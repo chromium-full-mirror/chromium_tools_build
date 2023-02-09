@@ -3,24 +3,9 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0777",
-      "[CACHE]/builder"
-    ],
-    "infra_step": true,
-    "name": "ensure builder cache dir"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'crossbench', 'url': 'https://chromium.googlesource.com/crossbench/'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'crossbench', 'url': 'https://chromium.googlesource.com/crossbench'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"crossbench\"}",
       "--git-cache-dir",
@@ -32,7 +17,6 @@
       "--revision",
       "crossbench@HEAD"
     ],
-    "cwd": "[CACHE]/builder",
     "env": {
       "DEPOT_TOOLS_COLLECT_METRICS": "0",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -89,7 +73,22 @@
   {
     "cmd": [
       "vpython3",
-      "tests/cbb/cbb_runner.py"
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "runhooks"
+    ],
+    "cwd": "[START_DIR]/crossbench",
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "gclient runhooks"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "crossbench/tests/cbb/cbb_runner.py"
     ],
     "name": "Run CBB Tests"
   },

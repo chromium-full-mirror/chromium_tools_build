@@ -6,25 +6,18 @@ Recipe for running CBB tests in Crossbench
 """
 
 DEPS = [
-    'depot_tools/git',
-    'recipe_engine/buildbucket',
+    'depot_tools/bot_update',
     'depot_tools/gclient',
     'recipe_engine/step',
-    'v8',
 ]
 
 
 def RunSteps(api):
-  gclient_config = api.gclient.make_config()
-  solution = gclient_config.solutions.add()
-  solution.url = 'https://chromium.googlesource.com/crossbench/'
-  solution.name = 'crossbench'
-  gclient_config.got_revision_mapping[solution.name] = 'got_revision'
-  api.gclient.c = gclient_config
+  api.gclient.set_config('crossbench')
+  api.bot_update.ensure_checkout()
+  api.gclient.runhooks()
 
-  api.v8.checkout()
-
-  api.step('Run CBB Tests', ['vpython3', 'tests/cbb/cbb_runner.py'])
+  api.step('Run CBB Tests', ['vpython3', 'crossbench/tests/cbb/cbb_runner.py'])
 
 
 def GenTests(api):
