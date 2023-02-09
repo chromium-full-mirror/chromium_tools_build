@@ -138,13 +138,17 @@ def fuchsia(c):
 def fuchsia_arm64(c):
   """Downloads terminal boot images for running ARM64 binaries on QEMU."""
 
-  c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = 'qemu.arm64'
+  c.solutions[0].custom_vars[
+      'checkout_fuchsia_boot_images'] = 'terminal.qemu-arm64'
+
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_x64(c):
   """Downloads terminal boot images for running x64 binaries on QEMU."""
 
-  c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = 'qemu.x64'
+  c.solutions[0].custom_vars[
+      'checkout_fuchsia_boot_images'] = 'terminal.qemu-x64'
+
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_no_hooks(c):
@@ -189,13 +193,13 @@ def fuchsia_workstation(c):
   """Downloads workstation boot images for running x64 binaries on QEMU."""
 
   c.solutions[0].custom_vars[
-      'checkout_fuchsia_boot_images'] = 'workstation_eng.qemu-x64-release'
+      'checkout_fuchsia_boot_images'] = 'workstation_eng.qemu-x64'
 
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_atlas(c):
   c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = (
-      'workstation_eng.chromebook-x64-release')
+      'workstation_eng.chromebook-x64')
 
 
 @CONFIG_CTX(includes=['fuchsia'])
