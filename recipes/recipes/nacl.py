@@ -123,7 +123,7 @@ def AnnotatedStepsSteps(api, got_revision, checkout_path,
       with api.depot_tools.on_path():
         with PlatformSDK(api):
           cmd = [
-              'vpython', '-u',
+              'vpython3', '-u',
               checkout_path.join('buildbot', 'buildbot_selector.py')
           ]
           api.legacy_annotation('annotated steps', cmd)

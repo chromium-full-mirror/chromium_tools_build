@@ -610,7 +610,7 @@
       "--output",
       "[CLEANUP]\\tmp_tmp_1\\sub_build.pb",
       "--",
-      "vpython",
+      "vpython3",
       "-u",
       "[START_DIR]\\native_client\\buildbot\\buildbot_selector.py"
     ],
