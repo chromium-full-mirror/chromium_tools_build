@@ -526,6 +526,32 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         result.append((change.host, change.project))
     return ', '.join('/'.join(p) for p in result)
 
+  def _persist_coverage_artifacts(self, source_dir, **kwargs):
+    """Uploads coverage artifacts to GCS bucket.
+
+    Uploads coverage artifacts to google cloud storage. Also adds the gs_path
+    and mimic_builder_name corresponding to the uploaded file to
+    self._coverage_metadata_gs_paths and self._mimic_builder_names,
+    which are later to be exposed as step properties.
+
+    Args:
+      source_dir: Absolute location to dir containing coverage artifacts
+    """
+    mimic_builder_name = self._compose_current_mimic_builder_name()
+    gs_path = self._compose_gs_path_for_coverage_data(
+        data_type='metadata', mimic_builder_name=mimic_builder_name)
+    self.m.gsutil.upload(
+        source=source_dir,
+        bucket=self._gs_bucket,
+        dest=gs_path,
+        name='Upload coverage artifacts',
+        link_name='Coverage Artifacts',
+        args=['-r'],
+        multithreaded=True,
+        **kwargs)
+    self._coverage_metadata_gs_paths.append(gs_path)
+    self._mimic_builder_names.append(mimic_builder_name)
+
   def process_clang_coverage_data(self, tests=None, binaries=None):
     """Processes the clang coverage data for html report or metadata.
 
@@ -583,32 +609,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               str(x) for x in sys.exc_info())
         else:
           raise
-
-  def _persist_coverage_artifacts(self, source_dir, **kwargs):
-    """Uploads coverage artifacts to GCS bucket.
-
-    Uploads coverage artifacts to google cloud storage. Also adds the gs_path
-    and mimic_builder_name corresponding to the uploaded file to
-    self._coverage_metadata_gs_paths and self._mimic_builder_names,
-    which are later to be exposed as step properties.
-
-    Args:
-      source_dir: Absolute location to dir containing coverage artifacts
-    """
-    mimic_builder_name = self._compose_current_mimic_builder_name()
-    gs_path = self._compose_gs_path_for_coverage_data(
-        data_type='metadata', mimic_builder_name=mimic_builder_name)
-    self.m.gsutil.upload(
-        source=source_dir,
-        bucket=self._gs_bucket,
-        dest=gs_path,
-        name='Upload coverage artifacts',
-        link_name='Coverage Artifacts',
-        args=['-r'],
-        multithreaded=True,
-        **kwargs)
-    self._coverage_metadata_gs_paths.append(gs_path)
-    self._mimic_builder_names.append(mimic_builder_name)
 
   def process_java_coverage_data(self, **kwargs):
     """Generates metadata and JaCoCo HTML report to upload to storage bucket.
@@ -702,32 +702,37 @@ class CodeCoverageApi(recipe_api.RecipeApi):
   def process_javascript_coverage_data(self):
     with self.m.step.nest('process javascript coverage'):
       try:
-        coverage_dir = self.build_dir.join('devtools_code_coverage')
-        cmd = [
-            'python3',
-            self.resource('generate_coverage_metadata_for_javascript.py'),
-            '--src-path',
-            self.src_dir,
-            '--output-dir',
-            coverage_dir,
-            '--coverage-dir',
-            coverage_dir,
-        ]
-
-        if self._is_per_cl_coverage:
-          cmd.append('--source-files')
-          cmd.extend(self._eligible_files)
-          cmd.extend(['--diff-mapping-path', self.bot_to_gerrit_mapping_file])
-        else:
-          dir_metadata_path = self._generate_dir_metadata()
-          cmd.extend([
-              '--dir-metadata-path',
-              dir_metadata_path,
-          ])
-
-        self.m.step('Generate JavaScript coverage metadata', cmd)
-
+        coverage_dir = self.build_dir.join('coverage')
+        if not self.m.path.exists('%s/lcov.info' % coverage_dir):
+          raise self.m.step.StepFailure("Required lcov.info is missing at %s" %
+                                        coverage_dir)
         self._persist_coverage_artifacts(source_dir=coverage_dir)
+        # Upload data to zoss to show it on code search
+        if self._export_coverage_to_zoss:
+          self.m.gsutil.upload(
+              source=coverage_dir.join('lcov.info'),
+              bucket=constants.ZOSS_BUCKET_NAME,
+              dest='%s/lcov.info' % self._compose_gs_path_for_zoss_upload(
+                  builder=self._compose_current_mimic_builder_name(),
+                  build_id=self.build_id),
+              link_name='lcov_info',
+              multithreaded=True,
+              name='export coverage data to zoss')
+          self.m.file.write_json(
+              name='create zoss metadata json',
+              dest=self.metadata_dir.join('zoss_metadata.json'),
+              data=self._get_zoss_metadata(
+                  coverage_format='LCOV',
+                  coverage_type=self._current_processing_test_type))
+          self.m.gsutil.upload(
+              source=coverage_dir.join('zoss_metadata.json'),
+              bucket=constants.ZOSS_BUCKET_NAME,
+              dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
+                  builder=self._compose_current_mimic_builder_name(),
+                  build_id=self.build_id),
+              link_name='Zoss Metadata',
+              multithreaded=True,
+              name='export metadata to zoss')
       except self.m.step.StepFailure:
         self.m.step.active_result.presentation.properties[
             'process_coverage_data_failure'] = True
@@ -772,7 +777,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         data_type='merged.profdata',
         mimic_builder_name=self._compose_current_mimic_builder_name())
     upload_step = self.m.profiles.upload(
-        self._gs_bucket, gs_path, merged_profdata, link_name=None)
+        self._gs_bucket, gs_path, merged_profdata, link_name='Merged profdata')
     upload_step.presentation.links['merged.profdata'] = (
         'https://storage.cloud.google.com/%s/%s' % (self._gs_bucket, gs_path))
     self._merged_profdata_gs_paths.append(gs_path)
@@ -875,7 +880,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         self.report_dir,
         self._gs_bucket,
         html_report_gs_path,
-        link_name=None,
+        link_name='html report',
         args=['-r'],
         multithreaded=True,
         name='upload html report')
@@ -925,7 +930,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if self.use_javascript_coverage:
       args.extend([
           '--javascript-coverage-dir',
-          self.build_dir.join('devtools_code_coverage'),
+          self.build_dir.join('coverage'),
           '--chromium-src-dir',
           self.src_dir,
           '--build-dir',
@@ -1031,7 +1036,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             dest='%s/coverage.json' % self._compose_gs_path_for_zoss_upload(
                 builder=self._compose_current_mimic_builder_name(),
                 build_id=self.build_id),
-            link_name=None,
+            link_name='coverage_json',
             multithreaded=True,
             name='export coverage data to zoss')
         self.m.file.write_json(
@@ -1046,7 +1051,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
                 builder=self._compose_current_mimic_builder_name(),
                 build_id=self.build_id),
-            link_name=None,
+            link_name='Zoss Metadata',
             multithreaded=True,
             name='export metadata to zoss')
 
@@ -1057,7 +1062,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           self.metadata_dir,
           self._gs_bucket,
           gs_path,
-          link_name=None,
+          link_name='Coverage Metadata',
           args=['-r'],
           multithreaded=True,
           name='upload coverage metadata')
