@@ -237,19 +237,16 @@ def trigger_publish_tarball_jobs(api):
   # TODO(phajdan.jr): find better solution than hardcoding version number.
   # We do that currently (carryover from a solution this recipe is replacing)
   # to avoid running into errors with older releases.
-  URL = 'https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>103'
+  URL = 'https://versionhistory.googleapis.com/v1/chrome/platforms/linux/channels/all/versions/all/releases?filter=version>103'
   TEST_DATA = """{ "releases": [
-    { "name": "chrome/platforms/ios/channels/canary/versions/103.0.5060.114/releases/1234567890" },
-    { "name": "chrome/platforms/mac/channels/canary/versions/103.0.5060.114/releases/1234567890" },
-    { "name": "chrome/platforms/win64/channels/canary_asan/versions/103.0.5060.114/releases/1234567890" }
+    { "name": "chrome/platforms/linux/channels/canary/versions/103.0.5060.114/releases/1234567890" },
+    { "name": "chrome/platforms/linux/channels/canary/versions/103.0.5060.114/releases/1234567890" },
+    { "name": "chrome/platforms/linux/channels/canary_asan/versions/103.0.5060.114/releases/1234567890" }
   ]}"""
   text = api.url.get_text(URL, default_test_data=TEST_DATA)
   for release in json.loads(text.output)['releases']:
     name = release['name'].split('/')
-    platform, channel, version = name[2], name[4], name[6]
-    # Exclude ios - it often uses internal buildspecs so public ones don't work.
-    if platform == 'ios':
-      continue
+    channel, version = name[4], name[6]
     if channel not in ('stable', 'beta', 'dev', 'canary'):
       continue
     if not published_all_tarballs(version, ls_result):
@@ -493,7 +490,7 @@ def GenTests(api):
       api.buildbucket.generic_build(),
       api.platform('linux', 64),
       api.url.text(
-          'GET https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>103',
+          'GET https://versionhistory.googleapis.com/v1/chrome/platforms/linux/channels/all/versions/all/releases?filter=version>103',
           """{ "releases": [
             { "name": "chrome/platforms/linux/channels/canary/versions/104.0.5112.79/releases/1234567890" }
           ]}"""),
