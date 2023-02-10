@@ -96,7 +96,7 @@ def RunSteps(api):
         for step in bot_steps[builder]['build_steps']:
           script = sync_dir.join(step['command'][0])
           args = step['command'][1:]
-          api.step(step['name'], ['python3', script] + dir_flags + args)
+          api.step(step['name'], ['vpython3', script] + dir_flags + args)
       except api.step.StepFailure as e:
         # If any of these builds fail, testing won't be meaningful.
         exit_status = e.retcode
@@ -110,7 +110,7 @@ def RunSteps(api):
         for step in bot_steps[builder]['test_steps']:
           script = sync_dir.join(step['command'][0])
           args = step['command'][1:]
-          api.step(step['name'], ['python3', script] + dir_flags + args)
+          api.step(step['name'], ['vpython3', script] + dir_flags + args)
 
 
 def GenTests(api):
