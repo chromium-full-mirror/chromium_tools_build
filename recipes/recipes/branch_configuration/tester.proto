@@ -6,18 +6,30 @@ syntax = "proto3";
 package recipes.build.branch_configuration.tester;
 
 message BranchConfig {
-  // Next ID: 3
+  // Next ID: 4
 
   // Required, the name to identify the configuration.
   //
   // The name is arbitrary and is only used for display and human
   // identification.
   string name = 1;
+
+  // Exactly one of branch_types or platforms must be set
+
   // Required, the branch types to set for the configuration.
   //
   // The branch types must be strings that can be passed as values for the
   // --type flag to script identified by branch_script in InputProperties.
+  //
+  // DEPRECATED: the project should be updated to use platform based selectors
+  // and switch to using the platforms field.
   repeated string branch_types = 2;
+
+  // Required, the platforms to set for the configuration.
+  //
+  // The platforms must be strings that can be present in the platforms dict of
+  // the project's settings.json.
+  repeated string platforms = 3;
 }
 
 message InputProperties {
@@ -27,9 +39,15 @@ message InputProperties {
   reserved "branch_types", "verification_scripts";
 
   // Required, the path within the repo to the branch script that can be used to
-  // set the branch type
+  // enable a platform or set the branch type
   //
-  // The script must be executable with a command of the form:
+  // If the platforms field is set in the branch configs, the script must be
+  // executable with a command of the form:
+  // <branch_script> enable-platform <platform> --description <description>
+  // It will be executed once for each element in branch_configs[i].platforms.
+  //
+  // If the branch_types field is set in the branch configs, the script must be
+  // executable with a command of the form:
   // <branch_script> set-type --type <branch_type> [--type <branch_type>]...
   // For each element <branch_type> in branch_configs[i].branch_types.
   string branch_script = 1;
@@ -39,10 +57,10 @@ message InputProperties {
 
   // Required, the path within the repo to the starlark entry point scripts
   //
-  // For each branch type, after the project is reconfigured for the branch
-  // type, each of the entry point scripts will have their config regenerated
-  // and validated with the luci-config service. If regenerating or validating
-  // fails, then the branch type will be considered a failure and the build's
-  // status will be failure.
+  // For each branch config, after the project is reconfigured, each of the
+  // entry point scripts will have their config regenerated and validated with
+  // the luci-config service. If regenerating or validating fails, then the
+  // branch config will be considered a failure and the build's status will be
+  // failure.
   repeated string starlark_entry_points = 5;
 }

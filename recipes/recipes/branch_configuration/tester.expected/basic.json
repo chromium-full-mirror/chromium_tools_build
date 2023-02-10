@@ -151,12 +151,12 @@
   {
     "cmd": [
       "[CACHE]/builder/project/branch-script",
-      "set-type",
-      "--type",
-      "branch-type1"
+      "enable-platform",
+      "platform1",
+      "--description",
+      "testing"
     ],
     "cwd": "[CACHE]/builder/project",
-    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -169,7 +169,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "branch-config1.set branch type",
+    "name": "branch-config1.enable platform1",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -341,12 +341,12 @@
   {
     "cmd": [
       "[CACHE]/builder/project/branch-script",
-      "set-type",
-      "--type",
-      "branch-type2"
+      "enable-platform",
+      "platform2",
+      "--description",
+      "testing"
     ],
     "cwd": "[CACHE]/builder/project",
-    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -359,7 +359,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "branch-config2.set branch type",
+    "name": "branch-config2.enable platform2",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -531,14 +531,12 @@
   {
     "cmd": [
       "[CACHE]/builder/project/branch-script",
-      "set-type",
-      "--type",
-      "branch-type1",
-      "--type",
-      "branch-type2"
+      "enable-platform",
+      "platform1",
+      "--description",
+      "testing"
     ],
     "cwd": "[CACHE]/builder/project",
-    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "project:try"
@@ -551,7 +549,33 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "branch-config3.set branch type",
+    "name": "branch-config3.enable platform1",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/project/branch-script",
+      "enable-platform",
+      "platform2",
+      "--description",
+      "testing"
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config3.enable platform2",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
