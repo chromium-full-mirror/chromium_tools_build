@@ -123,6 +123,7 @@ def RunSteps(api, properties):
   s.url = api.tryserver.gerrit_change_repo_url
   s.name = s.url.rsplit('/', 1)[-1]
   gclient_config.got_revision_mapping[s.name] = 'got_revision'
+  gclient_config.repo_path_map[s.url] = (s.name, 'HEAD')
 
   with api.chromium_bootstrap.update_gclient_config(gclient_config) as callback:
     with api.context(cwd=api.path['cache'].join('builder')):
