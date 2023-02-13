@@ -27,6 +27,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/resultdb',
     'recipe_engine/step',
     'recipe_engine/time',
 ]
@@ -325,12 +326,12 @@ def _RunTests(api,
     try:
       api.step(
           'run all tests',
-          [
+          api.resultdb.wrap([
               'vpython3', '-u', 'run_tests.py', '--tests', tests, '--hosts',
               host_dir, '--test_py', 'test.py', '--shared_provider_storage',
-              '%s-assets' % pool_name, '--error_logs_dir', logs_dir,
-              '--noprogress', '-v', '1'
-          ] + extra_args,
+              '%s-assets' %
+              pool_name, '--error_logs_dir', logs_dir, '--noprogress', '-v', '1'
+          ] + extra_args),
       )
     except:
       # We upload *all* logs, including those we reupload in _ParseTestSummary.
