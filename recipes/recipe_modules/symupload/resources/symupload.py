@@ -11,6 +11,7 @@
 
 import argparse
 from ast import dump
+import hashlib
 import os
 import subprocess
 import sys
@@ -98,6 +99,8 @@ def read_api_key(path_to_file):
   # Don't put the actual API key in the logs, but include some sort of debug
   # logging that might be helpful if there are problems.
   print('API key size sanity check: %s' % len(api_key))
+  sha = hashlib.sha256(api_key.encode())
+  print('API key hash: %s' % sha.hexdigest())
   return api_key
 
 
