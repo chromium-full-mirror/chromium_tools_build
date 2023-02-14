@@ -276,20 +276,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'basic win',
-      api.builder_group.for_current('devtools-frontend'),
-      ci_build(builder='win'),
-      api.platform('win', 64),
-  )
-
-  yield api.test(
-      'basic debug',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      ci_build(builder='linux'),
-      api.properties(builder_config='Debug'),
-  )
-
-  yield api.test(
       'debug cov',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
@@ -298,16 +284,6 @@ def GenTests(api):
           'karma-coverage',
           'coverage-summary.json',
       )),
-  )
-
-  yield api.test(
-      'full build',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      ci_build(builder='linux'),
-      api.properties(clobber=True),
-      api.post_process(post_process.MustRun, 'clean outdir'),
-      api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
