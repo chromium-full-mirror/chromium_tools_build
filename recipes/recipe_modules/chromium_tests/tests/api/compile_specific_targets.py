@@ -174,6 +174,36 @@ def GenTests(api):
   )
 
   yield api.test(
+      'perf_isolate_lookup_v8',
+      # pinpoint/builder.py does its own mapping of try builder to CI builder
+      # because it wants a simple mapping that pulls in all triggered try
+      # builders, which doesn't match the semantics of trybot/TrySpec
+      api.chromium.try_build(
+          builder='linux-builder-perf',
+          builder_group='chromium.perf',
+          git_repo='https://chromium.googlesource.com/v8/v8',
+          project='v8/v8',
+          revision='1234abcd' * 5),
+      api.properties(
+          deps_revision_overrides={'v8': '1234abcd' * 5}, swarming_gtest=True),
+      api.post_process(Filter('pinpoint isolate upload')),
+  )
+
+  yield api.test(
+      'perf_isolate_lookup_no_commit',
+      # pinpoint/builder.py does its own mapping of try builder to CI builder
+      # because it wants a simple mapping that pulls in all triggered try
+      # builders, which doesn't match the semantics of trybot/TrySpec
+      api.chromium.try_build(
+          builder='linux-builder-perf',
+          builder_group='chromium.perf',
+          git_repo=None,
+          revision=None),
+      api.properties(swarming_gtest=True),
+      api.post_process(Filter('pinpoint isolate upload')),
+  )
+
+  yield api.test(
       'android',
       api.platform.arch('arm'),
       api.chromium_tests_builder_config.ci_build(

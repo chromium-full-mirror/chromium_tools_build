@@ -1,0 +1,34 @@
+[
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[build::perf_dashboard]/resources/post_json.py",
+      "https://pinpoint-dot-chromeperf.appspot.com/api/isolate",
+      "-i",
+      "{\"builder_name\": \"linux-builder-perf\", \"change\": \"{\\\"commits\\\": [{\\\"git_hash\\\": \\\"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\\\", \\\"repository\\\": \\\"chromium\\\"}], \\\"patch\\\": {\\\"change\\\": 456789, \\\"revision\\\": 12, \\\"server\\\": \\\"https://chromium-review.googlesource.com\\\"}}\", \"isolate_map\": \"{\\\"base_unittests\\\": \\\"[dummy hash for base_unittests/dummy size]\\\"}\", \"isolate_server\": \"projects/example-cas-server/instances/default_instance\"}",
+      "-o",
+      "/path/to/tmp/json",
+      "-t",
+      "extra.secret.token.should.not.be.logged"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "pinpoint isolate upload",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"status_code\": 200@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  }
+]

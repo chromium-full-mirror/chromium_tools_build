@@ -625,10 +625,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       if builder_config.perf_isolate_upload:
         instance = self.m.cas.instance
+        repo = self.m.buildbucket.build.input.gitiles_commit.project or \
+               'chromium'
         self.m.perf_dashboard.upload_isolate(
             self.m.buildbucket.builder_name,
             self.m.perf_dashboard.get_change_info([{
-                'repository': 'chromium',
+                'repository': repo.split('/')[0],
                 'git_hash': update_step.presentation.properties['got_revision'],
             }]), instance, self.m.isolate.isolated_tests)
 
