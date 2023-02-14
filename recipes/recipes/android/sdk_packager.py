@@ -17,6 +17,7 @@ DEPS = [
     'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
+    'recipe_engine/context',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -36,6 +37,8 @@ def RunSteps(api, properties):
   sdk_manager = api.path['checkout'].join('third_party', 'android_sdk',
                                           'public', 'cmdline-tools', 'latest',
                                           'bin', 'sdkmanager')
+  jdk_path = api.path['checkout'].join('third_party', 'jdk', 'current')
+
   if not api.path.exists(sdk_manager):
     summary_markdown = (
         'Unable to find sdkmanager at path `%s`' % str(sdk_manager))
@@ -49,8 +52,11 @@ def RunSteps(api, properties):
         '--list',
         '--verbose',
     ]
-    list_output = api.step(
-        'list', list_cmd, stdout=api.raw_io.output_text()).stdout
+    # The sdkmanager script requires a JDK newer than 1.8, and on the bot the
+    # default JDK is 1.8, so we use the one bundled in Chromium (1.17).
+    with api.context(env={'JAVA_HOME': str(jdk_path)}):
+      list_output = api.step(
+          'list', list_cmd, stdout=api.raw_io.output_text()).stdout
 
     parse_result = api.step('parse', [
         'python3',
