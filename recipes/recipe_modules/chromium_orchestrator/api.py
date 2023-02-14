@@ -810,7 +810,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       return None
 
     # If more than one compilator is found the earliest would be '(with patch)'
-    compilator_build = min(builds, key=lambda b: b.start_time)
+    compilator_build = min(builds, key=lambda b: b.start_time.ToSeconds())
     return compilator_build
 
   def download_previous_code_coverage(self, quick_run_build):

@@ -194,8 +194,23 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
             ) if not empty_gitiles_commit else None,
             properties=json_format.Parse(
                 self.m.json.dumps(output_json_obj), struct_pb2.Struct())))
+    unused_compilator = build_pb2.Build(
+        id=54322,
+        status=sub_build_status,
+        summary_markdown=sub_build_summary,
+        start_time=timestamp_pb2.Timestamp(seconds=1562475246),
+        output=dict(
+            gitiles_commit=dict(
+                host="chromium.googlesource.com",
+                project="chromium/src",
+                id="cd7164f91fe44b4ec2304df88aa01da1ec930dd2",
+                ref="refs/heads/main",
+                position=1069217,
+            ) if not empty_gitiles_commit else None,
+            properties=json_format.Parse(
+                self.m.json.dumps(output_json_obj), struct_pb2.Struct())))
     return self.m.buildbucket.simulated_search_results(
-        [sub_build], step_name='get compilator build')
+        [sub_build, unused_compilator], step_name='get compilator build')
 
   def override_schedule_compilator_build(
       self, step_name='trigger compilator (with patch)', build_id=12345):
