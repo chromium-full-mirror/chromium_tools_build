@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from contextlib import contextmanager
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
@@ -12,10 +11,10 @@ import json
 DEPS = [
     'builder_group',
     'chromium',
+    'devtools',
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
     'depot_tools/git',
-    'depot_tools/gclient',
     'depot_tools/tryserver',
     'perf_dashboard',
     'recipe_engine/buildbucket',
@@ -25,7 +24,6 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
-    'recipe_engine/resultdb',
     'recipe_engine/step',
 ]
 
@@ -68,21 +66,14 @@ PROPERTIES = {
 }
 
 
-
-REPO_URL = 'https://chromium.googlesource.com/devtools/devtools-frontend.git'
-
-
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
              clobber, e2e_env, runner_args):
-  _configure(api, builder_config, is_official_build, devtools_skip_typecheck)
+  api.devtools.configure(builder_config, is_official_build,
+                         devtools_skip_typecheck)
+  api.devtools.update()
 
-  with _in_builder_cache(api):
-    api.bot_update.ensure_checkout()
-    _git_clean(api)
-    api.gclient.runhooks()
-
-  with _depot_on_path(api):
-    clean_out_dir(api, builder_config, clobber)
+  with api.devtools.depot_on_path():
+    api.devtools.clean_out_dir(builder_config, clobber)
     api.chromium.run_gn()
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
@@ -105,7 +96,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     run_interactions(api, builder_config)
     publish_coverage_points(api)
 
-    if _is_debug(builder_config):
+    if api.devtools.is_debug(builder_config):
       return
 
     run_lint_check(api)
@@ -116,51 +107,12 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       # builders with property run_experimental_steps == True
       pass
 
-def _is_debug(builder_config):
-  return builder_config == 'Debug'
-
-
-def _configure(api, builder_config, is_official_build, devtools_skip_typecheck):
-  _configure_source(api)
-  _configure_build(api, builder_config, is_official_build,
-                   devtools_skip_typecheck)
-
-
-def _configure_source(api):
-  src_cfg = api.gclient.make_config()
-  soln = src_cfg.solutions.add()
-  soln.name = 'devtools-frontend'
-  soln.url = REPO_URL
-  soln.revision = api.buildbucket.gitiles_commit.id or 'HEAD'
-  src_cfg.got_revision_mapping[soln.name] = 'got_revision'
-  api.gclient.c = src_cfg
-
-
-def _configure_build(api, builder_config, is_official_build,
-                     devtools_skip_typecheck):
-  build_cfg = api.chromium.make_config(BUILD_CONFIG=builder_config)
-  build_cfg.build_config_fs = builder_config
-  build_cfg.gn_args.append('devtools_dcheck_always_on=true')
-  if is_official_build:
-    build_cfg.gn_args.append('is_official_build=true')
-  if devtools_skip_typecheck:
-    build_cfg.gn_args.append('devtools_skip_typecheck=true')
-  api.chromium.c = build_cfg
-
 
 def run_script(api, step_name, script, args=None):
   with api.step.defer_results():
     sc_path = api.path['checkout'].join('scripts', 'test', script)
     args = ["vpython3", "-u", sc_path] + (args or [])
     api.step(step_name, args)
-
-
-def run_node_script(api, step_name, script, args=None, **kwargs):
-  with api.context(cwd=api.path['checkout']):
-    sc_path = api.path.join('third_party', 'node', 'node.py')
-    node_args = ['--output', api.path.join('scripts', 'test', script)]
-    node_args.extend(args or [])
-    api.step(step_name, ["vpython3", "-u", sc_path] + node_args, **kwargs)
 
 
 def run_unit_tests(api, builder_config):
@@ -177,22 +129,20 @@ def run_lint_check(api):
   lint_script = 'run_lint_check_js.mjs'
   if not lint_script_exists(api, lint_script):
     lint_script = 'run_lint_check_js.js'
-  run_node_script(api, 'Lint Check with ESLint', lint_script)
-  run_node_script(api, 'Lint check with Stylelint','run_lint_check_css.js')
+  api.devtools.run_node_script('Lint Check with ESLint', lint_script)
+  api.devtools.run_node_script('Lint check with Stylelint',
+                               'run_lint_check_css.js')
 
 
 def run_e2e(api, builder_config, args=None):
-  rdb_node_script(api, 'E2E tests', 'run_test_suite.js', [
-      "--test-suite-path=gen/test/e2e",
-      "--test-suite-source-dir=test/e2e",
-      "--test-server-type='hosted-mode'",
-      "--target=" + builder_config
-    ] + (args or []))
+  api.devtools.rdb_node_script('E2E tests', 'run_test_suite.js', [
+      "--test-suite-path=gen/test/e2e", "--test-suite-source-dir=test/e2e",
+      "--test-server-type='hosted-mode'", "--target=" + builder_config
+  ] + (args or []))
 
 
 def run_interactions(api, builder_config):
-  rdb_node_script(
-      api,
+  api.devtools.rdb_node_script(
       'Interactions',
       'run_test_suite.js',
       [
@@ -202,43 +152,6 @@ def run_interactions(api, builder_config):
           "--coverage"
       ],
   )
-
-
-def rdb_node_script(api, step_name, script, args=None):
-  rdb_wrapper = api.resultdb.wrap([])
-  run_node_script(api, step_name, script, args, wrapper = rdb_wrapper)
-
-
-# TODO(liviurau): remove this temp hack after devtools refactoring that
-# involve .gitignore are done
-def _git_clean(api):
-  with api.context(cwd=api.path['checkout']):
-    api.git('clean', '-xf', '--', 'front_end')
-
-
-def clean_out_dir(api, builder_config, clobber):
-  if clobber:
-    dir_to_clean = 'Release'
-  elif _is_debug(builder_config):
-    dir_to_clean = 'Debug'
-  else:
-    return
-  path_to_clean = api.path['checkout'].join('out', dir_to_clean)
-  api.file.rmtree('clean outdir', path_to_clean)
-
-
-@contextmanager
-def _in_builder_cache(api):
-  cache_dir = api.path['cache'].join('builder')
-  with api.context(cwd=cache_dir):
-    yield
-
-
-@contextmanager
-def _depot_on_path(api):
-  depot_tools_path = api.path['checkout'].join('third_party')
-  with api.context(env_prefixes={'PATH': [depot_tools_path]}):
-    yield
 
 
 def can_run_experimental_steps(api):
@@ -268,8 +181,8 @@ def publish_coverage_points(api):
   if api.tryserver.is_tryserver:
     return
 
-  run_node_script(api, 'Combining coverage reports',
-                  'merge_coverage_reports.js')
+  api.devtools.run_node_script('Combining coverage reports',
+                               'merge_coverage_reports.js')
 
   dimensions = ["lines", "statements", "functions", "branches"]
 
