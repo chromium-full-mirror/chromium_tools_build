@@ -8,9 +8,10 @@ from recipe_engine import recipe_api
 from google.protobuf import json_format
 
 class V8OrchestratorApi(recipe_api.RecipeApi):
-  def create_compilator_handler(self):
+
+  def create_compilator_handler(self, enable_led=True):
     # TODO: enable led when we trigger real compilators
-    if self.m.led.launched_by_led:
+    if enable_led and self.m.led.launched_by_led:
       return LedCompilatorHandler(self.m)
     return ProdCompilatorHandler(self.m)
 

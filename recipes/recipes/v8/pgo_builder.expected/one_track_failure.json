@@ -1,0 +1,22 @@
+[
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x64\"], \"revision\": \"cd12\", \"version\": \"1.1.1.4\"}",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/meta.json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload metadata 1.1.1.4",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/meta.json@@@"
+    ]
+  }
+]

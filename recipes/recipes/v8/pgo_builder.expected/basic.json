@@ -1,0 +1,1996 @@
+[
+  {
+    "cmd": [],
+    "name": "init trackers for candidate versions"
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "--tags",
+      "https://chromium.googlesource.com/v8/v8/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "init trackers for candidate versions.git ls-remote",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@stdout@1234 refs/tags/0.1.10.1@@@",
+      "@@@STEP_LOG_LINE@stdout@2234 refs/tags/1.1.1@@@",
+      "@@@STEP_LOG_LINE@stdout@ab34 refs/tags/1.1.1.1@@@",
+      "@@@STEP_LOG_LINE@stdout@abde refs/tags/1.1.1.2@@@",
+      "@@@STEP_LOG_LINE@stdout@f034 refs/tags/1.1.1.3@@@",
+      "@@@STEP_LOG_LINE@stdout@cd12 refs/tags/1.1.1.4@@@",
+      "@@@STEP_LOG_LINE@stdout@43ff refs/tags/1.1.2@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "ls",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "init trackers for candidate versions.gsutil Find versions with PGO profiles",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[stdout]@gs://chromium-v8-builtins-pgo-staging/by-version/@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[stdout]@gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1/@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[stdout]@gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.1/@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[stdout]@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger compilators"
+  },
+  {
+    "cmd": [],
+    "name": "trigger compilators.1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger compilators.1.1.2.0 x86.trigger compilator",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"builder\": \"V8 Linux PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"0-00000000-0000-0000-0000-000000001337\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }, @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514000\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001337\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"hide-in-gerrit\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"pointless\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"recipe\"@@@",
+      "@@@STEP_LOG_LINE@request@          }@@@",
+      "@@@STEP_LOG_LINE@request@        ]@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@8922054662172514000@https://cr-buildbucket.appspot.com/build/8922054662172514000@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger compilators.1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger compilators.1.1.2.0 x64.trigger compilator",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"builder\": \"V8 Linux64 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"0-00000000-0000-0000-0000-00000000133a\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }, @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514001\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-00000000133a\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"hide-in-gerrit\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"pointless\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"recipe\"@@@",
+      "@@@STEP_LOG_LINE@request@          }@@@",
+      "@@@STEP_LOG_LINE@request@        ]@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@8922054662172514001@https://cr-buildbucket.appspot.com/build/8922054662172514001@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger compilators.1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger compilators.1.1.1.4 x86.trigger compilator",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"builder\": \"V8 Linux PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"0-00000000-0000-0000-0000-00000000133d\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }, @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514002\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-00000000133d\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"hide-in-gerrit\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"pointless\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"recipe\"@@@",
+      "@@@STEP_LOG_LINE@request@          }@@@",
+      "@@@STEP_LOG_LINE@request@        ]@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@8922054662172514002@https://cr-buildbucket.appspot.com/build/8922054662172514002@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger compilators.1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger compilators.1.1.1.4 x64.trigger compilator",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"builder\": \"V8 Linux64 PGO instrumentation - builder\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"0-00000000-0000-0000-0000-000000001340\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }, @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514003\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"scheduleBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"builder\": \"V8 Linux64 PGO instrumentation - builder\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001340\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"parentRunId\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@request@        }, @@@",
+      "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"hide-in-gerrit\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"pointless\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"parent_buildbucket_id\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@request@          }, @@@",
+      "@@@STEP_LOG_LINE@request@          {@@@",
+      "@@@STEP_LOG_LINE@request@            \"key\": \"user_agent\", @@@",
+      "@@@STEP_LOG_LINE@request@            \"value\": \"recipe\"@@@",
+      "@@@STEP_LOG_LINE@request@          }@@@",
+      "@@@STEP_LOG_LINE@request@        ]@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@8922054662172514003@https://cr-buildbucket.appspot.com/build/8922054662172514003@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "download benchmark code"
+  },
+  {
+    "cmd": [
+      "git",
+      "clone",
+      "--depth=1",
+      "--filter=blob:none",
+      "--sparse",
+      "https://chrome-internal.googlesource.com/v8/v8-perf"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "download benchmark code.git clone",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "sparse-checkout",
+      "set",
+      "benchmarks/JetStream2"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1/v8-perf",
+    "infra_step": true,
+    "name": "download benchmark code.git sparse-checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect compilation isolates"
+  },
+  {
+    "cmd": [],
+    "name": "collect compilation isolates.1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect compilation isolates.1.1.2.0 x86.install infra/chromium/compilator_watcher",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/latest"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "collect compilation isolates.1.1.2.0 x86.install infra/chromium/compilator_watcher.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/latest",
+      "-ensure-file",
+      "infra/chromium/compilator_watcher/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "collect compilation isolates.1.1.2.0 x86.install infra/chromium/compilator_watcher.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/chromium/compilator_watcher/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/latest/compilator_watcher",
+      "--output",
+      "[CLEANUP]/tmp_tmp_2/sub_build.pb",
+      "--",
+      "-compilator-id",
+      "8922054662172514000",
+      "-get-swarming-trigger-props"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "MAC_CHROMIUM_TMPDIR": "[CLEANUP]/tmp_tmp_3",
+      "TEMP": "[CLEANUP]/tmp_tmp_3",
+      "TEMPDIR": "[CLEANUP]/tmp_tmp_3",
+      "TMP": "[CLEANUP]/tmp_tmp_3",
+      "TMPDIR": "[CLEANUP]/tmp_tmp_3"
+    },
+    "name": "collect compilation isolates.1.1.2.0 x86.compilator steps",
+    "stdin": "\b\u042d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012(\u001a&V8 Linux PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@All good!@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@{@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"id\": \"54321\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"output\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      \"compilator_properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"parent_test_spec\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"os\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_task_attrs\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"expiration\": 21600.0,@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"hard_timeout\": 7200.0@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"tests\": [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@              \"pgo_instrumentation\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"swarm_hashes\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"d8_pgo\": \"fa3e4a54\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"status\": \"SUCCESS\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"summary_markdown\": \"All good!\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@}@@@",
+      "@@@STEP_LOG_END@step.sub_build@@@",
+      "@@@STEP_LINK@compilator build: 8922054662172514000@https://cr-buildbucket.appspot.com/build/8922054662172514000@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect compilation isolates.1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/latest/compilator_watcher",
+      "--output",
+      "[CLEANUP]/tmp_tmp_4/sub_build.pb",
+      "--",
+      "-compilator-id",
+      "8922054662172514001",
+      "-get-swarming-trigger-props"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "MAC_CHROMIUM_TMPDIR": "[CLEANUP]/tmp_tmp_5",
+      "TEMP": "[CLEANUP]/tmp_tmp_5",
+      "TEMPDIR": "[CLEANUP]/tmp_tmp_5",
+      "TMP": "[CLEANUP]/tmp_tmp_5",
+      "TMPDIR": "[CLEANUP]/tmp_tmp_5"
+    },
+    "name": "collect compilation isolates.1.1.2.0 x64.compilator steps",
+    "stdin": "\b\u046d\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012*\u001a(V8 Linux64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@All good!@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@{@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"id\": \"54321\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"output\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      \"compilator_properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"parent_test_spec\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"os\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_task_attrs\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"expiration\": 21600.0,@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"hard_timeout\": 7200.0@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"tests\": [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@              \"pgo_instrumentation\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"swarm_hashes\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"d8_pgo\": \"fa3e4a54\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"status\": \"SUCCESS\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"summary_markdown\": \"All good!\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@}@@@",
+      "@@@STEP_LOG_END@step.sub_build@@@",
+      "@@@STEP_LINK@compilator build: 8922054662172514001@https://cr-buildbucket.appspot.com/build/8922054662172514001@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect compilation isolates.1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/latest/compilator_watcher",
+      "--output",
+      "[CLEANUP]/tmp_tmp_6/sub_build.pb",
+      "--",
+      "-compilator-id",
+      "8922054662172514002",
+      "-get-swarming-trigger-props"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "MAC_CHROMIUM_TMPDIR": "[CLEANUP]/tmp_tmp_7",
+      "TEMP": "[CLEANUP]/tmp_tmp_7",
+      "TEMPDIR": "[CLEANUP]/tmp_tmp_7",
+      "TMP": "[CLEANUP]/tmp_tmp_7",
+      "TMPDIR": "[CLEANUP]/tmp_tmp_7"
+    },
+    "name": "collect compilation isolates.1.1.1.4 x86.compilator steps",
+    "stdin": "\b\u04ad\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012(\u001a&V8 Linux PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@All good!@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@{@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"id\": \"54321\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"output\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      \"compilator_properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"parent_test_spec\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"os\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_task_attrs\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"expiration\": 21600.0,@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"hard_timeout\": 7200.0@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"tests\": [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@              \"pgo_instrumentation\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"swarm_hashes\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"d8_pgo\": \"fa3e4a54\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"status\": \"SUCCESS\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"summary_markdown\": \"All good!\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@}@@@",
+      "@@@STEP_LOG_END@step.sub_build@@@",
+      "@@@STEP_LINK@compilator build: 8922054662172514002@https://cr-buildbucket.appspot.com/build/8922054662172514002@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect compilation isolates.1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/latest/compilator_watcher",
+      "--output",
+      "[CLEANUP]/tmp_tmp_8/sub_build.pb",
+      "--",
+      "-compilator-id",
+      "8922054662172514003",
+      "-get-swarming-trigger-props"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "MAC_CHROMIUM_TMPDIR": "[CLEANUP]/tmp_tmp_9",
+      "TEMP": "[CLEANUP]/tmp_tmp_9",
+      "TEMPDIR": "[CLEANUP]/tmp_tmp_9",
+      "TMP": "[CLEANUP]/tmp_tmp_9",
+      "TMPDIR": "[CLEANUP]/tmp_tmp_9"
+    },
+    "name": "collect compilation isolates.1.1.1.4 x64.compilator steps",
+    "stdin": "\b\u04ed\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd{\u0012*\u001a(V8 Linux64 PGO instrumentation - builder2\u0006\b\ufffd\u00af\ufffd\u0005:\u0006\b\ufffd\u00af\ufffd\u0005`\u0002",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@All good!@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@{@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"id\": \"54321\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"output\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      \"compilator_properties\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"parent_test_spec\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"os\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"swarming_task_attrs\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"expiration\": 21600.0,@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            \"hard_timeout\": 7200.0@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"tests\": [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            [@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@              \"pgo_instrumentation\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@            ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          ]@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        \"swarm_hashes\": {@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@          \"d8_pgo\": \"fa3e4a54\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@        }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@      }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@    }@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  },@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"status\": \"SUCCESS\",@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@  \"summary_markdown\": \"All good!\"@@@",
+      "@@@STEP_LOG_LINE@step.sub_build@}@@@",
+      "@@@STEP_LOG_END@step.sub_build@@@",
+      "@@@STEP_LINK@compilator build: 8922054662172514003@https://cr-buildbucket.appspot.com/build/8922054662172514003@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "merge isolate with benchmark"
+  },
+  {
+    "cmd": [],
+    "name": "merge isolate with benchmark.1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "RECIPE_MODULE[recipe_engine::cas]/resources/infra.sha1",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x86.read infra revision",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@infra.sha1@git_revision:mock_infra_git_revision@@@",
+      "@@@STEP_LOG_END@infra.sha1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "merge isolate with benchmark.1.1.2.0 x86.install infra/tools/luci/cas",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x86.install infra/tools/luci/cas.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision",
+      "-ensure-file",
+      "infra/tools/luci/cas/${platform} git_revision:mock_infra_git_revision",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x86.install infra/tools/luci/cas.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-git_revision:moc\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/luci/cas/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "download",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-digest",
+      "fa3e4a54",
+      "-dir",
+      "[CLEANUP]/tmp_tmp_10"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x86.download",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copytree",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_10"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x86.copy benchmark code",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "archive",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-dump-digest",
+      "/path/to/tmp/",
+      "-paths-json",
+      "[[\"[CLEANUP]/tmp_tmp_10\", \".\"]]"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x86.archive",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@CAS UI@https://cas-viewer.appspot.com/projects/example-cas-server/instances/default_instance/blobs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0/tree@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "merge isolate with benchmark.1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "download",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-digest",
+      "fa3e4a54",
+      "-dir",
+      "[CLEANUP]/tmp_tmp_11"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x64.download",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copytree",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_11"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x64.copy benchmark code",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "archive",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-dump-digest",
+      "/path/to/tmp/",
+      "-paths-json",
+      "[[\"[CLEANUP]/tmp_tmp_11\", \".\"]]"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.2.0 x64.archive",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@CAS UI@https://cas-viewer.appspot.com/projects/example-cas-server/instances/default_instance/blobs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0/tree@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "merge isolate with benchmark.1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "download",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-digest",
+      "fa3e4a54",
+      "-dir",
+      "[CLEANUP]/tmp_tmp_12"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.1.4 x86.download",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copytree",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_12"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.1.4 x86.copy benchmark code",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "archive",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-dump-digest",
+      "/path/to/tmp/",
+      "-paths-json",
+      "[[\"[CLEANUP]/tmp_tmp_12\", \".\"]]"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.1.4 x86.archive",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@CAS UI@https://cas-viewer.appspot.com/projects/example-cas-server/instances/default_instance/blobs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0/tree@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "merge isolate with benchmark.1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "download",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-digest",
+      "fa3e4a54",
+      "-dir",
+      "[CLEANUP]/tmp_tmp_13"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.1.4 x64.download",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copytree",
+      "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
+      "[CLEANUP]/tmp_tmp_13"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.1.4 x64.copy benchmark code",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
+      "archive",
+      "-cas-instance",
+      "projects/example-cas-server/instances/default_instance",
+      "-dump-digest",
+      "/path/to/tmp/",
+      "-paths-json",
+      "[[\"[CLEANUP]/tmp_tmp_13\", \".\"]]"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "merge isolate with benchmark.1.1.1.4 x64.archive",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@CAS UI@https://cas-viewer.appspot.com/projects/example-cas-server/instances/default_instance/blobs/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0/tree@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger profilers"
+  },
+  {
+    "cmd": [],
+    "name": "trigger profilers.1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger profilers.1.1.2.0 x86.install infra/tools/luci/swarming",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger profilers.1.1.2.0 x86.install infra/tools/luci/swarming.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin",
+      "-ensure-file",
+      "infra/tools/luci/swarming/${platform} swarming_module_pin",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger profilers.1.1.2.0 x86.install infra/tools/luci/swarming.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-swarming_module_\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/luci/swarming/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298\", \"priority\": \"200\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.2.0 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"./tools/builtins-pgo/profile_only.py\", \"--v8-target-cpu\", \"x86\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger profilers.1.1.2.0 x86.[trigger] pgo profile 1.1.2.0 x86 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }, @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\", @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/0\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:pgo\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.2.0 x86 on Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ], @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"21600\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"./tools/builtins-pgo/profile_only.py\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--v8-target-cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"x86\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output-dir\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"7200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          }, @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x86/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=0@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger profilers.1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298\", \"priority\": \"200\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.2.0 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"./tools/builtins-pgo/profile_only.py\", \"--v8-target-cpu\", \"x64\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger profilers.1.1.2.0 x64.[trigger] pgo profile 1.1.2.0 x64 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }, @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\", @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:pgo\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.2.0 x64 on Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ], @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"21600\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"./tools/builtins-pgo/profile_only.py\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--v8-target-cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"x64\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output-dir\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"7200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          }, @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: pgo profile 1.1.2.0 x64/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger profilers.1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298\", \"priority\": \"200\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.1.4 x86 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"./tools/builtins-pgo/profile_only.py\", \"--v8-target-cpu\", \"x86\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger profilers.1.1.1.4 x86.[trigger] pgo profile 1.1.1.4 x86 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }, @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\", @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:pgo\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.1.4 x86 on Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ], @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"21600\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"./tools/builtins-pgo/profile_only.py\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--v8-target-cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"x86\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output-dir\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"7200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          }, @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x86/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "trigger profilers.1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
+      "spawn-tasks",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-json-input",
+      "{\"requests\": [{\"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298\", \"priority\": \"200\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:pgo\", \"stepname:pgo profile 1.1.1.4 x64 on Ubuntu 31.41\"], \"task_slices\": [{\"expiration_secs\": \"21600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"vpython3\", \"-u\", \"./tools/builtins-pgo/profile_only.py\", \"--v8-target-cpu\", \"x64\", \"--output-dir\", \"${ISOLATED_OUTDIR}\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu 31.41\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"7200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "trigger profilers.1.1.1.4 x64.[trigger] pgo profile 1.1.1.4 x64 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }, @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\", @@@",
+      "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"invocation\": \"invocations/3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@    {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"priority\": \"200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"service_account\": \"\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"botname:fake-bot-id\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"build_is_experimental:false\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"name:pgo\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:pgo profile 1.1.1.4 x64 on Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@      ], @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@        {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"expiration_secs\": \"21600\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"cas_input_root\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"cas_instance\": \"projects/example-cas-server/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"size_bytes\": \"0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"vpython3\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-u\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"./tools/builtins-pgo/profile_only.py\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--v8-target-cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"x64\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"--output-dir\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
+      "@@@STEP_LOG_LINE@json.input@            }, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"dimensions\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"cpu\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"x86-64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu 31.41\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }, @@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"chromium.tests\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@              {@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"key\": \"ISOLATED_OUTDIR\", @@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"${ISOLATED_OUTDIR}\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              }@@@",
+      "@@@STEP_LOG_LINE@json.input@            ], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"env_prefixes\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"execution_timeout_secs\": \"7200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"grace_period_secs\": \"30\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"idempotent\": false, @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"io_timeout_secs\": \"1200\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"outputs\": [], @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"relative_cwd\": \"\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          }, @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"wait_for_capacity\": false@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      ]@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  ]@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@",
+      "@@@STEP_LINK@task UI: pgo profile 1.1.1.4 x64/Ubuntu 31.41/e3b0c44298@https://example.swarmingserver.appspot.com/task?id=3@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect profiles"
+  },
+  {
+    "cmd": [],
+    "name": "collect profiles.1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/v1.1.2.0_x86_tmp_1",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "all",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"0\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
+      ]
+    },
+    "name": "collect profiles.1.1.2.0 x86.pgo profile 1.1.2.0 x86 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/some-inv-name\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"148aa78d7aa0000\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/some-inv-name/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect profiles.1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/v1.1.2.0_x64_tmp_1",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "all",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"1\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
+      ]
+    },
+    "name": "collect profiles.1.1.2.0 x64.pgo profile 1.1.2.0 x64 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/some-inv-name\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"148aa78d7aa0000\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/some-inv-name/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect profiles.1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/v1.1.1.4_x86_tmp_1",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "all",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"2\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
+      ]
+    },
+    "name": "collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/some-inv-name\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"148aa78d7aa0000\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/some-inv-name/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "collect profiles.1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/collect_task.py",
+      "--verbose",
+      "-o",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[CLEANUP]/v1.1.1.4_x64_tmp_1",
+      "--merge-script",
+      "RECIPE_MODULE[build::chromium_swarming]/resources/noop_merge.py",
+      "--merge-script-stdout-file",
+      "/path/to/tmp/merge_script_log",
+      "--merge-additional-args",
+      "[]",
+      "--summary-json-file",
+      "/path/to/tmp/json",
+      "--",
+      "swarming",
+      "collect",
+      "-server",
+      "https://example.swarmingserver.appspot.com",
+      "-task-summary-python",
+      "-task-output-stdout",
+      "all",
+      "-verbose",
+      "-requests-json",
+      "{\"tasks\": [{\"task_id\": \"3\"}]}"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
+      ]
+    },
+    "name": "collect profiles.1.1.1.4 x64.pgo profile 1.1.1.4 x64 on Ubuntu 31.41",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu 31.41'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"bot_id\": \"vm30\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"cas_output_root\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"cas_instance\": \"projects/example-project/instances/default_instance\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@          \"size_bytes\": 73@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"completed_ts\": \"2014-09-25T01:43:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"created_ts\": \"2014-09-25T01:41:00.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 31.5, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"exit_code\": 0, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"modified_ts\": \"2014-09-25 01:42:00\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"name\": \"heartbeat-canary-2014-09-25_01:41:55-os=Windows\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"output\": \"Heart beat succeeded on win32.\\nFoo\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"resultdb_info\": {@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@        \"invocation\": \"invocations/some-inv-name\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      }, @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"148aa78d7aa0000\"@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
+      "@@@STEP_LOG_END@chromium_swarming.summary@@@",
+      "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/some-inv-name/test-results@@@",
+      "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=3@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "upload to gs"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/v1.1.2.0_x86_tmp_1/0/x86.profile",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.2.0/x86.profile"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload 1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.2.0/x86.profile@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/v1.1.2.0_x64_tmp_1/1/x64.profile",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.2.0/x64.profile"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload 1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.2.0/x64.profile@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/v1.1.1.4_x86_tmp_1/2/x86.profile",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/x86.profile"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload 1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/x86.profile@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/v1.1.1.4_x64_tmp_1/3/x64.profile",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/x64.profile"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload 1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/x64.profile@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x86\", \"x64\"], \"revision\": \"43ff\", \"version\": \"1.1.2.0\"}",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.2.0/meta.json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload metadata 1.1.2.0",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.2.0/meta.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x86\", \"x64\"], \"revision\": \"cd12\", \"version\": \"1.1.1.4\"}",
+      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/meta.json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload metadata 1.1.1.4",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/meta.json@@@"
+    ]
+  },
+  {
+    "name": "$result"
+  }
+]

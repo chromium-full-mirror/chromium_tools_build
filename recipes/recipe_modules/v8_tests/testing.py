@@ -482,8 +482,17 @@ def _trigger_swarming_task(api, task, test_step_config):
 
   task_slice = task_slice.with_dimensions(**task_dimensions)
 
-  # Override attributes with per-test settings.
-  attrs = test_step_config.swarming_task_attrs
+  override_swarming_attrs(task, task_slice,
+                          test_step_config.swarming_task_attrs)
+
+  api.chromium_swarming.trigger_task(task)
+
+  # Remove 'invocations/' because it is added again in include_invocations.
+  api.resultdb.include_invocations(
+      [i[len('invocations/'):] for i in task.get_invocation_names()])
+
+
+def override_swarming_attrs(task, task_slice, attrs):
   if attrs.get('hard_timeout'):
     task_slice = task_slice.with_execution_timeout_secs(
         int(attrs['hard_timeout']))
@@ -492,12 +501,6 @@ def _trigger_swarming_task(api, task, test_step_config):
   task.request = task.request.with_slice(0, task_slice)
   if attrs.get('priority'):
     task.request = task.request.with_priority(int(attrs['priority']))
-
-  api.chromium_swarming.trigger_task(task)
-
-  # Remove 'invocations/' because it is added again in include_invocations.
-  api.resultdb.include_invocations(
-      [i[len('invocations/'):] for i in task.get_invocation_names()])
 
 
 class V8SwarmingTest(V8Test):
