@@ -104,7 +104,7 @@ class SymuploadApi(recipe_api.RecipeApi):
       key_presentation.logs['api_key sanity check'] = str(len(api_key))
 
     cmd = [
-        'python',
+        'python3',
         self.resource('symupload.py'),
         '--artifacts',
         ','.join(artifacts),
