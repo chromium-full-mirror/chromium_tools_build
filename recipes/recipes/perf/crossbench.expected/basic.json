@@ -86,9 +86,123 @@
     "name": "gclient runhooks"
   },
   {
+    "cmd": [],
+    "name": "Download Chrome Binaries"
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "gs://chromium-browser-snapshots/Mac/LAST_CHANGE",
+      "[CLEANUP]/chrome_tmp_1"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.gsutil download",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
-      "crossbench/tests/cbb/cbb_runner.py"
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/chrome_tmp_1/LAST_CHANGE",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.read latest chrome version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@LAST_CHANGE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "gs://chromium-browser-snapshots/Mac//chrome-mac.zip",
+      "[CLEANUP]/chrome_tmp_1"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.gsutil download (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "unzip",
+      "[CLEANUP]/chrome_tmp_1/chrome-mac.zip",
+      "-d",
+      "[CLEANUP]/chrome_tmp_1/zip"
+    ],
+    "name": "Download Chrome Binaries.Extract archive",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "chmod",
+      "-R",
+      "+x",
+      "[CLEANUP]/chrome_tmp_1/zip"
+    ],
+    "name": "Download Chrome Binaries.Update permissions for [CLEANUP]/chrome_tmp_1/zip",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "gs://chromium-browser-snapshots/Mac//chromedriver_mac64.zip",
+      "[CLEANUP]/chrome_tmp_1"
+    ],
+    "infra_step": true,
+    "name": "Download Chrome Binaries.gsutil download (3)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "unzip",
+      "[CLEANUP]/chrome_tmp_1/chromedriver_mac64.zip",
+      "-d",
+      "[CLEANUP]/chrome_tmp_1/zip"
+    ],
+    "name": "Download Chrome Binaries.Extract archive (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "crossbench/tests/cbb/cbb_runner.py",
+      "--browserpath=[CLEANUP]/chrome_tmp_1/zip/chrome-mac/Chromium.app",
+      "--driverpath=[CLEANUP]/chrome_tmp_1/zip/chromedriver_mac64/chromedriver"
     ],
     "name": "Run CBB Tests"
   },
