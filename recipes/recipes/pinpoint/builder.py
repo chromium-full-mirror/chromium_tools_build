@@ -127,7 +127,18 @@ def GenTests(api):
           ],
           **builder),
       api.chromium_tests.read_source_side_spec(*source_side_spec),
-      api.post_process(post_process.Filter('bot_update')),
+      api.post_process(
+          post_process.Filter('bot_update', 'pinpoint isolate upload')),
+  )
+
+  yield api.test(
+      'git_repo',
+      api.chromium.try_build(
+          revision='1cd310e5609606ca9c8531313142a1a9f16ae860',
+          git_repo='https://chromium.googlesource.com/v8/v8',
+          **builder),
+      api.chromium_tests.read_source_side_spec(*source_side_spec),
+      api.post_process(post_process.Filter('pinpoint isolate upload')),
   )
 
   yield api.test(

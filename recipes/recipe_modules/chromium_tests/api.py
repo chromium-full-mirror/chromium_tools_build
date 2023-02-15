@@ -627,11 +627,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         instance = self.m.cas.instance
         repo = self.m.buildbucket.build.input.gitiles_commit.project or \
                'chromium'
+        git_hash = self.m.buildbucket.build.input.gitiles_commit.id or \
+               update_step.presentation.properties['got_revision']
         self.m.perf_dashboard.upload_isolate(
             self.m.buildbucket.builder_name,
             self.m.perf_dashboard.get_change_info([{
                 'repository': repo.split('/')[0],
-                'git_hash': update_step.presentation.properties['got_revision'],
+                'git_hash': git_hash,
             }]), instance, self.m.isolate.isolated_tests)
 
     if skylab_isolates:

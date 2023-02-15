@@ -184,8 +184,7 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/v8/v8',
           project='v8/v8',
           revision='1234abcd' * 5),
-      api.properties(
-          deps_revision_overrides={'v8': '1234abcd' * 5}, swarming_gtest=True),
+      api.properties(swarming_gtest=True),
       api.post_process(Filter('pinpoint isolate upload')),
   )
 
