@@ -585,6 +585,16 @@
       "chromium.perf:android_arm64_high_end-builder-perf"
     ]
   },
+  "chromium.perf:android-pixel6-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf:android-pixel6-perf-pgo",
+      "chromium.perf:android-pixel6-pro-perf-pgo",
+      "chromium.perf:android_arm64_high_end-builder-perf-pgo"
+    ]
+  },
   "chromium.perf:android-pixel6-pro-perf": {
     "blockers": [
       "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
@@ -593,6 +603,16 @@
       "chromium.perf:android-pixel6-perf",
       "chromium.perf:android-pixel6-pro-perf",
       "chromium.perf:android_arm64_high_end-builder-perf"
+    ]
+  },
+  "chromium.perf:android-pixel6-pro-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf:android-pixel6-perf-pgo",
+      "chromium.perf:android-pixel6-pro-perf-pgo",
+      "chromium.perf:android_arm64_high_end-builder-perf-pgo"
     ]
   },
   "chromium.perf:android_arm64-builder-perf": {
@@ -628,6 +648,16 @@
       "chromium.perf:android-pixel6-perf",
       "chromium.perf:android-pixel6-pro-perf",
       "chromium.perf:android_arm64_high_end-builder-perf"
+    ]
+  },
+  "chromium.perf:android_arm64_high_end-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf:android-pixel6-perf-pgo",
+      "chromium.perf:android-pixel6-pro-perf-pgo",
+      "chromium.perf:android_arm64_high_end-builder-perf-pgo"
     ]
   },
   "chromium.perf:chromecast-linux-builder-perf": {

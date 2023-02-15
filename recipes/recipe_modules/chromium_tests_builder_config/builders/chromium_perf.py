@@ -201,9 +201,15 @@ _AddBuildSpec(
     target_bits=64,
     bisect_archive_build=True)
 
-# LUCI builder
 _AddBuildSpec(
     'android_arm64_high_end-builder-perf',
+    'android',
+    target_bits=64,
+    bisect_archive_build=True)
+
+# LUCI builder
+_AddBuildSpec(
+    'android_arm64_high_end-builder-perf-pgo',
     'android',
     target_bits=64,
     bisect_archive_build=True)
@@ -321,8 +327,12 @@ _AddIsolatedTestSpec('android-pixel4a_power-perf', 'android',
 
 _AddIsolatedTestSpec('android-pixel6-perf', 'android',
                      'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel6-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
 _AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
                      'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel6-pro-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
 
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',
@@ -400,6 +410,10 @@ _AddPinpointTestSpec('android-pixel4-perf-pgo', 'android',
                      'android_arm64-builder-perf-pgo')
 _AddPinpointTestSpec('android-pixel4a_power-perf-pgo', 'android',
                      'android_arm64-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel6-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel6-pro-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
 _AddPinpointTestSpec('android-new-pixel-perf', 'android',
                      'android_arm64-builder-perf')
 _AddPinpointTestSpec('android-new-pixel-pro-perf', 'android',
