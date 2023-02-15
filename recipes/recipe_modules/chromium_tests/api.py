@@ -1157,6 +1157,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if self.m.path.exists(gn_logs_path):
         self.m.file.read_text('read gn_logs.txt', gn_logs_path)
 
+      # run experimental dependency analysis for SSCI.
+      if ('ssci.experimental' in self.m.buildbucket.build.input.experiments):
+        self.m.depbot.run(
+            src_dir=self.m.path['checkout'],
+            build_dir=self.m.chromium.output_dir,
+            json_out=self.m.json.output(name="results"))
+
       return self.m.chromium.compile(
           compile_targets,
           name='compile%s' % name_suffix,

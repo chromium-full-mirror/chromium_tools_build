@@ -128,6 +128,37 @@ def GenTests(api):
   )
 
   yield api.test(
+      'linux_tests_ssci_experimental',
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          experiments=['ssci.experimental']),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.reclient.properties(),
+      api.properties(swarming_gtest=True),
+      api.post_process(post_process.MustRun, 'run depbot'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'linux_tests_no_ssci_experimental',
+      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.reclient.properties(),
+      api.properties(swarming_gtest=True),
+      api.post_process(post_process.DoesNotRun, 'run depbot'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'failure',
       api.platform('linux', 64),
       api.chromium.ci_build(
