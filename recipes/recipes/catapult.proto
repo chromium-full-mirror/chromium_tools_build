@@ -13,4 +13,7 @@ message InputProperties {
 
   // Indicate whether we want to only run the dashboard-specific tests.
   bool dashboard_only = 2;
+
+  // Indicate whether we want to only run the perf_issue_service-specific tests.
+  bool perf_issue_service_only = 3;
 }

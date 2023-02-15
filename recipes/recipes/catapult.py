@@ -29,7 +29,7 @@ def _CheckoutSteps(api):
   api.gclient.runhooks()
 
 
-def _RemoteSteps(api, app_engine_sdk_path, platform, dashboard_only):
+def _RemoteSteps(api, app_engine_sdk_path, properties):
   """Runs the build steps specified in catapult_build/build_steps.py.
 
   Steps are specified in catapult repo in order to avoid multi-sided patches
@@ -43,6 +43,9 @@ def _RemoteSteps(api, app_engine_sdk_path, platform, dashboard_only):
   """
   base = api.properties.get('test_checkout_path', str(api.path['checkout']))
   script = api.path.join(base, 'catapult_build', 'build_steps.py')
+  platform = properties.platform
+  dashboard_only = properties.dashboard_only
+  perf_issue_service_only = properties.perf_issue_service_only
   args = [
       script,
       '--api-path-checkout', api.path['checkout'],
@@ -52,6 +55,8 @@ def _RemoteSteps(api, app_engine_sdk_path, platform, dashboard_only):
   ]
   if dashboard_only:
     args.append('--dashboard_only')
+  elif perf_issue_service_only:
+    args.append('--perf_issue_service_only')
   return api.generator_script(*args, interpreter='vpython3')
 
 
@@ -80,8 +85,7 @@ def RunSteps(api, properties):
     with api.context(
         env_prefixes={'PATH': [packages_root,
                                packages_root.join('bin')]}):
-      _RemoteSteps(api, app_engine_sdk_path, properties.platform,
-                   properties.dashboard_only)
+      _RemoteSteps(api, app_engine_sdk_path, properties)
 
 
 def GenTests(api):
@@ -140,6 +144,20 @@ def GenTests(api):
       api.properties(
           platform='linux',
           dashboard_only=True,
+      ),
+      api.generator_script(
+          'build_steps.py',
+          {
+              'name': 'Dashboard Tests',
+              'cmd': ['run_py_tests', '--no-hooks']
+          },
+      ))
+
+  yield api.test(
+      'perf_issue_service_only', api.platform.name('linux'),
+      api.properties(
+          platform='linux',
+          perf_issue_service_only=True,
       ),
       api.generator_script(
           'build_steps.py',
