@@ -92,10 +92,12 @@ def RunSteps(api, properties):
           '--install',
           package.sdk_package_name,
       ]
-      api.step(
-          'install', install_cmd,
-          # Accept the license agreement, if necessary.
-          stdin=api.raw_io.input_text('y'))
+      with api.context(env={'JAVA_HOME': str(jdk_path)}):
+        api.step(
+            'install',
+            install_cmd,
+            # Accept the license agreement, if necessary.
+            stdin=api.raw_io.input_text('y'))
       tags = {}
       package_version = (
           packages_by_name.get(package.sdk_package_name, {}).get('version'))
