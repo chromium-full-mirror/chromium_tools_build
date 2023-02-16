@@ -101,7 +101,7 @@ def _gn_gen_builds(api, target_cpu, debug, clang, out_dir):
 
   with api.context(cwd=checkout):
     api.step('gn gen', [
-        'python',
+        'python3',
         gn_cmd,
         '--root=' + str(checkout),
         'gen',
