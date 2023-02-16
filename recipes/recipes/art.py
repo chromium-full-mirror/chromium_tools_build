@@ -93,6 +93,8 @@ def setup_host_x86(api,
           'en_US.UTF-8',
       'SOONG_ALLOW_MISSING_DEPENDENCIES':
           'true',
+      'BUILD_BROKEN_DISABLE_BAZEL':
+          'true',
       'TARGET_BUILD_UNBUNDLED':
           'true',
       'ANDROID_BUILD_TOP':
