@@ -57,6 +57,18 @@ SPEC = {
             gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='mac',
         ),
+    'webrtc_linux_chromium':
+        builder_spec.BuilderSpec.create(
+            chromium_apply_config=['dcheck', 'mb'],
+            chromium_config='chromium',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64
+            },
+            gclient_apply_config=[],
+            gclient_config='chromium_no_telemetry_dependencies',
+            simulation_platform='linux',
+        ),
     'win_chromium_compile':
         builder_spec.BuilderSpec.create(
             chromium_apply_config=['dcheck', 'mb'],

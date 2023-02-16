@@ -85,6 +85,11 @@ TRYBOTS = try_spec.TryDatabase.create({
                 is_compile_only=True,
                 include_all_triggered_testers=True,
             ),
+        'webrtc_linux_chromium':
+            try_spec.TrySpec.create_for_single_mirror(
+                builder_group='tryserver.webrtc',
+                buildername='webrtc_linux_chromium',
+            ),
     },
 
     # These builders don't actually exist, the configs are created to provide a
