@@ -720,7 +720,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               name='export coverage data to zoss')
           self.m.file.write_json(
               name='create zoss metadata json',
-              dest=self.metadata_dir.join('zoss_metadata.json'),
+              dest=coverage_dir.join('zoss_metadata.json'),
               data=self._get_zoss_metadata(
                   coverage_format='LCOV',
                   coverage_type=self._current_processing_test_type))
