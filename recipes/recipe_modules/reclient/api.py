@@ -376,6 +376,7 @@ class ReclientApi(recipe_api.RecipeApi):
       bootstrap_env: Environment for bootstrap to start reproxy.
     """
     reproxy_bin_path = self._get_reclient_exe_path('reproxy')
+    enable_crash_dump = 'true' if self._scandeps_server else 'false'
     env = {
         'RBE_instance': self.instance,
         'RBE_log_format': _REPROXY_LOG_FORMAT,
@@ -392,6 +393,7 @@ class ReclientApi(recipe_api.RecipeApi):
         'RBE_cache_dir': reclient_cache_dir,
         'RBE_enable_deps_cache': 'true',
         'RBE_deps_cache_max_mb': _DEPS_CACHE_MAX_MB,
+        'GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP': enable_crash_dump,
     }
 
     if bootstrap_env is not None:

@@ -754,6 +754,7 @@
     "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win_x86_more_configs",
       "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win_x86_more_configs",
       "RBE_deps_cache_max_mb": "256",
@@ -2098,6 +2099,7 @@
     "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win_x86_more_configs",
       "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win_x86_more_configs",
       "RBE_deps_cache_max_mb": "256",
@@ -3366,6 +3368,7 @@
     "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win_x86_more_configs",
       "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win_x86_more_configs",
       "RBE_deps_cache_max_mb": "256",

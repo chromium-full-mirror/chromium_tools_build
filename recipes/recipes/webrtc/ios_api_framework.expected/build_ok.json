@@ -517,6 +517,7 @@
       "[CLEANUP]/reclient_log_tmp_1"
     ],
     "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/iOS_API_Framework_Builder",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/iOS_API_Framework_Builder",
       "RBE_deps_cache_max_mb": "256",

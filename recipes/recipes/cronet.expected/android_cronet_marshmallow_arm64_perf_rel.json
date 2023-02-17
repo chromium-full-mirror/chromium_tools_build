@@ -552,6 +552,7 @@
     "cwd": "[START_DIR]/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/android_cronet_marshmallow_arm64_perf_rel",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/android_cronet_marshmallow_arm64_perf_rel",
       "RBE_deps_cache_max_mb": "256",
@@ -1831,6 +1832,7 @@
     "cwd": "[START_DIR]/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/android_cronet_marshmallow_arm64_perf_rel",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/android_cronet_marshmallow_arm64_perf_rel",
       "RBE_deps_cache_max_mb": "256",

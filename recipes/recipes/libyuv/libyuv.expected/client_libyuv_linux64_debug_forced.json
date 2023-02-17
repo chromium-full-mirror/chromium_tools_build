@@ -325,6 +325,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/Linux64_Debug",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/Linux64_Debug",
       "RBE_deps_cache_max_mb": "256",

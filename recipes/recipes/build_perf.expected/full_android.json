@@ -798,6 +798,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_max_mb": "256",
@@ -2068,6 +2069,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_max_mb": "256",
@@ -3230,6 +3232,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_max_mb": "256",
@@ -4413,6 +4416,7 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/fake_builder",
       "RBE_deps_cache_max_mb": "256",
