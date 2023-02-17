@@ -644,6 +644,12 @@ def generate_skylab_tests(chromium_tests_api,
         common_skylab_kwargs['autotest_name'] = 'chromium_Telemetry'
       else:
         common_skylab_kwargs['autotest_name'] = 'chromium'
+    # Default test exeuction timeout to half of the total timeout to allow for
+    # DUT provisioning and other overhead.
+    if not common_skylab_kwargs.get(
+        'max_run_sec') and common_skylab_kwargs.get('timeout_sec') > 0:
+      common_skylab_kwargs['max_run_sec'] = int(
+          common_skylab_kwargs.get('timeout_sec') / 2)
 
     return steps.SkylabTestSpec.create(
         skylab_test_spec.get('name'), **common_skylab_kwargs)

@@ -136,6 +136,9 @@ class SkylabApi(recipe_api.RecipeApi):
             test_args.append('test_shard_map_filename=%s' %
                              t.spec.test_shard_map_filename)
 
+          if t.spec.max_run_sec:
+            test_args.append('max_run_sec=%s' % t.spec.max_run_sec)
+
           # TODO(crbug.com/1233676): Support chromium perf tests.
           # if t.telemetry_shard_index is not None:
           #   test_args.append('test_shard_index=%s' % t.telemetry_shard_index)

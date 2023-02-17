@@ -2834,6 +2834,8 @@ class SkylabTestSpec(TestSpec):
   retries = attrib(int, default=3)
   # The timeout for the test in second. Default is one hour.
   timeout_sec = attrib(int, default=3600)
+  # The runtime timeout sent to the test execution environment.
+  max_run_sec = attrib(int, default=0)
 
   # Generic arguments to pass to the test command run in skylab.
   test_args = attrib(command_args, default=())

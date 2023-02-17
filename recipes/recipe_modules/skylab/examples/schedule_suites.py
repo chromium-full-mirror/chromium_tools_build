@@ -24,6 +24,7 @@ GPU_EXTRA_BROWSWER_ARGS = ('--log-level=0 --js-flags=--expose-gc '
                            '--force_high_performance_gpu')
 LACROS_GCS_PATH = 'gs://fake_bucket/lacros.squashfs'
 SHARD_COUNT = 2
+TAST_MAX_RUN_SEC = 21600
 
 
 def gen_skylab_rdb(suite):
@@ -109,6 +110,7 @@ REQUESTS = [
         tast_expr=LACROS_TAST_EXPR,
         dut_pool='cross_device_multi_cb',
         tast_expr_file='tast_expr_file.filter',
+        max_run_sec=TAST_MAX_RUN_SEC,
         shards=SHARD_COUNT),
     gen_skylab_test(
         'm109_gpu_tests',
@@ -140,15 +142,20 @@ def GenTests(api):
   def b64_encode(s):
     return base64.b64encode(s.encode('utf-8')).decode('ascii')
 
-  def test_args_for_shard(name, shard):
+  def test_args_for_shard(name,
+                          shard,
+                          shard_count=SHARD_COUNT,
+                          max_run_sec=TAST_MAX_RUN_SEC):
     return 'resultdb_settings={} '\
         'tast_expr_b64={} '\
         'exe_rel_path=out/Release/chrome '\
         'tast_expr_file=tast_expr_file.filter '\
-        'tast_expr_key=default shard_index={} '\
+        'tast_expr_key=default '\
+        'max_run_sec={} '\
+        'shard_index={} '\
         'total_shards={}'.format(
             b64_encode(json.dumps(gen_skylab_rdb(name))),
-            b64_encode(LACROS_TAST_EXPR), shard, SHARD_COUNT)
+            b64_encode(LACROS_TAST_EXPR), max_run_sec, shard, shard_count)
 
   yield api.test(
       'basic',
