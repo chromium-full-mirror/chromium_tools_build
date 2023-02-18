@@ -33,8 +33,6 @@ ALL_TEST_BINARIES_ISOLATE_NAME = 'all_test_binaries'
 
 DISABLE_RTS_FOOTER = 'Disable-Rts'
 
-RTS_DRY_RUN_EXPERIMENT_PERCENTAGE = 10
-
 
 @attrs()
 class SwarmingExecutionInfo:
@@ -2127,27 +2125,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       log_step = self.m.step.empty('RTS was used')
       log_step.presentation.properties['rts_was_used'] = True
 
-      compatible_run_modes = self.is_dry_run_rts()
-      if compatible_run_modes:
-        self.m.cq.allow_reuse_for(self.m.cq.DRY_RUN, self.m.cq.QUICK_DRY_RUN)
-      else:
-        self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
+      self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
     return tests
-
-  def is_dry_run_rts(self):
-    # Enable RTS on a portion of Dry Run CLs
-    def hash_change(change):
-      change = ((change >> 16) ^ change) * 0x45d9f3b
-      change = ((change >> 16) ^ change) * 0x45d9f3b
-      change = (change >> 16) ^ change
-      return change
-
-    experiment_active = False
-    for change in self.m.buildbucket.build.input.gerrit_changes:
-      experiment_active = hash_change(
-          change.change) % 100 < RTS_DRY_RUN_EXPERIMENT_PERCENTAGE
-      break
-    return experiment_active
 
   def get_quickrun_options(self, builder_config, inverted_rts=False):
     # TODO(sshrimp): cq.active/cq.run_mode no longer works from the compilator
@@ -2157,13 +2136,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     props = self.m.properties.get('$recipe_engine/cq', None)
     if props:
       run_mode = props.get('run_mode', props.get('runMode'))
-    experiment_active = False
-    if run_mode == self.m.cq.DRY_RUN:
-      experiment_active = self.is_dry_run_rts()
 
     rts_setting = None
     use_rts = (
-        ((experiment_active or run_mode == self.m.cq.QUICK_DRY_RUN) and
+        (run_mode == self.m.cq.QUICK_DRY_RUN and
          builder_config.regression_test_selection == try_spec.QUICK_RUN_ONLY) or
         builder_config.regression_test_selection == try_spec.ALWAYS)
 
@@ -2175,10 +2151,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         rts_setting = 'rts-chromium'
 
       step_result = self.m.step('quick run options', [])
-
-      if experiment_active:
-        step_result.presentation.step_text = ('RTS was enabled by an '
-                                              'experiment')
 
       step_result.presentation.properties['rts_setting'] = rts_setting
       step_result.presentation.links[
