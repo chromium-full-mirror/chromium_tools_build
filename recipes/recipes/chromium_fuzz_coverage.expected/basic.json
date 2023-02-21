@@ -1,0 +1,11 @@
+[
+  {
+    "cmd": [
+      "ls"
+    ],
+    "name": "list directory contents"
+  },
+  {
+    "name": "$result"
+  }
+]
