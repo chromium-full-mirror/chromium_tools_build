@@ -1991,6 +1991,74 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "assign pgo tags"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "tag",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--project",
+      "v8/v8",
+      "--tag",
+      "1.1.2.0-pgo",
+      "--commit",
+      "43ff",
+      "--json_file",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.2.0-pgo)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"can_delete\": false, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/tags/1.1.2.0-pgo\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"revision\": \"43ff\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "tag",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--project",
+      "v8/v8",
+      "--tag",
+      "1.1.1.4-pgo",
+      "--commit",
+      "cd12",
+      "--json_file",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"can_delete\": false, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/tags/1.1.1.4-pgo\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"revision\": \"cd12\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]

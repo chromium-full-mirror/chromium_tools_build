@@ -22,6 +22,7 @@ from google.protobuf import struct_pb2
 
 DEPS = [
     'chromium_swarming',
+    'depot_tools/gerrit',
     'depot_tools/gitiles',
     'depot_tools/gsutil',
     'depot_tools/tryserver',
@@ -44,13 +45,15 @@ DEPS = [
 
 JET_STREAM_PATH = 'benchmarks/JetStream2'
 BUCKET_NAME = 'chromium-v8-builtins-pgo-staging'
+GERRIT_HOST = 'https://chromium-review.googlesource.com'
+GERRIT_PROJECT = 'v8/v8'
 PGO_GS_BUCKET = f'gs://{BUCKET_NAME}/by-version/'  # TODO: switch to production 'gs://v8-builtins-pgo-profiles/by-version/'
 MAX_PARALLEL_VERSIONS = 10
 V8_REPO_URL = 'https://chromium.googlesource.com/v8/v8/'
 V8_PERF_REPO_URL = 'https://chrome-internal.googlesource.com/v8/v8-perf'
 VERSION_CUTOFF = (11, 1)
-VERSION_LS_REMOTE_PATTERN = '\w*\s*refs/tags/(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?'
-VERSION_LS_GS_PATTERN = PGO_GS_BUCKET + '(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?'
+VERSION_LS_REMOTE_PATTERN = r'\w*\s*refs/tags/(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?'
+VERSION_LS_GS_PATTERN = PGO_GS_BUCKET + r'(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?'
 
 COMPILATORS = {
     'x86': 'V8 Linux PGO instrumentation - builder',
@@ -88,9 +91,10 @@ def RunSteps(api, max_parallel_versions, version_number_cutoff):
     #     following regex (block_hint,\w+(,\d+){3}\n)+(builtin_hash,\w+,\-?\d+\n?)+
 
     upload_to_gs(api, profile_trackers)
+    assign_pgo_tags(api, profile_trackers)
 
     # TODO: step not implemented
-    # 9   A comment is added to the existing (and already merged) CL, indicating that profiles
+    # 10   A comment is added to the existing (and already merged) CL, indicating that profiles
     #     are available for this revision. Including a link to the build and to the profiles
     #     (for informational and debugging purposes only).
 
@@ -379,6 +383,27 @@ def upload_meta_json(api, tracker_pair):
       name=f'upload metadata {tracker_pair[0].version}')
 
 
+@with_wrapper_step
+def assign_pgo_tags(api, profile_trackers):
+  """Assign `refs/tags/<version>-pgo` to versions with all profiles."""
+  for version_trackers in grouped_by_version(advanceable(profile_trackers)):
+    if len(version_trackers) != len(COMPILATORS):
+      continue
+
+    version = version_trackers[0].version
+    revision = version_trackers[0].revision
+
+    tag = f'{version}-pgo'
+    api.gerrit.create_gerrit_tag(
+        GERRIT_HOST, GERRIT_PROJECT, tag, revision,
+        step_test_data=lambda: api.json.test_api.output({
+          'ref': f'refs/tags/{tag}',
+          'revision': revision,
+          'can_delete': False,
+        })
+    )
+
+
 def report_exceptions(api, profile_trackers):
   if any(t.exception for t in profile_trackers):
     return result_pb2.RawResult(
@@ -477,6 +502,7 @@ def GenTests(api):
           'trigger profilers.1.1.1.4 x86',
           'collect profiles.1.1.1.4 x86',
           'upload to gs.gsutil upload 1.1.1.4 x86',
+          'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
       api.post_process(StatusFailure),
       api.post_process(
@@ -506,6 +532,7 @@ def GenTests(api):
           'collect profiles.1.1.1.4 x64',
           'upload to gs.gsutil upload 1.1.1.4 x64',
           'upload to gs.gsutil upload metadata 1.1.1.4',
+          'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
       api.post_process(StatusFailure),
       api.post_process(DropExpectation),
