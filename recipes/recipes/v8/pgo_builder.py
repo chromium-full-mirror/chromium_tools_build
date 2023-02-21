@@ -8,7 +8,8 @@ import re
 from typing import List, Set, Tuple
 
 from recipe_engine.post_process import (Filter, DoesNotRun, DropExpectation,
-                                        MustRun, StatusFailure)
+                                        MustRun, StatusFailure,
+                                        StepCommandContains)
 from recipe_engine.recipe_api import Property
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
@@ -44,14 +45,16 @@ DEPS = [
 ]
 
 JET_STREAM_PATH = 'benchmarks/JetStream2'
-BUCKET_NAME = 'chromium-v8-builtins-pgo-staging'
+BUCKET_NAME = 'chromium-v8-builtins-pgo-staging'  # TODO: switch to production 'v8-builtins-pgo-profiles'
 GERRIT_HOST = 'https://chromium-review.googlesource.com'
 GERRIT_PROJECT = 'v8/v8'
-PGO_GS_BUCKET = f'gs://{BUCKET_NAME}/by-version/'  # TODO: switch to production 'gs://v8-builtins-pgo-profiles/by-version/'
 MAX_PARALLEL_VERSIONS = 10
 V8_REPO_URL = 'https://chromium.googlesource.com/v8/v8/'
 V8_PERF_REPO_URL = 'https://chrome-internal.googlesource.com/v8/v8-perf'
 VERSION_CUTOFF = (11, 1)
+
+BLOCKLIST_FILE = 'blocked-versions.txt'
+BLOCKLIST_PATH = f'gs://{BUCKET_NAME}/{BLOCKLIST_FILE}'
 
 VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)'
 PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
@@ -178,6 +181,7 @@ def init_trackers_for_candidate_versions(
   tags = select_tags_without_profiles(api)
   tags = filter_tags_by_cutoff(tags, version_cutoff)
   tags = filter_max_parallel_tags(tags, max_parallel_versions)
+  tags = filter_blocked_tags(api, tags)
   return create_profile_trackers(tags)
 
 
@@ -189,9 +193,8 @@ def select_tags_without_profiles(api) -> List[Tuple[VersionTuple, str]]:
 
   tags_without_pgo = list(all_tags - pgo_tags)
 
-  # Convert version string to tuple and guarantee 4 version components.
   return [
-      (tuple(int(c) for c in f'{version}.0'.split('.')[:4]), revision)
+      (normalize_version(version), revision)
       for version, revision in tags_without_pgo
   ]
 
@@ -216,8 +219,38 @@ def filter_max_parallel_tags(tags, parallel) -> List[Tuple[VersionTuple, str]]:
   return sorted(tags, reverse=True)[:parallel]
 
 
-def normalize_version(version_number):
-  return version_number + tuple([0] * (4 - len(version_number)))
+def filter_blocked_tags(api, tags) -> List[Tuple[VersionTuple, str]]:
+  """Load a blocklist from a storage bucket, and remove blocked versions."""
+  blocked = download_blocked_versions(api)
+  blocked = {normalize_version(v.split()[0]) for v in blocked if v}
+
+  return [t for t in tags if t[0] not in blocked]
+
+
+def download_blocked_versions(api) -> List[str]:
+  result = api.gsutil.cat(BLOCKLIST_PATH, stdout=api.raw_io.output())
+  blocked = result.stdout.decode().strip()
+  if not blocked:
+    return []
+  return blocked.split('\n')
+
+
+def normalize_version(version) -> Tuple[int, int, int, int]:
+  """Accept multiple input types to represent a version, and return a normalized
+  version tuple.
+
+  Supported input types:
+    * Tuple of integers of various lengths, e.g. (12, ) (12, 5), (12, 5, 1, 9)
+    * Dot-separated string of various length, e.g. '12', '12.5', '12.5.1.9'
+  """
+  if isinstance(version, str):
+    version = tuple(version.split('.'))
+
+  assert isinstance(version, tuple), f"Expected a tuple, found {type(version)}."
+
+  version = tuple(int(c) for c in version)
+
+  return (version + (0, ) * 3)[:4]
 
 
 def create_profile_trackers(selected_versions) -> List[VersionProfileTrack]:
@@ -396,12 +429,30 @@ def assign_pgo_tags(api, profile_trackers):
     )
 
 
+@with_wrapper_step
 def report_exceptions(api, profile_trackers):
-  if any(t.exception for t in profile_trackers):
-    return result_pb2.RawResult(
-        status=common_pb.FAILURE,
-        summary_markdown='Some versions encounterd exceptions')
-  return result_pb2.RawResult(status=common_pb.SUCCESS)
+  failed_versions = {t.version for t in profile_trackers if t.exception}
+  if not failed_versions:
+    return result_pb2.RawResult(status=common_pb.SUCCESS)
+
+  update_blocked_version_file(api, failed_versions)
+
+  return result_pb2.RawResult(
+      status=common_pb.FAILURE,
+      summary_markdown='Some versions encounterd exceptions')
+
+
+def update_blocked_version_file(api, failed_versions):
+  blocked_versions = download_blocked_versions(api)
+  details = api.json.dumps({'failures': [api.buildbucket.build_url()]})
+
+  for version in failed_versions:
+    blocked_versions.append(f'{version} {details}')
+
+  upload_content = api.raw_io.input_text('\n'.join(blocked_versions))
+  api.gsutil.upload(
+      upload_content, BUCKET_NAME, BLOCKLIST_FILE,
+      name=f'upload {BLOCKLIST_FILE}')
 
 
 def GenTests(api):
@@ -409,6 +460,10 @@ def GenTests(api):
   def stdout(step_name, text):
     return api.override_step_data(
         step_name, api.raw_io.stream_output_text(text, stream='stdout'))
+
+  def stdout_binary(step_name, content):
+    return api.override_step_data(
+        step_name, api.raw_io.stream_output(content, stream='stdout'))
 
   def subbuild_data(step_name,
                     summary='All good!',
@@ -459,7 +514,7 @@ def GenTests(api):
             ])), *args)
 
   yield main_scenario(
-      "basic",
+      'basic',
       subbuild_data(
           'collect compilation isolates.1.1.2.0 x86.compilator steps'),
       subbuild_data(
@@ -495,7 +550,7 @@ def GenTests(api):
   )
 
   yield main_scenario(
-      "full_version_failure",
+      'full_version_failure',
       subbuild_data(
           'collect compilation isolates.1.1.2.0 x86.compilator steps'),
       subbuild_data(
@@ -519,12 +574,17 @@ def GenTests(api):
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
+      api.post_process(
+          StepCommandContains,
+          'report exceptions.gsutil upload blocked-versions.txt',
+          ['1.1.1.4 {"failures": ["https://cr-buildbucket.appspot.com/build/0"]}']
+      ),
       api.post_process(StatusFailure),
       api.post_process(DropExpectation),
   )
 
   yield api.test(
-      "version_number_cutoff",
+      'version_number_cutoff',
       api.properties(
           max_parallel_versions=100, version_number_cutoff=(1, 1, 1)),
       stdout(
@@ -555,6 +615,31 @@ def GenTests(api):
           'trigger compilators.1.0.3.1 x64',
           'trigger compilators.0.1.1.10 x86',
           'trigger compilators.0.1.1.10 x64',
+      ),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'version_blocklist',
+      api.properties(
+          max_parallel_versions=100, version_number_cutoff=(1, 1, 1)),
+      stdout(
+          'init trackers for candidate versions.git ls-remote',
+          'ab34 refs/tags/1.1.1.1\n'
+          'abde refs/tags/1.1.1.2\n'),
+      stdout_binary(
+          'init trackers for candidate versions.gsutil cat',
+          '1.1.1.2 {"failures": ["url1", "url2"]}\n'
+          '1.1.1.4 {"failures": ["url3", "url4"]}'),
+      api.post_process(
+          MustRun,
+          'trigger compilators.1.1.1.1 x86',
+          'trigger compilators.1.1.1.1 x64',
+      ),
+      api.post_process(
+          DoesNotRun,
+          'trigger compilators.1.1.1.2 x86',
+          'trigger compilators.1.1.1.2 x64',
       ),
       api.post_process(DropExpectation),
   )
