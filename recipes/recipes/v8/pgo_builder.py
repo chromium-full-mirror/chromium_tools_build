@@ -5,7 +5,7 @@
 from collections import defaultdict
 import contextlib
 import re
-from typing import List
+from typing import List, Set, Tuple
 
 from recipe_engine.post_process import (Filter, DoesNotRun, DropExpectation,
                                         MustRun, StatusFailure)
@@ -52,8 +52,9 @@ MAX_PARALLEL_VERSIONS = 10
 V8_REPO_URL = 'https://chromium.googlesource.com/v8/v8/'
 V8_PERF_REPO_URL = 'https://chrome-internal.googlesource.com/v8/v8-perf'
 VERSION_CUTOFF = (11, 1)
-VERSION_LS_REMOTE_PATTERN = r'\w*\s*refs/tags/(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?'
-VERSION_LS_GS_PATTERN = PGO_GS_BUCKET + r'(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?'
+
+VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)'
+PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
 
 COMPILATORS = {
     'x86': 'V8 Linux PGO instrumentation - builder',
@@ -64,6 +65,9 @@ PROPERTIES = {
     'max_parallel_versions': Property(kind=int, default=MAX_PARALLEL_VERSIONS),
     'version_number_cutoff': Property(kind=tuple, default=VERSION_CUTOFF),
 }
+
+
+VersionTuple = Tuple[int, int, int, int]
 
 
 def RunSteps(api, max_parallel_versions, version_number_cutoff):
@@ -168,64 +172,52 @@ class VersionProfileTrack:
 
 
 @with_wrapper_step
-def init_trackers_for_candidate_versions(api, max_parallel_versions,
-                                         version_number_limit
-                                        ) -> List[VersionProfileTrack]:
-  version_hashes = version_info_from_tags(api, version_number_limit)
-  versions_w_pgo = versions_with_pgo(api, version_number_limit)
-  selected_versions = select_versions_to_profile(version_hashes, versions_w_pgo,
-                                                 max_parallel_versions)
-  return create_profile_trackers(selected_versions)
+def init_trackers_for_candidate_versions(
+    api, max_parallel_versions, version_cutoff
+) -> List[VersionProfileTrack]:
+  tags = select_tags_without_profiles(api)
+  tags = filter_tags_by_cutoff(tags, version_cutoff)
+  tags = filter_max_parallel_tags(tags, max_parallel_versions)
+  return create_profile_trackers(tags)
 
 
-def version_info_from_tags(api, version_number_cutoff):
-  result = api.v8.git_output('ls-remote', '--tags', V8_REPO_URL).split('\n')
-  versions_info = dict()
-  for line in result:
-    version = version_from_line(line, VERSION_LS_REMOTE_PATTERN,
-                                version_number_cutoff)
-    if version:
-      versions_info[version] = line.split()[0]
-  return versions_info
+def select_tags_without_profiles(api) -> List[Tuple[VersionTuple, str]]:
+  lines = api.v8.git_output('ls-remote', '--tags', V8_REPO_URL).split('\n')
+
+  all_tags = get_version_revision(lines, VERSION_TAG_PATTERN)
+  pgo_tags = get_version_revision(lines, PGO_VERSION_TAG_PATTERN)
+
+  tags_without_pgo = list(all_tags - pgo_tags)
+
+  # Convert version string to tuple and guarantee 4 version components.
+  return [
+      (tuple(int(c) for c in f'{version}.0'.split('.')[:4]), revision)
+      for version, revision in tags_without_pgo
+  ]
 
 
-def version_from_line(line, match_pattern, version_number_cutoff):
-  version_match = re.fullmatch(match_pattern, line)
-  if not version_match:
-    return None
-  match_groups = version_match.groups()
-  version = (
-      int(match_groups[0]),
-      int(match_groups[1]),
-      int(match_groups[2]),
-      int(match_groups[3]) if match_groups[3] else 0,
-  )
-  if version < version_number_cutoff:
-    return None
-  return version
+def get_version_revision(lines, pattern) -> Set[Tuple[str, str]]:
+  versions_revisions = set()
+  for line in lines:
+    match = re.fullmatch(pattern, line)
+    if not match:
+      continue
+    # We add the two groups in reversed order as we retrieve the revision as the
+    # first group and version as the second.
+    versions_revisions.add(match.groups()[::-1])
+  return versions_revisions
+
+
+def filter_tags_by_cutoff(tags, cutoff) -> List[Tuple[VersionTuple, str]]:
+  return [t for t in tags if t[0] >= cutoff]
+
+
+def filter_max_parallel_tags(tags, parallel) -> List[Tuple[VersionTuple, str]]:
+  return sorted(tags, reverse=True)[:parallel]
 
 
 def normalize_version(version_number):
   return version_number + tuple([0] * (4 - len(version_number)))
-
-
-def versions_with_pgo(api, version_number_cutoff):
-  result = api.gsutil.list(
-      PGO_GS_BUCKET,
-      name='Find versions with PGO profiles',
-      stdout=api.raw_io.output_text(add_output_log=True, name='stdout'),
-  ).stdout.splitlines()
-  return set(
-      version_from_line(line, VERSION_LS_GS_PATTERN, version_number_cutoff)
-      for line in result)
-
-
-def select_versions_to_profile(version_hashes, pgo_versions,
-                               max_parallel_versions):  # -> list[(tuple, str)]
-  diff = list(version_hashes.keys() - pgo_versions)
-  diff.sort(reverse=True)
-  selected_versions = diff[:max_parallel_versions]
-  return [(version, version_hashes[version]) for version in selected_versions]
 
 
 def create_profile_trackers(selected_versions) -> List[VersionProfileTrack]:
@@ -456,22 +448,15 @@ def GenTests(api):
             'init trackers for candidate versions.git ls-remote', '\n'.join([
                 '1234 refs/tags/0.1.10.1',
                 '2234 refs/tags/1.1.1',
+                '2234 refs/tags/1.1.1-pgo',
                 'ab34 refs/tags/1.1.1.1',
+                'ab34 refs/tags/1.1.1.1-pgo',
                 'abde refs/tags/1.1.1.2',
                 'f034 refs/tags/1.1.1.3',
                 'cd12 refs/tags/1.1.1.4',
                 '43ff refs/tags/1.1.2',
                 '',
-            ])),
-        stdout(
-            'init trackers for candidate versions.gsutil Find versions with PGO profiles',
-            '\n'.join([
-                'gs://chromium-v8-builtins-pgo-staging/by-version/',
-                'gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1/',
-                'gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.1/',
-                '',
-            ]),
-        ), *args)
+            ])), *args)
 
   yield main_scenario(
       "basic",

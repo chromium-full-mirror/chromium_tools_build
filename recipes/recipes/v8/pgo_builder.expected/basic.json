@@ -17,34 +17,14 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@stdout@1234 refs/tags/0.1.10.1@@@",
       "@@@STEP_LOG_LINE@stdout@2234 refs/tags/1.1.1@@@",
+      "@@@STEP_LOG_LINE@stdout@2234 refs/tags/1.1.1-pgo@@@",
       "@@@STEP_LOG_LINE@stdout@ab34 refs/tags/1.1.1.1@@@",
+      "@@@STEP_LOG_LINE@stdout@ab34 refs/tags/1.1.1.1-pgo@@@",
       "@@@STEP_LOG_LINE@stdout@abde refs/tags/1.1.1.2@@@",
       "@@@STEP_LOG_LINE@stdout@f034 refs/tags/1.1.1.3@@@",
       "@@@STEP_LOG_LINE@stdout@cd12 refs/tags/1.1.1.4@@@",
       "@@@STEP_LOG_LINE@stdout@43ff refs/tags/1.1.2@@@",
       "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "ls",
-      "gs://chromium-v8-builtins-pgo-staging/by-version/"
-    ],
-    "cwd": "[CLEANUP]/tmp_tmp_1",
-    "infra_step": true,
-    "name": "init trackers for candidate versions.gsutil Find versions with PGO profiles",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text[stdout]@gs://chromium-v8-builtins-pgo-staging/by-version/@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text[stdout]@gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1/@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text[stdout]@gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.1/@@@",
-      "@@@STEP_LOG_END@raw_io.output_text[stdout]@@@"
     ]
   },
   {
