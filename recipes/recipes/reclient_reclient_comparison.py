@@ -7,7 +7,6 @@
 
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
-from recipe_engine.recipe_api import Property
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium
 
@@ -32,7 +31,8 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb',],
-        'gclient_apply_config': ['reclient_test'],
+        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_2': ['reclient_test'],
         'platform': 'linux',
         'targets': ['all'],
     },
@@ -40,14 +40,24 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb',],
-        'gclient_apply_config': ['reclient_test'],
+        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'linux',
+        'targets': ['all'],
+    },
+    'Comparison Linux (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb',],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_test'],
         'platform': 'linux',
         'targets': ['all'],
     },
 })
 
 
-def configure_chromium_builder(api, recipe_config):
+def _configure_chromium_builder(api, recipe_config, build_number):
   api.chromium.set_config(
       recipe_config['chromium_config'],
       **recipe_config.get('chromium_config_kwargs',
@@ -58,13 +68,44 @@ def configure_chromium_builder(api, recipe_config):
   for c in recipe_config.get('chromium_apply_config', []):
     api.chromium.apply_config(c)
 
-  for c in recipe_config.get('gclient_apply_config', []):
+  for c in recipe_config.get(f'gclient_apply_config_{build_number}', []):
     api.gclient.apply_config(c)
 
   api.chromium.apply_config('reclient_deps_cache_by_step')
 
   # Checkout chromium.
   api.chromium_checkout.ensure_checkout()
+
+
+def _compile(api, recipe_config, build_number):
+  # Execute reclient build in '.{build_number}' out directory
+  target = f'{api.chromium.c.build_config_fs}.{build_number}'
+  build_dir = '//out/%s' % target
+
+  builder_id = chromium.BuilderId.create_for_group(
+      api.builder_group.for_current, api.buildbucket.builder_name)
+  api.chromium.mb_gen(
+      builder_id,
+      build_dir=build_dir,
+      phase=f'build{build_number}',
+      recursive_lookup=True)
+
+  return api.chromium.compile(
+      recipe_config['targets'],
+      name=f'Build {build_number}',
+      use_goma_module=False,
+      use_reclient=True,
+      target=target)
+
+
+def _clean_output_dirs(api, out_dirs):
+  with api.step.nest('clean_output_dirs'):
+    for out_dir in out_dirs:
+      api.file.rmtree('rmtree %s' % out_dir, out_dir)
+
+
+def _sanitize_nonalpha(text):
+  return ''.join(c if c.isalnum() else '_' for c in text)
 
 
 def RunSteps(api):
@@ -76,70 +117,34 @@ def RunSteps(api):
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
-    configure_chromium_builder(api, recipe_config)
+    _configure_chromium_builder(api, recipe_config, 1)
 
   base_out_dir = str(api.chromium.output_dir).rstrip('\\/')
-
   out_dirs = [base_out_dir] + [base_out_dir + '.' + ext for ext in '12']
 
   # Clear output directories for build
-  clean_output_dirs(api, out_dirs)
-
-  targets = recipe_config['targets']
+  _clean_output_dirs(api, out_dirs)
 
   api.chromium.ensure_toolchains()
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
+
   try:
-    # Do first reclient build .1 out directory
-    target = '%s.1' % api.chromium.c.build_config_fs
-    build_dir = '//out/%s' % target
-
-    builder_id = chromium.BuilderId.create_for_group(
-        api.builder_group.for_current, buildername)
-    api.chromium.mb_gen(
-        builder_id, build_dir=build_dir, phase='build1', recursive_lookup=True)
-
-    raw_result = api.chromium.compile(
-        targets,
-        name='Build 1',
-        use_goma_module=False,
-        use_reclient=True,
-        target=target)
+    raw_result = _compile(api, recipe_config, 1)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    # Clear output directories for build
-    clean_output_dirs(api, out_dirs)
+    with api.context(cwd=solution_path):
+      _configure_chromium_builder(api, recipe_config, 2)
 
-    # Do second reclient build in .2 out directory
-    target = '%s.2' % api.chromium.c.build_config_fs
-    build_dir = '//out/%s' % target
+    _clean_output_dirs(api, out_dirs)
 
-    api.chromium.mb_gen(
-        builder_id, build_dir=build_dir, phase='build2', recursive_lookup=True)
-
-    raw_result = api.chromium.compile(
-        targets,
-        name='Build 2',
-        use_goma_module=False,
-        use_reclient=True,
-        target=target)
+    raw_result = _compile(api, recipe_config, 2)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
   finally:
     # Always clean output directories after build
-    clean_output_dirs(api, out_dirs)
-
-
-def clean_output_dirs(api, out_dirs):
-  with api.step.nest('clean_output_dirs'):
-    for out_dir in out_dirs:
-      api.file.rmtree('rmtree %s' % out_dir, out_dir)
-
-
-def _sanitize_nonalpha(text):
-  return ''.join(c if c.isalnum() else '_' for c in text)
+    _clean_output_dirs(api, out_dirs)
 
 
 def GenTests(api):
