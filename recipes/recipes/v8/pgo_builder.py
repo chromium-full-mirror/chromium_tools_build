@@ -423,6 +423,10 @@ def assign_pgo_tags(api, profile_trackers):
     version = version_trackers[0].version
     revision = version_trackers[0].revision
 
+    # The git repository uses the three-component version representation
+    if version.endswith('.0'):
+      version = version[:-2]
+
     tag = f'{version}-pgo'
     api.gerrit.create_gerrit_tag(
         GERRIT_HOST, GERRIT_PROJECT, tag, revision,

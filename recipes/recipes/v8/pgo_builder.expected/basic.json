@@ -2010,7 +2010,7 @@
       "--project",
       "v8/v8",
       "--tag",
-      "1.1.2.0-pgo",
+      "1.1.2-pgo",
       "--commit",
       "43ff",
       "--json_file",
@@ -2021,12 +2021,12 @@
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
-    "name": "assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.2.0-pgo)",
+    "name": "assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.2-pgo)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"can_delete\": false, @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/tags/1.1.2.0-pgo\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/tags/1.1.2-pgo\", @@@",
       "@@@STEP_LOG_LINE@json.output@  \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
