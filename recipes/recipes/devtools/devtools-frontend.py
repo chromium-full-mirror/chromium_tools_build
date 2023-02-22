@@ -48,26 +48,11 @@ PROPERTIES = {
             kind=bool,
             help='Should the builder clean up the out/ folder before building',
             default=False),
-    'e2e_env':
-        Property(
-            kind=dict,
-            help='A set of environment variables to be used when running e2e'
-            'stress tests. If set we only compile and run e2e tests.'
-            'Example vars:  the subset of tests to be run, number of'
-            'iterations, etc.',
-            default=None),
-    # TODO: remove e2e_env property once the runner gets updated
-    'runner_args':
-        Property(
-            kind=str,
-            help='Parameters to be passed down to the test runner for running'
-            ' stress e2e tests. If set we only compile and run e2e tests.',
-            default=None),
 }
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber, e2e_env, runner_args):
+             clobber):
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
   api.devtools.update()
@@ -78,19 +63,6 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
-
-    # TODO(liviurau): move this logic in a separate recipe
-    # to maybe even add bisection later on
-    builder_name = api.buildbucket.builder_name
-    if (e2e_env or runner_args) and builder_name.startswith("e2e"):
-      # run only e2e stress tests
-      # TODO(liviurau): use parameters rahter than ENV vars
-      with api.context(env=e2e_env):
-        if runner_args:
-          run_e2e(api, builder_config, runner_args.split())
-        else:
-          run_e2e(api, builder_config)
-      return
 
     run_unit_tests(api, builder_config)
     run_interactions(api, builder_config)
@@ -300,27 +272,6 @@ def GenTests(api):
       ci_build(builder='linux'),
       api.properties(devtools_skip_typecheck=True),
       api.post_process(post_process.Filter('gn'))
-  )
-
-  yield api.test(
-      'e2e stress test',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='e2e_stressor_linux'),
-      api.properties(e2e_env={
-          'ITERATIONS': '100',
-          'SUITE': 'flaky suite'
-      }),
-      api.post_process(post_process.DoesNotRun, 'Unit Tests'),
-      api.post_process(post_process.Filter('E2E tests')),
-  )
-
-  yield api.test(
-      'e2e stress test with parameters',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='e2e_stressor_linux'),
-      api.properties(runner_args="--ITERATIONS=100 --SUITE=flaky/suite"),
-      api.post_process(post_process.DoesNotRun, 'Unit Tests'),
-      api.post_process(post_process.Filter('E2E tests')),
   )
 
   yield api.test(
