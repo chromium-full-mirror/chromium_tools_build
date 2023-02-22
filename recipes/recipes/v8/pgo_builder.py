@@ -7,9 +7,10 @@ import contextlib
 import re
 from typing import List, Set, Tuple
 
-from recipe_engine.post_process import (Filter, DoesNotRun, DropExpectation,
-                                        MustRun, StatusFailure,
-                                        StepCommandContains)
+from recipe_engine.post_process import (
+    Filter, DoesNotRun, DoesNotRunRE, DropExpectation, MustRun, StatusFailure,
+    StepCommandContains,
+)
 from recipe_engine.recipe_api import Property
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
@@ -81,6 +82,9 @@ def RunSteps(api, max_parallel_versions, version_number_cutoff):
         max_parallel_versions,
         normalize_version(version_number_cutoff),
     )
+
+    if not profile_trackers:
+      return result_pb2.RawResult(status=common_pb.SUCCESS)
 
     orchestrator = api.v8_orchestrator.create_compilator_handler(
         enable_led=False)
@@ -523,6 +527,25 @@ def GenTests(api):
           'collect compilation isolates.1.1.1.4 x86.compilator steps'),
       subbuild_data(
           'collect compilation isolates.1.1.1.4 x64.compilator steps'),
+  )
+
+  yield api.test(
+      'no_new_versions',
+      stdout(
+          'init trackers for candidate versions.git ls-remote', '\n'.join([
+              '2234 refs/tags/1.1.1',
+              '2234 refs/tags/1.1.1-pgo',
+              '',
+          ])),
+      api.post_process(
+          DoesNotRunRE,
+          'augment isolates.*',
+          'trigger profilers.*',
+          'collect profiles.*',
+          'upload to gs.*',
+          'assign pgo tags.*',
+      ),
+      api.post_process(DropExpectation),
   )
 
   yield main_scenario(
