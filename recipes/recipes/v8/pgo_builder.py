@@ -60,8 +60,8 @@ VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)'
 PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
 
 COMPILATORS = {
-    'x86': 'V8 Linux PGO instrumentation - builder',
-    'x64': 'V8 Linux64 PGO instrumentation - builder',
+    'x86': ('ci', 'V8 Linux PGO instrumentation - builder'),
+    'x64': ('ci', 'V8 Linux64 PGO instrumentation - builder'),
 }
 
 PROPERTIES = {
@@ -275,10 +275,10 @@ def exception_capture(api, tracker):
 def trigger_compilators(api, profile_trackers, orchestrator):
   for tracker in advanceable(profile_trackers):
     with exception_capture(api, tracker), api.step.nest(tracker.name):
-      compilator_name = COMPILATORS[tracker.arch]
+      bucket, compilator_name = COMPILATORS[tracker.arch]
       #tracker.hash = 'fcce324c4e7626e932635db71e074f26581aada9' # TODO: remove hack
       h = orchestrator.trigger_compilator(
-          compilator_name, revision=tracker.revision)
+          compilator_name, revision=tracker.revision, bucket=bucket)
       tracker.compilator_handler = h
 
 

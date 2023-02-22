@@ -22,13 +22,15 @@ class CompilatorHandler:
 
 
 class ProdCompilatorHandler(CompilatorHandler):
-  def trigger_compilator(self, compilator_name, revision=None):
+  def trigger_compilator(self, compilator_name, revision=None, bucket=None):
     """Trigger a compilator build via buildbucket."""
+    bucket = bucket or self.api.buildbucket.INHERIT
     request = self.api.buildbucket.schedule_request(
         builder=compilator_name,
         swarming_parent_run_id=self.api.swarming.task_id,
         tags=self.api.buildbucket.tags(**{'hide-in-gerrit': 'pointless'}),
-        properties=dict(revision=revision) if revision else {})
+        properties=dict(revision=revision) if revision else {},
+        bucket=bucket)
     return self.api.buildbucket.schedule(
         [request], step_name='trigger compilator')[0]
 
@@ -63,10 +65,10 @@ class ProdCompilatorHandler(CompilatorHandler):
 
 
 class LedCompilatorHandler(CompilatorHandler):
-  def trigger_compilator(self, compilator_name, revision=None):
+  def trigger_compilator(self, compilator_name, revision=None, bucket=None):
     """Trigger a compilator build via led."""
-    project=self.api.buildbucket.build.builder.project
-    bucket=self.api.buildbucket.build.builder.bucket
+    project = self.api.buildbucket.build.builder.project
+    bucket = bucket or self.api.buildbucket.build.builder.bucket
     led_builder_id = f'luci.{project}.{bucket}:{compilator_name}'
     with self.api.step.nest('trigger compilator'):
       led_job = self.api.led('get-builder', led_builder_id)
