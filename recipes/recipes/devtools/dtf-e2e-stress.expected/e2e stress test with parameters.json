@@ -1,0 +1,39 @@
+[
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "--",
+      "vpython3",
+      "-u",
+      "third_party/node/node.py",
+      "--output",
+      "scripts/test/run_test_suite.js",
+      "--test-suite-path=gen/test/e2e",
+      "--test-suite-source-dir=test/e2e",
+      "--test-server-type='hosted-mode'",
+      "--target=Debug",
+      "--ITERATIONS=100",
+      "--SUITE=flaky/suite"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "E2E tests"
+  }
+]
