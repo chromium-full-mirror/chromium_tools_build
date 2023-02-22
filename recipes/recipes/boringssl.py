@@ -120,9 +120,6 @@ class _Config:
     self.run_ssl_tests = run_ssl_tests
     self.run_unit_tests = run_unit_tests
 
-    if self.has_token('compile'):
-      self.run_ssl_tests = False
-      self.run_unit_tests = False
     if self.has_token('sde') or self.has_token('tsan'):
       self.run_ssl_tests = False
 
@@ -215,32 +212,14 @@ class _Config:
       args['CMAKE_TOOLCHAIN_FILE'] = bot_utils.join('android_ndk', 'build',
                                                     'cmake',
                                                     'android.toolchain.cmake')
-      if self.has_token('arm'):
-        args['ANDROID_ABI'] = 'armeabi-v7a'
-        args['ANDROID_NATIVE_API_LEVEL'] = 16
-      elif self.has_token('aarch64'):
-        args['ANDROID_ABI'] = 'arm64-v8a'
-        args['ANDROID_NATIVE_API_LEVEL'] = 21
-      # The Android toolchain defaults to Thumb mode, but ARM mode may be
-      # specified as well.
-      if self.has_token('armmode'):
-        args['ANDROID_ARM_MODE'] = 'arm'
     if self.has_token('fips'):
       args['FIPS'] = '1'
       if self.has_token('android'):
         # FIPS mode on Android uses shared libraries.
         args['BUILD_SHARED_LIBS'] = '1'
-    if self.has_token('ios'):
-      args['CMAKE_OSX_SYSROOT'] = 'iphoneos'
-      args['CMAKE_OSX_ARCHITECTURES'] = 'armv7'
-    if self.has_token('ios64'):
-      args['CMAKE_OSX_SYSROOT'] = 'iphoneos'
-      args['CMAKE_OSX_ARCHITECTURES'] = 'arm64'
     if self.has_token('fuzz'):
       args['FUZZ'] = '1'
       args['LIBFUZZER_FROM_DEPS'] = '1'
-    if self.has_token('nosse2'):
-      args['OPENSSL_NO_SSE2_FOR_TESTING'] = '1'
     # Pick one builder to build with the C++ runtime allowed. The default
     # configuration does not check pure virtuals.
     if self.buildername == 'linux':
@@ -466,7 +445,6 @@ def GenTests(api):
       ('linux_shared', api.platform('linux', 64)),
       ('linux32', api.platform('linux', 64)),
       ('linux_noasm_asan', api.platform('linux', 64)),
-      ('linux_noasm_nosse2', api.platform('linux', 64)),
       ('linux_small', api.platform('linux', 64)),
       ('linux_nothreads', api.platform('linux', 64)),
       ('linux_rel', api.platform('linux', 64)),
@@ -492,11 +470,7 @@ def GenTests(api):
       ('win64_small', api.platform('win', 64)),
       ('win64_rel', api.platform('win', 64)),
       ('win64_clang', api.platform('win', 64)),
-      ('android_arm', api.platform('linux', 64)),
-      ('android_arm_rel', api.platform('linux', 64)),
-      ('android_arm_armmode_rel', api.platform('linux', 64)),
       ('android_aarch64', api.platform('linux', 64)),
-      ('android_aarch64_rel', api.platform('linux', 64)),
       ('android_aarch64_fips', api.platform('linux', 64)),
       # This is not a builder configuration, but it ensures _AppendFlags handles
       # appending to CMAKE_CXX_FLAGS when there is already a value in there.
@@ -511,17 +485,6 @@ def GenTests(api):
                                api.boringssl.canned_test_output(True)),
         api.override_step_data('ssl tests',
                                api.boringssl.canned_test_output(True)),
-    )
-
-  compile_only_tests = [
-      ('ios_compile', api.platform('mac', 64)),
-      ('ios64_compile', api.platform('mac', 64)),
-  ]
-  for (buildername, host_platform) in compile_only_tests:
-    yield api.test(
-        buildername,
-        host_platform,
-        _CIBuild(api, buildername),
     )
 
   unit_test_only_tests = [
