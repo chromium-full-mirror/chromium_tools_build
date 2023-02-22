@@ -148,9 +148,11 @@
       "-u",
       "third_party/node/node.py",
       "--output",
-      "scripts/test/some_script.js",
-      "--option1",
-      "--option2"
+      "scripts/test/run_test_suite.js",
+      "--test-suite-path=gen/test/e2e",
+      "--test-suite-source-dir=test/e2e",
+      "--test-server-type='hosted-mode'",
+      "--target=Release"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env_prefixes": {
@@ -170,7 +172,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "JS Script"
+    "name": "E2E tests"
   },
   {
     "name": "$result"

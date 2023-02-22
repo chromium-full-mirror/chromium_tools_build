@@ -66,17 +66,8 @@ def RunSteps(api, clobber, e2e_env, runner_args):
       return compilation_result
 
     with api.context(env=e2e_env):
-      if runner_args:
-        run_e2e(api, builder_config, runner_args.split())
-      else:
-        run_e2e(api, builder_config)
-
-
-def run_e2e(api, builder_config, args=None):
-  api.devtools.rdb_node_script('E2E tests', 'run_test_suite.js', [
-      "--test-suite-path=gen/test/e2e", "--test-suite-source-dir=test/e2e",
-      "--test-server-type='hosted-mode'", "--target=" + builder_config
-  ] + (args or []))
+      args = runner_args.split() if runner_args else None
+      api.devtools.run_e2e(builder_config, args)
 
 
 def GenTests(api):

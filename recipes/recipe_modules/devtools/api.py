@@ -52,6 +52,12 @@ class DevToolsAPI(recipe_api.RecipeApi):
       node_args.extend(args or [])
       self.m.step(step_name, ["vpython3", "-u", sc_path] + node_args, **kwargs)
 
+  def run_e2e(self, builder_config, args=None):
+    self.m.devtools.rdb_node_script('E2E tests', 'run_test_suite.js', [
+        "--test-suite-path=gen/test/e2e", "--test-suite-source-dir=test/e2e",
+        "--test-server-type='hosted-mode'", "--target=" + builder_config
+    ] + (args or []))
+
   def _configure_source(self):
     src_cfg = self.m.gclient.make_config()
     soln = src_cfg.solutions.add()

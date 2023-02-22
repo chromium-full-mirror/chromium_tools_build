@@ -73,7 +73,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
     run_lint_check(api)
 
-    run_e2e(api, builder_config)
+    api.devtools.run_e2e(builder_config)
     if can_run_experimental_steps(api):
       # Place here any unstable steps that you want to be performed on
       # builders with property run_experimental_steps == True
@@ -105,12 +105,6 @@ def run_lint_check(api):
   api.devtools.run_node_script('Lint check with Stylelint',
                                'run_lint_check_css.js')
 
-
-def run_e2e(api, builder_config, args=None):
-  api.devtools.rdb_node_script('E2E tests', 'run_test_suite.js', [
-      "--test-suite-path=gen/test/e2e", "--test-suite-source-dir=test/e2e",
-      "--test-server-type='hosted-mode'", "--target=" + builder_config
-  ] + (args or []))
 
 
 def run_interactions(api, builder_config):

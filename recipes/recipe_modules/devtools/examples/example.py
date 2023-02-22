@@ -27,11 +27,7 @@ def RunSteps(api, builder_config, clobber):
 
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
-    api.devtools.rdb_node_script(
-        'JS Script',
-        'some_script.js',
-        ["--option1", "--option2"],
-    )
+    api.devtools.run_e2e(builder_config)
 
 
 def GenTests(api):
