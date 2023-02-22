@@ -54,8 +54,9 @@ V8_REPO_URL = 'https://chromium.googlesource.com/v8/v8/'
 V8_PERF_REPO_URL = 'https://chrome-internal.googlesource.com/v8/v8-perf'
 VERSION_CUTOFF = (11, 1)
 
+BLOCKLIST_BUCKET = 'chromium-v8-builtins-pgo-state'
 BLOCKLIST_FILE = 'blocked-versions.txt'
-BLOCKLIST_PATH = f'gs://{BUCKET_NAME}/{BLOCKLIST_FILE}'
+BLOCKLIST_PATH = f'gs://{BLOCKLIST_BUCKET}/{BLOCKLIST_FILE}'
 
 VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)'
 PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'

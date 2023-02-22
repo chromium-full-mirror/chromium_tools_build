@@ -36,7 +36,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cat",
-      "gs://chromium-v8-builtins-pgo-staging/blocked-versions.txt"
+      "gs://chromium-v8-builtins-pgo-state/blocked-versions.txt"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
