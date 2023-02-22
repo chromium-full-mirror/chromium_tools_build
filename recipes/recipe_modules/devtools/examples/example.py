@@ -28,21 +28,33 @@ def RunSteps(api, builder_config, clobber):
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
     api.devtools.run_e2e(builder_config)
+    with api.devtools.collect_screenshots('dummy-bucket'):
+      api.step.empty('Nothing')
 
 
 def GenTests(api):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
-  yield (api.test('release') +
-         api.buildbucket.ci_build(project='devtools', git_repo=git_repo))
+
+  def try_build(**kwargs):
+    return api.buildbucket.try_build(
+        project='devtools',
+        builder='builder',
+        git_repo=git_repo,
+        change_number=91827,
+        patch_set=1,
+        **kwargs)
+
+
+  yield (api.test('release') + try_build())
 
   yield (api.test('debug') + api.properties(builder_config='Debug') +
-         api.buildbucket.ci_build(project='devtools', git_repo=git_repo) +
+         try_build() +
          api.post_process(post_process.MustRun, 'clean outdir') +
          api.post_process(post_process.StatusSuccess) +
          api.post_process(post_process.DropExpectation))
 
   yield (api.test('clobber') + api.properties(clobber=True) +
-         api.buildbucket.ci_build(project='devtools', git_repo=git_repo) +
+         try_build() +
          api.post_process(post_process.MustRun, 'clean outdir') +
          api.post_process(post_process.StatusSuccess) +
          api.post_process(post_process.DropExpectation))

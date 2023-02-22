@@ -80,7 +80,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/builder/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/screenshots-builder/8945511751514863184",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800"
     },
@@ -177,7 +177,7 @@
     ],
     "cwd": "[CACHE]/builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/builder/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "devtools/try/screenshots-builder/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -200,20 +200,17 @@
   },
   {
     "cmd": [
-      "rdb",
-      "stream",
-      "--",
-      "vpython3",
-      "-u",
-      "third_party/node/node.py",
-      "--output",
-      "scripts/test/run_test_suite.js",
-      "--test-suite-path=gen/test/e2e",
-      "--test-suite-source-dir=test/e2e",
-      "--test-server-type='hosted-mode'",
-      "--target=Release"
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "--root=[CACHE]/builder/devtools-frontend",
+      "gen",
+      "//out/Release",
+      "--args=devtools_dcheck_always_on=true devtools_skip_typecheck=true is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/devtools-frontend/third_party"
@@ -231,7 +228,118 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "E2E tests"
+    "name": "gn"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
+      "--ninja_info_output",
+      "/path/to/tmp/json",
+      "--failure_output",
+      "/path/to/tmp/",
+      "--",
+      "[CACHE]/builder/devtools-frontend/third_party/ninja/ninja",
+      "-w",
+      "dupbuild=err",
+      "-C",
+      "[CACHE]/builder/devtools-frontend/out/Release"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/devtools-frontend/third_party/ninja/ninja",
+      "-w",
+      "dupbuild=err",
+      "-C",
+      "[CACHE]/builder/devtools-frontend/out/Release",
+      "-d",
+      "explain",
+      "-n"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile confirm no-op"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[build]/recipes/upload_goma_logs.py",
+      "--gsutil-py-path",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "--skip-sendgomatsmon",
+      "--ninja-log-outdir",
+      "[CACHE]/builder/devtools-frontend/out/Release",
+      "--ninja-log-command-file",
+      "[\"[CACHE]/builder/devtools-frontend/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/devtools-frontend/out/Release\"]",
+      "--build-exit-status",
+      "0",
+      "--ninja-log-compiler",
+      "unknown"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload_ninja_log"
   },
   {
     "cmd": [
@@ -265,8 +373,43 @@
     "name": "commit current patch"
   },
   {
-    "cmd": [],
-    "name": "Nothing"
+    "cmd": [
+      "rdb",
+      "stream",
+      "--",
+      "vpython3",
+      "-u",
+      "third_party/node/node.py",
+      "--output",
+      "scripts/test/run_test_suite.js",
+      "--test-suite-path=gen/test/interactions",
+      "--test-suite-source-dir=test/interactions",
+      "--test-server-type='component-docs'",
+      "--target=Release",
+      "--mocha-fgrep='[screenshot]'"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Screenshots"
   },
   {
     "cmd": [],
@@ -452,7 +595,7 @@
       "----",
       "cp",
       "[CLEANUP]/screenshots_tmp_1/screenshot.patch",
-      "gs://dummy-bucket/screenshots/builder/91827/1/screenshot.patch"
+      "gs://devtools-frontend-screenshots/screenshots/screenshots-builder/91827/1/screenshot.patch"
     ],
     "env": {
       "FORCE_UPDATE_ALL_GOLDENS": "True"
@@ -478,7 +621,7 @@
     "name": "upload screenshots.gsutil upload patch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@screenshots/builder/91827/1/screenshot.patch@https://storage.cloud.google.com/dummy-bucket/screenshots/builder/91827/1/screenshot.patch@@@"
+      "@@@STEP_LINK@screenshots/screenshots-builder/91827/1/screenshot.patch@https://storage.cloud.google.com/devtools-frontend-screenshots/screenshots/screenshots-builder/91827/1/screenshot.patch@@@"
     ]
   },
   {
