@@ -46,7 +46,7 @@ DEPS = [
 ]
 
 JET_STREAM_PATH = 'benchmarks/JetStream2'
-BUCKET_NAME = 'chromium-v8-builtins-pgo-staging'  # TODO: switch to production 'v8-builtins-pgo-profiles'
+BUCKET_NAME = 'chromium-v8-builtins-pgo'
 GERRIT_HOST = 'https://chromium-review.googlesource.com'
 GERRIT_PROJECT = 'v8/v8'
 MAX_PARALLEL_VERSIONS = 10

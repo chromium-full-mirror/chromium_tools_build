@@ -9,14 +9,14 @@
       "----",
       "cp",
       "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x64\"], \"revision\": \"cd12\", \"version\": \"1.1.1.4\"}",
-      "gs://chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/meta.json"
+      "gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/meta.json"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
     "name": "upload to gs.gsutil upload metadata 1.1.1.4",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo-staging/by-version/1.1.1.4/meta.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/meta.json@@@"
     ]
   }
 ]
