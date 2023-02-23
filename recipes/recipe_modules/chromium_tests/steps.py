@@ -2226,6 +2226,8 @@ class SwarmingTest(Test):
         # gets turned down.
         'test_id_prefix': [self.test_id_prefix or ''],
         'test_suite': [self.canonical_name],
+        'waterfall_builder_group': [self.spec.waterfall_builder_group or ''],
+        'waterfall_buildername': [self.spec.waterfall_buildername or ''],
     }
 
     task.request = (

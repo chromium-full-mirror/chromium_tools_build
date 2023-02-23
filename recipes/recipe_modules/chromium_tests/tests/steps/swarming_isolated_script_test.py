@@ -55,6 +55,8 @@ def RunSteps(api):
     isolate_coverage_data = api.properties.get('isolate_coverage_data', False)
     test_spec = steps.SwarmingIsolatedScriptTestSpec.create(
         name=test_name,
+        waterfall_builder_group='waterfall_builder_group',
+        waterfall_buildername='waterfall_buildername',
         override_compile_targets=api.properties.get('override_compile_targets'),
         io_timeout=120,
         hard_timeout=360,
