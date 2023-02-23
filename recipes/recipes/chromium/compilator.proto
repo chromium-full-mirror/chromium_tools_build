@@ -33,4 +33,8 @@ message InputProperties {
   // This is required for other non-src projects running a builder using
   // orchestrators and compilators
   string root_solution_revision = 4;
+
+  // Sets the rts setting to be used
+  // This will control which RTS model to be used for test selection, if any
+  string rts_setting = 5;
 }

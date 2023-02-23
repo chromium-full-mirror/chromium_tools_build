@@ -137,6 +137,9 @@ def GenTests(api):
           'read test spec (fake-group.json)',
           ['[CLEANUP]/src/testing/buildbot/fake-group.json'],
       ),
+      api.post_process(post_process.LogDoesNotContain,
+                       'trigger compilator (with patch)', 'request',
+                       ['rts_setting']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -533,6 +536,9 @@ def GenTests(api):
           ['$recipe_engine/cq', 'QUICK_DRY_RUN'],
       ),
       api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.LogContains,
+                       'trigger compilator (with patch)', 'request',
+                       ['"rts_setting": "rts-chromium"']),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -1275,7 +1275,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       failing_tests,
                                       bot_update_step,
                                       suffix,
-                                      additional_compile_targets=None):
+                                      additional_compile_targets=None,
+                                      rts_setting=None):
     """Builds and isolates test suites in |failing_tests|.
 
     Args:
@@ -1289,6 +1290,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         specified recipe-side. This field is intended for recipes to add
         targets needed for recipe functionality and not for configuring builder
         outputs (which should be specified src-side in waterfalls.pyl).
+      rts_setting (str): rts setting to be used in mb. This will control which
+        model is used for selecting tests. None will not perform any RTS.
     Returns:
       A tuple of:
         A RawResult object with the failure message and status or None if
@@ -1311,8 +1314,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # Remove duplicate targets.
     compile_targets = sorted(set(compile_targets))
     failing_swarming_tests = [t for t in failing_tests if t.uses_isolate]
-
-    rts_setting = self.get_quickrun_options(builder_config)
 
     raw_result = self.run_mb_and_compile(
         builder_id,
@@ -1910,10 +1911,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config)
     self.print_link_to_results()
+    rts_setting = self.get_quickrun_options(builder_config)
     raw_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
-        root_solution_revision=root_solution_revision)
+        root_solution_revision=root_solution_revision,
+        rts_setting=rts_setting)
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
@@ -2174,7 +2177,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                              builder_config,
                              root_solution_revision=None,
                              isolate_output_files_for_coverage=False,
-                             additional_compile_targets=None):
+                             additional_compile_targets=None,
+                             rts_setting=None):
     """Builds targets affected by change.
 
     Args:
@@ -2192,6 +2196,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         specified recipe-side. This field is intended for recipes to add
         targets needed for recipe functionality and not for configuring builder
         outputs (which should be specified src-side in waterfalls.pyl).
+      rts_setting (str): rts setting to be used in mb. This will control which
+        model is used for selecting tests. None will not perform any RTS.
 
     Returns:
       A Tuple of
@@ -2199,8 +2205,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           and the failure message if it failed
         Configuration of the build/test.
     """
-    rts_setting = self.get_quickrun_options(builder_config)
-
     self.configure_build(builder_config, rts_setting=rts_setting)
 
     self.m.chromium.apply_config('trybot_flavor')

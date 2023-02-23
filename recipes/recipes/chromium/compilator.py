@@ -70,10 +70,11 @@ def compilator_steps(api, properties):
 
     api.chromium_tests.report_builders(orch_builder_config)
 
-    # Implies that this compilator build must be compiled without a patch
-    # so that the orchestrator can retry these swarming tests without patch
-    rts_setting = api.chromium_tests.get_quickrun_options(orch_builder_config)
+    rts_setting = properties.rts_setting
 
+    # swarming_targets implies that this compilator build must be compiled
+    # without a patch so that the orchestrator can retry these swarming tests
+    # without patch
     if properties.swarming_targets:
       api.chromium_tests.configure_build(
           orch_builder_config,
@@ -111,13 +112,15 @@ def compilator_steps(api, properties):
               test_suites,
               bot_update_step,
               'without patch',
-              additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME]))
+              additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
+              rts_setting=rts_setting))
     else:
       raw_result, task = api.chromium_tests.build_affected_targets(
           orch_builder_id,
           orch_builder_config,
           isolate_output_files_for_coverage=True,
-          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME])
+          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
+          rts_setting=rts_setting)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
 
@@ -638,15 +641,18 @@ def GenTests(api):
           InputProperties(
               orchestrator=InputProperties.Orchestrator(
                   builder_group='tryserver.chromium.test',
-                  builder_name='rts-rel'))),
+                  builder_name='rts-rel'),
+              rts_setting='rts-chromium')),
       api.chromium_tests.read_source_side_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },
       }),
-      api.post_process(post_process.MustRun, 'quick run options'),
-      api.post_process(post_process.PropertyEquals, 'rts_setting',
-                       'rts-chromium'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'generate_build_files (with patch)',
+          ['rts-chromium'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -673,15 +679,18 @@ def GenTests(api):
           InputProperties(
               orchestrator=InputProperties.Orchestrator(
                   builder_group='tryserver.chromium.test',
-                  builder_name='rts-rel'))),
+                  builder_name='rts-rel'),
+              rts_setting='rts-ml-chromium')),
       api.chromium_tests.read_source_side_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },
       }),
-      api.post_process(post_process.MustRun, 'quick run options'),
-      api.post_process(post_process.PropertyEquals, 'rts_setting',
-                       'rts-ml-chromium'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'generate_build_files (with patch)',
+          ['rts-ml-chromium'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -708,13 +717,18 @@ def GenTests(api):
               orchestrator=InputProperties.Orchestrator(
                   builder_group='tryserver.chromium.test',
                   builder_name='rts-rel'),
-              swarming_targets=['base_unittests'])),
+              swarming_targets=['base_unittests']),
+          rts_setting='rts-chromium'),
       api.chromium_tests.read_source_side_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },
       }),
-      api.post_process(post_process.MustRun, 'quick run options'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'generate_build_files (without patch)',
+          ['rts-chromium'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 

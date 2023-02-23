@@ -171,6 +171,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             'builder_group': self.m.builder_group.for_current
         }
     }
+    if rts_setting:
+      compilator_properties['rts_setting'] = rts_setting
 
     gitiles_commit = None
 
