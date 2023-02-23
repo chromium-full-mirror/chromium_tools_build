@@ -45,6 +45,22 @@ COMPARISON_BUILDERS = freeze({
         'platform': 'linux',
         'targets': ['all'],
     },
+    'Comparison Android (reclient)': {
+        'chromium_config': 'android',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb', 'download_vr_test_apks'],
+        'gclient_apply_config_1': ['android'],
+        'gclient_apply_config_2': ['android', 'reclient_test'],
+        'chromium_config_kwargs': {
+            'BUILD_CONFIG': 'Debug',
+            'TARGET_BITS': 32,
+            'TARGET_PLATFORM': 'android',
+        },
+        'android_config': 'main_builder_mb',
+        'simulation_platform': 'linux',
+        'platform': 'linux',
+        'targets': ['all'],
+    },
     'Comparison Linux (reclient)': {
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
@@ -52,6 +68,100 @@ COMPARISON_BUILDERS = freeze({
         'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'platform': 'linux',
+        'targets': ['all'],
+    },
+    'Comparison Mac (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb'],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'mac',
+        'chromium_config_kwargs': {
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'mac',
+        },
+        'simulation_platform': 'mac',
+        'targets': ['all'],
+    },
+    'Comparison Mac arm64 (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb'],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'mac',
+        'chromium_config_kwargs': {
+            'TARGET_ARCH': 'arm',
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'mac',
+        },
+        'simulation_platform': 'mac',
+        'targets': ['all'],
+    },
+    'Comparison Mac arm64 on arm64 (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb'],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'mac',
+        'chromium_config_kwargs': {
+            'TARGET_ARCH': 'arm',
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'mac',
+        },
+        'simulation_platform': 'mac',
+        'targets': ['all'],
+    },
+    'Comparison Windows (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb'],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'win',
+        'targets': ['all'],
+    },
+    'Comparison Windows (8 cores) (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb'],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'win',
+        'targets': ['all'],
+    },
+    'Comparison Simple Chrome (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb'],
+        'gclient_apply_config_1': ['chromeos', 'checkout_lacros_sdk'],
+        'gclient_apply_config_2': [
+            'chromeos', 'reclient_test', 'checkout_lacros_sdk'
+        ],
+        'platform': 'linux',
+        'chromium_config_kwargs': {
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'chromeos',
+            'CROS_BOARDS_WITH_QEMU_IMAGES': 'amd64-generic:amd64-generic-vm',
+            'TARGET_CROS_BOARDS': 'amd64-generic',
+        },
+        'simulation_platform': 'linux',
+        'targets': ['chrome'],
+    },
+    'Comparison ios (reclient)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'ios',
+        'chromium_apply_config': ['mb', 'mac_toolchain'],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'mac',
+        'chromium_config_kwargs': {
+            'TARGET_BITS': 64,
+            'TARGET_PLATFORM': 'ios',
+        },
+        'simulation_platform': 'mac',
         'targets': ['all'],
     },
 })
@@ -71,19 +181,24 @@ def _configure_chromium_builder(api, recipe_config, build_number):
   for c in recipe_config.get(f'gclient_apply_config_{build_number}', []):
     api.gclient.apply_config(c)
 
+  if api.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES:
+    gclient_solution = api.gclient.c.solutions[0]
+    gclient_solution.custom_vars['cros_boards_with_qemu_images'] = (
+        api.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES)
+
   api.chromium.apply_config('reclient_deps_cache_by_step')
 
   # Checkout chromium.
   api.chromium_checkout.ensure_checkout()
 
 
-def _compile(api, recipe_config, build_number):
+def _compile(api, config_name, recipe_config, build_number):
   # Execute reclient build in '.{build_number}' out directory
   target = f'{api.chromium.c.build_config_fs}.{build_number}'
   build_dir = '//out/%s' % target
 
   builder_id = chromium.BuilderId.create_for_group(
-      api.builder_group.for_current, api.buildbucket.builder_name)
+      api.builder_group.for_current, config_name)
   api.chromium.mb_gen(
       builder_id,
       build_dir=build_dir,
@@ -98,6 +213,16 @@ def _compile(api, recipe_config, build_number):
       target=target)
 
 
+def _get_config(buildername):
+  # Match builders by prefix so that multiple builders
+  # (CI,CQ,experimental) can share the same configs.
+  for prefix, recipe_config in sorted(COMPARISON_BUILDERS.items()):
+    if buildername.startswith(prefix):
+      return prefix, recipe_config
+  raise NotImplementedError('Unexpected builder %s' %
+                            buildername)  #pragma: nocover
+
+
 def _clean_output_dirs(api, out_dirs):
   with api.step.nest('clean_output_dirs'):
     for out_dir in out_dirs:
@@ -109,8 +234,7 @@ def _sanitize_nonalpha(text):
 
 
 def RunSteps(api):
-  buildername = api.buildbucket.builder_name
-  recipe_config = COMPARISON_BUILDERS[buildername]
+  config_name, recipe_config = _get_config(api.buildbucket.builder_name)
 
   # Set up a named cache so runhooks doesn't redownload everything on each run.
   solution_path = api.path['cache'].join('builder')
@@ -130,7 +254,7 @@ def RunSteps(api):
     api.chromium.runhooks()
 
   try:
-    raw_result = _compile(api, recipe_config, 1)
+    raw_result = _compile(api, config_name, recipe_config, 1)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
@@ -139,7 +263,7 @@ def RunSteps(api):
 
     _clean_output_dirs(api, out_dirs)
 
-    raw_result = _compile(api, recipe_config, 2)
+    raw_result = _compile(api, config_name, recipe_config, 2)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
   finally:
