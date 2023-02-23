@@ -327,7 +327,9 @@ def merge_isolate_with_benchmark(api, profile_trackers, perf_code_path):
       cas_work_dir = api.path.mkdtemp()
       #tracker.original_cas_digest = '2acc1d5a0730b73dbe7432ad94e9f0dfee9c90bac442d81c0d77d149dc6ee9fa/241' # TODO: remove hack
       api.cas.download('download', tracker.original_cas_digest, cas_work_dir)
-      api.file.copytree('copy benchmark code', perf_code_path, cas_work_dir)
+      api.file.copytree(
+          'copy benchmark code', perf_code_path,
+          cas_work_dir.join('JetStream2'))
       tracker.augmented_cas_digest = api.cas.archive('archive', cas_work_dir)
 
 

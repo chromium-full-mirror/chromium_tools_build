@@ -813,7 +813,7 @@
       "/path/to/tmp/json",
       "copytree",
       "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
-      "[CLEANUP]/tmp_tmp_10"
+      "[CLEANUP]/tmp_tmp_10/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
@@ -875,7 +875,7 @@
       "/path/to/tmp/json",
       "copytree",
       "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
-      "[CLEANUP]/tmp_tmp_11"
+      "[CLEANUP]/tmp_tmp_11/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
@@ -937,7 +937,7 @@
       "/path/to/tmp/json",
       "copytree",
       "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
-      "[CLEANUP]/tmp_tmp_12"
+      "[CLEANUP]/tmp_tmp_12/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
@@ -999,7 +999,7 @@
       "/path/to/tmp/json",
       "copytree",
       "[CLEANUP]/tmp_tmp_1/v8-perf/benchmarks/JetStream2",
-      "[CLEANUP]/tmp_tmp_13"
+      "[CLEANUP]/tmp_tmp_13/JetStream2"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "infra_step": true,
