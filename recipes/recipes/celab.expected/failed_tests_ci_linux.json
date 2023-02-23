@@ -510,6 +510,9 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "--",
       "vpython3",
       "-u",
       "run_tests.py",
