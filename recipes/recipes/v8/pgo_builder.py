@@ -374,12 +374,16 @@ def collect_profiles(api, profile_trackers):
 
 @with_wrapper_step
 def upload_to_gs(api, profile_trackers):
-  for tracker in advanceable(profile_trackers):
-    with exception_capture(api, tracker):
-      upload_pgo_file(api, tracker)
-  for tracker_pair in grouped_by_version(profile_trackers):
-    with exception_capture(api, tracker_pair[0]):
-      upload_meta_json(api, tracker_pair)
+  for version_trackers in grouped_by_version(advanceable(profile_trackers)):
+    if len(version_trackers) != len(COMPILATORS):
+      continue
+
+    for tracker in version_trackers:
+      with exception_capture(api, tracker):
+        upload_pgo_file(api, tracker)
+
+    with exception_capture(api, version_trackers[0]):
+      upload_meta_json(api, version_trackers)
 
 
 def grouped_by_version(profile_trackers):
@@ -399,8 +403,7 @@ def upload_pgo_file(api, tracker):
 
 def upload_meta_json(api, tracker_pair):
   successful_tracks = [t.arch for t in tracker_pair if not t.exception]
-  if not successful_tracks:
-    return
+  assert successful_tracks, 'Expected tracks, but none found to upload.'
   api.gsutil.upload(
       api.json.input({
           'version': tracker_pair[0].version,
@@ -570,11 +573,11 @@ def GenTests(api):
           'trigger profilers.1.1.1.4 x86',
           'collect profiles.1.1.1.4 x86',
           'upload to gs.gsutil upload 1.1.1.4 x86',
+          'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
       api.post_process(StatusFailure),
-      api.post_process(
-          Filter().include('upload to gs.gsutil upload metadata 1.1.1.4')),
+      api.post_process(DropExpectation),
   )
 
   yield main_scenario(

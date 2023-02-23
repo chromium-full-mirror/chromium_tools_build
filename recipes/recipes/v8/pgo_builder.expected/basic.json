@@ -1925,6 +1925,26 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
+      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x86\", \"x64\"], \"revision\": \"43ff\", \"version\": \"1.1.2.0\"}",
+      "gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "upload to gs.gsutil upload metadata 1.1.2.0",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
       "[CLEANUP]/v1.1.1.4_x86_tmp_1/2/x86.profile",
       "gs://chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile"
     ],
@@ -1954,26 +1974,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "{\"build_link\": \"https://cr-buildbucket.appspot.com/build/0\", \"profile\": [\"x86\", \"x64\"], \"revision\": \"43ff\", \"version\": \"1.1.2.0\"}",
-      "gs://chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json"
-    ],
-    "cwd": "[CLEANUP]/tmp_tmp_1",
-    "infra_step": true,
-    "name": "upload to gs.gsutil upload metadata 1.1.2.0",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/meta.json@@@"
     ]
   },
   {
