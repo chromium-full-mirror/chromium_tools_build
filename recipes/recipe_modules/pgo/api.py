@@ -10,6 +10,7 @@ class PgoApi(recipe_api.RecipeApi):
 
   GS_BUCKET = 'chromium-optimization-profiles'
   GS_BUCKET_PATH = 'pgo_profiles'
+  SUPPORTED_CROS_ARCH = ['amd64-generic', 'arm-generic', 'arm64-generic']
   TEMP_PROFDATA_FILENAME = 'pgo_final_aggregate.profdata'
 
   def __init__(self, properties, *args, **kwargs):
@@ -64,16 +65,34 @@ class PgoApi(recipe_api.RecipeApi):
     # without internal sources. Update this prefix when support is introduced.
     profdata_template = 'chrome-%s-%s-%s-%s.profdata'
 
+    # android and chromeos are undefined through platform API,
+    # so we use the chromium config
+    target_platform = self.m.chromium.c.TARGET_PLATFORM
+    platform = (
+        target_platform
+        if target_platform in ['android', 'chromeos'] else self.m.platform.name)
+
     # if is_win or if android, should append bits [32,64]
-    # note: android only arm supported. mac appends -arm to the platform name
-    # to differentiate from non-arm mac.
-    platform = self.m.platform.name
-    if platform == 'mac' and self.m.chromium.c.TARGET_ARCH == 'arm':
-      platform += '-arm'
-    if self.m.chromium.c.TARGET_PLATFORM == 'android':
-      platform = 'android'
     if self.m.platform.is_win or platform == 'android':
       platform += str(self.m.chromium.c.TARGET_BITS)
+
+    # only supporting -arm for mac for now.
+    arch = self.m.chromium.c.TARGET_ARCH
+    if platform == 'mac' and self.m.chromium.c.TARGET_ARCH == 'arm':
+      platform += '-' + arch
+
+    # listify and split by colon.
+    target_cros_boards = self.m.chromium.c.TARGET_CROS_BOARDS
+    if platform == 'chromeos' and target_cros_boards:
+      target_cros_boards = target_cros_boards.split(':')
+      # lacros will specify both arch and board in TARGET_CROS_BOARDS.
+      # we don't include board as part of the name because amd64 can run across
+      # all the boards, but we can only train with one. we may look into
+      # training across multiple boards and merging into one, or train for the
+      # most popular board to maximize perf.
+      for arch_def in self.SUPPORTED_CROS_ARCH:
+        if arch_def in target_cros_boards:
+          platform += '-' + arch_def
 
     # timestamp from git commit HEAD. under the hood invokes
     # `git show --format=%at -s`, where %at=author date, UNIX timestamp
