@@ -35,10 +35,10 @@ def RunSteps(api, builder_config, clobber):
 def GenTests(api):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
-  def try_build(**kwargs):
+  def try_build(builder='builder', **kwargs):
     return api.buildbucket.try_build(
         project='devtools',
-        builder='builder',
+        builder=builder,
         git_repo=git_repo,
         change_number=91827,
         patch_set=1,
@@ -46,6 +46,8 @@ def GenTests(api):
 
 
   yield (api.test('release') + try_build())
+
+  yield (api.test('parallel release') + try_build(builder='parallel builder'))
 
   yield (api.test('debug') + api.properties(builder_config='Debug') +
          try_build() +
