@@ -30,6 +30,7 @@ def get_args_for_test(chromium_tests_api, raw_test_spec, got_revisions):
       got_src_revision
       patch_issue
       patch_set
+      use_permissive_angle_pixel_comparison
       xcode_build_version
 
   so, for example, a test can declare the argument:
@@ -61,6 +62,14 @@ def get_args_for_test(chromium_tests_api, raw_test_spec, got_revisions):
   # Perform substitution of known variables.
   build = chromium_tests_api.m.buildbucket.build
   cl = (build.input.gerrit_changes or [None])[0]
+  if chromium_tests_api.m.tryserver.is_tryserver:
+    footer_values = [
+        val.lower() for val in chromium_tests_api.m.tryserver.get_footer(
+            'Use-Permissive-Angle-Pixel-Comparison')
+    ]
+    use_permissive_angle_pixel_comparison = 'true' in footer_values
+  else:
+    use_permissive_angle_pixel_comparison = False
   substitutions = {
       'buildbucket_project':
           build.builder.project,
@@ -92,6 +101,8 @@ def get_args_for_test(chromium_tests_api, raw_test_spec, got_revisions):
           cl.change if cl else None,
       'patch_set':
           cl.patchset if cl else None,
+      'use_permissive_angle_pixel_comparison':
+          '1' if use_permissive_angle_pixel_comparison else '0',
       'xcode_build_version':
           chromium_tests_api.m.chromium.xcode_build_version
   }

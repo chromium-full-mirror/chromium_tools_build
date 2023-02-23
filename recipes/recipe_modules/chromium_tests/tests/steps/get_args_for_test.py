@@ -7,6 +7,7 @@ DEPS = [
     'chromium_tests',
     'depot_tools/bot_update',
     'depot_tools/gclient',
+    'depot_tools/tryserver',
     'recipe_engine/assertions',
     'recipe_engine/properties',
 ]
@@ -198,5 +199,96 @@ def GenTests(api):
       api.post_check(lambda check, steps: \
           check("Unknown variable 'foobar'"
                 in steps['Invalid conditional'].step_text)),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'use_permissive_angle_pixel_comparison not trybot',
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          single_spec={
+              'args': ['${use_permissive_angle_pixel_comparison}'],
+              'test': 'base_unittests',
+          },
+          expected_args=[u'0'],
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'use_permissive_angle_pixel_comparison trybot no footer',
+      api.chromium.try_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          single_spec={
+              'args': ['${use_permissive_angle_pixel_comparison}'],
+              'test': 'base_unittests',
+          },
+          expected_args=[u'0'],
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'use_permissive_angle_pixel_comparison trybot footer not true',
+      api.chromium.try_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          single_spec={
+              'args': ['${use_permissive_angle_pixel_comparison}'],
+              'test': 'base_unittests',
+          },
+          expected_args=[u'0'],
+      ),
+      api.tryserver.get_footers(
+          {'Use-Permissive-Angle-Pixel-Comparison': ['False']},),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'use_permissive_angle_pixel_comparison trybot footer true',
+      api.chromium.try_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          single_spec={
+              'args': ['${use_permissive_angle_pixel_comparison}'],
+              'test': 'base_unittests',
+          },
+          expected_args=[u'1'],
+      ),
+      api.tryserver.get_footers(
+          {'Use-Permissive-Angle-Pixel-Comparison': ['True']},),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'use_permissive_angle_pixel_comparison trybot multiple footers true',
+      api.chromium.try_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          single_spec={
+              'args': ['${use_permissive_angle_pixel_comparison}'],
+              'test': 'base_unittests',
+          },
+          expected_args=[u'1'],
+      ),
+      api.tryserver.get_footers(
+          {'Use-Permissive-Angle-Pixel-Comparison': ['foo', 'True']},),
+      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
