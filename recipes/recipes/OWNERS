@@ -19,6 +19,7 @@ per-file chromium_codesearch.proto=file:chromium_codesearch.expected/OWNERS
 per-file chromium_codesearch.py=file:chromium_codesearch.expected/OWNERS
 per-file chromium_codesearch_initiator.proto=file:chromium_codesearch_initiator.expected/OWNERS
 per-file chromium_codesearch_initiator.py=file:chromium_codesearch_initiator.expected/OWNERS
+per-file chromium_fuzz_coverage.py=file:chromium_fuzz_coverage.expected/OWNERS
 per-file chromium_integration.py=tmrts@chromium.org
 per-file chromium_libfuzzer.py=file:chromium_libfuzzer.expected/OWNERS
 per-file chromium_trybot.py=gbeaty@chromium.org
@@ -42,7 +43,6 @@ per-file publish_tarball.py=file:publish_tarball.expected/OWNERS
 per-file reclient_goma_comparison.py=file://recipes/reclient/OWNERS
 per-file tint.py=file:tint.expected/OWNERS
 per-file v8.py=file:v8.expected/OWNERS
-per-file chromium_fuzz_coverage.py=file:chromium_fuzz_coverage.expected/OWNERS
 
 # Generic owners, if the file isn't listed above.
 gbeaty@chromium.org
