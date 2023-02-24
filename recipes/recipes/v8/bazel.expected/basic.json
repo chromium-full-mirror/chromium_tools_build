@@ -1,6 +1,31 @@
 [
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[HOME]/.cache/bazel"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "BAZEL_COMPILER": "clang",
+      "CC": "[CACHE]/builder/v8/third_party/llvm-build/Release+Asserts/bin/clang",
+      "CXX": "[CACHE]/builder/v8/third_party/llvm-build/Release+Asserts/bin/clang++"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/llvm-build/Release+Asserts/bin",
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Clobber bazel cache"
+  },
+  {
+    "cmd": [
       "[CACHE]/builder/v8/tools/bazel/bazel",
       "build",
       "--verbose_failures",

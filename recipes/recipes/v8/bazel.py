@@ -39,6 +39,8 @@ def RunSteps(api):
     # directory to avoid incremental build problems.
     api.file.rmtree('Clobber bin dir', api.path['checkout'].join('bazel-bin'))
     api.file.rmtree('Clobber out dir', api.path['checkout'].join('bazel-out'))
+    api.file.rmtree(
+        'Clobber bazel cache', api.path['home'].join('.cache', 'bazel'))
 
     try:
       api.step(
@@ -51,5 +53,6 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic',
-      api.post_process(Filter('Bazel build', 'Bazel shutdown')),
+      api.post_process(Filter(
+          'Bazel build', 'Bazel shutdown', 'Clobber bazel cache')),
   )
