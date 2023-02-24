@@ -6,6 +6,7 @@ DEPS = [
     'depbot',
     'recipe_engine/json',
     'recipe_engine/path',
+    'recipe_engine/properties',
 ]
 
 
@@ -18,4 +19,14 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.properties(
+          **{
+              '$build/depbot': {
+                  "bq_artifact_table": "project.dataset.table",
+                  "bq_library_table": "project.dataset.table",
+                  "depbot_version": "latest",
+                  "target": "//base:base"
+              }
+          }))

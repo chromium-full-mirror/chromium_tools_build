@@ -117,7 +117,7 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/latest/depbot",
       "--target",
-      "//third_party/perfetto/src/tracing/ipc/producer:producer",
+      "//base:base",
       "--chromium-src-dir",
       "None",
       "--log-level",
@@ -157,7 +157,7 @@
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "ssci-dev.depbot.artifacts"
+      "project.dataset.table"
     ],
     "name": "ssci collection.upload artifacts to BigQuery",
     "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
@@ -168,7 +168,7 @@
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "ssci-dev.depbot.libraries"
+      "project.dataset.table"
     ],
     "name": "ssci collection.upload libraries to BigQuery",
     "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",

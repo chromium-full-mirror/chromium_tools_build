@@ -1,0 +1,23 @@
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipe_modules.build.depbot;
+
+message InputProperties {
+  // bq_artifact_table is the BQ table where artifact rows will be written
+  // to it has the form project.dataset.table.
+  string bq_artifact_table = 1;
+
+  // bq_library_table is the BQ table where library rows will be written
+  // to it has the form project.dataset.table.
+  string bq_library_table = 2;
+
+  // depbot_version is the version of the depbot binary to use.
+  string depbot_version = 3;
+
+  // target is the entrypoint to the SSCI collection.
+  string target = 4;
+}
