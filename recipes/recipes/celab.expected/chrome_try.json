@@ -1393,6 +1393,8 @@
     "cmd": [
       "rdb",
       "stream",
+      "-var",
+      "builder:win-celab-try-rel",
       "--",
       "vpython3",
       "-u",

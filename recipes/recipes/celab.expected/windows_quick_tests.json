@@ -432,6 +432,8 @@
     "cmd": [
       "rdb",
       "stream",
+      "-var",
+      "builder:windows-quick-tests",
       "--",
       "vpython3",
       "-u",

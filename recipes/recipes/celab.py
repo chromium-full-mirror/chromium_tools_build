@@ -324,14 +324,19 @@ def _RunTests(api,
       extra_args += ['--exclude', exclude_tests]
 
     try:
+      variant = {
+          'builder': api.buildbucket.builder_name,
+      }
       api.step(
           'run all tests',
-          api.resultdb.wrap([
-              'vpython3', '-u', 'run_tests.py', '--tests', tests, '--hosts',
-              host_dir, '--test_py', 'test.py', '--shared_provider_storage',
-              '%s-assets' %
-              pool_name, '--error_logs_dir', logs_dir, '--noprogress', '-v', '1'
-          ] + extra_args),
+          api.resultdb.wrap(
+              [
+                  'vpython3', '-u', 'run_tests.py', '--tests', tests, '--hosts',
+                  host_dir, '--test_py', 'test.py', '--shared_provider_storage',
+                  '%s-assets' % pool_name, '--error_logs_dir', logs_dir,
+                  '--noprogress', '-v', '1'
+              ] + extra_args,
+              base_variant=variant),
       )
     except:
       # We upload *all* logs, including those we reupload in _ParseTestSummary.

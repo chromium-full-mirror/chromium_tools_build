@@ -512,6 +512,8 @@
     "cmd": [
       "rdb",
       "stream",
+      "-var",
+      "builder:builder",
       "--",
       "vpython3",
       "-u",
