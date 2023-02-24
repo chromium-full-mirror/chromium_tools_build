@@ -40,6 +40,7 @@ DEPS = [
     'recipe_engine/runtime',
     'recipe_engine/step',
     'recipe_engine/swarming',
+    'test_utils',
     'v8',
     'v8_orchestrator',
     'v8_tests',
@@ -120,8 +121,24 @@ def with_wrapper_step(func):
     assert hasattr(
         api, 'step'), ('Decorated function does not take recipe API object '
                        'as first argument.')
+
+    # Check for version profile trackers as the second arg
+    version_profile_trackers = None
+    arg_is_version_profile_tracker = (
+        len(args) > 1 and
+        isinstance(args[1], list) and
+        len(args[1]) > 0 and
+        isinstance(args[1][0], VersionProfileTrack)
+    )
+    if arg_is_version_profile_tracker:
+      version_profile_trackers = args[1]
+
     wrapper_step_name = func.__name__.replace('_', ' ')
-    with api.step.nest(wrapper_step_name):
+    with api.step.nest(wrapper_step_name) as step:
+      if version_profile_trackers:
+        step.presentation.logs['profile trackers'] = [
+            t.presentation for t in version_profile_trackers
+        ]
       return func(*args, **kwargs)
 
   return wrapped_func
@@ -177,6 +194,16 @@ class VersionProfileTrack:
   @property
   def name(self):
     return f'{self.version} {self.arch}'
+
+  @property
+  def presentation(self):
+    result = '❌' if self.exception else '✓'
+    result += f' {self.version} {self.revision} {self.arch}'
+
+    if self.exception:
+      result += f' Failure: {self.exception}'
+
+    return result
 
 
 @with_wrapper_step
@@ -281,7 +308,6 @@ def trigger_compilators(api, profile_trackers, orchestrator):
   for tracker in advanceable(profile_trackers):
     with exception_capture(api, tracker), api.step.nest(tracker.name):
       bucket, compilator_name = COMPILATORS[tracker.arch]
-      #tracker.hash = 'fcce324c4e7626e932635db71e074f26581aada9' # TODO: remove hack
       h = orchestrator.trigger_compilator(
           compilator_name, revision=tracker.revision, bucket=bucket)
       tracker.compilator_handler = h
@@ -325,7 +351,6 @@ def merge_isolate_with_benchmark(api, profile_trackers, perf_code_path):
   for tracker in advanceable(profile_trackers):
     with exception_capture(api, tracker), api.step.nest(tracker.name):
       cas_work_dir = api.path.mkdtemp()
-      #tracker.original_cas_digest = '2acc1d5a0730b73dbe7432ad94e9f0dfee9c90bac442d81c0d77d149dc6ee9fa/241' # TODO: remove hack
       api.cas.download('download', tracker.original_cas_digest, cas_work_dir)
       api.file.copytree(
           'copy benchmark code', perf_code_path,
@@ -335,9 +360,12 @@ def merge_isolate_with_benchmark(api, profile_trackers, perf_code_path):
 
 @with_wrapper_step
 def trigger_profilers(api, profile_trackers):
+  # The default priority is 200 (very low). Presubmit runs at 30.
+  # FYI tasks run at 40.
+  api.chromium_swarming.default_priority = 25
+
   for tracker in advanceable(profile_trackers):
     with exception_capture(api, tracker), api.step.nest(tracker.name):
-      #tracker.augmented_cas_digest ='5699f2ad897750482f17ee4b86e157aa11099eb9e648c286ad7dd5f6cc25de49/325' # TODO: remove hack
       tracker.profile_dir = api.path.mkdtemp(
           f'v{tracker.version}_{tracker.arch}')
       task = api.chromium_swarming.task(
@@ -371,7 +399,9 @@ def trigger_profilers(api, profile_trackers):
 def collect_profiles(api, profile_trackers):
   for tracker in advanceable(profile_trackers):
     with exception_capture(api, tracker), api.step.nest(tracker.name):
-      api.chromium_swarming.collect_task(tracker.profile_task)
+      step, is_valid = api.chromium_swarming.collect_task(tracker.profile_task)
+      if step.presentation.status != api.step.SUCCESS or not is_valid:
+        raise Exception(f'collect_profiles returned {step.presentation.status}')
 
 
 @with_wrapper_step
@@ -465,7 +495,7 @@ def update_blocked_version_file(api, failed_versions):
 
   upload_content = api.raw_io.input_text('\n'.join(blocked_versions))
   api.gsutil.upload(
-      upload_content, BUCKET_NAME, BLOCKLIST_FILE,
+      upload_content, BLOCKLIST_BUCKET, BLOCKLIST_FILE,
       name=f'upload {BLOCKLIST_FILE}')
 
 
@@ -483,7 +513,7 @@ def GenTests(api):
                     summary='All good!',
                     status=common_pb.SUCCESS,
                     compilator_properties=None):
-    if compilator_properties == None:
+    if compilator_properties is None:
       compilator_properties = {
           'swarm_hashes': {
               'd8_pgo': 'fa3e4a54'
@@ -559,7 +589,7 @@ def GenTests(api):
   )
 
   yield main_scenario(
-      "one_track_failure",
+      "one_track_compilation_failure",
       subbuild_data(
           'collect compilation isolates.1.1.2.0 x86.compilator steps'),
       subbuild_data(
@@ -574,6 +604,31 @@ def GenTests(api):
           'augment isolates.1.1.1.4 x86',
           'trigger profilers.1.1.1.4 x86',
           'collect profiles.1.1.1.4 x86',
+          'upload to gs.gsutil upload 1.1.1.4 x86',
+          'upload to gs.gsutil upload metadata 1.1.1.4',
+          'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
+      ),
+      api.post_process(StatusFailure),
+      api.post_process(DropExpectation),
+  )
+
+  yield main_scenario(
+      "one_track_profiling_failure",
+      subbuild_data(
+          'collect compilation isolates.1.1.2.0 x86.compilator steps'),
+      subbuild_data(
+          'collect compilation isolates.1.1.2.0 x64.compilator steps'),
+      subbuild_data(
+          'collect compilation isolates.1.1.1.4 x86.compilator steps'),
+      subbuild_data(
+          'collect compilation isolates.1.1.1.4 x64.compilator steps'),
+      api.step_data(
+          'collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41',
+          api.chromium_swarming.summary(
+              api.test_utils.canned_gtest_output(True),
+              {'shards': [{'state': 'FAILURE'}]})),
+      api.post_process(
+          DoesNotRun,
           'upload to gs.gsutil upload 1.1.1.4 x86',
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
