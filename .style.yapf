@@ -1,5 +1,5 @@
 [style]
-based_on_style = chromium
+based_on_style = yapf
 # Defined in https://github.com/google/yapf/blob/20d0c8f1774cf3843f4032f3e9ab02338bf98c75/yapf/yapflib/style.py#L326
 
 # Docs and full list of knobs:
