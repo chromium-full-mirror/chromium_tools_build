@@ -13,7 +13,8 @@ def RunSteps(api):
   api.depbot.run(
       src_dir=api.path['checkout'],
       build_dir='out/Release',
-      json_out=api.json.output(name='results'))
+      json_artifact_out=api.json.output(name='artifacts'),
+      json_library_out=api.json.output(name='libraries'))
 
 
 def GenTests(api):

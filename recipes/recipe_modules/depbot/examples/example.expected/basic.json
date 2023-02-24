@@ -1,7 +1,14 @@
 [
   {
     "cmd": [],
-    "name": "install infra_internal/tools/security/depbot"
+    "name": "ssci collection"
+  },
+  {
+    "cmd": [],
+    "name": "ssci collection.install infra_internal/tools/security/depbot",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -16,9 +23,9 @@
       "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/latest"
     ],
     "infra_step": true,
-    "name": "install infra_internal/tools/security/depbot.ensure package directory",
+    "name": "ssci collection.install infra_internal/tools/security/depbot.ensure package directory",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -35,9 +42,9 @@
       "/path/to/tmp/json"
     ],
     "infra_step": true,
-    "name": "install infra_internal/tools/security/depbot.ensure_installed",
+    "name": "ssci collection.install infra_internal/tools/security/depbot.ensure_installed",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
@@ -52,10 +59,65 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "ssci collection.install infra/tools/bqupload",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest"
+    ],
+    "infra_step": true,
+    "name": "ssci collection.install infra/tools/bqupload.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest",
+      "-ensure-file",
+      "infra/tools/bqupload/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "name": "ssci collection.install infra/tools/bqupload.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/latest/depbot",
       "--target",
-      "//base:base",
+      "//third_party/perfetto/src/tracing/ipc/producer:producer",
       "--chromium-src-dir",
       "None",
       "--log-level",
@@ -64,18 +126,54 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--build-dir",
       "out/Release",
-      "--json-output",
+      "--json-artifact-output",
+      "/path/to/tmp/json",
+      "--json-library-output",
       "/path/to/tmp/json"
     ],
-    "name": "run depbot",
+    "name": "ssci collection.run depbot",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output[results]@{@@@",
-      "@@@STEP_LOG_LINE@json.output[results]@  \"artifacts\": [], @@@",
-      "@@@STEP_LOG_LINE@json.output[results]@  \"build_metadata\": {}, @@@",
-      "@@@STEP_LOG_LINE@json.output[results]@  \"entry_point\": \"//base:base\", @@@",
-      "@@@STEP_LOG_LINE@json.output[results]@  \"libraries\": []@@@",
-      "@@@STEP_LOG_LINE@json.output[results]@}@@@",
-      "@@@STEP_LOG_END@json.output[results]@@@"
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@[@@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@  {@@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@    \"field1\": \"1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@  }, @@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@  {@@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@    \"field2\": \"1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@  }@@@",
+      "@@@STEP_LOG_LINE@json.output[artifacts]@]@@@",
+      "@@@STEP_LOG_END@json.output[artifacts]@@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@[@@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@  {@@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@    \"field1\": \"1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@  }, @@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@  {@@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@    \"field2\": \"1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@  }@@@",
+      "@@@STEP_LOG_LINE@json.output[libraries]@]@@@",
+      "@@@STEP_LOG_END@json.output[libraries]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
+      "ssci-dev.depbot.artifacts"
+    ],
+    "name": "ssci collection.upload artifacts to BigQuery",
+    "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
+      "ssci-dev.depbot.libraries"
+    ],
+    "name": "ssci collection.upload libraries to BigQuery",
+    "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {

@@ -1160,7 +1160,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.depbot.run(
             src_dir=self.m.path['checkout'],
             build_dir=self.m.chromium.output_dir,
-            json_out=self.m.json.output(name="results"))
+            json_artifact_out=self.m.json.output(name="artifacts"),
+            json_library_out=self.m.json.output(name="libraries"))
 
       return self.m.chromium.compile(
           compile_targets,

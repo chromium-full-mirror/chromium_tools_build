@@ -140,7 +140,7 @@ def GenTests(api):
           ).assemble()),
       api.reclient.properties(),
       api.properties(swarming_gtest=True),
-      api.post_process(post_process.MustRun, 'run depbot'),
+      api.post_process(post_process.MustRun, 'ssci collection.run depbot'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -154,7 +154,7 @@ def GenTests(api):
           ).assemble()),
       api.reclient.properties(),
       api.properties(swarming_gtest=True),
-      api.post_process(post_process.DoesNotRun, 'run depbot'),
+      api.post_process(post_process.DoesNotRun, 'ssci collection.run depbot'),
       api.post_process(post_process.DropExpectation),
   )
 
