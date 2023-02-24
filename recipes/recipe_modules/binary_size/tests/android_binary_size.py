@@ -116,8 +116,19 @@ def GenTests(api):
       api.post_check(has_expected_supersize_link),
       api.post_check(has_expected_binary_size_url),
       api.post_check(final_step_is_not_nested),
+      # Make sure some steps that only get triggered on a package restructure
+      # are not run normally.
+      api.post_process(post_process.DoesNotRun, 'bot_update (without patch)'),
+      api.post_process(post_process.DoesNotRun,
+                       'gclient runhooks (with patch again)'),
+      # Make sure some steps that do not get triggered on a package restructure
+      # are run normally.
+      api.post_process(post_process.StepSuccess,
+                       'Commit log for uploaded revision'),
+      api.post_process(post_process.StepSuccess, 'gsutil Downloading zip'),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
       api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -133,7 +144,20 @@ def GenTests(api):
       'normal_significant_binary_package_restructure',
       api.binary_size.build('normal build + significant package restructure'),
       api.binary_size.on_significant_binary_package_restructure(),
+      api.post_check(has_expected_supersize_link),
+      api.post_check(has_expected_binary_size_url),
+      api.post_check(final_step_is_not_nested),
+      # Make sure some steps that normally get triggered are not run here.
+      api.post_process(post_process.DoesNotRun,
+                       'Commit log for uploaded revision'),
+      api.post_process(post_process.DoesNotRun, 'gsutil Downloaing zip'),
+      # Make sure some steps that are not normally triggered are run here.
+      api.post_process(post_process.StepSuccess, 'bot_update (without patch)'),
+      api.post_process(post_process.StepSuccess,
+                       'gclient runhooks (with patch again)'),
+      api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
       api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -149,6 +173,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepFailure, constants.RESULTS_STEP_NAME),
       api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )
 
   def has_failed_expectations(check, steps):

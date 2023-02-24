@@ -118,6 +118,7 @@ def GenTests(api):
       api.post_check(final_step_is_not_nested),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
       api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   # TODO(zijiehe): Make this test work. Currently, there isn't a way to specify
@@ -130,6 +131,7 @@ def GenTests(api):
       api.post_check(final_step_is_not_nested),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
       api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -154,6 +156,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepFailure, constants.RESULTS_STEP_NAME),
       api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )
 
   def has_failed_expectations(check, steps):
