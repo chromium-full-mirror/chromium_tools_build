@@ -26,8 +26,15 @@ DEPS = [
     'reclient',
 ]
 
+# Builders are matched by prefixes in the _get_config function below.
+# Prefixes are the keys in the COMPARISON_BUILDERS dict. If there are
+# keys in the dict that are prefixes of other keys, you might accidentally
+# use a config for a different builder.
+# Since python 3.7+ is now used for running recipes, dictionary iteration order
+# is guaranteed to be key insertion order. To prevent mismatches, order these
+# configs in 'more precise' to 'less precise' order.
 COMPARISON_BUILDERS = freeze({
-    'Comparison Linux (reclient vs reclient remote links)': {
+    'Comparison Linux (reclient vs reclient remote links)(small)': {
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb',],
@@ -36,7 +43,7 @@ COMPARISON_BUILDERS = freeze({
         'platform': 'linux',
         'targets': ['all'],
     },
-    'Comparison Linux (reclient vs reclient remote links)(small)': {
+    'Comparison Linux (reclient vs reclient remote links)': {
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb',],
@@ -216,7 +223,7 @@ def _compile(api, config_name, recipe_config, build_number):
 def _get_config(buildername):
   # Match builders by prefix so that multiple builders
   # (CI,CQ,experimental) can share the same configs.
-  for prefix, recipe_config in sorted(COMPARISON_BUILDERS.items()):
+  for prefix, recipe_config in COMPARISON_BUILDERS.items():
     if buildername.startswith(prefix):
       return prefix, recipe_config
   raise NotImplementedError('Unexpected builder %s' %
