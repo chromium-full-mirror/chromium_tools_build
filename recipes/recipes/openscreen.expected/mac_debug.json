@@ -293,7 +293,9 @@
       "gn_all",
       "openscreen_unittests",
       "e2e_tests",
-      "fuzzer_tests_all"
+      "fuzzer_tests_all",
+      "cast_sender",
+      "cast_receiver"
     ],
     "cwd": "[START_DIR]/openscreen",
     "luci_context": {

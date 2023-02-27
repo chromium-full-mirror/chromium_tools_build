@@ -201,7 +201,9 @@
       "gn_all",
       "openscreen_unittests",
       "e2e_tests",
-      "fuzzer_tests_all"
+      "fuzzer_tests_all",
+      "cast_sender",
+      "cast_receiver"
     ],
     "cwd": "[START_DIR]/openscreen",
     "luci_context": {
@@ -336,7 +338,7 @@
       "-dump-digest",
       "/path/to/tmp/",
       "-paths-json",
-      "[[\"[START_DIR]/openscreen\", \"out/Default/openscreen_unittests\"], [\"[START_DIR]/openscreen\", \"out/Default/e2e_tests\"], [\"[START_DIR]/openscreen\", \"test/data\"]]"
+      "[[\"[START_DIR]/openscreen\", \"out/Default/openscreen_unittests\"], [\"[START_DIR]/openscreen\", \"out/Default/e2e_tests\"], [\"[START_DIR]/openscreen\", \"cast/standalone_e2e.py\"], [\"[START_DIR]/openscreen\", \"out/Default/cast_sender\"], [\"[START_DIR]/openscreen\", \"out/Default/cast_receiver\"], [\"[START_DIR]/openscreen\", \"test/data\"]]"
     ],
     "cwd": "[START_DIR]/openscreen",
     "infra_step": true,
@@ -646,7 +648,7 @@
       "-task-output-stdout",
       "json",
       "-output-dir",
-      "[CLEANUP]/swarming-output_tmp_1",
+      "[CLEANUP]/unit tests-swarming-output_tmp_1",
       "-timeout",
       "30m",
       "0"

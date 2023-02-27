@@ -29,14 +29,20 @@ DEPS = [
 BUILD_CONFIG = 'Default'
 UNIT_TEST_BINARY_NAME = 'openscreen_unittests'
 E2E_TEST_BINARY_NAME = 'e2e_tests'
+CAST_E2E_TEST_SCRIPT_NAME = 'standalone_e2e.py'
+CAST_SENDER_BINARY_NAME = 'cast_sender'
+CAST_RECEIVER_BINARY_NAME = 'cast_receiver'
 BUILD_TARGETS = [
-    'gn_all', UNIT_TEST_BINARY_NAME, E2E_TEST_BINARY_NAME, 'fuzzer_tests_all'
+    'gn_all', UNIT_TEST_BINARY_NAME, E2E_TEST_BINARY_NAME, 'fuzzer_tests_all',
+    CAST_SENDER_BINARY_NAME, CAST_RECEIVER_BINARY_NAME
 ]
 OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 
 GN_PROPERTIES = [
-    'is_debug', 'is_asan', 'is_tsan', 'is_gcc', 'target_cpu',
-    'sysroot_platform', 'sysroot', 'target_sysroot_dir', 'use_coverage'
+    'cast_allow_developer_certificate', 'have_ffmpeg', 'have_libsdl2',
+    'have_libopus', 'have_libvpx', 'is_debug', 'is_asan', 'is_tsan', 'is_gcc',
+    'target_cpu', 'sysroot_platform', 'sysroot', 'target_sysroot_dir',
+    'use_coverage'
 ]
 
 # List of dimensions used for starting swarming on ARM64.
@@ -63,6 +69,12 @@ class RepositoryPaths:
     self.output_path = self.checkout_path.join('out', BUILD_CONFIG)
     self.unit_test_binary_path = self.output_path.join(UNIT_TEST_BINARY_NAME)
     self.e2e_test_binary_path = self.output_path.join(E2E_TEST_BINARY_NAME)
+    self.cast_e2e_test_script_path = self.checkout_path.join(
+        'cast', CAST_E2E_TEST_SCRIPT_NAME)
+    self.cast_sender_binary_path = self.output_path.join(
+        CAST_SENDER_BINARY_NAME)
+    self.cast_receiver_binary_path = self.output_path.join(
+        CAST_RECEIVER_BINARY_NAME)
     self.test_data_path = self.checkout_path.join('test', 'data')
     self.ninja_path = self.checkout_path.join('third_party', 'ninja', 'ninja')
 
@@ -187,7 +199,10 @@ def UploadOpenscreenTestFilesToCas(api, paths):
   """
   return api.cas.archive('upload files to cas', paths.checkout_path,
                          paths.unit_test_binary_path,
-                         paths.e2e_test_binary_path, paths.test_data_path)
+                         paths.e2e_test_binary_path,
+                         paths.cast_e2e_test_script_path,
+                         paths.cast_sender_binary_path,
+                         paths.cast_receiver_binary_path, paths.test_data_path)
 
 
 def CheckSwarmingResults(api, name, results):
@@ -245,6 +260,65 @@ def GenerateRequest(api, binary, digest, dimensions):
   return request
 
 
+class SwarmRequest:
+  """A class to represent the data necessary to generate a swarming request.
+
+  Attributes:
+    cas_digest: the digest used to download the executables for this request
+        from CAS, the test storage server.
+    binary_name (string): the name of the binary to execute.
+    task_name (string): the name to be used for the task steps associated with
+        this request.
+  """
+
+  def __init__(self, cas_digest, binary_name, task_name):
+    self.cas_digest = cas_digest
+    self.binary_name = binary_name
+    self.task_name = task_name
+
+
+def TriggerTest(api, paths, dimensions, swarm_request):
+  """Triggers a swarming test request.
+
+  Args:
+      api (recipe_api.RecipeApi): API generated from recipe dependencies.
+      paths (RepositoryPaths): Checkout-dependent repository files.
+      dimensions (dict of str=>str): Dimensions to be used to generate a
+          request. Must be valid swarming selection dimensions to be
+          unpacked as **kwargs, such as pool or os.
+      swarm_request(SwarmRequest): the information used to start the swarming
+          request.
+  """
+  request = GenerateRequest(api, swarm_request.binary_name,
+                            swarm_request.cas_digest, dimensions)
+  return api.swarming.trigger(
+      f'trigger {swarm_request.task_name}', requests=[request])
+
+
+def CollectTest(api, paths, dimensions, swarm_request, metadata):
+  """Collects a swarming test request. We collect each swarm request individually
+    to enable better reporting of failures.
+
+  Args:
+      api (recipe_api.RecipeApi): API generated from recipe dependencies.
+      paths (RepositoryPaths): Checkout-dependent repository files.
+      dimensions (dict of str=>str): Dimensions to be used to generate a
+          request. Must be valid swarming selection dimensions to be
+          unpacked as **kwargs, such as pool or os.
+      swarm_request(SwarmRequest): the information used to start the swarming
+          request.
+      metadata(TaskRequestMetadata): the information associated with the test trigger.
+  """
+  output_directory = api.path.mkdtemp(
+      f'{swarm_request.task_name}-swarming-output')
+  results = api.swarming.collect(
+      f'collect {swarm_request.task_name}',
+      metadata,
+      output_dir=output_directory,
+      timeout='30m')
+  CheckSwarmingResults(api, swarm_request.task_name, results)
+
+
 def SwarmTests(api, paths, dimensions):
   """Runs specific types of tests on a separate swarming bot.
 
@@ -257,34 +331,27 @@ def SwarmTests(api, paths, dimensions):
   """
 
   cas_digest = UploadOpenscreenTestFilesToCas(api, paths)
+  unit_tests_request = SwarmRequest(cas_digest, UNIT_TEST_BINARY_NAME,
+                                    'unit tests')
+  e2e_tests_request = SwarmRequest(cas_digest, E2E_TEST_BINARY_NAME,
+                                   'e2e tests')
+  unit_test_metadata = TriggerTest(api, paths, dimensions, unit_tests_request)
+  e2e_test_metadata = TriggerTest(api, paths, dimensions, e2e_tests_request)
 
-  # Generate the swarming request
-  unittest_request = GenerateRequest(api, UNIT_TEST_BINARY_NAME, cas_digest,
-                                     dimensions)
-  unittest_metadata = api.swarming.trigger(
-      'trigger unit tests', requests=[unittest_request])
+  # Generate, trigger, and collect results for a request to run the cast
+  # standalone end to end tests, if certificate support is configured for this
+  # build.
+  cast_certificate_enabled = api.properties.get(
+      'cast_allow_developer_certificate')
+  if (cast_certificate_enabled):
+    cast_request = SwarmRequest(cas_digest, CAST_E2E_TEST_SCRIPT_NAME,
+                                'cast streaming e2e tests')
+    cast_metadata = TriggerTest(api, paths, dimensions, cast_request)
+    CollectTest(api, paths, dimensions, cast_request, cast_metadata)
 
-  e2e_request = GenerateRequest(api, E2E_TEST_BINARY_NAME, cas_digest,
-                                dimensions)
-  e2e_metadata = api.swarming.trigger(
-      'trigger e2e tests', requests=[e2e_request])
+  CollectTest(api, paths, dimensions, unit_tests_request, unit_test_metadata)
+  CollectTest(api, paths, dimensions, e2e_tests_request, e2e_test_metadata)
 
-  # Collect the result of the task by metadata.
-  unittest_output_directory = api.path.mkdtemp('swarming-output')
-  unittest_results = api.swarming.collect(
-      'collect unit tests',
-      unittest_metadata,
-      output_dir=unittest_output_directory,
-      timeout='30m')
-  CheckSwarmingResults(api, 'unit tests', unittest_results)
-
-  e2e_output_directory = api.path.mkdtemp('e2e-swarming-output')
-  e2e_results = api.swarming.collect(
-      'collect e2e tests',
-      e2e_metadata,
-      output_dir=e2e_output_directory,
-      timeout='30m')
-  CheckSwarmingResults(api, 'e2e tests', e2e_results)
 
 
 def SetCodeCoverageConstants(api, checkout_path, host_tool_label):
@@ -627,6 +694,25 @@ def GenTests(api):
   yield api.test('linux_arm64_debug_ci', api.platform('linux', 64),
                  api.buildbucket.try_build('openscreen', 'ci'),
                  api.properties(is_debug=True, target_cpu='arm64', is_ci=True))
+  yield api.test(
+      'linux_arm64_cast_debug', api.platform('linux', 64),
+      api.buildbucket.try_build('openscreen', 'try'),
+      api.properties(
+          is_debug=True,
+          target_cpu='arm64',
+          cast_allow_developer_certificate=True,
+          have_ffmpeg=True,
+          have_libsdl2=True,
+          have_libopus=True,
+          have_libvpx=True))
+  yield api.test(
+      'linux_arm64_cast_debug_ci', api.platform('linux', 64),
+      api.buildbucket.try_build('openscreen', 'ci'),
+      api.properties(
+          is_debug=True,
+          target_cpu='arm64',
+          cast_allow_developer_certificate=True,
+          is_ci=True))
   failed_result = api.swarming.task_result(
       id='0',
       name=UNIT_TEST_BINARY_NAME,
