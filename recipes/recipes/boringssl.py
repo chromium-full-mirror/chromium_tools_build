@@ -274,8 +274,12 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
     msvc_prefix = config.get_target_msvc_prefix(bot_utils)
 
     # Build BoringSSL itself.
-    cmake = bot_utils.join('cmake-' + _GetHostToolSuffix(api.platform), 'bin',
-                           'cmake' + _GetHostExeSuffix(api.platform))
+    cmake_dir = bot_utils.join('cmake')
+    if not api.path.exists(cmake_dir):
+      # TODO(davidben): Remove this branch when BoringSSL is updated to put
+      # CMake in a platform-independent location.
+      cmake_dir = bot_utils.join('cmake-' + _GetHostToolSuffix(api.platform))
+    cmake = cmake_dir.join('bin', 'cmake' + _GetHostExeSuffix(api.platform))
     cmake_args = _GetHostCMakeArgs(api.platform, bot_utils)
     cmake_args.update(
         config.get_target_cmake_args(api.path, ninja_path, api.platform))
@@ -421,6 +425,17 @@ def GenTests(api):
         api.override_step_data('ssl tests',
                                api.boringssl.canned_test_output(True)),
     )
+
+  yield api.test(
+      'new_cmake_location',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      api.path.exists(api.path['checkout'].join('util', 'bot', 'cmake')),
+      api.override_step_data('unit tests',
+                             api.boringssl.canned_test_output(True)),
+      api.override_step_data('ssl tests',
+                             api.boringssl.canned_test_output(True)),
+  )
 
   yield api.test(
       'linux_sde',
