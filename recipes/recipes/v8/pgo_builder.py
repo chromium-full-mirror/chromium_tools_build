@@ -212,8 +212,8 @@ def init_trackers_for_candidate_versions(
 ) -> List[VersionProfileTrack]:
   tags = select_tags_without_profiles(api)
   tags = filter_tags_by_cutoff(tags, version_cutoff)
-  tags = filter_max_parallel_tags(tags, max_parallel_versions)
   tags = filter_blocked_tags(api, tags)
+  tags = filter_max_parallel_tags(tags, max_parallel_versions)
   return create_profile_trackers(tags)
 
 
