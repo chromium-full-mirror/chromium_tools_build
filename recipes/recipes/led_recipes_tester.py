@@ -125,7 +125,14 @@ FILES_TO_ALWAYS_IGNORE = (
             'The following affected files are being ignored because they are'
             ' used for tracking the migration of builder configs src-side and'
             ' are not part of the recipes:'),
-    ))
+    ),
+    FilesToIgnore(
+        patterns=[r'(.+/)*PRESUBMIT.py'],
+        step_name='ignoring PRESUBMIT.py scripts',
+        step_text=('PRESUBMIT.py scripts are executed by the presubmit builder'
+                   ' and are not consumed by our recipes:'),
+    ),
+)
 
 # CL to use when testing a recipe which touches chromium source.
 # The first level of keys is the bucket of the builder. The second level of keys
@@ -671,6 +678,21 @@ def GenTests(api):
                      'ignoring src-side config migration files'),
       api.post_check(affected_recipes_input_files_does_not_contain,
                      builder_config_path('migration/chromium.json')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'presubmit_scripts_ignored',
+      gerrit_change(),
+      affected_recipes(RECIPE),
+      affected_files(
+          'recipes/foo.py',
+          builder_config_path('PRESUBMIT.py'),
+      ),
+      default_builders(),
+      api.post_check(post_process.MustRun, 'ignoring PRESUBMIT.py scripts'),
+      api.post_check(affected_recipes_input_files_does_not_contain,
+                     builder_config_path('PRESUBMIT.py')),
       api.post_process(post_process.DropExpectation),
   )
 
