@@ -239,13 +239,14 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
   api.gclient.runhooks()
 
   # Set up paths.
-  bot_utils = api.path['checkout'].join('util', 'bot')
+  src = api.path['checkout']
+  bot_utils = src.join('util', 'bot')
   goroot = bot_utils.join('golang')
   adb_path = bot_utils.join('android_sdk', 'public', 'platform-tools', 'adb')
   sde_path = bot_utils.join('sde-' + _GetHostToolSuffix(api.platform),
                             'sde' + _GetHostExeSuffix(api.platform))
-  build_dir = api.path['checkout'].join('build')
-  runner_dir = api.path['checkout'].join('ssl', 'test', 'runner')
+  build_dir = src.join('build')
+  runner_dir = src.join('ssl', 'test', 'runner')
   ninja_path = bot_utils.join('ninja', 'ninja')
 
   env = {}
@@ -286,9 +287,14 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
     with api.context(cwd=build_dir):
       api.step(
           'cmake', msvc_prefix + [cmake, '-GNinja'] +
-          ['-D%s=%s' % (k, v) for (k, v) in sorted(cmake_args.items())] +
-          [api.path['checkout']])
+          ['-D%s=%s' % (k, v) for (k, v) in sorted(cmake_args.items())] + [src])
     api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir])
+
+    # Determine the list of Go tests to run. This must be done outside of
+    # defer_results to be able to read the result.
+    go_tests_str = api.file.read_text('read go tests',
+                                      src.join('util', 'go_tests.txt'))
+    go_tests = [t for t in go_tests_str.split('\n') if t]
 
     with api.step.defer_results():
       # The default Linux build may not depend on the C++ runtime. This is easy
@@ -298,28 +304,32 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
       # check_imported_libraries is set in the config instead.
       if check_imported_libraries or config.buildername == 'linux_shared':
         api.step('check imported libraries', [
-            'go', 'run', api.path['checkout'].join(
-                'util', 'check_imported_libraries.go'),
+            'go', 'run',
+            src.join('util', 'check_imported_libraries.go'),
             build_dir.join('crypto', 'libcrypto.so'),
             build_dir.join('ssl', 'libssl.so')
         ])
 
       if check_stack:
         api.step('check stack', [
-            'go', 'run', api.path['checkout'].join('util', 'check_stack.go'),
+            'go', 'run',
+            src.join('util', 'check_stack.go'),
             build_dir.join('tool', 'bssl')
         ])
 
-      with api.context(cwd=api.path['checkout']):
-        api.step('check filenames', [
-            'go', 'run', api.path['checkout'].join('util', 'check_filenames.go')
-        ])
+      with api.context(cwd=src):
+        api.step(
+            'check filenames',
+            ['go', 'run', src.join('util', 'check_filenames.go')])
+
+      with api.context(cwd=src):
+        api.step('go tests', ['go', 'test', '-v'] + go_tests)
 
       env = config.get_target_env(bot_utils, api.platform)
 
       # Run the unit tests.
       if config.run_unit_tests:
-        with api.context(cwd=api.path['checkout'], env=env):
+        with api.context(cwd=src, env=env):
           all_tests_args = []
           if config.sde:
             all_tests_args += ['-sde', '-sde-path', sde_path]
@@ -353,7 +363,7 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
           runner_args += ['-num-workers', '1']
         runner_args += config.runner_args
         if config.android:
-          with api.context(cwd=api.path['checkout'], env=env):
+          with api.context(cwd=src, env=env):
             api.step('ssl tests', [
                 'go', 'run',
                 api.path.join('util', 'run_android_tests.go'), '-build-dir',
@@ -386,6 +396,10 @@ def _TryBuild(api, builder):
 
 
 def GenTests(api):
+  mock_go_tests = api.step_data(
+      'read go tests',
+      api.file.read_text("./util/ar\n./util/fipstools/delocate\n"))
+
   tests = [
       ('linux', api.platform('linux', 64), {}),
       ('mac', api.platform('mac', 64), {}),
@@ -419,6 +433,7 @@ def GenTests(api):
         buildername,
         host_platform,
         _CIBuild(api, buildername),
+        mock_go_tests,
         api.properties(**props),
         api.override_step_data('unit tests',
                                api.boringssl.canned_test_output(True)),
@@ -430,6 +445,7 @@ def GenTests(api):
       'new_cmake_location',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      mock_go_tests,
       api.path.exists(api.path['checkout'].join('util', 'bot', 'cmake')),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(True)),
@@ -441,6 +457,7 @@ def GenTests(api):
       'linux_sde',
       api.platform('linux', 64),
       _CIBuild(api, 'linux_sde'),
+      mock_go_tests,
       api.properties(
           cmake_args={"CMAKE_BUILD_TYPE": "RelWithAsserts"},
           run_ssl_tests=False),
@@ -452,6 +469,7 @@ def GenTests(api):
       'failed_imported_libraries',
       api.platform('linux', 64),
       _CIBuild(api, 'linux_shared'),
+      mock_go_tests,
       api.properties(cmake_args={"BUILD_SHARED_LIBS": "1"}),
       api.override_step_data('check imported libraries', retcode=1),
       api.override_step_data('unit tests',
@@ -464,7 +482,20 @@ def GenTests(api):
       'failed_filenames',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      mock_go_tests,
       api.override_step_data('check filenames', retcode=1),
+      api.override_step_data('unit tests',
+                             api.boringssl.canned_test_output(True)),
+      api.override_step_data('ssl tests',
+                             api.boringssl.canned_test_output(True)),
+  )
+
+  yield api.test(
+      'failed_go_tests',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      mock_go_tests,
+      api.override_step_data('go tests', retcode=1),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
@@ -475,6 +506,7 @@ def GenTests(api):
       'failed_unit_tests',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      mock_go_tests,
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(False)),
       api.override_step_data('ssl tests',
@@ -486,6 +518,7 @@ def GenTests(api):
       'failed_unit_tests_win',
       api.platform('win', 64),
       _CIBuild(api, 'win64'),
+      mock_go_tests,
       api.properties(msvc_target='x64'),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(False)),
@@ -497,6 +530,7 @@ def GenTests(api):
       'failed_ssl_tests',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      mock_go_tests,
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
@@ -509,6 +543,7 @@ def GenTests(api):
       'failed_taskkill',
       api.platform('win', 64),
       _CIBuild(api, 'win64'),
+      mock_go_tests,
       api.properties(msvc_target='x64'),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(True)),
@@ -521,12 +556,14 @@ def GenTests(api):
       'gerrit_cl',
       api.platform('linux', 64),
       _TryBuild(api, 'linux'),
+      mock_go_tests,
   )
 
   yield api.test(
       'check_stack',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      mock_go_tests,
       api.properties(check_stack=True),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(True)),
@@ -538,6 +575,7 @@ def GenTests(api):
       'check_stack_failed',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      mock_go_tests,
       api.properties(check_stack=True),
       api.override_step_data('check stack', retcode=1),
       api.override_step_data('unit tests',
@@ -550,18 +588,21 @@ def GenTests(api):
       'skip_unit_tests',
       api.platform('linux', 64),
       _CIBuild(api, 'buildername'),
+      mock_go_tests,
       api.properties(run_unit_tests=False),
   )
   yield api.test(
       'skip_ssl_tests',
       api.platform('linux', 64),
       _CIBuild(api, 'buildername'),
+      mock_go_tests,
       api.properties(run_ssl_tests=False),
   )
   yield api.test(
       'skip_both',
       api.platform('linux', 64),
       _CIBuild(api, 'buildername'),
+      mock_go_tests,
       api.properties(run_unit_tests=False, run_ssl_tests=False),
   )
 
@@ -569,6 +610,7 @@ def GenTests(api):
       'win_arm64_compile',
       api.platform('win', 64),
       _CIBuild(api, 'buildername'),
+      mock_go_tests,
       api.properties(
           clang=True,
           cmake_args={
@@ -591,6 +633,7 @@ def GenTests(api):
       'linux_fuzz_properties',
       api.platform('linux', 64),
       _CIBuild(api, 'buildername'),
+      mock_go_tests,
       api.properties(
           clang=True,
           cmake_args={

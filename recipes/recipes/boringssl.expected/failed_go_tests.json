@@ -24,7 +24,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'checkout_clang': True, 'checkout_fuzzer': True}, 'deps_file': 'util/bot/DEPS', 'managed': True, 'name': 'boringssl', 'url': 'https://boringssl.googlesource.com/boringssl.git'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'util/bot/DEPS', 'managed': True, 'name': 'boringssl', 'url': 'https://boringssl.googlesource.com/boringssl.git'}]",
       "--revision_mapping_file",
       "{}",
       "--git-cache-dir",
@@ -39,7 +39,7 @@
       "refs/heads/main"
     ],
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/buildername/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/linux/8945511751514863184",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800"
     },
@@ -110,7 +110,7 @@
     ],
     "cwd": "[START_DIR]/boringssl",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/buildername/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/linux/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -209,11 +209,7 @@
     "cmd": [
       "[START_DIR]/boringssl/util/bot/cmake-linux64/bin/cmake",
       "-GNinja",
-      "-DCMAKE_CXX_COMPILER=[START_DIR]/boringssl/util/bot/llvm-build/bin/clang++",
-      "-DCMAKE_C_COMPILER=[START_DIR]/boringssl/util/bot/llvm-build/bin/clang",
       "-DCMAKE_MAKE_PROGRAM=[START_DIR]/boringssl/util/bot/ninja/ninja",
-      "-DFUZZ=1",
-      "-DLIBFUZZER_FROM_DEPS=1",
       "[START_DIR]/boringssl"
     ],
     "cwd": "[START_DIR]/boringssl/build",
@@ -379,7 +375,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "go tests"
+    "name": "go tests",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
   },
   {
     "cmd": [
@@ -391,13 +390,10 @@
     ],
     "cwd": "[START_DIR]/boringssl",
     "env": {
-      "ASAN_OPTIONS": "detect_stack_use_after_return=1",
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang",
-      "MSAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer"
+      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
@@ -418,9 +414,47 @@
     },
     "name": "unit tests",
     "~followup_annotations": [
-      "@@@STEP_LOG_END@boringssl.test_results (invalid)@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@boringssl.test_results (exception)@@@"
+      "@@@STEP_LOG_LINE@boringssl.test_results@{@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_passes\": 9001, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_regressions\": 0, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"path_separator\": \"/\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"tests\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"bad\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-bad-probably.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"flake\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"slow.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"SLOW\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"SLOW\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"timeout-then-crash.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"CRASH\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"CRASH\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-flakey.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"good\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-awesome.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"tricky\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-maybe-not-awesome.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"version\": 3@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@}@@@",
+      "@@@STEP_LOG_END@boringssl.test_results@@@"
     ]
   },
   {
@@ -429,20 +463,14 @@
       "test",
       "-json-output",
       "/path/to/tmp/json",
-      "-pipe",
-      "-fuzzer",
-      "-shim-config",
-      "fuzzer_mode.json"
+      "-pipe"
     ],
     "cwd": "[START_DIR]/boringssl/ssl/test/runner",
     "env": {
-      "ASAN_OPTIONS": "detect_stack_use_after_return=1",
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang",
-      "MSAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer"
+      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
@@ -463,12 +491,54 @@
     },
     "name": "ssl tests",
     "~followup_annotations": [
-      "@@@STEP_LOG_END@boringssl.test_results (invalid)@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@boringssl.test_results (exception)@@@"
+      "@@@STEP_LOG_LINE@boringssl.test_results@{@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_passes\": 9001, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_regressions\": 0, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"path_separator\": \"/\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"tests\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"bad\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-bad-probably.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"flake\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"slow.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"SLOW\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"SLOW\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"timeout-then-crash.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"CRASH\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"CRASH\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-flakey.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"good\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-awesome.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    \"tricky\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-maybe-not-awesome.html\": {@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@    }@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  }, @@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@  \"version\": 3@@@",
+      "@@@STEP_LOG_LINE@boringssl.test_results@}@@@",
+      "@@@STEP_LOG_END@boringssl.test_results@@@"
     ]
   },
   {
+    "failure": {
+      "failure": {},
+      "humanReason": "1 out of 4 aggregated steps failed: Step('go tests') (retcode: 1)"
+    },
     "name": "$result"
   }
 ]
