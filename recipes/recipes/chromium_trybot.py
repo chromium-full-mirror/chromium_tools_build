@@ -628,9 +628,7 @@ def GenTests(api):
               'gtest_tests': ['base_unittests'],
           },
       }),
-      api.post_process(
-          Filter('analyze', 'analyze_matched_exclusion',
-                 'compile (with patch)')),
+      api.post_process(Filter('analyze', 'compile (with patch)')),
   )
 
   # This should result in a compile.

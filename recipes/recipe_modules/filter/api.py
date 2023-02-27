@@ -203,6 +203,17 @@ class FilterApi(recipe_api.RecipeApi):
           'analyze', step_text='No compile necessary (all files ignored)')
       return [], []
 
+    for path in paths:
+      matched_pattern = self._find_matching_pattern(path, exclusions)
+      if matched_pattern:
+        self.m.step.empty(
+            'analyze',
+            step_text='Analyze disabled: matched exclusion',
+            log_name='excluded_files',
+            log_text=f'{path} (regex = \'{matched_pattern}\')')
+        all_targets = set(test_targets) | set(additional_compile_targets)
+        return sorted(test_targets), sorted(all_targets)
+
     analyze_input = {
         'files': paths,
         'test_targets': test_targets,
@@ -226,23 +237,6 @@ class FilterApi(recipe_api.RecipeApi):
       raise self.m.step.StepFailure(
           'Error, following targets were not found: ' +
           ', '.join(step_result.json.output['invalid_targets']))
-
-    exclusion_match = None
-    for path in paths:
-      matched_pattern = self._find_matching_pattern(path, exclusions)
-      if matched_pattern:
-        exclusion_match = (path, matched_pattern)
-
-    # TODO(gbeaty) Don't bother running analyze if an exclusion matches
-    if exclusion_match:
-      analyze_result = 'Analyze disabled: matched exclusion'
-      self.m.step.empty(
-          'analyze_matched_exclusion',
-          step_text=analyze_result,
-          log_name='excluded_files',
-          log_text='%s (regex = \'%s\')' % exclusion_match)
-      all_targets = set(test_targets) | set(additional_compile_targets)
-      return sorted(test_targets), sorted(all_targets)
 
     if (step_result.json.output['status'] in ('Found dependency',
                                               'Found dependency (all)')):

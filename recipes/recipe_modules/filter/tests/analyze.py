@@ -133,7 +133,8 @@ def GenTests(api):
               'test1', 'test2', 'compile1', 'compile2'
           ],
       ),
-      api.post_check(post_process.MustRun, 'analyze_matched_exclusion'),
+      api.post_check(post_process.StepTextContains, 'analyze',
+                     ['Analyze disabled: matched exclusion']),
       api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -1,58 +1,7 @@
 [
   {
-    "cmd": [
-      "python3",
-      "-u",
-      "[CACHE]/builder/src/tools/mb/mb.py",
-      "analyze",
-      "-m",
-      "fake-try-group",
-      "-b",
-      "fake-try-builder",
-      "--config-file",
-      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
-      "-v",
-      "//out/Release",
-      "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": [\"base_unittests\"]}",
-      "/path/to/tmp/json",
-      "--json-output",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "analyze",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"compile_targets\": [], @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"status\": \"Found dependency\", @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"test_targets\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"base_unittests\"@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
-      "@@@STEP_LOG_END@json.output[failure_summary]@@@"
-    ]
-  },
-  {
     "cmd": [],
-    "name": "analyze_matched_exclusion",
+    "name": "analyze",
     "~followup_annotations": [
       "@@@STEP_TEXT@Analyze disabled: matched exclusion@@@",
       "@@@STEP_LOG_LINE@excluded_files@foo.cc (regex = '.+')@@@",
