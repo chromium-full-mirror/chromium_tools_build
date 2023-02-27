@@ -123,7 +123,7 @@
       "--root=[CACHE]\\builder\\src",
       "gen",
       "//out/Release_x64",
-      "--args=is_clang=false is_debug=false target_cpu=\"x64\""
+      "--args=is_clang=false use_lld=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
