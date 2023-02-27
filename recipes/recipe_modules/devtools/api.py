@@ -55,7 +55,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
   def run_e2e(self, builder_config, args=None):
     args = args or []
     if 'parallel' in self.m.buildbucket.builder_name.lower():
-      args += ['--jobs=8']
+      args += ['--jobs=2']
     self.m.devtools.rdb_node_script('E2E tests', 'run_test_suite.js', [
         "--test-suite-path=gen/test/e2e", "--test-suite-source-dir=test/e2e",
         "--test-server-type='hosted-mode'", "--target=" + builder_config

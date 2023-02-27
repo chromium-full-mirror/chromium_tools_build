@@ -212,7 +212,7 @@
       "--test-suite-source-dir=test/e2e",
       "--test-server-type='hosted-mode'",
       "--target=Release",
-      "--jobs=8"
+      "--jobs=2"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env_prefixes": {
