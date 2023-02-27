@@ -24,7 +24,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'checkout_clang': 'True', 'checkout_fuzzer': True}, 'deps_file': 'util/bot/DEPS', 'managed': True, 'name': 'boringssl', 'url': 'https://boringssl.googlesource.com/boringssl.git'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'checkout_clang': True, 'checkout_fuzzer': True}, 'deps_file': 'util/bot/DEPS', 'managed': True, 'name': 'boringssl', 'url': 'https://boringssl.googlesource.com/boringssl.git'}]",
       "--revision_mapping_file",
       "{}",
       "--git-cache-dir",
@@ -315,10 +315,13 @@
     ],
     "cwd": "[START_DIR]/boringssl",
     "env": {
+      "ASAN_OPTIONS": "detect_stack_use_after_return=1",
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[START_DIR]/boringssl/util/bot/golang",
+      "MSAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer"
     },
     "env_prefixes": {
       "PATH": [
@@ -357,10 +360,13 @@
     ],
     "cwd": "[START_DIR]/boringssl/ssl/test/runner",
     "env": {
+      "ASAN_OPTIONS": "detect_stack_use_after_return=1",
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer",
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[START_DIR]/boringssl/util/bot/golang",
+      "MSAN_SYMBOLIZER_PATH": "[START_DIR]/boringssl/util/bot/llvm-build/bin/llvm-symbolizer"
     },
     "env_prefixes": {
       "PATH": [

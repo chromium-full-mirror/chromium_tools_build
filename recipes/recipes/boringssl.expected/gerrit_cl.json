@@ -267,7 +267,6 @@
     "cmd": [
       "[START_DIR]/boringssl/util/bot/cmake-linux64/bin/cmake",
       "-GNinja",
-      "-DBORINGSSL_ALLOW_CXX_RUNTIME=1",
       "-DCMAKE_MAKE_PROGRAM=[START_DIR]/boringssl/util/bot/ninja/ninja",
       "[START_DIR]/boringssl"
     ],

@@ -27,6 +27,13 @@ DEPS = [
 # some properties are redundant with calls to _Config.has_token() below. That
 # logic will be removed as the builder definitions pass in the same values.
 PROPERTIES = {
+    'android':
+        Property(default=False, kind=bool, help='whether to build for Android'),
+    'check_imported_libraries':
+        Property(
+            default=False,
+            kind=bool,
+            help='whether to run the check_imported_libraries script'),
     'check_stack':
         Property(
             default=False,
@@ -63,6 +70,8 @@ PROPERTIES = {
     'run_ssl_tests':
         Property(
             default=True, kind=bool, help='whether to run SSL protocol tests'),
+    'sde':
+        Property(default=False, kind=bool, help='whether to run tests on SDE'),
 }
 
 
@@ -100,17 +109,11 @@ def _GetHostCMakeArgs(platform, bot_utils):
   return args
 
 
-def _AppendFlags(args, key, flags):
-  if key in args:
-    args[key] += ' ' + flags
-  else:
-    args[key] = flags
-
-
 class _Config:
 
-  def __init__(self, buildername, clang, cmake_args, gclient_vars, msvc_target,
-               runner_args, run_ssl_tests, run_unit_tests):
+  def __init__(self, android, buildername, clang, cmake_args, gclient_vars,
+               msvc_target, runner_args, run_ssl_tests, run_unit_tests, sde):
+    self.android = android
     self.buildername = buildername
     self.clang = clang
     self.cmake_args = cmake_args
@@ -119,9 +122,12 @@ class _Config:
     self.runner_args = runner_args
     self.run_ssl_tests = run_ssl_tests
     self.run_unit_tests = run_unit_tests
+    self.sde = sde
 
-    if self.has_token('sde') or self.has_token('tsan'):
-      self.run_ssl_tests = False
+    if self.has_token('android'):
+      self.android = True
+    if self.has_token('sde'):
+      self.sde = True
 
   def has_token(self, token):
     # Builder names are a sequence of tokens separated by underscores.
@@ -129,26 +135,14 @@ class _Config:
     # TODO(davidben): Migrate uses of this to properties.
     return '_' + token + '_' in '_' + self.buildername + '_'
 
-  def uses_clang(self):
-    if self.clang is not None:
-      return self.clang
-    return any(self.has_token(token) for token in ('asan', 'clang', 'fuzz'))
-
-  def uses_custom_libcxx(self):
-    return any(self.has_token(token) for token in ('msan', 'tsan'))
-
   def get_gclient_vars(self, platform):
     ret = {}
-    if self.uses_clang():
-      ret['checkout_clang'] = 'True'
-    if self.has_token('sde'):
-      ret['checkout_sde'] = 'True'
-    if self.has_token('fuzz'):
-      ret['checkout_fuzzer'] = 'True'
+    if self.clang:
+      ret['checkout_clang'] = True
+    if self.sde:
+      ret['checkout_sde'] = True
     if platform.is_win:
-      ret['checkout_nasm'] = 'True'
-    if self.uses_custom_libcxx():
-      ret['checkout_libcxx'] = 'True'
+      ret['checkout_nasm'] = True
     ret.update(self.gclient_vars)
     return ret
 
@@ -156,27 +150,7 @@ class _Config:
     checkout = path['checkout']
     bot_utils = checkout.join('util', 'bot')
     args = {'CMAKE_MAKE_PROGRAM': ninja_path}
-    if self.has_token('shared'):
-      args['BUILD_SHARED_LIBS'] = '1'
-    if self.has_token('rel'):
-      args['CMAKE_BUILD_TYPE'] = 'Release'
-    if self.has_token('relwithasserts') or self.has_token('sde'):
-      args['CMAKE_BUILD_TYPE'] = 'RelWithAsserts'
-    # 32-bit builds are cross-compiled on the 64-bit bots.
-    if self.has_token('win32') and self.uses_clang():
-      args['CMAKE_SYSTEM_NAME'] = 'Windows'
-      args['CMAKE_SYSTEM_PROCESSOR'] = 'x86'
-      _AppendFlags(args, 'CMAKE_CXX_FLAGS', '-m32 -msse2')
-      _AppendFlags(args, 'CMAKE_C_FLAGS', '-m32 -msse2')
-    if self.has_token('linux32'):
-      args['CMAKE_SYSTEM_NAME'] = 'Linux'
-      args['CMAKE_SYSTEM_PROCESSOR'] = 'x86'
-      _AppendFlags(args, 'CMAKE_CXX_FLAGS', '-m32 -msse2')
-      _AppendFlags(args, 'CMAKE_C_FLAGS', '-m32 -msse2')
-      _AppendFlags(args, 'CMAKE_ASM_FLAGS', '-m32 -msse2')
-    if self.has_token('noasm'):
-      args['OPENSSL_NO_ASM'] = '1'
-    if self.uses_clang():
+    if self.clang:
       if platform.is_win:
         args['CMAKE_C_COMPILER'] = _WindowsCMakeWorkaround(
             bot_utils.join('llvm-build', 'bin', 'clang-cl.exe'))
@@ -186,65 +160,28 @@ class _Config:
         args['CMAKE_C_COMPILER'] = bot_utils.join('llvm-build', 'bin', 'clang')
         args['CMAKE_CXX_COMPILER'] = bot_utils.join('llvm-build', 'bin',
                                                     'clang++')
-    if self.has_token('asan'):
-      args['ASAN'] = '1'
-    if self.has_token('cfi'):
-      args['CFI'] = '1'
-    if self.has_token('msan'):
-      args['MSAN'] = '1'
-    if self.has_token('tsan'):
-      args['TSAN'] = '1'
-    if self.has_token('ubsan'):
-      args['UBSAN'] = '1'
-    if self.uses_custom_libcxx():
-      args['USE_CUSTOM_LIBCXX'] = '1'
-    if self.has_token('small'):
-      _AppendFlags(args, 'CMAKE_CXX_FLAGS', '-DOPENSSL_SMALL=1')
-      _AppendFlags(args, 'CMAKE_C_FLAGS', '-DOPENSSL_SMALL=1')
-    if self.has_token('nothreads'):
-      _AppendFlags(
-          args, 'CMAKE_CXX_FLAGS',
-          '-DOPENSSL_NO_THREADS_CORRUPT_MEMORY_AND_LEAK_SECRETS_IF_THREADED=1')
-      _AppendFlags(
-          args, 'CMAKE_C_FLAGS',
-          '-DOPENSSL_NO_THREADS_CORRUPT_MEMORY_AND_LEAK_SECRETS_IF_THREADED=1')
-    if self.has_token('android'):
+    if self.android:
       args['CMAKE_TOOLCHAIN_FILE'] = bot_utils.join('android_ndk', 'build',
                                                     'cmake',
                                                     'android.toolchain.cmake')
-    if self.has_token('fips'):
-      args['FIPS'] = '1'
-      if self.has_token('android'):
-        # FIPS mode on Android uses shared libraries.
-        args['BUILD_SHARED_LIBS'] = '1'
-    if self.has_token('fuzz'):
-      args['FUZZ'] = '1'
-      args['LIBFUZZER_FROM_DEPS'] = '1'
-    # Pick one builder to build with the C++ runtime allowed. The default
-    # configuration does not check pure virtuals.
-    if self.buildername == 'linux':
-      args['BORINGSSL_ALLOW_CXX_RUNTIME'] = '1'
     args.update(self.cmake_args)
     return args
 
   def get_target_msvc_prefix(self, bot_utils):
     if self.msvc_target is not None:
       return ['python3', bot_utils.join('vs_env.py'), self.msvc_target]
-    if self.has_token('win32'):
-      return ['python3', bot_utils.join('vs_env.py'), 'x86']
-    if self.has_token('win64'):
-      return ['python3', bot_utils.join('vs_env.py'), 'x64']
     return []
 
-  def get_target_env(self, bot_utils):
+  def get_target_env(self, bot_utils, platform):
     env = {}
-    if self.has_token('asan'):
+    if self.clang:
+      # TODO(davidben): detect_stack_use_after_return became default in
+      # https://reviews.llvm.org/D124057. Can we remove it?
       env['ASAN_OPTIONS'] = 'detect_stack_use_after_return=1'
-      env['ASAN_SYMBOLIZER_PATH'] = bot_utils.join('llvm-build', 'bin',
-                                                   'llvm-symbolizer')
-    if self.has_token('msan'):
-      env['MSAN_SYMBOLIZER_PATH'] = bot_utils.join('llvm-build', 'bin',
-                                                   'llvm-symbolizer')
+      env['ASAN_SYMBOLIZER_PATH'] = bot_utils.join(
+          'llvm-build', 'bin', 'llvm-symbolizer' + _GetHostExeSuffix(platform))
+      env['MSAN_SYMBOLIZER_PATH'] = bot_utils.join(
+          'llvm-build', 'bin', 'llvm-symbolizer' + _GetHostExeSuffix(platform))
     return env
 
 
@@ -272,10 +209,12 @@ def _CleanupMSVC(api):
           ok_ret='any')
 
 
-def RunSteps(api, check_stack, clang, cmake_args, gclient_vars, msvc_target,
-             runner_args, run_ssl_tests, run_unit_tests):
+def RunSteps(api, android, check_imported_libraries, check_stack, clang,
+             cmake_args, gclient_vars, msvc_target, runner_args, run_ssl_tests,
+             run_unit_tests, sde):
   # Use keyword arguments to avoid accidentally mixing them.
   config = _Config(
+      android=android,
       buildername=api.buildbucket.builder_name,
       clang=clang,
       cmake_args=cmake_args,
@@ -283,7 +222,8 @@ def RunSteps(api, check_stack, clang, cmake_args, gclient_vars, msvc_target,
       msvc_target=msvc_target,
       runner_args=runner_args,
       run_ssl_tests=run_ssl_tests,
-      run_unit_tests=run_unit_tests)
+      run_unit_tests=run_unit_tests,
+      sde=sde)
 
   # Print the kernel version on Linux builders. BoringSSL is sensitive to
   # whether the kernel has getrandom support.
@@ -292,7 +232,7 @@ def RunSteps(api, check_stack, clang, cmake_args, gclient_vars, msvc_target,
 
   # Sync and pull in everything.
   api.gclient.set_config('boringssl')
-  if config.has_token('android'):
+  if config.android:
     api.gclient.c.target_os.add('android')
   api.gclient.c.solutions[0].custom_vars = config.get_gclient_vars(api.platform)
   api.bot_update.ensure_checkout()
@@ -349,7 +289,10 @@ def RunSteps(api, check_stack, clang, cmake_args, gclient_vars, msvc_target,
     with api.step.defer_results():
       # The default Linux build may not depend on the C++ runtime. This is easy
       # to check when building shared libraries.
-      if config.buildername == 'linux_shared':
+      #
+      # TODO(davidben): Remove the 'linux_shared' check when
+      # check_imported_libraries is set in the config instead.
+      if check_imported_libraries or config.buildername == 'linux_shared':
         api.step('check imported libraries', [
             'go', 'run', api.path['checkout'].join(
                 'util', 'check_imported_libraries.go'),
@@ -368,15 +311,15 @@ def RunSteps(api, check_stack, clang, cmake_args, gclient_vars, msvc_target,
             'go', 'run', api.path['checkout'].join('util', 'check_filenames.go')
         ])
 
-      env = config.get_target_env(bot_utils)
+      env = config.get_target_env(bot_utils, api.platform)
 
       # Run the unit tests.
       if config.run_unit_tests:
         with api.context(cwd=api.path['checkout'], env=env):
           all_tests_args = []
-          if config.has_token('sde'):
+          if config.sde:
             all_tests_args += ['-sde', '-sde-path', sde_path]
-          if config.has_token('android'):
+          if config.android:
             api.step('unit tests', [
                 'go', 'run',
                 api.path.join('util', 'run_android_tests.go'), '-build-dir',
@@ -402,10 +345,10 @@ def RunSteps(api, check_stack, clang, cmake_args, gclient_vars, msvc_target,
         # Limit the number of workers on Android and Mac, to avoid flakiness.
         # https://crbug.com/boringssl/192
         # https://crbug.com/boringssl/199
-        if api.platform.is_mac or config.has_token('android'):
+        if api.platform.is_mac or config.android:
           runner_args += ['-num-workers', '1']
         runner_args += config.runner_args
-        if config.has_token('android'):
+        if config.android:
           with api.context(cwd=api.path['checkout'], env=env):
             api.step('ssl tests', [
                 'go', 'run',
@@ -440,73 +383,61 @@ def _TryBuild(api, builder):
 
 def GenTests(api):
   tests = [
-      # To ensure full test coverage, add a test for each builder configuration.
-      ('linux', api.platform('linux', 64)),
-      ('linux_shared', api.platform('linux', 64)),
-      ('linux32', api.platform('linux', 64)),
-      ('linux_noasm_asan', api.platform('linux', 64)),
-      ('linux_small', api.platform('linux', 64)),
-      ('linux_nothreads', api.platform('linux', 64)),
-      ('linux_rel', api.platform('linux', 64)),
-      ('linux32_rel', api.platform('linux', 64)),
-      ('linux_clang_rel', api.platform('linux', 64)),
-      ('linux_clang_relwithasserts_msan', api.platform('linux', 64)),
-      ('linux_clang_relwithasserts_ubsan', api.platform('linux', 64)),
-      ('linux_clang_cfi', api.platform('linux', 64)),
-      ('linux_fuzz', api.platform('linux', 64)),
-      ('linux_fips', api.platform('linux', 64)),
-      ('linux_fips_rel', api.platform('linux', 64)),
-      ('linux_fips_clang', api.platform('linux', 64)),
-      ('linux_fips_clang_rel', api.platform('linux', 64)),
-      ('linux_fips_noasm_asan', api.platform('linux', 64)),
-      ('mac', api.platform('mac', 64)),
-      ('mac_small', api.platform('mac', 64)),
-      ('mac_rel', api.platform('mac', 64)),
-      ('win32', api.platform('win', 64)),
-      ('win32_small', api.platform('win', 64)),
-      ('win32_rel', api.platform('win', 64)),
-      ('win32_clang', api.platform('win', 64)),
-      ('win64', api.platform('win', 64)),
-      ('win64_small', api.platform('win', 64)),
-      ('win64_rel', api.platform('win', 64)),
-      ('win64_clang', api.platform('win', 64)),
-      ('android_aarch64', api.platform('linux', 64)),
-      ('android_aarch64_fips', api.platform('linux', 64)),
-      # This is not a builder configuration, but it ensures _AppendFlags handles
-      # appending to CMAKE_CXX_FLAGS when there is already a value in there.
-      ('linux_nothreads_small', api.platform('linux', 64)),
+      ('linux', api.platform('linux', 64), {}),
+      ('mac', api.platform('mac', 64), {}),
+      ('win64', api.platform('win', 64), {
+          'msvc_target': 'x64'
+      }),
+      ('android_aarch64', api.platform('linux', 64), {
+          "cmake_args": {
+              "ANDROID_ABI": "arm64-v8a",
+              "ANDROID_PLATFORM": "android-21",
+          },
+      }),
+      ('linux_fuzz', api.platform('linux', 64), {
+          "clang": True,
+          "cmake_args": {
+              "FUZZ": "1",
+              "LIBFUZZER_FROM_DEPS": "1",
+          },
+          "gclient_vars": {
+              "checkout_fuzzer": True,
+          },
+      }),
+      ('linux_shared', api.platform('linux', 64), {
+          "cmake_args": {
+              "BUILD_SHARED_LIBS": "1",
+          },
+      }),
   ]
-  for (buildername, host_platform) in tests:
+  for (buildername, host_platform, props) in tests:
     yield api.test(
         buildername,
         host_platform,
         _CIBuild(api, buildername),
+        api.properties(**props),
         api.override_step_data('unit tests',
                                api.boringssl.canned_test_output(True)),
         api.override_step_data('ssl tests',
                                api.boringssl.canned_test_output(True)),
     )
 
-  unit_test_only_tests = [
-      ('linux_sde', api.platform('linux', 64)),
-      ('linux32_sde', api.platform('linux', 64)),
-      ('linux_clang_relwithasserts_tsan', api.platform('linux', 64)),
-      ('win32_sde', api.platform('win', 64)),
-      ('win64_sde', api.platform('win', 64)),
-  ]
-  for (buildername, host_platform) in unit_test_only_tests:
-    yield api.test(
-        buildername,
-        host_platform,
-        _CIBuild(api, buildername),
-        api.override_step_data('unit tests',
-                               api.boringssl.canned_test_output(True)),
-    )
+  yield api.test(
+      'linux_sde',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux_sde'),
+      api.properties(
+          cmake_args={"CMAKE_BUILD_TYPE": "RelWithAsserts"},
+          run_ssl_tests=False),
+      api.override_step_data('unit tests',
+                             api.boringssl.canned_test_output(True)),
+  )
 
   yield api.test(
       'failed_imported_libraries',
       api.platform('linux', 64),
       _CIBuild(api, 'linux_shared'),
+      api.properties(cmake_args={"BUILD_SHARED_LIBS": "1"}),
       api.override_step_data('check imported libraries', retcode=1),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(True)),
@@ -540,6 +471,7 @@ def GenTests(api):
       'failed_unit_tests_win',
       api.platform('win', 64),
       _CIBuild(api, 'win64'),
+      api.properties(msvc_target='x64'),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(False)),
       api.override_step_data('ssl tests',
@@ -562,6 +494,7 @@ def GenTests(api):
       'failed_taskkill',
       api.platform('win', 64),
       _CIBuild(api, 'win64'),
+      api.properties(msvc_target='x64'),
       api.override_step_data('unit tests',
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
@@ -598,8 +531,6 @@ def GenTests(api):
                              api.boringssl.canned_test_output(True)),
   )
 
-  # Test the new properties-based configuration. These builder names
-  # are intentionally generic to skip the old name-based configuration.
   yield api.test(
       'skip_unit_tests',
       api.platform('linux', 64),
@@ -618,6 +549,7 @@ def GenTests(api):
       _CIBuild(api, 'buildername'),
       api.properties(run_unit_tests=False, run_ssl_tests=False),
   )
+
   yield api.test(
       'win_arm64_compile',
       api.platform('win', 64),
@@ -639,6 +571,7 @@ def GenTests(api):
           run_ssl_tests=False,
       ),
   )
+
   yield api.test(
       'linux_fuzz_properties',
       api.platform('linux', 64),
