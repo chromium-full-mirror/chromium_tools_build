@@ -61,6 +61,9 @@ def CheckGroupings(input_api, output_api):
     new_groupings = input_api.json.loads(''.join(af.NewContents()))
     bad_builders = []
     for builder_id, grouping in new_groupings.items():
+      # Don't prevent adding builders if they aren't supported src-side
+      if 'blockers' in grouping:
+        continue
       # The builder is not new
       if builder_id in old_groupings:
         continue
