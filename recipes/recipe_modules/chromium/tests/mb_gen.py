@@ -45,23 +45,52 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+
+  def StepEnvContains(check, step_odict, step, key, value):
+    check('env for step %s contained %s: %s' % (step, key, value),
+          (key, value) in step_odict[step].env.items())
+
+  yield api.test(
+      'basic',
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'cros_boards',
       api.properties(
           target_platform='chromeos', target_cros_boards='x86-generic'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'mac',
       api.platform('mac', 64),
       api.properties(target_platform='mac'),
+      api.post_check(StepEnvContains, 'lookup GN args', 'FORCE_MAC_TOOLCHAIN',
+                     '1'),
+      api.post_check(StepEnvContains, 'generate_build_files',
+                     'FORCE_MAC_TOOLCHAIN', '1'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'mb_overrides',
       api.properties(chromium_apply_config=['mb_overrides']),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       [
+                           '--config-file',
+                           'None/override/mb_config.pyl',
+                       ]),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       [
+                           '--isolate-map-file',
+                           'None/override/gn_isolate_map.pyl',
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains)
+
 DEPS = [
   'chromium',
   'recipe_engine/platform',
@@ -25,30 +28,75 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.post_process(StepCommandContains, 'gn', [
+          'python3',
+          'RECIPE_REPO[depot_tools]/gn.py',
+      ]),
+      api.post_process(StepCommandContains, 'gn', [
+          '//out/Release',
+          '--args=is_debug=false target_cpu="x64" '
+          'use_goma=true goma_dir="None"',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
 
   yield api.test(
       'custom_gn_path',
       api.properties(gn_path='some/other/path/gn'),
+      api.post_process(StepCommandContains, 'gn', [
+          'some/other/path/gn',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
       'mac',
       api.platform('mac', 64),
       api.properties(target_platform='mac'),
+      api.post_process(StepCommandContains, 'gn', [
+          '//out/Release',
+          '--args=is_clang=true is_debug=false target_cpu="x64" '
+          'use_goma=true goma_dir="None"',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
       'android',
       api.properties(target_platform='android'),
+      api.post_process(StepCommandContains, 'gn', [
+          '//out/Release',
+          '--args=is_debug=false target_os="android" target_cpu="x64" '
+          'use_goma=true goma_dir="None"',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
       'debug',
       api.properties(build_config='Debug'),
+      api.post_process(StepCommandContains, 'gn', [
+          '//out/Debug',
+          '--args=is_debug=true target_cpu="x64" '
+          'use_goma=true goma_dir="None"',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
       'reclient',
       api.properties(build_config='Debug', use_remoteexec=True),
+      api.post_process(StepCommandContains, 'gn', [
+          '//out/Debug',
+          '--args=is_debug=true target_cpu="x64" use_remoteexec=true',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )

@@ -24,17 +24,31 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+
+  def StepEnvContains(check, step_odict, step, key, value):
+    check('env for step %s contained %s: %s' % (step, key, value),
+          (key, value) in step_odict[step].env.items())
+
+  yield api.test(
+      'basic',
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'chromeos',
       api.properties(
           target_platform='chromeos', target_cros_boards='x86-generic'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'clobber',
       api.properties(clobber='1'),
+      api.post_process(post_process.StepSuccess, 'clobber'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   # TODO(b/256012263): Remove this when the fix has rolled in.
@@ -50,4 +64,13 @@ def GenTests(api):
       'mac',
       api.platform.name('mac'),
       api.properties(target_platform='mac'),
+      api.post_process(post_process.StepSuccess, 'ensure_installed'),
+      api.post_check(StepEnvContains, 'gclient runhooks', 'FORCE_MAC_TOOLCHAIN',
+                     '1'),
+      api.post_check(StepEnvContains, 'gclient runhooks', 'GYP_DEFINES',
+                     'clang=1'),
+      api.post_check(StepEnvContains, 'gclient runhooks',
+                     'MAC_TOOLCHAIN_INSTALLER', '[START_DIR]/mac_toolchain'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )

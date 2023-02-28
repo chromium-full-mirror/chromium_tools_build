@@ -42,11 +42,20 @@ def RunSteps(api, use_goma):
 
 
 def GenTests(api):
+
+  def StepEnvContains(check, step_odict, step, key, value):
+    check('env for step %s contained %s: %s' % (step, key, value),
+          (key, value) in step_odict[step].env.items())
+
   yield api.test(
       'basic',
       api.chromium.generic_build(builder_group='test_group'),
       api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
                                                 'process_crashreports.py')),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -91,19 +100,29 @@ def GenTests(api):
   yield api.test(
       'codesearch',
       api.properties(chromium_apply_config=['codesearch']),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'official_win_luci',
-      api.properties(
-          target_platform='win',
-          chromium_apply_config=['official']),
+      api.properties(target_platform='win', chromium_apply_config=['official']),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'chromeos',
       api.properties(
           target_platform='chromeos', target_cros_boards='x86-generic'),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -112,29 +131,51 @@ def GenTests(api):
           target_platform='chromeos',
           target_cros_boards='x86-generic',
           chromium_apply_config=['official']),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'android',
       api.properties(target_platform='android', chromium_config='android'),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'goma_canary',
-      api.properties(
-          chromium_apply_config=['goma_canary']),
+      api.properties(chromium_apply_config=['goma_canary']),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'goma_client_candidate',
-      api.properties(
-          chromium_apply_config=['goma_client_candidate']),
+      api.properties(chromium_apply_config=['goma_client_candidate']),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'goma_custom_jobs_debug',
       api.goma(jobs=500, debug=True),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '-j',
+          '500',
+      ]),
+      api.post_check(StepEnvContains, 'compile', 'GOMA_DUMP', '1'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

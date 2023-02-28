@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains,
+                                        StepCommandDoesNotContain)
 from RECIPE_MODULES.build.chromium_tests.steps import ResultDB
 
 DEPS = [
@@ -46,6 +49,20 @@ def GenTests(api):
       api.properties(
           buildername='test_buildername', buildnumber=123,
           bot_id='test_bot_id'),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          'python3',
+          'RECIPE_REPO[build]/recipes/runtest.py',
+          '--target',
+          'Release',
+          '--no-xvfb',
+          '--test-type=base_unittests',
+          '--builder-name=test_buildername',
+          '--slave-name=test_bot_id',
+          '--build-number=123',
+          'base_unittests',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -59,6 +76,17 @@ def GenTests(api):
           builder_group='chromium.linux',
           builder='Linux Tests',
       ),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          'rdb',
+          'stream',
+          '-coerce-negative-duration',
+          '-exonerate-unexpected-pass',
+          '--',
+          'python3',
+          'RECIPE_REPO[build]/recipes/runtest.py',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   # In order to get coverage of the LUCI-specific code in runtest.
@@ -69,6 +97,12 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           target_platform='android'),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--test-platform',
+          'android',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -79,6 +113,13 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           target_platform='win'),
+      api.post_process(StepCommandContains, 'base_unittests',
+                       ['RECIPE_REPO[build]\\recipes\\runtest.py']),
+      api.post_process(StepCommandDoesNotContain, 'base_unittests', [
+          '--no-xvfb',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -88,6 +129,11 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           builder_group='fake-builder-group'),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--builder-group=fake-builder-group',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -97,6 +143,11 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           parse_gtest_output=True),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--parse-gtest-output',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -106,6 +157,11 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           python_mode=True),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--run-python-script',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -115,6 +171,18 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           chromium_apply_config=['memcheck']),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--pass-build-dir',
+          '--pass-target',
+          '--run-shell-script',
+          'None/tools/valgrind/chrome_tests.sh',
+          '--test',
+          'base_unittests',
+          '--tool',
+          'memcheck',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -125,6 +193,11 @@ def GenTests(api):
           bot_id='test_bot_id',
           chromium_config='chromium_clang',
           chromium_apply_config=['tsan2']),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--enable-tsan',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -134,6 +207,11 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           chromium_config='chromium_msan'),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--enable-msan',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -144,6 +222,11 @@ def GenTests(api):
           bot_id='test_bot_id',
           chromium_config='chromium_clang',
           chromium_apply_config=['lsan']),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--enable-lsan',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -153,4 +236,9 @@ def GenTests(api):
           buildnumber=123,
           bot_id='test_bot_id',
           chromium_apply_config=['chromium_win_asan']),
+      api.post_process(StepCommandContains, 'base_unittests', [
+          '--enable-asan',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
