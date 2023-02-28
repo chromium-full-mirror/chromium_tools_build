@@ -123,13 +123,13 @@
     "infra_step": true,
     "name": "last branches",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@branch-heads/9.2@@@",
+      "@@@STEP_LOG_LINE@stdout@branch-heads/11.2@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.2",
+    "name": "Checking branch 11.2",
     "~followup_annotations": [
       "@@@STEP_FAILURE@@@"
     ]
@@ -138,7 +138,7 @@
     "cmd": [
       "git",
       "checkout",
-      "branch-heads/9.2"
+      "branch-heads/11.2"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -147,7 +147,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.2.git checkout",
+    "name": "Checking branch 11.2.git checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@stdout@@@"
@@ -166,7 +166,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.2.Check branch-heads/9.2 version file",
+    "name": "Checking branch 11.2.Check branch-heads/11.2 version file",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -184,7 +184,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.2.Proof of version change",
+    "name": "Checking branch 11.2.Proof of version change",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@stdout@@@"
@@ -192,7 +192,7 @@
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.2.Increment version from 3.4.3.3",
+    "name": "Checking branch 11.2.Increment version from 11.4.3.3",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_FAILURE@@@"
@@ -226,13 +226,13 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.2.Increment version from 3.4.3.3.gerrit changes",
+    "name": "Checking branch 11.2.Increment version from 11.4.3.3.gerrit changes",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"_number\": \"123\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Version 3.4.3.3\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Version 11.4.3.3\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@]@@@",
       "@@@STEP_LOG_END@json.output@@@"
@@ -240,7 +240,7 @@
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.2.Increment version from 3.4.3.3.Stale version change CL found!",
+    "name": "Checking branch 11.2.Increment version from 11.4.3.3.Stale version change CL found!",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_FAILURE@@@"

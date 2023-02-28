@@ -123,19 +123,19 @@
     "infra_step": true,
     "name": "last branches",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@branch-heads/9.3@@@",
+      "@@@STEP_LOG_LINE@stdout@branch-heads/11.3@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.3"
+    "name": "Checking branch 11.3"
   },
   {
     "cmd": [
       "git",
       "checkout",
-      "branch-heads/9.3"
+      "branch-heads/11.3"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -144,7 +144,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.3.git checkout",
+    "name": "Checking branch 11.3.git checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@stdout@@@"
@@ -163,7 +163,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.3.Check branch-heads/9.3 version file",
+    "name": "Checking branch 11.3.Check branch-heads/11.3 version file",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -181,7 +181,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.3.Proof of version change",
+    "name": "Checking branch 11.3.Proof of version change",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@stdout@dummy proof of version change@@@",
@@ -190,7 +190,7 @@
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.3.Verify tag",
+    "name": "Checking branch 11.3.Verify version tag",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -201,7 +201,7 @@
       "show",
       "--format=%H",
       "--no-patch",
-      "refs/tags/3.4.3.3"
+      "refs/tags/11.4.3.3"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -210,7 +210,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.3.Verify tag.Commit at 3.4.3.3",
+    "name": "Checking branch 11.3.Verify version tag.Commit at 11.4.3.3",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@stdout@123@@@",
@@ -232,7 +232,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.3.Verify tag.Commit at HEAD",
+    "name": "Checking branch 11.3.Verify version tag.Commit at HEAD",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@stdout@123@@@",
@@ -241,7 +241,36 @@
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.3.Verify LKGR",
+    "name": "Checking branch 11.3.Verify pgo tag",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show",
+      "--format=%H",
+      "--no-patch",
+      "refs/tags/11.4.3.3-pgo"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@stdout@123@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Checking branch 11.3.Verify LKGR",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -251,7 +280,7 @@
       "git",
       "ls-remote",
       "https://chromium.googlesource.com/v8/v8.git",
-      "refs/heads/9.3-lkgr"
+      "refs/heads/11.3-lkgr"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -260,7 +289,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.3.Verify LKGR.git ls-remote refs_heads_9.3-lkgr",
+    "name": "Checking branch 11.3.Verify LKGR.git ls-remote refs_heads_11.3-lkgr",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@stdout@112233@@@",
@@ -272,7 +301,7 @@
       "git",
       "ls-remote",
       "https://chromium.googlesource.com/v8/v8.git",
-      "refs/tags/3.4.3.3"
+      "refs/tags/11.4.3.3"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -281,7 +310,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Checking branch 9.3.Verify LKGR.git ls-remote refs_tags_3.4.3.3",
+    "name": "Checking branch 11.3.Verify LKGR.git ls-remote refs_tags_11.4.3.3",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@stdout@112233@@@",
@@ -290,21 +319,21 @@
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.3.Verify LKGR.LKGR commit 112233",
+    "name": "Checking branch 11.3.Verify LKGR.LKGR commit 112233",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.3.Verify LKGR.HEAD commit 112233",
+    "name": "Checking branch 11.3.Verify LKGR.HEAD commit 112233",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Checking branch 9.3.Verify LKGR.There is no new lkgr.",
+    "name": "Checking branch 11.3.Verify LKGR.There is no new lkgr.",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]

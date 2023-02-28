@@ -91,33 +91,36 @@ def check_branch(api, branch_version, build_results):
   with api.step.nest('Checking branch %s' % branch_version):
     branch_ref = 'branch-heads/%s' % branch_version
     api.v8.git_output('checkout', branch_ref)
-    version_at_branch_head = api.v8.read_version_from_ref("HEAD", branch_ref)
+    version_at_head = api.v8.read_version_from_ref("HEAD", branch_ref)
     proof_of_version_change = api.v8.git_output(
         'show',
         api.v8.VERSION_FILE,
         ok_ret='any',
         name='Proof of version change')
     if proof_of_version_change:
-      verify_tag(api, version_at_branch_head, build_results)
-      verify_lkgr(api, branch_version, version_at_branch_head,
-                  build_results)
+      verify_version_tag(api, version_at_head, build_results)
+      has_pgo_tag = verify_pgo_tag(api, version_at_head)
+
+      # TODO(crbug.com/1382471): We can remove this again if there are no back-
+      # merges to LTS branches before M111 anymore.
+      before_cutoff = (
+          (int(version_at_head.major), int(version_at_head.minor)) < (11, 1))
+
+      if has_pgo_tag or before_cutoff:
+        # We only update the lkgr if pgo profiles are available. If they are not
+        # generated yet, we update the lkgr in the next run of auto-tag ng.
+        verify_lkgr(api, branch_version, version_at_head, build_results)
+
     else:
-      maybe_increment_version(api, branch_ref, version_at_branch_head,
-                              build_results)
+      maybe_increment_version(api, branch_ref, version_at_head, build_results)
 
 
-def verify_tag(api, version_at_branch_head, build_results):
-  with api.step.nest('Verify tag'):
-    commit_at_tag = api.v8.git_output(
-        'show',
-        '--format=%H',
-        '--no-patch',
-        'refs/tags/%s' % version_at_branch_head,
-        name='Commit at %s' % version_at_branch_head,
-        ok_ret='any')
+def verify_version_tag(api, version_at_branch_head, build_results):
+  with api.step.nest('Verify version tag'):
+    commit_at_tag = get_commit_at_tag(api, version_at_branch_head)
     commit_at_head = api.v8.git_output(
         'show', '--format=%H', '--no-patch', 'HEAD', name='Commit at HEAD')
-    assert commit_at_head
+    assert commit_at_head, 'Expected a checkout, but no head revision found.'
     if commit_at_head != commit_at_tag:
       # Tag latest version.
       if api.properties.get('dry_run') or api.runtime.is_experimental:
@@ -127,6 +130,21 @@ def verify_tag(api, version_at_branch_head, build_results):
         api.git('push', REMOTE_REPO_URL, str(version_at_branch_head))
       build_results.performed_actions.append(
             "Tagged %s" % version_at_branch_head)
+
+
+def verify_pgo_tag(api, version_at_branch_head):
+  with api.step.nest('Verify pgo tag'):
+    return bool(get_commit_at_tag(api, f'{version_at_branch_head}-pgo'))
+
+
+def get_commit_at_tag(api, tag):
+  return api.v8.git_output(
+      'show',
+      '--format=%H',
+      '--no-patch',
+      f'refs/tags/{tag}',
+      name=f'Commit at {tag}',
+      ok_ret='any')
 
 
 def verify_lkgr(api, branch_version, version_at_branch_head,
@@ -214,121 +232,143 @@ def GenTests(api):
         tracked_branches_count(1),
         *test_data)
 
+  def version_file(patch_level, description, prefix=''):
+    return api.v8.version_file(patch_level, description, prefix=prefix, major=11)
+
   yield test(
       'branches-to-update-version-for',
       tracked_branches_count(2),
-      stdout('last branches', 'branch-heads/9.1\nbranch-heads/9.2'),
-      api.v8.version_file(3, 'branch-heads/9.2', prefix="Checking branch 9.2."),
-      api.v8.version_file(
+      stdout('last branches', 'branch-heads/11.1\nbranch-heads/11.2'),
+      version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
+      version_file(
           4,
           'latest',
-          prefix="Checking branch 9.2.Increment version from 3.4.3.3."),
-      api.v8.version_file(2, 'branch-heads/9.1', prefix="Checking branch 9.1."),
-      api.v8.version_file(
+          prefix="Checking branch 11.2.Increment version from 11.4.3.3."),
+      version_file(2, 'branch-heads/11.1', prefix="Checking branch 11.1."),
+      version_file(
           3,
           'latest',
-          prefix="Checking branch 9.1.Increment version from 3.4.3.2."),
+          prefix="Checking branch 11.1.Increment version from 11.4.3.2."),
   )
 
   yield test(
       'dry-run-branches-to-update-version-for',
       tracked_branches_count(2),
       api.runtime(is_experimental=True),
-      stdout('last branches', 'branch-heads/9.1\nbranch-heads/9.2'),
-      api.v8.version_file(3, 'branch-heads/9.2', prefix="Checking branch 9.2."),
-      api.v8.version_file(
+      stdout('last branches', 'branch-heads/11.1\nbranch-heads/11.2'),
+      version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
+      version_file(
           4,
           'latest',
-          prefix="Checking branch 9.2.Increment version from 3.4.3.3."),
-      api.v8.version_file(2, 'branch-heads/9.1', prefix="Checking branch 9.1."),
-      api.v8.version_file(
+          prefix="Checking branch 11.2.Increment version from 11.4.3.3."),
+      version_file(2, 'branch-heads/11.1', prefix="Checking branch 11.1."),
+      version_file(
           3,
           'latest',
-          prefix="Checking branch 9.1.Increment version from 3.4.3.2."),
+          prefix="Checking branch 11.1.Increment version from 11.4.3.2."),
   )
 
   yield test(
       'branche-with-stale-version-update',
-      stdout('last branches', 'branch-heads/9.2'),
-      api.v8.version_file(3, 'branch-heads/9.2', prefix="Checking branch 9.2."),
+      stdout('last branches', 'branch-heads/11.2'),
+      version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
       api.override_step_data(
-          'Checking branch 9.2.'
-          'Increment version from 3.4.3.3.gerrit changes',
+          'Checking branch 11.2.'
+          'Increment version from 11.4.3.3.gerrit changes',
           api.json.output([{
               '_number': '123',
-              'subject': 'Version 3.4.3.3'
+              'subject': 'Version 11.4.3.3'
           }])),
       api.post_process(
-          StepFailure, 'Checking branch 9.2.'
-          'Increment version from 3.4.3.3.'
+          StepFailure, 'Checking branch 11.2.'
+          'Increment version from 11.4.3.3.'
           'Stale version change CL found!'),
   )
 
   yield test(
       'branch-with-updated-version-but-no-tag',
-      stdout('last branches', 'branch-heads/9.3'),
-      api.v8.version_file(3, 'branch-heads/9.3', prefix="Checking branch 9.3."),
-      stdout('Checking branch 9.3.Proof of version change',
+      stdout('last branches', 'branch-heads/11.3'),
+      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
+      stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 9.3.Verify tag.Commit at HEAD', '123'),
-      api.post_process(MustRun, 'Checking branch 9.3.Verify tag.git push'),
+      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
+      api.post_process(
+          MustRun, 'Checking branch 11.3.Verify version tag.git push'),
       api.post_process(DropExpectation),
   )
 
   yield test(
       'branch-with-correct-tags',
-      stdout('last branches', 'branch-heads/9.3'),
-      api.v8.version_file(3, 'branch-heads/9.3', prefix="Checking branch 9.3."),
-      stdout('Checking branch 9.3.Proof of version change',
+      stdout('last branches', 'branch-heads/11.3'),
+      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
+      stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 9.3.Verify tag.Commit at 3.4.3.3', '123'),
-      stdout('Checking branch 9.3.Verify tag.Commit at HEAD', '123'),
+      stdout('Checking branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'),
+      stdout('Checking branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'),
+      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
       stdout(
-          'Checking branch 9.3.Verify LKGR.'
-          'git ls-remote refs_heads_9.3-lkgr', '112233'),
+          'Checking branch 11.3.Verify LKGR.'
+          'git ls-remote refs_heads_11.3-lkgr', '112233'),
       stdout(
-          'Checking branch 9.3.Verify LKGR.'
-          'git ls-remote refs_tags_3.4.3.3', '112233'),
-      api.post_process(DoesNotRunRE, 'Checking branch 9.3.'
-                       'Verify tag.git tag'),
+          'Checking branch 11.3.Verify LKGR.'
+          'git ls-remote refs_tags_11.4.3.3', '112233'),
+      api.post_process(DoesNotRunRE, 'Checking branch 11.3.'
+                       'Verify version tag.git tag'),
       api.post_process(
-          MustRun, 'Checking branch 9.3.Verify LKGR.'
+          MustRun, 'Checking branch 11.3.Verify LKGR.'
           'There is no new lkgr.'),
   )
 
   yield test(
       'lkgr-branch',
-      stdout('last branches', 'branch-heads/9.3'),
-      api.v8.version_file(3, 'branch-heads/9.3', prefix="Checking branch 9.3."),
-      stdout('Checking branch 9.3.Proof of version change',
+      stdout('last branches', 'branch-heads/11.3'),
+      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
+      stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 9.3.Verify tag.Commit at 3.4.3.3', '123'),
-      stdout('Checking branch 9.3.Verify tag.Commit at HEAD', '123'),
+      stdout('Checking branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'),
+      stdout('Checking branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'),
+      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
       stdout(
-          'Checking branch 9.3.Verify LKGR.'
-          'git ls-remote refs_heads_9.3-lkgr', 'faceb00c'),
+          'Checking branch 11.3.Verify LKGR.'
+          'git ls-remote refs_heads_11.3-lkgr', 'faceb00c'),
       stdout(
-          'Checking branch 9.3.Verify LKGR.'
-          'git ls-remote refs_tags_3.4.3.3', '404'),
-      api.post_process(MustRun, 'Checking branch 9.3.Verify LKGR.git push'),
+          'Checking branch 11.3.Verify LKGR.'
+          'git ls-remote refs_tags_11.4.3.3', '404'),
+      api.post_process(MustRun, 'Checking branch 11.3.Verify LKGR.git push'),
+      api.post_process(DropExpectation),
+  )
+
+  yield test(
+      'no-pgo-profiles',
+      stdout('last branches', 'branch-heads/11.3'),
+      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
+      stdout('Checking branch 11.3.Proof of version change',
+             'dummy proof of version change'),
+      stdout('Checking branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'),
+      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
+      api.post_process(
+          DoesNotRunRE,
+          '.*Verify LKGR.*',
+      ),
       api.post_process(DropExpectation),
   )
 
   yield test(
       'dry-run-branch-no-tag-no-lkgr',
       api.runtime(is_experimental=True),
-      stdout('last branches', 'branch-heads/9.3'),
-      stdout('Checking branch 9.3.Proof of version change',
+      stdout('last branches', 'branch-heads/11.3'),
+      stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
-      stdout('Checking branch 9.3.Verify tag.Commit at HEAD', '123'),
-      api.v8.version_file(3, 'branch-heads/9.3', prefix="Checking branch 9.3."),
+      stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),
+      stdout('Checking branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'),
+      version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
       stdout(
-          'Checking branch 9.3.Verify LKGR.'
-          'git ls-remote refs_heads_9.3-lkgr', '3e1a'),
+          'Checking branch 11.3.Verify LKGR.'
+          'git ls-remote refs_heads_11.3-lkgr', '3e1a'),
       stdout(
-          'Checking branch 9.3.Verify LKGR.'
-          'git ls-remote refs_tags_3.4.3.3', '404'),
+          'Checking branch 11.3.Verify LKGR.'
+          'git ls-remote refs_tags_11.4.3.3', '404'),
       api.post_process(
-          MustRun, 'Checking branch 9.3.Verify LKGR.'
+          MustRun, 'Checking branch 11.3.Verify LKGR.'
           'Dry-run lkgr update 404'),
   )
