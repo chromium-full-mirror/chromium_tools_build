@@ -402,7 +402,6 @@ def CalculateCodeCoverage(api, paths):
 
   # Process the raw code coverage data.
   api.step('process raw coverage data', [
-      'python',
       api.profiles.merge_results_script,
       '--task-output-dir',
       paths.checkout_path,

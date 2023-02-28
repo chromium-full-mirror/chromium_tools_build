@@ -383,7 +383,6 @@
   },
   {
     "cmd": [
-      "python",
       "[START_DIR]/openscreen/build/code_coverage/merge_results.py",
       "--task-output-dir",
       "[START_DIR]/openscreen",
