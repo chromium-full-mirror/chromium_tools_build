@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DoesNotRun, DropExpectation,
+                                        StatusSuccess, StepCommandContains,
+                                        StepSuccess)
+
 DEPS = [
     'chromium_android',
     'recipe_engine/json',
@@ -25,8 +29,23 @@ def GenTests(api):
       api.properties(denylist_exists=True),
       api.override_step_data('read_denylist_file',
                              api.json.output({'serial1': {}})),
+      api.post_process(StepSuccess, 'read_denylist_file'),
+      api.post_process(StepCommandContains, 'print devices', [
+          'echo',
+          'serial2',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
   yield api.test(
       'no_denylist',
       api.properties(denylist_exists=False),
+      api.post_process(DoesNotRun, 'read_denylist_file'),
+      api.post_process(StepCommandContains, 'print devices', [
+          'echo',
+          'serial1',
+          'serial2',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )

@@ -938,7 +938,7 @@ class AndroidApi(recipe_api.RecipeApi):
           stdout=self.m.raw_io.output_text(),
           name='Finding changed files matching diff filter: %s' % diff_filter,
           step_test_data=(lambda: self.m.raw_io.test_api.stream_output_text(
-              'fake/file1.java\nfake/file2.java;\nfake/file3.java')))
+              'fake/file1.java\nfake/file2.java\nfake/file3.java')))
     return diff.stdout.splitlines()
 
   @contextlib.contextmanager

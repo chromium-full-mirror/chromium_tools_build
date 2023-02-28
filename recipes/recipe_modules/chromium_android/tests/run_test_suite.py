@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine import post_process
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains)
 
 from RECIPE_MODULES.build.chromium_tests.steps import ResultDB
 
@@ -22,4 +23,19 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic', api.buildbucket.try_build())
+  yield api.test(
+      'basic',
+      api.buildbucket.try_build(),
+      api.post_process(StepCommandContains, 'test_suite', [
+          '-t',
+          '1200',
+      ]),
+      api.post_process(StepCommandContains, 'test_suite-with-rdb', [
+          'rdb',
+          'stream',
+          '-tag',
+          'step_name:test_suite-with-rdb',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )

@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains, StepSuccess)
+
 DEPS = [
   'build',
   'chromium',
@@ -15,4 +18,15 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.post_process(StepSuccess, 'zip_build_product'),
+      api.post_process(StepSuccess, 'gsutil upload_build_product'),
+      api.post_process(StepCommandContains, 'gsutil upload_build_product', [
+          'cp',
+          'None/out/build_product.zip',
+          'gs://test-bucket/test/path',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )

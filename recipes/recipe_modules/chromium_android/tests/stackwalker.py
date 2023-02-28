@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepSuccess)
+
 DEPS = [
   'chromium',
   'chromium_android',
@@ -17,4 +20,24 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.path.exists(
+          api.path['checkout'].join('out', 'Release', 'lib.unstripped',
+                                    'libchrome.so'),
+          api.path['checkout'].join('out', 'Release', 'microdump_stackwalk'),
+          api.path['checkout'].join('out', 'Release', 'dump_syms'),
+      ),
+      api.post_process(StepSuccess,
+                       'generate breakpad symbols for libchrome.so'),
+      api.post_process(StepSuccess, 'symbolized breakpad crashes'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'missing_binaries',
+      api.post_process(StepSuccess, 'skipping stackwalker step'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
