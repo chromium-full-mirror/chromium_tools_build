@@ -14,6 +14,8 @@ def angle_base(c):
       'infra', 'specs', 'angle_mb_config.pyl')
   c.build_dir = c.CHECKOUT_PATH.join('out')
   c.source_side_spec_dir = c.CHECKOUT_PATH.join('infra', 'specs')
+  c.analyze_config_path = c.CHECKOUT_PATH.join('infra', 'specs',
+                                               'trybot_analyze_config.json')
 
   if c.HOST_PLATFORM == 'mac' and c.TARGET_PLATFORM != 'ios':
     # Update via recipe logic in api.chromium.runhooks and mac_toolchains DEPS

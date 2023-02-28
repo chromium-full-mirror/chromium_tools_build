@@ -108,6 +108,11 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           run_asan_test=Single(bool, required=False),
       ),
       source_side_spec_dir=Single(Path),
+      # Path to the analyze config file used for configuring ignores/exclusions
+      # for analyze (e.g. //testing/buildbot/trybot_analyze_config.json). If not
+      # provided, then trybot_analyze_config.json in source_side_spec_dir will
+      # be used.
+      analyze_config_path=Single(Path, required=False),
       use_tot_clang=Single(bool, empty_val=False, required=False),
 
       # Some platforms do not have a 1:1 correlation of BUILD_CONFIG to what is
@@ -204,6 +209,8 @@ def BASE(c):
       # Windows requires 64-bit builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
+  # TODO(crbug.com/1420014) Once the downstream repos have been updated to set
+  # analyze_config_path, set it here
   c.source_side_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
   # Test runner memory tools that are not compile-time based.
   c.runtests.memory_tests_runner = c.CHECKOUT_PATH.join(

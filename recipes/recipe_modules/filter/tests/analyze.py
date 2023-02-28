@@ -28,7 +28,6 @@ def RunSteps(api):
           api.properties.get('affected_files', ['file1', 'file2']),
           api.properties.get('test_targets', ['test1', 'test2']),
           api.properties.get('compile_targets', ['compile1', 'compile2']),
-          'config.json',
           builder_id=chromium.BuilderId.create_for_group(
               'test_group', 'test_buildername'),
           **api.properties.get('analyze_kwargs', {}),

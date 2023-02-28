@@ -2096,7 +2096,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           affected_files,
           test_targets,
           additional_compile_targets,
-          'trybot_analyze_config.json',
           builder_id=builder_id,
           mb_config_path=mb_config_path,
           additional_names=analyze_names)

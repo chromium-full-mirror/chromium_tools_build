@@ -134,7 +134,6 @@ def _compute_targets_and_tests(api, builder_config, targets_config, builder_id,
             changed_files,
             test_targets=tuple(requested_test_targets),
             additional_compile_targets=tuple(compile_targets),
-            config_file_name='trybot_analyze_config.json',
             builder_id=builder_id))
 
     actual_tests_to_run = []

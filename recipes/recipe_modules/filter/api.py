@@ -6,7 +6,7 @@ import functools
 import posixpath
 import re
 
-from typing import Any, Callable, Collection, Dict, Optional, Tuple
+from typing import Any, Callable, Collection, Dict, List, Optional, Tuple
 
 from recipe_engine import config_types
 from recipe_engine import recipe_api
@@ -22,7 +22,10 @@ _Analyzer = Callable[[_AnalyzeInput, _AnalyzeOutput], step_data.StepData]
 
 class FilterApi(recipe_api.RecipeApi):
 
-  def _load_analyze_config(self, file_name):
+  def _load_analyze_config(
+      self,
+      config_path: config_types.Path,
+  ) -> Dict[str, Dict[str, List[str]]]:
     """Load the given analyze config.
 
     Analyze config files are expected to be JSONs in the following format:
@@ -69,7 +72,6 @@ class FilterApi(recipe_api.RecipeApi):
     "base". Some clients may require additional analyze configs (e.g.
     chromium_tests requires "chromium" in addition to "base").
     """
-    config_path = self.m.chromium.c.source_side_spec_dir.join(file_name)
     step_result = self.m.json.read(
       'read filter exclusion spec',
       config_path,
@@ -85,7 +87,7 @@ class FilterApi(recipe_api.RecipeApi):
   def _get_path_matchers(
       self,
       additional_names: Collection[str],
-      config_file_name: str,
+      config_path: config_types.Path,
   ) -> Tuple[Collection[re.Pattern], Collection[re.Pattern]]:
     """Get the regular expressions for excluding and ignoring paths.
 
@@ -100,7 +102,7 @@ class FilterApi(recipe_api.RecipeApi):
       matching paths to exclude and the second element is a list of
       patterns matching paths to ignore.
     """
-    config = self._load_analyze_config(config_file_name)
+    config = self._load_analyze_config(config_path)
 
     names = ['base']
     names.extend(additional_names or [])
@@ -261,7 +263,8 @@ class FilterApi(recipe_api.RecipeApi):
       affected_files: Collection[str],
       test_targets: Optional[Collection[str]],
       additional_compile_targets: Optional[Collection[str]],
-      config_file_name: str = 'trybot_analyze_config.json',
+      *,
+      config_path: config_types.Path = None,
       additional_names: Optional[Collection[str]] = None,
       builder_id: Optional[chromium.BuilderId] = None,
       mb_path: Optional[config_types.Path] = None,
@@ -333,8 +336,13 @@ class FilterApi(recipe_api.RecipeApi):
     if additional_names is None:
       additional_names = ['chromium']
 
-    exclusions, ignores = self._get_path_matchers(additional_names,
-                                                  config_file_name)
+    if config_path is None:
+      config_path = (
+          self.m.chromium.c.analyze_config_path or
+          self.m.chromium.c.source_side_spec_dir.join(
+              'trybot_analyze_config.json'))
+
+    exclusions, ignores = self._get_path_matchers(additional_names, config_path)
 
     # TODO(gbeaty) Check if this is necessary, the documentation for the
     # parameter indicates that they should always have forward slashes

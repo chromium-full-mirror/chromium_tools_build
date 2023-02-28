@@ -85,7 +85,7 @@ def RunSteps(api):
       # Filter out all targets that the patch doesn't affect.
       affected_files = api.chromium_checkout.get_files_affected_by_patch()
       test_targets, compile_targets = api.filter.analyze(
-          affected_files, None, fuzz_labels, 'trybot_analyze_config.json')
+          affected_files, None, fuzz_labels)
       affected_fuzz_labels = sorted(test_targets + compile_targets)
       if not affected_fuzz_labels:
         return

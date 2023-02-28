@@ -176,8 +176,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
       self._clear_failed_expectation_files()
 
       affected_files = self.m.chromium_checkout.get_files_affected_by_patch()
-      if not self.m.filter.analyze(affected_files, self._analyze_targets, None,
-                                   'trybot_analyze_config.json')[0]:
+      if not self.m.filter.analyze(affected_files, self._analyze_targets,
+                                   None)[0]:
         step_result = self.m.step.active_result
         step_result.presentation.properties[constants
                                             .PLUGIN_OUTPUT_PROPERTY_NAME] = {
