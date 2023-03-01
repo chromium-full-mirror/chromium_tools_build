@@ -29,7 +29,7 @@ def RunSteps(api, builder_config, clobber):
     api.devtools.clean_out_dir(builder_config, clobber)
     api.devtools.run_e2e(builder_config)
     with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
-      api.step.empty('Nothing')
+      api.step('Nothing', [])
 
 
 def GenTests(api):

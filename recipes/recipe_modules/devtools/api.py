@@ -65,7 +65,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
   @contextmanager
   def collect_screenshots_on_trybot(self, bucket):
     if self.m.tryserver.is_tryserver:
-      with self.collect_screenshots(bucket):
+      with self.m.step.defer_results(), self.collect_screenshots(bucket):
         yield
     else:
       yield
