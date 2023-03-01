@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine import post_process
+from recipe_engine.post_process import (DoesNotRun, DropExpectation,
+                                        StatusSuccess, StepSuccess)
 
 from RECIPE_MODULES.depot_tools.gclient import (api as gclient, CONFIG_CTX as
                                                 GCLIENT_CONFIG_CTX)
@@ -48,33 +49,51 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test(
-      'full',
+      'full_ci',
       api.platform('linux', 64),
       api.buildbucket.generic_build(),
       api.path.exists(
           api.chromium_checkout.src_dir.join('out/Release/browser_tests')),
+      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
+      api.post_process(StepSuccess, 'gclient config'),
+      api.post_process(StepSuccess, 'bot_update'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   def verify_checkout_dir(check, step_odict, expected_path):
     step = step_odict['git diff to analyze patch']
     expected_path = str(expected_path)
     check(step.cwd == expected_path)
-    return {}
 
   yield api.test(
-      'win',
+      'win_try',
       api.buildbucket.try_build(),
       api.platform('win', 64),
-      api.post_process(verify_checkout_dir,
-                       api.path['cache'].join('builder', 'src')),
+      api.post_check(verify_checkout_dir,
+                     api.path['cache'].join('builder', 'src')),
+      api.post_process(StepSuccess, 'taskkill'),
+      api.post_process(StepSuccess, 'gclient config'),
+      api.post_process(StepSuccess, 'gerrit fetch current CL info'),
+      api.post_process(StepSuccess, 'bot_update'),
+      api.post_process(StepSuccess, 'git diff to analyze patch'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'linux',
+      'linux_try',
       api.buildbucket.try_build(),
       api.platform('linux', 64),
-      api.post_process(verify_checkout_dir,
-                       api.path['cache'].join('builder', 'src')),
+      api.post_check(verify_checkout_dir,
+                     api.path['cache'].join('builder', 'src')),
+      api.post_process(DoesNotRun, 'taskkill'),
+      api.post_process(StepSuccess, 'gclient config'),
+      api.post_process(StepSuccess, 'gerrit fetch current CL info'),
+      api.post_process(StepSuccess, 'bot_update'),
+      api.post_process(StepSuccess, 'git diff to analyze patch'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   def verify_revision_resolver_in_log(check, steps, expected):
@@ -86,5 +105,5 @@ def GenTests(api):
       api.properties(gclient_config='revision_resolver'),
       api.post_check(verify_revision_resolver_in_log,
                      "*RevisionFallbackChain*"),
-      api.post_process(post_process.DropExpectation),
+      api.post_process(DropExpectation),
   )
