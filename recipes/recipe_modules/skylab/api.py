@@ -71,6 +71,10 @@ class SkylabApi(recipe_api.RecipeApi):
           if t.spec.bucket:
             cmd.extend(['-bucket', t.spec.bucket])
 
+          if t.spec.public_builder and t.spec.public_builder_bucket:
+            cmd.extend(['-public-builder', t.spec.public_builder])
+            cmd.extend(['-public-builder-bucket', t.spec.public_builder_bucket])
+
           cmd.extend([
               '-pool', t.spec.dut_pool if t.spec.dut_pool else 'DUT_POOL_QUOTA'
           ])

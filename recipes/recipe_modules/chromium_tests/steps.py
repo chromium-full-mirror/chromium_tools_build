@@ -2823,6 +2823,12 @@ class SkylabTestSpec(TestSpec):
   cros_img = attrib(str)
   # The optional GS bucket of CrOS image.
   bucket = attrib(str, default='')
+  # The optional Public CTP Builder and luci bucket.
+  # The public_builder and public_builder_bucket fields can be used when
+  # default CTP builder is not sufficient/advised
+  # (ex: chromium cq, satlab for partners).
+  public_builder = attrib(str, default='')
+  public_builder_bucket = attrib(str, default='')
   # The skylab device pool to run the test. By default the
   # quota pool, shared by all CrOS tests.
   dut_pool = attrib(str, default='')

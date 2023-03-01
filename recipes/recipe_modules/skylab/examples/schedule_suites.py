@@ -83,7 +83,9 @@ REQUESTS = [
         'm88_tast_with_retry',
         tast_expr=LACROS_TAST_EXPR,
         retries=3,
-        bucket='a_different_chromium_bucket'),
+        bucket='a_different_chromium_bucket',
+        public_builder='ctp-public-builder',
+        public_builder_bucket='public-bucket'),
     gen_skylab_test(
         'm88_gtest_test_args', tast_expr=None, test_args=LACROS_GTEST_ARGS),
     gen_skylab_test(
@@ -163,9 +165,11 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[0].name + '.schedule', [
               'run', 'test', '-json', '-board', 'eve', '-bucket',
-              'a_different_chromium_bucket', '-pool', 'DUT_POOL_QUOTA',
-              '-image', 'eve-release/R88-13545.0.0', '-timeout-mins', '60',
-              '-qs-account', 'lacros', '-max-retries', '3'
+              'a_different_chromium_bucket', '-public-builder',
+              'ctp-public-builder', '-public-builder-bucket', 'public-bucket',
+              '-pool', 'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-timeout-mins', '60', '-qs-account', 'lacros', '-max-retries',
+              '3'
           ]),
       api.skylab.mock_wait_on_suites('find test runner build', len(REQUESTS)),
       api.post_process(post_process.DropExpectation),
