@@ -81,6 +81,7 @@ def GenTests(api):
       api.post_check(
           api.swarming.check_triggered_request, '[trigger] windows gpu task',
           lambda check, req: check(req[0].named_caches['foo'] == 'cache/foo')),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
