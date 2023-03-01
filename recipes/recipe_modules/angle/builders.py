@@ -142,6 +142,8 @@ _SPEC = {
         _create_tester_config('mac', 64, 'mac-test'),
     'mac-dbg-compile':
         _create_builder_config('mac', 'Debug', 64),
+    'mac-exp-amd':
+        _create_tester_config('mac', 64, 'mac-exp-test'),
     'mac-exp-intel':
         _create_tester_config('mac', 64, 'mac-exp-test'),
     'mac-exp-test':

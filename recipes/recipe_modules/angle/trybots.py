@@ -199,6 +199,11 @@ _SPEC = {
                 try_spec.TryMirror.create(
                     builder_group='angle',
                     buildername='mac-exp-test',
+                    tester='mac-exp-amd',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='mac-exp-test',
                     tester='mac-exp-intel',
                 ),
             ],
