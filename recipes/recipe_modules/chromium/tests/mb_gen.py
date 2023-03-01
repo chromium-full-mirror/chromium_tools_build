@@ -46,10 +46,6 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def StepEnvContains(check, step_odict, step, key, value):
-    check('env for step %s contained %s: %s' % (step, key, value),
-          (key, value) in step_odict[step].env.items())
-
   yield api.test(
       'basic',
       api.post_process(post_process.StatusSuccess),
@@ -68,10 +64,10 @@ def GenTests(api):
       'mac',
       api.platform('mac', 64),
       api.properties(target_platform='mac'),
-      api.post_check(StepEnvContains, 'lookup GN args', 'FORCE_MAC_TOOLCHAIN',
-                     '1'),
-      api.post_check(StepEnvContains, 'generate_build_files',
-                     'FORCE_MAC_TOOLCHAIN', '1'),
+      api.post_process(post_process.StepEnvContains, 'lookup GN args',
+                       {'FORCE_MAC_TOOLCHAIN': '1'}),
+      api.post_process(post_process.StepEnvContains, 'generate_build_files',
+                       {'FORCE_MAC_TOOLCHAIN': '1'}),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

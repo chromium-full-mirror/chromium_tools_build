@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import DropExpectation, StatusSuccess
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepEnvContains)
 
 DEPS = [
     'chromium',
@@ -25,10 +26,6 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def StepEnvContains(check, step_odict, step, key, value):
-    check('env for step %s contained %s: %s' % (step, key, value),
-          (key, value) in step_odict[step].env.items())
-
   yield api.test(
       'basic',
       api.platform('mac', 64),
@@ -40,7 +37,7 @@ def GenTests(api):
       'goma_store_only',
       api.platform('mac', 64),
       api.properties(chromium_apply_config=['goma_store_only']),
-      api.post_check(StepEnvContains, 'test', 'GOMA_STORE_ONLY', 'True'),
+      api.post_process(StepEnvContains, 'test', {'GOMA_STORE_ONLY': 'True'}),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
@@ -49,8 +46,8 @@ def GenTests(api):
       'goma_large_cache_file',
       api.platform('mac', 64),
       api.properties(chromium_apply_config=['goma_large_cache_file']),
-      api.post_check(StepEnvContains, 'test',
-                     'GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB', '256'),
+      api.post_process(StepEnvContains, 'test',
+                       {'GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB': '256'}),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

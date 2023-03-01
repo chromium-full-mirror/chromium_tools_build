@@ -43,10 +43,6 @@ def RunSteps(api, use_goma):
 
 def GenTests(api):
 
-  def StepEnvContains(check, step_odict, step, key, value):
-    check('env for step %s contained %s: %s' % (step, key, value),
-          (key, value) in step_odict[step].env.items())
-
   yield api.test(
       'basic',
       api.chromium.generic_build(builder_group='test_group'),
@@ -173,7 +169,8 @@ def GenTests(api):
           '-j',
           '500',
       ]),
-      api.post_check(StepEnvContains, 'compile', 'GOMA_DUMP', '1'),
+      api.post_process(post_process.StepEnvContains, 'compile',
+                       {'GOMA_DUMP': '1'}),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
