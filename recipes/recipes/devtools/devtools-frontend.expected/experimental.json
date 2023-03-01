@@ -370,6 +370,37 @@
   },
   {
     "cmd": [
+      "git",
+      "commit",
+      "-am",
+      "---"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "commit current patch"
+  },
+  {
+    "cmd": [
       "rdb",
       "stream",
       "--",
@@ -385,6 +416,9 @@
       "--coverage"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/devtools-frontend/third_party"
@@ -403,6 +437,219 @@
       }
     },
     "name": "Interactions"
+  },
+  {
+    "cmd": [],
+    "name": "upload screenshots"
+  },
+  {
+    "cmd": [
+      "git",
+      "add",
+      "test/interactions/goldens"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload screenshots.stage goldens",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "diff",
+      "--staged",
+      "--binary",
+      "--output",
+      "[CLEANUP]/screenshots_tmp_1/screenshot.patch",
+      "--",
+      "test/interactions/goldens"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload screenshots.create patch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "reset"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload screenshots.unstage goldens",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "--",
+      "."
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload screenshots.revert golden updates",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-dff"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload screenshots.remove newly created goldens",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/screenshots_tmp_1/screenshot.patch",
+      "gs://devtools-frontend-screenshots/screenshots/linux/91827/1/screenshot.patch"
+    ],
+    "env": {
+      "FORCE_UPDATE_ALL_GOLDENS": "True"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload screenshots.gsutil upload patch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@screenshots/linux/91827/1/screenshot.patch@https://storage.cloud.google.com/devtools-frontend-screenshots/screenshots/linux/91827/1/screenshot.patch@@@"
+    ]
   },
   {
     "cmd": [

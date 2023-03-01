@@ -28,7 +28,7 @@ def RunSteps(api, builder_config, clobber):
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
     api.devtools.run_e2e(builder_config)
-    with api.devtools.collect_screenshots('dummy-bucket'):
+    with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
       api.step.empty('Nothing')
 
 
@@ -44,8 +44,17 @@ def GenTests(api):
         patch_set=1,
         **kwargs)
 
+  def ci_build(builder='Builder'):
+    return api.buildbucket.ci_build(
+        project='devtools', builder=builder, git_repo=git_repo)
 
   yield (api.test('release') + try_build())
+
+  yield (api.test('ci_release') +
+         ci_build()+
+         api.post_process(post_process.DoesNotRun, 'upload screenshots') +
+         api.post_process(post_process.StatusSuccess) +
+         api.post_process(post_process.DropExpectation))
 
   yield (api.test('parallel release') + try_build(builder='parallel builder'))
 

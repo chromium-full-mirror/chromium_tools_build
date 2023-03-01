@@ -61,6 +61,15 @@ class DevToolsAPI(recipe_api.RecipeApi):
         "--test-server-type='hosted-mode'", "--target=" + builder_config
     ] + args)
 
+
+  @contextmanager
+  def collect_screenshots_on_trybot(self, bucket):
+    if self.m.tryserver.is_tryserver:
+      with self.collect_screenshots(bucket):
+        yield
+    else:
+      yield
+
   @contextmanager
   def collect_screenshots(self, bucket):
     update_env = {"FORCE_UPDATE_ALL_GOLDENS": True}

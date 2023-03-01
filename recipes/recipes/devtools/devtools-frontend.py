@@ -106,18 +106,20 @@ def run_lint_check(api):
                                'run_lint_check_css.js')
 
 
-
 def run_interactions(api, builder_config):
-  api.devtools.rdb_node_script(
-      'Interactions',
-      'run_test_suite.js',
-      [
-          "--test-suite-path=gen/test/interactions",
-          "--test-suite-source-dir=test/interactions",
-          "--test-server-type='component-docs'", "--target=" + builder_config,
-          "--coverage"
-      ],
-  )
+  bucket = 'devtools-frontend-screenshots'
+  with api.devtools.collect_screenshots_on_trybot(bucket):
+    api.devtools.rdb_node_script(
+        'Interactions',
+        'run_test_suite.js',
+        [
+            "--test-suite-path=gen/test/interactions",
+            "--test-suite-source-dir=test/interactions",
+            "--test-server-type='component-docs'",
+            "--target=" + builder_config,
+            "--coverage"
+        ],
+    )
 
 
 def can_run_experimental_steps(api):
