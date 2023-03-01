@@ -209,9 +209,9 @@ def BASE(c):
       # Windows requires 64-bit builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
-  # TODO(crbug.com/1420014) Once the downstream repos have been updated to set
-  # analyze_config_path, set it here
   c.source_side_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
+  c.analyze_config_path = c.CHECKOUT_PATH.join('testing', 'buildbot',
+                                               'trybot_analyze_config.json')
   # Test runner memory tools that are not compile-time based.
   c.runtests.memory_tests_runner = c.CHECKOUT_PATH.join(
       'tools',

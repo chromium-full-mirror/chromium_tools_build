@@ -337,10 +337,10 @@ class FilterApi(recipe_api.RecipeApi):
       additional_names = ['chromium']
 
     if config_path is None:
-      config_path = (
-          self.m.chromium.c.analyze_config_path or
-          self.m.chromium.c.source_side_spec_dir.join(
-              'trybot_analyze_config.json'))
+      config_path = self.m.chromium.c.analyze_config_path
+      assert config_path, (
+          'either config_path must be passed in'
+          ' or the chromium config must set analyze_config_path')
 
     exclusions, ignores = self._get_path_matchers(additional_names, config_path)
 
