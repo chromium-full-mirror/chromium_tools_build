@@ -1156,6 +1156,7 @@ class TestGroup:
           unexpected_result_invocations,
           suite_name=test.canonical_name,
           total_tests_ran=test_stats.total_test_results,
+          allow_flaky_passes=suffix != 'without patch',
           failure_on_exit=test.failure_on_exit(suffix),
           test_id_prefix=test.test_id_prefix)
     test.update_rdb_results(suffix, res)

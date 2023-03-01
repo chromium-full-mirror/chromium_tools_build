@@ -725,6 +725,59 @@ def GenTests(api):
   )
 
   yield api.test(
+      'retry_without_patch_with_flaky_failures_and_exit_code',
+      api.platform('linux', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarm_hashes={
+          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'with patch', failures=['Test.Two']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'without patch', flaky_failing_tests=['Test.Two']),
+      api.post_process(post_process.StepTextContains,
+                       'base_unittests (test results summary)',
+                       ['ignored', 'Test.Two']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'retry_without_patch_with_all_skips_and_exit_code',
+      api.platform('linux', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarm_hashes={
+          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'with patch', failures=['Test.Two']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', 'without patch', skips=['Test.Two']),
+      api.post_process(
+          post_process.StepTextContains,
+          'base_unittests (test results summary)', [
+              'Tests failed with patch, and caused build to fail:<br/>'
+              'Test.Two<br/>'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'disable_deapply_patch_affected_files',
       api.platform('linux', 64),
       api.chromium.try_build(

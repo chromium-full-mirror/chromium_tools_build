@@ -234,11 +234,20 @@ class RDBPerSuiteResults:
              suite_name,
              test_id_prefix,
              total_tests_ran,
+             allow_flaky_passes=True,
              failure_on_exit=False):
     """
     Args:
       invocations, dict of {invocation_id: api.resultdb.Invocation} as
           returned by resultdb recipe_module's query().
+      allow_flaky_passes: If True and an individual test ran multiple times
+          and passes at least once, the individual test is passing. If False
+          and the individual test passed and failed, the test is failing.
+          For example, if an individual test ran multiple times with
+          [FAIL, PASS, PASS, FAIL, PASS], the test will be categorized as
+          unexpectedly failing. This param is useful for retry wo patch suite
+          runs because the recipe is checking if failing tests fail at least
+          once without patch.
       failure_on_exit: If True, indicates the test harness/runner exited with a
           non-zero exit code. If this occurs and no unexpected failures were
           reported, it indicates invalid test results.
@@ -287,8 +296,15 @@ class RDBPerSuiteResults:
       # expected to CRASH and runs with results [FAIL, CRASH]. RDB returns
       # these results, but we don't consider them interesting for the
       # purposes of recipe retry/pass/fail decisions.
-      if any(tr.expected for tr in test_results):
-        continue
+      if allow_flaky_passes:
+        if any(tr.expected for tr in test_results):
+          continue
+      else:
+        if any(not tr.expected for tr in test_results):
+          unexpected_failing_tests.add(individual_test)
+          if all(tr.status == test_result_pb2.SKIP for tr in test_results):
+            unexpected_skipped_tests.add(individual_test)
+          continue
       individual_unexpected_test_by_test_name[
           individual_test.test_name] = individual_test
       if all(tr.status != test_result_pb2.PASS for tr in test_results):
