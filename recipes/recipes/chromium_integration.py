@@ -50,7 +50,7 @@ def GenTests(api):
 
   def blink_test_setup():
     return (try_props(extra_swarmed_tests=['blink_web_tests']) +
-            api.chromium_tests.read_source_side_spec(
+            api.chromium_tests.read_targets_spec(
                 'fake-group', {
                     'fake-builder': {
                         'isolated_scripts': [{

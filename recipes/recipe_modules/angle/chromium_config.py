@@ -13,7 +13,7 @@ def angle_base(c):
   c.project_generator.config_path = c.CHECKOUT_PATH.join(
       'infra', 'specs', 'angle_mb_config.pyl')
   c.build_dir = c.CHECKOUT_PATH.join('out')
-  c.source_side_spec_dir = c.CHECKOUT_PATH.join('infra', 'specs')
+  c.targets_spec_dir = c.CHECKOUT_PATH.join('infra', 'specs')
   c.analyze_config_path = c.CHECKOUT_PATH.join('infra', 'specs',
                                                'trybot_analyze_config.json')
 

@@ -184,7 +184,7 @@ def GenTests(api):
   yield api.test(
       'invalid_json_test',
       ci_build('linux-clang-builder'),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'angle', {
               'linux-clang-builder': {
                   'isolated_scripts': [{
@@ -198,7 +198,7 @@ def GenTests(api):
   yield api.test(
       'failed_json_test',
       ci_build('linux-clang-builder'),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'angle', {
               'linux-clang-builder': {
                   'isolated_scripts': [{

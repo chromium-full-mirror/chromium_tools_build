@@ -85,7 +85,7 @@ def RunSteps(api, properties):
 def GenTests(api):
 
   def override_test_spec():
-    return api.chromium_tests.read_source_side_spec(
+    return api.chromium_tests.read_targets_spec(
         'fake-group', {
             'Fake Builder': {
                 'scripts': [{

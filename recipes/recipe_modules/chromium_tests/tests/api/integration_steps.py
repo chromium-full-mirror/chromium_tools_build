@@ -40,7 +40,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'blink_web_tests': 'dummy hash for blink_web_tests/size',
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{

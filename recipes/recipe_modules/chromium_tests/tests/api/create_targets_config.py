@@ -20,10 +20,10 @@ DEPS = [
 PROPERTIES = {
     'isolated_tests_only': Property(default=False),
     'expected_tests': Property(default=[]),
-    'source_side_spec_dir': Property(default=None),
+    'targets_spec_dir': Property(default=None),
 }
 
-FAKE_TEST_SPEC = {
+FAKE_TARGETS_SPEC = {
     'junit_tests': [{
         'name':
             'android_webview_junit_tests',
@@ -71,7 +71,7 @@ FAKE_TEST_SPEC = {
 }
 
 
-def RunSteps(api, isolated_tests_only, expected_tests, source_side_spec_dir):
+def RunSteps(api, isolated_tests_only, expected_tests, targets_spec_dir):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   targets_config = api.chromium_tests.create_targets_config(
@@ -86,7 +86,7 @@ def RunSteps(api, isolated_tests_only, expected_tests, source_side_spec_dir):
           "got_webrtc_revision_cp": "refs/heads/main@{#36539}",
       },
       api.chromium_checkout.src_dir,
-      source_side_spec_dir=source_side_spec_dir,
+      targets_spec_dir=targets_spec_dir,
       isolated_tests_only=isolated_tests_only)
   tests = []
   for t in targets_config.all_tests:
@@ -98,10 +98,10 @@ def RunSteps(api, isolated_tests_only, expected_tests, source_side_spec_dir):
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
-  def fake_test_spec():
-    return api.chromium_tests.read_source_side_spec(
+  def fake_targets_spec():
+    return api.chromium_tests.read_targets_spec(
         'fake-group',
-        {'fake-builder': FAKE_TEST_SPEC},
+        {'fake-builder': FAKE_TARGETS_SPEC},
     )
 
   def ctbc_properties():
@@ -125,7 +125,7 @@ def GenTests(api):
               'check_static_initializers'
           ],
       ),
-      fake_test_spec(),
+      fake_targets_spec(),
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-try-builder',
@@ -140,7 +140,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'source_side_spec_dir',
+      'targets_spec_dir',
       ctbc_properties(),
       api.properties(
           isolated_tests_only=False,
@@ -149,10 +149,9 @@ def GenTests(api):
               'browser_tests_no_swarm', 'android_webview_junit_tests',
               'check_static_initializers'
           ],
-          source_side_spec_dir=api.chromium_checkout.src_dir.join(
-              'infra/specs'),
+          targets_spec_dir=api.chromium_checkout.src_dir.join('infra/specs'),
       ),
-      fake_test_spec(),
+      fake_targets_spec(),
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-try-builder',
@@ -175,7 +174,7 @@ def GenTests(api):
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests'
           ],
       ),
-      fake_test_spec(),
+      fake_targets_spec(),
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-try-builder',

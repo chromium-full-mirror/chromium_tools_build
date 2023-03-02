@@ -146,7 +146,7 @@ def GenTests(api):
               },
           }),
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.angle',
           {
               'linux-angle-chromium-intel': {
@@ -204,7 +204,7 @@ def GenTests(api):
               },
           }),
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.angle',
           {
               'linux-angle-chromium-intel': {
@@ -247,7 +247,7 @@ def GenTests(api):
               },
           }),
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.swangle',
           {
               'linux-swangle-tot-swiftshader-x64': {

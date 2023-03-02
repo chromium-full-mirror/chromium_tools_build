@@ -126,7 +126,7 @@ def GenTests(api):
             builder=target_builder,
         ),
         api.properties(props_proto),
-        api.chromium_tests.read_source_side_spec(*_default_spec),
+        api.chromium_tests.read_targets_spec(*_default_spec),
         api.chromium_tests_builder_config.databases(_default_builders),
     ], api.empty_test_data())
     return t

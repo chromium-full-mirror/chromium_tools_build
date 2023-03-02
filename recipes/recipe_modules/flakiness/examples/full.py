@@ -245,7 +245,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [
@@ -416,7 +416,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-android-builder': {
                   'junit_tests': [{
@@ -497,7 +497,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-android-builder': {
                   'junit_tests': [{
@@ -575,7 +575,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-android-builder': {
                   'scripts': [{
@@ -627,7 +627,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -754,7 +754,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -830,7 +830,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -920,7 +920,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -1009,7 +1009,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -1112,7 +1112,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -1198,7 +1198,7 @@ def GenTests(api):
               },
           })),
       api.properties(assert_tests=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{

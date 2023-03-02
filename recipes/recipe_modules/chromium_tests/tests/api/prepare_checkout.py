@@ -203,7 +203,7 @@ def GenTests(api):
                       ),
               },
           })),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': 'invalid-spec',
       }),
       api.expect_exception('AttributeError'),
@@ -232,7 +232,7 @@ def GenTests(api):
                       ),
               },
           })),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {},
           'fake-builder-with-bad-spec': 'invalid-spec',
       }),
@@ -260,7 +260,7 @@ def GenTests(api):
                       ),
               },
           })),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {},
           'fake-builder-with-bad-spec': 'invalid-spec',
       }),

@@ -107,11 +107,16 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           enable_tsan=Single(bool, empty_val=False, required=False),
           run_asan_test=Single(bool, required=False),
       ),
-      source_side_spec_dir=Single(Path),
+      # The directory where targets spec files will be read for the builder. If
+      # not set, will fall back to source_side_spec_dir.
+      targets_spec_dir=Single(Path, required=False),
+      # TODO(crbug.com/1420081) Remove this and make targets_spec_dir required
+      # once downstream uses have been switched to targets_spec_dir
+      source_side_spec_dir=Single(Path, required=False),
       # Path to the analyze config file used for configuring ignores/exclusions
       # for analyze (e.g. //testing/buildbot/trybot_analyze_config.json). If not
-      # provided, then trybot_analyze_config.json in source_side_spec_dir will
-      # be used.
+      # provided, then trybot_analyze_config.json in
+      # targets_spec_dir/source_side_spec_dir will be used.
       analyze_config_path=Single(Path, required=False),
       use_tot_clang=Single(bool, empty_val=False, required=False),
 

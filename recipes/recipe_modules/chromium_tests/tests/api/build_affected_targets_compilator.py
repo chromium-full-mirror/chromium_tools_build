@@ -66,7 +66,7 @@ def GenTests(api):
           builder='fake-compilator',
       ),
       ctbc_properties(),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'scripts': [{
@@ -111,7 +111,7 @@ def GenTests(api):
           builder='fake-compilator',
       ),
       ctbc_properties(),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'scripts': [{

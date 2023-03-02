@@ -46,7 +46,7 @@ def GenTests(api):
   fake_try_builder = 'fake-try-builder'
   fake_test = 'fake_test'
   webgl_fake_test = 'webgl_fake_test'
-  fake_source_side_spec = (fake_group, {
+  fake_targets_spec = (fake_group, {
       fake_tester: {
           'isolated_scripts': [{
               'name': fake_test,
@@ -113,13 +113,14 @@ def GenTests(api):
           }),
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
-      api.chromium_tests.read_source_side_spec(*fake_source_side_spec),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
-          api.swarming.check_triggered_request, 'test_pre_run.[trigger] %s' %
-          fake_test, lambda check, req: check(req[0].env_vars[
-              'ISOLATED_OUTDIR'] == '${ISOLATED_OUTDIR}'), lambda check, req:
-          check(req[0].relative_cwd == 'out/Release'), lambda check, req: check(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] %s' % fake_test, lambda check, req: check(req[
+              0].env_vars['ISOLATED_OUTDIR'] == '${ISOLATED_OUTDIR}'),
+          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          lambda check, req: check(
               is_subsequence(req[0].command, fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
   )
@@ -140,15 +141,16 @@ def GenTests(api):
           }),
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
-      api.chromium_tests.read_source_side_spec(*fake_source_side_spec),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_check(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s' % fake_test, lambda check, req: check(req[
-              0].relative_cwd == 'out/Release'), lambda check, req: check(
-                  is_subsequence(req[0].command, fake_command_lines[fake_test])
-              ), lambda check, req: check(req[0].env_vars['ISOLATED_OUTDIR'] ==
-                                          '${ISOLATED_OUTDIR}')),
+          'test_pre_run.[trigger] %s' % fake_test,
+          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          lambda check, req: check(
+              is_subsequence(req[0].command, fake_command_lines[fake_test])),
+          lambda check, req: check(req[0].env_vars['ISOLATED_OUTDIR'] ==
+                                   '${ISOLATED_OUTDIR}')),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -168,7 +170,7 @@ def GenTests(api):
           }),
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
-      api.chromium_tests.read_source_side_spec(*fake_source_side_spec),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(post_process.DropExpectation),
   )
@@ -196,7 +198,7 @@ def GenTests(api):
           builder_db=fake_builder_db,
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
-      api.chromium_tests.read_source_side_spec(*fake_source_side_spec),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.step_data('archive command lines to RBE-CAS',
                     api.raw_io.output_text(fake_command_lines_digest)),
@@ -218,14 +220,15 @@ def GenTests(api):
           swarm_hashes=fake_swarm_hashes,
           swarming_command_lines_digest=fake_command_lines_digest,
           swarming_command_lines_cwd='out/Release_x64'),
-      api.chromium_tests.read_source_side_spec(*fake_source_side_spec),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.step_data('read command lines',
                     api.file.read_json(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] fake_test', lambda check, req: check(req[
-              0].relative_cwd == 'out/Release_x64'), lambda check, req:
-          check(is_subsequence(req[0].command, fake_command_lines[fake_test]))),
+          'test_pre_run.[trigger] fake_test',
+          lambda check, req: check(req[0].relative_cwd == 'out/Release_x64'),
+          lambda check, req: check(
+              is_subsequence(req[0].command, fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -242,7 +245,7 @@ def GenTests(api):
           swarming_rts_command_digest=fake_rts_command_lines_digest,
           swarming_inverted_rts_command_digest=fake_inverted_rts_command_lines_digest,
           swarming_command_lines_cwd='out/Release_x64'),
-      api.chromium_tests.read_source_side_spec(*fake_source_side_spec),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.step_data('read command lines',
                     api.file.read_json(fake_command_lines)),
       api.step_data('read command lines (2)',
@@ -251,9 +254,10 @@ def GenTests(api):
                     api.file.read_json(fake_inverted_rts_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] fake_test', lambda check, req: check(req[
-              0].relative_cwd == 'out/Release_x64'), lambda check, req:
-          check(is_subsequence(req[0].command, fake_command_lines[fake_test]))),
+          'test_pre_run.[trigger] fake_test',
+          lambda check, req: check(req[0].relative_cwd == 'out/Release_x64'),
+          lambda check, req: check(
+              is_subsequence(req[0].command, fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -265,7 +269,7 @@ def GenTests(api):
           parent_buildername=fake_builder,
           builder_db=fake_builder_db,
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           fake_group, {
               fake_tester: {
                   'gtest_tests': [{
@@ -304,7 +308,7 @@ def GenTests(api):
           config='Release',
           swarm_hashes=fake_swarm_hashes,
       ),
-      api.chromium_tests.read_source_side_spec(*fake_source_side_spec),
+      api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.override_step_data(
           'read filter exclusion spec',
           api.json.output({
@@ -343,7 +347,7 @@ def GenTests(api):
           }),
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           fake_group, {
               fake_tester: {
                   'isolated_scripts': [{
@@ -358,9 +362,10 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s (experimental)' % fake_test, lambda check,
-          req: check(req[0].relative_cwd == 'out/Release'), lambda check, req:
-          check(is_subsequence(req[0].command, fake_command_lines[fake_test]))),
+          'test_pre_run.[trigger] %s (experimental)' % fake_test,
+          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          lambda check, req: check(
+              is_subsequence(req[0].command, fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -380,7 +385,7 @@ def GenTests(api):
           }),
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           fake_group, {
               fake_tester: {
                   'isolated_scripts': [{
@@ -408,38 +413,38 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s on (nv) GPU on Linux' %
-          fake_test, lambda check, req: check(req[
-              0].relative_cwd == 'out/Release'), lambda check, req: check(
-                  is_subsequence(req[0].command, [
-                      'rdb',
-                      'stream',
-                      '-test-id-prefix',
-                      'ninja://:fake_test/',
-                      '-var',
-                      'builder:fake-tester',
-                      '-var',
-                      'device_os:android',
-                      '-var',
-                      'device_type:phone',
-                      '-var',
-                      'gpu:nv',
-                      '-var',
-                      'os:Linux',
-                      '-var',
-                      'test_suite:fake_test',
-                      '-test-location-base',
-                      '//test/location',
-                      '-tag',
-                      'step_name:%s on (nv) GPU on Linux' % fake_test,
-                      '-tag',
-                      'target_platform:linux',
-                      '-coerce-negative-duration',
-                      '-location-tags-file',
-                      '../../testing/location_tags.json',
-                      '-exonerate-unexpected-pass',
-                      '--',
-                  ] + fake_command_lines[fake_test]))),
+          'test_pre_run.[trigger] %s on (nv) GPU on Linux' % fake_test,
+          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          lambda check, req: check(
+              is_subsequence(req[0].command, [
+                  'rdb',
+                  'stream',
+                  '-test-id-prefix',
+                  'ninja://:fake_test/',
+                  '-var',
+                  'builder:fake-tester',
+                  '-var',
+                  'device_os:android',
+                  '-var',
+                  'device_type:phone',
+                  '-var',
+                  'gpu:nv',
+                  '-var',
+                  'os:Linux',
+                  '-var',
+                  'test_suite:fake_test',
+                  '-test-location-base',
+                  '//test/location',
+                  '-tag',
+                  'step_name:%s on (nv) GPU on Linux' % fake_test,
+                  '-tag',
+                  'target_platform:linux',
+                  '-coerce-negative-duration',
+                  '-location-tags-file',
+                  '../../testing/location_tags.json',
+                  '-exonerate-unexpected-pass',
+                  '--',
+              ] + fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -459,7 +464,7 @@ def GenTests(api):
           }),
       ),
       api.properties(swarm_hashes=fake_swarm_hashes),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           fake_group, {
               fake_tester: {
                   'gtest_tests': [{
@@ -474,18 +479,19 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s' % fake_test, lambda check, req: check(req[
-              0].relative_cwd == 'out/Release'), lambda check, req: check(
-                  is_subsequence(req[0].command, [
-                      'rdb', 'stream', '-test-id-prefix', 'ninja://:fake_test/',
-                      '-var', 'builder:fake-tester', '-var', 'os:Ubuntu-16.04',
-                      '-var', 'test_suite:fake_test', '-tag',
-                      'step_name:%s' % fake_test, '-tag',
-                      'target_platform:linux', '-coerce-negative-duration',
-                      '-location-tags-file', '../../testing/location_tags.json',
-                      '-exonerate-unexpected-pass', '--', 'result_adapter',
-                      'gtest', '-result-file', '${ISOLATED_OUTDIR}/output.json',
-                      '-artifact-directory', '${ISOLATED_OUTDIR}', '--'
-                  ] + fake_command_lines[fake_test]))),
+          'test_pre_run.[trigger] %s' % fake_test,
+          lambda check, req: check(req[0].relative_cwd == 'out/Release'),
+          lambda check, req: check(
+              is_subsequence(req[0].command, [
+                  'rdb', 'stream', '-test-id-prefix', 'ninja://:fake_test/',
+                  '-var', 'builder:fake-tester', '-var', 'os:Ubuntu-16.04',
+                  '-var', 'test_suite:fake_test', '-tag',
+                  'step_name:%s' % fake_test, '-tag', 'target_platform:linux',
+                  '-coerce-negative-duration', '-location-tags-file',
+                  '../../testing/location_tags.json',
+                  '-exonerate-unexpected-pass', '--', 'result_adapter', 'gtest',
+                  '-result-file', '${ISOLATED_OUTDIR}/output.json',
+                  '-artifact-directory', '${ISOLATED_OUTDIR}', '--'
+              ] + fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
   )

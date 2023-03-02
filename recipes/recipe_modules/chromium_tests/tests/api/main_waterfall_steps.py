@@ -273,7 +273,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-tester': {
               'gtest_tests': ['base_unittests'],
           },
@@ -302,7 +302,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-tester': {
                   'gtest_tests': [{
@@ -384,7 +384,7 @@ def GenTests(api):
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
       api.code_coverage(use_clang_coverage=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -431,7 +431,7 @@ def GenTests(api):
       ),
       api.pgo(use_pgo=True),
       api.platform('mac', 64),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -479,7 +479,7 @@ def GenTests(api):
               '[dummy hash for chrome_public_test_apk/size]'
       }),
       api.code_coverage(use_java_coverage=True),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -526,7 +526,7 @@ def GenTests(api):
           build_number=123,
           bot_id='isolated_transfer_builder_id',
           builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.example', {
               'Isolated Transfer Tester': {
                   'gtest_tests': [{
@@ -558,7 +558,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.example', {
               'Isolated Transfer Tester': {
                   'gtest_tests': [{
@@ -583,7 +583,7 @@ def GenTests(api):
           build_number=123,
           bot_id='isolated_transfer_builder_id',
           builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.example', {
               'Isolated Transfer: mixed builder, isolated tester (builder)': {
                   'scripts': [{
@@ -617,7 +617,7 @@ def GenTests(api):
           build_number=123,
           bot_id='isolated_transfer_builder_tester_id',
           builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.example', {
               'Isolated Transfer: mixed BT, isolated tester (BT)': {
                   'junit_tests': [{
@@ -650,7 +650,7 @@ def GenTests(api):
           build_number=123,
           bot_id='packaged_transfer_builder_id',
           builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.example', {
               'Packaged Transfer Tester': {
                   'gtest_tests': [{
@@ -678,7 +678,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.example', {
               'Packaged Transfer Tester': {
                   'gtest_tests': [{
@@ -702,7 +702,7 @@ def GenTests(api):
           build_number=123,
           bot_id='multiple_triggers_builder_id',
           builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.example', {
               'Multiple Triggers: Mixed': {
                   'gtest_tests': [{
@@ -783,7 +783,7 @@ def GenTests(api):
               'min_failed_suites_to_skip_retry': 3,
           },
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-tester': {
                   'gtest_tests':
@@ -859,7 +859,7 @@ def GenTests(api):
                       ),
               }
           })),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           fake_group, {
               fake_triggered_builder: {
                   'isolated_scripts': [{
@@ -914,7 +914,7 @@ def GenTests(api):
                       ),
               }
           })),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           fake_group, {
               fake_triggered_builder: {
                   'isolated_scripts': [{
@@ -954,7 +954,7 @@ def GenTests(api):
                       ),
               },
           })),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'isolated_scripts': [{
                   'name': 'blink_web_tests',

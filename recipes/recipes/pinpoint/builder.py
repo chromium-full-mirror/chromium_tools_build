@@ -99,7 +99,7 @@ def GenTests(api):
       'builder_group': 'tryserver.chromium.perf',
       'builder': 'Android Compile Perf',
   }
-  source_side_spec = ('chromium.perf', {
+  targets_spec = ('chromium.perf', {
       'android-go-perf': {
           'isolated_scripts': [{
               'isolate_name': 'performance_test_suite_android_clank_chrome',
@@ -111,7 +111,7 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.chromium.generic_build(**builder),
-      api.chromium_tests.read_source_side_spec(*source_side_spec),
+      api.chromium_tests.read_targets_spec(*targets_spec),
   )
 
   yield api.test(
@@ -126,7 +126,7 @@ def GenTests(api):
                   patchset=1)
           ],
           **builder),
-      api.chromium_tests.read_source_side_spec(*source_side_spec),
+      api.chromium_tests.read_targets_spec(*targets_spec),
       api.post_process(
           post_process.Filter('bot_update', 'pinpoint isolate upload')),
   )
@@ -137,7 +137,7 @@ def GenTests(api):
           revision='1cd310e5609606ca9c8531313142a1a9f16ae860',
           git_repo='https://chromium.googlesource.com/v8/v8',
           **builder),
-      api.chromium_tests.read_source_side_spec(*source_side_spec),
+      api.chromium_tests.read_targets_spec(*targets_spec),
       api.post_process(post_process.Filter('pinpoint isolate upload')),
   )
 
@@ -154,7 +154,7 @@ def GenTests(api):
   yield api.test(
       'compile_failure',
       api.chromium.generic_build(**builder),
-      api.chromium_tests.read_source_side_spec(*source_side_spec),
+      api.chromium_tests.read_targets_spec(*targets_spec),
       api.step_data('compile', retcode=1),
       api.post_process(post_process.StatusFailure),
       api.post_process(post_process.DropExpectation),

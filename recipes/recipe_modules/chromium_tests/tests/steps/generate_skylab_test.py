@@ -107,7 +107,7 @@ def GenTests(api):
 
     steps = sum([
         build_gen,
-        api.chromium_tests.read_source_side_spec(
+        api.chromium_tests.read_targets_spec(
             builder_group, {
                 builder: {
                     'skylab_tests': [{

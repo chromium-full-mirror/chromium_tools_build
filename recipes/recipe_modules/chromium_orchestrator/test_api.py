@@ -36,7 +36,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
       tests: The set of swarming tests that should be on the tester.
       shards: The number of shards for the swarming tests.
     """
-    source_side_spec = {
+    targets_spec = {
         builder: {
             'scripts': [{
                 "isolate_profile_data": True,
@@ -56,11 +56,11 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         },
         'isolate_coverage_data': True,
     } for test in tests]
-    tester_dict = source_side_spec.setdefault(tester or builder, {})
+    tester_dict = targets_spec.setdefault(tester or builder, {})
     tester_dict['gtest_tests'] = gtest_tests
 
-    return self.m.chromium_tests.read_source_side_spec(
-        builder_group, source_side_spec, step_suffix=step_suffix)
+    return self.m.chromium_tests.read_targets_spec(
+        builder_group, targets_spec, step_suffix=step_suffix)
 
   def get_fake_swarming_trigger_properties(self, tests):
     input_hash = (

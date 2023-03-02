@@ -627,7 +627,7 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group',
           {
               'fake-builder': {

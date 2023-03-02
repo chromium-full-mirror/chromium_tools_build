@@ -104,7 +104,7 @@ def GenTests(api):
               builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -153,7 +153,7 @@ def GenTests(api):
                       ),
               },
           })),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -197,7 +197,7 @@ def GenTests(api):
               builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -233,7 +233,7 @@ def GenTests(api):
               builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -273,7 +273,7 @@ def GenTests(api):
               builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{

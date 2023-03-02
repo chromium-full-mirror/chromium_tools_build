@@ -104,8 +104,8 @@ class BuilderConfig:
   also record other builders as being in scope for testing (e.g. a
   tester triggered by a builder whose spec is wrapped). The builders
   that are in scope for testing will not have their specs wrapped, but
-  will have their source side spec files included when accessing
-  `source_side_spec_files`.
+  will have their targets spec files included when accessing
+  `targets_spec_files`.
   """
 
   builder_db = attrib(BuilderDatabase)
@@ -322,6 +322,11 @@ class BuilderConfig:
       ids = self.builder_db.builder_graph.get_transitive_closure(ids)
     return ids
 
+  @cached_property
+  def targets_spec_files(self):
+    return self.source_side_spec_files
+
+  # TODO(crbug.com/1420081) Remove this once all downstream callers are removed
   @cached_property
   def source_side_spec_files(self):
     groups = set(builder_id.group

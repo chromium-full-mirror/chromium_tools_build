@@ -46,7 +46,7 @@ def GenTests(api):
   })
 
   def common_test_data(test_spec):
-    t = api.chromium_tests.read_source_side_spec('test-group', {
+    t = api.chromium_tests.read_targets_spec('test-group', {
         'test-builder': {
             'isolated_scripts': [test_spec],
         },

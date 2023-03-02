@@ -203,8 +203,8 @@ def archive_src_side_deps(api, affected_files):
     digest = api.isolate.isolate('archive src-side deps', isolate_file)
     api.file.remove('rm %s' % isolate_file, isolate_file)
 
-    relative_test_spec_dir = api.path.relpath(
-        api.chromium.c.source_side_spec_dir, api.path['checkout'])
+    relative_test_spec_dir = api.path.relpath(api.chromium.targets_spec_dir,
+                                              api.path['checkout'])
     # On windows compilators, this would use a `\\` path separator instead of
     # a `/` that the linux orchestrators need to construct Paths
     relative_test_spec_dir = relative_test_spec_dir.replace(api.path.sep, '/')
@@ -328,7 +328,7 @@ def GenTests(api):
   })
 
   def override_test_spec():
-    return api.chromium_tests.read_source_side_spec(
+    return api.chromium_tests.read_targets_spec(
         'fake-group', {
             'fake-builder': {
                 'scripts': [{
@@ -643,7 +643,7 @@ def GenTests(api):
                   builder_group='tryserver.chromium.test',
                   builder_name='rts-rel'),
               rts_setting='rts-chromium')),
-      api.chromium_tests.read_source_side_spec('chromium.test', {
+      api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },
@@ -681,7 +681,7 @@ def GenTests(api):
                   builder_group='tryserver.chromium.test',
                   builder_name='rts-rel'),
               rts_setting='rts-ml-chromium')),
-      api.chromium_tests.read_source_side_spec('chromium.test', {
+      api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },
@@ -719,7 +719,7 @@ def GenTests(api):
                   builder_name='rts-rel'),
               swarming_targets=['base_unittests']),
           rts_setting='rts-chromium'),
-      api.chromium_tests.read_source_side_spec('chromium.test', {
+      api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },

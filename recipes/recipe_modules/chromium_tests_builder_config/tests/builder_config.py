@@ -149,9 +149,9 @@ def RunSteps(api):
       BuilderId.create_for_group('fake-group2', 'fake-builder2'),
   ))
 
-  # Test source_side_spec_files property
+  # Test targets_spec_files property
   api.assertions.assertEqual(
-      builder_config.source_side_spec_files, {
+      builder_config.targets_spec_files, {
           'fake-group': 'fake-group.json',
           'fake-group2': 'fake-group2.json',
           'fake-group3': 'fake-group3.json'

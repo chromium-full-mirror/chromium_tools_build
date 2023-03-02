@@ -20,12 +20,12 @@ class TargetsConfig:
   """
 
   builder_config = attrib(ctbc.BuilderConfig)
-  # The values should be a mapping from builder name to the raw test specs for
+  # The values should be a mapping from builder name to the raw targets spec for
   # the builder (mapping[str, mapping[str, ...]]), but if we enforce that here,
   # then a bad spec for one builder would cause all builders that read that file
   # to fail, so we don't apply any constraints to the value here to limit the
   # blast radius of bad changes
-  _source_side_specs = attrib(mapping[str, ...])
+  _targets_specs = attrib(mapping[str, ...])
   # The elements of the values should be chromium_tests.steps.Test instances,
   # but that would cause an import cycle. It's not expected that anyone will be
   # creating TargetsConfigs manually, so don't enforce the type, just trust that
@@ -71,10 +71,9 @@ class TargetsConfig:
     compile_targets = set()
 
     for builder_id in self.builder_config.builder_ids:
-      source_side_spec = self._source_side_specs[builder_id.group].get(
+      targets_spec = self._targets_specs[builder_id.group].get(
           builder_id.builder, {})
-      compile_targets.update(
-          source_side_spec.get('additional_compile_targets', []))
+      compile_targets.update(targets_spec.get('additional_compile_targets', []))
 
     for t in self.all_tests:
       compile_targets.update(t.compile_targets())

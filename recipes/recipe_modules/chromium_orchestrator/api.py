@@ -246,7 +246,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         builder_config,
         comp_output.got_revisions,
         self.m.chromium_checkout.src_dir,
-        source_side_spec_dir=self.m.chromium_checkout.src_dir.join(
+        targets_spec_dir=self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir),
         isolated_tests_only=True)
     self.check_for_non_swarmed_isolated_tests(targets_config.all_tests)

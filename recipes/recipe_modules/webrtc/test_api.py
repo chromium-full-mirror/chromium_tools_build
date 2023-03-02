@@ -134,7 +134,7 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
     test += self.m.properties(buildnumber=1337)
 
     if _run_tests(builder_id):
-      test += self.m.chromium_tests.read_source_side_spec(
+      test += self.m.chromium_tests.read_targets_spec(
           builder_id.group,
           contents={
               builder_id.builder: {

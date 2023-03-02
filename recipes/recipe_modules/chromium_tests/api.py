@@ -218,7 +218,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                             builder_config,
                             got_revisions,
                             checkout_path,
-                            source_side_spec_dir=None,
+                            targets_spec_dir=None,
                             isolated_tests_only=False):
     """
     Args:
@@ -229,8 +229,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       checkout_path: path to checked out repo that contains test specs. For
         chromium builders this is usually cache/builder/src, but for other
         builders, like angle, this is cache/builder/angle.
-      source_side_spec_dir: Path to directory containing source-side specs. If
-        this is None, chromium.c.source_side_spec_dir will be used.
+      targets_spec_dir: Path to directory containing targets specs. If
+        this is None, chromium.c.targets_spec_dir or
+        chromium.c.source_side_spec_dir will be used.
 
     Returns: TargetsConfig for current builder
     """
@@ -246,16 +247,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         memo.append(self.get_compile_targets_for_scripts())
       return memo[0]
 
-    source_side_specs = {}
-    for group, spec_file in sorted(
-        builder_config.source_side_spec_files.items()):
-      source_side_specs[group] = self.read_source_side_spec(
-          spec_file, source_side_spec_dir=source_side_spec_dir)
+    targets_specs_by_builder_by_group = {}
+    for group, spec_file in sorted(builder_config.targets_spec_files.items()):
+      targets_specs_by_builder_by_group[group] = self.read_targets_spec(
+          spec_file, targets_spec_dir=targets_spec_dir)
     tests = {}
 
     for builder_id in builder_config.builder_ids_in_scope_for_testing:
-      builder_tests = self.generate_tests_from_source_side_spec(
-          source_side_specs[builder_id.group],
+      builder_tests = self.generate_tests_from_targets_spec(
+          targets_specs_by_builder_by_group[builder_id.group],
           builder_id.builder,
           builder_id.group,
           scripts_compile_targets_fn,
@@ -267,7 +267,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return TargetsConfig.create(
         builder_config=builder_config,
-        source_side_specs=source_side_specs,
+        targets_specs=targets_specs_by_builder_by_group,
         tests=tests)
 
   def prepare_checkout(self,
@@ -335,11 +335,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return update_step, targets_config
 
-  def generate_tests_from_source_side_spec(self, source_side_spec, buildername,
-                                           builder_group,
-                                           scripts_compile_targets_fn,
-                                           got_revisions, isolated_tests_only,
-                                           checkout_path):
+  def generate_tests_from_targets_spec(self, targets_specs_by_builder,
+                                       buildername, builder_group,
+                                       scripts_compile_targets_fn,
+                                       got_revisions, isolated_tests_only,
+                                       checkout_path):
     test_specs = []
 
     # TODO(phajdan.jr): Switch everything to scripts generators and simplify.
@@ -349,7 +349,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
               self,
               builder_group,
               buildername,
-              source_side_spec,
+              targets_specs_by_builder,
               got_revisions,
               isolated_tests_only,
               checkout_path,
@@ -369,22 +369,28 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return tuple(tests)
 
+  def read_targets_spec(self, targets_spec_file, targets_spec_dir=None):
+    return self.read_source_side_spec(targets_spec_file, targets_spec_dir)
+
+  # TODO(crbug.com/1420081) Remove this once all downstream callers are removed
   def read_source_side_spec(self,
                             source_side_spec_file,
                             source_side_spec_dir=None):
-    if not source_side_spec_dir:
-      source_side_spec_dir = self.m.chromium.c.source_side_spec_dir
+    targets_spec_file = source_side_spec_file
+    targets_spec_dir = source_side_spec_dir
+    if not targets_spec_dir:
+      targets_spec_dir = self.m.chromium.targets_spec_dir
 
-    source_side_spec_path = source_side_spec_dir.join(source_side_spec_file)
+    targets_spec_path = targets_spec_dir.join(targets_spec_file)
     spec_result = self.m.json.read(
-        'read test spec (%s)' % self.m.path.basename(source_side_spec_path),
-        source_side_spec_path,
+        'read test spec (%s)' % self.m.path.basename(targets_spec_path),
+        targets_spec_path,
         infra_step=True,
         step_test_data=lambda: self.m.json.test_api.output({}))
-    spec_result.presentation.step_text = 'path: %s' % source_side_spec_path
-    source_side_spec = spec_result.json.output
+    spec_result.presentation.step_text = 'path: %s' % targets_spec_path
+    targets_spec = spec_result.json.output
 
-    return source_side_spec
+    return targets_spec
 
   def create_test_runner(self,
                          tests,
@@ -932,8 +938,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     absolute_affected_files = set(
         map(self.m.path.abspath, absolute_affected_files))
     absolute_spec_files = set(
-        str(self.m.chromium.c.source_side_spec_dir.join(f))
-        for f in builder_config.source_side_spec_files.values())
+        str(self.m.chromium.targets_spec_dir.join(f))
+        for f in builder_config.targets_spec_files.values())
     absolute_spec_files = set(map(self.m.path.abspath, absolute_spec_files))
     return absolute_spec_files & absolute_affected_files
 
@@ -1349,7 +1355,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     )
 
   def should_skip_without_patch(self, builder_config, affected_files,
-                                source_side_spec_dir):
+                                targets_spec_dir):
     """Determine whether the without patch steps should be skipped.
 
     If the without patch steps should be skipped, a no-op step will be
@@ -1438,7 +1444,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # Also exit if there are failures but we shouldn't deapply the patch
       if self.should_skip_without_patch(task.builder_config,
                                         task.affected_files,
-                                        self.m.chromium.c.source_side_spec_dir):
+                                        self.m.chromium.targets_spec_dir):
         self.summarize_test_failures(task.test_suites)
         return None, failing_test_suites
 

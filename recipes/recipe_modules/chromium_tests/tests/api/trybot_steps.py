@@ -161,7 +161,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'gtest_tests': ['base_unittests'],
           },
@@ -180,7 +180,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'gtest_tests': ['base_unittests'],
           },
@@ -243,12 +243,11 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=None,
       ),
-      api.chromium_tests.read_source_side_spec(
-          'tryserver.chromium.unmirrored', {
-              'unmirrored-chromium-rel': {
-                  'gtest_tests': ['bogus_unittests'],
-              },
-          }),
+      api.chromium_tests.read_targets_spec('tryserver.chromium.unmirrored', {
+          'unmirrored-chromium-rel': {
+              'gtest_tests': ['bogus_unittests'],
+          },
+      }),
       api.post_process(post_process.MustRun, 'bogus_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
   )
@@ -270,7 +269,7 @@ def GenTests(api):
   yield api.test(
       'retry_shards',
       custom_props(),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'retry-shards': {
                   'gtest_tests': [{
@@ -296,7 +295,7 @@ def GenTests(api):
   yield api.test(
       'retry_shards_without_patch',
       custom_props(),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'retry-shards': {
                   'gtest_tests': [{
@@ -323,7 +322,7 @@ def GenTests(api):
   yield api.test(
       'without_patch_notrun_failure',
       custom_props(),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'retry-shards': {
                   'gtest_tests': [{
@@ -360,7 +359,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'retry-shards': {
                   'gtest_tests': [{
@@ -395,7 +394,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'retry-shards': {
                   'gtest_tests': [{
@@ -429,7 +428,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'retry-shards': {
                   'gtest_tests': [{
@@ -470,7 +469,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'retry-shards': {
                   'gtest_tests': [{
@@ -505,7 +504,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'gtest_tests': ['base_unittests'],
           },
@@ -514,7 +513,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -552,7 +551,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'gtest_tests': ['base_unittests'],
           },
@@ -561,7 +560,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -604,7 +603,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'gtest_tests': ['base_unittests'],
           },
@@ -613,7 +612,7 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': '[dummy hash for base_unittests/size]'
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
@@ -680,7 +679,7 @@ def GenTests(api):
           },),
       api.pgo(use_pgo=True, skip_profile_upload=True),
       api.platform('linux', 64),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'pgo-group', {
               'pgo-builder': {
                   'isolated_scripts': [{
@@ -716,12 +715,12 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'gtest_tests': ['base_unittests'],
           },
       }),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'gtest_tests':
@@ -763,7 +762,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(dry_run=True),
-      api.chromium_tests.read_source_side_spec('fake-group', {
+      api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
               'gtest_tests': ['base_unittests'],
           },
@@ -788,7 +787,7 @@ def GenTests(api):
           try_db=_TEST_TRYBOTS,
           experiments=['chromium_rts.experimental_model'],
       ),
-      api.chromium_tests.read_source_side_spec('chromium.test', {
+      api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },
@@ -816,7 +815,7 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'chromium-rel': {
                   'gtest_tests': [{
@@ -883,7 +882,7 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'chromium.test', {
               'chromium-rel': {
                   'gtest_tests': [{
@@ -919,7 +918,7 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
       ),
-      api.chromium_tests.read_source_side_spec('chromium.test', {
+      api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
               'gtest_tests': ['base_unittests'],
           },
@@ -1081,7 +1080,7 @@ def GenTests(api):
               },
           }),
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -1155,7 +1154,7 @@ def GenTests(api):
               },
           }),
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
@@ -1225,7 +1224,7 @@ def GenTests(api):
               },
           }),
       ),
-      api.chromium_tests.read_source_side_spec(
+      api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
