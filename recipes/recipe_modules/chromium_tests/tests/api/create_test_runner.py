@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
+                                        StatusFailure, SummaryMarkdown)
 from RECIPE_MODULES.build.chromium_tests import steps
 
 DEPS = [
@@ -28,7 +30,9 @@ def RunSteps(api):
   test_runner = api.chromium_tests.create_test_runner(
       tests=[
           steps.LocalGTestTestSpec.create('base_unittests').get_test(
-              api.chromium_tests)
+              api.chromium_tests),
+          steps.LocalGTestTestSpec.create('net_unittests').get_test(
+              api.chromium_tests),
       ],
       serialize_tests=api.properties.get('serialize_tests'),
       retry_failed_shards=api.properties.get('retry_failed_shards'))
@@ -51,6 +55,11 @@ def GenTests(api):
           api.legacy_annotation.failure_step,
           stderr=api.raw_io.output_text(
               'rdb-stream: included "invocations/test-inv" in "build-inv"')),
+      api.post_process(DoesNotRun, 'test_pre_run (2)'),
+      api.post_process(SummaryMarkdown,
+                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(StatusFailure),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -70,22 +79,9 @@ def GenTests(api):
           api.legacy_annotation.failure_step,
           stderr=api.raw_io.output_text(
               'rdb-stream: included "invocations/test-inv" in "build-inv"')),
-  )
-  yield api.test(
-      'retry_failed_shards',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.builder_group.for_current('test_group'),
-      api.properties(
-          buildername='test_buildername',
-          bot_id='test_bot_id',
-          buildnumber=123,
-          retry_failed_shards=True),
-      api.override_step_data(
-          'base_unittests',
-          api.legacy_annotation.failure_step,
-          stderr=api.raw_io.output_text(
-              'rdb-stream: included "invocations/test-inv" in "build-inv"')),
+      api.post_process(MustRun, 'test_pre_run (2)'),
+      api.post_process(SummaryMarkdown,
+                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(StatusFailure),
+      api.post_process(DropExpectation),
   )

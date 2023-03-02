@@ -4,6 +4,9 @@
 
 import collections
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepSuccess)
+
 DEPS = [
     'chromium',
     'chromium_tests',
@@ -26,16 +29,6 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def filter_out_setup_steps():
-
-    def step_filter(check, steps):
-      del check
-      return collections.OrderedDict([
-          (k, v) for k, v in steps.items() if not k.startswith('setup steps')
-      ])
-
-    return api.post_process(step_filter)
-
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
@@ -50,5 +43,8 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      filter_out_setup_steps(),
+      api.post_process(StepSuccess, 'bot_update (without patch)'),
+      api.post_process(StepSuccess, 'gclient runhooks (without patch)'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )

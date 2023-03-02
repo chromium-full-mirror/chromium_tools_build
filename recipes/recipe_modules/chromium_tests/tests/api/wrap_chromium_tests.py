@@ -132,6 +132,8 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -150,6 +152,10 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(swarming_gtest=True),
+      api.post_process(post_process.StepSuccess, 'set_up'),
+      api.post_process(post_process.StepSuccess, 'tear_down'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -168,6 +174,10 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(local_isolated_script_test=True,),
+      api.post_process(post_process.StepSuccess, 'set_up'),
+      api.post_process(post_process.StepSuccess, 'tear_down'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -186,4 +196,6 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(script_test=True),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )

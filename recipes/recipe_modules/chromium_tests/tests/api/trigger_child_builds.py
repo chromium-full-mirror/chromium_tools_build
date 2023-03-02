@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import collections
+import re
 
 from recipe_engine import post_process, recipe_api
 
@@ -44,15 +45,9 @@ def RunSteps(api, commit, set_output_commit):
 
 def GenTests(api):
 
-  def filter_out_setup_steps():
-
-    def step_filter(check, steps):
-      del check
-      return collections.OrderedDict([
-          (k, v) for k, v in steps.items() if not k.startswith('setup steps')
-      ])
-
-    return api.post_process(step_filter)
+  def StepStdinRE(check, step_odict, step, regex):
+    check('stdin for %s contained %s' % (step, regex),
+          re.match(regex, step_odict[step].stdin))
 
   def builder_with_tester_to_trigger(**kwargs):
     return api.chromium_tests_builder_config.ci_build(
@@ -79,8 +74,9 @@ def GenTests(api):
   yield api.test(
       'scheduler',
       builder_with_tester_to_trigger(),
-      api.post_check(post_process.StatusSuccess),
-      filter_out_setup_steps(),
+      api.post_check(StepStdinRE, 'trigger', '.*"ref": "refs/heads/main".*'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -102,10 +98,12 @@ def GenTests(api):
               ref='fake-ref',
               id='fake-revision',
           )),
-      api.post_check(post_process.StatusSuccess),
-      filter_out_setup_steps(),
+      api.post_check(StepStdinRE, 'trigger', '.*"ref": "fake-ref".*'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
+  led_trigger_prefix = 'trigger.chromium/ci/fake-tester'
   yield api.test(
       'led',
       builder_with_tester_to_trigger(),
@@ -124,6 +122,15 @@ def GenTests(api):
                       ),
                   ),
           }),
-      api.post_check(post_process.StatusSuccess),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepSuccess, led_trigger_prefix),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led get-builder'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit (2)'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led launch'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )

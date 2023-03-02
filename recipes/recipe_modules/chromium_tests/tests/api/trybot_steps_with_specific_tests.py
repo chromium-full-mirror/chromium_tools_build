@@ -133,6 +133,10 @@ def GenTests(api):
           'base_unittests (with patch)',
           api.chromium_swarming.canned_summary_output(
               api.test_utils.canned_gtest_output(False), failure=True)),
+      api.post_process(post_process.SummaryMarkdown,
+                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -796,6 +800,13 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
+      api.post_process(post_process.MustRun, 'without patch steps are skipped'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          '1 Test Suite(s) failed.\n\n**base_unittests** failed because of:'
+          '\n\n- Test.One'),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -821,6 +832,12 @@ def GenTests(api):
               api.test_utils.gtest_results(
                   api.json.dumps({'per_iteration_data': []}), retcode=1),
               failure=True)),
+      api.post_process(post_process.StepTextEquals, 'base_unittests',
+                       'TEST RESULTS WERE INVALID'),
+      api.post_process(post_process.SummaryMarkdown,
+                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

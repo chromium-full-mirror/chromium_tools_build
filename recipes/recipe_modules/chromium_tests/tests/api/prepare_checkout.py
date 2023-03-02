@@ -68,6 +68,10 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.post_process(post_process.MustRun, 'gclient runhooks'),
+      api.post_process(post_process.DoesNotRun,
+                       'gclient runhooks (with patch)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

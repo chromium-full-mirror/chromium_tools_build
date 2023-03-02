@@ -80,16 +80,6 @@ def RunSteps(api):
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
-  def filter_out_setup_steps():
-
-    def step_filter(check, step_odict):
-      del check
-      return collections.OrderedDict([(k, v)
-                                      for k, v in step_odict.items()
-                                      if not k.startswith('setup steps')])
-
-    return api.post_process(step_filter)
-
   yield api.test(
       'linux_tests',
       api.platform('linux', 64),
@@ -106,7 +96,15 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(swarming_gtest=True),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepCommandContains, 'lookup GN args', [
+          '-m',
+          'fake-group',
+          '-b',
+          'fake-tester',
+      ]),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -175,7 +173,11 @@ def GenTests(api):
           ).assemble()),
       api.properties(swarming_gtest=True),
       api.step_data('compile', retcode=1),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(
+          post_process.SummaryMarkdownRE,
+          '#### Step _compile_ failed. Error logs are shown below:'),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -189,7 +191,12 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.step_data('compile (with patch)', retcode=1),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(
+          post_process.SummaryMarkdownRE,
+          r'#### Step _compile \(with patch\)_ failed\. ' +
+          'Error logs are shown below:'),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -201,7 +208,24 @@ def GenTests(api):
           builder_group='chromium.perf', builder='linux-builder-perf'),
       api.properties(
           deps_revision_overrides={'src': '12345678' * 5}, swarming_gtest=True),
-      api.post_process(Filter('pinpoint isolate upload')),
+      # The important bit here is the presence of the two "git_hash" entries.
+      api.
+      post_process(post_process.StepCommandContains, 'pinpoint isolate upload', [
+          '{"builder_name": "linux-builder-perf", '
+          '"change": "{\\"commits\\": ['
+          '{\\"git_hash\\": \\"1234567812345678123456781234567812345678\\", '
+          '\\"repository\\": \\"chromium\\"}, '
+          '{\\"git_hash\\": \\"1234567812345678123456781234567812345678\\", '
+          '\\"repository\\": \\"src\\"}], '
+          '\\"patch\\": {\\"change\\": 456789, \\"revision\\": 12, '
+          '\\"server\\": \\"https://chromium-review.googlesource.com\\"}}", '
+          '"isolate_map": "{\\"base_unittests\\": '
+          '\\"[dummy hash for base_unittests/dummy size]\\"}", '
+          '"isolate_server": '
+          '"projects/example-cas-server/instances/default_instance"}',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -216,7 +240,23 @@ def GenTests(api):
           project='v8/v8',
           revision='1234abcd' * 5),
       api.properties(swarming_gtest=True),
-      api.post_process(Filter('pinpoint isolate upload')),
+      # The important bit here is the lack of a second "git_hash" entry and the
+      # use of the v8 repo.
+      api.
+      post_process(post_process.StepCommandContains, 'pinpoint isolate upload', [
+          '{"builder_name": "linux-builder-perf", '
+          '"change": "{\\"commits\\": ['
+          '{\\"git_hash\\": \\"1234abcd1234abcd1234abcd1234abcd1234abcd\\", '
+          '\\"repository\\": \\"v8\\"}], '
+          '\\"patch\\": {\\"change\\": 456789, \\"revision\\": 12, '
+          '\\"server\\": \\"https://chromium-review.googlesource.com\\"}}", '
+          '"isolate_map": "{\\"base_unittests\\": '
+          '\\"[dummy hash for base_unittests/dummy size]\\"}", '
+          '"isolate_server": '
+          '"projects/example-cas-server/instances/default_instance"}',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -230,7 +270,22 @@ def GenTests(api):
           git_repo=None,
           revision=None),
       api.properties(swarming_gtest=True),
-      api.post_process(Filter('pinpoint isolate upload')),
+      # the important bit here is the lack of a second "git_hash" entry.
+      api.
+      post_process(post_process.StepCommandContains, 'pinpoint isolate upload', [
+          '{"builder_name": "linux-builder-perf", '
+          '"change": "{\\"commits\\": ['
+          '{\\"git_hash\\": \\"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\\", '
+          '\\"repository\\": \\"chromium\\"}], '
+          '\\"patch\\": {\\"change\\": 456789, \\"revision\\": 12, '
+          '\\"server\\": \\"https://chromium-review.googlesource.com\\"}}", '
+          '"isolate_map": "{\\"base_unittests\\": '
+          '\\"[dummy hash for base_unittests/dummy size]\\"}", '
+          '"isolate_server": '
+          '"projects/example-cas-server/instances/default_instance"}',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -238,7 +293,15 @@ def GenTests(api):
       api.platform.arch('arm'),
       api.chromium_tests_builder_config.ci_build(
           builder_group='fake.group', builder='Cronet', builder_db=BUILDERS),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepCommandContains, 'lookup GN args', [
+          '-m',
+          'fake.group',
+          '-b',
+          'Cronet',
+      ]),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -248,5 +311,11 @@ def GenTests(api):
           builder='Test Version',
           builder_db=BUILDERS),
       api.chromium.override_version(major=123, minor=1, build=9876, patch=2),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepCommandContains, 'lookup GN args', [
+          '--android-version-code=987600200',
+          '--android-version-name=123.1.9876.2',
+      ]),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )

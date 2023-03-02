@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains)
+
 DEPS = [
     'chromium',
     'chromium_tests',
@@ -28,4 +31,19 @@ def GenTests(api):
           builder_group='chromium.perf',
           builder='linux-perf',
       ),
+      api.post_process(StepCommandContains, 'sample script', [
+          '--build-config-fs',
+          'Release',
+          '--paths',
+          '{"checkout": "None"}',
+          '--properties',
+          ('{"bot_id": "fake-bot-id", '
+           '"buildername": "linux-perf", '
+           '"buildnumber": 571, '
+           '"mastername": "chromium.perf", '
+           '"slavename": "fake-bot-id", '
+           '"target_platform": "linux"}'),
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )

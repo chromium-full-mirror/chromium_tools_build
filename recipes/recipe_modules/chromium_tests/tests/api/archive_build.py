@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
-
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains, StepSuccess)
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -26,16 +26,6 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def filter_out_setup_steps():
-
-    def step_filter(check, steps):
-      del check
-      return collections.OrderedDict([
-          (k, v) for k, v in steps.items() if not k.startswith('setup steps')
-      ])
-
-    return api.post_process(step_filter)
-
   yield api.test(
       'cf_archive_build',
       api.chromium_tests_builder_config.ci_build(
@@ -54,5 +44,16 @@ def GenTests(api):
                       ),
               },
           })),
-      filter_out_setup_steps(),
+      api.post_process(StepCommandContains, 'gsutil upload', [
+          'public-read',
+          ('[CLEANUP]/chrome_staging/'
+           'cf_archive_build_test-linux-release-170242.zip'),
+          ('gs://clusterfuzz-gs-bucket/linux-release/'
+           'cf_archive_build_test-linux-release-170242.zip'),
+      ]),
+      api.post_process(StepSuccess, 'gsutil upload'),
+      api.post_process(StepSuccess,
+                       'cf_archive_build_test-linux-release-170242.zip'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )

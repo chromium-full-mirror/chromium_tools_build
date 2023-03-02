@@ -166,6 +166,18 @@ def GenTests(api):
               'gtest_tests': ['base_unittests'],
           },
       }),
+      api.post_process(post_process.StepSuccess,
+                       'gerrit fetch current CL info'),
+      api.post_process(post_process.StepCommandContains, 'bot_update', [
+          '--refs',
+          'refs/heads/main',
+      ]),
+      api.post_process(post_process.StepSuccess,
+                       'gclient runhooks (with patch)'),
+      api.post_process(post_process.StepSuccess, 'compile (with patch)'),
+      api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -186,6 +198,18 @@ def GenTests(api):
           },
       }),
       api.properties(root_solution_revision='refs/branch-heads/4472'),
+      api.post_process(post_process.StepSuccess,
+                       'gerrit fetch current CL info'),
+      api.post_process(post_process.StepCommandContains, 'bot_update', [
+          '--refs',
+          'refs/branch-heads/4472',
+      ]),
+      api.post_process(post_process.StepSuccess,
+                       'gclient runhooks (with patch)'),
+      api.post_process(post_process.StepSuccess, 'compile (with patch)'),
+      api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -203,6 +227,11 @@ def GenTests(api):
                   chromium_apply_config=['clobber'],
               ),
           ).assemble()),
+      api.post_process(post_process.StepSuccess, 'clobber'),
+      api.post_process(post_process.StepSuccess, 'analyze'),
+      api.post_process(post_process.DoesNotRunRE, 'compile.*'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -217,6 +246,16 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
+      api.post_process(post_process.DoesNotRun, 'clobber'),
+      api.post_process(post_process.StepSuccess, 'analyze'),
+      api.post_process(post_process.StepCommandContains, 'analyze', [
+          '{"additional_compile_targets": [], '
+          '"files": ["foo.cc"], '
+          '"test_targets": []}',
+      ]),
+      api.post_process(post_process.DoesNotRunRE, 'compile.*'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -233,6 +272,16 @@ def GenTests(api):
           ).assemble()),
       api.override_step_data('git diff to analyze patch',
                              api.raw_io.stream_output('OWNERS')),
+      api.post_process(post_process.DoesNotRun, 'clobber'),
+      api.post_process(post_process.StepSuccess, 'analyze'),
+      api.post_process(post_process.StepCommandContains, 'analyze', [
+          '{"additional_compile_targets": [], '
+          '"files": ["OWNERS"], '
+          '"test_targets": []}',
+      ]),
+      api.post_process(post_process.DoesNotRunRE, 'compile.*'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -767,6 +816,18 @@ def GenTests(api):
               'gtest_tests': ['base_unittests'],
           },
       }),
+      api.post_process(post_process.StepSuccess,
+                       'gerrit fetch current CL info'),
+      api.post_process(post_process.StepCommandContains, 'bot_update', [
+          '--refs',
+          'refs/heads/main',
+      ]),
+      api.post_process(post_process.StepSuccess,
+                       'gclient runhooks (with patch)'),
+      api.post_process(post_process.StepSuccess, 'compile (with patch)'),
+      api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

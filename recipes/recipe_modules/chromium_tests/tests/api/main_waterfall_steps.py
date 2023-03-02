@@ -251,6 +251,17 @@ def GenTests(api):
           "etag": "\\"8uCIh8TRuYs4vPN3iWmly9SJMqw\\""
         }
       """)),
+      api.post_process(post_process.StepSuccess,
+                       'read test spec (fake-group.json)'),
+      api.post_process(post_process.StepCommandContains, 'lookup GN args', [
+          '-m',
+          'fake-group',
+          '-b',
+          'fake-builder',
+      ]),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -278,6 +289,14 @@ def GenTests(api):
               'gtest_tests': ['base_unittests'],
           },
       }),
+      api.post_process(post_process.StepSuccess, 'extract build'),
+      api.post_process(post_process.DoesNotRun, 'compile'),
+      api.post_process(post_process.StepSuccess, 'base_unittests'),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          '--builder-name=fake-tester',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
