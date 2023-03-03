@@ -233,7 +233,6 @@ def RunSteps(api):
 
   checkout_results = api.chromium_checkout.ensure_checkout(bot_config)
 
-  api.chromium.ensure_goma()
   api.chromium.ensure_toolchains()
   api.chromium.runhooks()
   api.chromium.mb_gen(

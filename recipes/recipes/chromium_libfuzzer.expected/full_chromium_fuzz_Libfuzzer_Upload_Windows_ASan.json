@@ -316,94 +316,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "ensure_goma"
-  },
-  {
-    "cmd": [
-      "cipd.bat",
-      "ensure",
-      "-root",
-      "[CACHE]\\goma\\client",
-      "-ensure-file",
-      "infra_internal/goma/client/${platform} release",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure_goma.ensure_installed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-release---------\", @@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/goma/client/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "cipd.bat",
-      "ensure",
-      "-root",
-      "[CACHE]\\goma\\bqupload",
-      "-ensure-file",
-      "infra/tools/bqupload/${platform} bqupload_pin",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure_goma.ensure_installed (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-bqupload_pin----\", @@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
     "cmd": [
       "vpython3",
       "-u",
@@ -479,8 +391,6 @@
       "Libfuzzer Upload Windows ASan",
       "--config-file",
       "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]\\goma\\client",
       "--luci-auth",
       "--quiet"
     ],
@@ -517,8 +427,6 @@
       "Libfuzzer Upload Windows ASan",
       "--config-file",
       "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]\\goma\\client",
       "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
