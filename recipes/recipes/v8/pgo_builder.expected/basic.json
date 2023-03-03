@@ -1909,6 +1909,89 @@
   },
   {
     "cmd": [],
+    "name": "validate profiles",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 43ff x86@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 43ff x64@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 cd12 x86@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 cd12 x64@@@",
+      "@@@STEP_LOG_END@profile trackers@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/v1.1.2.0_x86_tmp_1/0/x86.profile",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "validate profiles.read profile for 1.1.2.0 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/v1.1.2.0_x64_tmp_1/1/x64.profile",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "validate profiles.read profile for 1.1.2.0 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/v1.1.1.4_x86_tmp_1/2/x86.profile",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "validate profiles.read profile for 1.1.1.4 x86",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/v1.1.1.4_x64_tmp_1/3/x64.profile",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "infra_step": true,
+    "name": "validate profiles.read profile for 1.1.1.4 x64",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "upload to gs",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 43ff x86@@@",

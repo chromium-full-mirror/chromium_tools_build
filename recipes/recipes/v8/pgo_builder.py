@@ -4,6 +4,7 @@
 
 from collections import defaultdict
 import contextlib
+import itertools
 import re
 from typing import List, Set, Tuple
 
@@ -61,6 +62,7 @@ BLOCKLIST_PATH = f'gs://{BLOCKLIST_BUCKET}/{BLOCKLIST_FILE}'
 
 VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)'
 PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
+PROFILE_PATTERN = r'(block_hint,\w+(,\d+){3}\n)+(builtin_hash,\w+,\-?\d+\n)+'
 
 COMPILATORS = {
     'x86': ('ci', 'V8 Linux PGO instrumentation - builder'),
@@ -97,12 +99,7 @@ def RunSteps(api, max_parallel_versions, version_number_cutoff):
     merge_isolate_with_benchmark(api, profile_trackers, perf_code_path)
     trigger_profilers(api, profile_trackers)
     collect_profiles(api, profile_trackers)
-
-    # TODO: step not implemented
-    # 7   The profiles are checked against a static structure to prevent malicious bots from
-    #     submitting arbitrary commands which might affect the build process. We might use the
-    #     following regex (block_hint,\w+(,\d+){3}\n)+(builtin_hash,\w+,\-?\d+\n?)+
-
+    validate_profiles(api, profile_trackers)
     upload_to_gs(api, profile_trackers)
     assign_pgo_tags(api, profile_trackers)
 
@@ -278,7 +275,7 @@ def normalize_version(version) -> Tuple[int, int, int, int]:
   if isinstance(version, str):
     version = tuple(version.split('.'))
 
-  assert isinstance(version, tuple), f"Expected a tuple, found {type(version)}."
+  assert isinstance(version, tuple), f'Expected a tuple, found {type(version)}.'
 
   version = tuple(int(c) for c in version)
 
@@ -405,6 +402,23 @@ def collect_profiles(api, profile_trackers):
 
 
 @with_wrapper_step
+def validate_profiles(api, profile_trackers):
+  """Check profiles against a static structure to prevent malicious bots from
+  submitting arbitrary content which might affect the build process."""
+
+  for tracker in advanceable(profile_trackers):
+    assert tracker.profile_out_file, 'Expected profile, but no file found.'
+
+    content = api.file.read_text(
+        name=f'read profile for {tracker.name}',
+        source=tracker.profile_out_file,
+        include_log=False)
+    assert re.fullmatch(PROFILE_PATTERN, content), (
+        f'Profile from tracker {tracker.name} does not match expected pattern.'
+    )
+
+
+@with_wrapper_step
 def upload_to_gs(api, profile_trackers):
   for version_trackers in grouped_by_version(advanceable(profile_trackers)):
     if len(version_trackers) != len(COMPILATORS):
@@ -509,10 +523,7 @@ def GenTests(api):
     return api.override_step_data(
         step_name, api.raw_io.stream_output(content, stream='stdout'))
 
-  def subbuild_data(step_name,
-                    summary='All good!',
-                    status=common_pb.SUCCESS,
-                    compilator_properties=None):
+  def mock_compilation(versions, archs, compilator_properties=None):
     if compilator_properties is None:
       compilator_properties = {
           'swarm_hashes': {
@@ -529,15 +540,36 @@ def GenTests(api):
               }
           },
       }
+
     sub_build = build_pb2.Build(
         id=54321,
-        status=status,
-        summary_markdown=summary,
+        status=common_pb.SUCCESS,
+        summary_markdown='All good!',
         output=dict(
             properties=json_format.Parse(
-                api.json.dumps({'compilator_properties': compilator_properties
-                               }), struct_pb2.Struct())))
-    return api.step_data(step_name, api.step.sub_build(sub_build))
+                api.json.dumps({
+                    'compilator_properties': compilator_properties
+                }), struct_pb2.Struct())))
+
+    return [
+        api.step_data(
+            f'collect compilation isolates.{version} {arch}.compilator steps',
+            api.step.sub_build(sub_build))
+        for version, arch in itertools.product(versions, archs)
+    ]
+
+  def mock_profiles(versions, archs, content=None):
+    mock_content = content or (
+        'block_hint,CallUndefinedReceiver1ExtraWideHandler,19,20,0\n'
+        'builtin_hash,RecordWriteSaveFP,234037449\n'
+    )
+    return [
+        api.step_data(
+            f'validate profiles.read profile for {version} {arch}',
+            api.file.read_text(mock_content))
+        for version, arch in itertools.product(versions, archs)
+    ]
+
 
   def main_scenario(name, *args):
     return api.test(
@@ -559,14 +591,8 @@ def GenTests(api):
 
   yield main_scenario(
       'basic',
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x86.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x64.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x86.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x64.compilator steps'),
+      *mock_compilation(['1.1.2.0', '1.1.1.4'], ['x86', 'x64']),
+      *mock_profiles(['1.1.2.0', '1.1.1.4'], ['x86', 'x64']),
   )
 
   yield api.test(
@@ -589,16 +615,12 @@ def GenTests(api):
   )
 
   yield main_scenario(
-      "one_track_compilation_failure",
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x86.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x64.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x86.compilator steps',
-          compilator_properties={}),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x64.compilator steps'),
+      'one_track_compilation_failure',
+      *mock_compilation(['1.1.2.0'], ['x86', 'x64']),
+      *mock_profiles(['1.1.2.0'], ['x86', 'x64']),
+      *mock_compilation(['1.1.1.4'], ['x64']),
+      *mock_profiles(['1.1.1.4'], ['x64']),
+      *mock_compilation(['1.1.1.4'], ['x86'], compilator_properties={}),
       api.post_process(
           DoesNotRun,
           'augment isolates.1.1.1.4 x86',
@@ -613,15 +635,10 @@ def GenTests(api):
   )
 
   yield main_scenario(
-      "one_track_profiling_failure",
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x86.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x64.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x86.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x64.compilator steps'),
+      'one_track_profiling_failure',
+      *mock_compilation(['1.1.2.0', '1.1.1.4'], ['x86', 'x64']),
+      *mock_profiles(['1.1.2.0'], ['x86', 'x64']),
+      *mock_profiles(['1.1.1.4'], ['x64']),
       api.step_data(
           'collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41',
           api.chromium_swarming.summary(
@@ -639,16 +656,9 @@ def GenTests(api):
 
   yield main_scenario(
       'full_version_failure',
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x86.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.2.0 x64.compilator steps'),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x86.compilator steps',
-          compilator_properties={}),
-      subbuild_data(
-          'collect compilation isolates.1.1.1.4 x64.compilator steps',
-          compilator_properties={}),
+      *mock_compilation(['1.1.2.0'], ['x86', 'x64']),
+      *mock_profiles(['1.1.2.0'], ['x86', 'x64']),
+      *mock_compilation(['1.1.1.4'], ['x86', 'x64'], compilator_properties={}),
       api.post_process(
           DoesNotRun,
           'augment isolates.1.1.1.4 x86',
@@ -729,5 +739,15 @@ def GenTests(api):
           'trigger compilators.1.1.1.2 x86',
           'trigger compilators.1.1.1.2 x64',
       ),
+      api.post_process(DropExpectation),
+  )
+
+  yield main_scenario(
+      'tampered_profile',
+      *mock_compilation(['1.1.2.0', '1.1.1.4'], ['x86', 'x64']),
+      *mock_profiles(['1.1.2.0', '1.1.1.4'], ['x86']),
+      *mock_profiles(['1.1.2.0'], ['x64']),
+      *mock_profiles(['1.1.1.4'], ['x64'], content='invalid-content'),
+      api.expect_exception('AssertionError'),
       api.post_process(DropExpectation),
   )
