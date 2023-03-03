@@ -2198,6 +2198,163 @@
   },
   {
     "cmd": [],
+    "name": "add comment to gerrit changes",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 43ff x86@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 43ff x64@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 cd12 x86@@@",
+      "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.1.4 cd12 x64@@@",
+      "@@@STEP_LOG_END@profile trackers@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "-p",
+      "commit=43ff"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "add comment to gerrit changes.gerrit retrieve details for 43ff (1.1.2.0)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"91827\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"id\": \"fully~qualified~changeid\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"chromium/src\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"1\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"status\": \"NEW\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "rawapi",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--path",
+      "/changes/fully~qualified~changeid/revisions/1/review",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--method",
+      "POST",
+      "--body",
+      "{\"message\": \"PGO profiles for V8 builtins have been generated in [build  0](https://cr-buildbucket.appspot.com/build/0) for the following architectures:\\n* [x86](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x86.profile)\\n* [x64](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.2.0/x64.profile)\\n\\nIf you suspect an error caused by PGO profiles, [report a bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Client>V8) to the V8 Infra team.\"}"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "add comment to gerrit changes.gerrit add comment to 43ff (1.1.2.0)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "-p",
+      "commit=cd12"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "add comment to gerrit changes.gerrit retrieve details for cd12 (1.1.1.4)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"91827\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"id\": \"fully~qualified~changeid\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"chromium/src\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"1\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"status\": \"NEW\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "rawapi",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--path",
+      "/changes/fully~qualified~changeid/revisions/1/review",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--method",
+      "POST",
+      "--body",
+      "{\"message\": \"PGO profiles for V8 builtins have been generated in [build  0](https://cr-buildbucket.appspot.com/build/0) for the following architectures:\\n* [x86](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x86.profile)\\n* [x64](https://storage.googleapis.com/chromium-v8-builtins-pgo/by-version/1.1.1.4/x64.profile)\\n\\nIf you suspect an error caused by PGO profiles, [report a bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra>Client>V8) to the V8 Infra team.\"}"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "add comment to gerrit changes.gerrit add comment to cd12 (1.1.1.4)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "report exceptions",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@profile trackers@\u2713 1.1.2.0 43ff x86@@@",

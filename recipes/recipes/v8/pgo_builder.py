@@ -102,12 +102,7 @@ def RunSteps(api, max_parallel_versions, version_number_cutoff):
     validate_profiles(api, profile_trackers)
     upload_to_gs(api, profile_trackers)
     assign_pgo_tags(api, profile_trackers)
-
-    # TODO: step not implemented
-    # 10   A comment is added to the existing (and already merged) CL, indicating that profiles
-    #     are available for this revision. Including a link to the build and to the profiles
-    #     (for informational and debugging purposes only).
-
+    add_comment_to_gerrit_changes(api, profile_trackers)
     return report_exceptions(api, profile_trackers)
 
 
@@ -201,6 +196,15 @@ class VersionProfileTrack:
       result += f' Failure: {self.exception}'
 
     return result
+
+  @property
+  def remote_profile_path(self):
+    return f'by-version/{self.version}/{self.arch}.profile'
+
+  @property
+  def profile_url(self):
+    return (f'https://storage.googleapis.com/{BUCKET_NAME}/'
+            f'{self.remote_profile_path}')
 
 
 @with_wrapper_step
@@ -443,7 +447,7 @@ def upload_pgo_file(api, tracker):
   api.gsutil.upload(
       tracker.profile_out_file,
       BUCKET_NAME,
-      f'by-version/{tracker.version}/{tracker.arch}.profile',
+      tracker.remote_profile_path,
       name=f'upload {tracker.name}')
 
 
@@ -485,6 +489,44 @@ def assign_pgo_tags(api, profile_trackers):
           'can_delete': False,
         })
     )
+
+@with_wrapper_step
+def add_comment_to_gerrit_changes(api, profile_trackers):
+  for version_trackers in grouped_by_version(advanceable(profile_trackers)):
+    if len(version_trackers) != len(COMPILATORS):
+      continue
+
+    commit = version_trackers[0].revision
+    version = version_trackers[0].version
+
+    change = api.gerrit.get_changes(
+        name=f'retrieve details for {commit} ({version})',
+        host=GERRIT_HOST,
+        query_params=[('commit', commit)])[0]
+    build_id = api.buildbucket.build.id
+    build_url = api.buildbucket.build_url()
+
+    api.gerrit.call_raw_api(
+        name=f'add comment to {commit} ({version})',
+        method='POST',
+        host=GERRIT_HOST,
+        path=f'/changes/{change["id"]}/revisions/1/review',
+        body={
+            "message": "\n".join([
+              (
+                  "PGO profiles for V8 builtins have been generated in "
+                  f"[build  {build_id}]({build_url}) for the following "
+                  "architectures:"
+              ),
+              *[f'* [{t.arch}]({t.profile_url})' for t in version_trackers],
+              "",
+              (
+                  "If you suspect an error caused by PGO profiles, "
+                  "[report a bug](https://bugs.chromium.org/p/chromium/issues/"
+                  "entry?components=Infra>Client>V8) to the V8 Infra team."
+              ),
+            ])
+        })
 
 
 @with_wrapper_step
