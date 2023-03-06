@@ -8,6 +8,7 @@ https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/clang_code
 """
 
 import argparse
+import logging
 import os
 import sys
 
@@ -56,6 +57,7 @@ def main():
     rebased_paths = _rebase_paths(params.src_path, params.build_path,
                                   params.sources)
     contents = '\n'.join(rebased_paths) + '\n'
+    logging.info("Paths to instrument = %r" % rebased_paths)
     out_file.write(contents)
 
 
