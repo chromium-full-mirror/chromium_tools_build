@@ -489,3 +489,8 @@ def checkout_rust(c):
 @CONFIG_CTX()
 def checkout_rust_toolchain_deps(c):
   c.solutions[0].custom_vars['checkout_rust_toolchain_deps'] = 'True'
+
+
+@CONFIG_CTX()
+def fetch_android_chromium_rust_toolchain(c):
+  c.solutions[0].custom_vars['fetch_android_chromium_rust_toolchain'] = 'True'

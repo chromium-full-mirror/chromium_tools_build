@@ -147,6 +147,12 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
+      'fetch_android_chromium_rust_toolchain',
+      api.properties(
+          apply_gclient_config='fetch_android_chromium_rust_toolchain'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
       'fuchsia_arm64',
       api.properties(apply_gclient_config='fuchsia_arm64'),
       api.post_process(post_process.DropExpectation),
