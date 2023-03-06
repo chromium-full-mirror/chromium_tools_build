@@ -41,12 +41,6 @@ class ChromiumApi(recipe_api.RecipeApi):
   def xcode_build_version(self):
     return self._xcode_build_version
 
-  # TODO(crbug.com/1420081) Once source_side_spec_dir is removed, switch
-  # all uses to access targets_spec_dir off of the config instead
-  @property
-  def targets_spec_dir(self):
-    return self.c.targets_spec_dir or self.c.source_side_spec_dir
-
   def make_config_params(self, *args, **kwargs):
     config_object, params = super().make_config_params(*args, **kwargs)
     if config_object is not None:

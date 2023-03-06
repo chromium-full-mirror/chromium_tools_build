@@ -203,7 +203,7 @@ def archive_src_side_deps(api, affected_files):
     digest = api.isolate.isolate('archive src-side deps', isolate_file)
     api.file.remove('rm %s' % isolate_file, isolate_file)
 
-    relative_test_spec_dir = api.path.relpath(api.chromium.targets_spec_dir,
+    relative_test_spec_dir = api.path.relpath(api.chromium.c.targets_spec_dir,
                                               api.path['checkout'])
     # On windows compilators, this would use a `\\` path separator instead of
     # a `/` that the linux orchestrators need to construct Paths

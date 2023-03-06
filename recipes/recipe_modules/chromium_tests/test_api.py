@@ -35,28 +35,6 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
     Returns:
       A recipe test object.
     """
-    return self.read_source_side_spec(builder_group, contents, step_prefix,
-                                      step_suffix)
-
-  # TODO(crbug.com/1420081) Remove this once all downstream uses are removed
-  def read_source_side_spec(self,
-                            builder_group,
-                            contents,
-                            step_prefix=None,
-                            step_suffix=None):
-    """Adds step data overrides for when a test reads source side test specs.
-
-    Args:
-      * builder_group: The group the test is using (ex. 'chromium.win').
-      * contents: The contents of the source side spec file.
-      * step_prefix: Any prefix to add to the step name. Useful if using step
-        nesting.
-      * step_suffix: Any suffix to append to the step name. Useful if the step
-        runs twice.
-
-    Returns:
-      A recipe test object.
-    """
     # Used to be called test specs, name has stuck around for now.
     filename = '%s.json' % builder_group
 

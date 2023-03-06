@@ -324,11 +324,6 @@ class BuilderConfig:
 
   @cached_property
   def targets_spec_files(self):
-    return self.source_side_spec_files
-
-  # TODO(crbug.com/1420081) Remove this once all downstream callers are removed
-  @cached_property
-  def source_side_spec_files(self):
     groups = set(builder_id.group
                  for builder_id in self.builder_ids_in_scope_for_testing)
     return {g: '{}.json'.format(g) for g in groups}

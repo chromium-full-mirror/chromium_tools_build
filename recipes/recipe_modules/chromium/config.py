@@ -107,16 +107,12 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           enable_tsan=Single(bool, empty_val=False, required=False),
           run_asan_test=Single(bool, required=False),
       ),
-      # The directory where targets spec files will be read for the builder. If
-      # not set, will fall back to source_side_spec_dir.
-      targets_spec_dir=Single(Path, required=False),
-      # TODO(crbug.com/1420081) Remove this and make targets_spec_dir required
-      # once downstream uses have been switched to targets_spec_dir
-      source_side_spec_dir=Single(Path, required=False),
+      # The directory where targets spec files will be read for the builder
+      targets_spec_dir=Single(Path),
       # Path to the analyze config file used for configuring ignores/exclusions
       # for analyze (e.g. //testing/buildbot/trybot_analyze_config.json). If not
-      # provided, then trybot_analyze_config.json in
-      # targets_spec_dir/source_side_spec_dir will be used.
+      # provided, then trybot_analyze_config.json in targets_spec_dir will be
+      # used.
       analyze_config_path=Single(Path, required=False),
       use_tot_clang=Single(bool, empty_val=False, required=False),
 
@@ -214,7 +210,7 @@ def BASE(c):
       # Windows requires 64-bit builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
-  c.source_side_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
+  c.targets_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
   c.analyze_config_path = c.CHECKOUT_PATH.join('testing', 'buildbot',
                                                'trybot_analyze_config.json')
   # Test runner memory tools that are not compile-time based.

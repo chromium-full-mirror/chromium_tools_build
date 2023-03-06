@@ -230,8 +230,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         chromium builders this is usually cache/builder/src, but for other
         builders, like angle, this is cache/builder/angle.
       targets_spec_dir: Path to directory containing targets specs. If
-        this is None, chromium.c.targets_spec_dir or
-        chromium.c.source_side_spec_dir will be used.
+        this is None, chromium.c.targets_spec_dir will be used.
 
     Returns: TargetsConfig for current builder
     """
@@ -370,16 +369,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return tuple(tests)
 
   def read_targets_spec(self, targets_spec_file, targets_spec_dir=None):
-    return self.read_source_side_spec(targets_spec_file, targets_spec_dir)
-
-  # TODO(crbug.com/1420081) Remove this once all downstream callers are removed
-  def read_source_side_spec(self,
-                            source_side_spec_file,
-                            source_side_spec_dir=None):
-    targets_spec_file = source_side_spec_file
-    targets_spec_dir = source_side_spec_dir
     if not targets_spec_dir:
-      targets_spec_dir = self.m.chromium.targets_spec_dir
+      targets_spec_dir = self.m.chromium.c.targets_spec_dir
 
     targets_spec_path = targets_spec_dir.join(targets_spec_file)
     spec_result = self.m.json.read(
@@ -938,7 +929,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     absolute_affected_files = set(
         map(self.m.path.abspath, absolute_affected_files))
     absolute_spec_files = set(
-        str(self.m.chromium.targets_spec_dir.join(f))
+        str(self.m.chromium.c.targets_spec_dir.join(f))
         for f in builder_config.targets_spec_files.values())
     absolute_spec_files = set(map(self.m.path.abspath, absolute_spec_files))
     return absolute_spec_files & absolute_affected_files
@@ -1444,7 +1435,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # Also exit if there are failures but we shouldn't deapply the patch
       if self.should_skip_without_patch(task.builder_config,
                                         task.affected_files,
-                                        self.m.chromium.targets_spec_dir):
+                                        self.m.chromium.c.targets_spec_dir):
         self.summarize_test_failures(task.test_suites)
         return None, failing_test_suites
 
