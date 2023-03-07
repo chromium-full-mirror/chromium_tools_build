@@ -72,7 +72,10 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   @contextmanager
   def collect_screenshots(self, bucket):
-    update_env = {"FORCE_UPDATE_ALL_GOLDENS": True}
+    update_env = {
+      "FORCE_UPDATE_ALL_GOLDENS": True,
+      "THROW_AFTER_GOLDENS_UPDATE": True,
+    }
     with self.m.context(env=update_env):
       self.m.git('commit', '-am', '---', name='commit current patch')
       yield

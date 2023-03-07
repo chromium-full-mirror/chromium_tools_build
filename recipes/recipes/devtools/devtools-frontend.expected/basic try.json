@@ -377,7 +377,8 @@
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
@@ -417,7 +418,8 @@
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
@@ -450,7 +452,8 @@
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
@@ -488,7 +491,8 @@
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
@@ -520,7 +524,8 @@
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
@@ -554,7 +559,8 @@
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
@@ -587,7 +593,8 @@
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
@@ -625,7 +632,8 @@
       "gs://devtools-frontend-screenshots/screenshots/linux/91827/1/screenshot.patch"
     ],
     "env": {
-      "FORCE_UPDATE_ALL_GOLDENS": "True"
+      "FORCE_UPDATE_ALL_GOLDENS": "True",
+      "THROW_AFTER_GOLDENS_UPDATE": "True"
     },
     "env_prefixes": {
       "PATH": [
