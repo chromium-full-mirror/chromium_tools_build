@@ -24,7 +24,7 @@ class IsolateApi(recipe_api.RecipeApi):
 
   def __call__(self, args, step_name, **kwargs):
     # Take revision from https://ci.chromium.org/p/infra-internal/g/infra-packagers/console
-    version = 'git_revision:582e828c5a8aaf5cdd0ad1d5465fb9092b71eab8'
+    version = 'git_revision:190841dbb0247656d2791d274eb2bd210821b1cd'
     if self._test_data.enabled:
       version = 'git_revision:mock_infra_git_revision'
     exe = self.m.cipd.ensure_tool('infra/tools/luci/isolate/${platform}',
