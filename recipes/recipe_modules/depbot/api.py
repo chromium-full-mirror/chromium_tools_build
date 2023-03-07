@@ -31,7 +31,7 @@ class DepbotAPI(recipe_api.RecipeApi):
               src_dir, '--log-level', 'debug', '--gn-path',
               self.m.depot_tools.gn_py_path, '--build-dir', build_dir,
               '--json-artifact-output', json_artifact_out,
-              '--json-library-output', json_library_out, '--fast_mode',
+              '--json-library-output', json_library_out, '--fast',
               self.fast_mode
           ],
           step_test_data=(lambda: self.m.json.test_api.output(
