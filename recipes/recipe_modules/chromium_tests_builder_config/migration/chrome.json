@@ -388,6 +388,680 @@
       "chromium.perf.fyi:win-10_laptop_low_end-perf_HP-Candidate"
     ]
   },
+  "chromium.perf.pinpoint:android-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-builder-perf",
+      "chromium.perf.pinpoint:android-go-perf",
+      "chromium.perf.pinpoint:android-go-wembley-perf",
+      "chromium.perf.pinpoint:android-go_webview-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-builder-perf-pgo",
+      "chromium.perf.pinpoint:android-go-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-go-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-builder-perf",
+      "chromium.perf.pinpoint:android-go-perf",
+      "chromium.perf.pinpoint:android-go-wembley-perf",
+      "chromium.perf.pinpoint:android-go_webview-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-go-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-builder-perf-pgo",
+      "chromium.perf.pinpoint:android-go-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-go-wembley-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-builder-perf",
+      "chromium.perf.pinpoint:android-go-perf",
+      "chromium.perf.pinpoint:android-go-wembley-perf",
+      "chromium.perf.pinpoint:android-go_webview-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-go_webview-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-builder-perf",
+      "chromium.perf.pinpoint:android-go-perf",
+      "chromium.perf.pinpoint:android-go-wembley-perf",
+      "chromium.perf.pinpoint:android-go_webview-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-new-pixel-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-new-pixel-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-new-pixel-pro-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel2-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel2-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel2_webview-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel4-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel4-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel4_webview-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel4a_power-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel6-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64_high_end-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-pixel6-perf",
+      "chromium.perf.pinpoint:android-pixel6-pro-perf",
+      "chromium.perf.pinpoint:android_arm64_high_end-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel6-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64_high_end-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-pixel6-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel6-pro-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64_high_end-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel6-pro-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64_high_end-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-pixel6-perf",
+      "chromium.perf.pinpoint:android-pixel6-pro-perf",
+      "chromium.perf.pinpoint:android_arm64_high_end-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-pixel6-pro-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64_high_end-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-pixel6-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel6-pro-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64_high_end-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android-samsung-foldable-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android_arm64-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf",
+      "chromium.perf.pinpoint:android-pixel2-perf",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4-perf",
+      "chromium.perf.pinpoint:android-pixel4_webview-perf",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf",
+      "chromium.perf.pinpoint:android_arm64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android_arm64-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-new-pixel-perf-pgo",
+      "chromium.perf.pinpoint:android-new-pixel-pro-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel2_webview-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel4a_power-perf-pgo",
+      "chromium.perf.pinpoint:android-samsung-foldable-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:android_arm64_high_end-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64_high_end-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-pixel6-perf",
+      "chromium.perf.pinpoint:android-pixel6-pro-perf",
+      "chromium.perf.pinpoint:android_arm64_high_end-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:android_arm64_high_end-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:android_arm64_high_end-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:android-pixel6-perf-pgo",
+      "chromium.perf.pinpoint:android-pixel6-pro-perf-pgo",
+      "chromium.perf.pinpoint:android_arm64_high_end-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:chromecast-linux-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:chromecast-linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:chromecast-linux-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:chromeos-amd64-generic-lacros-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:chromeos-amd64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:chromeos-amd64-generic-lacros-builder-perf",
+      "chromium.perf.pinpoint:lacros-eve-perf",
+      "chromium.perf.pinpoint:lacros-x86-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:chromeos-arm-generic-lacros-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:chromeos-arm-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:chromeos-arm-generic-lacros-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:chromeos-arm64-generic-lacros-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:chromeos-arm64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:chromeos-arm64-generic-lacros-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:lacros-eve-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:chromeos-amd64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:chromeos-amd64-generic-lacros-builder-perf",
+      "chromium.perf.pinpoint:lacros-eve-perf",
+      "chromium.perf.pinpoint:lacros-x86-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:lacros-x86-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:chromeos-amd64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:chromeos-amd64-generic-lacros-builder-perf",
+      "chromium.perf.pinpoint:lacros-eve-perf",
+      "chromium.perf.pinpoint:lacros-x86-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:linux-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:linux-builder-perf",
+      "chromium.perf.pinpoint:linux-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:linux-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:linux-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:linux-builder-perf-pgo",
+      "chromium.perf.pinpoint:linux-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:linux-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:linux-builder-perf",
+      "chromium.perf.pinpoint:linux-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:linux-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:linux-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:linux-builder-perf-pgo",
+      "chromium.perf.pinpoint:linux-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-10_12_laptop_low_end-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-10_12_laptop_low_end-perf",
+      "chromium.perf.pinpoint:mac-builder-perf",
+      "chromium.perf.pinpoint:mac-laptop_high_end-perf",
+      "chromium.perf.pinpoint:mac-laptop_low_end-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-arm-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-arm-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-arm-builder-perf",
+      "chromium.perf.pinpoint:mac-m1_mini_2020-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-arm-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-arm-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-arm-builder-perf-pgo",
+      "chromium.perf.pinpoint:mac-m1_mini_2020-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-10_12_laptop_low_end-perf",
+      "chromium.perf.pinpoint:mac-builder-perf",
+      "chromium.perf.pinpoint:mac-laptop_high_end-perf",
+      "chromium.perf.pinpoint:mac-laptop_low_end-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-builder-perf-pgo",
+      "chromium.perf.pinpoint:mac-laptop_high_end-perf-pgo",
+      "chromium.perf.pinpoint:mac-laptop_low_end-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-laptop_high_end-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-10_12_laptop_low_end-perf",
+      "chromium.perf.pinpoint:mac-builder-perf",
+      "chromium.perf.pinpoint:mac-laptop_high_end-perf",
+      "chromium.perf.pinpoint:mac-laptop_low_end-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-laptop_high_end-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-builder-perf-pgo",
+      "chromium.perf.pinpoint:mac-laptop_high_end-perf-pgo",
+      "chromium.perf.pinpoint:mac-laptop_low_end-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-laptop_low_end-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-10_12_laptop_low_end-perf",
+      "chromium.perf.pinpoint:mac-builder-perf",
+      "chromium.perf.pinpoint:mac-laptop_high_end-perf",
+      "chromium.perf.pinpoint:mac-laptop_low_end-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-laptop_low_end-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-builder-perf-pgo",
+      "chromium.perf.pinpoint:mac-laptop_high_end-perf-pgo",
+      "chromium.perf.pinpoint:mac-laptop_low_end-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-m1_mini_2020-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-arm-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-arm-builder-perf",
+      "chromium.perf.pinpoint:mac-m1_mini_2020-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:mac-m1_mini_2020-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:mac-arm-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:mac-arm-builder-perf-pgo",
+      "chromium.perf.pinpoint:mac-m1_mini_2020-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:win-10-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf",
+      "chromium.perf.pinpoint:win64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:win-10-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf-pgo",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf-pgo",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf-pgo",
+      "chromium.perf.pinpoint:win64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:win-10_amd_laptop-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf",
+      "chromium.perf.pinpoint:win64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:win-10_amd_laptop-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf-pgo",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf-pgo",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf-pgo",
+      "chromium.perf.pinpoint:win64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:win-10_laptop_low_end-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf",
+      "chromium.perf.pinpoint:win64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:win-10_laptop_low_end-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf-pgo",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf-pgo",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf-pgo",
+      "chromium.perf.pinpoint:win64-builder-perf-pgo"
+    ]
+  },
+  "chromium.perf.pinpoint:win64-builder-perf": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf",
+      "chromium.perf.pinpoint:win64-builder-perf"
+    ]
+  },
+  "chromium.perf.pinpoint:win64-builder-perf-pgo": {
+    "blockers": [
+      "cannot migrate builder 'chromium.perf.pinpoint:win64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
+    ],
+    "builders": [
+      "chromium.perf.pinpoint:win-10-perf-pgo",
+      "chromium.perf.pinpoint:win-10_amd_laptop-perf-pgo",
+      "chromium.perf.pinpoint:win-10_laptop_low_end-perf-pgo",
+      "chromium.perf.pinpoint:win64-builder-perf-pgo"
+    ]
+  },
   "chromium.perf:android-builder-perf": {
     "blockers": [
       "cannot migrate builder 'chromium.perf:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"

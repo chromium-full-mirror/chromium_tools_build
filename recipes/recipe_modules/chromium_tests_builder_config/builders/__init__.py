@@ -8,6 +8,7 @@ from . import chromium_devtools_frontend
 from . import chromium_perf
 from . import chromium_perf_fyi
 from . import chromium_perf_calibration
+from . import chromium_perf_pinpoint
 from . import client_devtools_frontend_integration
 from . import client_openscreen_chromium
 from . import client_v8_chromium
@@ -59,6 +60,8 @@ BUILDERS = builder_db.BuilderDatabase.create({
         chromium_perf_fyi.SPEC,
     'chromium.perf.calibration':
         chromium_perf_calibration.SPEC,
+    'chromium.perf.pinpoint':
+        chromium_perf_pinpoint.SPEC,
     'client.devtools-frontend.integration':
         client_devtools_frontend_integration.SPEC,
     'client.openscreen.chromium':
