@@ -6,6 +6,7 @@ import attr
 import collections
 import contextlib
 import itertools
+import traceback
 from urllib.parse import urlencode
 
 from recipe_engine import recipe_api, step_data
@@ -154,6 +155,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # Will get updated in initialize, which gets run by the recipe engine after
     # the self.m module injection
     self.base_variant = {}
+
+    self._enable_snoopy = input_properties.enable_snoopy
 
   def initialize(self):
     # add var 'builder' by default
@@ -873,7 +876,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         package_step.presentation.logs['why is this running?'] = (
             standard_reasons)
 
-  def archive_build(self, builder_id, update_step, builder_config):
+  def archive_build(self,
+                    builder_id,
+                    update_step,
+                    builder_config,
+                    enable_snoopy=False):
     """Archive the build if the bot is configured to do so.
 
     There are three types of builds that get archived: regular builds,
@@ -908,7 +915,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     upload_results = self.m.archive.generic_archive(
         build_dir=self.m.chromium.output_dir,
         update_properties=update_step.presentation.properties,
-        custom_vars=custom_vars)
+        custom_vars=custom_vars,
+        report_artifacts=enable_snoopy)
 
     self.m.symupload(self.m.chromium.output_dir)
     return upload_results
@@ -1539,6 +1547,19 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         step_test_data=lambda: self.m.json.test_api.output({}))
     return result.json.output
 
+  @contextlib.contextmanager
+  def _suppress_exception(self, step_name):
+    """Suppresses exception and creates a step with the exception log."""
+    try:
+      yield
+    except Exception:
+      self.m.step.empty(
+          step_name,
+          status=self.m.step.EXCEPTION,
+          log_name='exception',
+          log_text=traceback.format_exc(),
+          raise_on_failure=False)
+
   def main_waterfall_steps(self,
                            builder_id,
                            builder_config,
@@ -1559,9 +1580,18 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         and a failure message if a failure occurred.
       - None if no failures
     """
+    # Don't fail the build if snoopy service in unavailable.
+    if self._enable_snoopy:
+      with self._suppress_exception('snoopy failure'):
+        self.m.bcid_reporter.report_stage('start')
+
     self.report_builders(builder_config, report_mirroring_builders=True)
     self.print_link_to_results()
     self.configure_build(builder_config)
+
+    if self._enable_snoopy:
+      with self._suppress_exception('snoopy failure'):
+        self.m.bcid_reporter.report_stage('fetch')
     update_step, targets_config = self.prepare_checkout(
         builder_config,
         timeout=3600,
@@ -1574,6 +1604,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           mb_config_path=mb_config_path,
           mb_phase=mb_phase)
 
+    if self._enable_snoopy:
+      with self._suppress_exception('snoopy failure'):
+        self.m.bcid_reporter.report_stage('compile')
     compile_result, swarming_execution_info = self.compile_specific_targets(
         builder_id,
         builder_config,
@@ -1606,8 +1639,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_config,
         additional_properties=additional_trigger_properties)
 
-    upload_results = self.archive_build(builder_id, update_step, builder_config)
-
+    if self._enable_snoopy:
+      with self._suppress_exception('snoopy failure'):
+        self.m.bcid_reporter.report_stage('upload')
+    upload_results = self.archive_build(builder_id, update_step, builder_config,
+                                        self._enable_snoopy)
+    if self._enable_snoopy:
+      with self._suppress_exception('snoopy failure'):
+        self.m.bcid_reporter.report_stage('upload-complete')
 
     tests = targets_config.tests_on(builder_id)
     return self.run_tests(builder_id, builder_config, tests, upload_results)

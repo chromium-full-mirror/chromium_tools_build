@@ -5,7 +5,12 @@ syntax = "proto3";
 
 package recipe_modules.build.chromium_tests;
 
+// Next ID: 5
 message InputProperties {
   reserved 1, 2, 3;
   reserved "bucketed_triggers", "project_trigger_overrides", "fixed_revisions";
+
+  // Indicates whether the builder should have snoopy reporting enabled. This
+  // is used if the builds need to be BCID compliant.
+  bool enable_snoopy = 4;
 }

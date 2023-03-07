@@ -987,3 +987,53 @@ def GenTests(api):
       api.post_check(post_process.StatusFailure),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'snoopy_reporting_enabled',
+      api.properties(**{'$build/chromium_tests': {
+          'enable_snoopy': True,
+      }}),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.post_process(post_process.MustRun, 'snoop: report_stage'),
+      api.post_check(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'catch_snoopy_reporting_exception',
+      api.properties(**{'$build/chromium_tests': {
+          'enable_snoopy': True,
+      }}),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.step_data('snoop: report_stage', retcode=1),
+      api.post_process(
+          post_process.LogContains,
+          'snoopy failure',
+          'exception',
+          ['Step(\'snoop: report_stage\') (retcode: 1)'],
+      ),
+      api.post_check(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
