@@ -14,6 +14,7 @@ class DepbotAPI(recipe_api.RecipeApi):
     self.bq_art_table = props.bq_artifact_table or "ssci-dev.depbot.artifacts"
     self.bq_lib_table = props.bq_library_table or "ssci-dev.depbot.libraries"
     self.depbot_version = props.depbot_version or "latest"
+    self.fast_mode = props.fast_mode
     self.target = props.target or "//third_party/perfetto/src/tracing/ipc/producer:producer"
 
   def run(self, src_dir, build_dir, json_artifact_out, json_library_out):
@@ -30,7 +31,8 @@ class DepbotAPI(recipe_api.RecipeApi):
               src_dir, '--log-level', 'debug', '--gn-path',
               self.m.depot_tools.gn_py_path, '--build-dir', build_dir,
               '--json-artifact-output', json_artifact_out,
-              '--json-library-output', json_library_out
+              '--json-library-output', json_library_out, '--fast_mode',
+              self.fast_mode
           ],
           step_test_data=(lambda: self.m.json.test_api.output(
               data=[{

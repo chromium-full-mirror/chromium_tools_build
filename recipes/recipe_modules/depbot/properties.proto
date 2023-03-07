@@ -20,4 +20,7 @@ message InputProperties {
 
   // target is the entrypoint to the SSCI collection.
   string target = 4;
+
+  // fast mode only collects the full dependency tree not the artifacts.
+  bool fast_mode = 5;
 }

@@ -129,7 +129,9 @@
       "--json-artifact-output",
       "/path/to/tmp/json",
       "--json-library-output",
-      "/path/to/tmp/json"
+      "/path/to/tmp/json",
+      "--fast_mode",
+      "False"
     ],
     "name": "ssci collection.run depbot",
     "~followup_annotations": [

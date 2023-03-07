@@ -27,6 +27,7 @@ def GenTests(api):
                   "bq_artifact_table": "project.dataset.table",
                   "bq_library_table": "project.dataset.table",
                   "depbot_version": "latest",
+                  "fast_mode": False,
                   "target": "//base:base"
               }
           }))
