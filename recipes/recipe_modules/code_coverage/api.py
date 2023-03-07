@@ -16,6 +16,9 @@ from . import constants
 
 MAX_CANDIDATE_FILES = 200
 
+# This should be same as toolchain side token at bit.ly/3F3IIMC
+INSTRUMENT_ALL_JACOCO_OVERRIDE_TOKEN = 'INSTRUMENT_ALL_JACOCO'
+
 
 class CodeCoverageApi(recipe_api.RecipeApi):
   """This module contains apis to generate code coverage data."""
@@ -412,41 +415,59 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       candidate_files (list of str): paths to the files we want to instrument,
           relative to the checkout path.
     """
-    skip_step = None
-    if len(candidate_files) > MAX_CANDIDATE_FILES:
-      # Skip instrumentation if there are too many files because:
-      # 1. They cause problems such as crash due to too many cmd line arguments.
-      # 2. These CLs typically does mechanial refactorings, and coverage
-      #    information is useless.
-      # 3. Has non-trivial performance implications in terms of CQ cycle time.
+    self.set_is_per_cl_coverage(True)
+    contains_jacoco_change = False
+    if self.use_java_coverage:
+      for candidate_file in candidate_files:
+        if candidate_file.startswith('third_party/jacoco'):
+          contains_jacoco_change = True
+          break
+    if contains_jacoco_change:
+      # In case of a jacoco change, we write a special token to output file,
+      # which indicates toolchain to instrument everything. We do so to surface
+      # any compatability issues between jacoco and chromium/src.
+      # See crbug/1412466#c47
+      files_to_instrument = [INSTRUMENT_ALL_JACOCO_OVERRIDE_TOKEN]
+      # Because we are instrumenting everything, there would be large amount
+      # of raw coverage data, which we do not care for(because it is mostly for
+      # the files outside the CL). Therefore we do not process it either.
       candidate_files = []
-      skipping_coverage_message = (
-          'skip instrumenting code coverage because >{} files are modified')
-      skip_step = self.m.step.empty(
-          skipping_coverage_message.format(MAX_CANDIDATE_FILES))
-    if is_deps_only_change:
-      # Skip instrumentation if current change is a DEPS only change.
-      # This is because code_coverage recipe module expects candidate_files to
-      # belong to a chromium checkout, and in case of DEPS only change
-      # candidate_files belong to third party code.
-      candidate_files = []
-      skip_step = self.m.step.empty(
-          'Skip instrumentating code coverage because DEPS only change')
-    # This will let other builders (like orchestrator) know that coverage is
-    # being skipped so files will not be instrumented.
-    if skip_step:
-      skip_step.presentation.properties['skipping_coverage'] = True
-      self._skipping_coverage = True
+      self.m.step.empty('Jacoco change detected. Instrumenting everything!' +
+                        ' Generated coverage data will not be processed')
+    else:
+      skip_step = None
+      if len(candidate_files) > MAX_CANDIDATE_FILES:
+        # Skip instrumentation if there are too many files because:
+        # 1. They cause problems such as crash due to too many cmd line arguments.
+        # 2. These CLs typically does mechanial refactorings, and coverage
+        #    information is useless.
+        # 3. Has non-trivial performance implications in terms of CQ cycle time.
+        candidate_files = []
+        skipping_coverage_message = (
+            'skip instrumenting code coverage because >{} files are modified')
+        skip_step = self.m.step.empty(
+            skipping_coverage_message.format(MAX_CANDIDATE_FILES))
+      if is_deps_only_change:
+        # Skip instrumentation if current change is a DEPS only change.
+        # This is because code_coverage recipe module expects candidate_files to
+        # belong to a chromium checkout, and in case of DEPS only change
+        # candidate_files belong to third party code.
+        candidate_files = []
+        skip_step = self.m.step.empty(
+            'Skip instrumentating code coverage because DEPS only change')
+      # This will let other builders (like orchestrator) know that coverage is
+      # being skipped so coverage data need not be processed.
+      if skip_step:
+        skip_step.presentation.properties['skipping_coverage'] = True
+        self._skipping_coverage = True
+
+      self.filter_and_set_eligible_files(candidate_files)
+      files_to_instrument = self._eligible_files
 
     if not output_dir:
       output_dir = self.m.chromium.output_dir
-
-    self.set_is_per_cl_coverage(True)
-
-    self.filter_and_set_eligible_files(candidate_files)
     self.m.file.ensure_directory('create .code-coverage',
                                  self.src_dir.join('.code-coverage'))
-
     self.m.step(
         'save paths of affected files',
         [
@@ -458,7 +479,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             self.src_dir,
             '--build-path',
             output_dir,
-        ] + self._eligible_files,
+        ] + files_to_instrument,
         stdout=self.m.raw_io.output_text(add_output_log=True))
 
   def process_coverage_data(self, tests):

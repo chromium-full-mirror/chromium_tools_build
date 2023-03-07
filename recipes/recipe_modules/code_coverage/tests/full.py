@@ -671,6 +671,27 @@ def GenTests(api):
   )
 
   yield api.test(
+      'jacoco changes',
+      api.chromium.try_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.code_coverage(use_java_coverage=True),
+      api.properties(files_to_instrument=[
+          'some/path/to/myfile.java', 'third_party/jacoco/BUILD.gn'
+      ]),
+      api.post_process(
+          post_process.MustRun,
+          'Jacoco change detected. Instrumenting everything!' +
+          ' Generated coverage data will not be processed'),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'process java coverage for per-cl',
       api.chromium.try_build(
           builder_group='fake-group', builder='fake-builder'),
