@@ -135,16 +135,6 @@ def GenTests(api):
             ).assemble()),
     ], api.empty_test_data())
 
-  def filter_out_setup_steps():
-
-    def step_filter(check, step_odict):
-      del check
-      return collections.OrderedDict([(k, v)
-                                      for k, v in step_odict.items()
-                                      if not k.startswith('setup steps')])
-
-    return api.post_process(step_filter)
-
   yield api.test(
       'basic',
       arbitrary_tester(),
@@ -227,11 +217,12 @@ def GenTests(api):
           'Linux (with patch)',
           retcode=1,
       ),
-      api.post_process(post_process.StatusAnyFailure),
+      api.post_process(post_process.StatusException),
       api.post_process(
-          post_process.Filter(
-              '[trigger] base_unittests on Intel GPU on Linux (without patch)')
-      ),
+          post_process.SummaryMarkdown, "Infra Failure: "
+          "Step('test_pre_run (with patch).[trigger] base_unittests "
+          "on Intel GPU on Linux (with patch)') (retcode: 1)"),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -255,9 +246,15 @@ def GenTests(api):
           extra_suffix='on Intel GPU on Linux',
           failures=['Test.Two']),
       api.post_process(
-          post_process.Filter(
-              '[trigger] base_unittests on Intel GPU on Linux (without patch)')
-      ),
+          post_process.MustRun,
+          '[trigger] base_unittests on Intel GPU on Linux (without patch)'),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          '[trigger] base_unittests on Intel GPU on Linux (without patch)',
+          lambda check, req: check('--isolated-script-test-filter=Test.Two' in
+                                   req[0].command)),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -301,8 +298,38 @@ def GenTests(api):
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           },
           override_compile_targets=['base_unittests_run']),
-      filter_out_setup_steps(),
+      api.post_process(post_process.LogContains, 'details', 'details', [
+          "compile_targets: 'base_unittests_run'",
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
+
+  chartjson_build_properties = (
+      '{"bot_id": "test_bot", "builder_group": "fake-group", '
+      '"got_angle_revision": "fac9503c46405f77757b9a728eb85b8d7bc6080c", '
+      '"got_angle_revision_cp": "refs/heads/main@{#297276}", '
+      '"got_buildtools_revision": "f0319a328b2809876916353cb994259692140934", '
+      '"got_buildtools_revision_cp": "refs/heads/main@{#182578}", '
+      '"got_dawn_revision": "1b5c932bc9a9a35c66edea3914fb675742d57cc2", '
+      '"got_dawn_revision_cp": "refs/heads/main@{#51819}", '
+      '"got_nacl_revision": "d998e125e8253980d76e269b7982aeeefc1b9b50", '
+      '"got_nacl_revision_cp": "refs/heads/main@{#274981}", '
+      '"got_revision": "2d72510e447ab60a9728aeea2362d8be2cbd7789", '
+      '"got_revision_cp": "refs/heads/main@{#170242}", '
+      '"got_swiftshader_revision": "44a40deda357aff750ab1cbfd94ec79dbc8bb754", '
+      '"got_swiftshader_revision_cp": "refs/heads/main@{#202157}", '
+      '"got_v8_revision": "801ada225ddc271c132c3a35f03975671d43e399", '
+      '"got_v8_revision_cp": "refs/heads/main@{#43426}", '
+      '"got_webrtc_revision": "0f90628433546e61d9268596da93418c623137f4", '
+      '"got_webrtc_revision_cp": "refs/heads/main@{#120644}", '
+      '"parent_builder_group": "fake-group", '
+      '"parent_buildername": "fake-builder", '
+      '"perf_builder_name_alias": "test-perf-id", '
+      '"recipe": "chromium_tests:tests/steps/swarming_isolated_script_test", '
+      '"results_url": "https://example/url", '
+      '"swarm_hashes": {"base_unittests": '
+      '"ffffffffffffffffffffffffffffffffffffffff/size"}}')
 
   yield api.test(
       'chartjson',
@@ -313,7 +340,12 @@ def GenTests(api):
           },
           perf_builder_name_alias='test-perf-id',
           results_url='https://example/url'),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepCommandContains,
+                       'base_unittests on Intel GPU on Linux (with patch)', [
+                           chartjson_build_properties,
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -330,7 +362,12 @@ def GenTests(api):
           api.chromium_swarming.canned_summary_output(
               api.json.output({}), shards=2),
           retcode=102),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepCommandContains,
+                       'base_unittests on Intel GPU on Linux (with patch)', [
+                           chartjson_build_properties,
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -346,8 +383,39 @@ def GenTests(api):
           'base_unittests on Intel GPU on Linux (with patch)',
           api.chromium_swarming.canned_summary_output(
               api.json.output({}), failure=True)),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepCommandContains,
+                       'base_unittests on Intel GPU on Linux (with patch)', [
+                           chartjson_build_properties,
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
+
+  histograms_custom_revisions = (
+      '{"bot_id": "test_bot", "builder_group": "fake-group", '
+      '"got_angle_revision": "fac9503c46405f77757b9a728eb85b8d7bc6080c", '
+      '"got_angle_revision_cp": "refs/heads/main@{#297276}", '
+      '"got_buildtools_revision": "f0319a328b2809876916353cb994259692140934", '
+      '"got_buildtools_revision_cp": "refs/heads/main@{#182578}", '
+      '"got_dawn_revision": "1b5c932bc9a9a35c66edea3914fb675742d57cc2", '
+      '"got_dawn_revision_cp": "refs/heads/main@{#51819}", '
+      '"got_nacl_revision": "d998e125e8253980d76e269b7982aeeefc1b9b50", '
+      '"got_nacl_revision_cp": "refs/heads/main@{#274981}", '
+      '"got_revision": "2d72510e447ab60a9728aeea2362d8be2cbd7789", '
+      '"got_revision_cp": "refs/heads/main@{#170242}", '
+      '"got_swiftshader_revision": "44a40deda357aff750ab1cbfd94ec79dbc8bb754", '
+      '"got_swiftshader_revision_cp": "refs/heads/main@{#202157}", '
+      '"got_v8_revision": "ffffffffffffffffffffffffffffffffffffffff", '
+      '"got_v8_revision_cp": "refs/heads/main@{#43426}", '
+      '"got_webrtc_revision": "ffffffffffffffffffffffffffffffffffffffff", '
+      '"got_webrtc_revision_cp": "refs/heads/main@{#120644}", '
+      '"parent_builder_group": "fake-group", '
+      '"parent_buildername": "fake-builder", '
+      '"perf_builder_name_alias": "test-perf-id", '
+      '"recipe": "chromium_tests:tests/steps/swarming_isolated_script_test", '
+      '"results_url": "https://example/url", '
+      '"swarm_hashes": {"base_unittests": '
+      '"ffffffffffffffffffffffffffffffffffffffff/size"}}')
 
   yield api.test(
       'histograms_LUCI_missing_perf_dashboard_machine_group_property',
@@ -360,7 +428,12 @@ def GenTests(api):
           got_v8_revision='ffffffffffffffffffffffffffffffffffffffff',
           perf_builder_name_alias='test-perf-id',
           results_url='https://example/url'),
-      filter_out_setup_steps(),
+      api.post_process(post_process.StepCommandContains,
+                       'base_unittests on Intel GPU on Linux (with patch)', [
+                           histograms_custom_revisions,
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -374,7 +447,17 @@ def GenTests(api):
               'gpu': '8086',
               'os': 'Windows',
           }),
-      filter_out_setup_steps(),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests '
+          'on Intel GPU on Windows (with patch)',
+          lambda check, req: check(
+              ('gpu', '8086') in req[0].dimensions.items()),
+          lambda check, req: check(
+              ('os', 'Windows') in req[0].dimensions.items()),
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -388,7 +471,16 @@ def GenTests(api):
               'gpu': '8086',
               'os': 'Mac',
           }),
-      filter_out_setup_steps(),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests '
+          'on Intel GPU on Mac (with patch)',
+          lambda check, req: check(
+              ('gpu', '8086') in req[0].dimensions.items()),
+          lambda check, req: check(('os', 'Mac') in req[0].dimensions.items()),
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -403,7 +495,17 @@ def GenTests(api):
               'os': 'Mac',
               'hidpi': '1',
           }),
-      filter_out_setup_steps(),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests '
+          'on Intel GPU on Mac Retina (with patch)',
+          lambda check, req: check(
+              ('gpu', '8086') in req[0].dimensions.items()),
+          lambda check, req: check(('os', 'Mac') in req[0].dimensions.items()),
+          lambda check, req: check(('hidpi', '1') in req[0].dimensions.items()),
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -418,7 +520,19 @@ def GenTests(api):
               'device_os': 'LOL123',
               'os': 'Android',
           }),
-      filter_out_setup_steps(),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run (with patch).[trigger] base_unittests '
+          'on Android device Nexus 5X (with patch)',
+          lambda check, req: check(
+              ('device_type', 'bullhead') in req[0].dimensions.items()),
+          lambda check, req: check(
+              ('device_os', 'LOL123') in req[0].dimensions.items()),
+          lambda check, req: check(
+              ('os', 'Android') in req[0].dimensions.items()),
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

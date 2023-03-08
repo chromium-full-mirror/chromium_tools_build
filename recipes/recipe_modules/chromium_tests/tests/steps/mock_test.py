@@ -36,7 +36,13 @@ def GenTests(api):
   failure_code = steps.MockTest.ExitCodes.FAILURE
   infra_code = steps.MockTest.ExitCodes.INFRA_FAILURE
 
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.post_process(post_process.MustRun, 'pre_run MockTest'),
+      api.post_process(post_process.MustRun, 'MockTest'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'failure',

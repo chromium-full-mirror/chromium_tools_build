@@ -106,13 +106,22 @@ def GenTests(api):
 
   yield api.test(
       'basic',
-      ci_build(
-          test_spec={
-              'test': 'base_unittests',
-              'total_shards': 2,
-          },
-      ),
+      ci_build(test_spec={
+          'test': 'base_unittests',
+          'total_shards': 2,
+      },),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          'base_unittests',
+          '--test-launcher-shard-index=0',
+          '--test-launcher-total-shards=2',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
+
+  logdog_path = '{$HOME}/logdog'
+  logdog_package = 'infra/logdog/linux-386'
+  logdog_revision = 'git_revision:deadbeef'
 
   yield api.test(
       'swarming',
@@ -133,12 +142,29 @@ def GenTests(api):
                       },
                   },
                   'cipd_packages': [{
-                      'location': '{$HOME}/logdog',
-                      'cipd_package': 'infra/logdog/linux-386',
-                      'revision': 'git_revision:deadbeef',
+                      'location': logdog_path,
+                      'cipd_package': logdog_package,
+                      'revision': logdog_revision,
                   }],
               },
           }),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests',
+          lambda check, req: check(('bar', 'baz') in req[0].dimensions.items()),
+          lambda check, req: check(logdog_path in req[0].cipd_ensure_file.
+                                   packages),
+          lambda check, req: check(logdog_package == req[0].cipd_ensure_file.
+                                   packages[logdog_path][0].name),
+          lambda check, req: check(logdog_revision == req[0].cipd_ensure_file.
+                                   packages[logdog_path][0].version),
+      ),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          'swarming',
+          'collect',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -160,6 +186,17 @@ def GenTests(api):
                   },
               },
           }),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests',
+          lambda check, req: check(('bar', 'baz') in req[0].dimensions.items()),
+      ),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          'swarming',
+          'collect',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -222,6 +259,8 @@ def GenTests(api):
                   }],
               },
           }),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -263,6 +302,14 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True,
               },
           }),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          '--merge-script',
+          '[CACHE]/builder/src/merge_script.py',
+          '--merge-script-stdout-file',
+          '/path/to/tmp/merge_script_log',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -303,6 +350,9 @@ def GenTests(api):
                   'script': '//tear_down_script2.py',
               }],
           }),
+      api.post_process(post_process.MustRun, 'base_unittests'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -371,6 +421,15 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True,
               },
           }),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run.[trigger (custom trigger script)] base_unittests', [
+              'vpython3',
+              '[CACHE]/builder/src/trigger_script.py',
+              'trigger',
+          ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -387,6 +446,14 @@ def GenTests(api):
                   'shards': 5,
               },
           }),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run.[trigger (custom trigger script)] base_unittests', [
+              '--shards',
+              '5',
+          ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

@@ -114,6 +114,16 @@ def GenTests(api):
           'name': 'base_unittests',
           'isolate_name': 'base_unittests_run',
       }),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          'vpython3',
+          '[START_DIR]/swarming.client/run_isolated.py',
+      ]),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          '--isolated-script-test-output',
+          '[CLEANUP]/tmp_tmp_1',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -127,6 +137,8 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True,
               },
           }),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -157,6 +169,16 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True,
               },
           }),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] base_unittests'),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          '--merge-script',
+          '[CACHE]/builder/src/path/to/script.py',
+          '--merge-script-stdout-file',
+          '/path/to/tmp/merge_script_log',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -242,6 +264,15 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True,
               },
           }),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run.[trigger (custom trigger script)] base_unittests', [
+              'vpython3',
+              '[CACHE]/builder/src/path/to/script.py',
+              'trigger',
+          ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -281,6 +312,17 @@ def GenTests(api):
                   },
               },
           }),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests',
+          lambda check, req: check(('bar', 'baz') in req[0].dimensions.items()),
+      ),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          'swarming',
+          'collect',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -298,6 +340,17 @@ def GenTests(api):
                   },
               },
           }),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests',
+          lambda check, req: check(('bar', 'baz') in req[0].dimensions.items()),
+      ),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          'swarming',
+          'collect',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -372,6 +425,13 @@ def GenTests(api):
               'args': ['--should-be-in-output',],
               'precommit_args': ['--should-also-be-in-output',],
           }),
+      api.post_process(post_process.StepCommandContains,
+                       'base_unittests (with patch)', [
+                           '--should-be-in-output',
+                           '--should-also-be-in-output',
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -391,6 +451,7 @@ def GenTests(api):
           }),
       api.post_process(post_process.StepSuccess,
                        'archive results for blink_web_tests'),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -404,6 +465,9 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True,
               },
           }),
+      api.post_process(post_process.MustRun, 'custom_webkit_tests'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

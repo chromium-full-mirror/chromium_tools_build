@@ -97,6 +97,13 @@ def GenTests(api):
           swarm_hashes={
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           }),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests',
+          lambda check, req: check('target_platform:android' in req[0].command),
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -108,6 +115,10 @@ def GenTests(api):
           swarm_hashes={
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           }),
+      api.post_process(post_process.LogContains, 'details', 'details',
+                       ["compile_targets: 'base_unittests_run'"]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -123,6 +134,13 @@ def GenTests(api):
           'base_unittests',
           api.chromium_swarming.canned_summary_output(
               dispatched_task_step_test_data=None, failure=True, retcode=1)),
+      api.post_process(post_process.StepFailure, 'base_unittests'),
+      api.post_process(
+          post_process.LogContains, '$debug - all results',
+          'serialized results',
+          ['"unexpected_failing_suites": [\n    "base_unittests"']),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

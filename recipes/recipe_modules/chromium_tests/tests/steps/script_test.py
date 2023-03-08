@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine import post_process
+from recipe_engine.post_process import (DropExpectation, LogContains, MustRun,
+                                        StatusFailure, StatusSuccess,
+                                        StepCommandContains, StepTextEquals)
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
@@ -51,6 +53,18 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
+      api.post_process(StepCommandContains, 'script_test', [
+          'vpython3',
+          'None/testing/scripts/script.py',
+      ]),
+      api.post_process(StepCommandContains, 'script_test', [
+          '--args',
+          '["some", "args"]',
+      ]),
+      api.post_process(LogContains, 'details', 'details',
+                       ["compile_targets: ['compile_target']"]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -60,6 +74,18 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.properties(override_compile_targets=['other_target']),
+      api.post_process(StepCommandContains, 'script_test', [
+          'vpython3',
+          'None/testing/scripts/script.py',
+      ]),
+      api.post_process(StepCommandContains, 'script_test', [
+          '--args',
+          '["some", "args"]',
+      ]),
+      api.post_process(LogContains, 'details', 'details',
+                       ["compile_targets: ('other_target',)"]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -69,6 +95,10 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.override_step_data('script_test', api.json.output({})),
+      api.post_process(MustRun,
+                       'script_test with suffix  had an invalid result'),
+      api.post_process(StatusFailure),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -83,4 +113,8 @@ def GenTests(api):
               'valid': True,
               'failures': ['TestOne']
           })),
+      api.post_process(StepTextEquals, 'script_test',
+                       '<br/>failures:<br/>TestOne<br/>'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )

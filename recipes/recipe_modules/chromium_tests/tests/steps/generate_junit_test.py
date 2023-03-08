@@ -94,6 +94,9 @@ def GenTests(api):
       ci_build(test_spec={
           'test': 'junit_test',
       }),
+      api.post_process(post_process.MustRun, 'junit_test'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

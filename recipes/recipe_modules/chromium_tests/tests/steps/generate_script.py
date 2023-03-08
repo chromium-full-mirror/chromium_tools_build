@@ -88,6 +88,12 @@ def GenTests(api):
           'name': 'base_unittests',
           'script': 'gtest_test.py',
       }),
+      api.post_process(post_process.StepCommandContains, 'base_unittests', [
+          'vpython3',
+          '[CACHE]/builder/src/testing/scripts/gtest_test.py',
+      ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

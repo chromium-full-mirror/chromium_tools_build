@@ -8,6 +8,7 @@ DEPS = [
     'recipe_engine/step',
 ]
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess)
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
@@ -18,4 +19,8 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
