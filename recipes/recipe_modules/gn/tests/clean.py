@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains)
+
 DEPS = [
     'recipe_engine/path',
     'gn',
@@ -15,4 +18,13 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.post_process(StepCommandContains, 'foobar', [
+          'RECIPE_REPO[depot_tools]/gn.py',
+          'clean',
+          '[START_DIR]/out/Release',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
