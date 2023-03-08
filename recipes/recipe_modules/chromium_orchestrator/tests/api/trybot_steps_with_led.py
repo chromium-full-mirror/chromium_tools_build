@@ -56,7 +56,7 @@ def GenTests(api):
       str(cas_digest_size),
   )
 
-  def setup(use_cipd_exe=False):
+  def setup(use_cipd_exe=False, real_build=False):
     if use_cipd_exe:
       exe = chromium_bootstrap.BootstrappedExe(
           cipd=chromium_bootstrap.Cipd(
@@ -81,6 +81,15 @@ def GenTests(api):
           ),
           cmd='luciexe',
       )
+
+    led_property = {
+        'led_run_id': 'chromium/led/kimstephanie_google.com/88a27cab21a8ad2',
+    }
+    if real_build:
+      led_property = {
+          'shadowed_bucket': 'try',
+      }
+
     return sum([
         api.chromium.try_build(
             builder_group='fake-try-group',
@@ -97,10 +106,8 @@ def GenTests(api):
                         compilator='fake-compilator',
                         compilator_watcher_git_revision='e841fc',
                     ),
-                '$recipe_engine/led': {
-                    'led_run_id':
-                        'chromium/led/kimstephanie_google.com/88a27cab21a8ad2',
-                },
+                '$recipe_engine/led':
+                    led_property,
             }),
     ], api.empty_test_data())
 
@@ -281,5 +288,88 @@ def GenTests(api):
                        'downloading cas digest all_test_binaries'),
       api.post_process(post_process.DoesNotRun, 'download src-side deps'),
       api.post_process(post_process.StatusException),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'trigger_led_compilator_real_build',
+      api.chromium.try_build(
+          bucket="try.shadow",
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+      ),
+      setup(real_build=True),
+      api.chromium_orchestrator.override_led_get_builder(),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.post_process(post_process.MustRun,
+                       'trigger led compilator build (with patch)'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'trigger led compilator build (with patch).led get-builder',
+          [
+              'led', 'get-builder', '-adjust-priority', '0', '-real-build',
+              'luci.chromium.try:fake-compilator'
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'trigger led compilator build (with patch).led edit-payload',
+          ['-cas-ref', expected_cas_ref],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'trigger led compilator build (with patch).led launch',
+          ['led', 'launch', '-resultdb', 'on', '-real-build'],
+      ),
+      api.post_process(post_process.MustRun, 'compilator steps (with patch)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'trigger_led_compilator_real_build_without_patch',
+      api.chromium.try_build(
+          bucket="try.shadow",
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+      ),
+      setup(real_build=True),
+      api.chromium_orchestrator.override_led_get_builder(),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(with_patch=False),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'retry shards with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'without patch', failures=['Test.One']),
+      api.post_process(post_process.MustRun,
+                       'trigger led compilator build (without patch)'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'trigger led compilator build (without patch).led get-builder',
+          [
+              'led', 'get-builder', '-adjust-priority', '0', '-real-build',
+              'luci.chromium.try:fake-compilator'
+          ],
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'trigger led compilator build (without patch).led launch',
+          ['led', 'launch', '-resultdb', 'on', '-real-build'],
+      ),
+      api.post_process(post_process.MustRun,
+                       'compilator steps (without patch)'),
+      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

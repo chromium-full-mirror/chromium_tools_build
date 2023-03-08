@@ -76,7 +76,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     # The triggered compilator's swarming task is already fully collected during
     # test_patch()
-    if self.m.led.launched_by_led:
+    if self.m.led.launched_by_led and not self.m.led.led_build:
       return raw_result
 
     # If the orchestrator build is canceled or infra failed, the exception
@@ -168,7 +168,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     compilator_properties = {
         'orchestrator': {
             'builder_name': self.m.buildbucket.builder_name,
-            'builder_group': self.m.builder_group.for_current
+            'builder_group': self.m.builder_group.for_current,
         }
     }
     if rts_setting:
@@ -212,7 +212,14 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
         self.current_compilator_buildbucket_id = build.id
 
-      if self.m.led.launched_by_led:
+      if self.m.led.led_build:
+        # This is a led job as a real Buildbucket build.
+        led_build = self.m.buildbucket.get(led_job.build_id)
+        self.current_compilator_buildbucket_id = led_job.build_id
+        build_to_process = self.launch_compilator_watcher(
+            led_build, is_swarming_phase=True, with_patch=True)
+      elif self.m.led.launched_by_led:
+        # This is a led job as a raw Swarming task.
         # Collect the led swarming task instead of using a compilator_watcher,
         # since raw swarming tasks need to finish completely before outputting
         # a build.proto json file, which has all of the compilator build props.
@@ -414,7 +421,14 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
       self.current_compilator_buildbucket_id = wo_build.id
 
-    if self.m.led.launched_by_led:
+    if self.m.led.led_build:
+      # This is a led job as a real Buildbucket build.
+      led_build = self.m.buildbucket.get(led_job.build_id)
+      self.current_compilator_buildbucket_id = led_job.build_id
+      wo_build_to_process = self.launch_compilator_watcher(
+          led_build, is_swarming_phase=True, with_patch=False)
+    elif self.m.led.launched_by_led:
+      # This is a led job as a raw Swarming task.
       wo_build_to_process = self.collect_compilator_led_build(
           led_job, with_patch=False)
     else:
@@ -501,7 +515,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     with self.m.step.nest(nested_step_name):
       builder_name = 'luci.{project}.{bucket}:{builder}'.format(
           project=self.m.buildbucket.build.builder.project,
-          bucket=self.m.buildbucket.build.builder.bucket,
+          bucket=(self.m.led.shadowed_bucket or
+                  self.m.buildbucket.build.builder.bucket),
           builder=self.compilator)
       # By default, the priority of the tasks will be increased by 10, but
       # since this builder runs as part of CQ for the recipe repos, we want
