@@ -235,9 +235,6 @@
     ]
   },
   "chromium.perf.fyi:android-pixel2-perf-aab-fyi": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -252,9 +249,6 @@
     ]
   },
   "chromium.perf.fyi:android-pixel2-perf-fyi": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -286,9 +280,6 @@
     ]
   },
   "chromium.perf.fyi:fuchsia-builder-perf-arm64": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf.fyi:fuchsia-builder-perf-arm64' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf.fyi:fuchsia-builder-perf-arm64",
       "chromium.perf.fyi:fuchsia-perf-ast",
@@ -297,9 +288,6 @@
     ]
   },
   "chromium.perf.fyi:fuchsia-perf-ast": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf.fyi:fuchsia-builder-perf-arm64' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf.fyi:fuchsia-builder-perf-arm64",
       "chromium.perf.fyi:fuchsia-perf-ast",
@@ -308,9 +296,6 @@
     ]
   },
   "chromium.perf.fyi:fuchsia-perf-nsn": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf.fyi:fuchsia-builder-perf-arm64' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf.fyi:fuchsia-builder-perf-arm64",
       "chromium.perf.fyi:fuchsia-perf-ast",
@@ -319,9 +304,6 @@
     ]
   },
   "chromium.perf.fyi:fuchsia-perf-shk": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf.fyi:fuchsia-builder-perf-arm64' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf.fyi:fuchsia-builder-perf-arm64",
       "chromium.perf.fyi:fuchsia-perf-ast",
@@ -330,9 +312,6 @@
     ]
   },
   "chromium.perf.fyi:linux-perf-fyi": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:linux-builder-perf",
       "chromium.perf:linux-perf",
@@ -341,9 +320,6 @@
     ]
   },
   "chromium.perf.fyi:win-10_laptop_high_end-perf_Dell-Precision": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -357,9 +333,6 @@
     ]
   },
   "chromium.perf.fyi:win-10_laptop_high_end-perf_Lenovo-P51": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -373,9 +346,6 @@
     ]
   },
   "chromium.perf.fyi:win-10_laptop_low_end-perf_HP-Candidate": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -389,9 +359,6 @@
     ]
   },
   "chromium.perf:android-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-builder-perf",
       "chromium.perf:android-go-perf",
@@ -401,17 +368,11 @@
     ]
   },
   "chromium.perf:android-builder-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-builder-perf-pgo"
     ]
   },
   "chromium.perf:android-go-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-builder-perf",
       "chromium.perf:android-go-perf",
@@ -421,9 +382,6 @@
     ]
   },
   "chromium.perf:android-go-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-builder-perf",
       "chromium.perf:android-go-perf",
@@ -433,9 +391,6 @@
     ]
   },
   "chromium.perf:android-go-wembley-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-builder-perf",
       "chromium.perf:android-go-perf",
@@ -445,9 +400,6 @@
     ]
   },
   "chromium.perf:android-go_webview-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-builder-perf",
       "chromium.perf:android-go-perf",
@@ -457,9 +409,6 @@
     ]
   },
   "chromium.perf:android-pixel2-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -474,9 +423,6 @@
     ]
   },
   "chromium.perf:android-pixel2-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -491,9 +437,6 @@
     ]
   },
   "chromium.perf:android-pixel2_webview-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -508,9 +451,6 @@
     ]
   },
   "chromium.perf:android-pixel2_webview-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -525,9 +465,6 @@
     ]
   },
   "chromium.perf:android-pixel4-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -542,9 +479,6 @@
     ]
   },
   "chromium.perf:android-pixel4_webview-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -559,9 +493,6 @@
     ]
   },
   "chromium.perf:android-pixel4a_power-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -576,9 +507,6 @@
     ]
   },
   "chromium.perf:android-pixel6-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel6-perf",
       "chromium.perf:android-pixel6-pro-perf",
@@ -586,9 +514,6 @@
     ]
   },
   "chromium.perf:android-pixel6-pro-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel6-perf",
       "chromium.perf:android-pixel6-pro-perf",
@@ -596,9 +521,6 @@
     ]
   },
   "chromium.perf:android_arm64-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel2-perf",
       "chromium.perf:android-pixel2-processor-perf",
@@ -613,17 +535,11 @@
     ]
   },
   "chromium.perf:android_arm64-builder-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android_arm64-builder-perf-pgo"
     ]
   },
   "chromium.perf:android_arm64_high_end-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android-pixel6-perf",
       "chromium.perf:android-pixel6-pro-perf",
@@ -631,25 +547,16 @@
     ]
   },
   "chromium.perf:android_arm64_high_end-builder-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:android_arm64_high_end-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:android_arm64_high_end-builder-perf-pgo"
     ]
   },
   "chromium.perf:chromecast-linux-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:chromecast-linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:chromecast-linux-builder-perf"
     ]
   },
   "chromium.perf:chromeos-amd64-generic-lacros-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:chromeos-amd64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:chromeos-amd64-generic-lacros-builder-perf",
       "chromium.perf:lacros-eve-perf",
@@ -657,25 +564,16 @@
     ]
   },
   "chromium.perf:chromeos-arm-generic-lacros-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:chromeos-arm-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:chromeos-arm-generic-lacros-builder-perf"
     ]
   },
   "chromium.perf:chromeos-arm64-generic-lacros-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:chromeos-arm64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:chromeos-arm64-generic-lacros-builder-perf"
     ]
   },
   "chromium.perf:lacros-eve-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:chromeos-amd64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:chromeos-amd64-generic-lacros-builder-perf",
       "chromium.perf:lacros-eve-perf",
@@ -683,9 +581,6 @@
     ]
   },
   "chromium.perf:lacros-x86-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:chromeos-amd64-generic-lacros-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:chromeos-amd64-generic-lacros-builder-perf",
       "chromium.perf:lacros-eve-perf",
@@ -693,9 +588,6 @@
     ]
   },
   "chromium.perf:linux-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:linux-builder-perf",
       "chromium.perf:linux-perf",
@@ -704,9 +596,6 @@
     ]
   },
   "chromium.perf:linux-builder-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:linux-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:linux-builder-perf-pgo"
     ]
@@ -718,9 +607,6 @@
     ]
   },
   "chromium.perf:linux-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:linux-builder-perf",
       "chromium.perf:linux-perf",
@@ -735,9 +621,6 @@
     ]
   },
   "chromium.perf:linux-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:linux-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:linux-builder-perf",
       "chromium.perf:linux-perf",
@@ -746,27 +629,18 @@
     ]
   },
   "chromium.perf:mac-arm-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-arm-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-arm-builder-perf",
       "chromium.perf:mac-m1_mini_2020-perf"
     ]
   },
   "chromium.perf:mac-arm-builder-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-arm-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-arm-builder-perf-pgo",
       "chromium.perf:mac-m1_mini_2020-perf-pgo"
     ]
   },
   "chromium.perf:mac-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-builder-perf",
       "chromium.perf:mac-laptop_high_end-perf",
@@ -776,17 +650,11 @@
     ]
   },
   "chromium.perf:mac-builder-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-builder-perf-pgo"
     ]
   },
   "chromium.perf:mac-laptop_high_end-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-builder-perf",
       "chromium.perf:mac-laptop_high_end-perf",
@@ -796,9 +664,6 @@
     ]
   },
   "chromium.perf:mac-laptop_high_end-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-builder-perf",
       "chromium.perf:mac-laptop_high_end-perf",
@@ -808,9 +673,6 @@
     ]
   },
   "chromium.perf:mac-laptop_low_end-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-builder-perf",
       "chromium.perf:mac-laptop_high_end-perf",
@@ -820,9 +682,6 @@
     ]
   },
   "chromium.perf:mac-laptop_low_end-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-builder-perf",
       "chromium.perf:mac-laptop_high_end-perf",
@@ -832,27 +691,18 @@
     ]
   },
   "chromium.perf:mac-m1_mini_2020-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-arm-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-arm-builder-perf",
       "chromium.perf:mac-m1_mini_2020-perf"
     ]
   },
   "chromium.perf:mac-m1_mini_2020-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:mac-arm-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:mac-arm-builder-perf-pgo",
       "chromium.perf:mac-m1_mini_2020-perf-pgo"
     ]
   },
   "chromium.perf:win-10-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -866,9 +716,6 @@
     ]
   },
   "chromium.perf:win-10-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -882,9 +729,6 @@
     ]
   },
   "chromium.perf:win-10_amd_laptop-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -898,9 +742,6 @@
     ]
   },
   "chromium.perf:win-10_laptop_low_end-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -914,9 +755,6 @@
     ]
   },
   "chromium.perf:win-10_laptop_low_end-processor-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -930,9 +768,6 @@
     ]
   },
   "chromium.perf:win64-builder-perf": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win-10-perf",
       "chromium.perf:win-10-processor-perf",
@@ -946,9 +781,6 @@
     ]
   },
   "chromium.perf:win64-builder-perf-pgo": {
-    "blockers": [
-      "cannot migrate builder 'chromium.perf:win64-builder-perf-pgo' with the following unsupported attrs:\n* bisect_archive_build\n* bisect_gs_bucket\n* bisect_gs_extra"
-    ],
     "builders": [
       "chromium.perf:win64-builder-perf-pgo"
     ]

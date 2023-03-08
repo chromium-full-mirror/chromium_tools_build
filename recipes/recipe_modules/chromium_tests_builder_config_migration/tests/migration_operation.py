@@ -102,6 +102,10 @@ def GenTests(api):
                   archive_name_prefix = "clusterfuzz-archive-name-prefix",
                   archive_subdir = "clusterfuzz-archive-subdir",
               ),
+              bisect_archive = builder_config.bisect_archive(
+                  gs_bucket = "bisect-gs-bucket",
+                  archive_subdir = "bisect-archive-subdir",
+              ),
           ),
 
       foo-group:foo-tester
@@ -196,6 +200,9 @@ def GenTests(api):
                           cf_gs_acl="clusterfuzz-gs-acl",
                           cf_archive_name="clusterfuzz-archive-name-prefix",
                           cf_archive_subdir_suffix="clusterfuzz-archive-subdir",
+                          bisect_archive_build=True,
+                          bisect_gs_bucket="bisect-gs-bucket",
+                          bisect_gs_extra="bisect-archive-subdir",
                       ),
                   'foo-tester':
                       ctbc.BuilderSpec.create(
@@ -411,40 +418,5 @@ def GenTests(api):
       api.post_check(post_process.StatusException),
       api.post_check(post_process.ResultReason,
                      "unknown builder 'foo-group:foo-builder'"),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'migration-unsupported-attrs',
-      api.properties(
-          migration_operation={
-              'builders_to_migrate': [{
-                  'builder_group': 'foo-group',
-                  'builder': 'foo-builder',
-              }],
-              'output_path': '/fake/output/path',
-          }),
-      api.chromium_tests_builder_config.databases(
-          ctbc.BuilderDatabase.create({
-              'foo-group': {
-                  'foo-builder':
-                      ctbc.BuilderSpec.create(
-                          bisect_archive_build=True,
-                          bisect_gs_bucket='fake-bisect-gs-bucket',
-                          bisect_gs_extra='fake-bisect-gs-extra',
-                      ),
-              }
-          }),
-          ctbc.TryDatabase.create({}),
-      ),
-      api.post_check(post_process.StatusException),
-      api.post_check(
-          post_process.ResultReasonRE,
-          textwrap.dedent("""\
-              \s*cannot migrate builder 'foo-group:foo-builder' with the \
-following unsupported attrs:
-              \s*\\* bisect_archive_build
-              \s*\\* bisect_gs_bucket
-              \s*\\* bisect_gs_extra""")),
       api.post_process(post_process.DropExpectation),
   )

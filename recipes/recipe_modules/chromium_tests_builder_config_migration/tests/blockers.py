@@ -69,7 +69,7 @@ def GenTests(api):
       }""")
 
   yield api.test(
-      'custom-blocker-category',
+      'blocker-groupings',
       api.properties(
           groupings_operation={
               'output_path':
@@ -92,5 +92,33 @@ def GenTests(api):
       api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_non_existent_groupings in steps['groupings'].cmd)),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'blocker-migration',
+      api.properties(
+          migration_operation={
+              'output_path':
+                  '/fake/output/path',
+              'builders_to_migrate': [{
+                  'builder_group': 'fake-group',
+                  'builder': 'non-existent-builder',
+              }],
+          }),
+      api.chromium_tests_builder_config.databases(
+          ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder': ctbc.BuilderSpec.create(),
+                  'non-existent-builder': ctbc.BuilderSpec.create(),
+              },
+          }),
+          ctbc.TryDatabase.create({}),
+      ),
+      api.post_check(post_process.StatusException),
+      api.post_check(
+          post_process.ResultReasonRE,
+          "The grouping for 'fake-group:non-existent-builder' cannot be migrated"
+      ),
       api.post_process(post_process.DropExpectation),
   )

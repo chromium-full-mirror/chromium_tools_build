@@ -374,37 +374,6 @@ class BlockerCategory(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
 
-class _UnsupportedAttr(BlockerCategory):
-  _DEFAULT_BUILDER_SPEC = ctbc.BuilderSpec.create()
-  _UNSUPPORTED_ATTRS = (
-      # The use of all of these fields should be replaced with the use of
-      # the archive module
-      'bisect_archive_build',
-      'bisect_gs_bucket',
-      'bisect_gs_extra',
-  )
-
-  def get_blocker(
-      self,
-      builder_id: chromium.BuilderId,
-      builder_spec: ctbc.BuilderSpec,
-  ) -> Optional[str]:
-    invalid_attrs = [
-        a for a in self._UNSUPPORTED_ATTRS
-        if getattr(builder_spec, a) != getattr(self._DEFAULT_BUILDER_SPEC, a)
-    ]
-    if not invalid_attrs:
-      return None
-
-    message = [
-        f"cannot migrate builder '{builder_id}'"
-        ' with the following unsupported attrs:'
-    ]
-    for a in invalid_attrs:
-      message.append('* {}'.format(a))
-    return '\n'.join(message)
-
-
 def _migrate_builder_spec(
     builder_spec: ctbc.BuilderSpec,
     builder_factory: _OutputArgumentsFactory,
@@ -495,6 +464,15 @@ def _migrate_builder_spec(
                                builder_spec.cf_archive_name)
         if archive_subdir := builder_spec.cf_archive_subdir_suffix:
           ca_fact.set_string_arg('archive_subdir', archive_subdir)
+
+    if builder_spec.bisect_archive_build:
+      with spec_fact.start_call_arg(
+          'bisect_archive',
+          'builder_config.bisect_archive',
+      ) as ba_fact:
+        ba_fact.set_string_arg('gs_bucket', builder_spec.bisect_gs_bucket)
+        if archive_subdir := builder_spec.bisect_gs_extra:
+          ba_fact.set_string_arg('archive_subdir', archive_subdir)
 
 
 _DEFAULT_TRY_SPEC = ctbc.TrySpec.create_for_single_mirror(
@@ -587,9 +565,7 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
     operation = properties.WhichOneof('operation')
     handler = handlers_by_operation[operation]
 
-    blocker_categories = [_UnsupportedAttr()]
-    if additional_blocker_categories:
-      blocker_categories.extend(additional_blocker_categories)
+    blocker_categories = additional_blocker_categories or []
 
     return handler(
         getattr(properties, operation), builder_db, try_db, blocker_categories)

@@ -82,6 +82,11 @@ def _validate_clusterfuzz_archive(obj, ctx):
   ctx.validate_field(obj, 'archive_name_prefix')
 
 
+@VALIDATORS.register(properties_pb.BuilderSpec.BisectArchive)
+def _validate_bisect_archive(obj, ctx):
+  ctx.validate_field(obj, 'gs_bucket')
+
+
 @VALIDATORS.register(properties_pb.BuilderSpec)
 def _validate_builder_spec(obj, ctx):
   ctx.validate_field(obj, 'builder_group')
@@ -91,6 +96,7 @@ def _validate_builder_spec(obj, ctx):
   ctx.validate_field(obj, 'legacy_android_config', optional=True)
   ctx.validate_field(obj, 'skylab_upload_location', optional=True)
   ctx.validate_field(obj, 'clusterfuzz_archive', optional=True)
+  ctx.validate_field(obj, 'bisect_archive', optional=True)
 
 
 _EXECUTION_MODE_MAP = {
@@ -131,6 +137,12 @@ def _convert_builder_spec(obj, builder_id_by_builder_key):
             cf_archive_subdir_suffix=obj.clusterfuzz_archive.archive_subdir or
             None,
         ))
+  if obj.HasField('bisect_archive'):
+    kwargs.update(
+        bisect_archive_build=True,
+        bisect_gs_bucket=obj.bisect_archive.gs_bucket,
+        bisect_gs_extra=obj.bisect_archive.archive_subdir or None,
+    )
 
   return BuilderSpec.create(
       execution_mode=_EXECUTION_MODE_MAP[obj.execution_mode],

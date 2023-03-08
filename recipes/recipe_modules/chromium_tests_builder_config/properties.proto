@@ -9,7 +9,7 @@ import "go.chromium.org/luci/buildbucket/proto/builder_common.proto";
 
 // The details configuring execution for a single builder
 //
-// Next ID: 17
+// Next ID: 18
 message BuilderSpec {
   // Required, the builder group that the builder is a part of
   //
@@ -176,6 +176,20 @@ message BuilderSpec {
       string archive_subdir = 4;
   }
   ClusterfuzzArchive clusterfuzz_archive = 16;
+
+  // Details of an archive to be created containing artifacts for bisection.
+  //
+  // Next ID: 3
+  message BisectArchive {
+      // Required, the Google Storage bucket to upload the archive containing
+      // artifacts for bisect
+      string gs_bucket = 1;
+
+      // An additional subdirectory within the target/platform directory for
+      // uploading the archive to
+      string archive_subdir = 2;
+  }
+  BisectArchive bisect_archive = 17;
 }
 
 // A database of builder specs that can be used during a build
