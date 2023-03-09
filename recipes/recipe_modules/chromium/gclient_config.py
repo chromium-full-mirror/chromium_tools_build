@@ -463,6 +463,16 @@ def reclient_test(c):
 
 
 # This configuration overrides the default reclient version
+# with the experimental version. This is used for experiments
+# before they're released to reclient
+@CONFIG_CTX()
+def reclient_experimental(c):
+  cv = c.solutions[0].custom_vars
+  cv['reclient_package'] = 'infra_internal/rbe/client/'
+  cv['reclient_version'] = reclient.EXPERIMENTAL_VERSION
+
+
+# This configuration overrides the default reclient version
 # with a clang-scan-deps version.  This is used for doing builds
 # with the clang-scan-deps based input processor.
 @CONFIG_CTX()
