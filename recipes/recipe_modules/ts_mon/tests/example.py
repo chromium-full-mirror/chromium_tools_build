@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        StepCommandContains)
+
 DEPS = [
   'ts_mon',
 ]
@@ -22,4 +25,25 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield api.test(
+      'basic',
+      api.post_process(StepCommandContains, 'upload ts_mon metrics', [
+          '--counter-file',
+          '{"name": "/example/metric", "value": 42}',
+      ]),
+      api.post_process(StepCommandContains, 'custom upload step name', [
+          '--ts-mon-task-service-name',
+          'example_service',
+          '--ts-mon-task-job-name',
+          'example_job',
+          '--float-file',
+          '{"foo": "bar", "name": "/example/metric", "value": 42.0}',
+      ]),
+      api.post_process(StepCommandContains, 'upload ts_mon metrics (2)', [
+          '--counter-file',
+          '{"a": 1, "name": "/example/metric", "value": 42}\n'
+          '{"a": 2, "name": "/example/metric", "value": 43}',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
