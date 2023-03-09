@@ -1,32 +1,10 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2023 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from .. import builder_spec
 
-from RECIPE_MODULES.build.chromium import CONFIG_CTX as CHROMIUM_CONFIG_CTX
-
 SPEC = {}
-
-
-@CHROMIUM_CONFIG_CTX(includes=[
-    'chromium',
-    'official',
-    'mb',
-    'goma_hermetic_fallback',
-])
-def chromium_perf(c):
-  # Bisects may build using old toolchains, so goma_hermetic_fallback is
-  # required. See https://codereview.chromium.org/1015633002
-  c.clobber_before_runhooks = False
-
-  # HACK(shinyak): In perf builder, goma often fails with 'reached max
-  # number of active fail fallbacks'. In fail fast mode, we cannot make the
-  # number infinite currently.
-  #
-  # After the goma side fix, this env should be removed.
-  # See http://crbug.com/606987
-  c.compile_py.goma_max_active_fail_fallback_tasks = 1024
 
 
 def _common_kwargs(execution_mode, config_name, platform, target_bits):
@@ -57,19 +35,17 @@ def _common_kwargs(execution_mode, config_name, platform, target_bits):
   elif platform == 'chromeos':
     spec['chromium_config_kwargs']['TARGET_PLATFORM'] = 'chromeos'
     spec['gclient_apply_config'] += ['chromeos']
-  elif platform == 'fuchsia':
-    spec['chromium_config_kwargs']['TARGET_PLATFORM'] = 'fuchsia'
 
   return spec
 
 
-def BuildSpec(config_name,
-              platform,
-              target_bits,
-              bisect_archive_build=False,
-              cros_boards=None,
-              target_arch=None,
-              extra_gclient_apply_config=None):
+def _BuildSpec(config_name,
+               platform,
+               target_bits,
+               bisect_archive_build=False,
+               cros_boards=None,
+               target_arch=None,
+               extra_gclient_apply_config=None):
 
   kwargs = _common_kwargs(
       execution_mode=builder_spec.COMPILE_AND_TEST,
@@ -80,15 +56,10 @@ def BuildSpec(config_name,
 
   kwargs['perf_isolate_upload'] = True
 
-  if cros_boards:
-    kwargs['chromium_config_kwargs']['TARGET_CROS_BOARDS'] = cros_boards
-
   if target_arch:
     kwargs['chromium_config_kwargs']['TARGET_ARCH'] = target_arch
 
   kwargs['gclient_apply_config'] += ['checkout_pgo_profiles']
-  if extra_gclient_apply_config:
-    kwargs['gclient_apply_config'] += list(extra_gclient_apply_config)
 
   kwargs['bisect_archive_build'] = bisect_archive_build
   if bisect_archive_build:
@@ -99,12 +70,12 @@ def BuildSpec(config_name,
   return builder_spec.BuilderSpec.create(**kwargs)
 
 
-def TestSpec(config_name,
-             platform,
-             target_bits,
-             parent_buildername,
-             cros_boards=None,
-             target_arch=None):
+def _TestSpec(config_name,
+              platform,
+              target_bits,
+              parent_buildername,
+              cros_boards=None,
+              target_arch=None):
   kwargs = _common_kwargs(
       execution_mode=builder_spec.TEST,
       config_name=config_name,
@@ -130,7 +101,25 @@ def _AddIsolatedTestSpec(name,
                          target_bits=64,
                          target_arch=None,
                          cros_boards=None):
-  spec = TestSpec(
+  spec = _TestSpec(
+      'chromium_perf',
+      platform,
+      target_bits,
+      parent_buildername=parent_buildername,
+      cros_boards=cros_boards,
+      target_arch=target_arch)
+  SPEC[name] = spec
+
+
+# Similar to _AddIsolatedTestSpec, except the builder is only available on
+# Pinpoint, and not on perf waterfall.
+def _AddPinpointTestSpec(name,
+                         platform,
+                         parent_buildername,
+                         target_bits=64,
+                         target_arch=None,
+                         cros_boards=None):
+  spec = _TestSpec(
       'chromium_perf',
       platform,
       target_bits,
@@ -146,7 +135,7 @@ def _AddBuildSpec(name,
                   bisect_archive_build=False,
                   target_arch=None,
                   gclient_apply_config=None):
-  SPEC[name] = BuildSpec(
+  SPEC[name] = _BuildSpec(
       'chromium_perf',
       platform,
       target_bits,
@@ -279,11 +268,9 @@ SPEC.update({
 
 _AddBuildSpec('linux-builder-perf', 'linux', bisect_archive_build=True)
 _AddBuildSpec('linux-builder-perf-pgo', 'linux', bisect_archive_build=True)
-_AddBuildSpec('linux-builder-perf-rel', 'linux')
 
 _AddBuildSpec(
     'chromecast-linux-builder-perf', 'linux', bisect_archive_build=True)
-
 
 _AddIsolatedTestSpec(
     'android-go-perf', 'android', 'android-builder-perf', target_bits=32)
@@ -326,10 +313,12 @@ _AddIsolatedTestSpec('mac-laptop_high_end-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec(
     'mac-m1_mini_2020-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 _AddIsolatedTestSpec(
-    'mac-m1_mini_2020-perf-pgo', 'mac', 'mac-arm-builder-perf-pgo', target_arch='arm')
+    'mac-m1_mini_2020-perf-pgo',
+    'mac',
+    'mac-arm-builder-perf-pgo',
+    target_arch='arm')
 
 _AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
-_AddIsolatedTestSpec('linux-perf-rel', 'linux', 'linux-builder-perf-rel')
 
 _AddIsolatedTestSpec(
     'lacros-eve-perf',
@@ -347,21 +336,56 @@ _AddIsolatedTestSpec(
     target_arch='intel',
     cros_boards='amd64-generic:eve:octopus')
 
-# Perf result processors
-_AddIsolatedTestSpec('linux-processor-perf', 'linux', 'linux-perf')
+# Deprecated in perf waterfall. Needed for pinpoint when running Chrome
+# Health on old commits.
+_AddPinpointTestSpec('mac-10_12_laptop_low_end-perf', 'mac', 'mac-builder-perf')
 
-_AddIsolatedTestSpec(
-    'android-go-processor-perf', 'android', 'android-go-perf', target_bits=32)
-_AddIsolatedTestSpec('android-pixel2-processor-perf', 'android',
-                     'android-pixel2-perf')
-_AddIsolatedTestSpec('android-pixel2_webview-processor-perf', 'android',
-                     'android-pixel2_webview-perf')
-
-_AddIsolatedTestSpec('win-10-processor-perf', 'win', 'win-10-perf')
-_AddIsolatedTestSpec('win-10_laptop_low_end-processor-perf', 'win',
-                     'win-10_laptop_low_end-perf')
-
-_AddIsolatedTestSpec('mac-laptop_low_end-processor-perf', 'mac',
-                     'mac-laptop_low_end-perf')
-_AddIsolatedTestSpec('mac-laptop_high_end-processor-perf', 'mac',
-                     'mac-laptop_high_end-perf')
+# Pinpoint-only bots
+# android
+_AddPinpointTestSpec(
+    'android-go-perf-pgo',
+    'android',
+    'android-builder-perf-pgo',
+    target_bits=32)
+_AddPinpointTestSpec('android-pixel2-perf-pgo', 'android',
+                     'android_arm64-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel2_webview-perf-pgo', 'android',
+                     'android_arm64-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel4-perf-pgo', 'android',
+                     'android_arm64-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel4a_power-perf-pgo', 'android',
+                     'android_arm64-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel6-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
+_AddPinpointTestSpec('android-pixel6-pro-perf-pgo', 'android',
+                     'android_arm64_high_end-builder-perf-pgo')
+_AddPinpointTestSpec('android-new-pixel-perf', 'android',
+                     'android_arm64-builder-perf')
+_AddPinpointTestSpec('android-new-pixel-pro-perf', 'android',
+                     'android_arm64-builder-perf')
+_AddPinpointTestSpec('android-new-pixel-perf-pgo', 'android',
+                     'android_arm64-builder-perf-pgo')
+_AddPinpointTestSpec('android-new-pixel-pro-perf-pgo', 'android',
+                     'android_arm64-builder-perf-pgo')
+_AddPinpointTestSpec('android-samsung-foldable-perf', 'android',
+                     'android_arm64-builder-perf')
+_AddPinpointTestSpec('android-samsung-foldable-perf-pgo', 'android',
+                     'android_arm64-builder-perf-pgo')
+# linux
+_AddPinpointTestSpec('linux-perf-pgo', 'linux', 'linux-builder-perf-pgo')
+# mac
+_AddPinpointTestSpec('mac-laptop_low_end-perf-pgo', 'mac',
+                     'mac-builder-perf-pgo')
+_AddPinpointTestSpec('mac-laptop_high_end-perf-pgo', 'mac',
+                     'mac-builder-perf-pgo')
+_AddPinpointTestSpec(
+    'mac-m1_mini_2020-perf-pgo',
+    'mac',
+    'mac-arm-builder-perf-pgo',
+    target_arch='arm')
+# windows
+_AddPinpointTestSpec('win-10-perf-pgo', 'win', 'win64-builder-perf-pgo')
+_AddPinpointTestSpec('win-10_laptop_low_end-perf-pgo', 'win',
+                     'win64-builder-perf-pgo')
+_AddPinpointTestSpec('win-10_amd_laptop-perf-pgo', 'win',
+                     'win64-builder-perf-pgo')

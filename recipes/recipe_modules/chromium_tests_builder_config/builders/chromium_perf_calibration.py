@@ -14,7 +14,7 @@ def _AddCalibrationTestSpec(name, platform, target_bits):
   builder. As we don't have any compiled version available to checkout, we will
   build it again. Calibration targets on the Stable branch so Goma should save
   lots of compiling effort.
-  This function means to be a union of BuildSpec and TestSpec from
+  This function means to be a union of _BuildSpec and _TestSpec from
   chromium_perf.py. More arguments and logic will be added when more builders
   are added.
   """
