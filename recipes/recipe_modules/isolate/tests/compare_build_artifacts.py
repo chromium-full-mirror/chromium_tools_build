@@ -22,12 +22,18 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.properties(buildername='test_buildername', buildnumber=123),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'failure',
       api.properties(buildername='test_buildername', buildnumber=123),
       api.step_data('compare_build_artifacts', retcode=1),
+      api.post_process(post_process.SummaryMarkdown,
+                       "Step('compare_build_artifacts') (retcode: 1)"),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import (DropExpectation, LogContains,
+                                        StatusSuccess)
+
 DEPS = [
   'isolate',
   'recipe_engine/properties',
@@ -22,4 +25,10 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
       }),
+      api.post_process(LogContains, 'isolated_tests', 'details', [
+          "isolated_tests: {'base_unittests': "
+          "'ffffffffffffffffffffffffffffffffffffffff'}",
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
