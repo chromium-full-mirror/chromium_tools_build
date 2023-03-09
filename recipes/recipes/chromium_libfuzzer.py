@@ -83,18 +83,6 @@ BUILDERS = freeze({
                     upload_bucket='chromium-browser-libfuzzer',
                     upload_directory='asan',
                 ),
-            'Libfuzzer Upload Linux32 ASan Debug':
-                LibfuzzerSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Debug',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 32,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan',
-                ),
             'Libfuzzer Upload Linux32 V8-ARM ASan':
                 LibfuzzerSpec.create(
                     chromium_config='chromium_clang',
