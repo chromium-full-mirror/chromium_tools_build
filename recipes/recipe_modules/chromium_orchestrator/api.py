@@ -554,7 +554,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
                 size_bytes=self.m.chromium_bootstrap.exe.cas.digest.size_bytes,
             ))
 
-      led_comp_build = led_comp_build.then('launch', '-resultdb', 'on')
+      led_comp_build = led_comp_build.then('launch', '-resultdb', 'on',
+                                           '-bound-to-parent')
       return led_comp_build.launch_result
 
   def collect_compilator_led_build(self, led_job, with_patch):

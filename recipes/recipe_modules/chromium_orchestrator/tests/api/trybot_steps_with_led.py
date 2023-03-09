@@ -324,7 +324,10 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'trigger led compilator build (with patch).led launch',
-          ['led', 'launch', '-resultdb', 'on', '-real-build'],
+          [
+              'led', 'launch', '-resultdb', 'on', '-bound-to-parent',
+              '-real-build'
+          ],
       ),
       api.post_process(post_process.MustRun, 'compilator steps (with patch)'),
       api.post_process(post_process.StatusSuccess),
@@ -366,7 +369,10 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'trigger led compilator build (without patch).led launch',
-          ['led', 'launch', '-resultdb', 'on', '-real-build'],
+          [
+              'led', 'launch', '-resultdb', 'on', '-bound-to-parent',
+              '-real-build'
+          ],
       ),
       api.post_process(post_process.MustRun,
                        'compilator steps (without patch)'),
