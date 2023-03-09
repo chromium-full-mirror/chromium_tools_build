@@ -853,7 +853,8 @@
       "led",
       "launch",
       "-resultdb",
-      "on"
+      "on",
+      "-bound-to-parent"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1191,7 +1192,8 @@
       "led",
       "launch",
       "-resultdb",
-      "on"
+      "on",
+      "-bound-to-parent"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1529,7 +1531,8 @@
       "led",
       "launch",
       "-resultdb",
-      "on"
+      "on",
+      "-bound-to-parent"
     ],
     "infra_step": true,
     "luci_context": {

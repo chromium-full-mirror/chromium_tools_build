@@ -10,6 +10,7 @@ import re
 
 from recipe_engine import post_process
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.led.job import job as job_pb2
 
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
@@ -287,8 +288,14 @@ def _get_led_builders(api, builders):
         # By default, the priority of the tasks will be increased by 10, but
         # since this builder runs as part of CQ for the recipe repos, we want
         # the builds to run at regular priority
-        led_builders[builder.name] = api.led('get-builder', '-adjust-priority',
-                                             '0', builder.name)
+        if 'recipe.led.real_build' in api.buildbucket.build.input.experiments:
+          led_builders[builder.name] = api.led('get-builder',
+                                               '-adjust-priority', '0',
+                                               '-real-build', builder.name)
+        else:
+          led_builders[builder.name] = api.led('get-builder',
+                                               '-adjust-priority', '0',
+                                               builder.name)
 
   return led_builders
 
@@ -437,20 +444,32 @@ def _test_builder(api, affected_files, affected_recipes, builder, led_builder,
       # build.git CQ, we decided the tradeoff to run these edited recipes in
       # production mode instead would be better.
       ir = ir.then('edit', '-exp', 'false')
-      ir = ir.then('launch', '-resultdb', 'on')
+      ir = ir.then('launch', '-resultdb', 'on', '-bound-to-parent')
 
       job = ir.launch_result
-      presentation.links['Swarming task'] = job.swarming_task_url
+      if job.build_url:
+        presentation.links['Build'] = job.build_url
+      else:
+        presentation.links['Swarming task'] = job.swarming_task_url
 
-    results = api.swarming.collect(
-        'collect',
-        [job.task_id],
-        # We're launching LUCI builders, so they can be viewed in the Milo UI,
-        # which is much better than the stdout, so don't take the time to
-        # download the stdout
-        task_output_stdout='none')
-    for result in results:
-      result.analyze()
+    if job.build_id:
+      build = api.buildbucket.collect_build(job.build_id)
+      step_status = (
+          api.step.SUCCESS
+          if build.status == common_pb2.SUCCESS else api.step.FAILURE)
+      api.step.empty(
+          'build ends with {}'.format(common_pb2.Status.Name(build.status)),
+          status=step_status)
+    else:
+      results = api.swarming.collect(
+          'collect',
+          [job.task_id],
+          # We're launching LUCI builders, so they can be viewed in the Milo UI,
+          # which is much better than the stdout, so don't take the time to
+          # download the stdout
+          task_output_stdout='none')
+      for result in results:
+        result.analyze()
 
 
 def RunSteps(api):
@@ -519,12 +538,14 @@ def RunSteps(api):
 def GenTests(api):
   RECIPE = 'foo_recipe'
 
-  def gerrit_change(footer_builder=None):
+  def gerrit_change(footer_builder=None, experiments=()):
     patch_set = 12
     t = api.buildbucket.try_build(
         git_repo='https://chromium.googlesource.com/foo/bar/baz',
         change_number=456789,
-        patch_set=patch_set)
+        patch_set=patch_set,
+        experiments=experiments,
+    )
 
     message = 'nothing important'
     parse_description_json = {}
@@ -847,4 +868,11 @@ def GenTests(api):
           led_get_builder_name('luci.chromium.try:arbitrary-builder')),
       api.post_check(post_process.StatusFailure),
       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'basic_with_real_builds',
+      gerrit_change(experiments=['recipe.led.real_build']),
+      affected_recipes(RECIPE),
+      default_builders(),
   )

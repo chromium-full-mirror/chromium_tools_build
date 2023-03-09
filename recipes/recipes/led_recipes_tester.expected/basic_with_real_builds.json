@@ -169,8 +169,7 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@[CACHE]/builder/baz/infra/config/recipes.cfg@@@",
-      "@@@STEP_LOG_LINE@files@[CACHE]/builder/baz/random/file.py@@@",
+      "@@@STEP_LOG_LINE@files@[CACHE]/builder/baz/foo.cc@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
@@ -269,6 +268,7 @@
       "get-builder",
       "-adjust-priority",
       "0",
+      "-real-build",
       "luci.chromium.try:chromium_presubmit"
     ],
     "luci_context": {
@@ -325,6 +325,7 @@
       "get-builder",
       "-adjust-priority",
       "0",
+      "-real-build",
       "luci.chromium.try:linux-rel"
     ],
     "luci_context": {
@@ -381,6 +382,7 @@
       "get-builder",
       "-adjust-priority",
       "0",
+      "-real-build",
       "luci.chromium.try:win-rel"
     ],
     "luci_context": {
@@ -507,7 +509,7 @@
       "--package",
       "[CACHE]/builder/baz/infra/config/recipes.cfg",
       "analyze",
-      "{\"files\": [\"[CACHE]/builder/baz/infra/config/recipes.cfg\", \"[CACHE]/builder/baz/random/file.py\"], \"recipes\": [\"foo_recipe\"]}",
+      "{\"files\": [\"[CACHE]/builder/baz/foo.cc\"], \"recipes\": [\"foo_recipe\"]}",
       "/path/to/tmp/json"
     ],
     "luci_context": {
@@ -525,10 +527,12 @@
     "name": "determine affected recipes",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"recipes\": []@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"recipes\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"foo_recipe\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@recipes@@@@",
+      "@@@STEP_LOG_LINE@recipes@foo_recipe@@@",
       "@@@STEP_LOG_END@recipes@@@"
     ]
   },
@@ -684,7 +688,7 @@
     "name": "test luci.chromium.try:chromium_presubmit",
     "~followup_annotations": [
       "@@@STEP_LINK@Test CL (fast)@https://chromium-review.googlesource.com/c/chromium/src/+/3299047@@@",
-      "@@@STEP_LINK@Swarming task@https://example.swarmingserver.appspot.com/task?id=fake-task-id@@@"
+      "@@@STEP_LINK@Build@https://ci.chromium.org/b/87654321@@@"
     ]
   },
   {
@@ -854,7 +858,8 @@
       "launch",
       "-resultdb",
       "on",
-      "-bound-to-parent"
+      "-bound-to-parent",
+      "-real-build"
     ],
     "infra_step": true,
     "luci_context": {
@@ -874,33 +879,32 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"example.swarmingserver.appspot.com\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"task_id\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"build_id\": 87654321, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket@appspot.com\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@Swarming task@https://example.swarmingserver.appspot.com/task?id=fake-task-id@@@"
+      "@@@STEP_LINK@Build@https://ci.chromium.org/b/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:chromium_presubmit.buildbucket.collect",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
+      "bb",
       "collect",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-task-summary-json",
-      "/path/to/tmp/json",
-      "-task-output-stdout",
-      "none",
-      "fake-task-id"
+      "-host",
+      "cr-buildbucket.appspot.com",
+      "-interval",
+      "60s",
+      "87654321"
     ],
-    "cost": {
-      "cpu": 100,
-      "disk": 0,
-      "memory": 50,
-      "net": 0
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -914,37 +918,66 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:chromium_presubmit.collect",
+    "name": "test luci.chromium.try:chromium_presubmit.buildbucket.collect.wait",
+    "timeout": 3600,
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:chromium_presubmit.buildbucket.collect.get",
+    "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"id\": \"87654321\"}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"fake-task-id\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [], @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\", @@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\", @@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      }, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"name\": \"my_task_0\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"87654321\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"status\": \"SUCCESS\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: my_task_0@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: my_task_0@@@",
-      "@@@STEP_LINK@task cas outputs: my_task_0@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@"
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"id\": \"87654321\"@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@87654321@https://cr-buildbucket.appspot.com/build/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:chromium_presubmit.build ends with SUCCESS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -1022,8 +1055,8 @@
     "cmd": [],
     "name": "test luci.chromium.try:linux-rel",
     "~followup_annotations": [
-      "@@@STEP_LINK@Test CL (fast)@https://chromium-review.googlesource.com/c/chromium/src/+/3299047@@@",
-      "@@@STEP_LINK@Swarming task@https://example.swarmingserver.appspot.com/task?id=fake-task-id@@@"
+      "@@@STEP_LINK@Test CL (slow)@https://chromium-review.googlesource.com/c/chromium/src/+/1286761@@@",
+      "@@@STEP_LINK@Build@https://ci.chromium.org/b/87654321@@@"
     ]
   },
   {
@@ -1037,7 +1070,7 @@
     "cmd": [
       "led",
       "edit-cr-cl",
-      "https://chromium-review.googlesource.com/c/chromium/src/+/3299047"
+      "https://chromium-review.googlesource.com/c/chromium/src/+/1286761"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1092,7 +1125,7 @@
       "@@@STEP_LOG_LINE@proto.output@        \"input\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"gerrit_changes\": [@@@",
       "@@@STEP_LOG_LINE@proto.output@            {@@@",
-      "@@@STEP_LOG_LINE@proto.output@              \"change\": \"3299047\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"change\": \"1286761\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"host\": \"chromium-review.googlesource.com\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"patchset\": \"1337\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"project\": \"chromium/src\"@@@",
@@ -1107,7 +1140,7 @@
       "@@@STEP_LOG_LINE@proto.output@  }@@@",
       "@@@STEP_LOG_LINE@proto.output@}@@@",
       "@@@STEP_LOG_END@proto.output@@@",
-      "@@@STEP_LINK@Test CL (fast)@https://chromium-review.googlesource.com/c/chromium/src/+/3299047@@@"
+      "@@@STEP_LINK@Test CL (slow)@https://chromium-review.googlesource.com/c/chromium/src/+/1286761@@@"
     ]
   },
   {
@@ -1131,7 +1164,7 @@
       }
     },
     "name": "test luci.chromium.try:linux-rel.trigger.led edit",
-    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          },\n          \"swarming\": {\n            \"priority\": 40\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"3299047\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          },\n          \"swarming\": {\n            \"priority\": 40\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"1286761\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@proto.output@{@@@",
@@ -1170,7 +1203,7 @@
       "@@@STEP_LOG_LINE@proto.output@        \"input\": {@@@",
       "@@@STEP_LOG_LINE@proto.output@          \"gerrit_changes\": [@@@",
       "@@@STEP_LOG_LINE@proto.output@            {@@@",
-      "@@@STEP_LOG_LINE@proto.output@              \"change\": \"3299047\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"change\": \"1286761\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"host\": \"chromium-review.googlesource.com\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"patchset\": \"1337\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"project\": \"chromium/src\"@@@",
@@ -1193,7 +1226,8 @@
       "launch",
       "-resultdb",
       "on",
-      "-bound-to-parent"
+      "-bound-to-parent",
+      "-real-build"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1209,37 +1243,36 @@
       }
     },
     "name": "test luci.chromium.try:linux-rel.trigger.led launch",
-    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          },\n          \"swarming\": {\n            \"priority\": 40\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"3299047\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"linux-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          },\n          \"swarming\": {\n            \"priority\": 40\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"1286761\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"example.swarmingserver.appspot.com\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"task_id\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"build_id\": 87654321, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket@appspot.com\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@Swarming task@https://example.swarmingserver.appspot.com/task?id=fake-task-id@@@"
+      "@@@STEP_LINK@Build@https://ci.chromium.org/b/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:linux-rel.buildbucket.collect",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
+      "bb",
       "collect",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-task-summary-json",
-      "/path/to/tmp/json",
-      "-task-output-stdout",
-      "none",
-      "fake-task-id"
+      "-host",
+      "cr-buildbucket.appspot.com",
+      "-interval",
+      "60s",
+      "87654321"
     ],
-    "cost": {
-      "cpu": 100,
-      "disk": 0,
-      "memory": 50,
-      "net": 0
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1253,37 +1286,66 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:linux-rel.collect",
+    "name": "test luci.chromium.try:linux-rel.buildbucket.collect.wait",
+    "timeout": 3600,
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:linux-rel.buildbucket.collect.get",
+    "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"id\": \"87654321\"}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"fake-task-id\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [], @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\", @@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\", @@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      }, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"name\": \"my_task_0\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"87654321\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"status\": \"SUCCESS\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: my_task_0@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: my_task_0@@@",
-      "@@@STEP_LINK@task cas outputs: my_task_0@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@"
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"id\": \"87654321\"@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@87654321@https://cr-buildbucket.appspot.com/build/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:linux-rel.build ends with SUCCESS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -1362,7 +1424,7 @@
     "name": "test luci.chromium.try:win-rel",
     "~followup_annotations": [
       "@@@STEP_LINK@Test CL (fast)@https://chromium-review.googlesource.com/c/chromium/src/+/3299047@@@",
-      "@@@STEP_LINK@Swarming task@https://example.swarmingserver.appspot.com/task?id=fake-task-id@@@"
+      "@@@STEP_LINK@Build@https://ci.chromium.org/b/87654321@@@"
     ]
   },
   {
@@ -1532,7 +1594,8 @@
       "launch",
       "-resultdb",
       "on",
-      "-bound-to-parent"
+      "-bound-to-parent",
+      "-real-build"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1552,33 +1615,32 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"example.swarmingserver.appspot.com\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"task_id\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"build_id\": 87654321, @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket@appspot.com\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@Swarming task@https://example.swarmingserver.appspot.com/task?id=fake-task-id@@@"
+      "@@@STEP_LINK@Build@https://ci.chromium.org/b/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:win-rel.buildbucket.collect",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
+      "bb",
       "collect",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-task-summary-json",
-      "/path/to/tmp/json",
-      "-task-output-stdout",
-      "none",
-      "fake-task-id"
+      "-host",
+      "cr-buildbucket.appspot.com",
+      "-interval",
+      "60s",
+      "87654321"
     ],
-    "cost": {
-      "cpu": 100,
-      "disk": 0,
-      "memory": 50,
-      "net": 0
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1592,37 +1654,66 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test luci.chromium.try:win-rel.collect",
+    "name": "test luci.chromium.try:win-rel.buildbucket.collect.wait",
+    "timeout": 3600,
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:win-rel.buildbucket.collect.get",
+    "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"id\": \"87654321\"}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"fake-task-id\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [], @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\", @@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\", @@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      }, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"name\": \"my_task_0\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }, @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"fake-task-id\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"87654321\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"status\": \"SUCCESS\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: my_task_0@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: my_task_0@@@",
-      "@@@STEP_LINK@task cas outputs: my_task_0@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@"
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", @@@",
+      "@@@STEP_LOG_LINE@request@        \"id\": \"87654321\"@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@87654321@https://cr-buildbucket.appspot.com/build/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:win-rel.build ends with SUCCESS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
