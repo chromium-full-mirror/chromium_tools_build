@@ -518,7 +518,7 @@
       "python3",
       "-u",
       "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
-      "[CACHE]/builder/src/testing/buildbot/chromium.perf.pinpoint.json",
+      "[CACHE]/builder/src/testing/buildbot/chromium.perf.json",
       "/path/to/tmp/json"
     ],
     "env": {
@@ -537,9 +537,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "read test spec (chromium.perf.pinpoint.json)",
+    "name": "read test spec (chromium.perf.json)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/chromium.perf.pinpoint.json@@@",
+      "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/chromium.perf.json@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"android-go-perf\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"isolated_scripts\": [@@@",
@@ -677,7 +677,7 @@
       "[CACHE]/builder/src/tools/mb/mb.py",
       "lookup",
       "-m",
-      "chromium.perf.pinpoint",
+      "chromium.perf",
       "-b",
       "android-builder-perf",
       "--config-file",
@@ -717,7 +717,7 @@
       "[CACHE]/builder/src/tools/mb/mb.py",
       "gen",
       "-m",
-      "chromium.perf.pinpoint",
+      "chromium.perf",
       "-b",
       "android-builder-perf",
       "--config-file",
