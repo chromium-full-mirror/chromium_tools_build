@@ -2922,7 +2922,7 @@ class SkylabTest(Test):
 
   @property
   def is_GPU_test(self):
-    return self.spec.autotest_name == 'chromium_GPU'
+    return self.spec.autotest_name == 'chromium_Graphics'
 
   def _raise_failed_step(self, suffix, step, status, failure_msg):
     step.presentation.status = status

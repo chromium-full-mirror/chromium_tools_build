@@ -117,7 +117,7 @@ REQUESTS = [
     gen_skylab_test(
         'm109_gpu_tests',
         test_args=GPU_GTEST_ARGS,
-        autotest_name='chromium_GPU',
+        autotest_name='chromium_Graphics',
         bucket='chromiumos-image-archive',
         extra_browser_args=GPU_EXTRA_BROWSWER_ARGS,
     ),
@@ -213,11 +213,11 @@ def GenTests(api):
   )
 
   yield api.test(
-      'chromium_GPU_test',
+      'chromium_Graphics_test',
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[6].name + '.schedule',
-          'chromium_GPU'),
+          'chromium_Graphics'),
       api.post_process(post_process.DropExpectation),
   )
 
