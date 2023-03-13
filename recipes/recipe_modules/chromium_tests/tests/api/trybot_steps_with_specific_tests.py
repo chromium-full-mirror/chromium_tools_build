@@ -63,7 +63,7 @@ def RunSteps(api, fail_calculate_tests, fail_mb_and_compile,
   test_specs = [steps.SwarmingGTestTestSpec.create('base_unittests', **kwargs)]
 
   if api.properties.get('use_custom_dimensions', False):
-    api.chromium_swarming.set_default_dimension('os', 'Windows-10')
+    api.chromium_swarming.set_default_dimension('os', 'Windows-11-19045')
 
   affected_files = api.properties.get('affected_files', [])
 
@@ -526,7 +526,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests',
           'with patch',
-          custom_os='Windows-10',
+          custom_os='Windows-11-19045',
           failures=['Test.Two']),
       api.post_process(post_process.DropExpectation),
   )

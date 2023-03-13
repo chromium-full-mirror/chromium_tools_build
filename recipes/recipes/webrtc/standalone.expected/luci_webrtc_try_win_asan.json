@@ -2063,7 +2063,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"dummy_test/Windows-7-SP1/[dummy has/win_asan/-1\", \"priority\": \"30\", \"realm\": \"webrtc:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.webrtc\", \"buildername:win_asan\", \"data:[dummy hash for dummy_test/dummy size]\", \"gerrit:https://webrtc-review.googlesource.com/c/123456/7\", \"name:dummy_test\", \"ninja_target:\", \"patch_project:src\", \"project:webrtc\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:webrtc.try:win_asan\", \"stepname:dummy_test\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"waterfall_builder_group:tryserver.webrtc\", \"waterfall_buildername:win_asan\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:win_asan\", \"-var\", \"os:Windows-7-SP1\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"result_adapter.exe\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Windows-7-SP1\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"dummy_test/Windows-10/[dummy has/win_asan/-1\", \"priority\": \"30\", \"realm\": \"webrtc:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.webrtc\", \"buildername:win_asan\", \"data:[dummy hash for dummy_test/dummy size]\", \"gerrit:https://webrtc-review.googlesource.com/c/123456/7\", \"name:dummy_test\", \"ninja_target:\", \"patch_project:src\", \"project:webrtc\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:webrtc.try:win_asan\", \"stepname:dummy_test\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"waterfall_builder_group:tryserver.webrtc\", \"waterfall_buildername:win_asan\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:win_asan\", \"-var\", \"os:Windows-10\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"result_adapter.exe\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Windows-10\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2087,7 +2087,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"dummy_test/Windows-7-SP1/[dummy has/win_asan/-1\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"dummy_test/Windows-10/[dummy has/win_asan/-1\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }, @@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\", @@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -2102,7 +2102,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"dummy_test/Windows-7-SP1/[dummy has/win_asan/-1\", @@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"dummy_test/Windows-10/[dummy has/win_asan/-1\", @@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"30\", @@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"webrtc:try\", @@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -2147,7 +2147,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"builder:win_asan\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\", @@@",
-      "@@@STEP_LOG_LINE@json.input@              \"os:Windows-7-SP1\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"os:Windows-10\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:dummy_test\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\", @@@",
@@ -2178,7 +2178,7 @@
       "@@@STEP_LOG_LINE@json.input@              }, @@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\", @@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Windows-7-SP1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Windows-10\"@@@",
       "@@@STEP_LOG_LINE@json.input@              }, @@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\", @@@",
@@ -2206,7 +2206,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: dummy_test/Windows-7-SP1/[dummy has/win_asan/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: dummy_test/Windows-10/[dummy has/win_asan/-1@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -2593,7 +2593,7 @@
     },
     "name": "dummy_test",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows-7-SP1'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -2629,7 +2629,7 @@
       "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"dummy_test\", @@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"cpu\": \"x86-64\", @@@",
-      "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Windows-7-SP1\", @@@",
+      "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Windows-10\", @@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  }, @@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"dummy_test\", @@@",

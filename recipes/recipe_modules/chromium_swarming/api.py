@@ -336,7 +336,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     versions, type of CPU, GPU card or VM, or preallocated pool.
 
     Example:
-      {'cpu': 'x86-64', 'os': 'Windows-XP-SP3'}
+      {'cpu': 'x86-64', 'os': 'Windows-10'}
 
     This value can be changed per individual task.
     """
@@ -428,9 +428,9 @@ class SwarmingApi(recipe_api.RecipeApi):
     dimension.
     """
     return {
-      'linux': 'Ubuntu-16.04',
-      'mac': 'Mac-10.13',
-      'win': 'Windows-7-SP1',
+        'linux': 'Ubuntu-16.04',
+        'mac': 'Mac-10.13',
+        'win': 'Windows-10',
     }[platform]
 
   def merge_script_path(self, name):

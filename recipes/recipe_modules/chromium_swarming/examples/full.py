@@ -415,7 +415,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.chromium_swarming.canned_summary_output(
               api.test_utils.canned_gtest_output(True))),
   )
@@ -440,7 +440,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.chromium_swarming.summary(
               api.test_utils.canned_gtest_output(True), data)),
   )
@@ -460,7 +460,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.chromium_swarming.summary(
               api.test_utils.canned_gtest_output(True), data)),
   )
@@ -498,7 +498,7 @@ def GenTests(api):
           'archive for win',
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
-      api.step_data('hello_world on Windows-7-SP1',
+      api.step_data('hello_world on Windows-10',
                     api.chromium_swarming.summary(None, data)),
   )
   yield api.test(
@@ -512,7 +512,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.raw_io.output_dir(
               {'summary.json': api.json.dumps(data).encode('utf-8')})),
       api.properties(isolated_script_task=True),
@@ -529,7 +529,7 @@ def GenTests(api):
           'archive for win',
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
-      api.step_data('hello_world on Windows-7-SP1',
+      api.step_data('hello_world on Windows-10',
                     api.chromium_swarming.summary(None, data)),
   )
   yield api.test(
@@ -543,7 +543,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.raw_io.output_dir(
               {'summary.json': api.json.dumps(data).encode('utf-8')})),
       api.properties(isolated_script_task=True),
@@ -562,7 +562,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.chromium_swarming.summary(
               api.raw_io.output_dir(
                   {'summary.json': api.json.dumps(data).encode('utf-8')}),
@@ -593,7 +593,7 @@ def GenTests(api):
           'archive for win',
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
-      api.step_data('hello_world on Windows-7-SP1',
+      api.step_data('hello_world on Windows-10',
                     api.raw_io.output_dir(big_output_dir)),
       api.properties(isolated_script_task=True),
   )
@@ -626,7 +626,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.chromium_swarming.summary(
               api.raw_io.output_dir({
                   'summary.json': api.json.dumps(summary_data).encode('utf-8')
@@ -648,7 +648,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.step_data(
-          'hello_world on Windows-7-SP1',
+          'hello_world on Windows-10',
           api.chromium_swarming.summary(
               api.raw_io.output_dir({
                   'summary.json': api.json.dumps(summary_data).encode('utf-8')
@@ -661,8 +661,7 @@ def GenTests(api):
           )),
       api.post_process(
           post_process.Filter(
-              '[trigger (custom trigger script)] hello_world on Windows-7-SP1')
-      ),
+              '[trigger (custom trigger script)] hello_world on Windows-10')),
   )
 
   yield api.test(
