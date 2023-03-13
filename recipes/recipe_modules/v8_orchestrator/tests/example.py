@@ -8,9 +8,10 @@ from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
-from recipe_engine.post_process import (
-    DropExpectation, Filter, ResultReason, StatusException,
-    StatusFailure, StatusSuccess)
+from recipe_engine.post_process import (DropExpectation, Filter, MustRun,
+                                        ResultReason, StatusException,
+                                        StatusFailure, StatusSuccess,
+                                        SummaryMarkdown)
 from recipe_engine.recipe_api import Property
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
@@ -51,15 +52,27 @@ def GenTests(api):
       'basic try',
       api.buildbucket.try_build(builder='v8_foobar'),
       subbuild_data(),
+      api.post_process(MustRun, 'trigger compilator'),
+      api.post_process(MustRun, 'compilator steps'),
+      api.post_process(SummaryMarkdown, 'All good!'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
+
+  def StepStdinContains(check, step_odict, step, substr):
+    check('stdin for step %s contained %s' % (step, substr), substr
+          in step_odict[step].stdin)
 
   yield api.test(
       'basic ci',
       api.buildbucket.ci_build(builder='V8 Foobar'),
       api.properties(revision="abcd"),
       subbuild_data(),
+      api.post_check(StepStdinContains, 'trigger compilator', '"bucket": "ci"'),
+      api.post_check(StepStdinContains, 'trigger compilator',
+                     '"revision": "abcd"'),
       api.post_process(StatusSuccess),
-      api.post_process(Filter().include('trigger compilator')),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -96,15 +109,20 @@ def GenTests(api):
     },
   }
 
+  def StepRealmEquals(check, step_odict, step, realm):
+    check('LUCI realm for step %s was %s' % (step, realm),
+          realm == step_odict[step].luci_context['realm']['name'])
+
   yield api.test(
       'led try',
       api.buildbucket.try_build(builder='v8_foobar'),
       api.properties(**led_properties),
-      api.step_data(
-          'read build.proto.json',
-          api.file.read_json(json_content=build_proto_json)),
+      api.step_data('read build.proto.json',
+                    api.file.read_json(json_content=build_proto_json)),
+      api.post_process(StepRealmEquals, 'trigger compilator.led launch',
+                       'project:try'),
       api.post_process(StatusSuccess),
-      api.post_process(Filter().include('trigger compilator.led launch')),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -112,9 +130,10 @@ def GenTests(api):
       api.buildbucket.ci_build(builder='V8 Foobar'),
       api.properties(revision="abcd"),
       api.properties(**led_properties),
-      api.step_data(
-          'read build.proto.json',
-          api.file.read_json(json_content=build_proto_json)),
+      api.step_data('read build.proto.json',
+                    api.file.read_json(json_content=build_proto_json)),
+      api.post_process(StepRealmEquals, 'trigger compilator.led launch',
+                       'project:ci'),
       api.post_process(StatusSuccess),
-      api.post_process(Filter().include('trigger compilator.led launch')),
+      api.post_process(DropExpectation),
   )
