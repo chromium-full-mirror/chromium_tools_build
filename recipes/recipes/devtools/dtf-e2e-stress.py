@@ -66,8 +66,13 @@ def RunSteps(api, clobber, e2e_env, runner_args):
       return compilation_result
 
     with api.context(env=e2e_env):
-      args = runner_args.split() if runner_args else None
-      api.devtools.run_e2e(builder_config, args)
+      args = runner_args.split() if runner_args else []
+
+      if api.devtools.is_parallel_run():
+        api.devtools.run_e2e(builder_config, args, 'parallel')
+        api.devtools.run_e2e(builder_config, args, 'sequential')
+      else:
+        api.devtools.run_e2e(builder_config, args)
 
 
 def GenTests(api):
@@ -114,3 +119,12 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'Unit Tests'),
       api.post_process(post_process.Filter('E2E tests')),
   )
+
+  yield api.test(
+      'parallel stress builder',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='parallel_stressor_linux'),
+      api.post_process(post_process.MustRun, 'E2E tests (Parallel)'),
+      api.post_process(post_process.MustRun, 'E2E tests (Sequential)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation))

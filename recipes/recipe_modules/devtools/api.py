@@ -52,11 +52,21 @@ class DevToolsAPI(recipe_api.RecipeApi):
       node_args.extend(args or [])
       self.m.step(step_name, ["vpython3", "-u", sc_path] + node_args, **kwargs)
 
-  def run_e2e(self, builder_config, args=None):
-    args = args or []
-    if 'parallel' in self.m.buildbucket.builder_name.lower():
-      args += ['--jobs=2']
-    self.m.devtools.rdb_node_script('E2E tests', 'run_test_suite.js', [
+  def is_parallel_run(self):
+    return 'parallel' in self.m.buildbucket.builder_name.lower()
+
+  def run_e2e(self, builder_config, args=None, run_mode='regular'):
+    args = list(args or [])
+    mode_modifiers = dict(
+        regular=([], ''),
+        parallel=(['--jobs=2'], ' (Parallel)'),
+        sequential=(['--mocha-fgrep=[sequential]'], ' (Sequential)'),
+    )
+
+    extra_args, suffix = mode_modifiers[run_mode]
+    args += extra_args
+
+    self.m.devtools.rdb_node_script('E2E tests' + suffix, 'run_test_suite.js', [
         "--test-suite-path=gen/test/e2e", "--test-suite-source-dir=test/e2e",
         "--test-server-type='hosted-mode'", "--target=" + builder_config
     ] + args)

@@ -73,7 +73,12 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
     run_lint_check(api)
 
-    api.devtools.run_e2e(builder_config)
+    if api.devtools.is_parallel_run():
+      api.devtools.run_e2e(builder_config, run_mode='parallel')
+      api.devtools.run_e2e(builder_config, run_mode='sequential')
+    else:
+      api.devtools.run_e2e(builder_config)
+
     if can_run_experimental_steps(api):
       # Place here any unstable steps that you want to be performed on
       # builders with property run_experimental_steps == True
@@ -279,3 +284,12 @@ def GenTests(api):
           'scripts', 'test', 'run_lint_check_js.mjs'
       )),
   )
+
+  yield api.test(
+      'parallel builder',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='parallel_linux'),
+      api.post_process(post_process.MustRun, 'E2E tests (Parallel)'),
+      api.post_process(post_process.MustRun, 'E2E tests (Sequential)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation))
