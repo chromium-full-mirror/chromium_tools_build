@@ -41,8 +41,8 @@ def GenTests(api):
           'post_summary_to_monorail.ModifyIssues projects/chromium/issues/123',
           api.json.output_stream(generate_issue_result()),
       ),
-      api.post_check(post_process.StatusSuccess),
-      api.post_check(post_process.DropExpectation),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -51,8 +51,8 @@ def GenTests(api):
           'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
           api.json.output_stream(generate_issue_result(['flaky-reproduced'])),
       ),
-      api.post_check(post_process.StatusFailure),
-      api.post_check(post_process.DropExpectation),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -61,6 +61,6 @@ def GenTests(api):
           'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
           retcode=5,
       ),
-      api.post_check(post_process.StatusFailure),
-      api.post_check(post_process.DropExpectation),
+      api.post_process(post_process.StatusFailure),
+      api.post_process(post_process.DropExpectation),
   )

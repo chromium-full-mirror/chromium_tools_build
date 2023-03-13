@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+
+from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
 DEPS = [
@@ -24,10 +27,6 @@ def RunSteps(api, task_id):
         test_binary.to_jsonish(), indent=2).splitlines()
 
 
-import json
-from recipe_engine import post_process
-
-
 def GenTests(api):
   yield api.test(
       'gtest_from_test_request',
@@ -37,6 +36,16 @@ def GenTests(api):
               json.loads(
                   api.flaky_reproducer.get_test_data(
                       'gtest_task_request.json')))),
+      api.post_process(post_process.StepSuccess,
+                       'get_test_binary.get_test_binary from 54321fffffabc123'),
+      api.post_process(post_process.LogContains,
+                       'get_test_binary.get_test_binary from 54321fffffabc123',
+                       'json.output', [
+                           '"./base_unittests.exe"',
+                           '"--test-launcher-bot-mode"',
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -47,12 +56,22 @@ def GenTests(api):
               json.loads(
                   api.flaky_reproducer.get_test_data(
                       'blink_web_tests_task_request.json')))),
+      api.post_process(post_process.StepSuccess,
+                       'get_test_binary.get_test_binary from 54321fffffabc123'),
+      api.post_process(post_process.LogContains,
+                       'get_test_binary.get_test_binary from 54321fffffabc123',
+                       'json.output', [
+                           '"bin/run_blink_wpt_tests"',
+                       ]),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
 
   chrome_all_tast_tests_task_request = json.loads(
       api.flaky_reproducer.get_test_data('gtest_task_request.json'))
   chrome_all_tast_tests_task_request['tags'].append(
       'test_suite:chrome_all_tast_tests')
+
   yield api.test(
       'chrome_all_tast_tests',
       api.step_data('get_test_binary.get_test_binary from 54321fffffabc123',
@@ -106,4 +125,9 @@ def GenTests(api):
       api.step_data('get_test_binary.get_test_binary from 54321fffffabc123',
                     api.json.output_stream(task_request)),
       api.expect_exception(ValueError.__name__),
+      api.post_process(
+          post_process.SummaryMarkdown, "Uncaught Exception: "
+          "ValueError('No TaskSlice found in the TaskRequest.')"),
+      api.post_process(post_process.StatusException),
+      api.post_process(post_process.DropExpectation),
   )
