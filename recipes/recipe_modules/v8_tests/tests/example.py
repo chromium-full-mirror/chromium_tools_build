@@ -4,13 +4,15 @@
 
 import json
 
-from recipe_engine.post_process import Filter
+from recipe_engine.post_process import (DropExpectation, LogContains,
+                                        StatusSuccess)
 
 DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/json',
     'recipe_engine/properties',
     'recipe_engine/runtime',
+    'recipe_engine/swarming',
     'v8_tests',
 ]
 
@@ -37,18 +39,35 @@ def GenTests(api):
   swarm_hashes = api.v8_tests._make_dummy_swarm_hashes(
       test[0] for test in buider_spec.get('tests', []))
 
-  yield (
-      api.test('basic') +
-      api.buildbucket.try_build() +
-      api.properties(swarm_hashes=swarm_hashes, **parent_test_spec)
+  yield api.test(
+      'basic',
+      api.buildbucket.try_build(),
+      api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
+      api.post_process(
+          api.swarming.check_triggered_request,
+          'trigger tests.[trigger] Check',
+          lambda check, req: check(
+              ('pool', 'chromium.tests') in req[0].dimensions.items()),
+          lambda check, req: check(
+              ('os', 'Ubuntu-16.04') in req[0].dimensions.items()),
+          lambda check, req: check('project:v8' in req.tags),
+      ),
+      api.post_process(LogContains, 'trigger tests.[trigger] Test262',
+                       'json.input', ['"--extra-flags=--flag",']),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
-  yield (
-      api.test('cl_with_resultdb_footer') +
-      api.buildbucket.try_build() +
-      api.properties(swarm_hashes=swarm_hashes, **parent_test_spec) +
+  yield api.test(
+      'cl_with_resultdb_footer',
+      api.buildbucket.try_build(),
+      api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
       api.step_data('parse description',
-                    api.json.output({'V8-Recipe-Flags': ['resultdb']})) +
-      api.post_process(Filter(
-          'parse description', 'trigger tests.[trigger] Check', 'Check'))
+                    api.json.output({'V8-Recipe-Flags': ['resultdb']})),
+      api.post_process(LogContains, 'parse description', 'json.output', [
+          '"V8-Recipe-Flags":',
+          '"resultdb"',
+      ]),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
