@@ -67,7 +67,7 @@ def GenTests(api):
          api.post_process(post_process.MustRun, 'E2E tests (Sequential)') +
          api.post_process(
              post_process.StepCommandContains, 'E2E tests (Parallel)', [
-                 '--jobs=2',
+                 '--jobs=4',
              ]) + api.post_process(post_process.StepCommandDoesNotContain,
                                    'E2E tests (Parallel)', [
                                        '--mocha-fgrep=[sequential]',
@@ -77,7 +77,7 @@ def GenTests(api):
                  '--mocha-fgrep=[sequential]',
              ]) + api.post_process(post_process.StepCommandDoesNotContain,
                                    'E2E tests (Sequential)', [
-                                       '--jobs=2',
+                                       '--jobs=4',
                                    ]) +
          api.post_process(post_process.StatusSuccess) +
          api.post_process(post_process.DropExpectation))

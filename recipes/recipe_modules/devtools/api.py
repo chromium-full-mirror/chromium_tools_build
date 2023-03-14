@@ -59,7 +59,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
     args = list(args or [])
     mode_modifiers = dict(
         regular=([], ''),
-        parallel=(['--jobs=2'], ' (Parallel)'),
+        parallel=(['--jobs=4'], ' (Parallel)'),
         sequential=(['--mocha-fgrep=[sequential]'], ' (Sequential)'),
     )
 
