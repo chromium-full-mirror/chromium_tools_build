@@ -16,6 +16,8 @@ DEPS = [
     'chromium_tests_builder_config',
     'code_coverage',
     'filter',
+    'depot_tools/tryserver',
+    'recipe_engine/assertions',
     'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -38,11 +40,16 @@ def RunSteps(api, properties):
           builder_id=orch_builder_id))
   api.chromium_tests.configure_build(orch_builder_config)
 
-  api.chromium_tests.build_affected_targets(
+  _, task = api.chromium_tests.build_affected_targets(
       orch_builder_id,
       orch_builder_config,
       isolate_output_files_for_coverage=True,
       additional_compile_targets=['infra_orchestrator:orchestrator_all'])
+
+  expected_tests = api.properties.get('expected_tests')
+  if expected_tests is not None:
+    tests = [t.name for t in task.test_suites]
+    api.assertions.assertCountEqual(tests, expected_tests)
 
 
 def GenTests(api):
@@ -136,6 +143,39 @@ def GenTests(api):
               orchestrator=InputProperties.Orchestrator(
                   builder_name='fake-orchestrator',
                   builder_group='fake-try-group'))),
+      api.post_process(post_process.DoesNotRun, 'compile (with patch)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'DEPS-only change returns non-isolated tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+      ),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'))),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(expected_tests=['checkdeps']),
+      api.tryserver.get_files_affected_by_patch(['foo/DEPS']),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'scripts': [{
+                      "name": "checkdeps",
+                      "script": "checkdeps.py",
+                  }],
+              },
+          }),
+      api.filter.no_dependency(),
       api.post_process(post_process.DoesNotRun, 'compile (with patch)'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),

@@ -2303,11 +2303,20 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           rts_recall=builder_config.regression_test_selection_recall,
           isolate_output_files_for_coverage=isolate_output_files_for_coverage)
     else:
+
+      def is_source_file(filepath):
+        # DEPS files embed include_rules, which we want to run the checkdeps
+        # test for
+        if self.m.path.basename(filepath) == 'DEPS':
+          return True
+        _, ext = self.m.path.splitext(filepath)
+        return ext in ['.c', '.cc', '.cpp', '.h', '.java', '.mm']
+
       # Even though the patch doesn't require a compile on this platform,
       # we'd still like to run tests not depending on
       # compiled targets (that's obviously not covered by the
       # 'analyze' step) if any source files change.
-      if any(self._is_source_file(f) for f in affected_files):
+      if any(is_source_file(f) for f in affected_files):
         tests = [t for t in tests if not t.compile_targets()]
       else:
         tests = []
@@ -2416,11 +2425,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def _all_compile_targets(self, tests):
     """Returns the compile_targets for all the Tests in |tests|."""
     return sorted(set(x for test in tests for x in test.compile_targets()))
-
-  def _is_source_file(self, filepath):
-    """Returns true iff the file is a source file."""
-    _, ext = self.m.path.splitext(filepath)
-    return ext in ['.c', '.cc', '.cpp', '.h', '.java', '.mm']
 
   def tests_in_compile_targets(self, compile_targets, tests):
     """Returns the tests in |tests| that have at least one of their compile
