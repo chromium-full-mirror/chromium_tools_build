@@ -51,6 +51,11 @@ BUILDERS = freeze({
 INCLUDED_FUZZ_TARGETS = ['//testing/libfuzzer:libfuzzer_main']
 EXCLUDED_FUZZ_TARGETS = ['//testing/libfuzzer:no_clusterfuzz']
 
+# TODO(crbug/1369919):
+# This recipe is deprecated - use chromium_fuzz_engine instead.
+# This recipe can be removed when builders in all relevant branches
+# have migrated.
+
 
 def RunSteps(api):
   assert api.tryserver.is_tryserver
