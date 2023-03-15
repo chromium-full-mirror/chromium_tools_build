@@ -508,8 +508,7 @@ def main(argv):
     return popen.wait()
 
 
-  popen = subprocess.Popen(ninja_cmd, stdout=subprocess.PIPE,
-                           universal_newlines=True)
+  popen = subprocess.Popen(ninja_cmd, stdout=subprocess.PIPE, text=False)
 
   warning_collector = WarningCollector()
   if options.ninja_info_output:
@@ -537,11 +536,24 @@ def main(argv):
     readline = popen.stdout.readline
 
   timed_out = False
-  for stdout_line in iter(readline, ''):
+  for stdout_line in iter(readline, b''):
     if stdout_line is None:
       timed_out = True
       break
 
+    # The shell command may contain escape codes which do not parse as valid
+    # utf-8, such as `\\xc3` (which appears as `\\\xc3` in the python byte
+    # string). The shell accepts the extra `\` produced by GN, but python does
+    # not. So we need to drop it here.
+    stdout_bytes = bytearray(stdout_line)
+    i = 0
+    while i < len(stdout_bytes) - 2:
+      if stdout_bytes[i] == ord('\\') and stdout_bytes[i + 1] > 127:
+        del stdout_bytes[i:i + 1]
+      else:
+        i += 1
+
+    stdout_line = stdout_bytes.decode('utf-8')
     print(stdout_line, end='')
 
     if ninja_parser:

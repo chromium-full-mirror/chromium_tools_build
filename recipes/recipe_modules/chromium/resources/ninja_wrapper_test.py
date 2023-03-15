@@ -431,7 +431,7 @@ class NinjaWrapperTestCase(unittest.TestCase):
     """Test main() with a timeout that is not raised"""
 
     mock_popen_instance = unittest.mock.MagicMock()
-    mock_popen_instance.stdout.readline.side_effect = ['a', 'b', 'c', '']
+    mock_popen_instance.stdout.readline.side_effect = [b'a', b'b', b'c', b'']
     mock_Popen.return_value = mock_popen_instance
 
     output_path = os.path.join(tempfile.mkdtemp(), 'output')
@@ -448,8 +448,8 @@ class NinjaWrapperTestCase(unittest.TestCase):
     """Test main() with a timeout that is raised"""
 
     def faulty_readline_sequence():
-      yield 'a'
-      yield 'b'
+      yield b'a'
+      yield b'b'
       time.sleep(1.0)
       raise Exception(
           'This should not be reached, a timeout should have occurred')
@@ -469,6 +469,26 @@ class NinjaWrapperTestCase(unittest.TestCase):
     self.assertEqual(mock_print.call_count, 5)
     self.assertEqual(mock_call.call_count, 1)
     self.assertEqual(retval, 124)
+    mock_popen_instance.stdout.close.assert_called()
+
+
+  @unittest.mock.patch('ninja_wrapper.print')
+  @unittest.mock.patch('ninja_wrapper.subprocess.Popen')
+  @unittest.mock.patch('ninja_wrapper.subprocess.call')
+  def testMainBadEscaping(self, mock_call, mock_Popen, mock_print):
+    """Test main() with an invalid escape sequence coming from GN."""
+
+    mock_popen_instance = unittest.mock.MagicMock()
+    # This should be encoded as '\xc3\x81l' but GN puts an extra '\' in front
+    # of it (which is escaped as '\\'). Shell accepts this, and ninja_wrapper
+    # needs to too.
+    mock_popen_instance.stdout.readline.side_effect = [b'\\\xc3\\\x81l', b'']
+    mock_Popen.return_value = mock_popen_instance
+
+    ninja_wrapper.main(
+        ['-t', '.1', '--', 'ninja', 'build/path', 'target1', 'target2'])
+
+    self.assertEqual(mock_print.call_count, 1)
     mock_popen_instance.stdout.close.assert_called()
 
 
