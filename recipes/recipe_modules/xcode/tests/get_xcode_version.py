@@ -32,4 +32,5 @@ def GenTests(api):
       api.properties(**{'$build/xcode': xcode_input_properties}),
       api.post_process(post_process.StepSuccess,
                        'Read xcode_configs from repo'),
+      api.post_process(post_process.DropExpectation),
   )

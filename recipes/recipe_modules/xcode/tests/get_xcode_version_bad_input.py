@@ -5,6 +5,8 @@
 from PB.recipe_modules.build.xcode\
   import properties as xcode_properties
 
+from recipe_engine.post_process import (DropExpectation, StatusSuccess)
+
 DEPS = [
     'xcode',
     'recipe_engine/properties',
@@ -21,7 +23,11 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('testing xcode version retrieval with no input',)
+  yield api.test(
+      'testing xcode version retrieval with no input',
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
+  )
 
   config_path = 'some-path/test_xcode_config.json'
   xcode_input_properties = xcode_properties.InputProperties(
@@ -29,4 +35,6 @@ def GenTests(api):
   yield api.test(
       'testing xcode version when file does not exist',
       api.properties(**{'$build/xcode': xcode_input_properties}),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
