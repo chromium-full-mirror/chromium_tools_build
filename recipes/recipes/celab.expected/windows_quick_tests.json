@@ -489,12 +489,6 @@
       "[START_DIR]\\logs\\summary.json",
       "/path/to/tmp/json"
     ],
-    "cwd": "[START_DIR]\\go\\src\\chromium.googlesource.com\\enterprise\\cel\\test",
-    "env_suffixes": {
-      "PATH": [
-        "[START_DIR]\\packages_tests\\bin"
-      ]
-    },
     "luci_context": {
       "realm": {
         "name": "celab:try"

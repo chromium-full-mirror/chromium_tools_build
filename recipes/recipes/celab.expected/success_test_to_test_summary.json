@@ -551,119 +551,11 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "run all tests",
-    "~followup_annotations": [
-      "@@@STEP_FAILURE@@@"
-    ]
+    "name": "run all tests"
   },
   {
     "cmd": [],
-    "name": "find failed tests"
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
-      "[START_DIR]/logs/summary.json",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
-    "env_suffixes": {
-      "PATH": [
-        "[START_DIR]/packages_tests/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "find failed tests.parse summary",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[infra::zip]/resources/zip.py"
-    ],
-    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
-    "env_suffixes": {
-      "PATH": [
-        "[START_DIR]/packages_tests/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "zip logs archive",
-    "stdin": "{\"comment\": \"\", \"entries\": [{\"path\": \"[START_DIR]/logs\", \"type\": \"dir\"}], \"mode\": \"w\", \"output\": \"[START_DIR]/all_logs.zip\", \"root\": \"[START_DIR]/logs\"}"
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[START_DIR]/all_logs.zip",
-      "gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip"
-    ],
-    "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
-    "env_suffixes": {
-      "PATH": [
-        "[START_DIR]/packages_tests/bin"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "gsutil upload CELab Test Logs",
-    "~followup_annotations": [
-      "@@@STEP_LINK@CELab Test Logs@https://storage.cloud.google.com/celab-ci-logs/builder/2012/05/14/8945511751514863184/all_logs.zip@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "test summary",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@exception 3rd test@Error(\"Step('read logs') failed 'EEXIST' with: file command encountered system error EEXIST\")@@@",
-      "@@@STEP_LOG_END@exception 3rd test@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
+    "name": "test summary"
   },
   {
     "cmd": [
@@ -691,7 +583,7 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"1st test\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"output\": \"/some/file\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"success\": false@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"success\": true@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"2nd test\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"output\": \"/other/file\", @@@",
@@ -699,7 +591,7 @@
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"3rd test\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"output\": \"/missing\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"success\": false@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"success\": true@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
@@ -709,100 +601,7 @@
     "cmd": [],
     "name": "test summary.1st test",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@test.py output@first@@@",
-      "@@@STEP_LOG_LINE@test.py output@test@@@",
-      "@@@STEP_LOG_LINE@test.py output@logs@@@",
-      "@@@STEP_LOG_END@test.py output@@@",
-      "@@@STEP_LINK@Compute logs@https://storage.cloud.google.com/celab-ci-logs/builder/2012/05/14/8945511751514863184/1st%20test.zip@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "/some/file",
-      "/path/to/tmp/"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test summary.1st test.read logs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@file@first@@@",
-      "@@@STEP_LOG_LINE@file@test@@@",
-      "@@@STEP_LOG_LINE@file@logs@@@",
-      "@@@STEP_LOG_END@file@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[infra::zip]/resources/zip.py"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test summary.1st test.zip logs archive",
-    "stdin": "{\"comment\": \"\", \"entries\": [{\"path\": \"[START_DIR]/logs/1st test\", \"type\": \"dir\"}], \"mode\": \"w\", \"output\": \"[START_DIR]/1st test.zip\", \"root\": \"[START_DIR]/logs/1st test\"}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[START_DIR]/1st test.zip",
-      "gs://celab-ci-logs/builder/2012/05/14/8945511751514863184/1st test.zip"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test summary.1st test.gsutil upload Compute logs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@Compute logs@https://storage.cloud.google.com/celab-ci-logs/builder/2012/05/14/8945511751514863184/1st%20test.zip@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -816,46 +615,10 @@
     "cmd": [],
     "name": "test summary.3rd test",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_FAILURE@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "/missing",
-      "/path/to/tmp/"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "celab:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test summary.3rd test.read logs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@file command encountered system error EEXIST@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
-    "failure": {
-      "failure": {},
-      "humanReason": "Step('run all tests') (retcode: 1)"
-    },
     "name": "$result"
   }
 ]

@@ -1451,12 +1451,6 @@
       "[START_DIR]\\logs\\summary.json",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e",
-    "env_suffixes": {
-      "PATH": [
-        "[START_DIR]\\packages_tests\\bin"
-      ]
-    },
     "luci_context": {
       "realm": {
         "name": "chrome:luci.chrome.try"
