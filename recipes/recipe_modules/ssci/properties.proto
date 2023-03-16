@@ -4,7 +4,7 @@
 
 syntax = "proto3";
 
-package recipe_modules.build.depbot;
+package recipe_modules.build.ssci;
 
 message InputProperties {
   // bq_artifact_table is the BQ table where artifact rows will be written

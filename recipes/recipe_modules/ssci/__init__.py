@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from PB.recipe_modules.build.depbot import properties
+from PB.recipe_modules.build.ssci import properties
 
 DEPS = [
     'depot_tools/depot_tools',

@@ -3,15 +3,15 @@
 # found in the LICENSE file.
 
 DEPS = [
-    'depbot',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'ssci',
 ]
 
 
 def RunSteps(api):
-  api.depbot.run(
+  api.ssci.run(
       src_dir=api.path['checkout'],
       build_dir='out/Release',
       json_artifact_out=api.json.output(name='artifacts'),
@@ -23,7 +23,7 @@ def GenTests(api):
       'basic',
       api.properties(
           **{
-              '$build/depbot': {
+              '$build/ssci': {
                   "bq_artifact_table": "project.dataset.table",
                   "bq_library_table": "project.dataset.table",
                   "depbot_version": "latest",

@@ -15,7 +15,6 @@ DEPS = [
     'chromium_checkout',
     'chromium_swarming',
     'code_coverage',
-    'depbot',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/gsutil',
@@ -52,6 +51,7 @@ DEPS = [
     'recipe_engine/time',
     'reclient',
     'skylab',
+    'ssci',
     'symupload',
     'test_utils',
 ]

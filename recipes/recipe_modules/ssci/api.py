@@ -6,7 +6,8 @@ import json
 
 from recipe_engine import recipe_api
 
-class DepbotAPI(recipe_api.RecipeApi):
+
+class SsciAPI(recipe_api.RecipeApi):
 
   def __init__(self, props, **kwargs):
     super().__init__(**kwargs)
