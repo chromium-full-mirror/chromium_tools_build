@@ -417,7 +417,7 @@ def GenTests(api):
   flake_test_spec = """
     {
       "swarming_dimensions": {
-        "os": "Windows-7-SP1",
+        "os": "Windows-42",
         "cpu": "x86-64",
       },
       "tests": [

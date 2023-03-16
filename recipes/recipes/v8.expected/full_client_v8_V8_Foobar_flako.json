@@ -15,7 +15,7 @@
       "@@@STEP_LOG_LINE@test-name@also_interesting = \"absolutely\"@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",
       "@@@STEP_LOG_LINE@test-name@Trigger flake bisect on command line:@@@",
-      "@@@STEP_LOG_LINE@test-name@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar - builder\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Windows-7-SP1\"]' -p 'isolated_name=\"test262\"' -p 'test_name=\"suite-name/dir/test-name\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"stress\"' -p 'extra_args=[\"--extra-flags=--flag\"]'@@@",
+      "@@@STEP_LOG_LINE@test-name@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar - builder\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Windows-42\"]' -p 'isolated_name=\"test262\"' -p 'test_name=\"suite-name/dir/test-name\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"stress\"' -p 'extra_args=[\"--extra-flags=--flag\"]'@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",
       "@@@STEP_LOG_LINE@test-name@Local flake reproduction on command line:@@@",
       "@@@STEP_LOG_LINE@test-name@tools/run-tests.py --outdir=SET_OUTDIR_HERE --variants=stress --random-seed-stress-count=1000000 --total-timeout-sec=120 --exit-after-n-failures=1 --extra-flags=--flag suite-name/dir/test-name@@@",
