@@ -6,6 +6,8 @@ import ast
 import contextlib
 import re
 
+from functools import cached_property
+
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 from recipe_engine import recipe_api
@@ -37,6 +39,31 @@ V8_PATCH = 'V8_PATCH_LEVEL'
 
 LCOV_IMAGE = 'lcov:2018-01-18_17-03'
 
+COVERAGE_URL = 'https://storage.googleapis.com/chromium-v8/coverage'
+
+# Name of the file extension for profraw data files.
+PROFRAW_FILE_EXTENSION = 'profraw'
+
+# TODO(https://crbug.com/1265931): Infer this on the V8 side.
+V8_EXECUTABLES = [
+  'cctest',
+  'd8',
+  'inspector-test',
+  'mkgrokdump',
+  'v8_simple_inspector_fuzzer',
+  'v8_simple_json_fuzzer',
+  'v8_simple_multi_return_fuzzer',
+  'v8_simple_parser_fuzzer',
+  'v8_simple_regexp_builtins_fuzzer',
+  'v8_simple_regexp_fuzzer',
+  'v8_simple_wasm_async_fuzzer',
+  'v8_simple_wasm_code_fuzzer',
+  'v8_simple_wasm_compile_fuzzer',
+  'v8_simple_wasm_fuzzer',
+  'v8_simple_wasm_streaming_fuzzer',
+  'v8_unittests',
+  'wasm_api_tests',
+]
 
 class V8Version:
   """A v8 version as used for tagging (with patch level), e.g. '3.4.5.1'."""
@@ -632,13 +659,8 @@ class V8Api(recipe_api.RecipeApi):
 
   @property
   def target_bits(self):
-    """Returns target bits (as int) inferred from gn arguments from MB."""
-    for arg in self.m.v8_tests.gn_args:
-      match = TARGET_CPU_RE.match(arg)
-      if match:
-        return 64 if '64' in match.group(1) else 32
-    # If target_cpu is not set, gn defaults to 64 bits.
-    return 64  # pragma: no cover
+    """Returns target bits (as int) inferred from V8's build artifacts."""
+    return 64 if '64' in self.build_config.get('target_cpu', 'x64') else 32
 
   @contextlib.contextmanager
   def ensure_osx_sdk_if_needed(self):
@@ -881,15 +903,19 @@ class V8Api(recipe_api.RecipeApi):
         args=['-a', 'public-read'],
     )
 
+  @cached_property
+  def build_config(self):
+    build_config_path = self.build_output_dir.join('v8_build_config.json')
+    return self.m.json.read(
+        'read build config', build_config_path,
+        step_test_data=self.test_api.example_build_config).json.output
+
   def get_build_type(self):
     """Returns the given build type: 'debug' if gn args is_debug or
     dcheck_always_on are set, 'release' otherwise.
     """
-    build_config_path = self.build_output_dir.join('v8_build_config.json')
-    build_config = self.m.json.read(
-      'read build config', build_config_path,
-      step_test_data=self.test_api.example_build_config).json.output
-    debug = build_config['is_debug'] or build_config['dcheck_always_on']
+    debug = (self.build_config['is_debug'] or
+             self.build_config['dcheck_always_on'])
     return 'debug' if debug else 'release'
 
   def maybe_create_clusterfuzz_archive(self, update_step):
@@ -1023,6 +1049,106 @@ class V8Api(recipe_api.RecipeApi):
     )
     result.presentation.links['report'] = (
       f'https://storage.googleapis.com/chromium-v8/{dest}/index.html')
+
+  @contextlib.contextmanager
+  def maybe_clang_coverage(self):
+    """Context manager for wrapping a local test execution with
+    coverage-collection logic (switched by the 'coverage' property).
+    """
+    if self.bot_config.get('coverage') != 'llvm':
+      yield
+    else:
+      profile_path = self.m.path['cleanup'].join('profraw')
+      profile_template = profile_path.join('default-%%9m.profraw')
+      try:
+        with self.m.context(env={'LLVM_PROFILE_FILE': profile_template}):
+          yield
+      finally:
+        with self.m.step.nest('Code coverage') as parent_presentation:
+          with self.m.context(cwd=self.m.path['checkout']):
+            profiles = self.find_profiles(profile_path)
+            total_profile = self.merge_profiles(profiles)
+            report_dir = self.create_report(total_profile)
+            link = self.upload_report(report_dir)
+            parent_presentation.links['report'] = link
+
+  def find_profiles(self, profile_path):
+    """Returns a list of paths to all raw profiles."""
+    return [
+      str(f)
+      for f in self.m.file.listdir('List profraw files', profile_path)
+      if str(f).endswith(PROFRAW_FILE_EXTENSION)
+    ]
+
+  def llvm_tool(self, name):
+    """Returns an absolute path to an llvm tool in the V8 checkout."""
+    return self.m.path['checkout'].join(
+        'third_party', 'llvm-build', 'Release+Asserts', 'bin', name)
+
+  def merge_profiles(self, profiles):
+    """Merges multiple raw profiles and returns a path to the total profile."""
+    output_dir = self.m.path['cleanup'].join('profdata')
+    total_profile = output_dir.join('total.profdata')
+    self.m.file.ensure_directory('Ensure output directory', output_dir)
+
+    self.m.step('Merge profiles', cmd=[
+        self.llvm_tool('llvm-profdata'),
+        'merge',
+        '-o', total_profile,
+        '--sparse'] + profiles)
+
+    return total_profile
+
+  def create_report(self, total_profile):
+    """Creates an html coverage report for a merged profile."""
+    report_dir = self.m.path['cleanup'].join('report')
+    self.m.file.ensure_directory('Ensure report directory', report_dir)
+
+    cmd = [
+      self.llvm_tool('llvm-cov'),
+      'show',
+      '-format=html',
+      f'-compilation-dir={self.build_output_dir}',
+      f'-output-dir={report_dir}',
+      f'-instr-profile={total_profile}',
+      '-Xdemangler', 'c++filt', '-Xdemangler', '-n',
+    ]
+    for exe in V8_EXECUTABLES:
+      cmd.append('--object')
+      cmd.append(str(self.build_output_dir.join(exe)))
+
+    self.m.step('Create report', cmd=cmd)
+
+    return report_dir
+
+  def upload_report(self, report_dir):
+    """Uploads the coverage-report directory structure to google storage."""
+    type_suffix = 'rel' if self.get_build_type() == 'release' else 'dbg'
+    if self.m.tryserver.is_tryserver:
+      dest = 'try/%s%d_%s/%d/%d/%d' % (
+          self.m.platform.name,
+          self.target_bits,
+          type_suffix,
+          self.m.tryserver.gerrit_change_number,
+          self.m.tryserver.gerrit_patchset_number,
+          int(self.m.time.time()),
+      )
+    else:
+      dest = 'ci/%s%d_%s/%s' % (
+          self.m.platform.name,
+          self.target_bits,
+          type_suffix,
+          self.revision,
+      )
+
+    self.m.gsutil(
+        [
+          '-m', 'cp', '-a', 'public-read', '-R', report_dir,
+          f'gs://chromium-v8/coverage/{dest}',
+        ],
+        'coverage report')
+
+    return f'{COVERAGE_URL}/{dest}/index.html'
 
   @property
   def is_pure_swarming_tester(self):

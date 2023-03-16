@@ -160,7 +160,8 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
     v8.maybe_create_clusterfuzz_archive(update_step)
 
   if v8.should_test and tests:
-    test_results = api.v8_tests.runtests(tests)
+    with v8.maybe_clang_coverage():
+      test_results = api.v8_tests.runtests(tests)
     v8.maybe_bisect(test_results, test_spec)
 
     if not api.tryserver.is_tryserver and test_results.is_negative:
