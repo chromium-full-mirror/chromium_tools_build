@@ -186,7 +186,7 @@ def mark_as_reported(api, roller, cl):
 #} Generic recovery functions
 
 
-#Devtools recovery functions {
+#Devtools screenshots recovery functions {
 
 
 def try_update_screenshots(api, roller, cl):
@@ -208,7 +208,7 @@ def apply_screenshot_patches(api, roller, cl):
         with api.context(cwd=work_dir):
             prepare_local_checkout(api, cl)
             patches_found = [
-                apply_patch_from_screenshot_builder(api, builder, cl)
+                apply_patch_from_screenshot_builder(api, roller, builder, cl)
                 for builder in roller['screenshot_builders']
             ]
             outcome_title = None
@@ -255,7 +255,7 @@ def prepare_local_checkout(api, cl):
         git_output(api, 'cl', 'issue', cl['_number'])
 
 
-def apply_patch_from_screenshot_builder(api, builder, cl):
+def apply_patch_from_screenshot_builder(api, roller, builder, cl):
     with api.step.nest('Apply screenshot patch from {}'.format(builder)):
         patch_dir = api.path.mkdtemp()
         gs_path = [ 'screenshots',
@@ -267,7 +267,7 @@ def apply_patch_from_screenshot_builder(api, builder, cl):
         patch_platform = builder.split('_')[-2]
         local_path = patch_dir.join(patch_platform + '.patch')
         api.gsutil.download(
-                'devtools-internal-screenshots',
+                roller.get('gs_bucket', 'devtools-internal-screenshots'),
                 gs_location,
                 local_path,
                 name='Download patch from {}'.format(builder))
@@ -325,8 +325,7 @@ def git_output(api, *args, **kwargs):
     return output.strip()
 
 
-#} Devtools recovery functions
-
+#} Devtools screenshots recovery functions
 
 def GenTests(api):
     default_roller = {
