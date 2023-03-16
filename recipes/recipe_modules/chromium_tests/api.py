@@ -1162,11 +1162,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       # run experimental dependency analysis for SSCI.
       if ('ssci.experimental' in self.m.buildbucket.build.input.experiments):
-        self.m.depbot.run(
-            src_dir=self.m.path['checkout'],
-            build_dir=self.m.chromium.output_dir,
-            json_artifact_out=self.m.json.output(name="artifacts"),
-            json_library_out=self.m.json.output(name="libraries"))
+        with self.m.context(env=self.m.chromium.get_env()):
+          self.m.depbot.run(
+              src_dir=self.m.path['checkout'],
+              build_dir=self.m.chromium.output_dir,
+              json_artifact_out=self.m.json.output(name="artifacts"),
+              json_library_out=self.m.json.output(name="libraries"))
 
       return self.m.chromium.compile(
           compile_targets,
