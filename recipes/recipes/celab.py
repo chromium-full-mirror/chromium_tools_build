@@ -314,7 +314,7 @@ def _RunTests(api,
 
   # Run our tests and catch test failures.
   storage_logs = '%s-logs' % pool_name
-  RETRY_ATTEMPT_COUNT = 2
+  RETRY_ATTEMPT_COUNT = 1
   current_iteration = 0
   step_name = 'run all tests'
   test_py_args += ' --no_external_access=True'
@@ -631,15 +631,6 @@ def GenTests(api):
                   'output': '/some/file'
               },
           })),
-      api.step_data('retry failed tests (2)', retcode=1),
-      api.step_data(
-          'find failed tests (3).parse summary',
-          api.json.output({
-              '1st test': {
-                  'success': False,
-                  'output': '/some/file'
-              },
-          })),
       api.step_data(
           'test summary.parse summary',
           api.json.output({
@@ -657,7 +648,7 @@ def GenTests(api):
               }
           })),
       api.post_process(MustRun, 'retry failed tests'),
-      api.post_process(MustRun, 'retry failed tests (2)'),
+      api.post_process(DoesNotRun, 'retry failed tests (2)'),
       api.step_data('test summary.1st test.read logs',
                     api.file.read_text('first\ntest\nlogs')),
       api.post_process(StatusFailure),
