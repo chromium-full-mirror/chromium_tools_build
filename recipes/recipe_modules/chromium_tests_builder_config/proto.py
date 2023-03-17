@@ -17,15 +17,15 @@ same conceptual value will be returned. Converters are registered for
 the following types with the specified additional keyword arguments:
 * BuilderConfig
 * BuilderDatabase
-  * builder_id_by_builder_key - A mapping from (project, bucket,
-    builder) to chromium.BuilderId. This allows for converting the proto
-    message BuilderID to the in-memory BuilderId, which uses the builder
-    group instead of the project and bucket.
+  * builder_id_by_bb_builder_id - A mapping from BuildbucketBuilderID to
+    chromium.BuilderId. This allows for converting the proto message
+    BuilderID to the in-memory BuilderId, which uses the builder group
+    instead of the project and bucket.
 * BuilderSpec
-  * builder_id_by_builder_key - A mapping from (project, bucket,
-    builder) to chromium.BuilderId. This allows for converting the proto
-    message BuilderID to the in-memory BuilderId, which uses the builder
-    group instead of the project and bucket.
+  * builder_id_by_bb_builder_id - A mapping from BuildbucketBuilderID to
+    chromium.BuilderId. This allows for converting the proto message
+    BuilderID to the in-memory BuilderId, which uses the builder group
+    instead of the project and bucket.
 """
 
 import collections
@@ -41,12 +41,9 @@ from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
 
 from . import (BuilderConfig, BuilderDatabase, BuilderSpec, COMPILE_AND_TEST,
                TEST, NEVER, QUICK_RUN_ONLY, ALWAYS)
+from .builder_config import BuildbucketBuilderId
 
 VALIDATORS = proto_validation.Registry()
-
-
-def _builder_key(builder_id):
-  return (builder_id.project, builder_id.bucket, builder_id.builder)
 
 
 @VALIDATORS.register(builder_common_pb.BuilderID)
@@ -105,8 +102,9 @@ _EXECUTION_MODE_MAP = {
 }
 
 
-def _convert_builder_spec(obj, builder_id_by_builder_key):
-  parent_id = builder_id_by_builder_key.get(_builder_key(obj.parent))
+def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
+  parent_id = builder_id_by_bb_builder_id.get(
+      BuildbucketBuilderId.from_proto(obj.parent))
 
   legacy_chromium_config = obj.legacy_chromium_config
   chromium_config_kwargs = {}
@@ -177,7 +175,7 @@ def _validate_builder_database(obj, ctx):
   location_by_builder_key = {}
 
   def check_builder_id_unique(entry, sub_ctx):
-    builder_key = _builder_key(entry.builder_id)
+    builder_key = BuildbucketBuilderId.from_proto(entry.builder_id)
     if builder_key in location_by_builder_key:
       sub_ctx.error('{}.builder_id is the same as {}.builder_id'.format(
           sub_ctx.location, location_by_builder_key[builder_key]))
@@ -187,13 +185,15 @@ def _validate_builder_database(obj, ctx):
   ctx.validate_repeated_field(obj, 'entries', callback=check_builder_id_unique)
 
 
-def _convert_builder_database(obj, builder_id_by_builder_key):
+def _convert_builder_database(obj, builder_id_by_bb_builder_id):
   builders = collections.defaultdict(dict)
   for entry in obj.entries:
-    builder_id = builder_id_by_builder_key[_builder_key(entry.builder_id)]
+    bb_builder_id = BuildbucketBuilderId.from_proto(entry.builder_id)
+    builder_id = builder_id_by_bb_builder_id[bb_builder_id]
     builders[builder_id.group][builder_id.builder] = _convert_builder_spec(
         entry.builder_spec,
-        builder_id_by_builder_key=builder_id_by_builder_key)
+        builder_id_by_bb_builder_id=builder_id_by_bb_builder_id,
+    )
   return BuilderDatabase.create(builders)
 
 
@@ -210,10 +210,12 @@ def _validate_rts_config(obj, ctx):
 
 @VALIDATORS.register(properties_pb.BuilderConfig)
 def _validate_builder_config(obj, ctx):
-  builders = set(_builder_key(e.builder_id) for e in obj.builder_db.entries)
+  builders = set(
+      BuildbucketBuilderId.from_proto(e.builder_id)
+      for e in obj.builder_db.entries)
 
   def check_builder_id_in_db(builder_id, sub_ctx):
-    if _builder_key(builder_id) not in builders:
+    if BuildbucketBuilderId.from_proto(builder_id) not in builders:
       sub_ctx.error('there is no entry in {}.builder_db for {}'.format(
           ctx.location, sub_ctx.location))
 
@@ -244,8 +246,8 @@ def convert_builder_config(obj):
   # The builder ID in the protos is (project, bucket, builder), whereas the
   # one in the recipes is (group, builder), so we need to map between them
   # until such time as the recipes version uses project and bucket
-  builder_id_by_builder_key = {
-      _builder_key(entry.builder_id):
+  builder_id_by_bb_builder_id = {
+      BuildbucketBuilderId.from_proto(entry.builder_id):
       BuilderId.create_for_group(entry.builder_spec.builder_group,
                                  entry.builder_id.builder)
       for entry in obj.builder_db.entries
@@ -259,14 +261,19 @@ def convert_builder_config(obj):
 
   return BuilderConfig.create(
       builder_db=_convert_builder_database(
-          obj.builder_db, builder_id_by_builder_key=builder_id_by_builder_key),
+          obj.builder_db,
+          builder_id_by_bb_builder_id=builder_id_by_bb_builder_id),
       builder_ids=[
-          builder_id_by_builder_key[_builder_key(b)] for b in obj.builder_ids
+          builder_id_by_bb_builder_id[BuildbucketBuilderId.from_proto(b)]
+          for b in obj.builder_ids
       ],
       builder_ids_in_scope_for_testing=[
-          builder_id_by_builder_key[_builder_key(b)]
+          builder_id_by_bb_builder_id[BuildbucketBuilderId.from_proto(b)]
           for b in obj.builder_ids_in_scope_for_testing
       ],
+      bb_builder_id_by_builder_id={
+          v: k for k, v in builder_id_by_bb_builder_id.items()
+      },
       mirroring_try_builders=[
           BuilderId.create_for_group(x.group, x.builder)
           for x in obj.mirroring_builder_group_and_names

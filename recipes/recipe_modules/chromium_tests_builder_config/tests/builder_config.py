@@ -7,6 +7,11 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build.chromium import BuilderId
 from RECIPE_MODULES.build.chromium_tests_builder_config import (
     builder_config as builder_config_module, builder_db, builder_spec, try_spec)
+from RECIPE_MODULES.build.chromium_tests_builder_config.builder_config import (
+    BuildbucketBuilderId)
+
+from PB.go.chromium.org.luci.buildbucket.proto import (builder_common as
+                                                       builder_common_pb)
 
 DEPS = [
     'recipe_engine/assertions',
@@ -156,6 +161,51 @@ def RunSteps(api):
           'fake-group2': 'fake-group2.json',
           'fake-group3': 'fake-group3.json'
       })
+
+  # Test get_buildbucket_id method
+  api.assertions.assertIsNone(
+      builder_config.get_buildbucket_builder_id(
+          BuilderId.create_for_group('fake-group', 'fake-builder')))
+
+  builder_config_with_bb_ids = builder_config_module.BuilderConfig.create(
+      builders,
+      builder_ids=[BuilderId.create_for_group('fake-group', 'fake-builder')],
+      builder_ids_in_scope_for_testing=[
+          BuilderId.create_for_group('fake-group', 'fake-tester')
+      ],
+      bb_builder_id_by_builder_id={
+          BuilderId.create_for_group('fake-group', 'fake-builder'):
+              BuildbucketBuilderId(
+                  project='fake-project',
+                  bucket='fake-bucket',
+                  builder='fake-builder'),
+          BuilderId.create_for_group('fake-group', 'fake-tester'):
+              BuildbucketBuilderId(
+                  project='fake-project',
+                  bucket='fake-bucket',
+                  builder='fake-tester'),
+      },
+  )
+
+  bb_builder_id = builder_config_with_bb_ids.get_buildbucket_builder_id(
+      BuilderId.create_for_group('fake-group', 'fake-builder'))
+  api.assertions.assertEqual(
+      bb_builder_id,
+      BuildbucketBuilderId(
+          project='fake-project', bucket='fake-bucket', builder='fake-builder'))
+  api.assertions.assertEqual(
+      bb_builder_id.to_proto(),
+      builder_common_pb.BuilderID(
+          project='fake-project', bucket='fake-bucket', builder='fake-builder'))
+  bb_tester_id = builder_config_with_bb_ids.get_buildbucket_builder_id(
+      BuilderId.create_for_group('fake-group', 'fake-tester'))
+  api.assertions.assertEqual(
+      bb_tester_id,
+      BuildbucketBuilderId(
+          project='fake-project', bucket='fake-bucket', builder='fake-tester'))
+  bb_builder2_id = builder_config_with_bb_ids.get_buildbucket_builder_id(
+      BuilderId.create_for_group('fake-group2', 'fake-builder2'))
+  api.assertions.assertIsNone(bb_builder2_id)
 
   # Test BuilderSpec-consistent properties
   builder_config_with_matched_values = (

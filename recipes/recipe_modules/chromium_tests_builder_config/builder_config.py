@@ -7,13 +7,18 @@ import inspect
 import itertools
 import traceback
 
+from typing import Optional, Tuple
+
 from .builder_spec import BuilderSpec, COMPILE_AND_TEST, TEST
 from .builder_db import BuilderDatabase
 from .try_spec import TryDatabase, ALWAYS, NEVER, QUICK_RUN_ONLY
 
 from RECIPE_MODULES.build.chromium import BuilderId
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
-                                             enum, sequence)
+                                             enum, mapping, sequence)
+
+from PB.go.chromium.org.luci.buildbucket.proto import (builder_common as
+                                                       builder_common_pb)
 
 
 class BuilderConfigException(Exception):
@@ -83,6 +88,35 @@ def delegate_to_builder_spec(builder_spec_class):
   return delegate
 
 
+@attrs()
+class BuildbucketBuilderId:
+  """An immutable representation of buildbucket BuilderID
+
+  Proto messages are not hashable, so can't be frozen, this type
+  provides the same information as the buildbucket proto type while
+  being able to appear in immutable types.
+  """
+
+  project = attrib(str)
+  bucket = attrib(str)
+  builder = attrib(str)
+
+  @classmethod
+  def from_proto(cls, proto: builder_common_pb.BuilderID):
+    return cls(
+        project=proto.project,
+        bucket=proto.bucket,
+        builder=proto.builder,
+    )
+
+  def to_proto(self) -> builder_common_pb.BuilderID:
+    return builder_common_pb.BuilderID(
+        project=self.project,
+        bucket=self.bucket,
+        builder=self.builder,
+    )
+
+
 @delegate_to_builder_spec(BuilderSpec)
 @attrs()
 class BuilderConfig:
@@ -112,6 +146,11 @@ class BuilderConfig:
 
   builder_ids = attrib(sequence[BuilderId])
   _builder_ids_in_scope_for_testing = attrib(sequence[BuilderId])
+
+  # A mapping of chromium BuilderId to BuildbucketBuilderId. This will
+  # only be populated for src-side builder configs
+  _bb_builder_id_by_builder_id = attrib(
+      mapping[BuilderId, BuildbucketBuilderId], default={})
 
   # The try builders that mirror the builder that this BuilderConfig
   # wraps
@@ -321,6 +360,20 @@ class BuilderConfig:
     if self.include_all_triggered_testers:
       ids = self.builder_db.builder_graph.get_transitive_closure(ids)
     return ids
+
+  def get_buildbucket_builder_id(
+      self,
+      builder_id: BuilderId,
+  ) -> BuildbucketBuilderId:
+    """Get the BuildbucketBuilderId for a chromium BuilderId.
+
+    Returns:
+      The BuildbucketBuilderID for the builder if the config contains
+      the necessary mapping (i.e. it was specified src-side) and the
+      given chromium BuilderId is wrapped by the config. Otherwise,
+      None.
+    """
+    return self._bb_builder_id_by_builder_id.get(builder_id)
 
   @cached_property
   def targets_spec_files(self):

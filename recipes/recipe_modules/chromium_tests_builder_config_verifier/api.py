@@ -239,10 +239,13 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
               for builder_id, builder_spec in d['_db'].items()
           }
 
-        # include_all_triggered_testers will already be reflected in
-        # builder_ids_in_scope_for_testing and it doesn't appear in the proto,
-        # so set it to False so that it doesn't impact comparison
         if isinstance(obj, ctbc.BuilderConfig):
+          # bb_builder_id_by_builder_id will only be populated by
+          # src-side configs
+          d.pop('_bb_builder_id_by_builder_id', None)
+          # include_all_triggered_testers will already be reflected in
+          # builder_ids_in_scope_for_testing and it doesn't appear in the proto,
+          # so set it to False so that it doesn't impact comparison
           d.pop('include_all_triggered_testers', None)
           # Make sure unordered collections are sorted for comparison
           d['builder_ids'] = sorted(d['builder_ids'])
