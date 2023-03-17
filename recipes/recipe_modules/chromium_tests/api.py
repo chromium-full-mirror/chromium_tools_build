@@ -366,7 +366,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests.append(test_spec.get_test(self))
 
-    for reason, test_specs in sorted(test_specs_by_disabled_reason.items()):
+    for reason, test_specs in sorted(
+        test_specs_by_disabled_reason.items(), key=repr):
       reason.report_tests(self, [t.name for t in test_specs])
 
     return tuple(tests)

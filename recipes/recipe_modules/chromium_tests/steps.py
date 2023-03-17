@@ -259,6 +259,9 @@ class DisabledReason:
 
   __metaclass__ = abc.ABCMeta
 
+  def __repr__(self):
+    return type(self).__name__
+
   @abc.abstractmethod
   def report_tests(self, chromium_tests_api, tests):
     """Report tests that are disabled for this reason."""
