@@ -17,7 +17,6 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'chromium_swarming',
-    'code_coverage',
     'depot_tools/tryserver',
     'gn',
     'recipe_engine/path',
@@ -83,9 +82,6 @@ def RunSteps(api):
     ]
 
     test_failure_summary = api.webrtc.run_tests(builder_id, tests_to_run)
-
-    if api.code_coverage.using_coverage:
-      api.code_coverage.process_coverage_data(tests_to_run)
 
     if test_failure_summary:
       return test_failure_summary
