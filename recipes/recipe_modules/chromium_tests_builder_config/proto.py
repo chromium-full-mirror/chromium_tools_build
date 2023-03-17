@@ -39,9 +39,9 @@ from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
                                                                    properties_pb
                                                                   )
 
-from . import (BuilderConfig, BuilderDatabase, BuilderSpec, COMPILE_AND_TEST,
-               TEST, NEVER, QUICK_RUN_ONLY, ALWAYS)
-from .builder_config import BuildbucketBuilderId
+from . import (BuildbucketBuilderId, BuilderConfig, BuilderDatabase,
+               BuilderSpec, COMPILE_AND_TEST, TEST, NEVER, QUICK_RUN_ONLY,
+               ALWAYS)
 
 VALIDATORS = proto_validation.Registry()
 
