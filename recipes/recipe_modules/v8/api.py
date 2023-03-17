@@ -9,6 +9,7 @@ import re
 from functools import cached_property
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine.result import RawResult
 
 from recipe_engine import recipe_api
 from . import bisection
@@ -243,6 +244,7 @@ class V8Api(recipe_api.RecipeApi):
     self.revision_cp = None
     self.revision_number = None
     self.use_remoteexec = properties.get('use_remoteexec', False)
+    self.recipe_result = RawResult(status=common_pb.SUCCESS)
 
   # TODO(machenbach): Temporary convenience method to update recipe
   # dependencies.
@@ -1071,6 +1073,9 @@ class V8Api(recipe_api.RecipeApi):
             report_dir = self.create_report(total_profile)
             link = self.upload_report(report_dir)
             parent_presentation.links['report'] = link
+            self.recipe_result = RawResult(
+                status=common_pb.SUCCESS,
+                summary_markdown=f'[Report]({link})')
 
   def find_profiles(self, profile_path):
     """Returns a list of paths to all raw profiles."""

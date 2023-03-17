@@ -181,6 +181,8 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
     with api.step.nest('measurements'):
       api.v8.collect_post_compile_metrics()
 
+  return v8.recipe_result
+
 
 def link_to_parent(api):
   value = api.properties.get('parent_build')

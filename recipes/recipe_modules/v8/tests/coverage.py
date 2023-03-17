@@ -19,6 +19,7 @@ def RunSteps(api):
   api.v8.checkout()
   with api.v8.maybe_clang_coverage():
     api.step('run tests', cmd=['run-some-tests.py'])
+  return api.v8.recipe_result
 
 
 def StepLinkEquals(check, step_odict, step, link_name, link_value):
@@ -81,6 +82,10 @@ def GenTests(api):
           'Code coverage',
           'report',
           public_link,
+      ) +
+      api.post_process(
+          post_process.SummaryMarkdown,
+          f'[Report]({public_link})',
       ) +
       api.post_process(post_process.StatusSuccess) +
       api.post_process(post_process.DropExpectation)
