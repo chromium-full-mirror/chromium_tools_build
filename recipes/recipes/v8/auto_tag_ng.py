@@ -102,9 +102,9 @@ def check_branch(api, branch_version, build_results):
       has_pgo_tag = verify_pgo_tag(api, version_at_head)
 
       # TODO(crbug.com/1382471): We can remove this again if there are no back-
-      # merges to LTS branches before M111 anymore.
+      # merges to LTS branches before M112 anymore.
       before_cutoff = (
-          (int(version_at_head.major), int(version_at_head.minor)) < (11, 1))
+          (int(version_at_head.major), int(version_at_head.minor)) < (11, 2))
 
       if has_pgo_tag or before_cutoff:
         # We only update the lkgr if pgo profiles are available. If they are not
