@@ -36,8 +36,8 @@ def RunSteps(api):
       builder_config, report_mirroring_builders=True)
 
 
-def check_link(check, steps, expected_link):
-  check(steps['report builders'].links['fake-builder'] == expected_link)
+def check_link(check, steps, link_name, expected_link):
+  check(steps['report builders'].links[link_name] == expected_link)
 
 
 def GenTests(api):
@@ -56,11 +56,51 @@ def GenTests(api):
             builder_group='fake-try-group',
             builder='fake-try-builder',
         ),
-        api.post_check(check_link, expected_link),
+        api.post_check(check_link, 'fake-builder', expected_link),
         api.post_process(post_process.DropExpectation),
     )
 
   ctbc_api = api.chromium_tests_builder_config
+
+  yield api.test(
+      'mirroring-try-builder',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.post_check(
+          check_link,
+          'fake-builder',
+          'https://ci.chromium.org/p/chromium/builders/ci/fake-builder',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'standalone-try-builder',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-try-group',
+              bucket='try',
+              builder='fake-try-builder',
+          ).assemble()),
+      api.post_check(
+          check_link,
+          'fake-try-builder',
+          'https://ci.chromium.org/p/chromium/builders/try/fake-try-builder',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
   ctbc_props = ctbc_api.properties_assembler_for_ci_builder(
       builder_group='fake-group',
       builder='fake-builder',
@@ -70,7 +110,7 @@ def GenTests(api):
   mirroring.builder = 'fake-try-builder'
 
   yield api.test(
-      'mirroring-try-builder',
+      'ci-builder-with-mirroring-try-builder',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',

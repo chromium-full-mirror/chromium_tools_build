@@ -151,7 +151,7 @@
     "name": "report builders",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>running builder 'fake-builder' on group 'fake-group'@@@",
-      "@@@STEP_LINK@fake-builder@https://ci.chromium.org/p/project/builders/ci/fake-builder@@@"
+      "@@@STEP_LINK@fake-builder@https://ci.chromium.org/p/chromium/builders/ci/fake-builder@@@"
     ]
   },
   {

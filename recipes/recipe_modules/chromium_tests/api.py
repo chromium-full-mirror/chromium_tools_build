@@ -2392,18 +2392,23 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       ])
 
     # Links to upstreams help people figure out if upstreams are broken too
-    # TODO(gbeaty): When we switch to using buckets to identify builders instead
-    # of group, we can have an authoritative value for the bucket to use
-    # in these links, for now rely on convention:
-    # try -> ci
+    def link(builder_id):
+      bb_builder_id = builder_config.get_buildbucket_builder_id(builder_id)
+      # For recipe-side builder configs, we don't have reliable information for
+      # the project and bucket, so we assume the same project as the current
+      # builder and the same bucket except with try replaced with ci
+      if bb_builder_id is None:
+        project = self.m.buildbucket.build.builder.project
+        bucket = self.m.buildbucket.build.builder.bucket.replace('try', 'ci')
+      else:
+        project = bb_builder_id.project
+        bucket = bb_builder_id.bucket
+      builder = builder_id.builder
+      return f'https://ci.chromium.org/p/{project}/builders/{bucket}/{builder}'
+
     for d in builder_details:
       for builder_id in d:
-        result.presentation.links[builder_id.builder] = (
-            'https://ci.chromium.org/p/{}/builders/{}/{}'.format(
-                self.m.buildbucket.build.builder.project,
-                self.m.buildbucket.build.builder.bucket.replace('try', 'ci'),
-                builder_id.builder,
-            ))
+        result.presentation.links[builder_id.builder] = link(builder_id)
 
   def print_link_to_results(self):
     """Prints a step with a link to the 'test results' tab in Milo.
