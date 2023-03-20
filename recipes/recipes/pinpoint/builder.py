@@ -77,9 +77,6 @@ def RunSteps(api):
     #  - load the spec mapping of 'chromium.perf' from builder_config
     #  - add the old testers to the mapping, and regenerate the builder config.
     builder_dict = dict(builder_config.builder_db.builders_by_group)
-    spec_dict = dict(builder_dict['chromium.perf.pinpoint'])
-    spec_dict.update(ctbc.builders.chromium_perf_pinpoint.SPEC)
-    builder_dict['chromium.perf.pinpoint'] = spec_dict
     new_builder_db = ctbc.builder_db.BuilderDatabase.create(builder_dict)
     _, builder_config = api.chromium_tests_builder_config.lookup_builder(
         builder_id, builder_db=new_builder_db, use_try_db=False)
