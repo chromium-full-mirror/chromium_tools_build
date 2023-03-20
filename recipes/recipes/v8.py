@@ -52,7 +52,7 @@ PROPERTIES = {
     # clusterfuzz. The mapping consists of "name", "bucket" and optional
     # "bitness".
     'clusterfuzz_archive': Property(default=None, kind=dict),
-    # Optional coverage setting. Set to "gcov" to use.
+    # Optional coverage setting. Set to "llvm" to use.
     'coverage': Property(default=None, kind=str),
     # Mapping of custom dependencies to sync (dependency name as in DEPS
     # file -> deps url).
@@ -139,9 +139,6 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
       api.v8_tests.set_up_swarming()
       v8.runhooks()
 
-      if v8.generate_gcov_coverage:
-        v8.init_gcov_coverage()
-
       # Dynamically load more test specifications from all discovered test
       # roots.
       test_roots = v8.get_test_roots()
@@ -171,9 +168,6 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
     if api.tryserver.is_tryserver and test_results.has_failures:
       # Let tryjobs fail for failures only.
       raise api.step.StepFailure('Failures in tryjob.')
-
-  if v8.generate_gcov_coverage:
-    v8.upload_gcov_coverage_report()
 
   v8.maybe_trigger(test_spec=test_spec, **additional_trigger_properties)
 
@@ -998,58 +992,6 @@ def GenTests(api):
     api.post_process(
       Filter('build.isolate tests', 'trigger tests.[trigger] Num Fuzz - sfx'))
   )
-
-  # Same template as in chromium recipe, but with 64 bits target cpu.
-  fake_gn_args_x64 = (
-      '\n'
-      'Writing """\\\n'
-      'goma_dir = "/b/build/slave/cache/goma_client"\n'
-      'target_cpu = "x64"\n'
-      'use_goma = true\n'
-      '""" to _path_/args.gn.\n'
-  )
-
-  # Cover running gcov coverage.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'gcov_coverage',
-        clobber=True,
-        coverage='gcov',
-        enable_swarming=False,
-    ) +
-    api.step_data(
-        'build.lookup GN args',
-        api.raw_io.stream_output_text(fake_gn_args_x64)) +
-    api.v8.test_spec_in_checkout(
-        'V8 Foobar',
-        '{"tests": [{"name": "v8testing"}]}') +
-    api.post_process(MustRun, 'initialization.clobber') +
-    api.post_process(Filter(
-        'initialization.docker login',
-        'initialization.lcov zero counters',
-        'lcov capture',
-        'lcov remove',
-        'genhtml',
-        'gsutil coverage report',
-    ))
-  )
-
-  # Cover running gcov coverage on tryserver.
-  yield (api.v8.test(
-      'tryserver.v8',
-      'v8_foobar',
-      'gcov_coverage',
-      clobber=True,
-      coverage='gcov',
-      enable_swarming=False,
-  ) + api.step_data('build.lookup GN args',
-                    api.raw_io.stream_output_text(fake_gn_args_x64)) +
-         api.v8.test_spec_in_checkout('v8_foobar',
-                                      '{"tests": [{"name": "v8testing"}]}') +
-         api.post_process(MustRun, 'initialization.clobber') +
-         api.post_process(Filter('gsutil coverage report',)))
 
   # Test using clobber_all property.
   yield (

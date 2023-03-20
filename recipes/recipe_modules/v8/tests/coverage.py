@@ -15,7 +15,10 @@ GS_URL = 'gs://chromium-v8/coverage'
 PUB_URL = 'https://storage.googleapis.com/chromium-v8/coverage'
 
 def RunSteps(api):
-  api.v8.apply_bot_config({'coverage': 'llvm'})
+  api.v8.apply_bot_config(api.v8.update_bot_config(
+      {}, binary_size_tracking=None, clusterfuzz_archive=None, coverage='llvm',
+      enable_swarming=False, target_arch='intel', target_platform='linux',
+      track_build_dependencies=False, triggers=[], triggers_proxy=False))
   api.v8.checkout()
   with api.v8.maybe_clang_coverage():
     api.step('run tests', cmd=['run-some-tests.py'])
