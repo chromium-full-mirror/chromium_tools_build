@@ -352,9 +352,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/src/buildtools/reclient/bootstrap",
-      "-output_dir",
-      "[CLEANUP]/reclient_log_tmp_1"
+      "[CACHE]/builder/src/buildtools/reclient/bootstrap"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -369,6 +367,7 @@
       "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_re_proxy": "[CACHE]/builder/src/buildtools/reclient/reproxy",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
@@ -471,20 +470,28 @@
   {
     "cmd": [
       "[CACHE]/builder/src/buildtools/reclient/bootstrap",
-      "-shutdown",
-      "-log_format",
-      "reducedtext",
-      "-output_dir",
-      "[CLEANUP]/reclient_log_tmp_1",
-      "-proxy_log_dir",
-      "[CLEANUP]/reclient_log_tmp_1",
-      "-server_address",
-      "unix:///[TMP_BASE]/reproxy.sock"
+      "-shutdown"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1"
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/Linux_Tsan_v2",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/Linux_Tsan_v2",
+      "RBE_deps_cache_max_mb": "256",
+      "RBE_enable_deps_cache": "true",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]/builder/src/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true"
     },
     "infra_step": true,
     "luci_context": {

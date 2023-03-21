@@ -99,10 +99,9 @@ def GenTests(api):
   )
 
   def metrics_labels_checker(check, steps):
-    cmd = steps["postprocess for reclient.shutdown reproxy via bootstrap"].cmd
-    check("-metrics_labels" in cmd)
-    i = cmd.index("-metrics_labels")
-    check(cmd[i + 1] ==
+    env = steps["postprocess for reclient.shutdown reproxy via bootstrap"].env
+    check("RBE_metrics_labels" in env)
+    check(env["RBE_metrics_labels"] ==
           "project=chromium,bucket=ci,builder=Linux reclient,source=led,")
 
   yield api.test(

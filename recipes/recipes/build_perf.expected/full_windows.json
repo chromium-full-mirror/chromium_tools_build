@@ -806,9 +806,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_1"
+      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -823,6 +821,7 @@
       "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
       "RBE_remote_accept_cache": "false",
@@ -928,21 +927,29 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-shutdown",
-      "-log_format",
-      "reducedtext",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_1",
-      "-proxy_log_dir",
-      "[CLEANUP]\\reclient_log_tmp_1",
-      "-server_address",
-      "pipe://reproxy.pipe"
+      "-shutdown"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_max_mb": "256",
+      "RBE_enable_deps_cache": "true",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
-      "RBE_remote_accept_cache": "false"
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
+      "RBE_remote_accept_cache": "false",
+      "RBE_server_address": "pipe://reproxy.pipe",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true"
     },
     "infra_step": true,
     "luci_context": {
@@ -2073,9 +2080,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_2"
+      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -2090,6 +2095,7 @@
       "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_2",
       "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_2",
       "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_2",
       "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
       "RBE_server_address": "pipe://reproxy.pipe",
@@ -2192,20 +2198,28 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-shutdown",
-      "-log_format",
-      "reducedtext",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_2",
-      "-proxy_log_dir",
-      "[CLEANUP]\\reclient_log_tmp_2",
-      "-server_address",
-      "pipe://reproxy.pipe"
+      "-shutdown"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_2"
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_max_mb": "256",
+      "RBE_enable_deps_cache": "true",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_2",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_2",
+      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_2",
+      "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
+      "RBE_server_address": "pipe://reproxy.pipe",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true"
     },
     "infra_step": true,
     "luci_context": {
@@ -3232,9 +3246,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_3"
+      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -3249,6 +3261,7 @@
       "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_3",
       "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_3",
       "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_3",
       "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
       "RBE_remote_accept_cache": "false",
@@ -3356,21 +3369,29 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-shutdown",
-      "-log_format",
-      "reducedtext",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_3",
-      "-proxy_log_dir",
-      "[CLEANUP]\\reclient_log_tmp_3",
-      "-server_address",
-      "pipe://reproxy.pipe"
+      "-shutdown"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_max_mb": "256",
+      "RBE_enable_deps_cache": "true",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_3",
-      "RBE_remote_accept_cache": "false"
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_3",
+      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_3",
+      "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
+      "RBE_remote_accept_cache": "false",
+      "RBE_server_address": "pipe://reproxy.pipe",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true"
     },
     "infra_step": true,
     "luci_context": {
@@ -4412,9 +4433,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_4"
+      "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -4429,6 +4448,7 @@
       "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
       "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_4",
       "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
       "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
       "RBE_server_address": "pipe://reproxy.pipe",
@@ -4533,20 +4553,28 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\buildtools\\reclient\\bootstrap.exe",
-      "-shutdown",
-      "-log_format",
-      "reducedtext",
-      "-output_dir",
-      "[CLEANUP]\\reclient_log_tmp_4",
-      "-proxy_log_dir",
-      "[CLEANUP]\\reclient_log_tmp_4",
-      "-server_address",
-      "pipe://reproxy.pipe"
+      "-shutdown"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_4"
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\fake_builder",
+      "RBE_deps_cache_max_mb": "256",
+      "RBE_enable_deps_cache": "true",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_4",
+      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
+      "RBE_re_proxy": "[CACHE]\\builder\\src\\buildtools\\reclient\\reproxy.exe",
+      "RBE_server_address": "pipe://reproxy.pipe",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true"
     },
     "infra_step": true,
     "luci_context": {

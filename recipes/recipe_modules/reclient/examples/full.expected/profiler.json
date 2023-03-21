@@ -1,9 +1,7 @@
 [
   {
     "cmd": [
-      "[TMP_BASE]/checkout/buildtools/reclient/bootstrap",
-      "-output_dir",
-      "[CLEANUP]/reclient_log_tmp_1"
+      "[TMP_BASE]/checkout/buildtools/reclient/bootstrap"
     ],
     "env": {
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
@@ -16,6 +14,7 @@
       "RBE_instance": "projects/test-rbe-project/instances/default_instance",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_profiler_project_id": "test-rbe-project",
       "RBE_profiler_service": "reclient",
       "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",

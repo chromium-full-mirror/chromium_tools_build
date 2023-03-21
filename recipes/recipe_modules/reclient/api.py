@@ -299,8 +299,7 @@ class ReclientApi(recipe_api.RecipeApi):
       self._start_cloudtail(cloudtail_project_id, log_dir,
                             'reproxy-gomaip.INFO')
 
-      self._start_reproxy(self._reclient_log_dir, deps_cache_path,
-                          self.bootstrap_env)
+      self._start_reproxy(deps_cache_path)
 
     p = BuildResultReceiver()
     try:
@@ -308,7 +307,7 @@ class ReclientApi(recipe_api.RecipeApi):
         yield p
     finally:
       with self.m.step.nest('postprocess for reclient'):
-        self._stop_reproxy(self._reclient_log_dir, self.bootstrap_env)
+        self._stop_reproxy(deps_cache_path)
         self._stop_cloudtail(self._get_platform_exe_name('reproxy') + '.INFO')
         self._stop_cloudtail('reproxy-gomaip.INFO')
         self._upload_rbe_metrics(self._reclient_log_dir)
@@ -363,25 +362,23 @@ class ReclientApi(recipe_api.RecipeApi):
     """List contents of the reclient cache directory."""
     self.m.file.listdir('list reclient cache directory', reclient_cache_dir)
 
-  def _start_reproxy(self, reclient_log_dir, reclient_cache_dir, bootstrap_env):
-    """Starts the reproxy via bootstramp.
+  @contextlib.contextmanager
+  def _bootstrap_context(self, reclient_cache_dir):
+    """Creates env dict for running bootstrap
 
     Args:
-      reclient_log_dir: Directory to hold the logs produced by reclient.
-                        Specifically, it contains the .rpl file, which can be of
-                        several GB.
       reclient_cache_dir: Directory from which to load
                           the dependency cache at reproxy startup
                           and update at shutdown
-      bootstrap_env: Environment for bootstrap to start reproxy.
     """
     reproxy_bin_path = self._get_reclient_exe_path('reproxy')
     enable_crash_dump = 'true' if self._scandeps_server else 'false'
     env = {
         'RBE_instance': self.instance,
         'RBE_log_format': _REPROXY_LOG_FORMAT,
-        'RBE_log_dir': reclient_log_dir,
-        'RBE_proxy_log_dir': reclient_log_dir,
+        'RBE_log_dir': self._reclient_log_dir,
+        'RBE_proxy_log_dir': self._reclient_log_dir,
+        'RBE_output_dir': self._reclient_log_dir,
         'RBE_re_proxy': reproxy_bin_path,
         'RBE_service': self._service,
         'RBE_server_address': self.server_address,
@@ -396,53 +393,10 @@ class ReclientApi(recipe_api.RecipeApi):
         'GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP': enable_crash_dump,
     }
 
-    if bootstrap_env is not None:
-      env.update(bootstrap_env)
-    if self._props.profiler_service:
-      env['RBE_profiler_service'] = self._props.profiler_service
-      env['RBE_profiler_project_id'] = self.rbe_project
-
-    if self.cache_silo:
-      env['RBE_cache_silo'] = self.cache_silo
-
-    if self._scandeps_server:
-      env['RBE_depsscanner_address'] = "exec://" + self._scandeps_server_bin_path
-
-    with self.m.context(env=env):
-      self.m.step(
-          'start reproxy via bootstrap',
-          [self._bootstrap_bin_path, '-output_dir', reclient_log_dir],
-          infra_step=True)
-
-  def _stop_reproxy(self, reclient_log_dir, bootstrap_env):
-    """Stops the reproxy via bootstramp.
-
-    Args:
-      reclient_log_dir: Directory to hold the logs produced by reclient.
-      bootstrap_env: Environment for bootstrap to start reproxy.
-    """
-    args = [
-        self._bootstrap_bin_path,
-        '-shutdown',
-        '-log_format',
-        _REPROXY_LOG_FORMAT,
-        '-output_dir',
-        reclient_log_dir,
-        '-proxy_log_dir',
-        reclient_log_dir,
-        '-server_address',
-        self.server_address,
-    ]
-
     if self.metrics_project:
-      args += [
-          '-metrics_project',
-          self.metrics_project,
-          '-metrics_prefix',
-          'go.chromium.org',
-          '-metrics_namespace',
-          self.rbe_project,
-      ]
+      env['RBE_metrics_project'] = self.metrics_project
+      env['RBE_metrics_prefix'] = 'go.chromium.org'
+      env['RBE_metrics_namespace'] = self.rbe_project
       labels = ''
       builder_id = self.m.buildbucket.build.builder
       if builder_id.project:
@@ -454,16 +408,50 @@ class ReclientApi(recipe_api.RecipeApi):
       labels += 'source=' + ('led'
                              if self.m.led.launched_by_led else 'prod') + ','
       if labels != '':
-        args += ['-metrics_labels', labels]
+        env['RBE_metrics_labels'] = labels
 
-    env = {
-        # glog's logging directory
-        'RBE_log_dir': reclient_log_dir,
-    }
-    if bootstrap_env is not None:
-      env.update(bootstrap_env)
+    if self.bootstrap_env is not None:
+      env.update(self.bootstrap_env)
+
+    if self._props.profiler_service:
+      env['RBE_profiler_service'] = self._props.profiler_service
+      env['RBE_profiler_project_id'] = self.rbe_project
+
+    if self.cache_silo:
+      env['RBE_cache_silo'] = self.cache_silo
+
+    if self._scandeps_server:
+      env['RBE_depsscanner_address'] = "exec://" + self._scandeps_server_bin_path
+
     with self.m.context(env=env):
-      self.m.step('shutdown reproxy via bootstrap', args, infra_step=True)
+      yield
+
+  def _start_reproxy(self, reclient_cache_dir):
+    """Starts the reproxy via bootstrap.
+
+    Args:
+      reclient_cache_dir: Directory from which to load
+                          the dependency cache at reproxy startup
+                          and update at shutdown
+    """
+    with self._bootstrap_context(reclient_cache_dir):
+      self.m.step(
+          'start reproxy via bootstrap', [self._bootstrap_bin_path],
+          infra_step=True)
+
+  def _stop_reproxy(self, reclient_cache_dir):
+    """Stops the reproxy via bootstrap.
+
+    Args:
+      reclient_cache_dir: Directory from which to load
+                          the dependency cache at reproxy startup
+                          and update at shutdown
+    """
+    with self._bootstrap_context(reclient_cache_dir):
+      self.m.step(
+          'shutdown reproxy via bootstrap',
+          [self._bootstrap_bin_path, '-shutdown'],
+          infra_step=True)
 
   def _upload_rbe_metrics(self, reclient_log_dir):
     bq_pb = rbe_metrics_bq.RbeMetricsBq()
