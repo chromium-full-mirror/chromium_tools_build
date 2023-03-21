@@ -919,7 +919,7 @@
       }
     },
     "name": "test luci.chromium.try:chromium_presubmit.buildbucket.collect.wait",
-    "timeout": 3600,
+    "timeout": 7200,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1287,7 +1287,7 @@
       }
     },
     "name": "test luci.chromium.try:linux-rel.buildbucket.collect.wait",
-    "timeout": 3600,
+    "timeout": 7200,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1655,7 +1655,7 @@
       }
     },
     "name": "test luci.chromium.try:win-rel.buildbucket.collect.wait",
-    "timeout": 3600,
+    "timeout": 7200,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]

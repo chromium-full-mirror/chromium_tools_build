@@ -453,7 +453,7 @@ def _test_builder(api, affected_files, affected_recipes, builder, led_builder,
         presentation.links['Swarming task'] = job.swarming_task_url
 
     if job.build_id:
-      build = api.buildbucket.collect_build(job.build_id)
+      build = api.buildbucket.collect_build(job.build_id, timeout=7200)
       step_status = (
           api.step.SUCCESS
           if build.status == common_pb2.SUCCESS else api.step.FAILURE)
