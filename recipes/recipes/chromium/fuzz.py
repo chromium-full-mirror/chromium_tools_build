@@ -293,15 +293,11 @@ def gn_refs(api, step_name, target):
   """Runs gn refs to calculate targets depending on target.
   Returns: the list of matched targets.
   """
-  step_result = api.step(
-      step_name, [
-          'python3', api.depot_tools.gn_py_path,
-          '--root=%s' % str(api.path['checkout']), 'refs',
-          str(api.chromium.output_dir), '--all', '--type=executable',
-          '--as=output', target
-      ],
-      stdout=api.raw_io.output_text())
-  return set(step_result.stdout.split())
+  return api.gn.refs(
+      api.chromium.output_dir, [target],
+      output_type='executable',
+      step_name=step_name,
+      output_format='label')
 
 
 def RunSteps(api):

@@ -564,12 +564,12 @@
     "cmd": [
       "python3",
       "RECIPE_REPO[depot_tools]/gn.py",
-      "--root=[CACHE]/builder/src",
       "refs",
-      "[CACHE]/builder/src/out/Release",
+      "-q",
+      "--as=label",
       "--all",
       "--type=executable",
-      "--as=output",
+      "[CACHE]/builder/src/out/Release",
       "//testing/libfuzzer:fuzzing_engine"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -585,18 +585,24 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "calculate all_fuzzers"
+    "name": "calculate all_fuzzers",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo/bar:target1@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo/bar:target2@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo/bar:target3@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[refs]@@@"
+    ]
   },
   {
     "cmd": [
       "python3",
       "RECIPE_REPO[depot_tools]/gn.py",
-      "--root=[CACHE]/builder/src",
       "refs",
-      "[CACHE]/builder/src/out/Release",
+      "-q",
+      "--as=label",
       "--all",
       "--type=executable",
-      "--as=output",
+      "[CACHE]/builder/src/out/Release",
       "//testing/libfuzzer:no_clusterfuzz"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -614,6 +620,8 @@
     },
     "name": "calculate no_clusterfuzz",
     "~followup_annotations": [
+      "@@@STEP_LOG_LINE@raw_io.output_text[refs]@//foo/bar:target1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[refs]@@@",
       "@@@STEP_LOG_LINE@all_fuzzers@//foo/bar:target1@@@",
       "@@@STEP_LOG_LINE@all_fuzzers@//foo/bar:target2@@@",
       "@@@STEP_LOG_LINE@all_fuzzers@//foo/bar:target3@@@",
