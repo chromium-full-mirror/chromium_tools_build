@@ -340,47 +340,48 @@ def RunSteps(api):
         sorted(no_clusterfuzz))
     api.step.active_result.presentation.logs['targets'] = targets
 
+    outdir = api.chromium.output_dir
     if api.tryserver.is_tryserver:
       # Filter out all targets that the patch doesn't affect.
-      outdir = api.chromium.output_dir
       affected_files = api.chromium_checkout.get_files_affected_by_patch()
       test_targets, compile_targets = api.filter.analyze(
           affected_files, None, targets)
-      affected_fuzz_labels = sorted(test_targets + compile_targets)
-      if not affected_fuzz_labels:
+      targets = sorted(test_targets + compile_targets)
+      if not targets:
         return
 
       # Run MB one more time since filter calls above wipes out the specified
       # goma dir.
       api.chromium.mb_gen(builder_id, gn_args_location=api.gn.LOGS)
 
-      # Convert the GN labels to ninja targets and pass them into compile.
-      targets = list(
-          api.gn.ls(outdir, affected_fuzz_labels, output_format='output'))
+    # Up until now we work in terms of GN labels so that we can use
+    # api.filter.analyze above in the trybot case. We now convert the GN labels to
+    # ninja targets and pass them into compile.
+    targets = list(api.gn.ls(outdir, targets, output_format='output'))
 
-  raw_result = api.chromium.compile(
-      targets=targets,
-      use_goma_module=not use_reclient,
-      use_reclient=use_reclient)
-  if raw_result.status != common_pb.SUCCESS or api.tryserver.is_tryserver:
-    return raw_result
-  assert (bot_config.upload_directory is not None)
-  assert (bot_config.upload_bucket is not None)
+    raw_result = api.chromium.compile(
+        targets=targets,
+        use_goma_module=not use_reclient,
+        use_reclient=use_reclient)
+    if raw_result.status != common_pb.SUCCESS or api.tryserver.is_tryserver:
+      return raw_result
+    assert (bot_config.upload_directory is not None)
+    assert (bot_config.upload_bucket is not None)
 
-  # Make sure 32 bit archives are distinguished from 64 bit ones.
-  kwargs = {}
-  if api.chromium.c.TARGET_BITS == 32:
-    kwargs['use_legacy'] = False
-    kwargs['bitness'] = 32
+    # Make sure 32 bit archives are distinguished from 64 bit ones.
+    kwargs = {}
+    if api.chromium.c.TARGET_BITS == 32:
+      kwargs['use_legacy'] = False
+      kwargs['bitness'] = 32
 
-  api.archive.clusterfuzz_archive(
-      build_dir=api.chromium.output_dir,
-      update_properties=checkout_results.json.output['properties'],
-      gs_bucket=bot_config.upload_bucket,
-      archive_prefix=bot_config.archive_prefix,
-      archive_subdir_suffix=bot_config.upload_directory,
-      gs_acl='public-read',
-      **kwargs)
+    api.archive.clusterfuzz_archive(
+        build_dir=api.chromium.output_dir,
+        update_properties=checkout_results.json.output['properties'],
+        gs_bucket=bot_config.upload_bucket,
+        archive_prefix=bot_config.archive_prefix,
+        archive_subdir_suffix=bot_config.upload_directory,
+        gs_acl='public-read',
+        **kwargs)
 
 
 def GenTests(api):
