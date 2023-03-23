@@ -161,7 +161,7 @@
       "project.dataset.table"
     ],
     "name": "ssci collection.upload artifacts to BigQuery",
-    "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
+    "stdin": "{\"field1\": \"1234\", \"builder\": \"\"}\n{\"field2\": \"1234\", \"builder\": \"\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -172,7 +172,7 @@
       "project.dataset.table"
     ],
     "name": "ssci collection.upload libraries to BigQuery",
-    "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
+    "stdin": "{\"field1\": \"1234\", \"builder\": \"\"}\n{\"field2\": \"1234\", \"builder\": \"\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
