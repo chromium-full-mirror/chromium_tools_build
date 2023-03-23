@@ -50,12 +50,12 @@ class SsciAPI(recipe_api.RecipeApi):
 
       artifactRows = []
       for row in result.json.outputs.get('artifacts'):
-        row["builder"] = self.m.buildbucket.builder_name
+        row["builder"] = self.m.buildbucket.builder_full_name
         artifactRows.append(json.dumps(row))
 
       libraryRows = []
       for row in result.json.outputs.get('libraries'):
-        row["builder"] = self.m.buildbucket.builder_name
+        row["builder"] = self.m.buildbucket.builder_full_name
         libraryRows.append(json.dumps(row))
 
       self.m.step(

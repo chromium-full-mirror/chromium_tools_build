@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'recipe_engine/buildbucket',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -21,6 +22,8 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic',
+      api.buildbucket.ci_build(
+          project='myproject', bucket='mybucket', builder='mybuilder'),
       api.properties(
           **{
               '$build/ssci': {
