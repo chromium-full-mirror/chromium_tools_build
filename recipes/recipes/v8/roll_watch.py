@@ -150,6 +150,7 @@ def find_recovery_fn(name):
         'just_pass': just_pass,
         'mark_as_reported': mark_as_reported,
         'try_update_screenshots': try_update_screenshots,
+        'apply_screenshot_patches': apply_screenshot_patches,
     }[name]
 
 
