@@ -34,6 +34,15 @@ DEPS = [
 # is guaranteed to be key insertion order. To prevent mismatches, order these
 # configs in 'more precise' to 'less precise' order.
 COMPARISON_BUILDERS = freeze({
+    'Comparison Linux (reclient vs reclient remote links)(compression)': {
+        'chromium_config': 'chromium',
+        'gclient_config': 'chromium',
+        'chromium_apply_config': ['mb',],
+        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_2': ['reclient_test'],
+        'platform': 'linux',
+        'targets': ['all'],
+    },
     'Comparison Linux (reclient vs reclient remote links)(small)': {
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
