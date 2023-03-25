@@ -1332,6 +1332,36 @@
   },
   {
     "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CACHE]/builder/src/out/win-Debug/gn_targets.json",
+      "gs://chrome-internal-codesearch/debug/gn_targets_win_170242.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gsutil upload gn_targets.json",
+    "~followup_annotations": [
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-internal-codesearch/debug/gn_targets_win_170242.json@@@"
+    ]
+  },
+  {
+    "cmd": [
       "git",
       "config",
       "core.longpaths",
