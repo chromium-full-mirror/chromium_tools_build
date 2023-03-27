@@ -226,6 +226,7 @@ class _CiBuilderPropertiesAssembler:
     self._props_assembler = props_assembler
     self._builder_id = builder_id
     self._builder_spec = builder_spec
+    self._mirroring_builders = []
 
   @classmethod
   def create(cls, **kwargs):
@@ -246,8 +247,15 @@ class _CiBuilderPropertiesAssembler:
     self._props_assembler.add_builder_id_in_scope_for_testing(tester_id)
     return self
 
+  def with_mirroring_builder(self, builder_group, builder):
+    self._mirroring_builders.append(
+        properties_pb.BuilderConfig.BuilderGroupAndName(
+            group=builder_group, builder=builder))
+    return self
+
   def assemble(self):
-    return self._props_assembler.assemble()
+    return self._props_assembler.assemble(
+        mirroring_builder_group_and_names=self._mirroring_builders)
 
 
 class _CiTesterPropertiesAssembler:

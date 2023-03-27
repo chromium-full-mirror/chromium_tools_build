@@ -56,6 +56,9 @@ def GenTests(api):
           api.chromium_tests_builder_config.properties_assembler_for_ci_builder(
               builder_group='fake-group',
               builder='fake-builder',
+          ).with_mirroring_builder(
+              builder_group='fake-try-group',
+              builder='fake-try-builder',
           ).assemble()),
       api.properties(
           expected_builder_ids=[builder_id],
@@ -66,6 +69,11 @@ def GenTests(api):
                       gclient_config='chromium',
                       chromium_config='chromium',
                   ),
+          },
+          expected_attrs={
+              'mirroring_try_builders':
+                  (chromium.BuilderId.create_for_group('fake-try-group',
+                                                       'fake-try-builder'),),
           },
       ),
       api.post_check(post_process.StatusSuccess),

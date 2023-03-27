@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import difflib
-from typing import AbstractSet, Sequence, Optional, Tuple
+from typing import AbstractSet, Collection, Sequence, Optional, Tuple
 
 import attr
 from google.protobuf import json_format
@@ -40,6 +40,7 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
       repo_path: Path,
       properties_files_directory: str,
       dbs: Sequence[Tuple[ctbc.BuilderDatabase, Optional[ctbc.TryDatabase]]],
+      try_buckets: Collection[str] = (),
   ) -> result_pb.RawResult:
     """Verify builder configs specified in properties files.
 
@@ -63,6 +64,12 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
         BuilderConfig that the properties-based BuilderConfig will be
         compared against. If no BuilderConfig is found, then no
         verification is performed.
+      * try_buckets - The names of buckets for which a lookup should
+        occur in the try database. For all other buckets, the try
+        database will not be used. This resolves the situation where a
+        builder group is used for both CI and try builders. The bucket
+        for each builder will be determined by the path to properties
+        file, see properties_file_directory for more information.
     """
     assert self.m.tryserver.is_tryserver
 
@@ -93,7 +100,7 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
       if f not in properties_files:
         continue
 
-      builder = f.rsplit('/', 2)[1]
+      _, bucket, builder, _ = f.rsplit('/', 3)
 
       futures.append(
           self.m.futures.spawn_immediate(
@@ -101,8 +108,10 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
               repo_path,
               files_at_head,
               f,
+              bucket,
               builder,
               dbs,
+              try_buckets,
               __name=f))
 
     self.m.futures.wait(futures)
@@ -119,8 +128,10 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
       repo_path: Path,
       files_at_head: AbstractSet[str],
       f: str,
+      bucket: str,
       builder: str,
       dbs: Sequence[Tuple[ctbc.BuilderDatabase, Optional[ctbc.TryDatabase]]],
+      try_buckets: Collection[str],
   ) -> bool:
     with self.m.step.nest(f'verify {f}') as presentation:
 
@@ -163,7 +174,7 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
       for builder_db, try_db in dbs:
         try:
           recipe_config = ctbc.BuilderConfig.lookup(
-              builder_id, builder_db, try_db, use_try_db=True)
+              builder_id, builder_db, try_db, use_try_db=bucket in try_buckets)
           break
         except ctbc.BuilderConfigException:
           pass

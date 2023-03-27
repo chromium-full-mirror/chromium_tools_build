@@ -67,6 +67,7 @@ def RunSteps(api, properties):
       repo_path,
       properties.builder_config_directory,
       [(ctbc_api.builder_db, ctbc_api.try_db)],
+      ['try'],
   )
 
 

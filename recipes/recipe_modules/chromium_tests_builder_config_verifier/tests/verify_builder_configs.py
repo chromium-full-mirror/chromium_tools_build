@@ -31,7 +31,11 @@ def RunSteps(api, dbs):
   repo_path = api.path['start_dir']
 
   return api.chromium_tests_builder_config_verifier.verify_builder_configs(
-      repo_path, _PROPS_DIR, dbs)
+      repo_path,
+      _PROPS_DIR,
+      dbs,
+      try_buckets=api.properties.get('try_buckets', []),
+  )
 
 
 def GenTests(api):
@@ -424,4 +428,78 @@ def GenTests(api):
           post_process.Filter(
               f'verify {_PROPS_DIR}/bucket/not-matching-config/properties.json')
       ),
+  )
+
+  # Some internal builders reuse the CI builder group for try builders
+  yield api.test(
+      'shared-builder-id',
+      api.buildbucket.try_build(),
+      api.properties(try_buckets=['fake-try-bucket']),
+      api.properties(dbs=[(
+          ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          }),
+          ctbc.TryDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          builder_group='fake-group',
+                          buildername='fake-builder',
+                      ),
+              },
+          }),
+      )]),
+      ctbcv_api.test_case(
+          properties_files_directory=_PROPS_DIR,
+          properties_files={
+              f'{_PROPS_DIR}/fake-ci-bucket/fake-builder/properties.json':
+                  ctbcv_api.Contents(
+                      patched=dumps({
+                          '$build/chromium_tests_builder_config':
+                              json_format.MessageToDict(
+                                  ctbc_api.properties_assembler_for_ci_builder(
+                                      bucket='fake-ci-bucket',
+                                      builder='fake-builder',
+                                      builder_group='fake-group',
+                                      builder_spec=example_spec,
+                                  ).with_mirroring_builder(
+                                      builder_group='fake-group',
+                                      builder='fake-builder',
+                                  ).assemble()),
+                          'builder_group':
+                              'fake-group',
+                      })),
+              f'{_PROPS_DIR}/fake-try-bucket/fake-builder/properties.json':
+                  ctbcv_api.Contents(
+                      patched=dumps({
+                          '$build/chromium_tests_builder_config':
+                              json_format.MessageToDict(
+                                  ctbc_api.properties_assembler_for_try_builder(
+                                  ).with_mirrored_builder(
+                                      bucket='fake-ci-bucket',
+                                      builder='fake-builder',
+                                      builder_group='fake-group',
+                                      builder_spec=example_spec,
+                                  ).assemble()),
+                          'builder_group':
+                              'fake-group',
+                      })),
+          },
+      ),
+      api.post_check(
+          check_verify,
+          f'verify {_PROPS_DIR}/fake-ci-bucket/fake-builder/properties.json',
+          step_text='src-side config matches recipe config'),
+      api.post_check(
+          check_verify,
+          f'verify {_PROPS_DIR}/fake-try-bucket/fake-builder/properties.json',
+          step_text='src-side config matches recipe config'),
+      api.post_check(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
   )
