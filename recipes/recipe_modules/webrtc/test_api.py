@@ -46,6 +46,8 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
     builder_name = _sanitize_builder_name(builder_id.builder)
     project = 'webrtc-internal' if 'internal' in builder_id.group else 'webrtc'
     test_target = 'dummy_test'
+    status = ('FAILURE' if fail_compile or failing_test or fail_android_archive
+              else 'SUCCESS')
 
     chromium_kwargs = builder_config.chromium_config_kwargs
     test = self.test(
@@ -58,6 +60,7 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
         self.m.platform(builder_config.simulation_platform or 'linux',
                         chromium_kwargs.get('TARGET_BITS', 64)),
         self.m.runtime(is_experimental=is_experimental),
+        status=status,
     )
 
     if 'mac_toolchain' in builder_config.chromium_apply_config:

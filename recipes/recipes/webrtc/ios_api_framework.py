@@ -58,6 +58,7 @@ def GenTests(api):
       api.properties(xcode_build_version='dummy_xcode'),
       api.step_data('build', retcode=1),
       api.reclient.properties(),
+      status='FAILURE',
   )
 
   yield api.test(
