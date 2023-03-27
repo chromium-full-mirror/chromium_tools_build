@@ -288,14 +288,9 @@ def _get_led_builders(api, builders):
         # By default, the priority of the tasks will be increased by 10, but
         # since this builder runs as part of CQ for the recipe repos, we want
         # the builds to run at regular priority
-        if 'recipe.led.real_build' in api.buildbucket.build.input.experiments:
-          led_builders[builder.name] = api.led('get-builder',
-                                               '-adjust-priority', '0',
-                                               '-real-build', builder.name)
-        else:
-          led_builders[builder.name] = api.led('get-builder',
-                                               '-adjust-priority', '0',
-                                               builder.name)
+        led_builders[builder.name] = api.led('get-builder', '-real-build',
+                                             '-adjust-priority', '0',
+                                             builder.name)
 
   return led_builders
 
@@ -447,29 +442,15 @@ def _test_builder(api, affected_files, affected_recipes, builder, led_builder,
       ir = ir.then('launch', '-resultdb', 'on', '-bound-to-parent')
 
       job = ir.launch_result
-      if job.build_url:
-        presentation.links['Build'] = job.build_url
-      else:
-        presentation.links['Swarming task'] = job.swarming_task_url
+      presentation.links['Build'] = job.build_url
 
-    if job.build_id:
-      build = api.buildbucket.collect_build(job.build_id, timeout=7200)
-      step_status = (
-          api.step.SUCCESS
-          if build.status == common_pb2.SUCCESS else api.step.FAILURE)
-      api.step.empty(
-          'build ends with {}'.format(common_pb2.Status.Name(build.status)),
-          status=step_status)
-    else:
-      results = api.swarming.collect(
-          'collect',
-          [job.task_id],
-          # We're launching LUCI builders, so they can be viewed in the Milo UI,
-          # which is much better than the stdout, so don't take the time to
-          # download the stdout
-          task_output_stdout='none')
-      for result in results:
-        result.analyze()
+    build = api.buildbucket.collect_build(job.build_id, timeout=7200)
+    step_status = (
+        api.step.SUCCESS
+        if build.status == common_pb2.SUCCESS else api.step.FAILURE)
+    api.step.empty(
+        'build ends with {}'.format(common_pb2.Status.Name(build.status)),
+        status=step_status)
 
 
 def RunSteps(api):
@@ -728,26 +709,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'expired_tryjob',
-      gerrit_change(),
-      affected_recipes(RECIPE),
-      default_builders(),
-      # Step has a retcode of 0 in production.
-      api.step_data(
-          'test luci.chromium.try:linux-rel.collect',
-          api.json.output({
-              'deadbeef': {
-                  'results': {
-                      'name': 'test',
-                      'state': 'EXPIRED',
-                  },
-              },
-          })),
-      api.post_check(post_process.StatusException),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'no_jobs_to_run',
       gerrit_change(),
       default_builders(),
@@ -868,11 +829,4 @@ def GenTests(api):
           led_get_builder_name('luci.chromium.try:arbitrary-builder')),
       api.post_check(post_process.StatusFailure),
       api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'basic_with_real_builds',
-      gerrit_change(experiments=['recipe.led.real_build']),
-      affected_recipes(RECIPE),
-      default_builders(),
   )
