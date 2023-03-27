@@ -283,8 +283,13 @@ class BuilderConfig:
     kwargs = {}
 
     try_spec = None
-    if try_db:
-      if builder_id not in try_db:
+    if try_db and use_try_db:
+      try_spec = try_db.get(builder_id)
+
+    if try_spec is None:
+      kwargs['builder_ids'] = [builder_id]
+
+      if try_db:
 
         def is_builder_mirrored(spec):
           for mirror in spec.mirrors:
@@ -295,16 +300,10 @@ class BuilderConfig:
               return True
           return False
 
-        kwargs['mirroring_try_builders'] = [
+        kwargs['mirroring_try_builders'] = sorted([
             try_id for try_id, spec in try_db.items()
             if is_builder_mirrored(spec)
-        ]
-
-      elif use_try_db:
-        try_spec = try_db.get(builder_id)
-
-    if try_spec is None:
-      kwargs['builder_ids'] = [builder_id]
+        ])
     else:
       try_spec_kwargs = attr.asdict(try_spec, recurse=False)
       mirrors = try_spec_kwargs.pop('mirrors')

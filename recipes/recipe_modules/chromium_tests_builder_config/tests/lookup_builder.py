@@ -53,6 +53,12 @@ TRY_DB = ctbc.TryDatabase.create({
                 regression_test_selection_recall=0.5,
             ),
     },
+    # Some of the internal try builders have the same builder group and name as
+    # the builder they mirror
+    'fake-group': {
+        'fake-builder':
+            ctbc.TrySpec.create_for_single_mirror('fake-group', 'fake-builder'),
+    },
 })
 
 
@@ -75,14 +81,17 @@ def GenTests(api):
       api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
       api.properties(
           expected_attrs=dict(
-              mirroring_try_builders=(BuilderId.create_for_group(
-                  'fake-try-group', 'fake-try-builder'),),
+              mirroring_try_builders=(
+                  BuilderId.create_for_group('fake-group', 'fake-builder'),
+                  BuilderId.create_for_group('fake-try-group',
+                                             'fake-try-builder'),
+              ),
               builder_ids=(
                   BuilderId.create_for_group('fake-group', 'fake-builder'),),
-              builder_ids_in_scope_for_testing=set([
+              builder_ids_in_scope_for_testing={
                   BuilderId.create_for_group('fake-group', 'fake-builder'),
-                  BuilderId.create_for_group('fake-group', 'fake-tester')
-              ]),
+                  BuilderId.create_for_group('fake-group', 'fake-tester'),
+              },
               include_all_triggered_testers=True,
               is_compile_only=False,
               analyze_names=(),
