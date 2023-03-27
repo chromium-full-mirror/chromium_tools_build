@@ -34,6 +34,13 @@ ALL_TEST_BINARIES_ISOLATE_NAME = 'all_test_binaries'
 
 DISABLE_RTS_FOOTER = 'Disable-Rts'
 
+REPOSITORY_MAPPING = {
+    'chromium': 'chromium',
+    'chromium/src': 'chromium',
+    'v8/v8': 'v8',
+    'src/webrtc': 'webrtc'
+}
+
 
 @attrs()
 class SwarmingExecutionInfo:
@@ -631,7 +638,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.perf_dashboard.upload_isolate(
             self.m.buildbucket.builder_name,
             self.m.perf_dashboard.get_change_info([{
-                'repository': repo.split('/')[0],
+                'repository': REPOSITORY_MAPPING.get(repo),
                 'git_hash': git_hash,
             }]), instance, self.m.isolate.isolated_tests)
 
