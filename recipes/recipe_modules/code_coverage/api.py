@@ -392,9 +392,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       if test_type not in constants.SUPPORTED_TEST_TYPES:
         raise Exception('Unsupported test type %s.' % test_type)
 
-  def _set_builder_output_properties_for_uploads(self):
+  def _set_builder_output_properties_for_uploads(self, has_coverage_data=True):
     """Sets the output property of the builder."""
     result = self.m.step.empty('Set builder output properties')
+    result.presentation.properties['coverage_is_presubmit'] = (
+        self._is_per_cl_coverage)
+    if not has_coverage_data:
+      return
     result.presentation.properties['coverage_metadata_gs_paths'] = (
         self._coverage_metadata_gs_paths)
     result.presentation.properties['mimic_builder_names'] = (
@@ -402,8 +406,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     result.presentation.properties['merged_profdata_gs_paths'] = (
         self._merged_profdata_gs_paths)
     result.presentation.properties['coverage_gs_bucket'] = (self._gs_bucket)
-    result.presentation.properties['coverage_is_presubmit'] = (
-        self._is_per_cl_coverage)
 
   def instrument(self,
                  candidate_files,
@@ -505,6 +507,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       if not self._eligible_files:
         self.m.step.empty(
             'skip processing coverage data because no source file changed')
+        self._set_builder_output_properties_for_uploads(has_coverage_data=False)
         return
       unsupported_projects = self._get_unsupported_projects()
       if unsupported_projects:
