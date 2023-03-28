@@ -2074,6 +2074,7 @@ class SwarmingTest(Test):
     test_options = self.test_options.for_running(suffix, tests_to_retry)
     args = test_options.add_args(extra_args, self.option_flags)
 
+    add_one_test_shard_enabled = False
     # If we're in quick run or inverse quick run set the shard count to any
     # available quickrun shards
     if (self.api.m.cq.active and
@@ -2083,6 +2084,20 @@ class SwarmingTest(Test):
       shards = self.spec.inverse_quickrun_shards
     else:
       shards = self.spec.shards
+
+      # When this experiment is enabled, we want to trigger suites with one
+      # additional shard so that we can go back and query for test overhead
+      # estimations.
+      # See go/nplus1shardsproposal
+      buildbucket_experiments = self.api.m.buildbucket.build.input.experiments
+      add_one_test_shard_enabled = ('chromium.add_one_test_shard'
+                                    in buildbucket_experiments and
+                                    suffix == 'with patch')
+      # For now, only add a shard if the suite already runs with multiple shards
+      # Although rare, some suites may be swarmed but unable to work properly
+      # with more than one shard.
+      if shards > 1 and add_one_test_shard_enabled:
+        shards += 1
 
     if tests_to_retry:
       # The filter list is eventually passed to the binary over the command
@@ -2232,6 +2247,11 @@ class SwarmingTest(Test):
         'waterfall_builder_group': [self.spec.waterfall_builder_group or ''],
         'waterfall_buildername': [self.spec.waterfall_buildername or ''],
     }
+    if add_one_test_shard_enabled:
+      tags.update({
+          'experimental_shard_count': [str(shards)],
+          'normally_assigned_shard_count': [str(shards - 1)],
+      })
 
     task.request = (
         task_request.with_slice(0, task_slice).with_name(

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import attr
+import re
 
 from google.protobuf import json_format
 
@@ -362,6 +363,79 @@ def GenTests(api):
           'base_unittests', 'without patch', expected_failures=['Test.One']),
       api.post_process(post_process.StatusFailure),
       api.post_process(post_process.StepFailure, 'base_unittests (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'add_one_test_shard_enabled',
+      api.platform('linux', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['chromium.add_one_test_shard'],
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(
+          shards=20,
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          }),
+      api.post_check(
+          api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
+          '.[trigger] base_unittests (with patch)', lambda check, req: check(
+              req[0].env_vars['GTEST_TOTAL_SHARDS'] == '21')),
+      api.post_check(
+          api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
+          '.[trigger] base_unittests (with patch)',
+          lambda check, req: check('experimental_shard_count:21' in req.tags)),
+      api.post_check(
+          api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
+          '.[trigger] base_unittests (with patch)', lambda check, req: check(
+              'normally_assigned_shard_count:20' in req.tags)),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'add_one_test_shard_not_enabled',
+      api.platform('linux', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(
+          shards=20,
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          }),
+      api.post_check(
+          api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
+          '.[trigger] base_unittests (with patch)', lambda check, req: check(
+              req[0].env_vars['GTEST_TOTAL_SHARDS'] == '20')),
+      api.post_check(
+          api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
+          '.[trigger] base_unittests (with patch)', lambda check, req: check(
+              len(
+                  list(
+                      filter(
+                          lambda s: re.match('experimental_shard_count.*', s),
+                          req.tags))) == 0)),
+      api.post_check(
+          api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
+          '.[trigger] base_unittests (with patch)', lambda check, req: check(
+              len(
+                  list(
+                      filter(
+                          lambda s: re.match('normally_assigned_shard_count.*',
+                                             s), req.tags))) == 0)),
       api.post_process(post_process.DropExpectation),
   )
 
