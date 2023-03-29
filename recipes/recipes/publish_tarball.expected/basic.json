@@ -44,9 +44,9 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@refs/tags/105.0.5148.2",
+      "src@refs/tags/113.0.5656.2",
       "--refs",
-      "refs/tags/105.0.5148.2",
+      "refs/tags/113.0.5656.2",
       "--with_branch_heads",
       "--with_tags"
     ],
@@ -76,18 +76,18 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "bot_update - 105.0.5148.2",
+    "name": "bot_update - 113.0.5656.2",
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"src\": \"refs/tags/105.0.5148.2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": \"refs/tags/113.0.5656.2\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }, @@@",
       "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src.git\", @@@",
-      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"20feca7eccefcffa9af9c0604487caa2780172ce\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"b331d9468b2859783f5372755a7d10405e68408c\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }, @@@",
       "@@@STEP_LOG_LINE@json.output@    \"src/buildtools\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/buildtools.git\", @@@",
@@ -129,8 +129,8 @@
       "@@@STEP_LOG_LINE@json.output@    \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"20feca7eccefcffa9af9c0604487caa2780172ce\", @@@",
-      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/tags/105.0.5148.2@{#170242}\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"b331d9468b2859783f5372755a7d10405e68408c\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/tags/113.0.5656.2@{#170242}\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\", @@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\", @@@",
@@ -144,7 +144,7 @@
       "@@@STEP_LOG_LINE@json.output@      \"src\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src.git\", @@@",
-      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"20feca7eccefcffa9af9c0604487caa2780172ce\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"b331d9468b2859783f5372755a7d10405e68408c\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }, @@@",
       "@@@STEP_LOG_LINE@json.output@      \"src/buildtools\": {@@@",
@@ -203,8 +203,8 @@
       "@@@SET_BUILD_PROPERTY@got_dawn_revision_cp@\"refs/heads/main@{#51819}\"@@@",
       "@@@SET_BUILD_PROPERTY@got_nacl_revision@\"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
       "@@@SET_BUILD_PROPERTY@got_nacl_revision_cp@\"refs/heads/main@{#274981}\"@@@",
-      "@@@SET_BUILD_PROPERTY@got_revision@\"20feca7eccefcffa9af9c0604487caa2780172ce\"@@@",
-      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/tags/105.0.5148.2@{#170242}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"b331d9468b2859783f5372755a7d10405e68408c\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/tags/113.0.5656.2@{#170242}\"@@@",
       "@@@SET_BUILD_PROPERTY@got_swiftshader_revision@\"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
       "@@@SET_BUILD_PROPERTY@got_swiftshader_revision_cp@\"refs/heads/main@{#202157}\"@@@",
       "@@@SET_BUILD_PROPERTY@got_v8_revision@\"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
@@ -457,6 +457,28 @@
   {
     "cmd": [
       "python3",
+      "[START_DIR]/src/v8/tools/builtins-pgo/download_profiles.py",
+      "download",
+      "--depot-tools",
+      "[START_DIR]/src/third_party/depot_tools"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:cron"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Fetch V8 PGO profiles"
+  },
+  {
+    "cmd": [
+      "python3",
       "RECIPE_REPO[depot_tools]/download_from_google_storage.py",
       "--no_resume",
       "--extract",
@@ -698,11 +720,11 @@
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/export_tarball.py",
       "--remove-nonessential-files",
-      "chromium-105.0.5148.2",
+      "chromium-113.0.5656.2",
       "--verbose",
       "--progress",
       "--version",
-      "105.0.5148.2",
+      "113.0.5656.2",
       "--src-dir",
       "[START_DIR]/src"
     ],
@@ -732,8 +754,8 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/export_tarball_tmp_1/chromium-105.0.5148.2.tar.xz",
-      "gs://chromium-browser-official/chromium-105.0.5148.2.tar.xz"
+      "[CLEANUP]/export_tarball_tmp_1/chromium-113.0.5656.2.tar.xz",
+      "gs://chromium-browser-official/chromium-113.0.5656.2.tar.xz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -748,16 +770,16 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2.tar.xz",
+    "name": "gsutil upload chromium-113.0.5656.2.tar.xz",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2.tar.xz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2.tar.xz@@@"
     ]
   },
   {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/generate_hashes.py",
-      "[CLEANUP]/export_tarball_tmp_1/chromium-105.0.5148.2.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_1/chromium-113.0.5656.2.tar.xz",
       "/path/to/tmp/"
     ],
     "luci_context": {
@@ -786,7 +808,7 @@
       "-a",
       "public-read",
       "md5  164ebd6889588da166a52ca0d57b9004  bash",
-      "gs://chromium-browser-official/chromium-105.0.5148.2.tar.xz.hashes"
+      "gs://chromium-browser-official/chromium-113.0.5656.2.tar.xz.hashes"
     ],
     "infra_step": true,
     "luci_context": {
@@ -801,9 +823,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2.tar.xz.hashes",
+    "name": "gsutil upload chromium-113.0.5656.2.tar.xz.hashes",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2.tar.xz.hashes@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2.tar.xz.hashes@@@"
     ]
   },
   {
@@ -853,7 +875,7 @@
       }
     },
     "name": "luci-scheduler.EmitTriggers",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Build From Tarball\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"version\": \"105.0.5148.2\"}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\"}}], \"timestamp\": 1337000001500000}",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Build From Tarball\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"version\": \"113.0.5656.2\"}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\"}}], \"timestamp\": 1337000001500000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -867,7 +889,7 @@
       "@@@STEP_LOG_LINE@input@            \"trigger\": {@@@",
       "@@@STEP_LOG_LINE@input@                \"buildbucket\": {@@@",
       "@@@STEP_LOG_LINE@input@                    \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@input@                        \"version\": \"105.0.5148.2\"@@@",
+      "@@@STEP_LOG_LINE@input@                        \"version\": \"113.0.5656.2\"@@@",
       "@@@STEP_LOG_LINE@input@                    }, @@@",
       "@@@STEP_LOG_LINE@input@                    \"tags\": [@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_buildername:builder\", @@@",
@@ -889,11 +911,11 @@
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/export_tarball.py",
       "--test-data",
-      "chromium-105.0.5148.2",
+      "chromium-113.0.5656.2",
       "--verbose",
       "--progress",
       "--version",
-      "105.0.5148.2",
+      "113.0.5656.2",
       "--src-dir",
       "[START_DIR]/src"
     ],
@@ -923,8 +945,8 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/export_tarball_tmp_2/chromium-105.0.5148.2.tar.xz",
-      "gs://chromium-browser-official/chromium-105.0.5148.2-testdata.tar.xz"
+      "[CLEANUP]/export_tarball_tmp_2/chromium-113.0.5656.2.tar.xz",
+      "gs://chromium-browser-official/chromium-113.0.5656.2-testdata.tar.xz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -939,16 +961,16 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2-testdata.tar.xz",
+    "name": "gsutil upload chromium-113.0.5656.2-testdata.tar.xz",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2-testdata.tar.xz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2-testdata.tar.xz@@@"
     ]
   },
   {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/generate_hashes.py",
-      "[CLEANUP]/export_tarball_tmp_2/chromium-105.0.5148.2.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_2/chromium-113.0.5656.2.tar.xz",
       "/path/to/tmp/"
     ],
     "luci_context": {
@@ -977,7 +999,7 @@
       "-a",
       "public-read",
       "md5  164ebd6889588da166a52ca0d57b9004  bash",
-      "gs://chromium-browser-official/chromium-105.0.5148.2-testdata.tar.xz.hashes"
+      "gs://chromium-browser-official/chromium-113.0.5656.2-testdata.tar.xz.hashes"
     ],
     "infra_step": true,
     "luci_context": {
@@ -992,9 +1014,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2-testdata.tar.xz.hashes",
+    "name": "gsutil upload chromium-113.0.5656.2-testdata.tar.xz.hashes",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2-testdata.tar.xz.hashes@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2-testdata.tar.xz.hashes@@@"
     ]
   },
   {
@@ -1622,11 +1644,11 @@
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/export_tarball.py",
       "--remove-nonessential-files",
-      "chromium-105.0.5148.2",
+      "chromium-113.0.5656.2",
       "--verbose",
       "--progress",
       "--version",
-      "105.0.5148.2",
+      "113.0.5656.2",
       "--src-dir",
       "[CLEANUP]/tmp_tmp_1/src"
     ],
@@ -1656,8 +1678,8 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/export_tarball_tmp_3/chromium-105.0.5148.2.tar.xz",
-      "gs://chromium-browser-official/chromium-105.0.5148.2-lite.tar.xz"
+      "[CLEANUP]/export_tarball_tmp_3/chromium-113.0.5656.2.tar.xz",
+      "gs://chromium-browser-official/chromium-113.0.5656.2-lite.tar.xz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1672,16 +1694,16 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2-lite.tar.xz",
+    "name": "gsutil upload chromium-113.0.5656.2-lite.tar.xz",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2-lite.tar.xz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2-lite.tar.xz@@@"
     ]
   },
   {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/generate_hashes.py",
-      "[CLEANUP]/export_tarball_tmp_3/chromium-105.0.5148.2.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_3/chromium-113.0.5656.2.tar.xz",
       "/path/to/tmp/"
     ],
     "luci_context": {
@@ -1710,7 +1732,7 @@
       "-a",
       "public-read",
       "md5  164ebd6889588da166a52ca0d57b9004  bash",
-      "gs://chromium-browser-official/chromium-105.0.5148.2-lite.tar.xz.hashes"
+      "gs://chromium-browser-official/chromium-113.0.5656.2-lite.tar.xz.hashes"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1725,9 +1747,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2-lite.tar.xz.hashes",
+    "name": "gsutil upload chromium-113.0.5656.2-lite.tar.xz.hashes",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2-lite.tar.xz.hashes@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2-lite.tar.xz.hashes@@@"
     ]
   },
   {
@@ -1835,11 +1857,11 @@
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/export_tarball.py",
       "--remove-nonessential-files",
-      "chromium-105.0.5148.2",
+      "chromium-113.0.5656.2",
       "--verbose",
       "--progress",
       "--version",
-      "105.0.5148.2",
+      "113.0.5656.2",
       "--src-dir",
       "[CLEANUP]/tmp_tmp_2/src"
     ],
@@ -1869,8 +1891,8 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/export_tarball_tmp_4/chromium-105.0.5148.2.tar.xz",
-      "gs://chromium-browser-official/chromium-105.0.5148.2-nacl.tar.xz"
+      "[CLEANUP]/export_tarball_tmp_4/chromium-113.0.5656.2.tar.xz",
+      "gs://chromium-browser-official/chromium-113.0.5656.2-nacl.tar.xz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1885,16 +1907,16 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2-nacl.tar.xz",
+    "name": "gsutil upload chromium-113.0.5656.2-nacl.tar.xz",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2-nacl.tar.xz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2-nacl.tar.xz@@@"
     ]
   },
   {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/generate_hashes.py",
-      "[CLEANUP]/export_tarball_tmp_4/chromium-105.0.5148.2.tar.xz",
+      "[CLEANUP]/export_tarball_tmp_4/chromium-113.0.5656.2.tar.xz",
       "/path/to/tmp/"
     ],
     "luci_context": {
@@ -1923,7 +1945,7 @@
       "-a",
       "public-read",
       "md5  164ebd6889588da166a52ca0d57b9004  bash",
-      "gs://chromium-browser-official/chromium-105.0.5148.2-nacl.tar.xz.hashes"
+      "gs://chromium-browser-official/chromium-113.0.5656.2-nacl.tar.xz.hashes"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1938,9 +1960,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gsutil upload chromium-105.0.5148.2-nacl.tar.xz.hashes",
+    "name": "gsutil upload chromium-113.0.5656.2-nacl.tar.xz.hashes",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-105.0.5148.2-nacl.tar.xz.hashes@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium-browser-official/chromium-113.0.5656.2-nacl.tar.xz.hashes@@@"
     ]
   },
   {

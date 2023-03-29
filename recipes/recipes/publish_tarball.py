@@ -356,6 +356,17 @@ def publish_tarball(api):
 
   fetch_pgo_profiles(api)
 
+  # https://chromium.googlesource.com/chromium/src/+/065d83e42bb327e81b045fd04c37eef2934be298
+  if [int(x) for x in version.split('.')] >= [113, 0, 5656, 0]:
+    api.step('Fetch V8 PGO profiles', [
+        'python3',
+        api.path['checkout'].join('v8', 'tools', 'builtins-pgo',
+                                  'download_profiles.py'),
+        'download',
+        '--depot-tools',
+        api.path['checkout'].join('third_party', 'depot_tools'),
+    ])
+
   node_modules_sha_path = api.path['checkout'].join('third_party', 'node',
                                                     'node_modules.tar.gz.sha1')
   if api.path.exists(node_modules_sha_path):
@@ -456,7 +467,7 @@ def RunSteps(api):
 def GenTests(api):
   yield (
       api.test('basic') + api.buildbucket.generic_build() +
-      api.properties(version='105.0.5148.2') + api.platform('linux', 64) +
+      api.properties(version='113.0.5656.2') + api.platform('linux', 64) +
       api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
