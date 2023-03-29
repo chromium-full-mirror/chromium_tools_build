@@ -478,7 +478,8 @@
       "-f",
       "--bypass-hooks",
       "--send-mail",
-      "--no-autocc"
+      "--no-autocc",
+      "--no-python2-post-upload-hooks"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -757,7 +758,8 @@
       "-f",
       "--bypass-hooks",
       "--send-mail",
-      "--no-autocc"
+      "--no-autocc",
+      "--no-python2-post-upload-hooks"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -1035,7 +1037,8 @@
       "upload",
       "-f",
       "--bypass-hooks",
-      "--send-mail"
+      "--send-mail",
+      "--no-python2-post-upload-hooks"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
