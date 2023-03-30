@@ -171,7 +171,7 @@ class SkylabApi(recipe_api.RecipeApi):
                 cmd.extend(['-secondary-lacros-paths', secondary_lacros_paths])
 
             if t.spec.bucket and 'chromium' in t.spec.bucket:
-              test_args.append('run_private_tests=false')
+              test_args.append('run_private_tests=False')
 
           assert t.spec.shards == 1 or t.is_tast_test, (
               'Only sharding for tast tests are currently supported in Skylab')
