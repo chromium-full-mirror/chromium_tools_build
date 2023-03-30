@@ -327,6 +327,8 @@ _AddIsolatedTestSpec(
     'mac-m1_mini_2020-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 _AddIsolatedTestSpec(
     'mac-m1_mini_2020-perf-pgo', 'mac', 'mac-arm-builder-perf-pgo', target_arch='arm')
+_AddIsolatedTestSpec(
+    'mac-m1-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
 _AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf-rel', 'linux', 'linux-builder-perf-rel')

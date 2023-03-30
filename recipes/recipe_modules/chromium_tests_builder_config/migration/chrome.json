@@ -1131,6 +1131,7 @@
   "chromium.perf:mac-arm-builder-perf": {
     "builders": [
       "chromium.perf:mac-arm-builder-perf",
+      "chromium.perf:mac-m1-pro-perf",
       "chromium.perf:mac-m1_mini_2020-perf"
     ]
   },
@@ -1190,9 +1191,17 @@
       "chromium.perf:mac-laptop_low_end-processor-perf"
     ]
   },
+  "chromium.perf:mac-m1-pro-perf": {
+    "builders": [
+      "chromium.perf:mac-arm-builder-perf",
+      "chromium.perf:mac-m1-pro-perf",
+      "chromium.perf:mac-m1_mini_2020-perf"
+    ]
+  },
   "chromium.perf:mac-m1_mini_2020-perf": {
     "builders": [
       "chromium.perf:mac-arm-builder-perf",
+      "chromium.perf:mac-m1-pro-perf",
       "chromium.perf:mac-m1_mini_2020-perf"
     ]
   },
