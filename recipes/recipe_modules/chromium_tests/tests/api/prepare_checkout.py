@@ -75,6 +75,25 @@ def GenTests(api):
   )
 
   yield api.test(
+      'pinpoint_without_new_config',
+      api.chromium.generic_build(
+          builder_group='chromium.perf.pinpoint', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='chromium.perf.pinpoint',
+              builder='fake-builder',
+          ).assemble()),
+      api.override_step_data(
+          'read test spec (chromium.perf.pinpoint.json)',
+          retcode=1,
+      ),
+      api.post_process(post_process.MustRun,
+                       'read test spec (chromium.perf.json)'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'basic_try',
       api.platform('linux', 64),
       api.chromium.try_build(
