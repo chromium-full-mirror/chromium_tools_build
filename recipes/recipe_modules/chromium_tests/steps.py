@@ -2089,14 +2089,14 @@ class SwarmingTest(Test):
       # additional shard so that we can go back and query for test overhead
       # estimations.
       # See go/nplus1shardsproposal
-      buildbucket_experiments = self.api.m.buildbucket.build.input.experiments
-      add_one_test_shard_enabled = ('chromium.add_one_test_shard'
-                                    in buildbucket_experiments and
-                                    suffix == 'with patch')
       # For now, only add a shard if the suite already runs with multiple shards
       # Although rare, some suites may be swarmed but unable to work properly
       # with more than one shard.
-      if shards > 1 and add_one_test_shard_enabled:
+      buildbucket_experiments = self.api.m.buildbucket.build.input.experiments
+      add_one_test_shard_enabled = ('chromium.add_one_test_shard'
+                                    in buildbucket_experiments and
+                                    suffix == 'with patch' and shards > 1)
+      if add_one_test_shard_enabled:
         shards += 1
 
     if tests_to_retry:
