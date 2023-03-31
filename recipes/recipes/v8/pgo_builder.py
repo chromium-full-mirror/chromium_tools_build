@@ -9,7 +9,11 @@ import re
 from typing import List, Set, Tuple
 
 from recipe_engine.post_process import (
-    Filter, DoesNotRun, DoesNotRunRE, DropExpectation, MustRun, StatusFailure,
+    Filter,
+    DoesNotRun,
+    DoesNotRunRE,
+    DropExpectation,
+    MustRun,
     StepCommandContains,
 )
 from recipe_engine.recipe_api import Property
@@ -672,7 +676,7 @@ def GenTests(api):
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -685,14 +689,16 @@ def GenTests(api):
           'collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41',
           api.chromium_swarming.summary(
               api.test_utils.canned_gtest_output(True),
-              {'shards': [{'state': 'FAILURE'}]})),
+              {'shards': [{
+                  'state': 'FAILURE'
+              }]})),
       api.post_process(
           DoesNotRun,
           'upload to gs.gsutil upload 1.1.1.4 x86',
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -716,10 +722,10 @@ def GenTests(api):
       ),
       api.post_process(
           StepCommandContains,
-          'report exceptions.gsutil upload blocked-versions.txt',
-          ['1.1.1.4 {"failures": ["https://cr-buildbucket.appspot.com/build/0"]}']
-      ),
-      api.post_process(StatusFailure),
+          'report exceptions.gsutil upload blocked-versions.txt', [
+              '1.1.1.4 {"failures": ["https://cr-buildbucket.appspot.com/build/0"]}'
+          ]),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 

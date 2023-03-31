@@ -42,7 +42,7 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.override_step_data('parse description',
                              api.json.output({_FOOTER: 'true'})),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

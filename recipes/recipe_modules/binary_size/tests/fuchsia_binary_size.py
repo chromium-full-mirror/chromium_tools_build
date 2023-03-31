@@ -55,7 +55,7 @@ def GenTests(api):
       'compile_failure',
       api.binary_size.build(),
       api.override_step_data('compile (with patch)', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -155,7 +155,7 @@ def GenTests(api):
               'links': [],
           })),
       api.post_process(post_process.StepFailure, constants.RESULTS_STEP_NAME),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -182,7 +182,7 @@ def GenTests(api):
       api.post_process(post_process.StepFailure,
                        constants.EXPECTATIONS_STEP_NAME),
       api.post_check(has_failed_expectations),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -194,7 +194,7 @@ def GenTests(api):
       api.post_process(post_process.StepFailure,
                        constants.EXPECTATIONS_STEP_NAME),
       api.post_check(has_failed_expectations),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

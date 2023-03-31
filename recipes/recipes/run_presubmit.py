@@ -347,7 +347,7 @@ def GenTests(api):
               'warnings': []
           }),
           times_out_after=60 * 20),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReason,
                        'Timeout occurred during presubmit step.'),
       api.post_process(post_process.DropExpectation),
@@ -372,7 +372,7 @@ def GenTests(api):
               'warnings': []
           }),
           times_out_after=60 * 20),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent('''
@@ -523,7 +523,7 @@ def GenTests(api):
               }]
           }),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent(r'''
@@ -569,7 +569,7 @@ def GenTests(api):
               'warnings': []
           }),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent(r'''
@@ -627,7 +627,7 @@ def GenTests(api):
               'warnings': []
           }),
           retcode=2),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent('''
@@ -655,7 +655,7 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src'),
       api.properties(repo_name='chromium'),
       api.step_data('presubmit', api.json.output(None, retcode=1)),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.ResultReason, bug_msg),
       api.post_process(post_process.DropExpectation),
   )
@@ -667,7 +667,7 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src'),
       api.properties(repo_name='chromium'),
       api.step_data('presubmit', api.json.output(None, retcode=2)),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.ResultReason, bug_msg),
       api.post_process(post_process.DropExpectation),
   )
@@ -691,7 +691,7 @@ def GenTests(api):
               'warnings': [],
           }),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent(r'''

@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (Filter, DoesNotRun, DropExpectation,
-                                        MustRun, StatusException, StatusFailure,
-                                        StatusSuccess, StepCommandContains,
-                                        StepTextContains)
+                                        MustRun, StatusSuccess,
+                                        StepCommandContains, StepTextContains)
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
@@ -68,7 +67,7 @@ def GenTests(api):
           builder='fake-builder',
       ),
       api.post_check(MustRun, 'not a tryjob'),
-      api.post_check(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -90,7 +89,7 @@ def GenTests(api):
       api.post_check(MustRun, 'not a tryjob'),
       api.post_check(StepTextContains, 'not a tryjob',
                      ["run 'led edit-cr-cl <source CL URL>'"]),
-      api.post_check(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -422,7 +421,7 @@ def GenTests(api):
       api.override_step_data(
           'git diff to analyze patch',
           api.raw_io.stream_output('foo.cc\ntesting/buildbot/bar.json')),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -736,7 +735,7 @@ def GenTests(api):
           api.json.output(
               {'invalid_targets': ['invalid target', 'another one']})),
       api.post_process(Filter('analyze', '$result')),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

@@ -137,7 +137,7 @@ def GenTests(api):
           failing_sample=UnexpectedTestResult('some-test'),
           reproducing_step_data=api.json.loads(
               api.flaky_reproducer.get_test_data('reproducing_step.json'))),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_check(post_process.ResultReason,
                      'Cannot retrieve invocation for task some-task-id.'),
       api.post_process(post_process.DropExpectation),
@@ -156,7 +156,7 @@ def GenTests(api):
                   resultdb_invocation,
           },
           step_name='verify_reproducing_step.find_related_builders.rdb query'),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_check(post_process.ResultReason,
                      'Cannot find TestResult for test Not.Exists.Test.'),
       api.post_process(post_process.DropExpectation),

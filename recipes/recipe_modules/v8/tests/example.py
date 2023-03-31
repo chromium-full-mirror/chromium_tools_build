@@ -47,8 +47,7 @@ def GenTests(api):
          api.post_process(post_process.DropExpectation))
 
   yield (api.v8.test('client.v8', 'V8 Foobar', 'compile_failure') +
-         api.step_data('compile', retcode=1) +
-         api.post_process(post_process.StatusFailure) +
+         api.step_data('compile', retcode=1) + api.expect_status('FAILURE') +
          api.post_process(post_process.DropExpectation))
 
 

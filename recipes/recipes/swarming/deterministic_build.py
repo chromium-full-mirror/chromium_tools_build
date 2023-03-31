@@ -318,7 +318,7 @@ def GenTests(api):
           64),
       api.properties(configuration='Release'),
       api.step_data('First build', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -332,6 +332,6 @@ def GenTests(api):
           64),
       api.properties(configuration='Release'),
       api.step_data('Second build', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

@@ -128,6 +128,5 @@ def GenTests(api):
       api.post_process(
           post_process.SummaryMarkdown, "Uncaught Exception: "
           "ValueError('No TaskSlice found in the TaskRequest.')"),
-      api.post_process(post_process.StatusException),
       api.post_process(post_process.DropExpectation),
   )

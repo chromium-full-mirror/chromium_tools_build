@@ -200,7 +200,7 @@ def GenTests(api):
       ),
       api.post_check(post_process.MustRun,
                      'invalid children for migration:foo-builder'),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -239,6 +239,6 @@ def GenTests(api):
           post_process.MustRun,
           'invalid mirroring configuration for tryserver.migration:try-builder'
       ),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

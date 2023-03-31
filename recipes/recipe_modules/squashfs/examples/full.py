@@ -41,9 +41,9 @@ def GenTests(api):
                  api.post_process(post_process.DropExpectation))
 
   yield api.test('fail_on_windows', api.platform('win', 64),
-                 api.post_process(post_process.StatusFailure),
+                 api.expect_status('FAILURE'),
                  api.post_process(post_process.DropExpectation))
 
   yield api.test('binary_not_found', api.properties(binary_not_found=True,),
-                 api.post_process(post_process.StatusFailure),
+                 api.expect_status('FAILURE'),
                  api.post_process(post_process.DropExpectation))

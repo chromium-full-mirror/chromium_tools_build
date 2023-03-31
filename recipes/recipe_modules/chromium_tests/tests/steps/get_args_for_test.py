@@ -177,7 +177,7 @@ def GenTests(api):
       api.properties(single_spec={
           'conditional_args': [{}],
       }),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_check(lambda check, steps: \
           check("Conditional has no 'variable' key"
                 in steps['Invalid conditional'].step_text)),
@@ -195,7 +195,7 @@ def GenTests(api):
               'variable': 'foobar',
           }],
       }),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_check(lambda check, steps: \
           check("Unknown variable 'foobar'"
                 in steps['Invalid conditional'].step_text)),

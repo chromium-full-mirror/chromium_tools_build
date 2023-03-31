@@ -122,11 +122,11 @@ def GenTests(api):
           post_process.StepFailure,
           'Generate commit size analysis files',
       ),
-      api.post_check(lambda check, steps: check('gsutil Uploading zip file'
-                                                not in steps)),
+      api.post_check(
+          lambda check, steps: check('gsutil Uploading zip file' not in steps)),
       api.post_check(lambda check, steps: check('gsutil Uploading LATEST file'
                                                 not in steps)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -137,10 +137,10 @@ def GenTests(api):
           'compile',
           retcode=1,
       ),
-      api.post_check(lambda check, steps: check('gsutil Uploading zip file'
-                                                not in steps)),
+      api.post_check(
+          lambda check, steps: check('gsutil Uploading zip file' not in steps)),
       api.post_check(lambda check, steps: check('gsutil Uploading LATEST file'
                                                 not in steps)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

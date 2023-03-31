@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        StatusFailure, SummaryMarkdown)
+                                        SummaryMarkdown)
 from RECIPE_MODULES.build.chromium_tests import steps
 
 DEPS = [
@@ -58,7 +58,7 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'test_pre_run (2)'),
       api.post_process(SummaryMarkdown,
                        '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -82,6 +82,6 @@ def GenTests(api):
       api.post_process(MustRun, 'test_pre_run (2)'),
       api.post_process(SummaryMarkdown,
                        '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )

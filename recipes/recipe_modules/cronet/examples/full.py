@@ -97,6 +97,6 @@ def GenTests(api):
           builder='local_test',
       ),
       api.step_data('compile', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

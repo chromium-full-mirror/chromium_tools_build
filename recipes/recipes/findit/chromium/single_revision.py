@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        StepCommandContains, StatusFailure,
-                                        StatusSuccess)
+                                        StepCommandContains, StatusSuccess)
 
 from PB.recipes.build.findit.chromium.single_revision import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -296,7 +295,7 @@ def GenTests(api):
       'compile_failure',
       _common(api),
       api.step_data('compile', retcode=1),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 

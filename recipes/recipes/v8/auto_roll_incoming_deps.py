@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DoesNotRun, DoesNotRunRE,
-                                        DropExpectation, MustRun, StatusFailure)
+                                        DropExpectation, MustRun)
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, Dict, Single, List
 
@@ -927,6 +927,6 @@ remote:"""
       additional_v8_deps='\nv8/mock-changed-location: foo/changed-location@1',
       additional_cr_deps='\nsrc/mock-changed-location: bar/changed-location@2',
   ) + [
-    api.post_process(StatusFailure),
-    api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
+      api.post_process(DropExpectation),
   ])

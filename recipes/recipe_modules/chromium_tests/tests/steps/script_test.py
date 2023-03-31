@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DropExpectation, LogContains, MustRun,
-                                        StatusFailure, StatusSuccess,
-                                        StepCommandContains, StepTextEquals)
+                                        StatusSuccess, StepCommandContains,
+                                        StepTextEquals)
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
@@ -97,7 +97,7 @@ def GenTests(api):
       api.override_step_data('script_test', api.json.output({})),
       api.post_process(MustRun,
                        'script_test with suffix  had an invalid result'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 

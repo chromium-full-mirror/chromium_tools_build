@@ -302,7 +302,7 @@ def GenTests(api):
       ),
       api.post_process(post_process.DoesNotRun,
                        'trigger compilator (with patch)'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -325,7 +325,7 @@ def GenTests(api):
           'parse description',
           api.json.output(
               {tryserver.constants.CQ_DEPEND_FOOTER: 'chromium:123456'})),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReasonRE,
                        r'Commit message footer Cq-Depend is not supported.*'),
       api.post_process(post_process.DropExpectation),
@@ -378,7 +378,7 @@ def GenTests(api):
               '$build/chromium_orchestrator':
                   InputProperties(compilator_watcher_git_revision='e841fc'),
           }),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -402,7 +402,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           sub_build_status=common_pb.CANCELED, empty_props=True),
       api.post_process(post_process.ResultReasonRE, BUILD_CANCELED_SUMMARY),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -426,7 +426,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           sub_build_status=common_pb.INFRA_FAILURE, empty_props=True),
       api.post_process(post_process.DoesNotRun, 'fetch compilator build proto'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -455,7 +455,7 @@ def GenTests(api):
       ),
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -662,7 +662,7 @@ def GenTests(api):
               },
           },
       ),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           'angle_unittests_no_swarm is an isolated test but is not swarmed.',
@@ -807,7 +807,7 @@ def GenTests(api):
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
       api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -884,7 +884,7 @@ def GenTests(api):
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -926,7 +926,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -972,7 +972,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1017,7 +1017,7 @@ def GenTests(api):
       api.post_process(post_process.ResultReasonRE,
                        '.*headless_python_unittests.*'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1174,7 +1174,7 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in 2 tests'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1221,7 +1221,7 @@ def GenTests(api):
                        'trigger compilator (without patch)'),
       api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1258,7 +1258,7 @@ def GenTests(api):
                        'trigger compilator (without patch)'),
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1288,7 +1288,7 @@ def GenTests(api):
                        'Step compile (with patch) failed.'),
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1338,7 +1338,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1368,7 +1368,7 @@ def GenTests(api):
                        'Timeout waiting for compilator build'),
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1391,7 +1391,7 @@ def GenTests(api):
           sub_build_status=common_pb.CANCELED,
           empty_props=True,
           sub_build_summary='Canceled'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1429,7 +1429,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Tests statistics'),
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1454,7 +1454,7 @@ def GenTests(api):
           is_swarming_phase=False,
           sub_build_summary='Canceled'),
       api.chromium_orchestrator.override_compilator_steps(),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1484,7 +1484,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1576,7 +1576,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Tests statistics'),
       api.post_process(post_process.ResultReasonRE,
                        '.*caused by RTS skipped.*'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1615,7 +1615,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Tests statistics'),
       api.post_process(post_process.ResultReasonRE,
                        '.*caused by RTS skipped.*'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -2010,7 +2010,7 @@ def GenTests(api):
                                  ))),
       api.post_process(post_process.MustRun, 'calculate flake rates'),
       api.post_process(post_process.ResultReasonRE, '.*browser_tests.*'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -2066,7 +2066,7 @@ def GenTests(api):
       api.post_process(post_process.ResultReasonRE, '.*browser_tests.*'),
       api.post_process(post_process.ResultReasonRE,
                        '.*headless_python_unittests.*'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

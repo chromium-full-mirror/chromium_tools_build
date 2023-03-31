@@ -5,8 +5,8 @@
 """Recipe to test v8/node.js integration."""
 
 from recipe_engine.recipe_api import Property
-from recipe_engine.post_process import (Filter, ResultReasonRE, StatusFailure,
-                                        StatusSuccess, DropExpectation)
+from recipe_engine.post_process import (Filter, ResultReasonRE, StatusSuccess,
+                                        DropExpectation)
 
 from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
                                                        builds_service_pb2)
@@ -262,35 +262,28 @@ def GenTests(api):
   )
 
   # Test CI builder on V8 group with consistent test failures.
-  yield (
-      test(
-          'V8 Foobar',
-          platform='linux',
-          suffix='_test_failure',
-          triggers=['v8_foobar_perf'],
-          v8_tot=True,
-      ) +
-      api.step_data('test default', retcode=1) +
-      api.step_data('test default (retry)', retcode=1) +
-      api.post_process(StatusFailure) +
-      api.post_process(Filter('test default', 'test default (retry)'))
-  )
+  yield (test(
+      'V8 Foobar',
+      platform='linux',
+      suffix='_test_failure',
+      triggers=['v8_foobar_perf'],
+      v8_tot=True,
+  ) + api.step_data('test default', retcode=1) +
+         api.step_data('test default (retry)', retcode=1) +
+         api.expect_status('FAILURE') +
+         api.post_process(Filter('test default', 'test default (retry)')))
 
   # Test CI builder on V8 group with flakes.
-  yield (
-      test(
-          'V8 Foobar',
-          platform='linux',
-          suffix='_flake',
-          triggers=['v8_foobar_perf'],
-          v8_tot=True,
-      ) +
-      api.step_data('test default', retcode=1) +
-      api.post_process(StatusFailure) +
-      api.post_process(ResultReasonRE, 'Flakes in build') +
-      api.post_process(Filter(
-          'test default', 'test default (retry)', 'test default (flakes)'))
-  )
+  yield (test(
+      'V8 Foobar',
+      platform='linux',
+      suffix='_flake',
+      triggers=['v8_foobar_perf'],
+      v8_tot=True,
+  ) + api.step_data('test default', retcode=1) + api.expect_status('FAILURE') +
+         api.post_process(ResultReasonRE, 'Flakes in build') + api.post_process(
+             Filter('test default', 'test default (retry)',
+                    'test default (flakes)')))
 
   # Test that flakes are ignored on trybot.
   yield (
@@ -306,16 +299,12 @@ def GenTests(api):
       api.post_process(DropExpectation)
   )
 
-  yield (
-    test(
+  yield (test(
       'compile_failure',
       platform='linux',
       is_trybot=True,
-    ) +
-    api.step_data('build.compile', retcode=1) +
-    api.post_process(StatusFailure) +
-    api.post_process(DropExpectation)
-  )
+  ) + api.step_data('build.compile', retcode=1) + api.expect_status('FAILURE') +
+         api.post_process(DropExpectation))
 
   yield (
     test(

@@ -124,10 +124,7 @@ def GenTests(api):
   yield generate_builder('tryserver.libyuv', 'linux', revision=None,
                          suffix='_forced')
 
-  yield (
-    generate_builder('tryserver.libyuv', 'linux', revision=None,
-                         suffix='_compile_failed') +
-    api.step_data('compile', retcode=1) +
-    api.post_process(post_process.StatusFailure) +
-    api.post_process(post_process.DropExpectation)
-  )
+  yield (generate_builder(
+      'tryserver.libyuv', 'linux', revision=None, suffix='_compile_failed') +
+         api.step_data('compile', retcode=1) + api.expect_status('FAILURE') +
+         api.post_process(post_process.DropExpectation))

@@ -40,7 +40,7 @@ def RunSteps(api, config, task_id, build_id, test_name, test_id,
 from google.protobuf import timestamp_pb2, struct_pb2
 
 from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StatusFailure, ResultReason)
+                                        ResultReason)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
     common as common_pb2,  # go/pyformat-break
     invocation as invocation_pb2,  #
@@ -311,7 +311,7 @@ def GenTests(api):
           task_id='54321fffffabc123', test_name='MockUnitTests.FailTest'),
       api.step_data('get_test_result_summary.swarming collect',
                     api.swarming.collect([])),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(ResultReason,
                        'Cannot find TaskResult for task 54321fffffabc123.'),
       api.post_process(DropExpectation),
@@ -323,7 +323,7 @@ def GenTests(api):
           task_id='54321fffffabc123', test_name='MockUnitTests.FailTest'),
       api.step_data('get_test_result_summary.download swarming outputs',
                     api.raw_io.output_dir({})),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(ResultReason, 'Not supported task result.'),
       api.post_process(DropExpectation),
   )
@@ -396,7 +396,7 @@ def GenTests(api):
                       'gtest_task_request.json')))),
       api.step_data('collect strategy results',
                     api.swarming.collect(failed_swarming_results)),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           ResultReason, '''Error while running:
 * flaky reproducer strategy batch for MockUnitTests.FailTest

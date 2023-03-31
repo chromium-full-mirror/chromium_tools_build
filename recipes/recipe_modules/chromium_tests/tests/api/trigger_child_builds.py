@@ -84,7 +84,7 @@ def GenTests(api):
       builder_with_tester_to_trigger(),
       api.properties(set_output_commit=False),
       api.post_check(post_process.MustRun, 'no commit for trigger'),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

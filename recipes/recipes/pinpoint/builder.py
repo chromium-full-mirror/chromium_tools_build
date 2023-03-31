@@ -150,7 +150,7 @@ def GenTests(api):
           builder_group='tryserver.chromium.perf',
           builder='Nonexistent Compile Perf'),
       api.post_check(post_process.MustRun, 'no pinpoint mapping'),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -159,6 +159,6 @@ def GenTests(api):
       api.chromium.generic_build(**builder),
       api.chromium_tests.read_targets_spec(*targets_spec),
       api.step_data('compile', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

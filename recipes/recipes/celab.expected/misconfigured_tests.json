@@ -298,11 +298,11 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 69, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 68, in RunSteps",
       "    _RunStepsCelab(api)",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 94, in _RunStepsCelab",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 93, in _RunStepsCelab",
       "    _RunTests(",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 285, in _RunTests",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 284, in _RunTests",
       "    raise ValueError('pool_name and pool_size must be defined with `tests`.')",
       "ValueError('pool_name and pool_size must be defined with `tests`.')"
     ]

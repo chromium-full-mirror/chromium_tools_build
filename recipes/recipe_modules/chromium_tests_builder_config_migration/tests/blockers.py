@@ -115,7 +115,7 @@ def GenTests(api):
           }),
           ctbc.TryDatabase.create({}),
       ),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_check(
           post_process.ResultReasonRE,
           "The grouping for 'fake-group:non-existent-builder' cannot be migrated"

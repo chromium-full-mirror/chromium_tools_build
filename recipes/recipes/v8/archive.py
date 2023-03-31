@@ -9,8 +9,8 @@ Recipe for archiving officially tagged v8 builds.
 import re
 
 from recipe_engine.config import Single
-from recipe_engine.post_process import (
-    DoesNotRun, DropExpectation, Filter, MustRun, StatusFailure)
+from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
+                                        MustRun)
 from recipe_engine.recipe_api import Property
 
 DEPS = [
@@ -467,7 +467,7 @@ def GenTests(api):
           'sync.bot_update', '--revision', 'v8@refs/branch-heads/' +
           '3.4:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
       api.step_data('build.compile', retcode=1),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -490,7 +490,7 @@ def GenTests(api):
           'sync.bot_update', '--revision', 'v8@refs/branch-heads/' +
           '3.4:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
       api.step_data('build.compile', retcode=1),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -513,7 +513,7 @@ def GenTests(api):
           'sync.bot_update', '--revision', 'v8@refs/branch-heads/' +
           '3.4:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
       api.step_data('build (libs).compile', retcode=1),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -533,7 +533,7 @@ def GenTests(api):
       api.override_step_data('sync.git describe',
                              api.raw_io.stream_output_text('3.4.3')),
       api.step_data('build (ref).compile', retcode=1),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 

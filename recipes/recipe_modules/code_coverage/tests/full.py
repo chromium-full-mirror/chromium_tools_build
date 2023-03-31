@@ -310,7 +310,7 @@ def GenTests(api):
       api.post_check(lambda check, steps: check(steps[
           'process javascript coverage'].output_properties[
               'process_coverage_data_failure'] == True)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -538,7 +538,7 @@ def GenTests(api):
           'for overall test coverage.gsutil '
           'upload coverage metadata'
           ''].output_properties['process_coverage_data_failure'] == True)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -764,7 +764,7 @@ def GenTests(api):
       api.post_check(lambda check, steps: check(steps[
           'process java coverage (overall).Generate Java coverage metadata'
       ].output_properties['process_coverage_data_failure'] == True)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1079,7 +1079,7 @@ def GenTests(api):
           post_process.MustRun,
           'Exception when validating test types to process: Unsupported test '
           'type unsupportedtest.'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

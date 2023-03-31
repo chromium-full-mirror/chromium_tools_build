@@ -179,6 +179,6 @@ def GenTests(api):
                 **builder).assemble()),
         api.reclient.properties(),
         api.step_data(step, retcode=1),
-        api.post_process(post_process.StatusFailure),
+        api.expect_status('FAILURE'),
         api.post_process(post_process.DropExpectation),
     )

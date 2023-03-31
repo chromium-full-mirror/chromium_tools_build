@@ -17,9 +17,8 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
 
-from recipe_engine.post_process import (
-    DoesNotRun, DropExpectation, MustRun, ResultReason, StatusException,
-    StatusFailure, StatusSuccess)
+from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
+                                        ResultReason, StatusSuccess)
 from recipe_engine.recipe_api import Property
 
 from google.protobuf import json_format
@@ -182,7 +181,7 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'Check'),
       api.post_process(DoesNotRun, 'Test262'),
       api.post_process(ResultReason, 'Compile failed'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -192,14 +191,14 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'Check'),
       api.post_process(DoesNotRun, 'Test262'),
       api.post_process(ResultReason, 'Timeout'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
   yield test(
       'no_subbuild',
       api.post_process(ResultReason, 'sub_build missing from step'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -208,7 +207,7 @@ def GenTests(api):
       subbuild_data(output_properties),
       api.runtime.global_shutdown_on_step('Check'),
       api.post_process(ResultReason, BUILD_CANCELED_SUMMARY),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -217,7 +216,7 @@ def GenTests(api):
       api.runtime.global_shutdown_on_step('compilator steps'),
       subbuild_data({}, '', common_pb.CANCELED),
       api.post_process(ResultReason, BUILD_CANCELED_SUMMARY),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -225,17 +224,19 @@ def GenTests(api):
       'subbuild_canceled_before_parent',
       subbuild_data({}, '', common_pb.CANCELED),
       api.post_process(ResultReason, BUILD_WRONGLY_CANCELED_SUMMARY),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
   yield test(
       'no_tests',
-      subbuild_data({'compilator_properties': {'parent_test_spec': {}}}),
+      subbuild_data({'compilator_properties': {
+          'parent_test_spec': {}
+      }}),
       api.post_process(DoesNotRun, 'Check'),
       api.post_process(DoesNotRun, 'Test262'),
       api.post_process(ResultReason, 'No tests specified'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 

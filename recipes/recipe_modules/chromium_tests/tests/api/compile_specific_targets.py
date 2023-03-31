@@ -173,7 +173,7 @@ def GenTests(api):
           ).assemble()),
       api.properties(swarming_gtest=True),
       api.step_data('compile', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.SummaryMarkdownRE,
           '#### Step _compile_ failed. Error logs are shown below:'),
@@ -191,7 +191,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.step_data('compile (with patch)', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.SummaryMarkdownRE,
           r'#### Step _compile \(with patch\)_ failed\. ' +

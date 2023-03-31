@@ -763,7 +763,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(fail_compile=True),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReason, 'Compile step failed.'),
       api.post_process(post_process.DropExpectation),
   )
@@ -984,7 +984,7 @@ def GenTests(api):
           'blink_web_tests',
           api.test_utils.canned_isolated_script_output(
               passing=False, isolated_script_passing=False)),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

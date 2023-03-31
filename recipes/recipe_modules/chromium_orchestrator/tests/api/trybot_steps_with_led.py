@@ -266,7 +266,7 @@ def GenTests(api):
                        'trigger led compilator build (without patch)'),
       api.post_process(post_process.DoesNotRun,
                        'collect led compilator build (without patch)'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -287,7 +287,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'downloading cas digest all_test_binaries'),
       api.post_process(post_process.DoesNotRun, 'download src-side deps'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

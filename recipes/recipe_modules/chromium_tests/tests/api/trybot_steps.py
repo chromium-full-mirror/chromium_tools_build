@@ -393,7 +393,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
       # A test that exits with FAILURE in 'with patch' then NOTRUN in
       # 'without patch' should fail the build.
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -462,7 +462,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -503,7 +503,7 @@ def GenTests(api):
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests (without patch)'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -537,7 +537,7 @@ def GenTests(api):
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests (without patch)'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -687,7 +687,7 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in 2 tests'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -792,7 +792,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'base_unittests3', failing_tests=['Test.One']))),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReasonRE,
                        r'3 Test Suite\(s\) failed.*'),
       api.post_process(post_process.DropExpectation),
@@ -1006,7 +1006,7 @@ def GenTests(api):
           'parse description',
           api.json.output(
               {tryserver.constants.CQ_DEPEND_FOOTER: 'chromium:123456'})),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReasonRE,
                        r'Commit message footer Cq-Depend is not supported.*'),
       api.post_process(post_process.DropExpectation),
@@ -1265,7 +1265,7 @@ def GenTests(api):
               'test new tests for flakiness.'
               'collect tasks (check flakiness shard #0).'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results')),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1329,7 +1329,7 @@ def GenTests(api):
            '(check flakiness shard #0) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
               api.json.output({}), internal_failure=True)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -80,7 +80,7 @@ def GenTests(api):
       'infra_failure',
       api.chromium.generic_build(builder_group='test_group'),
       api.override_step_data('compile', retcode=2),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -89,7 +89,7 @@ def GenTests(api):
       api.chromium.generic_build(builder_group='test_group'),
       api.properties(use_goma=False),
       api.override_step_data('compile', retcode=2),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -201,7 +201,7 @@ def GenTests(api):
           """).strip(),
               name='failure_summary'),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent("""
@@ -239,7 +239,7 @@ def GenTests(api):
           """),
               name='failure_summary'),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent("""

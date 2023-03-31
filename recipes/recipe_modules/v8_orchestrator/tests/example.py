@@ -9,8 +9,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
 from recipe_engine.post_process import (DropExpectation, Filter, MustRun,
-                                        ResultReason, StatusException,
-                                        StatusFailure, StatusSuccess,
+                                        ResultReason, StatusSuccess,
                                         SummaryMarkdown)
 from recipe_engine.recipe_api import Property
 from google.protobuf import json_format
@@ -80,7 +79,7 @@ def GenTests(api):
       api.buildbucket.ci_build(builder='V8 Foobar'),
       api.properties(revision="abcd"),
       subbuild_data('Compile failed', common_pb.FAILURE),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(ResultReason, 'Compile failed'),
       api.post_process(DropExpectation),
   )
@@ -89,7 +88,7 @@ def GenTests(api):
       'no subbuild',
       api.buildbucket.ci_build(builder='V8 Foobar'),
       api.properties(revision="abcd"),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(ResultReason, 'sub_build missing from step'),
       api.post_process(DropExpectation),
   )

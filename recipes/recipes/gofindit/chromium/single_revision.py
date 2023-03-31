@@ -6,8 +6,7 @@ from PB.recipes.build.gofindit.chromium.single_revision import InputProperties
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        StepCommandContains, StatusFailure,
-                                        StatusSuccess)
+                                        StepCommandContains, StatusSuccess)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 

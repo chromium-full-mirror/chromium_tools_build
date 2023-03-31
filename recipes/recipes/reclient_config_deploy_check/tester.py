@@ -118,7 +118,7 @@ def GenTests(api):
           'rbe-project-1.fetch configs',
           'rbe-project-1.verify',
       ),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -134,6 +134,6 @@ def GenTests(api):
       api.properties(mock_cfgs=False),
       api.step_data('rbe-project-1.fetch configs', retcode=1),
       api.post_check(post_process.StepException, 'rbe-project-1'),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

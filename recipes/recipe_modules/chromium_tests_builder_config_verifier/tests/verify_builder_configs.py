@@ -168,7 +168,7 @@ def GenTests(api):
           f'verify {_PROPS_DIR}/bucket/no-builder-group/properties.json',
           status='FAILURE',
           step_text="builder_group property is not set, can't verify"),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_check(build_failure_result,
                      f'{_PROPS_DIR}/bucket/no-builder-group/properties.json'),
       api.post_process(post_process.DropExpectation),

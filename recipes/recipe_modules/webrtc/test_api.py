@@ -81,7 +81,7 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
 
     if fail_compile:
       test += self.step_data('compile', retcode=1)
-      test += self.post_process(post_process.StatusFailure)
+      test += self.expect_status('FAILURE')
       test += self.post_process(post_process.DropExpectation)
 
     if failing_test:

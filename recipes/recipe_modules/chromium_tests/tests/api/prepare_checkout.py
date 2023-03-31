@@ -230,7 +230,6 @@ def GenTests(api):
           'fake-builder': 'invalid-spec',
       }),
       api.expect_exception('AttributeError'),
-      api.post_process(post_process.StatusException),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -260,7 +259,6 @@ def GenTests(api):
           'fake-builder-with-bad-spec': 'invalid-spec',
       }),
       api.expect_exception('AttributeError'),
-      api.post_process(post_process.StatusException),
       api.post_process(post_process.DropExpectation),
   )
 

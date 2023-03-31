@@ -420,7 +420,7 @@ def GenTests(api):
                 'got_revision': TEST_HASH_MAIN,
             },
             **{'$build/archive': input_properties}),
-        api.post_process(post_process.StatusFailure),
+        api.expect_status('FAILURE'),
         api.post_process(post_process.DropExpectation),
     )
 
@@ -432,7 +432,7 @@ def GenTests(api):
                 'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
             },
             **{'$build/archive': input_properties}),
-        api.post_process(post_process.StatusFailure),
+        api.expect_status('FAILURE'),
         api.post_process(post_process.DropExpectation),
     )
 
@@ -532,7 +532,7 @@ def GenTests(api):
           **{'$build/archive': input_properties}),
       api.post_process(post_process.StepFailure,
                        'Generic Archiving Steps.Validate files'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -553,7 +553,7 @@ def GenTests(api):
           **{'$build/archive': input_properties}),
       api.post_process(post_process.StepFailure,
                        'Generic Archiving Steps.Validate directories'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -576,7 +576,7 @@ def GenTests(api):
               'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
           },
           **{'$build/archive': input_properties}),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -708,7 +708,7 @@ def GenTests(api):
               'chrome_version': '1.2.3.4',
           },
           **{'$build/archive': input_properties}),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -802,7 +802,7 @@ def GenTests(api):
           gcs_archive=True,
           update_properties={},
           **{'$build/archive': input_properties}),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -823,7 +823,7 @@ def GenTests(api):
             gcs_archive=True,
             update_properties={},
             **{'$build/archive': input_properties}),
-        api.post_process(post_process.StatusFailure),
+        api.expect_status('FAILURE'),
         api.post_process(post_process.DropExpectation),
     )
 

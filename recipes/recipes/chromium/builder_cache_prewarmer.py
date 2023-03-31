@@ -200,6 +200,6 @@ def GenTests(api):
       api.override_step_data('compile', retcode=1),
       api.post_process(post_process.DoesNotRun,
                        'write {}'.format(warmed_file_name)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

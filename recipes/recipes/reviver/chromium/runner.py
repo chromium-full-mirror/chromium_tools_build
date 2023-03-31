@@ -210,7 +210,7 @@ def GenTests(api):
               },
           }),
       api.step_data('compile', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -286,6 +286,6 @@ def GenTests(api):
               },
           }),
       api.override_step_data('fake-gtest', retcode=1),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

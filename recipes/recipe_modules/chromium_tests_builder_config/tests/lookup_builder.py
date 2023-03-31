@@ -133,7 +133,7 @@ def GenTests(api):
           builder_group='fake-group2', builder='fake-builder2'),
       api.post_process(post_process.MustRun,
                        "No configuration present for group 'fake-group2'"),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -144,7 +144,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        ('No configuration present for builder '
                         "'fake-builder2' in group 'fake-group'")),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -316,6 +316,6 @@ def GenTests(api):
               builder_config=properties_pb.BuilderConfig())),
       api.post_process(post_process.MustRun,
                        'invalid chromium_tests_builder_config properties'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

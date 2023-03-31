@@ -19,8 +19,7 @@ import json
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 
-from recipe_engine.post_process import (
-    DropExpectation, ResultReason, StatusException, StatusFailure)
+from recipe_engine.post_process import DropExpectation, ResultReason
 from recipe_engine.recipe_api import Property
 
 DEPS = [
@@ -201,17 +200,10 @@ def GenTests(api):
       api.post_process(DropExpectation)
   )
 
-  yield (
-      test('compile_failure') +
-      api.step_data('build.compile', retcode=1) +
-      api.post_process(StatusFailure) +
-      api.post_process(DropExpectation)
-  )
+  yield (test('compile_failure') + api.step_data('build.compile', retcode=1) +
+         api.expect_status('FAILURE') + api.post_process(DropExpectation))
 
-  yield (
-      test('cancellation') +
-      api.runtime.global_shutdown_on_step('build.compile') +
-      api.post_process(ResultReason, CANCELLATION_MESSAGE) +
-      api.post_process(StatusException) +
-      api.post_process(DropExpectation)
-  )
+  yield (test('cancellation') +
+         api.runtime.global_shutdown_on_step('build.compile') +
+         api.post_process(ResultReason, CANCELLATION_MESSAGE) +
+         api.expect_status('INFRA_FAILURE') + api.post_process(DropExpectation))

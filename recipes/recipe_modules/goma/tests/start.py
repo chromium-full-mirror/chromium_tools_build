@@ -51,7 +51,7 @@ def GenTests(api):
       api.step_data('preprocess_for_goma.start_goma', retcode=1),
       api.step_data(
           'preprocess_for_goma.upload_goma_start_failed_logs', retcode=1),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_check(
           post_process.ResultReason,
           "Infra Failure: Step('preprocess_for_goma.start_goma') (retcode: 1)"),

@@ -543,7 +543,7 @@ def GenTests(api):
           builder: step_failure for builder in _CHILD_BUILDERS
       },
       tricium_data={builder: [comment0] for builder in _CHILD_BUILDERS}) +
-         api.post_process(post_process.StatusFailure) +
+         api.expect_status('FAILURE') +
          api.post_process(post_process.StepWarning, 'schedule tidy builds') +
          api.post_process(
              _tricium_has_comment,

@@ -95,12 +95,10 @@ def GenTests(api):
       api.properties(target_platform='mac'),
       api.step_data(
           'generate_build_files',
-          api.json.output({
-              'output': 'ERROR at line 5: missing )'
-          },
+          api.json.output({'output': 'ERROR at line 5: missing )'},
                           name="failure_summary"),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent('''
@@ -119,12 +117,10 @@ def GenTests(api):
       api.properties(target_platform='win'),
       api.step_data(
           'generate_build_files',
-          api.json.output({
-              'output': 'ERROR at line 5: missing )'
-          },
+          api.json.output({'output': 'ERROR at line 5: missing )'},
                           name="failure_summary"),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent('''
@@ -143,9 +139,10 @@ def GenTests(api):
       api.chromium.change_line_limit(150),
       api.step_data(
           'generate_build_files',
-          api.json.output({
-              'output':
-                  textwrap.dedent("""
+          api.json.output(
+              {
+                  'output':
+                      textwrap.dedent("""
                 ERROR at //view_unittest.cc:38:11: Can't include header here.
                 #include "ui/compositor_extra/shadow.h"
                 :          ^---------------------------
@@ -156,10 +153,10 @@ def GenTests(api):
                 ERROR at //view_unittest.cc:38:14: Can't include header here.
                 #include "ui/compositor_extra/shadow4.h"
               """).strip()
-          },
-                          name="failure_summary"),
+              },
+              name="failure_summary"),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent("""

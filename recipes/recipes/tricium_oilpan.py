@@ -174,7 +174,7 @@ def GenTests(api):
          api.override_step_data('gerrit changes', api.json.output([])) +
          api.post_process(post_process.DoesNotRun,
                           'oilpan_analyzer.untraced_member') +
-         api.post_check(post_process.StatusException) +
+         api.expect_status('INFRA_FAILURE') +
          api.post_process(post_process.DropExpectation))
 
   yield (test_with_patch(

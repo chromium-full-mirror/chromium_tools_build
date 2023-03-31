@@ -217,7 +217,7 @@ def GenTests(api):
           'Linux (with patch)',
           retcode=1,
       ),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(
           post_process.SummaryMarkdown, "Infra Failure: "
           "Step('test_pre_run (with patch).[trigger] base_unittests "
@@ -228,7 +228,7 @@ def GenTests(api):
   yield api.test(
       'fail_to_trigger',
       arbitrary_tester(),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

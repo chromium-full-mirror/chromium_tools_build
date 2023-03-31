@@ -751,7 +751,7 @@ def GenTests(api):
       api.runtime.global_shutdown_on_step('isolate tests (with patch)'),
       api.post_process(post_process.ResultReasonRE,
                        '.*causing this build to be canceled.*'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -838,7 +838,7 @@ def GenTests(api):
       ]),
       api.post_process(post_process.DoesNotRun, 'isolate tests (with patch)'),
       api.post_process(post_process.DoesNotRun, 'swarming trigger properties'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -863,7 +863,7 @@ def GenTests(api):
           'builder \'fake-builder\' on group \'fake-group\''
       ]),
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -987,6 +987,6 @@ def GenTests(api):
       api.post_process(post_process.ResultReasonRE,
                        '.*check_static_initializers.*'),
       api.post_process(post_process.MustRun, 'calculate flake rates'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

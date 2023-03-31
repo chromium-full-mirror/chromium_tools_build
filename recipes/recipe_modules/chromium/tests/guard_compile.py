@@ -23,18 +23,18 @@ def GenTests(api):
                  api.post_check(post_process.StatusSuccess),
                  api.post_process(post_process.DropExpectation))
 
-  yield api.test('compile-failure', api.override_step_data(
-      'compile', retcode=1),
+  yield api.test('compile-failure',
+                 api.override_step_data('compile', retcode=1),
                  api.post_check(post_process.MustRun, 'create compile guard'),
                  api.post_check(post_process.MustRun, 'remove compile guard'),
-                 api.post_check(post_process.StatusFailure),
+                 api.expect_status('FAILURE'),
                  api.post_process(post_process.DropExpectation))
 
   yield api.test(
       'catastrophe', api.override_step_data('compile', retcode=100),
       api.post_check(post_process.MustRun, 'create compile guard'),
       api.post_check(post_process.DoesNotRun, 'remove compile guard'),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation))
 
   yield api.test(

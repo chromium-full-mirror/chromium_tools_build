@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusException,
-                                        StatusFailure, StepException,
+from recipe_engine.post_process import (DropExpectation, StepException,
                                         StepWarning, SummaryMarkdown)
 
 DEPS = [
@@ -21,7 +20,7 @@ def GenTests(api):
       api.post_process(StepWarning, 'provision_devices'),
       api.post_process(SummaryMarkdown,
                        "Warning: Step('provision_devices') (retcode: 88)"),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
   yield api.test(
@@ -31,6 +30,6 @@ def GenTests(api):
       api.post_process(
           SummaryMarkdown,
           "Infra Failure: Step('provision_devices') (retcode: 87)"),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )

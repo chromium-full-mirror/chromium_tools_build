@@ -136,7 +136,7 @@ def GenTests(api):
               api.test_utils.canned_gtest_output(False), failure=True)),
       api.post_process(post_process.SummaryMarkdown,
                        '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -153,7 +153,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(fail_calculate_tests=True),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReason,
                        'Compile step failed from "build_affected_targets".'),
       api.post_process(post_process.DropExpectation),
@@ -178,7 +178,7 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReason,
                        'Compile step failed from "run_mb_and_compile".'),
       api.post_process(post_process.DropExpectation),
@@ -361,7 +361,7 @@ def GenTests(api):
           'base_unittests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'without patch', expected_failures=['Test.One']),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.StepFailure, 'base_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
   )
@@ -916,7 +916,7 @@ def GenTests(api):
           post_process.SummaryMarkdown,
           '1 Test Suite(s) failed.\n\n**base_unittests** failed because of:'
           '\n\n- Test.One'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -947,7 +947,7 @@ def GenTests(api):
                        'TEST RESULTS WERE INVALID'),
       api.post_process(post_process.SummaryMarkdown,
                        '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

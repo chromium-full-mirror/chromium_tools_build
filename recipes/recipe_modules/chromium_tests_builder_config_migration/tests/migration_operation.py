@@ -415,7 +415,7 @@ def GenTests(api):
           }),
           ctbc.TryDatabase.create({}),
       ),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_check(post_process.ResultReason,
                      "unknown builder 'foo-group:foo-builder'"),
       api.post_process(post_process.DropExpectation),

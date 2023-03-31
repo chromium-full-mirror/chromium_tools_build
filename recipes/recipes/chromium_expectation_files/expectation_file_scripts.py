@@ -4,7 +4,6 @@
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         LogContains, ResultReason,
-                                        StatusException, StatusFailure,
                                         StatusSuccess, StepCommandRE,
                                         StepFailure, StepSuccess)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -346,7 +345,7 @@ def GenTests(api):
       api.step_data('step_name.upload cl', retcode=1),
       api.post_process(StepFailure, 'step_name.upload cl'),
       api.post_process(DoesNotRun, 'step_name.upload cl (has conflicts)'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -372,7 +371,7 @@ def GenTests(api):
       api.step_data('step_name.upload cl (has conflicts)', retcode=1),
       api.post_process(StepFailure, 'step_name.upload cl'),
       api.post_process(StepFailure, 'step_name.upload cl (has conflicts)'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -614,7 +613,7 @@ def GenTests(api):
       api.url.json('step_name.get reviewer_rotation rotation JSON',
                    {'emails': []}),
       api.post_process(StepFailure, 'step_name.missing reviewers'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -625,7 +624,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'scripts is empty'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -645,7 +644,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].step_name is not set'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -665,7 +664,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].script is not set'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -687,7 +686,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].script_type is not set'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -709,7 +708,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].submit_type is not set'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -729,7 +728,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'No reviewer_rotation/reviewer_list set.'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -750,7 +749,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].reviewer_list.reviewer is empty'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -770,7 +769,7 @@ def GenTests(api):
           ResultReason,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].cl_title is not set'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -796,7 +795,7 @@ def GenTests(api):
       api.step_data('step_name_failure.run script', retcode=1),
       api.post_process(StepFailure, 'step_name_failure.run script'),
       api.post_process(StepSuccess, 'step_name_success'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(ResultReason, '1 script invocation(s) failed'),
       api.post_process(DropExpectation),
   )
@@ -866,6 +865,6 @@ def GenTests(api):
               ' M some/path\n A path/to/file\n', stream='stdout')),
       api.post_process(StepFailure,
                        'step_name.Script added/removed a file: A path/to/file'),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )

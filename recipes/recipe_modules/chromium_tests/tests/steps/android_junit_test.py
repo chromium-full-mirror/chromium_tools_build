@@ -88,7 +88,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'test_name', failing_tests=['Test.One']))),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -101,7 +101,7 @@ def GenTests(api):
       # No failing tests in RDB results, but a non-zero exit code will make
       # the recipe consider the suite's results invalid.
       api.override_step_data('test_name', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

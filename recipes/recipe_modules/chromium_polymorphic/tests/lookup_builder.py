@@ -94,7 +94,6 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.expect_exception('TesterForbidden'),
-      api.post_check(post_process.StatusException),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -261,7 +261,7 @@ def GenTests(api):
           'Test did not run or failed to report to ResultDB.'
           'Check the CTP build for details.'),
       api.post_process(post_process.SummaryMarkdown, 'failed: basic_EVE_TOT'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -272,7 +272,7 @@ def GenTests(api):
       api.properties(test_name='base_unittests'),
       api.override_step_data('base_unittests', retcode=failure_code),
       api.post_process(post_process.MustRun, 'test2'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -283,7 +283,7 @@ def GenTests(api):
       api.properties(test_name='base_unittests', abort_on_failure=True),
       api.override_step_data('base_unittests', retcode=failure_code),
       api.post_process(post_process.DoesNotRun, 'test2'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -294,7 +294,7 @@ def GenTests(api):
       api.properties(test_name='base_unittests'),
       api.override_step_data('base_unittests', retcode=infra_code),
       api.post_process(post_process.DoesNotRun, 'test2'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
@@ -329,7 +329,7 @@ def GenTests(api):
           'test_pre_run.pre_run base_unittests', retcode=failure_code),
       api.post_process(post_process.MustRun, 'base_unittests'),
       api.post_process(post_process.MustRun, 'test2'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -341,7 +341,7 @@ def GenTests(api):
       api.override_step_data(
           'test_pre_run.pre_run base_unittests', retcode=infra_code),
       api.post_process(post_process.DoesNotRun, 'base_unittests'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -361,7 +361,7 @@ def GenTests(api):
           retry_invalid_shards=True,
       ),
       api.post_process(post_process.MustRun, 'test3'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -387,7 +387,7 @@ def GenTests(api):
                   'base_unittests_failed_results',
                   failing_tests=['Test.One']))),
       api.post_process(post_process.MustRun, 'test3'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -489,7 +489,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'base_unittests', flaky_passing_tests=['Test.One']))),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

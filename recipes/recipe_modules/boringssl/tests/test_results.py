@@ -39,6 +39,6 @@ def GenTests(api):
       'failure',
       api.override_step_data('run tests',
                              api.boringssl.canned_test_output(False)),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

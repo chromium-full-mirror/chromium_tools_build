@@ -61,6 +61,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'blink_web_tests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'blink_web_tests (without patch)'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

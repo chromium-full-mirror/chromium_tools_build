@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusException,
-                                        StatusSuccess, SummaryMarkdown)
+from recipe_engine.post_process import (DropExpectation, StatusSuccess,
+                                        SummaryMarkdown)
 
 DEPS = [
   'isolate',
@@ -43,6 +43,6 @@ def GenTests(api):
       api.post_process(
           SummaryMarkdown,
           'Missing isolated target(s) other_target in swarm_hashes'),
-      api.post_process(StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )

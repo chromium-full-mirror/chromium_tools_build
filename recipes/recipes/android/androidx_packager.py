@@ -117,7 +117,7 @@ def GenTests(api):
           androidx_sample_lib.join('README.chromium')),
       api.override_step_data('check libs empty',
                              api.file.listdir(['androidx_dino/cipd.yaml'])),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

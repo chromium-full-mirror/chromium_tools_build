@@ -26,7 +26,7 @@ def RunSteps(api, properties):
 def GenTests(api):
 
   def invalid_properties(*errors):
-    test_data = api.post_check(post_process.StatusException)
+    test_data = api.expect_status('INFRA_FAILURE')
     test_data += api.post_check(
         post_process.ResultReasonRE,
         '^The following errors were found with the input properties')

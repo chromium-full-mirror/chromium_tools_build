@@ -311,7 +311,7 @@ def GenTests(api):
           )),
       api.step_data('bad-branch-config.enable platform1', retcode=1),
       api.post_check(post_process.StepFailure, 'bad-branch-config'),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -334,7 +334,7 @@ def GenTests(api):
           )),
       api.step_data('bad-branch-config.set branch type', retcode=1),
       api.post_check(post_process.StepException, 'bad-branch-config'),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -378,7 +378,7 @@ def GenTests(api):
           'branch-config3.verify.lucicfg generate entry-point2.star'),
       api.post_check(post_process.StepFailure, 'branch-config3'),
       api.post_check(post_process.StepSuccess, 'branch-config2'),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_check(post_process.ResultReasonRE,
                      '^The following branch configs failed verification'),
       api.post_check(post_process.ResultReasonRE, r'\bbranch-config1\b'),
@@ -388,7 +388,7 @@ def GenTests(api):
 
   # Must appear last since it drops expectations
   def invalid_properties(*errors):
-    test_data = api.post_check(post_process.StatusException)
+    test_data = api.expect_status('INFRA_FAILURE')
     test_data += api.post_check(
         post_process.ResultReasonRE,
         '^The following errors were found with the input properties')

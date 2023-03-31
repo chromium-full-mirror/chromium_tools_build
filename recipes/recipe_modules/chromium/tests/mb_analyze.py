@@ -46,7 +46,7 @@ def GenTests(api):
           api.json.output({'output': 'ERROR at line 5: missing )'},
                           name="failure_summary"),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(
           post_process.ResultReason,
           textwrap.dedent('''
@@ -67,7 +67,7 @@ def GenTests(api):
           'analyze',
           api.json.output({'output': ''}, name="failure_summary"),
           retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReason,
                        "Step('analyze') (retcode: 1)"),
       api.post_process(post_process.DropExpectation),

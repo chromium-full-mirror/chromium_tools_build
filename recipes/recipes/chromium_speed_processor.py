@@ -100,6 +100,6 @@ def GenTests(api):
       'builder-coverage',
       api.chromium_tests_builder_config.ci_build(
           builder_group='chromium.perf', builder='linux-builder-perf'),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

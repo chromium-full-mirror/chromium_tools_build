@@ -76,7 +76,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'retry shards with patch', failures=['test_case1']),
       api.post_process(post_process.PropertyEquals, 'do_not_retry', True),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -444,7 +444,7 @@ def GenTests(api):
               'Tests failed with patch, and caused build to fail:<br/>'
               'Test.Two<br/>'
           ]),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

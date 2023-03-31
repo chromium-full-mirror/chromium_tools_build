@@ -77,7 +77,7 @@ def GenTests(api):
       api.properties(target_platform='win', host_platform='win'),
       api.symupload(input_properties),
       api.post_process(post_process.StepFailure, 'symupload'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -210,7 +210,7 @@ def GenTests(api):
       api.path.exists(api.path['tmp_base'].join('symupload')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.StepFailure, 'symupload'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -304,6 +304,6 @@ def GenTests(api):
       api.symupload(input_properties_v2),
       api.post_process(post_process.MustRun,
                        'symupload.Unresolved placeholder'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

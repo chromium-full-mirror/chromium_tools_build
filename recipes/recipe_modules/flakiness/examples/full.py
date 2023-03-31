@@ -810,7 +810,7 @@ def GenTests(api):
                      'collect tasks (check flakiness shard #0).'
                      'base_unittests results')),
       api.post_check(post_process.MustRun, 'calculate flake rates'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -900,7 +900,7 @@ def GenTests(api):
               'collect tasks (check flakiness shard #0).'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results')),
       api.post_check(post_process.MustRun, 'calculate flake rates'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -989,7 +989,7 @@ def GenTests(api):
           'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
           '(check flakiness shard #0) steps in '
           "test new tests for flakiness didn't produce test results."),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1165,7 +1165,7 @@ def GenTests(api):
           '- ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 (with patch)'
       ]),
       api.post_check(post_process.DoesNotRun, 'test new tests for flakiness'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1259,7 +1259,7 @@ def GenTests(api):
           '(retry shards with patch)',
       ]),
       api.post_check(post_process.DoesNotRun, 'test new tests for flakiness'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

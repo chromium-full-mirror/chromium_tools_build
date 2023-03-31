@@ -304,7 +304,7 @@ def GenTests(api):
           COMPARISON_BUILDERS['Comparison Linux (reclient)']['platform'], 64),
       api.properties(configuration='Release'),
       api.step_data('Goma build', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -319,6 +319,6 @@ def GenTests(api):
           COMPARISON_BUILDERS['Comparison Linux (reclient)']['platform'], 64),
       api.properties(configuration='Release'),
       api.step_data('Reclient build', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

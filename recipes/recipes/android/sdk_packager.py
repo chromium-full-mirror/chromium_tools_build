@@ -166,7 +166,7 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-sdk-packager'),
       emulator_package_properties,
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -186,7 +186,7 @@ def GenTests(api):
               textwrap.dedent('''\
               [UNPARSEABLE]
               '''))),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.ResultReason,
                        'Unable to parse sdkmanager output.'),
       api.post_process(post_process.DropExpectation),
@@ -203,7 +203,7 @@ def GenTests(api):
                                                 'public', 'cmdline-tools',
                                                 'latest', 'bin', 'sdkmanager')),
       package_version_steps(),
-      api.post_process(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.ResultReasonRE, 'Unable to find yaml file'),
       api.post_process(post_process.DropExpectation),
   )

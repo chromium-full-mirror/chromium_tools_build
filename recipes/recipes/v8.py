@@ -7,8 +7,7 @@ import json
 from recipe_engine import recipe_test_api
 from recipe_engine.post_process import (Filter, DoesNotRun, DoesNotRunRE,
                                         DropExpectation, MustRun,
-                                        ResultReasonRE, StatusException,
-                                        StatusFailure, StepException,
+                                        ResultReasonRE, StepException,
                                         StepFailure)
 from recipe_engine.recipe_api import Property
 
@@ -315,30 +314,23 @@ def GenTests(api):
   yield TestFailures(flakes=False)
   yield TestFailures(flakes=True)
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'compile_failure',
-    ) +
-    api.step_data('build.compile', retcode=1) +
-    api.post_process(StatusFailure) +
-    api.post_process(DropExpectation)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'compile_failure',
+  ) + api.step_data('build.compile', retcode=1) + api.expect_status('FAILURE') +
+         api.post_process(DropExpectation))
 
   yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'compile_bisect_failure',
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.override_step_data(
-        'Check', api.v8_tests.output_json(has_failures=True, flakes=False)) +
-    api.step_data('Bisect a2.compile', retcode=1) +
-    api.post_process(StatusFailure) +
-    api.post_process(DropExpectation)
-  )
+      api.v8.test(
+          'client.v8',
+          'V8 Foobar',
+          'compile_bisect_failure',
+      ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+      api.override_step_data(
+          'Check', api.v8_tests.output_json(has_failures=True, flakes=False)) +
+      api.step_data('Bisect a2.compile', retcode=1) +
+      api.expect_status('FAILURE') + api.post_process(DropExpectation))
 
   yield (
     api.v8.test(
@@ -683,8 +675,8 @@ def GenTests(api):
       parent_test_spec=test_spec,
       requester='commit-bot@chromium.org',
       blamelist=['dude@chromium.org'],
-  ) + api.override_step_data('Check', api.v8_tests.output_json(empty_run=True)) +
-         api.post_process(StatusFailure) +
+  ) + api.override_step_data('Check', api.v8_tests.output_json(empty_run=True))
+         + api.expect_status('FAILURE') +
          api.post_process(ResultReasonRE, 'No tests were run') +
          api.post_process(DropExpectation))
 
@@ -1124,19 +1116,14 @@ def GenTests(api):
     ) + api.post_process(DropExpectation))
 
   # Test overall failure on upload failures.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'measurements_upload_failure',
-        track_build_dependencies=True,
-    ) +
-    api.override_step_data(
-        'measurements.perf dashboard post',
-        api.json.output({'status_code': 403})) +
-    api.post_process(StatusException) +
-    api.post_process(DropExpectation)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'measurements_upload_failure',
+      track_build_dependencies=True,
+  ) + api.override_step_data('measurements.perf dashboard post',
+                             api.json.output({'status_code': 403})) +
+         api.expect_status('INFRA_FAILURE') + api.post_process(DropExpectation))
 
   # Test windows-specific build steps.
   yield (

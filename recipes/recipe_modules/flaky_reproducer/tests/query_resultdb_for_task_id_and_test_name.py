@@ -157,6 +157,6 @@ def GenTests(api):
           'query_test_results',
           retcode=1,
       ),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

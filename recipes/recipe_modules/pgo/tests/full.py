@@ -131,7 +131,7 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'Processing PGO .profraw data.No profdata was generated.'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -277,7 +277,7 @@ def GenTests(api):
           post_process.MustRun,
           'Processing PGO .profraw data.Failing due to merge errors found '
           'alongside invalid profile data.'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -291,7 +291,7 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -310,7 +310,7 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -329,7 +329,7 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -348,7 +348,7 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

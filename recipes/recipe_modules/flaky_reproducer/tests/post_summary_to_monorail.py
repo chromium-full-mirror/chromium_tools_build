@@ -51,7 +51,7 @@ def GenTests(api):
           'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
           api.json.output_stream(generate_issue_result(['flaky-reproduced'])),
       ),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -61,6 +61,6 @@ def GenTests(api):
           'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
           retcode=5,
       ),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

@@ -129,7 +129,7 @@ def GenTests(api):
       api.override_step_data(
           'Confirm no-op',
           api.raw_io.stream_output_text('third_party/qux/3pp/3pp.pb')),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.ResultReasonRE, 'Unexpected 3pp changes'),
       api.post_process(post_process.DropExpectation),
   )

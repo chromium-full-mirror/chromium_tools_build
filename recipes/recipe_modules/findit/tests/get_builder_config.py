@@ -76,7 +76,7 @@ def GenTests(api):
               builder=builder_id.builder,
           ).assemble()),
       api.post_check(post_process.StepException, 'invalid target builder'),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

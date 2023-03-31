@@ -221,7 +221,7 @@ def GenTests(api):
           post_process.ResultReason,
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'failed because of:\n\n- Test.Two'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

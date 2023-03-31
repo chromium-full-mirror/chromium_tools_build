@@ -64,6 +64,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'avd uninstall tools/android/avd/proto/generic_android28.textpb'),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

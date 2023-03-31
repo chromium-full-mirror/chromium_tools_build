@@ -743,7 +743,7 @@ def GenTests(api):
       default_builders(),
       api.override_step_data('determine affected recipes', retcode=1),
       api.post_check(post_process.StepException, 'determine affected recipes'),
-      api.post_check(post_process.StatusException),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -764,7 +764,7 @@ def GenTests(api):
           check(RECIPE in
                 steps['determine affected recipes'].logs['invalid recipes'])
       ),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -779,7 +779,7 @@ def GenTests(api):
           lambda check, steps: \
           check('bad-builder' in step_text_lines(steps['bad builders']))
       ),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -791,7 +791,7 @@ def GenTests(api):
           lambda check, steps: \
           check('arbitrary-bucket' in step_text_lines(steps['unknown buckets']))
       ),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -827,6 +827,6 @@ def GenTests(api):
       api.post_check(
           post_process.StepFailure,
           led_get_builder_name('luci.chromium.try:arbitrary-builder')),
-      api.post_check(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

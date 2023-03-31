@@ -96,7 +96,7 @@ def GenTests(api):
       api.builder_group.for_current('devtools-frontend'),
       ci_build(builder='linux'),
       api.step_data('compile', retcode=1),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

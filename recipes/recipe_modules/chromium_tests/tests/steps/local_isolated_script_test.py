@@ -113,7 +113,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'base_unittests', failing_tests=['Test.One']))),
-      api.post_process(post_process.StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

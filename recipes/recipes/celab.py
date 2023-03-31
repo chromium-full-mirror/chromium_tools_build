@@ -8,7 +8,6 @@ from recipe_engine import post_process
 from recipe_engine.post_process import DoesNotRun
 from recipe_engine.post_process import DropExpectation
 from recipe_engine.post_process import MustRun
-from recipe_engine.post_process import StatusFailure
 from recipe_engine.post_process import StepCommandRE
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -651,7 +650,7 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'retry failed tests (2)'),
       api.step_data('test summary.1st test.read logs',
                     api.file.read_text('first\ntest\nlogs')),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.path.exists(api.path['start_dir'].join('logs', '1st test')),
       api.post_process(DropExpectation),
   )
@@ -831,7 +830,7 @@ def GenTests(api):
           builder='win-celab-try-rel',
           git_repo=CHROMIUM_REPO),
       api.step_data('compile (with patch)', retcode=1),
-      api.post_process(StatusFailure),
+      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
   )
   yield api.test(
