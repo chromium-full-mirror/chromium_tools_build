@@ -135,3 +135,13 @@ def GenTests(api):
   yield from_config('android_internal_isolate_maps')
 
   yield from_config('official_no_clobber')
+
+  yield api.test(
+      'ios_codesearch',
+      api.platform('mac', 64),
+      api.properties(
+          target_platform='ios',
+          chromium_config='codesearch',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )

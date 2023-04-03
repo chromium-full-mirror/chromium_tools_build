@@ -52,6 +52,7 @@ TRYBOT_SPEC = freeze({
         'gen-android-try': 'codesearch-gen-chromium-android',
         'gen-chromiumos-try': 'codesearch-gen-chromium-chromiumos',
         'gen-fuchsia-try': 'codesearch-gen-chromium-fuchsia',
+        'gen-ios-try': 'codesearch-gen-chromium-ios',
         'gen-lacros-try': 'codesearch-gen-chromium-lacros',
         'gen-linux-try': 'codesearch-gen-chromium-linux',
         'gen-mac-try': 'codesearch-gen-chromium-mac',
@@ -202,6 +203,9 @@ def RunSteps(api, properties):
   elif platform == 'mac':
     target_os = 'mac'
     host_os = 'mac'
+  elif platform == 'ios':
+    target_os = 'ios'
+    host_os = 'mac'
   gclient_config.target_os = [target_os]
   api.gclient.c = gclient_config
 
@@ -229,6 +233,10 @@ def RunSteps(api, properties):
       HOST_PLATFORM=host_os)
 
   api.chromium.ensure_goma()
+
+  if target_os == 'ios':
+    api.chromium.ensure_toolchains()
+
   # CHROME_HEADLESS makes sure that running 'gclient runhooks' doesn't require
   # entering 'y' to agree to a license.
   with api.context(env={'CHROME_HEADLESS': '1'}):
@@ -377,6 +385,7 @@ def GenTests(api):
     return api.properties(
         root_solution_revision='HEAD',
         root_solution_revision_timestamp=1337000001,
+        xcode_build_version="123",
         recipe_properties=RecipeProperties(
             compile_targets=['all'],
             platform=platform,
@@ -390,7 +399,7 @@ def GenTests(api):
         ))
 
   for platform in ('android', 'lacros', 'linux', 'fuchsia', 'chromiumos', 'mac',
-                   'win', 'webview'):
+                   'ios', 'win', 'webview'):
     for internal in (True, False):
       buildername = _format_builder_name(platform, internal)
       yield api.test(

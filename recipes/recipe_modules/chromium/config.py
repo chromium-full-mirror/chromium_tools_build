@@ -653,6 +653,10 @@ def codesearch(c):
   if c.TARGET_PLATFORM == 'mac':
     c.env.FORCE_MAC_TOOLCHAIN = 1
 
+  if c.TARGET_PLATFORM == 'ios':
+    c.mac_toolchain.enabled = True
+    c.env.FORCE_MAC_TOOLCHAIN = 0
+
 
 @config_ctx()
 def download_vr_test_apks(c):
