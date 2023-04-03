@@ -38,6 +38,7 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/time',
     'recipe_engine/url',
+    'reclient',
     'test_utils',
     'v8_tests',
 ]

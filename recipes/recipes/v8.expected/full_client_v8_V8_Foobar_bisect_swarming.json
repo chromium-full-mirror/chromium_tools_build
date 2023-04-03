@@ -245,15 +245,12 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -271,7 +268,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -287,9 +283,7 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
@@ -300,8 +294,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -324,7 +317,6 @@
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@test262@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -336,7 +328,6 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
@@ -349,7 +340,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -384,7 +376,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -399,39 +392,6 @@
       }
     },
     "name": "build.compile confirm no-op",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
-    ],
-    "cost": {
-      "cpu": 0,
-      "disk": 0,
-      "memory": 0,
-      "net": 0
-    },
-    "cwd": "[CACHE]/builder/v8",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "v8:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "build.start goma canceller",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -829,7 +789,6 @@
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@GN arguments:@@@",
       "@@@STEP_LOG_LINE@fast@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@fast@use_goma = true@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@fast@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/fast\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -863,7 +822,6 @@
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@GN arguments:@@@",
       "@@@STEP_LOG_LINE@slow@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@slow@use_goma = true@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@slow@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/slow\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -1146,15 +1104,12 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -1172,7 +1127,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -1188,9 +1142,7 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
@@ -1201,8 +1153,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -1225,7 +1176,6 @@
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@test262@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -1237,7 +1187,6 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
@@ -1250,7 +1199,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -1285,7 +1235,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -1300,39 +1251,6 @@
       }
     },
     "name": "Bisect a0.compile confirm no-op",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
-    ],
-    "cost": {
-      "cpu": 0,
-      "disk": 0,
-      "memory": 0,
-      "net": 0
-    },
-    "cwd": "[CACHE]/builder/v8",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "v8:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Bisect a0.start goma canceller",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1793,15 +1711,12 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -1819,7 +1734,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -1835,9 +1749,7 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
@@ -1848,8 +1760,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -1872,7 +1783,6 @@
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@test262@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -1884,7 +1794,6 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
@@ -1897,7 +1806,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -1932,7 +1842,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -1947,39 +1858,6 @@
       }
     },
     "name": "Bisect a2.compile confirm no-op",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
-    ],
-    "cost": {
-      "cpu": 0,
-      "disk": 0,
-      "memory": 0,
-      "net": 0
-    },
-    "cwd": "[CACHE]/builder/v8",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "v8:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Bisect a2.start goma canceller",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2300,7 +2178,6 @@
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@GN arguments:@@@",
       "@@@STEP_LOG_LINE@fast@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@fast@use_goma = true@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@fast@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/fast\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -2334,7 +2211,6 @@
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@GN arguments:@@@",
       "@@@STEP_LOG_LINE@slow@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@slow@use_goma = true@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@slow@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/slow\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -2502,15 +2378,12 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -2528,7 +2401,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -2544,9 +2416,7 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
+      "[TMP_BASE]/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
@@ -2557,8 +2427,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -2581,7 +2450,6 @@
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@test262@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -2593,7 +2461,6 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
@@ -2606,7 +2473,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -2641,7 +2509,8 @@
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -2656,39 +2525,6 @@
       }
     },
     "name": "Bisect a1.compile confirm no-op",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
-    ],
-    "cost": {
-      "cpu": 0,
-      "disk": 0,
-      "memory": 0,
-      "net": 0
-    },
-    "cwd": "[CACHE]/builder/v8",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "v8:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Bisect a1.start goma canceller",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

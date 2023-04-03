@@ -5,10 +5,9 @@
 import json
 
 from recipe_engine import recipe_test_api
-from recipe_engine.post_process import (Filter, DoesNotRun, DoesNotRunRE,
-                                        DropExpectation, MustRun,
-                                        ResultReasonRE, StepException,
-                                        StepFailure)
+from recipe_engine.post_process import (
+    Filter, DoesNotRun, DoesNotRunRE, DropExpectation, MustRun, ResultReasonRE,
+    StepException, StepFailure)
 from recipe_engine.recipe_api import Property
 
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
@@ -30,7 +29,6 @@ DEPS = [
     'recipe_engine/swarming',
     'recipe_engine/url',
     'recipe_engine/time',
-    'reclient',
     'test_utils',
     'depot_tools/tryserver',
     'v8',
@@ -76,8 +74,6 @@ PROPERTIES = {
     'triggers': Property(default=None, kind=list),
     # Weather to trigger the internal trigger proxy.
     'triggers_proxy': Property(default=False, kind=bool),
-    # Weather to use goma for compilation.
-    'use_goma': Property(default=True, kind=bool),
 }
 
 
@@ -85,13 +81,13 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
              clusterfuzz_archive, coverage, custom_deps, default_targets,
              enable_swarming, gclient_vars, mb_config_path, target_arch,
              target_platform, track_build_dependencies, triggers,
-             triggers_proxy, use_goma):
+             triggers_proxy):
   link_to_parent(api)
   v8 = api.v8
   api.v8_tests.read_cl_footer_flags()
   api.v8_tests.load_static_test_configs()
   bot_config = v8.update_bot_config(
-      v8.bot_config_by_buildername(use_goma=use_goma),
+      v8.bot_config_by_buildername(),
       binary_size_tracking,
       clusterfuzz_archive,
       coverage,
@@ -901,9 +897,6 @@ def GenTests(api):
       api.v8.check_in_param(
           'initialization.bot_update',
           '--spec-path', '\'custom_deps\': {\'v8/foo\': \'bar\'}') +
-      api.v8.check_in_param(
-          'build.generate_build_files',
-          '--config-file', 'somewhere/else/mb_config.pyl') +
       api.post_process(DropExpectation)
   )
 
@@ -996,42 +989,6 @@ def GenTests(api):
     api.v8.check_in_any_arg('initialization.bot_update', '--clobber') +
     api.post_process(DropExpectation)
   )
-
-  # Test switching goma on and off. Goma steps are asserted in the v8 test api.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'goma',
-        use_goma=True,
-    ) +
-    api.post_process(DropExpectation)
-  )
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'no_goma',
-        use_goma=False,
-    ) +
-    api.post_process(DropExpectation)
-  )
-  yield (
-      api.v8.test(
-          'client.v8',
-          'V8 Foobar',
-          'rbe_atomic',
-          use_goma=False,
-          use_remoteexec=True,
-          **{'$build/v8': {'use_remoteexec': True}}
-      ) + api.reclient.properties() +
-      api.post_process(Filter(
-          'build.read MB config',
-          'build.tweak MB config',
-          'build.generate_build_files',
-      ))
-  )
-
 
   def check_gs_url_equals(check, steps, expected):
     check('gsutil upload' in steps)

@@ -50,8 +50,6 @@ PROPERTIES = {
     'target_arch': Property(default=None, kind=str),
     # One of android|fuchsia|linux|mac|win.
     'target_platform': Property(default=None, kind=str),
-    # Weather to use goma for compilation.
-    'use_goma': Property(default=True, kind=bool),
     # Revision to compile
     'revision': Property(default=None, kind=str),
 }
@@ -97,11 +95,11 @@ def emit_compilator_properties(api, test_spec):
 
 
 def compilator_steps(api, custom_deps, default_targets, gclient_vars,
-                     target_arch, target_platform, use_goma, revision):
+                     target_arch, target_platform, revision):
   v8 = api.v8
   api.v8_tests.load_static_test_configs()
   bot_config = v8.update_bot_config(
-      v8.bot_config_by_buildername(use_goma=use_goma),
+      v8.bot_config_by_buildername(),
       binary_size_tracking=None,
       clusterfuzz_archive=None,
       coverage=None,
@@ -136,11 +134,11 @@ def compilator_steps(api, custom_deps, default_targets, gclient_vars,
 
 
 def RunSteps(api, custom_deps, default_targets, gclient_vars, target_arch,
-             target_platform, use_goma, revision):
+             target_platform, revision):
   try:
     return compilator_steps(
         api, custom_deps, default_targets, gclient_vars, target_arch,
-        target_platform, use_goma, revision)
+        target_platform, revision)
   finally:
     if api.runtime.in_global_shutdown:
       # pylint: disable=lost-exception

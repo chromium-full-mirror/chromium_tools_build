@@ -283,22 +283,14 @@ class V8Api(recipe_api.RecipeApi):
   def vpython(self, name, script, args=None, **kwargs):
     return self._python(name, 'vpython3', script, args, **kwargs)
 
-  def bot_config_by_buildername(self,
-                                builders=None,
-                                use_goma=True):
+  def bot_config_by_buildername(self, builders=None):
     default = {}
-    assert not use_goma or not self.use_remoteexec
     if not self.m.properties.get('parent_buildername'):
       # Builders and builder_testers both build and need the following set of
       # default chromium configs:
-      if use_goma:
-        default['chromium_apply_config'] = [
-            'default_compiler', 'goma', 'mb', 'mb_no_luci_auth'
-        ]
-      else:
-        default['chromium_apply_config'] = [
-            'default_compiler', 'mb', 'mb_no_luci_auth'
-        ]
+      default['chromium_apply_config'] = [
+          'default_compiler', 'mb', 'mb_no_luci_auth'
+      ]
     return (builders or {}).get(self.m.buildbucket.builder_name, default)
 
   def update_bot_config(self, bot_config, binary_size_tracking,
@@ -524,11 +516,6 @@ class V8Api(recipe_api.RecipeApi):
       self.revision_number = str(self.revision_number)
 
   def runhooks(self, **kwargs):
-    if (self.m.chromium.c.compile_py.compiler and
-        self.m.chromium.c.compile_py.compiler.startswith('goma')):
-      # Only ensure goma if we want to use it. Otherwise it might break bots
-      # that don't support the goma executables.
-      self.m.chromium.ensure_goma()
     self.m.chromium.runhooks(**kwargs)
 
   @property
@@ -778,9 +765,6 @@ class V8Api(recipe_api.RecipeApi):
         None
     """
     with self.ensure_osx_sdk_if_needed():
-      use_goma = (self.m.chromium.c.compile_py.compiler and
-                  'goma' in self.m.chromium.c.compile_py.compiler)
-
       # Calculate targets to isolate from V8-side test specification. The
       # test_spec contains extra TestStepConfig objects for the current builder
       # and all its triggered builders.
@@ -808,11 +792,11 @@ class V8Api(recipe_api.RecipeApi):
 
         gn_args = self.m.chromium.mb_gen(
             self.m.chromium.get_builder_id(),
-            use_goma=use_goma,
             mb_config_path=mb_config_path,
             isolated_targets=isolate_targets,
             build_dir=build_dir,
-            gn_args_location=self.m.gn.LOGS)
+            gn_args_location=self.m.gn.LOGS,
+            use_goma=False)
 
         # Update the gn args, which are printed to the user on test failures
         # for easier build reproduction.
@@ -824,11 +808,9 @@ class V8Api(recipe_api.RecipeApi):
         presentation.logs['gn_args'] = self.m.v8_tests.gn_args
       elif self.m.chromium.c.project_generator.tool == 'gn':
         self.m.chromium.run_gn(
-            use_goma=use_goma, build_dir=build_dir,
+            build_dir=build_dir,
             use_reclient=self.use_remoteexec)
 
-      if use_goma and not self.use_remoteexec:
-        kwargs['use_goma_module'] = True
       raw_result = self.m.chromium.compile(
           out_dir=out_dir, use_reclient=self.use_remoteexec, **kwargs)
       if raw_result.status != common_pb.SUCCESS:

@@ -6,12 +6,11 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "//out/build",
-      "--args=v8_enable_slow_dchecks=true is_debug=true target_cpu=\"x64\" use_goma=true goma_dir=\"[CACHE]/goma/client\""
+      "--args=v8_enable_slow_dchecks=true is_debug=true target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -38,21 +37,17 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
       "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "80",
       "v8_archive"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {

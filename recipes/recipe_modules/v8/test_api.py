@@ -9,7 +9,7 @@ from collections import OrderedDict
 import re
 
 from recipe_engine import recipe_test_api
-from recipe_engine.post_process import DoesNotRun, Filter, MustRun
+from recipe_engine.post_process import Filter, StepCommandContains
 
 from PB.go.chromium.org.luci.scheduler.api.scheduler.v1 import (
     triggers as triggers_pb2)
@@ -159,9 +159,10 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
     """
     skip_fragments = map(re.escape, [
       'ensure builder cache dir',
-      'ensure_goma',
-      'preprocess_for_goma',
-      'postprocess_for_goma',
+      'read MB config',
+      'tweak MB config',
+      'preprocess for reclient',
+      'postprocess for reclient',
       'read revision',
     ])
     return self.post_process(
@@ -234,7 +235,9 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
             # TODO(sergiyb): Remove this property after archive module has been
             # migrated to new buildbucket properties.
             buildername=buildername,
-            **kwargs),
+            use_remoteexec=True,
+            **dict(kwargs, **{'$build/v8': {'use_remoteexec': True}})),
+        self.m.reclient.properties(),
         self.m.builder_group.for_current(builder_group),
         self.m.platform('linux', 64),
     )
@@ -301,19 +304,15 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
           experiments=experiments,
       )
 
-    # If use_goma is provided (not None), check if relevant steps either are
-    # executed or not executed.
-    goma_steps = [
-      'initialization.ensure_goma',
-      'build.preprocess_for_goma',
-      'build.postprocess_for_goma'
-    ]
-    if kwargs.get('use_goma') is True:
-      test += self.post_process(MustRun, *goma_steps)
-    elif kwargs.get('use_goma') is False:
-      test += self.post_process(DoesNotRun, *goma_steps)
+    # Check correct path is used for MB before the step is filtered out below.
+    if 'mb_config_path' in kwargs:
+      mb_config_path = kwargs['mb_config_path']
+      test += self.post_process(
+          StepCommandContains,
+          'build.read MB config',
+          [f'[CACHE]/builder/v8/{mb_config_path}'])
 
-    # Skip some goma and swarming related steps in expectations.
+    # Skip some reclient and swarming related steps in expectations.
     test += self.hide_infra_steps()
 
     # Only show the command for swarming trigger steps (i.e. drop logs).

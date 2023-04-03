@@ -6,13 +6,12 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "//out/build",
-      "--args=is_clang=true dcheck_always_on=false is_debug=false target_cpu=\"x64\" use_goma=true goma_dir=\"[CACHE]/goma/client\""
+      "--args=is_clang=true dcheck_always_on=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1",
-      "FORCE_MAC_TOOLCHAIN": "1",
-      "GOMA_USE_LOCAL": "false"
+      "FORCE_MAC_TOOLCHAIN": "1"
     },
     "luci_context": {
       "realm": {

@@ -300,14 +300,11 @@
       "v8_foobar_compile_rel",
       "--config-file",
       "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -325,7 +322,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -342,8 +338,6 @@
       "v8_foobar_compile_rel",
       "--config-file",
       "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
@@ -354,8 +348,7 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -377,7 +370,6 @@
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@bot_default@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
-      "@@@STEP_LOG_LINE@gn_args@use_goma = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -389,20 +381,16 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
       "dupbuild=err",
       "-C",
-      "[CACHE]/builder/v8/out/build",
-      "-j",
-      "80"
+      "[CACHE]/builder/v8/out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -428,16 +416,13 @@
       "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "80",
       "-d",
       "explain",
       "-n"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -458,16 +443,20 @@
   },
   {
     "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
+      "vpython3",
+      "RECIPE_REPO[build]/recipes/upload_goma_logs.py",
+      "--gsutil-py-path",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "--skip-sendgomatsmon",
+      "--ninja-log-outdir",
+      "[CACHE]/builder/v8/out/build",
+      "--ninja-log-command-file",
+      "[\"[CACHE]/builder/v8/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/v8/out/build\"]",
+      "--build-exit-status",
+      "0",
+      "--ninja-log-compiler",
+      "unknown"
     ],
-    "cost": {
-      "cpu": 0,
-      "disk": 0,
-      "memory": 0,
-      "net": 0
-    },
     "cwd": "[CACHE]/builder/v8",
     "env": {
       "CHROME_HEADLESS": "1"
@@ -484,7 +473,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build.start goma canceller",
+    "name": "build.upload_ninja_log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -641,8 +630,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@compilator_properties@{@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  \"gn_args\": [@@@",
-      "@@@STEP_LOG_LINE@compilator_properties@    \"target_cpu = \\\"x86\\\"\", @@@",
-      "@@@STEP_LOG_LINE@compilator_properties@    \"use_goma = true\"@@@",
+      "@@@STEP_LOG_LINE@compilator_properties@    \"target_cpu = \\\"x86\\\"\"@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  ], @@@",
       "@@@STEP_LOG_LINE@compilator_properties@  \"parent_test_spec\": {@@@",
       "@@@STEP_LOG_LINE@compilator_properties@    \"swarming_dimensions\": {}, @@@",
@@ -664,7 +652,7 @@
       "@@@STEP_LOG_LINE@compilator_properties@  }@@@",
       "@@@STEP_LOG_LINE@compilator_properties@}@@@",
       "@@@STEP_LOG_END@compilator_properties@@@",
-      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"gn_args\": [\"target_cpu = \\\"x86\\\"\", \"use_goma = true\"], \"parent_test_spec\": {\"swarming_dimensions\": {}, \"swarming_task_attrs\": {}, \"tests\": [[\"v8testing\", 1, null, \"\", [], {}, {}]]}, \"swarm_hashes\": {\"bot_default\": \"[dummy hash for bot_default/dummy size]\"}}@@@"
+      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"gn_args\": [\"target_cpu = \\\"x86\\\"\"], \"parent_test_spec\": {\"swarming_dimensions\": {}, \"swarming_task_attrs\": {}, \"tests\": [[\"v8testing\", 1, null, \"\", [], {}, {}]]}, \"swarm_hashes\": {\"bot_default\": \"[dummy hash for bot_default/dummy size]\"}}@@@"
     ]
   },
   {

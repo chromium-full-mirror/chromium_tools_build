@@ -6,12 +6,11 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "//out/build",
-      "--args=dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=19 is_debug=false target_os=\"android\" target_cpu=\"arm64\" use_goma=true goma_dir=\"[CACHE]/goma/client\""
+      "--args=dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=19 is_debug=false target_os=\"android\" target_cpu=\"arm64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -38,21 +37,17 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
       "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "80",
       "v8_archive"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -182,12 +177,11 @@
       "--root=[CACHE]/builder/v8",
       "gen",
       "//out/build",
-      "--args=v8_static_library=true dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=19 is_debug=false target_os=\"android\" target_cpu=\"arm64\" use_goma=true goma_dir=\"[CACHE]/goma/client\""
+      "--args=v8_static_library=true dcheck_always_on=false symbol_level=1 v8_android_log_stdout=true android_unstripped_runtime_outputs=false default_min_sdk_version=19 is_debug=false target_os=\"android\" target_cpu=\"arm64\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {
@@ -214,21 +208,17 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
       "-w",
       "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
-      "-j",
-      "80",
       "v8_archive"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "CHROME_HEADLESS": "1"
     },
     "luci_context": {
       "realm": {

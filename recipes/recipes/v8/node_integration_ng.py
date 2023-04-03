@@ -321,6 +321,4 @@ def GenTests(api):
       v8_tot=True,
       **{'$build/v8': {'use_remoteexec': True}}
   ) + api.reclient.properties() + api.post_process(
-      Filter('initialization.bot_update', 'build.gn',
-             'build.preprocess for reclient',
-             'build.postprocess for reclient')))
+      Filter('initialization.bot_update', 'build.gn')))
