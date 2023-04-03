@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-Recipe for running CBB tests in Crossbench
+Recipe for running Crossbench's End2End tests.
 """
 
 DEPS = [
@@ -21,10 +21,12 @@ def RunSteps(api):
   api.gclient.runhooks()
 
   chrome_app_path, chrome_driver_path = download_chrome(api)
-  api.step('Run CBB Tests', [
-      'vpython3', 'crossbench/tests/cbb/cbb_runner.py',
-      '--browserpath=%s' % chrome_app_path,
-      '--driverpath=%s' % chrome_driver_path
+
+  test_driver = 'crossbench/tests/end2end/runner.py'
+  api.step('Run End2End Tests', [
+      'vpython3', test_driver,
+      '--test-browser-path=%s' % chrome_app_path,
+      '--test-driver-path=%s' % chrome_driver_path
   ])
 
 
@@ -45,27 +47,26 @@ def download_chrome(api):
     chrome_driver_zip = 'chromedriver_mac64.zip'
     api.gsutil.download(gs_bucket, '%s/%s' % (gs_path, version_file), chrome)
     version = api.file.read_text('read latest chrome version',
-                                 chrome.join(version_file))
+                                 chrome / version_file)
     chrome_output_path = download(api, gs_bucket,
                                   '%s/%s/%s' % (gs_path, version, chrome_zip),
                                   chrome)
-    unzip_archive(api, str(chrome.join(chrome_zip)), str(chrome_output_path))
+    unzip_archive(api, chrome / chrome_zip, chrome_output_path)
     update_permissions(api, chrome_output_path)
-    chrome_app_path = chrome_output_path.join('chrome-mac').join('Chromium.app')
+    chrome_app_path = chrome_output_path / 'chrome-mac' / 'Chromium.app'
 
     chromedriver_output_path = download(
         api, gs_bucket, '%s/%s/%s' % (gs_path, version, chrome_driver_zip),
         chrome)
-    unzip_archive(api, str(chrome.join(chrome_driver_zip)),
-                  str(chromedriver_output_path))
-    chrome_driver_path = chromedriver_output_path.join(
-        'chromedriver_mac64').join('chromedriver')
+    unzip_archive(api, chrome / chrome_driver_zip, chromedriver_output_path)
+    chrome_driver_path = (
+        chromedriver_output_path / 'chromedriver_mac64' / 'chromedriver')
     return chrome_app_path, chrome_driver_path
 
 
 def download(api, gs_bucket, file_path, download_dir):
   api.gsutil.download(gs_bucket, file_path, download_dir)
-  output_path = download_dir.join('zip')
+  output_path = download_dir / 'zip'
   return output_path
 
 

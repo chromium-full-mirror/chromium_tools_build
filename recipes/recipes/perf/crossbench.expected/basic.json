@@ -200,11 +200,11 @@
   {
     "cmd": [
       "vpython3",
-      "crossbench/tests/cbb/cbb_runner.py",
-      "--browserpath=[CLEANUP]/chrome_tmp_1/zip/chrome-mac/Chromium.app",
-      "--driverpath=[CLEANUP]/chrome_tmp_1/zip/chromedriver_mac64/chromedriver"
+      "crossbench/tests/end2end/runner.py",
+      "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome-mac/Chromium.app",
+      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver_mac64/chromedriver"
     ],
-    "name": "Run CBB Tests"
+    "name": "Run End2End Tests"
   },
   {
     "name": "$result"
