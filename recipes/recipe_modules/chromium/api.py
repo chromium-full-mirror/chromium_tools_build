@@ -1357,6 +1357,28 @@ class ChromiumApi(recipe_api.RecipeApi):
         stdout=self.m.raw_io.output_text(),
         step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
             lookup_test_data))
+    # TODO(crbug.com/1429167) - Removing the block below when we don't
+    # need to check earlier commits in Pinpoint. Let's aim at M114
+    if result.retcode:
+      if builder_id.group == 'chromium.perf.pinpoint':
+        pinpoint_builder = chromium.BuilderId.create_for_group(
+            'chromium.perf', 'linux-perf')
+        result = self.run_mb_cmd(
+            name,
+            'lookup',
+            pinpoint_builder,
+            mb_path=mb_path,
+            mb_config_path=mb_config_path,
+            chromium_config=chromium_config,
+            phase=phase,
+            use_goma=use_goma,
+            android_version_code=android_version_code,
+            android_version_name=android_version_name,
+            additional_args=additional_args,
+            raise_on_failure=False,
+            stdout=self.m.raw_io.output_text(),
+            step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+                lookup_test_data))
 
     gn_args = result.stdout
     if gn_args is not None:
