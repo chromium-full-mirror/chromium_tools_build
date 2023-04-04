@@ -51,11 +51,40 @@ DEPS = [
     'v8_tests',
 ]
 
+
+# Paths relative to the V8 checkout directory
+PROFILE_ONLY_PATH = 'tools/builtins-pgo/profile_only.py'
+D8_OUT_PATH = 'out/build/d8'
+
+
+class UnixPlatform:
+  @property
+  def profile_only_path(self):
+    return PROFILE_ONLY_PATH
+
+  @property
+  def d8_out_path(self):
+    return D8_OUT_PATH
+
+
+class WindowsPlatform:
+  def _to_windows_path(self, path):
+    return path.replace('/', '\\')
+
+  @property
+  def profile_only_path(self):
+    return self._to_windows_path(PROFILE_ONLY_PATH)
+
+  @property
+  def d8_out_path(self):
+    return self._to_windows_path(f'{D8_OUT_PATH}.exe')
+
+
 JET_STREAM_PATH = 'benchmarks/JetStream2'
 BUCKET_NAME = 'chromium-v8-builtins-pgo'
 GERRIT_HOST = 'https://chromium-review.googlesource.com'
 GERRIT_PROJECT = 'v8/v8'
-MAX_PARALLEL_VERSIONS = 10
+MAX_PARALLEL_VERSIONS = 5
 V8_REPO_URL = 'https://chromium.googlesource.com/v8/v8/'
 V8_PERF_REPO_URL = 'https://chrome-internal.googlesource.com/v8/v8-perf'
 VERSION_CUTOFF = (11, 2)
@@ -69,8 +98,26 @@ PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
 PROFILE_PATTERN = r'(block_hint,\w+(,\d+){3}\n)+(builtin_hash,\w+,\-?\d+\n)+'
 
 COMPILATORS = {
-    'x86': ('ci', 'V8 Linux PGO instrumentation - builder'),
-    'x64': ('ci', 'V8 Linux64 PGO instrumentation - builder'),
+    'x86': {
+      'bucket': 'ci',
+      'builder': 'V8 Linux PGO instrumentation - builder',
+      'platform': UnixPlatform(),
+    },
+    'x64': {
+      'bucket': 'ci',
+      'builder': 'V8 Linux64 PGO instrumentation - builder',
+      'platform': UnixPlatform(),
+    },
+    'x86-rl': {
+      'bucket': 'ci',
+      'builder': 'V8 Win32 PGO instrumentation - builder',
+      'platform': WindowsPlatform(),
+    },
+    'x64-rl': {
+      'bucket': 'ci',
+      'builder': 'V8 Win64 PGO instrumentation - builder',
+      'platform': WindowsPlatform(),
+    },
 }
 
 PROPERTIES = {
@@ -142,18 +189,18 @@ def with_wrapper_step(func):
 
 class VersionProfileTrack:
   """
-  A track is the process of compiling, profile generation and uloading the
-  profile for a single version on a single architecture. This process has
+  A track is the process of compiling, generating and uploading the profile
+  for a single version on a track (architecture × platform). This process has
   multiple discrete steps. We want to run these steps in parallel for each
-  versions and each architecture.
+  versions and each track.
 
-  This class keeps track of the state of this process by collecting from
-  every step handlers and properties that are necessary for the next.
+  This class manages the state of this process by collecting handlers and
+  properties from every step and passes it to the next one.
   """
 
-  def __init__(self, version, arch, revision) -> None:
+  def __init__(self, version, track, revision) -> None:
     self.version = '%d.%d.%d.%d' % version
-    self.arch = arch
+    self.track = track
     self.revision = revision
     self.compilator_handler = None
     self.compilator_properties = None
@@ -164,9 +211,8 @@ class VersionProfileTrack:
 
   @property
   def profile_out_file(self):
-    out_dir = self.profile_dir.join(
-        self.profile_task.get_task_shard_output_dirs()[0])
-    return out_dir.join(f'{self.arch}.profile')
+    shard_output_dir = self.profile_task.get_task_shard_output_dirs()[0]
+    return self.profile_dir / shard_output_dir / 'pgo.profile'
 
   def find_original_cas_digest(self, comp_props):
     self.compilator_properties = comp_props
@@ -189,12 +235,12 @@ class VersionProfileTrack:
 
   @property
   def name(self):
-    return f'{self.version} {self.arch}'
+    return f'{self.version} {self.track}'
 
   @property
   def presentation(self):
     result = '❌' if self.exception else '✓'
-    result += f' {self.version} {self.revision} {self.arch}'
+    result += f' {self.version} {self.revision} {self.track}'
 
     if self.exception:
       result += f' Failure: {self.exception}'
@@ -203,7 +249,7 @@ class VersionProfileTrack:
 
   @property
   def remote_profile_path(self):
-    return f'by-version/{self.version}/{self.arch}.profile'
+    return f'by-version/{self.version}/{self.track}.profile'
 
   @property
   def profile_url(self):
@@ -312,9 +358,10 @@ def exception_capture(api, tracker):
 def trigger_compilators(api, profile_trackers, orchestrator):
   for tracker in advanceable(profile_trackers):
     with exception_capture(api, tracker), api.step.nest(tracker.name):
-      bucket, compilator_name = COMPILATORS[tracker.arch]
+      compilator = COMPILATORS[tracker.track]
       h = orchestrator.trigger_compilator(
-          compilator_name, revision=tracker.revision, bucket=bucket)
+          compilator['builder'], revision=tracker.revision,
+          bucket=compilator['bucket'])
       tracker.compilator_handler = h
 
 
@@ -331,14 +378,14 @@ def download_benchmark_code(api, work_dir):
         '--sparse',
         V8_PERF_REPO_URL,
     )
-    checkout_path = work_dir.join('v8-perf')
+    checkout_path = work_dir / 'v8-perf'
     with api.context(cwd=checkout_path):
       api.v8.git_output(
           'sparse-checkout',
           'set',
           JET_STREAM_PATH,
       )
-      return checkout_path.join(JET_STREAM_PATH)
+      return checkout_path / JET_STREAM_PATH
 
 
 @with_wrapper_step
@@ -358,8 +405,7 @@ def merge_isolate_with_benchmark(api, profile_trackers, perf_code_path):
       cas_work_dir = api.path.mkdtemp()
       api.cas.download('download', tracker.original_cas_digest, cas_work_dir)
       api.file.copytree(
-          'copy benchmark code', perf_code_path,
-          cas_work_dir.join('JetStream2'))
+          'copy benchmark code', perf_code_path, cas_work_dir / 'JetStream2')
       tracker.augmented_cas_digest = api.cas.archive('archive', cas_work_dir)
 
 
@@ -372,16 +418,18 @@ def trigger_profilers(api, profile_trackers):
   for tracker in advanceable(profile_trackers):
     with exception_capture(api, tracker), api.step.nest(tracker.name):
       tracker.profile_dir = api.path.mkdtemp(
-          f'v{tracker.version}_{tracker.arch}')
+          f'v{tracker.version}_{tracker.track}')
+
+      platform = COMPILATORS[tracker.track]['platform']
       task = api.chromium_swarming.task(
           name=f'pgo profile {tracker.name}',
           task_output_dir=tracker.profile_dir,
           raw_cmd=[
               'vpython3',
               '-u',
-              './tools/builtins-pgo/profile_only.py',
-              '--v8-target-cpu',
-              tracker.arch,
+              platform.profile_only_path,
+              '--d8-path',
+              platform.d8_out_path,
               '--output-dir',
               '${ISOLATED_OUTDIR}',
           ],
@@ -456,7 +504,7 @@ def upload_pgo_file(api, tracker):
 
 
 def upload_meta_json(api, tracker_pair):
-  successful_tracks = [t.arch for t in tracker_pair if not t.exception]
+  successful_tracks = [t.track for t in tracker_pair if not t.exception]
   assert successful_tracks, 'Expected tracks, but none found to upload.'
   api.gsutil.upload(
       api.json.input({
@@ -520,9 +568,9 @@ def add_comment_to_gerrit_changes(api, profile_trackers):
               (
                   "PGO profiles for V8 builtins have been generated in "
                   f"[build  {build_id}]({build_url}) for the following "
-                  "architectures:"
+                  "tracks:"
               ),
-              *[f'* [{t.arch}]({t.profile_url})' for t in version_trackers],
+              *[f'* [{t.track}]({t.profile_url})' for t in version_trackers],
               "",
               (
                   "If you suspect an error caused by PGO profiles, "
@@ -560,6 +608,7 @@ def update_blocked_version_file(api, failed_versions):
 
 
 def GenTests(api):
+  all_tracks = {'x86', 'x64', 'x86-rl', 'x64-rl'}
 
   def stdout(step_name, text):
     return api.override_step_data(
@@ -633,12 +682,14 @@ def GenTests(api):
                 'cd12 refs/tags/1.1.1.4',
                 '43ff refs/tags/1.1.2',
                 '',
-            ])), *args)
+            ])),
+        *args,
+    )
 
   yield main_scenario(
       'basic',
-      *mock_compilation(['1.1.2.0', '1.1.1.4'], ['x86', 'x64']),
-      *mock_profiles(['1.1.2.0', '1.1.1.4'], ['x86', 'x64']),
+      *mock_compilation(['1.1.2.0', '1.1.1.4'], all_tracks),
+      *mock_profiles(['1.1.2.0', '1.1.1.4'], all_tracks),
   )
 
   yield api.test(
@@ -660,19 +711,21 @@ def GenTests(api):
       api.post_process(DropExpectation),
   )
 
+  failing_track = 'x86'
+  passing_tracks = all_tracks - {failing_track}
   yield main_scenario(
       'one_track_compilation_failure',
-      *mock_compilation(['1.1.2.0'], ['x86', 'x64']),
-      *mock_profiles(['1.1.2.0'], ['x86', 'x64']),
-      *mock_compilation(['1.1.1.4'], ['x64']),
-      *mock_profiles(['1.1.1.4'], ['x64']),
-      *mock_compilation(['1.1.1.4'], ['x86'], compilator_properties={}),
+      *mock_compilation(['1.1.2.0'], all_tracks),
+      *mock_profiles(['1.1.2.0'], all_tracks),
+      *mock_compilation(['1.1.1.4'], passing_tracks),
+      *mock_profiles(['1.1.1.4'], passing_tracks),
+      *mock_compilation(['1.1.1.4'], [failing_track], compilator_properties={}),
       api.post_process(
           DoesNotRun,
-          'augment isolates.1.1.1.4 x86',
-          'trigger profilers.1.1.1.4 x86',
-          'collect profiles.1.1.1.4 x86',
-          'upload to gs.gsutil upload 1.1.1.4 x86',
+          f'augment isolates.1.1.1.4 {failing_track}',
+          f'trigger profilers.1.1.1.4 {failing_track}',
+          f'collect profiles.1.1.1.4 {failing_track}',
+          f'upload to gs.gsutil upload 1.1.1.4 {failing_track}',
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
@@ -680,13 +733,16 @@ def GenTests(api):
       api.post_process(DropExpectation),
   )
 
+  failing_track = 'x86'
+  passing_tracks = all_tracks - {failing_track}
   yield main_scenario(
       'one_track_profiling_failure',
-      *mock_compilation(['1.1.2.0', '1.1.1.4'], ['x86', 'x64']),
-      *mock_profiles(['1.1.2.0'], ['x86', 'x64']),
-      *mock_profiles(['1.1.1.4'], ['x64']),
+      *mock_compilation(['1.1.2.0', '1.1.1.4'], all_tracks),
+      *mock_profiles(['1.1.2.0'], all_tracks),
+      *mock_profiles(['1.1.1.4'], passing_tracks),
       api.step_data(
-          'collect profiles.1.1.1.4 x86.pgo profile 1.1.1.4 x86 on Ubuntu 31.41',
+          f'collect profiles.1.1.1.4 {failing_track}.pgo profile 1.1.1.4 x86 '
+          'on Ubuntu 31.41',
           api.chromium_swarming.summary(
               api.test_utils.canned_gtest_output(True),
               {'shards': [{
@@ -694,7 +750,7 @@ def GenTests(api):
               }]})),
       api.post_process(
           DoesNotRun,
-          'upload to gs.gsutil upload 1.1.1.4 x86',
+          f'upload to gs.gsutil upload 1.1.1.4 {failing_track}',
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
@@ -704,9 +760,9 @@ def GenTests(api):
 
   yield main_scenario(
       'full_version_failure',
-      *mock_compilation(['1.1.2.0'], ['x86', 'x64']),
-      *mock_profiles(['1.1.2.0'], ['x86', 'x64']),
-      *mock_compilation(['1.1.1.4'], ['x86', 'x64'], compilator_properties={}),
+      *mock_compilation(['1.1.2.0'], all_tracks),
+      *mock_profiles(['1.1.2.0'], all_tracks),
+      *mock_compilation(['1.1.1.4'], all_tracks, compilator_properties={}),
       api.post_process(
           DoesNotRun,
           'augment isolates.1.1.1.4 x86',
@@ -763,6 +819,8 @@ def GenTests(api):
           'trigger compilators.0.1.1.10 x64',
       ),
       api.post_process(DropExpectation),
+      # The test fails due to missing mock data for following steps.
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -788,6 +846,8 @@ def GenTests(api):
           'trigger compilators.1.1.1.2 x64',
       ),
       api.post_process(DropExpectation),
+      # The test fails due to missing mock data for following steps.
+      api.expect_status('FAILURE'),
   )
 
   yield main_scenario(
