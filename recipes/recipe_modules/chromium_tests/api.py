@@ -821,8 +821,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       step_result = self.m.step.empty('expose execution properties')
       step_result.presentation.properties[
           'trigger_properties'] = execution_info.as_trigger_prop()
-      step_result.presentation.properties[
-          'swarming_execution_properties'] = execution_info.as_trigger_prop()
 
     return execution_info
 
