@@ -1362,7 +1362,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if result.retcode:
       if builder_id.group == 'chromium.perf.pinpoint':
         pinpoint_builder = chromium.BuilderId.create_for_group(
-            'chromium.perf', 'linux-perf')
+            'chromium.perf', builder_id.builder)
         result = self.run_mb_cmd(
             name,
             'lookup',
