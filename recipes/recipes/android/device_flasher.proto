@@ -1,0 +1,38 @@
+// Copyright 2023 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package recipes.build.android.device_flasher;
+
+message FlashCriteria {
+  // The swarming dimension "pool" to lookup for devices.
+  // Can use the OR dimension operator "|" to search multiple pools, e.g.
+  // "pool_a|pool_b|pool_c".
+  string pool = 1;
+
+  // The swarming dimension "device_type" to lookup for devices.
+  // Can use the OR dimension operator "|" to search multiple device types.
+  string device_type = 2;
+
+  // The swarming dimension "device_os" to lookup for devices.
+  // Can use the OR dimension operator "|" to search multiple device oses.
+  string device_os = 3;
+
+  // The swarming dimension "id" to lookup for devices.
+  // Can use the OR dimension operator "|" to search multiple bot ids.
+  optional string bot_id = 4;
+
+  // Flash the device when its max UID reaches this number.
+  // Note that the range of a valid UID is 10000 ~ 19999.
+  // A value below 10000 means to flash the device regardless of its max UID.
+  optional int32 max_uid_threshold = 5;
+}
+
+message InputProperties {
+  // Use these criteria to lookup and flash devices.
+  repeated FlashCriteria flash_criteria = 1;
+
+  // When True, don't perform the flash task.
+  optional bool dry_run = 2;
+}
