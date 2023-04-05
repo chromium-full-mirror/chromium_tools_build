@@ -1479,24 +1479,49 @@ class ChromiumApi(recipe_api.RecipeApi):
         mb_args += ['--rts-target-change-recall', str(rts_recall)]
 
     name = name or 'generate_build_files'
-    with self.mb_failure_handler(name):
-      result = self.run_mb_cmd(
-          name,
-          'gen',
-          builder_id,
-          mb_path=mb_path,
-          mb_config_path=mb_config_path,
-          phase=phase,
-          use_goma=use_goma,
-          android_version_code=android_version_code,
-          android_version_name=android_version_name,
-          additional_args=mb_args,
-          step_test_data=step_test_data,
-          **kwargs)
+    try:
+      with self.mb_failure_handler(name):
+        result = self.run_mb_cmd(
+            name,
+            'gen',
+            builder_id,
+            mb_path=mb_path,
+            mb_config_path=mb_config_path,
+            phase=phase,
+            use_goma=use_goma,
+            android_version_code=android_version_code,
+            android_version_name=android_version_name,
+            additional_args=mb_args,
+            step_test_data=step_test_data,
+            **kwargs)
+    except Exception as e:
+      # TODO(crbug.com/1429167) - Removing the block below when we don't
+      # need to check earlier commits in Pinpoint. Let's aim at M114
+      if builder_id.group == 'chromium.perf.pinpoint':
+        pinpoint_builder = chromium.BuilderId.create_for_group(
+            'chromium.perf', builder_id.builder)
+        try:
+          result = self.run_mb_cmd(
+              name,
+              'gen',
+              pinpoint_builder,
+              mb_path=mb_path,
+              mb_config_path=mb_config_path,
+              phase=phase,
+              use_goma=use_goma,
+              android_version_code=android_version_code,
+              android_version_name=android_version_name,
+              additional_args=mb_args,
+              step_test_data=step_test_data,
+              **kwargs)
+        except Exception:
+          raise e from e
+      else:
+        raise e from e
 
-      if isolated_targets:
-        result.presentation.logs['swarming-targets-file.txt'] = (
-            sorted_isolated_targets)
+    if isolated_targets:
+      result.presentation.logs['swarming-targets-file.txt'] = (
+          sorted_isolated_targets)
 
     return gn_args
 
