@@ -40,6 +40,7 @@ BUILDER_GROUP_SWARMING_PRIORITIES.update({
     'chromium.fyi': 35,
     'chromium.fuchsia.fyi': 35,
     'chromium.goma.fyi': 35,  # This should be lower than the CQ.
+    'chromium.memory.fyi': 35,
     'chromium.reclient.fyi': 35,
     'client.v8.chromium': 35,
     'client.v8.fyi': 35,
