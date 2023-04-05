@@ -211,6 +211,11 @@ def RunSteps(api, fail_compile):
   if fail_compile:
     api.chromium_tests.compile_specific_targets = compile_override
 
+  if 'mock_output_files' in api.properties:
+    for f in api.properties['mock_output_files']:
+      api.path.mock_add_paths('[CACHE]/builder/src/out/%s/%s' %
+                              (api.properties['config'], f))
+
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   return api.chromium_tests.main_waterfall_steps(builder_id, builder_config)
@@ -853,6 +858,7 @@ def GenTests(api):
   yield api.test(
       'ci_bot_expose_trigger_properties',
       api.properties(
+          mock_output_files=['orchestrator_all.runtime_deps'],
           config='Release',
           swarm_hashes={fake_test: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size'},
       ),
@@ -889,6 +895,12 @@ def GenTests(api):
                   }],
               }
           }),
+      api.step_data(
+          'archive test-trigger deps.read test-trigger deps file',
+          api.file.read_text(
+              '../../testing/buildbot/*.json\n'
+              '../../testing/merge_scripts/merge_api.py\n'
+              '../../testing/merge_scripts/standard_gtest_merge.py')),
       api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun,
                        'archive command lines to RBE-CAS'),

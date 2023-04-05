@@ -41,6 +41,9 @@ REPOSITORY_MAPPING = {
     'src/webrtc': 'webrtc'
 }
 
+TEST_TRIGGER_AND_COLLECT_DEPS_TARGET = 'infra/orchestrator:orchestrator_all'
+TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE = 'orchestrator_all.runtime_deps'
+
 
 @attrs()
 class SwarmingExecutionInfo:
@@ -600,6 +603,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.get_android_version_details(
             builder_config.android_version, log_details=True))
 
+    # Compile the src side deps so it is ready to be uploaded to CAS.
+    # This is only useful when uploading test isolate to be executed in
+    # a different srcless builder.
+    if isolated_tests and builder_config.expose_trigger_properties:
+      compile_targets = sorted(
+          set(compile_targets) | {TEST_TRIGGER_AND_COLLECT_DEPS_TARGET})
+
     raw_result = self.run_mb_and_compile(
         builder_id,
         compile_targets,
@@ -817,10 +827,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if expose_to_properties:
       execution_info = execution_info.ensure_command_lines_archived(self)
+      trigger_properties = execution_info.as_trigger_prop()
+      trigger_properties[
+          'test_trigger_deps_digest'] = self._archive_test_trigger_deps_digest(
+          )
 
       step_result = self.m.step.empty('expose execution properties')
       step_result.presentation.properties[
-          'trigger_properties'] = execution_info.as_trigger_prop()
+          'trigger_properties'] = trigger_properties
 
     return execution_info
 
@@ -1852,6 +1866,49 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                            command_lines)
     return self.m.cas.archive('archive command lines to RBE-CAS',
                               self.m.path['cleanup'], command_lines_file)
+
+  def _archive_test_trigger_deps_digest(self):
+    # Runtime files are listed relative to output dir, we upload to CAS relative
+    # to checkout dir (src checkout folder) as those will be used in the srcless
+    # builder as they were checked out. Note, it's possible that test-trigger
+    # deps doesn't compile in the builder as the builder itself can be a tester
+    # or a srcless builder.
+    #
+    # Runtime files (TEST_TRIGGER_AND_COLLECT_DEPS_TARGET) are defined here:
+    # https://source.chromium.org/chromium/chromium/src/+/main:infra/orchestrator/BUILD.gn
+    base_dir = self.m.path['checkout']
+    output_dir = self.m.chromium.output_dir
+    runtime_deps_file = self.m.chromium.output_dir.join(
+        TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE)
+
+    if not self.m.path.exists(runtime_deps_file):
+      self.m.step.empty('test-trigger deps not compiled, ignored (%s)' %
+                        runtime_deps_file)
+      return None
+
+    with self.m.step.nest('archive test-trigger deps') as result:
+      dep_paths = set()
+      paths = (
+          self.m.file.read_text('read test-trigger deps file',
+                                runtime_deps_file).rstrip().split('\n'))
+      for path in paths:
+        file_path = self.m.path.relpath(output_dir.join(path), base_dir)
+        file_path = base_dir.join(file_path)
+
+        if "*" in str(file_path):
+          # Glob files if it contains a wildcard
+          paths = self.m.file.glob_paths('get files that match pattern',
+                                         base_dir, str(file_path))
+          dep_paths.update([str(p) for p in paths])
+        else:
+          dep_paths.add(str(file_path))
+
+      digest = self.m.cas.archive('archive test-trigger deps to RBE-CAS',
+                                  base_dir, *dep_paths)
+      result.presentation.logs["collected test-trigger deps"] = [
+          str(x) for x in dep_paths
+      ]
+      return digest
 
   def _download_command_lines(self, command_lines_digest):
     self.m.cas.download('download command lines', command_lines_digest,
