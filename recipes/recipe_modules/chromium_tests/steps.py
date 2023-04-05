@@ -2227,14 +2227,6 @@ class SwarmingTest(Test):
     task_dimensions = task_slice.dimensions
     # Add custom dimensions.
     task_dimensions.update(self.spec.dimensions)
-    # Set default value.
-    used_default_os = False
-    if 'os' not in task_dimensions:
-      # TODO(crbug.com/1203436): Remove this once no more tasks are using it.
-      used_default_os = True
-      task_dimensions['os'] = (
-          self.api.m.chromium_swarming.prefered_os_dimension(
-              self.api.m.platform.name))
     task_slice = task_slice.with_dimensions(**task_dimensions)
 
     # Add optional dimensions.
@@ -2255,8 +2247,6 @@ class SwarmingTest(Test):
           'experimental_shard_count': [str(shards)],
           'normally_assigned_shard_count': [str(shards - 1)],
       })
-    if used_default_os:
-      tags['used_default_os'] = ['true']
 
     task.request = (
         task_request.with_slice(0, task_slice).with_name(

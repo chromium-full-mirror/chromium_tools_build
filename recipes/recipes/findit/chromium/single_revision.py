@@ -204,13 +204,19 @@ def GenTests(api):
                 'name': 'blink_web_tests',
                 'swarming': {
                     'can_use_on_swarming_builders': True,
+                    'dimension_sets': [{
+                        'os': 'Linux',
+                    },],
                     'shards': 1,
                 },
             }],
             'gtest_tests': [{
                 'test': 'base_unittests',
                 'swarming': {
-                    'can_use_on_swarming_builders': True
+                    'can_use_on_swarming_builders': True,
+                    'dimension_sets': [{
+                        'os': 'Linux',
+                    },],
                 },
             }],
         }

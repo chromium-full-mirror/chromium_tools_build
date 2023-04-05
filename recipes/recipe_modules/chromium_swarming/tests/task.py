@@ -23,10 +23,10 @@ def RunSteps(api):
   if api.properties.get('wait_for_capacity'):
     task.wait_for_capacity = True
 
+  target_os = 'Linux'
   task_slice = task.request[0]
   task_dimensions = task_slice.dimensions
-  task_dimensions['os'] = api.chromium_swarming.prefered_os_dimension(
-      api.platform.name)
+  task_dimensions['os'] = target_os
   task_dimensions['pool'] = api.properties.get('pool', 'chromium.tests')
   task_slice = task_slice.with_dimensions(**task_dimensions)
   task.named_caches = dict(api.properties.get('named_caches', {}))

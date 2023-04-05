@@ -984,7 +984,7 @@ def GenTests(api):
       step_prefix = f'calibration attempt {calibration_attempt}.'
     step_name = f'check {test_name} at #{offset}'
     return api.step_data(
-        f'{step_prefix}{step_name}.{step_name} - shard {shard}',
+        f'{step_prefix}{step_name}.{step_name} - shard {shard} on Ubuntu-16.04',
         api.chromium_swarming.summary(
             dispatched_task_step_test_data=None, data=test_data))
 
@@ -1246,14 +1246,13 @@ def GenTests(api):
 
   # Simulate repro-only mode reproducing a flake.
   yield (
-      test('repro_only', mode='repro') +
-      successful_lookups(0) +
+      test('repro_only', mode='repro') + successful_lookups(0) +
       is_flaky(0, 0, 1, calibration_attempt=1) +
       api.post_process(SummaryMarkdown, 'Flake still reproduces.') +
-      api.post_process(StatusSuccess) +
-      api.post_process(Filter(
-          'calibration attempt 1.check mjsunit/foobar at #0.'
-          '[trigger] check mjsunit/foobar at #0 - shard 0'))
+      api.post_process(StatusSuccess) + api.post_process(
+          Filter(
+              'calibration attempt 1.check mjsunit/foobar at #0.'
+              '[trigger] check mjsunit/foobar at #0 - shard 0 on Ubuntu-16.04'))
   )
 
   # Simulate repro-only mode not reproducing a flake.
@@ -1354,20 +1353,23 @@ def GenTests(api):
 
   # Simulate triggering of the recipe by the flake verification bot.
   yield (
-      test('verify_flake', mode='repro', swarming_priority=40, num_shards=2,
-           swarming_expiration=7200, total_timeout_sec=240,
-           max_calibration_attempts=1) +
-      successful_lookups(0) +
+      test(
+          'verify_flake',
+          mode='repro',
+          swarming_priority=40,
+          num_shards=2,
+          swarming_expiration=7200,
+          total_timeout_sec=240,
+          max_calibration_attempts=1) + successful_lookups(0) +
       is_flaky(0, 0, 0, calibration_attempt=1) +
       is_flaky(0, 1, 1, calibration_attempt=1) +
       api.post_process(SummaryMarkdown, 'Flake still reproduces.') +
-      api.post_process(StatusSuccess) +
-      api.post_process(Filter(
-          'calibration attempt 1.check mjsunit/foobar at #0.'
-          '[trigger] check mjsunit/foobar at #0 - shard 1',
-          'calibration attempt 1.check mjsunit/foobar at #0.'
-          'check mjsunit/foobar at #0 - shard 1'))
-  )
+      api.post_process(StatusSuccess) + api.post_process(
+          Filter(
+              'calibration attempt 1.check mjsunit/foobar at #0.'
+              '[trigger] check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04',
+              'calibration attempt 1.check mjsunit/foobar at #0.'
+              'check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04')))
 
   yield (
       test('bisect_attempt_with_wrong_commit_position') +

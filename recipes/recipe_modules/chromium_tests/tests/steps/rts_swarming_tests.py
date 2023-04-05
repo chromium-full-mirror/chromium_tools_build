@@ -20,6 +20,7 @@ from RECIPE_MODULES.build.chromium_tests import steps
 def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_swarming.set_default_dimension('pool', 'foo')
+  api.chromium_swarming.set_default_dimension('os', 'Linux')
   api.chromium.set_build_properties({
       'got_webrtc_revision': 'webrtc_sha',
       'got_v8_revision': 'v8_sha',

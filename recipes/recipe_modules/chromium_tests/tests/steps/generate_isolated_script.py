@@ -7,6 +7,7 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
+    'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
     'filter',
@@ -18,6 +19,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   if api.tryserver.is_tryserver:

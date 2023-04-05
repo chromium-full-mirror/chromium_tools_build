@@ -449,17 +449,14 @@ def GenTests(api):
 
   step_test_data = api.m.chromium_swarming.canned_summary_output(
       api.m.test_utils.canned_gtest_output(passing=False), failure=True)
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'fuzz_archive',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec='{"tests": [{"name": "jsfunfuzz"}]}',
-    ) +
-    api.override_step_data('Fuzz', step_test_data)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'fuzz_archive',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec='{"tests": [{"name": "jsfunfuzz"}]}',
+  ) + api.override_step_data('Fuzz on Ubuntu-16.04', step_test_data))
 
   yield (
     api.v8.test(
@@ -491,34 +488,25 @@ def GenTests(api):
     )
   )
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bytecode_baseline',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec='{"tests": [{"name": "check-bytecode-baseline"}]}',
-    ) +
-    api.post_process(MustRun, 'Bytecode-Baseline') +
-    api.post_process(DropExpectation)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bytecode_baseline',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec='{"tests": [{"name": "check-bytecode-baseline"}]}',
+  ) + api.post_process(MustRun, 'Bytecode-Baseline on Ubuntu-16.04') +
+         api.post_process(DropExpectation))
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'fuchsia-unittests',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec='{"tests": [{"name": "fuchsia-unittests"}]}',
-    ) +
-    api.post_process(MustRun, 'Unittests') +
-    api.post_process(
-        Filter()
-            .include_re(r'.*Unittests.*')
-    )
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'fuchsia-unittests',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec='{"tests": [{"name": "fuchsia-unittests"}]}',
+  ) + api.post_process(MustRun, 'Unittests on Ubuntu-16.04') +
+         api.post_process(Filter().include_re(r'.*Unittests.*')))
 
   yield (
     api.v8.test(
@@ -965,18 +953,15 @@ def GenTests(api):
   )
 
   # Cover test config entries with specific isolate targets.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'specific_isolated_file',
-    ) +
-    api.v8.test_spec_in_checkout(
-        'V8 Foobar',
-        '{"tests": [{"name": "numfuzz", "suffix": "sfx"}]}') +
-    api.post_process(
-      Filter('build.isolate tests', 'trigger tests.[trigger] Num Fuzz - sfx'))
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'specific_isolated_file',
+  ) + api.v8.test_spec_in_checkout(
+      'V8 Foobar', '{"tests": [{"name": "numfuzz", "suffix": "sfx"}]}') +
+         api.post_process(
+             Filter('build.isolate tests',
+                    'trigger tests.[trigger] Num Fuzz - sfx on Ubuntu-16.04')))
 
   # Test using clobber_all property.
   yield (

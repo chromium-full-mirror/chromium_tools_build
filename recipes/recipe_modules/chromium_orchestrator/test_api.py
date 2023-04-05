@@ -52,6 +52,9 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         'name': test,
         'swarming': {
             'can_use_on_swarming_builders': True,
+            'dimension_sets': [{
+                'os': 'Linux',
+            }],
             'shards': shards,
         },
         'isolate_coverage_data': True,

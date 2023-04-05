@@ -569,7 +569,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"hello_world/Ubuntu-16.04/hash_for_l/test_buildername/571:0:2\", \"priority\": \"30\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:test_group\", \"builder_group:tryserver\", \"buildername:test_buildername\", \"buildnumber:571\", \"data:hash_for_linux/size\", \"name:hello_world\", \"os:linux\", \"spec_name:chromium.ci:test_buildername\", \"stepname:hello_world\", \"test_suite:chromium_test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"hash_for_linux\", \"size_bytes\": \"size\"}}, \"cipd_input\": {\"packages\": [{\"package_name\": \"super/awesome/pkg\", \"path\": \"bin\", \"version\": \"git_revision:deadbeef\"}]}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:test_buildername\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:chromium_test\", \"-tag\", \"step_name:hello_world\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"hello_world.exe\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"foo\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"0\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}, {\"key\": \"TESTING\", \"value\": \"1\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"joe\"}]}",
+      "{\"requests\": [{\"name\": \"hello_world/Ubuntu-16.04/hash_for_l/test_buildername/571:0:2\", \"priority\": \"30\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:test_group\", \"builder_group:tryserver\", \"buildername:test_buildername\", \"buildnumber:571\", \"data:hash_for_linux/size\", \"name:hello_world\", \"os:linux\", \"spec_name:chromium.ci:test_buildername\", \"stepname:hello_world on Ubuntu-16.04\", \"test_suite:chromium_test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"hash_for_linux\", \"size_bytes\": \"size\"}}, \"cipd_input\": {\"packages\": [{\"package_name\": \"super/awesome/pkg\", \"path\": \"bin\", \"version\": \"git_revision:deadbeef\"}]}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:test_buildername\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:chromium_test\", \"-tag\", \"step_name:hello_world on Ubuntu-16.04\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"hello_world.exe\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"foo\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"0\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}, {\"key\": \"TESTING\", \"value\": \"1\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"joe\"}]}",
       "-json-output",
       "/path/to/tmp/json",
       "-verbose"
@@ -587,7 +587,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "[trigger] hello_world",
+    "name": "[trigger] hello_world on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
@@ -627,7 +627,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:hello_world\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"os:linux\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:test_buildername\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:hello_world\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:hello_world on Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:chromium_test\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -660,7 +660,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:chromium_test\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\", @@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:hello_world\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:hello_world on Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
@@ -730,7 +730,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"hello_world/Ubuntu-16.04/hash_for_l/test_buildername/571:1:2\", \"priority\": \"30\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:test_group\", \"builder_group:tryserver\", \"buildername:test_buildername\", \"buildnumber:571\", \"data:hash_for_linux/size\", \"name:hello_world\", \"os:linux\", \"spec_name:chromium.ci:test_buildername\", \"stepname:hello_world\", \"test_suite:chromium_test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"hash_for_linux\", \"size_bytes\": \"size\"}}, \"cipd_input\": {\"packages\": [{\"package_name\": \"super/awesome/pkg\", \"path\": \"bin\", \"version\": \"git_revision:deadbeef\"}]}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:test_buildername\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:chromium_test\", \"-tag\", \"step_name:hello_world\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"hello_world.exe\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"foo\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"1\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}, {\"key\": \"TESTING\", \"value\": \"1\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"joe\"}]}",
+      "{\"requests\": [{\"name\": \"hello_world/Ubuntu-16.04/hash_for_l/test_buildername/571:1:2\", \"priority\": \"30\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:test_group\", \"builder_group:tryserver\", \"buildername:test_buildername\", \"buildnumber:571\", \"data:hash_for_linux/size\", \"name:hello_world\", \"os:linux\", \"spec_name:chromium.ci:test_buildername\", \"stepname:hello_world on Ubuntu-16.04\", \"test_suite:chromium_test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"hash_for_linux\", \"size_bytes\": \"size\"}}, \"cipd_input\": {\"packages\": [{\"package_name\": \"super/awesome/pkg\", \"path\": \"bin\", \"version\": \"git_revision:deadbeef\"}]}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:test_buildername\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:chromium_test\", \"-tag\", \"step_name:hello_world on Ubuntu-16.04\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"hello_world.exe\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"foo\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"1\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}, {\"key\": \"TESTING\", \"value\": \"1\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"joe\"}]}",
       "-json-output",
       "/path/to/tmp/json",
       "-verbose"
@@ -748,7 +748,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "[trigger] hello_world (2)",
+    "name": "[trigger] hello_world on Ubuntu-16.04 (2)",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
@@ -788,7 +788,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"name:hello_world\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"os:linux\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:test_buildername\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:hello_world\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:hello_world on Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:chromium_test\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
@@ -821,7 +821,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:chromium_test\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\", @@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:hello_world\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:hello_world on Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
@@ -949,7 +949,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "hello_world",
+    "name": "hello_world on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Total shard runtime (0s) + overhead(0s): 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",

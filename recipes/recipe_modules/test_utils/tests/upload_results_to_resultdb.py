@@ -59,6 +59,7 @@ def RunSteps(api, is_swarming_test=True):
     test_specs.append(
         steps.SwarmingGTestTestSpec.create(
             'base_unittests',
+            dimensions={'os': 'Linux'},
             shards=2,
             test_id_prefix='ninja://chromium/tests:base_unittests/'))
   tests = [test_spec.get_test(api.chromium_tests) for test_spec in test_specs]

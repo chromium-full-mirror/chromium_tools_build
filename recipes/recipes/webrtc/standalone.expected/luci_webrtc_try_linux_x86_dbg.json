@@ -215,7 +215,12 @@
       "@@@STEP_LOG_LINE@json.output@    \"gtest_tests\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"can_use_on_swarming_builders\": true@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"can_use_on_swarming_builders\": true, @@@",
+      "@@@STEP_LOG_LINE@json.output@          \"dimension_sets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@            {@@@",
+      "@@@STEP_LOG_LINE@json.output@              \"os\": \"Ubuntu-16.04\"@@@",
+      "@@@STEP_LOG_LINE@json.output@            }@@@",
+      "@@@STEP_LOG_LINE@json.output@          ]@@@",
       "@@@STEP_LOG_LINE@json.output@        }, @@@",
       "@@@STEP_LOG_LINE@json.output@        \"test\": \"dummy_test\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
@@ -2016,7 +2021,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"dummy_test/Ubuntu-16.04/[dummy has/linux_x86_dbg/-1\", \"priority\": \"30\", \"realm\": \"webrtc:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.webrtc\", \"buildername:linux_x86_dbg\", \"data:[dummy hash for dummy_test/dummy size]\", \"gerrit:https://webrtc-review.googlesource.com/c/123456/7\", \"name:dummy_test\", \"ninja_target:\", \"patch_project:src\", \"project:webrtc\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:webrtc.try:linux_x86_dbg\", \"stepname:dummy_test\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"used_default_os:true\", \"waterfall_builder_group:tryserver.webrtc\", \"waterfall_buildername:linux_x86_dbg\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:linux_x86_dbg\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"dummy_test/Ubuntu-16.04/[dummy has/linux_x86_dbg/-1\", \"priority\": \"30\", \"realm\": \"webrtc:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver.webrtc\", \"buildername:linux_x86_dbg\", \"data:[dummy hash for dummy_test/dummy size]\", \"gerrit:https://webrtc-review.googlesource.com/c/123456/7\", \"name:dummy_test\", \"ninja_target:\", \"patch_project:src\", \"project:webrtc\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:webrtc.try:linux_x86_dbg\", \"stepname:dummy_test on Ubuntu-16.04\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"waterfall_builder_group:tryserver.webrtc\", \"waterfall_buildername:linux_x86_dbg\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:linux_x86_dbg\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test on Ubuntu-16.04\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2033,7 +2038,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] dummy_test",
+    "name": "test_pre_run.[trigger] dummy_test on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -2077,10 +2082,9 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:ManualTS\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:pre-commit\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:webrtc.try:linux_x86_dbg\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:dummy_test\", @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:dummy_test on Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_suite:dummy_test\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"used_default_os:true\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_builder_group:tryserver.webrtc\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:linux_x86_dbg\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
@@ -2105,7 +2109,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:dummy_test\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\", @@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:dummy_test\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:dummy_test on Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:linux\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\", @@@",
@@ -2545,7 +2549,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "dummy_test",
+    "name": "dummy_test on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2586,7 +2590,7 @@
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  }, @@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"dummy_test\", @@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"dummy_test on Ubuntu-16.04\", @@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"dummy_test\", @@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false, @@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",

@@ -109,11 +109,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole ia32/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole ia32\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"ia32\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole ia32/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole ia32 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"ia32\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole ia32"
+    "name": "trigger tests.[trigger] GCMole ia32 on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -158,11 +158,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole x64/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole x64\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"x64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole x64/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole x64 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"x64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole x64"
+    "name": "trigger tests.[trigger] GCMole x64 on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -207,11 +207,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole arm/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole arm\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"arm\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole arm/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole arm on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"arm\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole arm"
+    "name": "trigger tests.[trigger] GCMole arm on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -256,11 +256,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole arm64/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole arm64\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"arm64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole arm64/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole arm64 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"arm64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole arm64"
+    "name": "trigger tests.[trigger] GCMole arm64 on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -305,11 +305,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - arm64/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - arm64\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:arm64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"arm64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - arm64/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - arm64 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:arm64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"arm64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole - arm64"
+    "name": "trigger tests.[trigger] GCMole - arm64 on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -354,11 +354,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - x64 - prepare/Ubuntu-16.04/[dummy has/V8 Foobar/571:0:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64 - prepare\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"collect\", \"x64\", \"--output\", \"${ISOLATED_OUTDIR}/callgraph.bin\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"0\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - x64 - prepare/Ubuntu-16.04/[dummy has/V8 Foobar/571:0:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64 - prepare on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"collect\", \"x64\", \"--output\", \"${ISOLATED_OUTDIR}/callgraph.bin\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"0\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole - x64 - prepare"
+    "name": "trigger tests.[trigger] GCMole - x64 - prepare on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -367,11 +367,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - x64 - prepare/Ubuntu-16.04/[dummy has/V8 Foobar/571:1:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64 - prepare\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"collect\", \"x64\", \"--output\", \"${ISOLATED_OUTDIR}/callgraph.bin\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"1\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - x64 - prepare/Ubuntu-16.04/[dummy has/V8 Foobar/571:1:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64 - prepare on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"collect\", \"x64\", \"--output\", \"${ISOLATED_OUTDIR}/callgraph.bin\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"1\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole - x64 - prepare (2)"
+    "name": "trigger tests.[trigger] GCMole - x64 - prepare on Ubuntu-16.04 (2)"
   },
   {
     "cmd": [
@@ -417,11 +417,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - test/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:test\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"ia32\", \"--test-run\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - test/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - test on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:test\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"ia32\", \"--test-run\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole - test"
+    "name": "trigger tests.[trigger] GCMole - test on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -466,11 +466,11 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - test - prepare/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - test - prepare\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:test\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"collect\", \"ia32\", \"--output\", \"${ISOLATED_OUTDIR}/callgraph.bin\", \"--test-run\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - test - prepare/Ubuntu-16.04/[dummy has/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:[dummy hash for run-gcmole]/123\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - test - prepare on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for run-gcmole]\", \"size_bytes\": \"123\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:test\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"collect\", \"ia32\", \"--output\", \"${ISOLATED_OUTDIR}/callgraph.bin\", \"--test-run\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "name": "trigger tests.[trigger] GCMole - test - prepare"
+    "name": "trigger tests.[trigger] GCMole - test - prepare on Ubuntu-16.04"
   },
   {
     "cmd": [
@@ -701,7 +701,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - x64 - local.GCMole - x64 - prepare",
+    "name": "GCMole - x64 - local.GCMole - x64 - prepare on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
@@ -837,7 +837,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - x64/Ubuntu-16.04/e3b0c44298/V8 Foobar/571:0:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"check\", \"x64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"0\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - x64/Ubuntu-16.04/e3b0c44298/V8 Foobar/571:0:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"check\", \"x64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"0\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -854,7 +854,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - x64 - local.[trigger] GCMole - x64",
+    "name": "GCMole - x64 - local.[trigger] GCMole - x64 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -896,7 +896,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:CI\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:v8.ci:V8 Foobar\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:GCMole - x64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:GCMole - x64 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -984,7 +984,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - x64/Ubuntu-16.04/e3b0c44298/V8 Foobar/571:1:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"check\", \"x64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"1\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - x64/Ubuntu-16.04/e3b0c44298/V8 Foobar/571:1:2\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - x64 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:x64\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"check\", \"x64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"GTEST_SHARD_INDEX\", \"value\": \"1\"}, {\"key\": \"GTEST_TOTAL_SHARDS\", \"value\": \"2\"}, {\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1001,7 +1001,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - x64 - local.[trigger] GCMole - x64 (2)",
+    "name": "GCMole - x64 - local.[trigger] GCMole - x64 on Ubuntu-16.04 (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -1043,7 +1043,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:CI\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:v8.ci:V8 Foobar\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:GCMole - x64\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:GCMole - x64 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1241,7 +1241,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - test - local.GCMole - test - prepare",
+    "name": "GCMole - test - local.GCMole - test - prepare on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -1349,7 +1349,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"GCMole - test/Ubuntu-16.04/e3b0c44298/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:test\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"check\", \"ia32\", \"--test-run\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"GCMole - test/Ubuntu-16.04/e3b0c44298/V8 Foobar/571\", \"priority\": \"25\", \"realm\": \"v8:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.v8\", \"buildername:V8 Foobar\", \"buildnumber:571\", \"data:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\", \"name:GCMole\", \"project:v8\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:v8.ci:V8 Foobar\", \"stepname:GCMole - test on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"//\", \"-var\", \"bucket:ci\", \"-var\", \"builder:V8 Foobar\", \"-var\", \"test_config:test\", \"-coerce-negative-duration\", \"--\", \"vpython3\", \"-u\", \"tools/gcmole/run-gcmole.py\", \"check\", \"ia32\", \"--test-run\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"2700\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1366,7 +1366,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - test - local.[trigger] GCMole - test",
+    "name": "GCMole - test - local.[trigger] GCMole - test on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -1408,7 +1408,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:CI\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:v8.ci:V8 Foobar\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:GCMole - test\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:GCMole - test on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1564,7 +1564,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole ia32",
+    "name": "GCMole ia32 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -1650,7 +1650,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole x64",
+    "name": "GCMole x64 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -1736,7 +1736,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole arm",
+    "name": "GCMole arm on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -1822,7 +1822,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole arm64",
+    "name": "GCMole arm64 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -1908,7 +1908,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - arm64",
+    "name": "GCMole - arm64 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -1994,7 +1994,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - x64",
+    "name": "GCMole - x64 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Max pending time: 1m 11s (shard #0)<br>Max shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Min shard runtime (32s) + overhead (29s): 1m 0s (shard #0)<br>Total shard runtime (1m 3s) + overhead(57s): 2m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -2107,7 +2107,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - test",
+    "name": "GCMole - test on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -2193,7 +2193,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GCMole - test (2)",
+    "name": "GCMole - test on Ubuntu-16.04 (2)",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",

@@ -64,6 +64,7 @@ def RunSteps(api):
         shards=1,
         dimensions=api.properties.get('dimensions', {
             'gpu': '8086',
+            'os': 'Linux',
         }),
         isolate_coverage_data=isolate_coverage_data,
         quickrun_shards=api.properties.get('quickrun_shards', 0),

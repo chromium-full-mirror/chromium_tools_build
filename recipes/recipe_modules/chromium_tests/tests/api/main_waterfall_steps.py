@@ -333,6 +333,9 @@ def GenTests(api):
                       'test': 'base_unittests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Mac',
+                          }],
                       }
                   }],
               },
@@ -416,6 +419,9 @@ def GenTests(api):
                       'test': 'base_unittests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Linux',
+                          }],
                       }
                   }],
               },
@@ -464,6 +470,9 @@ def GenTests(api):
                       'test': 'performance_test_suite',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Linux',
+                          }],
                       }
                   }],
               },
@@ -589,6 +598,9 @@ def GenTests(api):
                       'args': ['--sample-argument'],
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Linux',
+                          }],
                       },
                       'test': 'base_unittests',
                   },],
@@ -952,6 +964,9 @@ def GenTests(api):
                       'name': fake_test,
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Linux',
+                          }],
                       }
                   }],
               }

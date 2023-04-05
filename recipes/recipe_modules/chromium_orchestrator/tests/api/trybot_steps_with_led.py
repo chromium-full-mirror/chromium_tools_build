@@ -15,6 +15,7 @@ DEPS = [
     'chromium',
     'chromium_bootstrap',
     'chromium_orchestrator',
+    'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
     'code_coverage',
@@ -31,7 +32,7 @@ DEPS = [
 
 def RunSteps(api):
   assert api.tryserver.is_tryserver
-
+  api.chromium_swarming.set_default_dimension('os', 'Linux')
   return api.chromium_orchestrator.trybot_steps()
 
 

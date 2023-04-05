@@ -416,24 +416,6 @@ class SwarmingApi(recipe_api.RecipeApi):
     assert ':' in tag, tag
     self._default_tags.add(tag)
 
-  @staticmethod
-  def prefered_os_dimension(platform):
-    """Given a platform name returns the prefered Swarming OS dimension.
-
-    Platform name is usually provided by 'platform' recipe module, it's one
-    of 'win', 'linux', 'mac'. This function returns more concrete Swarming OS
-    dimension that represent this platform on Swarming by default.
-
-    Recipes are free to use other OS dimension if there's a need for it. For
-    example WinXP try bot recipe may explicitly specify 'Windows-XP-SP3'
-    dimension.
-    """
-    return {
-        'linux': 'Ubuntu-16.04',
-        'mac': 'Mac-10.13',
-        'win': 'Windows-10',
-    }[platform]
-
   def merge_script_path(self, name):
     """Returns the path to a merge script.
 
@@ -1546,11 +1528,8 @@ class SwarmingApi(recipe_api.RecipeApi):
     # step names, so substitute that now so it does not cause issues later on.
     task_os = task_os.replace('|', ' or ')
 
-    bot_os = self.prefered_os_dimension(self.m.platform.name)
-    suffix = ('' if (
-        task_os == bot_os or task_os.lower() == self.m.platform.name.lower() or
-        task_os in task.request.name)
-              else ' on %s' % task_os)
+    suffix = ('' if (task_os.lower() == self.m.platform.name.lower() or
+                     task_os in task.request.name) else ' on %s' % task_os)
     # Note: properly detecting dimensions of the bot the recipe is running
     # on is somewhat non-trivial. It is not safe to assume it uses default
     # or preferred dimensions for its OS. For example, the version of the OS

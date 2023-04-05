@@ -42,16 +42,6 @@ def RunSteps(api):
   # Run tests from chromium.swarm buildbot with a relatively high priority
   # so that they take precedence over manually triggered tasks.
   api.chromium_swarming.default_priority = 20
-
-  # Do not care about the OS specific version on Canary.
-  api.chromium_swarming.set_default_dimension(
-      'os',
-      api.chromium_swarming.prefered_os_dimension(
-          api.platform.name).split('-', 1)[0])
-  if api.platform.is_win:
-    # Force os:Windows-10 instead of os:Windows which may trigger on Windows 7.
-    api.chromium_swarming.set_default_dimension('os', 'Windows-10')
-
   api.chromium_swarming.set_default_dimension('pool', 'chromium.tests')
   api.chromium_swarming.add_default_tag('project:chromium')
   api.chromium_swarming.add_default_tag('purpose:staging')
@@ -142,6 +132,9 @@ def GenTests(api):
                       'test': 'browser_tests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Ubuntu',
+                          }],
                           'shards': 2,
                       },
                   }],
@@ -171,6 +164,9 @@ def GenTests(api):
                       'test': 'browser_tests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Windows-10',
+                          }],
                           'shards': 2,
                       },
                   }],
@@ -214,6 +210,9 @@ def GenTests(api):
                       'test': 'browser_tests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Linux',
+                          }],
                           'shards': 2,
                       },
                   }],

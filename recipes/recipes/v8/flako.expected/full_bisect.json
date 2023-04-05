@@ -186,12 +186,12 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 0/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 0\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
+      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 0/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "infra_step": true,
-    "name": "calibration attempt 1.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 0",
+    "name": "calibration attempt 1.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -222,7 +222,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"data:[dummy hash for foo_isolated]/123\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:check\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:v8-flake-bisect\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -299,12 +299,12 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 1/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 1\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
+      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 1/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "infra_step": true,
-    "name": "calibration attempt 1.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 1",
+    "name": "calibration attempt 1.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -335,7 +335,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"data:[dummy hash for foo_isolated]/123\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:check\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:v8-flake-bisect\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -439,7 +439,7 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
       ]
     },
-    "name": "calibration attempt 1.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 0",
+    "name": "calibration attempt 1.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -514,7 +514,7 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
       ]
     },
-    "name": "calibration attempt 1.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 1",
+    "name": "calibration attempt 1.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -580,12 +580,12 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 0/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 0\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
+      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 0/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "infra_step": true,
-    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 0",
+    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -616,7 +616,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"data:[dummy hash for foo_isolated]/123\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:check\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:v8-flake-bisect\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 0\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -693,12 +693,12 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 1/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 1\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
+      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 1/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "infra_step": true,
-    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 1",
+    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -729,7 +729,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"data:[dummy hash for foo_isolated]/123\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:check\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:v8-flake-bisect\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 1\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -806,12 +806,12 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 2/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 2\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
+      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 2/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 2 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "infra_step": true,
-    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 2",
+    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 2 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -842,7 +842,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"data:[dummy hash for foo_isolated]/123\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:check\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:v8-flake-bisect\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 2\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 2 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -919,12 +919,12 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 3/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 3\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
+      "{\"requests\": [{\"name\": \"check mjsunit/foobar at #1 - shard 3/Ubuntu-16.04/[dummy has\", \"priority\": \"25\", \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"build_is_experimental:false\", \"data:[dummy hash for foo_isolated]/123\", \"name:check\", \"purpose:v8-flake-bisect\", \"stepname:check mjsunit/foobar at #1 - shard 3 on Ubuntu-16.04\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for foo_isolated]\", \"size_bytes\": \"123\"}}, \"command\": [\"python3\", \"-u\", \"tools/run-tests.py\", \"--progress=verbose\", \"--outdir=out/build\", \"--timeout=20\", \"--swarming\", \"--variants=stress_foo\", \"--exit-after-n-failures=4\", \"--foo-flag\", \"--bar-flag\", \"mjsunit/foobar\", \"--random-seed-stress-count=64\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"v8-flake-bisect\"}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
     "infra_step": true,
-    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 3",
+    "name": "calibration attempt 2.check mjsunit/foobar at #1.[trigger] check mjsunit/foobar at #1 - shard 3 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -955,7 +955,7 @@
       "@@@STEP_LOG_LINE@json.input@        \"data:[dummy hash for foo_isolated]/123\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"name:check\", @@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:v8-flake-bisect\", @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 3\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:check mjsunit/foobar at #1 - shard 3 on Ubuntu-16.04\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ], @@@",
       "@@@STEP_LOG_LINE@json.input@      \"task_slices\": [@@@",
       "@@@STEP_LOG_LINE@json.input@        {@@@",
@@ -1059,7 +1059,7 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
       ]
     },
-    "name": "calibration attempt 2.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 0",
+    "name": "calibration attempt 2.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 0 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -1135,7 +1135,7 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
       ]
     },
-    "name": "calibration attempt 2.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 1",
+    "name": "calibration attempt 2.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 1 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
@@ -1211,7 +1211,7 @@
         "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
       ]
     },
-    "name": "calibration attempt 2.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 2",
+    "name": "calibration attempt 2.check mjsunit/foobar at #1.check mjsunit/foobar at #1 - shard 2 on Ubuntu-16.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",

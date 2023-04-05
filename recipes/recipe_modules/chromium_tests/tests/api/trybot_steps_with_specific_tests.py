@@ -65,6 +65,8 @@ def RunSteps(api, fail_calculate_tests, fail_mb_and_compile,
 
   if api.properties.get('use_custom_dimensions', False):
     api.chromium_swarming.set_default_dimension('os', 'Windows-11-19045')
+  else:
+    api.chromium_swarming.set_default_dimension('os', 'Linux')
 
   affected_files = api.properties.get('affected_files', [])
 

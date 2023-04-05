@@ -149,14 +149,17 @@ def RunSteps(api, platforms, custom_trigger_script,
                   root='',
               )
           ])
-
+    assert platform in ('linux', 'mac', 'win')
     if platform == 'linux':
+      target_os = 'Ubuntu-16.04'
       task.shards = 2
       task.shard_indices = range(task.shards)
     elif platform == 'mac':
+      target_os = 'Mac-10.13'
       task.shards = 3
       task.shard_indices = [1]
     else:
+      target_os = 'Windows-10'
       task.shards = 1
       task.shard_indices = [0]
     if custom_trigger_script:
@@ -166,8 +169,7 @@ def RunSteps(api, platforms, custom_trigger_script,
     task_request = task.request
     task_slice = task_request[0]
     task_dimensions = task_slice.dimensions
-    task_dimensions['os'] = api.chromium_swarming.prefered_os_dimension(
-        platform)
+    task_dimensions['os'] = target_os
     task.tags.add('os:' + platform)
 
     # test_suite is required, if resultdb is enabled.
@@ -266,16 +268,18 @@ def GenTests(api):
       api.properties(platforms=('linux',), custom_trigger_script=False),
       api.post_check(
           api.swarming.check_triggered_request,
-          '[trigger] hello_world', lambda check, req: check(req[0].env_vars[
-              'GTEST_SHARD_INDEX'] == '0'), lambda check, req: check(req[
-                  0].env_vars['GTEST_TOTAL_SHARDS'] == '2'), lambda check, req:
-          check(req[0].command[-2:] == ['--foo', '42'])),
+          '[trigger] hello_world on Ubuntu-16.04',
+          lambda check, req: check(req[0].env_vars['GTEST_SHARD_INDEX'] == '0'),
+          lambda check, req: check(req[0].env_vars['GTEST_TOTAL_SHARDS'] == '2'
+                                  ),
+          lambda check, req: check(req[0].command[-2:] == ['--foo', '42'])),
       api.post_check(
           api.swarming.check_triggered_request,
-          '[trigger] hello_world (2)', lambda check, req: check(req[0].env_vars[
-              'GTEST_SHARD_INDEX'] == '1'), lambda check, req: check(req[
-                  0].env_vars['GTEST_TOTAL_SHARDS'] == '2'), lambda check, req:
-          check(req[0].command[-2:] == ['--foo', '42'])),
+          '[trigger] hello_world on Ubuntu-16.04 (2)',
+          lambda check, req: check(req[0].env_vars['GTEST_SHARD_INDEX'] == '1'),
+          lambda check, req: check(req[0].env_vars['GTEST_TOTAL_SHARDS'] == '2'
+                                  ),
+          lambda check, req: check(req[0].command[-2:] == ['--foo', '42'])),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -731,7 +735,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_linux/size hello_world.isolated')),
       api.step_data(
-          'hello_world',
+          'hello_world on Ubuntu-16.04',
           api.chromium_swarming.summary(
               api.raw_io.output_dir({
                   'summary.json': api.json.dumps(summary_data).encode('utf-8')
@@ -749,7 +753,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_linux/size hello_world.isolated')),
       api.step_data(
-          'hello_world',
+          'hello_world on Ubuntu-16.04',
           api.chromium_swarming.summary(
               api.raw_io.output_dir({
                   'summary.json': api.json.dumps(summary_data).encode('utf-8')
@@ -767,13 +771,13 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_linux/size hello_world.isolated')),
       api.step_data(
-          'hello_world',
+          'hello_world on Ubuntu-16.04',
           api.chromium_swarming.summary(
               api.raw_io.output_dir({
                   'summary.json': api.json.dumps(summary_data).encode('utf-8')
               }) + api.test_utils.canned_gtest_output(False), summary_data)),
       api.properties(platforms=('linux',), gtest_task=True),
-      api.post_process(post_process.StepFailure, 'hello_world'),
+      api.post_process(post_process.StepFailure, 'hello_world on Ubuntu-16.04'),
       api.post_process(post_process.DropExpectation))
 
   summary_data_deduped = {
@@ -806,7 +810,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_linux/size hello_world.isolated')),
       api.step_data(
-          'hello_world',
+          'hello_world on Ubuntu-16.04',
           api.chromium_swarming.summary(
               api.raw_io.output_dir({
                   'summary.json':
@@ -829,7 +833,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_linux/size hello_world.isolated')),
       api.step_data(
-          'hello_world',
+          'hello_world on Ubuntu-16.04',
           api.chromium_swarming.summary(
               api.test_utils.canned_gtest_output(True), missing_duration_data)),
       api.properties(platforms=('linux',), gtest_task=True),

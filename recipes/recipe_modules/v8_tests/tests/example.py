@@ -45,14 +45,15 @@ def GenTests(api):
       api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
       api.post_process(
           api.swarming.check_triggered_request,
-          'trigger tests.[trigger] Check',
+          'trigger tests.[trigger] Check on Ubuntu-16.04',
           lambda check, req: check(
               ('pool', 'chromium.tests') in req[0].dimensions.items()),
           lambda check, req: check(
               ('os', 'Ubuntu-16.04') in req[0].dimensions.items()),
           lambda check, req: check('project:v8' in req.tags),
       ),
-      api.post_process(LogContains, 'trigger tests.[trigger] Test262',
+      api.post_process(LogContains,
+                       'trigger tests.[trigger] Test262 on Ubuntu-16.04',
                        'json.input', ['"--extra-flags=--flag",']),
       api.post_process(StatusSuccess),
       api.post_process(DropExpectation),

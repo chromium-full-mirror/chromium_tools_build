@@ -137,6 +137,11 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
     test += self.m.properties(buildnumber=1337)
 
     if _run_tests(builder_id):
+      target_os = 'Ubuntu-16.04'
+      if builder_config.simulation_platform == 'mac':
+        target_os = 'Mac-10.13'
+      elif builder_config.simulation_platform == 'win':
+        target_os = 'Windows-10'
       test += self.m.chromium_tests.read_targets_spec(
           builder_id.group,
           contents={
@@ -144,7 +149,10 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
                   'gtest_tests': [{
                       'test': test_target,
                       'swarming': {
-                          'can_use_on_swarming_builders': True
+                          'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': target_os,
+                          }],
                       }
                   }]
               }

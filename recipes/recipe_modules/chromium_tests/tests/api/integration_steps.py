@@ -17,6 +17,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   with api.chromium.chromium_layout():

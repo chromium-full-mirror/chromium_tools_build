@@ -29,6 +29,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.chromium_swarming.set_default_dimension('os', 'Linux')
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   if api.tryserver.is_tryserver:
@@ -471,6 +472,9 @@ def GenTests(api):
                       'name': fake_test,
                       'swarming': {
                           'can_use_on_swarming_builders': True,
+                          'dimension_sets': [{
+                              'os': 'Ubuntu-16.04',
+                          }],
                       },
                       'test_id_prefix': 'ninja://:fake_test/',
                   }],
@@ -479,16 +483,16 @@ def GenTests(api):
       api.step_data('find command lines', api.json.output(fake_command_lines)),
       api.post_process(
           api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] %s' % fake_test,
+          'test_pre_run.[trigger] %s on Ubuntu-16.04' % fake_test,
           lambda check, req: check(req[0].relative_cwd == 'out/Release'),
           lambda check, req: check(
               is_subsequence(req[0].command, [
                   'rdb', 'stream', '-test-id-prefix', 'ninja://:fake_test/',
                   '-var', 'builder:fake-tester', '-var', 'os:Ubuntu-16.04',
                   '-var', 'test_suite:fake_test', '-tag',
-                  'step_name:%s' % fake_test, '-tag', 'target_platform:linux',
-                  '-coerce-negative-duration', '-location-tags-file',
-                  '../../testing/location_tags.json',
+                  'step_name:%s on Ubuntu-16.04' % fake_test, '-tag',
+                  'target_platform:linux', '-coerce-negative-duration',
+                  '-location-tags-file', '../../testing/location_tags.json',
                   '-exonerate-unexpected-pass', '--', 'result_adapter', 'gtest',
                   '-result-file', '${ISOLATED_OUTDIR}/output.json',
                   '-artifact-directory', '${ISOLATED_OUTDIR}', '--'
