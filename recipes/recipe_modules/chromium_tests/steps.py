@@ -2093,9 +2093,9 @@ class SwarmingTest(Test):
       # Although rare, some suites may be swarmed but unable to work properly
       # with more than one shard.
       buildbucket_experiments = self.api.m.buildbucket.build.input.experiments
-      add_one_test_shard_enabled = ('chromium.add_one_test_shard'
-                                    in buildbucket_experiments and
-                                    suffix == 'with patch' and shards > 1)
+      add_one_test_shard_enabled = (
+          'chromium.add_one_test_shard' in buildbucket_experiments and
+          suffix in ['with patch', 'retry shards with patch'] and shards > 1)
       if add_one_test_shard_enabled:
         shards += 1
 
