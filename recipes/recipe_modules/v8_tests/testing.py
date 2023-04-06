@@ -401,7 +401,7 @@ class V8Test(BaseTest):
       search_query = ' label:{label} -status:Fixed -status:Verified'
       bug_description = MONORAIL_FILE_BUG_DESCRIPTION
       if link_params['crash_analysis_hash']:
-        search_query = '("{name}" OR {crash_analysis_hash})' + search_query
+        search_query = '"{crash_analysis_hash}"' + search_query
         bug_description += MONORAIL_CRASH_DESCRIPTION
       else:
         search_query = '"{name}"' + search_query
