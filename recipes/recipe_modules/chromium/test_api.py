@@ -176,8 +176,11 @@ class ChromiumTestApi(recipe_test_api.RecipeTestApi):
 
     for builder_group in builder_dict:
       for buildername in builder_dict[builder_group]['builders']:
+        properties = self.m.properties()
         if 'mac' in buildername or 'Mac' in buildername:
           platform_name = 'mac'
+          properties = self.m.properties(
+              xcode_build_version='fake-xcode-version')
         elif 'win' in buildername or 'Win' in buildername:
           platform_name = 'win'
         else:
@@ -186,6 +189,7 @@ class ChromiumTestApi(recipe_test_api.RecipeTestApi):
             'full_%s_%s' % (_sanitize_nonalpha(builder_group),
                             _sanitize_nonalpha(buildername)),
             self.m.platform.name(platform_name),
+            properties,
         )
         if builder_group.startswith('tryserver'):
           test += self.try_build(
