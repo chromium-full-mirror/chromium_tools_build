@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess)
+from recipe_engine.post_process import (DropExpectation)
 
 DEPS = [
     'goma',
@@ -23,7 +23,6 @@ def GenTests(api):
       'default-is-based-off-cpu-count',
       api.platform.name('linux'),
       api.properties(expected_jobs=None),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -31,6 +30,5 @@ def GenTests(api):
       'can-be-overridden-99',
       api.goma(jobs=99),
       api.properties(expected_jobs=99),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

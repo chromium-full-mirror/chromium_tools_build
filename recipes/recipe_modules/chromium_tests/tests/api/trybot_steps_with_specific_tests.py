@@ -209,6 +209,7 @@ def GenTests(api):
           'base_unittests', 'retry shards with patch', failures=['Test.One']),
       api.post_process(post_process.PropertyEquals, 'do_not_retry', True),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -241,6 +242,7 @@ def GenTests(api):
               failure=True)),
       api.post_process(post_process.PropertiesDoNotContain, 'do_not_retry'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -284,6 +286,7 @@ def GenTests(api):
       api.post_process(post_process.PropertiesDoNotContain, 'do_not_retry'),
       api.post_process(post_process.DoesNotRun, '.*without patch.*'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -307,6 +310,7 @@ def GenTests(api):
       api.override_step_data('bot_update', retcode=1),
       api.post_process(post_process.PropertiesDoNotContain, 'do_not_retry'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   # TODO(erikchen): Fix this behavior + test once parallel recipe steps has been
@@ -337,7 +341,6 @@ def GenTests(api):
               'Tests failed with patch, but ignored as they also fail without '
               'patch'
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepFailure, 'base_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
   )
@@ -506,6 +509,7 @@ def GenTests(api):
           'test_pre_run (without patch).[trigger] base_unittests ' +
           '(without patch)', lambda check, req: check(req.priority == 29)),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   def generate_one_failed_shard_raw():
@@ -616,6 +620,7 @@ def GenTests(api):
             lambda check, steps: 'shard #1' in steps[base_unittests_retry].links
         ),
         api.post_process(post_process.DropExpectation),
+        api.expect_status('FAILURE'),
     )
 
   yield api.test(
@@ -668,6 +673,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results('base_unittests',
                                                       'without patch'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # This test tests the scenario when a test failed deterministically with patch
@@ -766,6 +772,7 @@ def GenTests(api):
                     failing_tests=['Test.Two'] if status == 'FAILURE' else [],
                     skipped_tests=['Test.Two'] if status == 'NOTRUN' else []))),
         api.post_process(post_process.DropExpectation),
+        api.expect_status('FAILURE'),
     )
 
   yield api.test(
@@ -786,6 +793,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -812,6 +820,7 @@ def GenTests(api):
           '.[trigger] base_unittests (without patch)', lambda check, req: check(
               req[0].env_vars['GTEST_TOTAL_SHARDS'] == '3')),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Any failure in 'retry without patch' should cause the test to be considered
@@ -892,6 +901,7 @@ def GenTests(api):
               'Test.Two<br/>'
           ]),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -980,6 +990,7 @@ def GenTests(api):
           '(without patch)', lambda check, req: check('--gtest_filter=Test.Two'
                                                       in req[0].command)),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # This test tests that only Test.One is determined as unrecoverable failures
@@ -1020,6 +1031,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'without patch', failures=['Test.Three']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1103,6 +1115,7 @@ def GenTests(api):
               'Test.Two<br/>'
           ]),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # This test tests the scenario that if a known flaky failure fails again while
@@ -1277,6 +1290,7 @@ def GenTests(api):
           'Test.Three',
       ),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # This test tests the scenrio when there are multiple test suites with
@@ -1341,4 +1355,5 @@ def GenTests(api):
                            '<br/>UrlTest.One<br/>'
                        ]),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )

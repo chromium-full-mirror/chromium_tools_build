@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        SummaryMarkdown)
+from recipe_engine.post_process import DropExpectation, SummaryMarkdown
 
 DEPS = [
   'isolate',
@@ -24,13 +23,11 @@ def GenTests(api):
               'other_target': 'b' * 40,
               'another_one': 'c' * 40
           }),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
   yield api.test(
       'detected',
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 

@@ -43,6 +43,5 @@ def GenTests(api):
           })),
       api.post_process(post_process.MustRun,
                        'cipd set-tag sample/avd/package/name'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

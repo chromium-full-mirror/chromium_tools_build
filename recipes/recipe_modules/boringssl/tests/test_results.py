@@ -23,7 +23,6 @@ def GenTests(api):
 
   yield api.test(
       'default',
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -31,7 +30,6 @@ def GenTests(api):
       'success',
       api.override_step_data('run tests',
                              api.boringssl.canned_test_output(True)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

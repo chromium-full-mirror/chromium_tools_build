@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DropExpectation, LogContains,
-                                        StatusSuccess, StepCommandContains,
-                                        StepTextEquals)
+                                        StepCommandContains, StepTextEquals)
 
 DEPS = [
   'goma',
@@ -41,7 +40,6 @@ def GenTests(api):
       'non_canary',
       api.properties(client_type='release'),
       *AssertCorrectClientType('release'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -51,7 +49,6 @@ def GenTests(api):
       *AssertCorrectClientType('candidate'),
       api.post_process(StepTextEquals, 'ensure_goma',
                        'candidate goma client is selected'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -61,7 +58,6 @@ def GenTests(api):
       *AssertCorrectClientType('latest'),
       api.post_process(StepTextEquals, 'ensure_goma',
                        'latest goma client is selected'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -79,7 +75,6 @@ def GenTests(api):
               '-ensure-file',
               'infra_internal/goma/client/chromeos-amd64 candidate',
           ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -95,6 +90,5 @@ def GenTests(api):
                            '-root',
                            '[TMP_BASE]/goma/bqupload',
                        ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

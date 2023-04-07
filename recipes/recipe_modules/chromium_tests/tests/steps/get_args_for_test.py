@@ -48,7 +48,6 @@ def GenTests(api):
           },
           expected_args=[u'8945511751514863184'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -65,7 +64,6 @@ def GenTests(api):
           },
           expected_args=[u'8945511751514863184'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -82,7 +80,6 @@ def GenTests(api):
           },
           expected_args=[u'8945511751514863184'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -102,7 +99,6 @@ def GenTests(api):
           },
           expected_args=['foo', 'bar'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -122,7 +118,6 @@ def GenTests(api):
           },
           expected_args=[],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -143,7 +138,6 @@ def GenTests(api):
           },
           expected_args=['foo', 'bar'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -164,7 +158,6 @@ def GenTests(api):
           },
           expected_args=[],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -215,7 +208,6 @@ def GenTests(api):
           },
           expected_args=[u'0'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -232,7 +224,6 @@ def GenTests(api):
           },
           expected_args=[u'0'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -251,7 +242,6 @@ def GenTests(api):
       ),
       api.tryserver.get_footers(
           {'Use-Permissive-Angle-Pixel-Comparison': ['False']},),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -270,7 +260,6 @@ def GenTests(api):
       ),
       api.tryserver.get_footers(
           {'Use-Permissive-Angle-Pixel-Comparison': ['True']},),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -289,6 +278,5 @@ def GenTests(api):
       ),
       api.tryserver.get_footers(
           {'Use-Permissive-Angle-Pixel-Comparison': ['foo', 'True']},),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

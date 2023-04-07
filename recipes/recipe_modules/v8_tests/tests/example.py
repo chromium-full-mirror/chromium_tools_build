@@ -4,8 +4,7 @@
 
 import json
 
-from recipe_engine.post_process import (DropExpectation, LogContains,
-                                        StatusSuccess)
+from recipe_engine.post_process import DropExpectation, LogContains
 
 DEPS = [
     'recipe_engine/buildbucket',
@@ -55,7 +54,6 @@ def GenTests(api):
       api.post_process(LogContains,
                        'trigger tests.[trigger] Test262 on Ubuntu-16.04',
                        'json.input', ['"--extra-flags=--flag",']),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -69,6 +67,5 @@ def GenTests(api):
           '"V8-Recipe-Flags":',
           '"resultdb"',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

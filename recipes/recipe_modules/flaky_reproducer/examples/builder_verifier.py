@@ -293,7 +293,6 @@ def GenTests(api):
                   content_type='text/html',
                   contents=b'foobar'),
           ]), 'summarize_results.upload_invocation_artifacts'),
-      api.post_process(post_process.StatusSuccess),
       api.post_check(lambda check, steps: check('results.html' in steps[
           'summarize_results'].step_summary_text)),
       api.post_process(post_process.DropExpectation),

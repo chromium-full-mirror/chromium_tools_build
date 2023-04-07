@@ -44,7 +44,6 @@ def GenTests(api):
                            '"./base_unittests.exe"',
                            '"--test-launcher-bot-mode"',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -63,7 +62,6 @@ def GenTests(api):
                        'json.output', [
                            '"bin/run_blink_wpt_tests"',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

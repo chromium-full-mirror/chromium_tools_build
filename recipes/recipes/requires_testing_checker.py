@@ -49,6 +49,5 @@ def GenTests(api):
   yield api.test(
       'does-not-require-testing',
       api.buildbucket.try_build(),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, MustRun, StatusSuccess,
+from recipe_engine.post_process import (DropExpectation, MustRun,
                                         StepEnvContains)
 
 DEPS = [
@@ -29,6 +29,5 @@ def GenTests(api):
               'GOMA_RPC_EXTRA_PARAMS': '?prod',
               'GOMA_SERVER_HOST': 'goma.chromium.org',
           }),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

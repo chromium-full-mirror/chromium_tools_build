@@ -73,7 +73,6 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun, 'test_name'),
       api.post_process(calls_runner_script, 'test_name', 'run_test_name'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -116,6 +115,5 @@ def GenTests(api):
                        ['target_name']),
       api.post_process(post_process.MustRun, 'test_name'),
       api.post_process(calls_runner_script, 'test_name', 'run_target_name'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

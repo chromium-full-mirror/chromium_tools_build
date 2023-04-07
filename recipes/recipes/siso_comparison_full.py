@@ -157,7 +157,6 @@ def GenTests(api):
               **builder).assemble()),
       api.siso.properties(),
       api.reclient.properties(),
-      api.post_process(post_process.StatusSuccess),
       api.code_coverage(use_clang_coverage=True),
   )
 
@@ -175,7 +174,6 @@ def GenTests(api):
               **builder).assemble()),
       api.siso.properties(),
       api.reclient.properties(),
-      api.post_process(post_process.StatusSuccess),
       api.code_coverage(use_clang_coverage=True),
   )
 
@@ -193,7 +191,6 @@ def GenTests(api):
               **builder).assemble()),
       api.siso.properties(),
       api.reclient.properties(),
-      api.post_process(post_process.StatusSuccess),
       api.code_coverage(use_clang_coverage=True),
   )
 

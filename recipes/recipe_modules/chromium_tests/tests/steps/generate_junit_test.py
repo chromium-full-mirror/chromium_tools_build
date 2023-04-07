@@ -95,7 +95,6 @@ def GenTests(api):
           'test': 'junit_test',
       }),
       api.post_process(post_process.MustRun, 'junit_test'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -106,7 +105,6 @@ def GenTests(api):
           'name': 'junit_alias',
       }),
       api.post_process(post_process.MustRun, 'junit_alias'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -119,7 +117,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'junit_test'),
       api.post_process(post_process.StepCommandContains, 'junit_test',
                        ['--foo=bar']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -140,7 +137,6 @@ def GenTests(api):
       ]),
       api.post_process(post_process.StepCommandContains, 'junit_test',
                        ['--foo=bar']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -166,7 +162,6 @@ def GenTests(api):
       ]),
       api.post_process(post_process.StepCommandContains, 'junit_test',
                        ['--foo=bar']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -176,7 +171,6 @@ def GenTests(api):
           'test': 'gtest_test',
           'description': 'This is a description.'
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
@@ -188,7 +182,6 @@ def GenTests(api):
           'test': 'gtest_test',
           'description': 'This is a description.'
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'gtest_test',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
@@ -200,7 +193,6 @@ def GenTests(api):
           'ci_only': True,
           'test': 'junit_test',
       },),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'ci_only tests',
                        ['* junit_test']),
       api.post_process(post_process.DoesNotRun, 'junit_test (with patch)'),
@@ -215,7 +207,6 @@ def GenTests(api):
       },),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'junit_test (with patch)'),
       api.post_process(post_process.StepTextContains, 'junit_test (with patch)',
                        [('This test is being run due to the'
@@ -229,7 +220,6 @@ def GenTests(api):
           'ci_only': True,
           'test': 'junit_test',
       },),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'junit_test'),
       api.post_process(post_process.StepTextContains, 'junit_test',
                        ['This test will not be run on try builders']),

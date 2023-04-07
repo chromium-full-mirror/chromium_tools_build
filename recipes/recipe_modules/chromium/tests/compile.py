@@ -50,7 +50,6 @@ def GenTests(api):
                                                 'process_crashreports.py')),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -74,6 +73,7 @@ def GenTests(api):
                                                 'process_crashreports.py')),
       api.post_process(post_process.MustRun, 'process clang crashes'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -98,7 +98,6 @@ def GenTests(api):
       api.properties(chromium_apply_config=['codesearch']),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -107,7 +106,6 @@ def GenTests(api):
       api.properties(target_platform='win', chromium_apply_config=['official']),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -117,7 +115,6 @@ def GenTests(api):
           target_platform='chromeos', target_cros_boards='x86-generic'),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -129,7 +126,6 @@ def GenTests(api):
           chromium_apply_config=['official']),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -138,7 +134,6 @@ def GenTests(api):
       api.properties(target_platform='android', chromium_config='android'),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -147,7 +142,6 @@ def GenTests(api):
       api.properties(chromium_apply_config=['goma_canary']),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -156,7 +150,6 @@ def GenTests(api):
       api.properties(chromium_apply_config=['goma_client_candidate']),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -171,7 +164,6 @@ def GenTests(api):
       ]),
       api.post_process(post_process.StepEnvContains, 'compile',
                        {'GOMA_DUMP': '1'}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -272,4 +264,5 @@ def GenTests(api):
       api.post_check(post_process.DoesNotRun, 'process clang crashes'),
       api.post_check(post_process.DoesNotRun, 'postprocess_for_goma'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('CANCELED'),
   )

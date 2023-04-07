@@ -106,7 +106,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'isolate tests (with patch)'),
       api.post_process(post_process.LogContains, 'isolate tests (with patch)',
                        'json.output', [ALL_TEST_BINARIES_ISOLATE_NAME]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -144,7 +143,6 @@ def GenTests(api):
                   builder_name='fake-orchestrator',
                   builder_group='fake-try-group'))),
       api.post_process(post_process.DoesNotRun, 'compile (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -177,6 +175,5 @@ def GenTests(api):
           }),
       api.filter.no_dependency(),
       api.post_process(post_process.DoesNotRun, 'compile (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

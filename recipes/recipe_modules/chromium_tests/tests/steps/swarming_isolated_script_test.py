@@ -199,7 +199,7 @@ def GenTests(api):
           'test_pre_run (with patch).[trigger] base_unittests on Intel GPU on '
           'Linux (with patch)',
           retcode=1),
-      api.post_process(post_process.StatusAnyFailure),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -254,7 +254,6 @@ def GenTests(api):
           '[trigger] base_unittests on Intel GPU on Linux (without patch)',
           lambda check, req: check('--isolated-script-test-filter=Test.Two' in
                                    req[0].command)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -302,7 +301,6 @@ def GenTests(api):
       api.post_process(post_process.LogContains, 'details', 'details', [
           "compile_targets: 'base_unittests_run'",
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -345,7 +343,6 @@ def GenTests(api):
                        'base_unittests on Intel GPU on Linux (with patch)', [
                            chartjson_build_properties,
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -367,7 +364,6 @@ def GenTests(api):
                        'base_unittests on Intel GPU on Linux (with patch)', [
                            chartjson_build_properties,
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -388,7 +384,6 @@ def GenTests(api):
                        'base_unittests on Intel GPU on Linux (with patch)', [
                            chartjson_build_properties,
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -433,7 +428,6 @@ def GenTests(api):
                        'base_unittests on Intel GPU on Linux (with patch)', [
                            histograms_custom_revisions,
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -457,7 +451,6 @@ def GenTests(api):
           lambda check, req: check(
               ('os', 'Windows') in req[0].dimensions.items()),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -480,7 +473,6 @@ def GenTests(api):
               ('gpu', '8086') in req[0].dimensions.items()),
           lambda check, req: check(('os', 'Mac') in req[0].dimensions.items()),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -505,7 +497,6 @@ def GenTests(api):
           lambda check, req: check(('os', 'Mac') in req[0].dimensions.items()),
           lambda check, req: check(('hidpi', '1') in req[0].dimensions.items()),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -532,7 +523,6 @@ def GenTests(api):
           lambda check, req: check(
               ('os', 'Android') in req[0].dimensions.items()),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -599,6 +589,7 @@ def GenTests(api):
           retcode=1,
       ),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -616,4 +607,5 @@ def GenTests(api):
           retcode=1,
       ),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )

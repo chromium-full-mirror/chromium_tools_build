@@ -265,7 +265,6 @@ def GenTests(api):
           'fake-builder',
       ]),
       api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -300,7 +299,6 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'base_unittests', [
           '--builder-name=fake-tester',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -340,7 +338,6 @@ def GenTests(api):
                   }],
               },
           }),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -373,7 +370,6 @@ def GenTests(api):
           chrome_version=None, **{'$build/archive': input_properties}),
       api.post_process(check_gs_url_equals, 'x86/1.2.3.4/chrome',
                        'gs://any-bucket/x86/1.2.3.4/chrome'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -394,7 +390,6 @@ def GenTests(api):
           chrome_version='2.2.2.2', **{'$build/archive': input_properties}),
       api.post_process(check_gs_url_equals, 'x86/2.2.2.2/chrome',
                        'gs://any-bucket/x86/2.2.2.2/chrome'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -439,7 +434,6 @@ def GenTests(api):
           NotIdempotent,
           'test_pre_run (retry shards).[trigger] base_unittests (retry shards)'
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -486,7 +480,6 @@ def GenTests(api):
           post_process.MustRun,
           'Processing PGO .profraw data.merge all profile files into a single '
           '.profdata'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -527,7 +520,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'chrome_public_test_apk on Android'),
       api.post_process(post_process.MustRun, 'process java coverage (overall)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -855,6 +847,7 @@ def GenTests(api):
           api.legacy_annotation.success_step),
       api.post_process(post_process.DoesNotRunRE, 'skip retrying'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   fake_group = 'fake-group'
@@ -918,7 +911,6 @@ def GenTests(api):
                        'archive command lines to RBE-CAS'),
       api.post_process(PropertyExists, 'trigger_properties'),
       api.post_process(post_process.DoesNotRun, 'mark: before_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -980,7 +972,6 @@ def GenTests(api):
                        'archive command lines to RBE-CAS'),
       api.post_process(PropertyExists, 'trigger_properties'),
       api.post_process(post_process.DoesNotRun, 'mark: before_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1033,7 +1024,6 @@ def GenTests(api):
               },
           })),
       api.post_process(post_process.MustRun, 'snoop: report_stage'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1061,6 +1051,5 @@ def GenTests(api):
           'exception',
           ['Step(\'snoop: report_stage\') (retcode: 1)'],
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

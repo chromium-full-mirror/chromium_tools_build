@@ -233,7 +233,6 @@ def GenTests(api):
       api.post_check(post_process.StepCommandContains,
                      'branch-config3.enable platform2',
                      ['platform2', '--description', 'testing']),
-      api.post_check(post_process.StatusSuccess),
   )
 
   yield api.test(
@@ -288,7 +287,6 @@ def GenTests(api):
       api.post_check(post_process.StepCommandContains,
                      'branch-config3.set branch type',
                      ['--type', 'branch-type1', '--type', 'branch-type2']),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

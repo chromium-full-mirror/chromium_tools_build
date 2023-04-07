@@ -57,7 +57,6 @@ def GenTests(api):
       'not-bootstrapped',
       manifest({}),
       expect_gclient_config_revisions({}),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -95,7 +94,6 @@ def GenTests(api):
           'src': 'src-hash',
           'src-internal': 'src-internal-hash',
       }),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -109,7 +107,6 @@ def GenTests(api):
           'src': ('https://chromium.googlesource.com/chromium/src', 'src-hash'),
       }),
       expect_gclient_config_revisions({'src': 'src-hash'}),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -178,6 +175,5 @@ def GenTests(api):
           'src': 'refs/heads/main',
           'src-internal': 'src-internal-hash',
       }),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -23,6 +23,5 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.chromium.try_build(builder_group='fake-group'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

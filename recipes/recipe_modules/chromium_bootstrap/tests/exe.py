@@ -46,6 +46,5 @@ def GenTests(api):
           expected_exe_cas_hash='examplehash',
           expected_exe_cas_size_bytes=71,
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

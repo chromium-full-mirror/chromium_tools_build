@@ -63,7 +63,6 @@ def GenTests(api):
           target_platform='linux'),
       api.path.exists(
           api.chromium_checkout.src_dir.join('out/Release/browser_tests')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -99,6 +98,5 @@ def GenTests(api):
                'java__process_device.filter.jar'),
           ]),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

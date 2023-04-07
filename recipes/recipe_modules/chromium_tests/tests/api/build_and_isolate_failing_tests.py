@@ -109,7 +109,6 @@ def GenTests(api):
           ['browser_tests', 'infra_orchestrator:orchestrator_all'],
       ),
       api.post_process(post_process.MustRun, 'isolate tests (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -121,6 +120,5 @@ def GenTests(api):
       ),
       ctbc_properties(),
       api.properties(no_extra_compile_targets=True),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

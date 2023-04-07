@@ -37,5 +37,4 @@ def GenTests(api):
       'setup_repo',
       api.step_data('repo list',
                     api.raw_io.stream_output_text(REPO_LIST_OUTPUT)),
-      api.post_process(post_process.StatusSuccess),
   )

@@ -296,6 +296,7 @@ def GenTests(api):
       ),
       api.properties(slavetype='BuilderTester'),
       api.step_data('annotated steps', api.legacy_annotation.failure_step),
+      api.expect_status('FAILURE'),
   )
 
   failed_output = '@@@BUILD_STEP fake_step@@@\nfake_output\n@@@STEP_FAILURE@@@'
@@ -318,6 +319,7 @@ def GenTests(api):
       api.properties(slavetype='BuilderTester'),
       api.override_step_data(swarming_collection_step_name,
                              api.swarming.collect([failed_result])),
+      api.expect_status('FAILURE'),
   )
 
   timeout_result = api.swarming.task_result(
@@ -325,29 +327,37 @@ def GenTests(api):
       name=swarming_dimensions[triggering_builder_name]['builder'],
       state=api.swarming.TaskState.TIMED_OUT)
   yield api.test(
-      'linux_triggering_arm_with_collect_TIMED_OUT', api.platform('linux', 64),
+      'linux_triggering_arm_with_collect_TIMED_OUT',
+      api.platform('linux', 64),
       api.builder_group.for_current('client.nacl'),
       api.buildbucket.ci_build(
           builder=triggering_builder_name,
           git_repo=git_repo,
           revision='a' * 40,
           build_number=1234,
-      ), api.properties(slavetype='BuilderTester'),
+      ),
+      api.properties(slavetype='BuilderTester'),
       api.override_step_data(swarming_collection_step_name,
-                             api.swarming.collect([timeout_result])))
+                             api.swarming.collect([timeout_result])),
+      api.expect_status('FAILURE'),
+  )
 
   died_result = api.swarming.task_result(
       id='0',
       name=swarming_dimensions[triggering_builder_name]['builder'],
       state=api.swarming.TaskState.BOT_DIED)
   yield api.test(
-      'linux_triggering_arm_with_collect_BOT_DIED', api.platform('linux', 64),
+      'linux_triggering_arm_with_collect_BOT_DIED',
+      api.platform('linux', 64),
       api.builder_group.for_current('client.nacl'),
       api.buildbucket.ci_build(
           builder=triggering_builder_name,
           git_repo=git_repo,
           revision='a' * 40,
           build_number=1234,
-      ), api.properties(slavetype='BuilderTester'),
+      ),
+      api.properties(slavetype='BuilderTester'),
       api.override_step_data(swarming_collection_step_name,
-                             api.swarming.collect([died_result])))
+                             api.swarming.collect([died_result])),
+      api.expect_status('INFRA_FAILURE'),
+  )

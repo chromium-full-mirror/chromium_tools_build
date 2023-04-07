@@ -92,7 +92,6 @@ def GenTests(api):
           'vpython3',
           '[CACHE]/builder/src/testing/scripts/gtest_test.py',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -105,7 +104,6 @@ def GenTests(api):
               'script': 'gtest_test.py',
               'description': 'This is a description.'
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains,
                        'base_unittests (with patch)',
                        ['This is a description.']),
@@ -121,7 +119,6 @@ def GenTests(api):
               'script': 'gtest_test.py',
               'description': 'This is a description.'
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'base_unittests',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
@@ -134,7 +131,6 @@ def GenTests(api):
           'ci_only': True,
           'script': 'gtest_test.py',
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'base_unittests'),
       api.post_process(post_process.StepTextContains, 'base_unittests',
                        ['This test will not be run on try builders']),
@@ -148,7 +144,6 @@ def GenTests(api):
           'ci_only': True,
           'script': 'gtest_test.py',
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'ci_only tests',
                        ['* base_unittests']),
       api.post_process(post_process.DoesNotRun, 'base_unittests (with patch)'),
@@ -164,7 +159,6 @@ def GenTests(api):
       }),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'base_unittests (with patch)'),
       api.post_process(post_process.StepTextContains,
                        'base_unittests (with patch)',

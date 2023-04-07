@@ -42,6 +42,5 @@ def GenTests(api):
       api.properties(
           known_flaky_failures={'testA', 'testB'},
           weak_flaky_failures={'testC', 'testD'}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -39,60 +39,49 @@ def GenTests(api):
 
   def test(
       builder_group, builder_name, target_cpu, is_debug, gs_link, public_link):
-    return (
-      api.v8.test(builder_group, builder_name) +
-      api.step_data(
+    return (api.v8.test(builder_group, builder_name) + api.step_data(
         'Code coverage.read build config',
         api.json.output({
-          'is_debug': is_debug,
-          'dcheck_always_on': False,
-          'target_cpu': target_cpu})) +
-      api.post_process(
-          post_process.StepEnvContains,
-          'run tests',
-          {'LLVM_PROFILE_FILE': '[CLEANUP]/profraw/default-%9m.profraw'},
-      ) +
-      api.post_process(
-          post_process.StepCommandContains,
-          'Code coverage.List profraw files',
-          '[CLEANUP]/profraw',
-      ) +
-      api.override_step_data(
-          'Code coverage.List profraw files',
-          api.file.listdir(['default-0.profraw', 'default-1.profraw']),
-      ) +
-      api.post_process(
-          post_process.StepCommandRE,
-          'Code coverage.Merge profiles',
-          [
-            '.+/llvm-profdata', 'merge', '-o', '.+/total.profdata', '--sparse',
-            '.+/default-0.profraw', '.+/default-1.profraw'],
-      ) +
-      step_command_contains_multiple(
-          'Code coverage.Create report',
-          '-compilation-dir=[CACHE]/builder/v8/out/build',
-          '-output-dir=[CLEANUP]/report',
-          '-instr-profile=[CLEANUP]/profdata/total.profdata',
-          '[CACHE]/builder/v8/out/build/d8',
-      ) +
-      api.post_process(
-          post_process.StepCommandContains,
-          'Code coverage.gsutil coverage report',
-          gs_link,
-      ) +
-      api.post_process(
-          StepLinkEquals,
-          'Code coverage',
-          'report',
-          public_link,
-      ) +
-      api.post_process(
-          post_process.SummaryMarkdown,
-          f'[Report]({public_link})',
-      ) +
-      api.post_process(post_process.StatusSuccess) +
-      api.post_process(post_process.DropExpectation)
-  )
+            'is_debug': is_debug,
+            'dcheck_always_on': False,
+            'target_cpu': target_cpu
+        })) + api.post_process(
+            post_process.StepEnvContains,
+            'run tests',
+            {'LLVM_PROFILE_FILE': '[CLEANUP]/profraw/default-%9m.profraw'},
+        ) + api.post_process(
+            post_process.StepCommandContains,
+            'Code coverage.List profraw files',
+            '[CLEANUP]/profraw',
+        ) + api.override_step_data(
+            'Code coverage.List profraw files',
+            api.file.listdir(['default-0.profraw', 'default-1.profraw']),
+        ) + api.post_process(
+            post_process.StepCommandRE,
+            'Code coverage.Merge profiles',
+            [
+                '.+/llvm-profdata', 'merge', '-o', '.+/total.profdata',
+                '--sparse', '.+/default-0.profraw', '.+/default-1.profraw'
+            ],
+        ) + step_command_contains_multiple(
+            'Code coverage.Create report',
+            '-compilation-dir=[CACHE]/builder/v8/out/build',
+            '-output-dir=[CLEANUP]/report',
+            '-instr-profile=[CLEANUP]/profdata/total.profdata',
+            '[CACHE]/builder/v8/out/build/d8',
+        ) + api.post_process(
+            post_process.StepCommandContains,
+            'Code coverage.gsutil coverage report',
+            gs_link,
+        ) + api.post_process(
+            StepLinkEquals,
+            'Code coverage',
+            'report',
+            public_link,
+        ) + api.post_process(
+            post_process.SummaryMarkdown,
+            f'[Report]({public_link})',
+        ) + api.post_process(post_process.DropExpectation))
 
   # Test a CI builder with 64 bits and release mode.
   hsh = 5 * 'deadbeef'

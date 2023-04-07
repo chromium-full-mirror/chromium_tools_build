@@ -183,7 +183,6 @@ def GenTests(api):
       build_with_patch(
           affected_files=['path/to/some/cc/file.cpp'], is_revert=True),
       api.post_process(post_process.DoesNotRun, 'bot_update'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -193,6 +192,5 @@ def GenTests(api):
       'no_files',
       build_with_patch(affected_files=[]),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

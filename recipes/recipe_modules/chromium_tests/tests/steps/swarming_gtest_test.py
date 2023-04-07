@@ -103,7 +103,6 @@ def GenTests(api):
           'test_pre_run.[trigger] base_unittests',
           lambda check, req: check('target_platform:android' in req[0].command),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -118,7 +117,6 @@ def GenTests(api):
           }),
       api.post_process(post_process.LogContains, 'details', 'details',
                        ["compile_targets: 'base_unittests_run'"]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -140,7 +138,6 @@ def GenTests(api):
           post_process.LogContains, '$debug - all results',
           'serialized results',
           ['"unexpected_failing_suites": [\n    "base_unittests"']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

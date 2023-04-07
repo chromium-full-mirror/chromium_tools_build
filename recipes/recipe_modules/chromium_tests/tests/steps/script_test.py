@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DropExpectation, LogContains, MustRun,
-                                        StatusSuccess, StepCommandContains,
-                                        StepTextEquals)
+                                        StepCommandContains, StepTextEquals)
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
@@ -63,7 +62,6 @@ def GenTests(api):
       ]),
       api.post_process(LogContains, 'details', 'details',
                        ["compile_targets: ['compile_target']"]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -84,7 +82,6 @@ def GenTests(api):
       ]),
       api.post_process(LogContains, 'details', 'details',
                        ["compile_targets: ('other_target',)"]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -115,6 +112,5 @@ def GenTests(api):
           })),
       api.post_process(StepTextEquals, 'script_test',
                        '<br/>failures:<br/>TestOne<br/>'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

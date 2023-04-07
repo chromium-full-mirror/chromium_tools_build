@@ -106,7 +106,6 @@ def GenTests(api):
           'query LUCI Analysis for failure rates.rpc call', retcode=1),
       api.post_process(post_process.MustRun,
                        'error querying LUCI Analysis for failure rates'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -127,7 +126,6 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun,
                        'error querying LUCI Analysis for failure rates'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -142,7 +140,6 @@ def GenTests(api):
               'should_exonerate_flaky_failures': True,
           },
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -163,7 +160,6 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun,
                        'error querying LUCI Analysis for failure rates'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -182,7 +178,6 @@ def GenTests(api):
           }),
       api.post_process(post_process.DoesNotRun,
                        'query LUCI Analysis for failure rates'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -214,7 +209,6 @@ def GenTests(api):
               expected_count=10,
               unexpected_count=0),
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -268,7 +262,6 @@ def GenTests(api):
           'exonerate unrelated test failures',
           'testB',
           should_contain=False),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -299,7 +292,6 @@ def GenTests(api):
                        'exonerate unrelated test failures'),
       api.post_process(post_process.MustRun,
                        'failed_test (retry shards with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -341,7 +333,6 @@ def GenTests(api):
       # Ensure LUCI Analysis is in the explaination
       api.post_process(CheckStepInput, 'exonerate unrelated test failures',
                        'LUCI Analysis'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -373,7 +364,6 @@ def GenTests(api):
               examples_times=[60 * 60 * 12]),
       ]),
       api.post_process(post_process.PropertiesContain, 'luci_analysis_info'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -393,7 +383,6 @@ def GenTests(api):
           }),
       api.post_process(post_process.DoesNotRun,
                        'query LUCI Analysis for failure rates'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -429,7 +418,6 @@ def GenTests(api):
           api.luci_analysis.generate_analysis(
               test_id='ninja://failed_test/testB', unexpected_count=10),
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -465,7 +453,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'failed_test (with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'failed_test (retry shards with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -528,6 +515,5 @@ def GenTests(api):
       api.post_process(post_process.StepTextContains,
                        'Skipping querying LUCI Analysis for failure rates',
                        ['101']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

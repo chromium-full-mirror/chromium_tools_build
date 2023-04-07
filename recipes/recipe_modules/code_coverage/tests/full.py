@@ -157,7 +157,6 @@ def GenTests(api):
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS),
                        ['None/out/Release/content_shell']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -173,7 +172,6 @@ def GenTests(api):
       api.code_coverage(
           use_clang_coverage=True,
           coverage_exclude_sources='ios_test_files_and_test_utils'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -188,7 +186,6 @@ def GenTests(api):
           ).assemble()),
       api.code_coverage(
           use_clang_coverage=True, coverage_exclude_sources='all_test_files'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -217,7 +214,6 @@ def GenTests(api):
           post_process.MustRun,
           ('process clang code coverage data for overall test coverage.gsutil '
            'export metadata to zoss')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -247,7 +243,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'process java coverage (overall).gsutil export metadata to zoss'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -270,7 +265,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'process javascript coverage.gsutil export metadata to zoss'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -290,7 +284,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'process javascript coverage.'
           'gsutil Upload coverage artifacts'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -333,7 +326,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'skip processing coverage data because no source file changed'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -386,7 +378,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.gsutil '
           'upload coverage metadata'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -404,7 +395,6 @@ def GenTests(api):
           'some/path/to/file%d.cc' % i for i in range(500)
       ]),
       api.post_process(post_process.PropertyEquals, 'skipping_coverage', True),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -420,7 +410,6 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.properties(files_to_instrument=['third_party/skia/file.cc']),
       api.properties(is_deps_only_change=True),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -445,7 +434,6 @@ def GenTests(api):
           'skip processing coverage data, project(s) '
           'chromium-review.googlesource.com/v8/v8 is(are) unsupported',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -467,7 +455,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.Finding '
           'profile merge errors'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -565,7 +552,6 @@ def GenTests(api):
           'for overall test coverage.gsutil '
           'upload coverage metadata'
           ''].output_properties['process_coverage_data_failure'] == True)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -584,7 +570,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.skip '
           'processing because no profdata was generated'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -603,7 +588,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.gsutil '
           'upload artifact to GS'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -627,7 +611,6 @@ def GenTests(api):
           post_process.MustRun, 'process java coverage (overall).'
           'gsutil Upload coverage artifacts'),
       api.post_process(post_process.MustRun, 'Clean up Java coverage files'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -648,7 +631,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
           'Generate Java coverage metadata'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -716,7 +698,6 @@ def GenTests(api):
           post_process.MustRun, 'process java coverage (overall).'
           'gsutil Upload coverage artifacts'),
       api.post_process(post_process.MustRun, 'Clean up Java coverage files'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -744,7 +725,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
           'skip processing because overall tests metadata was missing'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -788,7 +768,6 @@ def GenTests(api):
       api.post_check(lambda check, steps: check(steps[
           'process java coverage (overall).Generate Java coverage metadata'
       ].output_properties['process_coverage_data_failure'] == True)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -853,7 +832,6 @@ def GenTests(api):
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.gsutil '
           'upload html report'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -916,7 +894,6 @@ def GenTests(api):
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.gsutil '
           'upload html report'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -988,7 +965,6 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
               'None/out/Debug/ios_chrome_eg2tests.app/ios_chrome_eg2tests'
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1059,7 +1035,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for unit test coverage.gsutil '
           'upload coverage metadata'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1105,7 +1080,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'process clang code coverage data for overall test coverage'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1129,7 +1103,6 @@ def GenTests(api):
           post_process.MustRun,
           'skip processing because of an exception when validating test types '
           'to process: Unsupported test type instrument.'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1188,7 +1161,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.gsutil '
           'upload coverage metadata'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1209,7 +1181,6 @@ def GenTests(api):
       api.post_check(lambda check, steps: check('some-task-id' in steps[
           'process clang code coverage data for overall test coverage.gsutil '
           'upload coverage metadata'].cmd[-1])),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1228,6 +1199,5 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.gsutil '
           'upload coverage metadata'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

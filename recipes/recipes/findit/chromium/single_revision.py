@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        StepCommandContains, StatusSuccess)
+                                        StepCommandContains)
 
 from PB.recipes.build.findit.chromium.single_revision import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -279,7 +279,6 @@ def GenTests(api):
       api.post_process(MustRun, 'compile'),
       api.post_process(StepCommandContains, 'compile', ['blink_web_tests']),
       api.post_process(StepCommandContains, 'compile', ['base_unittests']),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -293,7 +292,6 @@ def GenTests(api):
       api.post_process(MustRun, 'compile'),
       api.post_process(StepCommandContains, 'compile', ['base_unittests']),
       api.post_process(_StepCommandNotContains, 'compile', 'missing_target'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -326,7 +324,6 @@ def GenTests(api):
                   0].command)),
       api.post_process(MustRun, 'test_pre_run.[trigger] base_unittests'),
       api.post_process(DoesNotRun, 'analyze'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -350,7 +347,6 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'test_pre_run.[trigger] blink_web_tests'),
       api.post_process(MustRun, 'test_pre_run.[trigger] base_unittests'),
       api.post_process(MustRun, 'analyze'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -370,7 +366,6 @@ def GenTests(api):
       ),
       api.post_process(DoesNotRun, 'compile'),
       api.post_process(MustRun, 'checkperms'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 

@@ -53,7 +53,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -75,7 +74,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -103,18 +101,16 @@ def GenTests(api):
                       ),
               },
           })),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'reclient',
-      api.properties(
-          **{
-              '$build/reclient': {
-                  'instance': 'fake-reclient-instance',
-              },
-          }),
+      api.properties(**{
+          '$build/reclient': {
+              'instance': 'fake-reclient-instance',
+          },
+      }),
       api.chromium_tests_builder_config.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
@@ -127,7 +123,6 @@ def GenTests(api):
                       ),
               },
           })),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -176,7 +171,6 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -200,6 +194,5 @@ def GenTests(api):
               ),
           ).assemble()),
       api.properties(test_only=True),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

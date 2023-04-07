@@ -73,7 +73,6 @@ def GenTests(api):
               chromium.BuilderId.create_for_group('fake-group',
                                                   'fake-tester-bar')
           ]),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -118,7 +117,6 @@ def GenTests(api):
           expected_builder_id=chromium.BuilderId.create_for_group(
               'fake-group', 'fake-tester'),
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -152,7 +150,6 @@ def GenTests(api):
               chromium.BuilderId.create_for_group('fake-group',
                                                   'fake-tester-foo')
           ]),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -177,7 +174,6 @@ def GenTests(api):
       api.properties(
           expected_builder_id=chromium.BuilderId.create_for_group(
               'fake-group', 'fake-builder')),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -211,6 +207,5 @@ def GenTests(api):
           expected_builder_id=chromium.BuilderId.create_for_group(
               'fake-group', 'fake-tester'),
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

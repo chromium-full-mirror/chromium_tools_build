@@ -132,6 +132,7 @@ def GenTests(api):
       build(),
       api.step_data('Build Wabt', retcode=1),
       api.post_process(Filter('postprocess_for_goma.upload_log')),
+      api.expect_status('FAILURE'),
   )
 
   # Check that if the first test fails, the second runs but the overall
@@ -141,6 +142,7 @@ def GenTests(api):
       build(),
       api.step_data('Emscripten testsuite (upstream)', retcode=1) +
       api.post_process(Filter('Emscripten testsuite (asm2wasm)', '$result')),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

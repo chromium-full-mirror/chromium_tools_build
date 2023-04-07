@@ -31,9 +31,9 @@ See PROPERTIES for documentation on the recipe's interface.
 import re
 
 from recipe_engine.config import Single
-from recipe_engine.post_process import (
-    DoesNotRun, DropExpectation, Filter, MustRun, StatusAnyFailure,
-    StatusSuccess, SummaryMarkdown, SummaryMarkdownRE)
+from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
+                                        MustRun, SummaryMarkdown,
+                                        SummaryMarkdownRE)
 from recipe_engine.recipe_api import Property
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -1146,8 +1146,8 @@ def GenTests(api):
       # The flake still reproduces.
       is_flaky(-3, 0, 2),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Progression testing with a too large gap between known bad revision
@@ -1164,8 +1164,8 @@ def GenTests(api):
           SummaryMarkdown,
           f'Could not connect the known bad revision to refs/heads/main. '
           f'Looked in over {MAX_HEAD_OFFSET} commits.'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Combine progression and regression testing.
@@ -1188,7 +1188,6 @@ def GenTests(api):
       api.post_process(SummaryMarkdownRE, r'Flake still reproduces'),
       api.post_process(SummaryMarkdownRE,
                        re.escape(f'Suspecting [#3..#2]({REPO}/+log/a3..a2)')),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -1206,7 +1205,6 @@ def GenTests(api):
       verify_fixed(-1, -2),
       api.post_process(SummaryMarkdown,
                        f'Fixed in [#-1..#-2]({REPO}/+log/a-1..a-2)'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -1217,8 +1215,8 @@ def GenTests(api):
       sum((get_revisions(i, 1) for i in range(1, MAX_CAS_OFFSET)),
           api.empty_test_data()),
       api.post_process(SummaryMarkdown, 'Couldn\'t find cas_digests.'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Simulate not returning a JSON output after many iterations.
@@ -1233,8 +1231,8 @@ def GenTests(api):
       api.post_process(
           SummaryMarkdown,
           'Unable to retrieve from CAS, probably went out of retention'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Simulate not returning a JSON output after a few iterations.
@@ -1248,8 +1246,8 @@ def GenTests(api):
       is_flaky(15, 0, 1, no_output=True),
       api.post_process(SummaryMarkdownRE,
                        'Infra Failure.*missing shard results.*'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   # Simulate repro-only mode reproducing a flake.
@@ -1257,7 +1255,6 @@ def GenTests(api):
       'repro_only', builder_properties(mode='repro'), successful_lookups(0),
       is_flaky(0, 0, 1, calibration_attempt=1),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(StatusSuccess),
       api.post_process(
           Filter(
               'calibration attempt 1.check mjsunit/foobar at #0.'
@@ -1270,8 +1267,8 @@ def GenTests(api):
       builder_properties(mode='repro'),
       successful_lookups(0),
       api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Simulate repro-only mode with no revision property given.
@@ -1284,7 +1281,6 @@ def GenTests(api):
       is_flaky(0, 0, 1, calibration_attempt=1),
       api.post_process(MustRun, 'init head #0'),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -1300,6 +1296,7 @@ def GenTests(api):
       api.post_process(MustRun, 'gsutil lookup cas_digests for #1 (fallback)'),
       api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2'),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Simulate repro-only mode reproducing a flake by regexp.
@@ -1314,7 +1311,6 @@ def GenTests(api):
           calibration_attempt=1,
           output_prefix='has foo and bar in the output...\n'),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -1325,8 +1321,8 @@ def GenTests(api):
       successful_lookups(0),
       is_flaky(0, 0, 1, calibration_attempt=1),
       api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Simulate running tasks on Android and verify correct dimensions.
@@ -1350,6 +1346,7 @@ def GenTests(api):
       successful_lookups(0),
       api.post_process(check_dimensions),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Simulate not finding enough flakes during calibration.
@@ -1367,8 +1364,8 @@ def GenTests(api):
       is_flaky(0, 1, 3, calibration_attempt=4, test_name=shortened_test_name),
       is_flaky(0, 0, 3, calibration_attempt=5, test_name=shortened_test_name),
       api.post_process(SummaryMarkdown, 'Could not reach enough confidence.'),
-      api.post_process(StatusAnyFailure),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # Simulate triggering of the recipe by the flake verification bot.
@@ -1385,7 +1382,6 @@ def GenTests(api):
       is_flaky(0, 0, 0, calibration_attempt=1),
       is_flaky(0, 1, 1, calibration_attempt=1),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(StatusSuccess),
       api.post_process(
           Filter(
               'calibration attempt 1.check mjsunit/foobar at #0.'

@@ -331,6 +331,7 @@ def GenTests(api):
             stdout=api.raw_io.output_text(
                 'hash_for_mac/size hello_world.isolated')),
         api.properties(platforms=('win', 'linux', 'mac')),
+        api.expect_status('INFRA_FAILURE'),
     )
 
   yield api.test(
@@ -398,6 +399,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
       api.properties(show_outputs_ref_in_collect_step=False),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   data = {
@@ -741,6 +743,7 @@ def GenTests(api):
                   'summary.json': api.json.dumps(summary_data).encode('utf-8')
               }) + api.test_utils.canned_gtest_output(False), summary_data)),
       api.properties(platforms=('linux',), gtest_task=True),
+      api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
       'isolated_script_with_null_shard',
@@ -759,6 +762,7 @@ def GenTests(api):
                   'summary.json': api.json.dumps(summary_data).encode('utf-8')
               }), summary_data)),
       api.properties(platforms=('linux',), isolated_script_task=True),
+      api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
       'coverage_gtest_with_null_shard',
@@ -837,7 +841,6 @@ def GenTests(api):
           api.chromium_swarming.summary(
               api.test_utils.canned_gtest_output(True), missing_duration_data)),
       api.properties(platforms=('linux',), gtest_task=True),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation))
 
   yield api.test(
@@ -851,5 +854,4 @@ def GenTests(api):
           'archive for linux',
           stdout=api.raw_io.output_text(
               'hash_for_linux/size hello_world.isolated')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation))

@@ -65,7 +65,6 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -80,7 +79,6 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'base_unittests', failing_tests=['Test.One']))),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -91,9 +89,6 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.platform.name('win'),
-      api.properties(
-          target_platform='win',
-      ),
-      api.post_process(post_process.StatusSuccess),
+      api.properties(target_platform='win',),
       api.post_process(post_process.DropExpectation),
   )

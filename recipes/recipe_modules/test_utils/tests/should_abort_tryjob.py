@@ -67,7 +67,6 @@ def GenTests(api):
       'disable-retries-footer-failure',
       api.chromium.try_build(),
       api.step_data('gerrit changes', retcode=1),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(post_process.DoesNotRun, 'retries disabled'),
       api.post_check(post_process.MustRun, 'failure getting footers'),
       api.post_process(post_process.DropExpectation),

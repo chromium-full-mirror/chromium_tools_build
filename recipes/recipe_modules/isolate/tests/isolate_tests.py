@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DropExpectation, PropertyEquals,
-                                        StatusSuccess, StepCommandContains)
+                                        StepCommandContains)
 from recipe_engine.recipe_api import Property
 
 DEPS = [
@@ -31,6 +31,5 @@ def GenTests(api):
               'dummy_target_1': '[dummy hash for dummy_target_1/dummy size]',
               'dummy_target_2': '[dummy hash for dummy_target_2/dummy size]'
           }),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

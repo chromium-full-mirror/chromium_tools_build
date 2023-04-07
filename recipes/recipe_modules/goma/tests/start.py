@@ -26,7 +26,6 @@ def GenTests(api):
                        'preprocess_for_goma.start_goma'),
       api.post_process(post_process.StepSuccess,
                        'preprocess_for_goma.start cloudtail'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -42,7 +41,6 @@ def GenTests(api):
                        'postprocess_for_goma.upload_log', [
                            '--is-experimental',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

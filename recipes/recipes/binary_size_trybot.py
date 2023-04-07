@@ -20,5 +20,4 @@ def RunSteps(api):
 
 def GenTests(api):
   yield api.test('basic', api.binary_size.build(override_commit_log=True),
-                 api.post_process(post_process.StatusSuccess),
                  api.post_process(post_process.DropExpectation))

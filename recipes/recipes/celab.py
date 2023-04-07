@@ -597,6 +597,7 @@ def GenTests(api):
       api.step_data('test summary.3rd test.read logs',
                     api.file.errno('EEXIST')),
       api.path.exists(api.path['start_dir'].join('logs', '1st test')),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'failed_tests_ci_linux_with_retry',
@@ -681,7 +682,8 @@ def GenTests(api):
       api.post_process(DropExpectation),
   )
   yield api.test(
-      'flaky_tests_ci_linux_with_retry', api.platform('linux', 64),
+      'flaky_tests_ci_linux_with_retry',
+      api.platform('linux', 64),
       api.properties(tests='*', pool_name='celab-ci', pool_size=5),
       api.buildbucket.ci_build(
           project='celab', bucket='ci', git_repo=CELAB_REPO),
@@ -701,7 +703,8 @@ def GenTests(api):
                   'success': False,
                   'output': '/missing'
               }
-          })), api.post_process(MustRun, 'retry failed tests'),
+          })),
+      api.post_process(MustRun, 'retry failed tests'),
       api.step_data('retry failed tests', retcode=1),
       api.step_data(
           'find failed tests (2).parse summary',
@@ -714,8 +717,11 @@ def GenTests(api):
                   'success': True,
                   'output': '/missing'
               }
-          })), api.step_data('test summary.parse summary'),
-      api.post_process(DropExpectation))
+          })),
+      api.step_data('test summary.parse summary'),
+      api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
+  )
   yield api.test(
       'failed_tests_no_summary_ci_linux',
       api.platform('linux', 64),
@@ -726,6 +732,7 @@ def GenTests(api):
       api.step_data('find failed tests.parse summary', retcode=1),
       api.step_data('test summary.parse summary', retcode=1),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'windows_quick_tests',

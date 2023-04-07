@@ -199,30 +199,35 @@ def GenTests(api):
       'tester_no_devices_during_recovery',
       properties_for('tester'),
       api.step_data('device_recovery', retcode=1),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
       'tester_no_devices_during_status',
       properties_for('tester'),
       api.step_data('device_status', retcode=1),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
       'tester_other_device_failure_during_recovery',
       properties_for('tester'),
       api.step_data('device_recovery', retcode=2),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
       'tester_other_device_failure_during_status',
       properties_for('tester'),
       api.step_data('device_status', retcode=2),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
       'tester_with_step_warning',
       properties_for('tester'),
       api.step_data('unittests', retcode=88),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

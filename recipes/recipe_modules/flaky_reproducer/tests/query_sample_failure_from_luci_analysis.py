@@ -145,6 +145,7 @@ def GenTests(api):
       api.post_check(post_process.ResultReason,
                      'No cluster associated with bug.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -163,4 +164,5 @@ def GenTests(api):
       api.post_check(post_process.ResultReason,
                      'No failure found in the LUCI Analysis cluster.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )

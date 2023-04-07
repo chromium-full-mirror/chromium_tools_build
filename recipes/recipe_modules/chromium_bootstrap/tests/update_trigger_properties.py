@@ -26,7 +26,6 @@ def GenTests(api):
   def expect_properties(properties):
     return sum([
         api.properties(expected_properties=properties),
-        api.post_check(post_process.StatusSuccess),
         api.post_process(post_process.DropExpectation),
     ], api.empty_test_data())
 

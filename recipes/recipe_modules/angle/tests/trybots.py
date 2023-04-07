@@ -41,7 +41,6 @@ def GenTests(api):
             builder=buildername,
             patch_set=1,
         ),
-        api.post_check(post_process.StatusSuccess),
         api.post_process(post_process.DropExpectation),
         api.angle.override_commit_pos_data(),
     )

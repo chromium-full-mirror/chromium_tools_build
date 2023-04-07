@@ -357,6 +357,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'telemetry_gpu_unittests', failing_tests=['Test.One']))),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -423,6 +424,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'telemetry_gpu_unittests', failing_tests=['Test.One']))),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -455,6 +457,7 @@ def GenTests(api):
           }),
       api.override_step_data(
           'telemetry_gpu_unittests', api.json.output(None), retcode=-11),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -658,6 +661,7 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'telemetry_gpu_unittests', '', failures=['Test.One']),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -737,6 +741,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'telemetry_gpu_unittests Dashboard Upload'),
       api.post_process(post_process.Filter('telemetry_gpu_unittests')),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -959,6 +964,7 @@ def GenTests(api):
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'telemetry_gpu_unittests', '', failures=['Test.One']),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -996,6 +1002,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data('telemetry_gpu_unittests', retcode=255),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -1153,6 +1160,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data('base_unittests', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1191,6 +1199,7 @@ def GenTests(api):
               api.test_utils.rdb_results(
                   'test_script_with_broken_tests',
                   failing_tests=['FailSuite.Test1', 'FlakySuite.TestA']))),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1268,6 +1277,7 @@ def GenTests(api):
                   },],
               },
           }),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1347,6 +1357,7 @@ def GenTests(api):
                   },],
               },
           }),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1460,4 +1471,5 @@ def GenTests(api):
                   },],
               },
           }),
+      api.expect_status('FAILURE'),
   )

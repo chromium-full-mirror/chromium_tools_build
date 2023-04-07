@@ -17,8 +17,8 @@ from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
 from recipe_engine.post_process import (DropExpectation, Filter, MustRun,
-                                        ResultReasonRE, StatusSuccess,
-                                        StepException, StepFailure)
+                                        ResultReasonRE, StepException,
+                                        StepFailure)
 
 
 DEPS = [
@@ -170,7 +170,6 @@ def GenTests(api):
   yield api.test(
       'success',
       test_data(['SUCCESS']),
-      api.post_process(StatusSuccess),
   )
 
   yield api.test(
@@ -187,7 +186,6 @@ def GenTests(api):
       'infra_failure',
       test_data(['INFRA_FAILURE']),
       api.post_process(StepException, 'FunctionCallSample'),
-      api.post_process(StatusSuccess),
       api.post_process(Filter().include_re(r'.*FunctionCallSample.*')),
   )
 
@@ -195,7 +193,6 @@ def GenTests(api):
       'no_flakes',
       api.step_data('read flake config', api.gitiles.make_encoded_file('[]')),
       api.post_process(MustRun, 'No flakes to reproduce'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 

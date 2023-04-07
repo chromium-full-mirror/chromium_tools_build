@@ -22,6 +22,5 @@ def GenTests(api):
       'basic',
       api.chromium_bootstrap.properties(skip_analysis_reasons=['foo', 'bar']),
       api.properties(expected_reasons=['foo', 'bar']),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

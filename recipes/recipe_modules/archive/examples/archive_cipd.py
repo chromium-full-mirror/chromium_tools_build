@@ -85,7 +85,6 @@ def GenTests(api):
           **{'$build/archive': input_properties}),
       api.chromium.override_version(
           major=91, step_name='Generic Archiving Steps.get version'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
@@ -124,7 +123,6 @@ def GenTests(api):
           **{'$build/archive': input_properties}),
       api.chromium.override_version(
           major=90, step_name='Generic Archiving Steps.get version'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
@@ -175,7 +173,6 @@ def GenTests(api):
                   },
               },],
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
@@ -226,7 +223,6 @@ def GenTests(api):
               '/path/to/another/file.txt',
               'gs://any-bucket/dest_dir/path/to/another/file.txt'
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -247,7 +243,6 @@ def GenTests(api):
           **{'$build/archive': input_properties}),
       api.chromium.override_version(
           major=89, step_name='Generic Archiving Steps.get version'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [

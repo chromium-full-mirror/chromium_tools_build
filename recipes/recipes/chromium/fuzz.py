@@ -392,7 +392,6 @@ def GenTests(api):
         stdout=api.raw_io.output_text('target1 target2 target3')
     ) + api.step_data(
         'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
-    test += api.post_process(post_process.StatusSuccess)
     if not "tryserver" in test.name:
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     test += api.post_process(post_process.DropExpectation)

@@ -33,11 +33,9 @@ def GenTests(api):
   yield api.test(
       'zstd',
       api.properties(compression_algorithm='zstd', compression_level=22),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation))
 
   yield api.test('block_size', api.properties(block_size='256K'),
-                 api.post_process(post_process.StatusSuccess),
                  api.post_process(post_process.DropExpectation))
 
   yield api.test('fail_on_windows', api.platform('win', 64),

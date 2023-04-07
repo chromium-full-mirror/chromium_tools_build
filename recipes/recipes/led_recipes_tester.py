@@ -704,7 +704,6 @@ def GenTests(api):
       affected_files(builder_config_path('builders/__init__.py')),
       api.post_check(post_process.MustRun, 'all affected files ignored'),
       api.post_check(post_process.DoesNotRun, 'determine affected recipes'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -713,7 +712,6 @@ def GenTests(api):
       gerrit_change(),
       default_builders(),
       api.post_check(post_process.DoesNotRunRE, 'test .*\.trigger'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

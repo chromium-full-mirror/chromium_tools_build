@@ -135,7 +135,6 @@ def GenTests(api):
           'read test spec (fake-group.json)',
           ['testing/buildbot'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -161,7 +160,6 @@ def GenTests(api):
           'read test spec (fake-group.json)',
           ['infra/specs'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -179,6 +177,5 @@ def GenTests(api):
           builder_group='fake-try-group',
           builder='fake-try-builder',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

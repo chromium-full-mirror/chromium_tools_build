@@ -92,7 +92,6 @@ def GenTests(api):
           InputProperties(
               tasks_groups=MOCK_TASK_GROUPS,
               tester_properties=MOCK_PROR_JSON_STRING)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

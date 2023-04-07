@@ -90,7 +90,6 @@ def GenTests(api):
       'no_files',
       with_patch(affected_files=[]),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -98,7 +97,6 @@ def GenTests(api):
       'no_analysis_non_cpp',
       with_patch(affected_files=['some/cc/file.txt']),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -108,7 +106,6 @@ def GenTests(api):
           affected_files=['path/to/some/cc/file.cpp'], auto_exist_files=False),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
       api.post_process(_tricium_has_no_messages),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -122,7 +119,6 @@ def GenTests(api):
       api.post_process(
           _tricium_has_message, 'warning: clang-tidy timed out on this '
           'file; issuing diagnostics is impossible.'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -135,7 +131,6 @@ def GenTests(api):
                              })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -148,7 +143,6 @@ def GenTests(api):
               {'failed_tidy_files': ['path/to/some/cc/file.cpp']})),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -179,7 +173,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_message, 'hello, world 1 (https://clang.llvm.org/'
           'extra/clang-tidy/checks/super/cool-diag.html)'),
@@ -203,7 +196,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_message, 'hello, world 1 (https://clang.llvm.org/'
           'extra/clang-tidy/checks/super/cool-diag.html)'),
@@ -229,7 +221,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_message, 'hello, world 1 (https://clang.llvm.org/'
           'extra/clang-tidy/checks/super/cool-diag.html)'),
@@ -264,7 +255,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(_tricium_has_no_messages),
       api.post_process(post_process.DropExpectation),
   )
@@ -287,7 +277,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_message,
           'a (https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
@@ -316,7 +305,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_message,
           'a (https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
@@ -344,7 +332,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepWarning,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_message,
           'a (https://clang.llvm.org/extra/clang-tidy/checks/b.html)\n\n'
@@ -386,7 +373,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(_tricium_has_replacements, 'foo', 'bar'),
       api.post_process(post_process.DropExpectation),
   )
@@ -431,7 +417,6 @@ def GenTests(api):
                       api.file.read_json({'diagnostics': diags})),
         api.post_process(post_process.StepSuccess,
                          'clang-tidy.generate-warnings'),
-        api.post_process(post_process.StatusSuccess),
         api.post_process(_tricium_outputs_json, [{
             'category': 'ClangTidy/tidy-is-angry',
             'path': 'path/to/some/cc/file.h',
@@ -476,7 +461,6 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepSuccess,
                        'clang-tidy.generate-warnings'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(_tricium_outputs_json, [
           {
               'category': 'ClangTidy/bugprone-use-after-move',

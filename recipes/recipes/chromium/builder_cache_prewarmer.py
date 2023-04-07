@@ -176,7 +176,6 @@ def GenTests(api):
           'write {}'.format(warmed_file_name),
           ['{},{}'.format(fake_timestamp, fake_revision)],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

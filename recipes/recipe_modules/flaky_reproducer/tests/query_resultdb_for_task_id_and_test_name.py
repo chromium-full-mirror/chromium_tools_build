@@ -107,6 +107,7 @@ def GenTests(api):
       api.resultdb.query_test_results(query_test_results),
       api.post_check(post_process.ResultReason, 'Cannot find TestResult.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -119,6 +120,7 @@ def GenTests(api):
       api.post_check(post_process.ResultReason,
                      'Must specify task_id or build_id.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -131,6 +133,7 @@ def GenTests(api):
       api.post_check(post_process.ResultReason,
                      'Must specify test_name or test_id.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -145,6 +148,7 @@ def GenTests(api):
       ),
       api.post_check(post_process.ResultReason, 'Not support realm.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

@@ -24,12 +24,11 @@ def RunSteps(api):
   test_suite.debug()
 
 
-from recipe_engine.post_process import DropExpectation, StatusSuccess
+from recipe_engine.post_process import DropExpectation
 
 
 def GenTests(api):
   yield api.test(
       'unittests',
-      api.post_check(StatusSuccess),
       api.post_process(DropExpectation),
   )

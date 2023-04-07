@@ -155,7 +155,6 @@ def GenTests(api):
       package_version_steps(),
       api.post_process(post_process.MustRun, 'emulator.install'),
       api.post_process(post_process.MustRun, 'emulator.create emulator.yaml'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

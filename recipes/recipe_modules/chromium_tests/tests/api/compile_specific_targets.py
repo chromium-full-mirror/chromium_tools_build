@@ -103,7 +103,6 @@ def GenTests(api):
           'fake-tester',
       ]),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -224,7 +223,6 @@ def GenTests(api):
           '"isolate_server": '
           '"projects/example-cas-server/instances/default_instance"}',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -255,7 +253,6 @@ def GenTests(api):
           '"isolate_server": '
           '"projects/example-cas-server/instances/default_instance"}',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -284,7 +281,6 @@ def GenTests(api):
           '"isolate_server": '
           '"projects/example-cas-server/instances/default_instance"}',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -300,7 +296,6 @@ def GenTests(api):
           'Cronet',
       ]),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -316,6 +311,5 @@ def GenTests(api):
           '--android-version-name=123.1.9876.2',
       ]),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

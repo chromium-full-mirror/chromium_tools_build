@@ -112,7 +112,6 @@ def GenTests(api):
           repository_url='https://chromium.googlesource.com/chromium/src.git',),
       api.step_data('presubmit', api.json.output({})),
       api.step_data('presubmit py3', api.json.output({})),
-      api.post_process(post_process.StatusSuccess),
   )
 
   yield api.test(

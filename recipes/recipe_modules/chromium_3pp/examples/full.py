@@ -72,7 +72,6 @@ def GenTests(api):
       # CI should upload the 3pp packages
       api.post_process(post_process.MustRun, 'building p_apple/other.do upload',
                        'building p_apple/some.do upload'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -92,7 +91,6 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains, 'Preprocessing third_party/foo',
           ['[CACHE]/builder/src/third_party/foo/bar.py', '--verbose']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -103,7 +101,6 @@ def GenTests(api):
           post_process.MustRun,
           'Load to-build packages from third_party/bar/some',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -113,7 +110,6 @@ def GenTests(api):
           runtime_properties={'is_experimental': True},
           local_checkout_dir='[CACHE]/hi'),
       api.path.exists(api.path['cache'].join('hi', '.gclient')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -148,7 +144,6 @@ def GenTests(api):
               ''')),
       api.post_process(post_process.StepTextEquals, 'Unsupported packages',
                        'prefix/deps/pear'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -195,7 +190,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'building p_apple/other.do upload',
                        'building p_apple/some.do upload'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -208,6 +202,5 @@ def GenTests(api):
           api.raw_io.stream_output_text('\n'.join(
               ['foo.cc', 'testing/buildbot/bar.json']))),
       api.post_process(post_process.MustRun, 'No 3pp related changes'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -147,7 +147,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.post_process(post_process.MustRun, 'download src-side deps'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -177,7 +176,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.post_process(post_process.MustRun, 'download src-side deps'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -229,7 +227,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.post_process(post_process.MustRun, 'download src-side deps'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -331,7 +328,6 @@ def GenTests(api):
           ],
       ),
       api.post_process(post_process.MustRun, 'compilator steps (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -377,6 +373,5 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun,
                        'compilator steps (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

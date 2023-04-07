@@ -65,4 +65,5 @@ def GenTests(api):
   yield api.test(
       'space_usage_fails_build',
       api.properties(usage1_data={'x': 1}, usage1_fails_build=True),
+      api.expect_status('FAILURE'),
   )

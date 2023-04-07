@@ -42,7 +42,6 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.override_step_data('test_suite',
                              api.test_utils.canned_gtest_output(passing=True)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'test_suite'),
       api.post_process(post_process.DropExpectation),
   )
@@ -53,7 +52,6 @@ def GenTests(api):
       api.properties(target_name='test_target'),
       api.override_step_data('test_suite',
                              api.test_utils.canned_gtest_output(passing=True)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'test_suite'),
       api.post_process(post_process.StepCommandContains, 'test_suite',
                        ['[CACHE]/builder/src/out/Release/bin/run_test_target']),
@@ -66,7 +64,6 @@ def GenTests(api):
       api.properties(additional_args=['--foo=bar']),
       api.override_step_data('test_suite',
                              api.test_utils.canned_gtest_output(passing=True)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'test_suite'),
       api.post_process(post_process.StepCommandContains, 'test_suite',
                        ['--foo=bar']),

@@ -126,5 +126,4 @@ def GenTests(api):
       try_build(builder='parallel_stressor_linux'),
       api.post_process(post_process.MustRun, 'E2E tests (Parallel)'),
       api.post_process(post_process.MustRun, 'E2E tests (Sequential)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation))

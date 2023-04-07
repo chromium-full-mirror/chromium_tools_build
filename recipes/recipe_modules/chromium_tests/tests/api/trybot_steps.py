@@ -177,7 +177,6 @@ def GenTests(api):
                        'gclient runhooks (with patch)'),
       api.post_process(post_process.StepSuccess, 'compile (with patch)'),
       api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -209,7 +208,6 @@ def GenTests(api):
                        'gclient runhooks (with patch)'),
       api.post_process(post_process.StepSuccess, 'compile (with patch)'),
       api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -231,7 +229,6 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess, 'clobber'),
       api.post_process(post_process.StepSuccess, 'analyze'),
       api.post_process(post_process.DoesNotRunRE, 'compile.*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -255,7 +252,6 @@ def GenTests(api):
           '"test_targets": []}',
       ]),
       api.post_process(post_process.DoesNotRunRE, 'compile.*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -281,7 +277,6 @@ def GenTests(api):
           '"test_targets": []}',
       ]),
       api.post_process(post_process.DoesNotRunRE, 'compile.*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -338,7 +333,6 @@ def GenTests(api):
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -365,7 +359,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -429,7 +422,6 @@ def GenTests(api):
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -585,7 +577,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in 1 tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -637,7 +628,6 @@ def GenTests(api):
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in 2 tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -749,7 +739,6 @@ def GenTests(api):
                              'performance_test_suite.profdata')])),
       api.post_process(post_process.DoesNotRunRE,
                        '.*gsutil upload artifact to GS.*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -827,7 +816,6 @@ def GenTests(api):
                        'gclient runhooks (with patch)'),
       api.post_process(post_process.StepSuccess, 'compile (with patch)'),
       api.post_process(post_process.StepSuccess, 'base_unittests (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1187,7 +1175,6 @@ def GenTests(api):
               'collect tasks (check flakiness shard #0).'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results'),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1358,6 +1345,7 @@ def GenTests(api):
       ),
       api.post_check(post_process.DoesNotRunRE, '.+ \(without patch\)'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('CANCELED'),
   )
 
   yield api.test(
@@ -1387,6 +1375,5 @@ def GenTests(api):
                   ]
               },
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

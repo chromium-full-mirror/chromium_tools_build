@@ -40,6 +40,5 @@ def GenTests(api):
               bucket='fake-bucket',
               builder='fake-builder',
           )),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

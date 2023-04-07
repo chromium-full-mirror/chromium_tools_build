@@ -18,7 +18,7 @@ from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        ResultReason, StatusSuccess)
+                                        ResultReason)
 from recipe_engine.recipe_api import Property
 
 from google.protobuf import json_format
@@ -173,6 +173,7 @@ def GenTests(api):
       api.step_data('Check', api.v8_tests.one_failure()),
       api.post_process(MustRun, 'Check'),
       api.post_process(MustRun, 'Test262'),
+      api.expect_status('FAILURE'),
   )
 
   yield test(
@@ -207,7 +208,7 @@ def GenTests(api):
       subbuild_data(output_properties),
       api.runtime.global_shutdown_on_step('Check'),
       api.post_process(ResultReason, BUILD_CANCELED_SUMMARY),
-      api.expect_status('INFRA_FAILURE'),
+      api.expect_status('CANCELED'),
       api.post_process(DropExpectation),
   )
 
@@ -216,7 +217,7 @@ def GenTests(api):
       api.runtime.global_shutdown_on_step('compilator steps'),
       subbuild_data({}, '', common_pb.CANCELED),
       api.post_process(ResultReason, BUILD_CANCELED_SUMMARY),
-      api.expect_status('INFRA_FAILURE'),
+      api.expect_status('CANCELED'),
       api.post_process(DropExpectation),
   )
 
@@ -268,6 +269,5 @@ def GenTests(api):
       api.post_process(MustRun, 'read build.proto.json'),
       api.post_process(MustRun, 'Check'),
       api.post_process(MustRun, 'Test262'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

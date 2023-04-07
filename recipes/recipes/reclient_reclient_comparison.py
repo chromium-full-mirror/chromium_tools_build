@@ -306,7 +306,6 @@ def GenTests(api):
             buildnumber=571,
             configuration='Release',
             **mac_test_props),
-        api.post_process(post_process.StatusSuccess),
         api.post_process(post_process.DropExpectation),
     )
 

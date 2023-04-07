@@ -36,7 +36,6 @@ def GenTests(api):
 
   yield api.test(
       'basic',
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -48,7 +47,6 @@ def GenTests(api):
                            '-m',
                            'chromium.perf',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -63,6 +61,6 @@ def GenTests(api):
                        ]),
       api.post_check(post_process.ResultReason,
                      'Step(\'generate_build_files\') (retcode: 1)'),
-      api.post_process(post_process.StatusAnyFailure),
       api.post_process(post_process.DropExpectation),
-      api.expect_status("FAILURE"))
+      api.expect_status("FAILURE"),
+  )

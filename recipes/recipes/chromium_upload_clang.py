@@ -185,7 +185,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'select XCode'),
       api.post_process(post_process.MustRun, 'package rust'),
       api.post_process(post_process.StepSuccess, 'package rust'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -197,7 +196,6 @@ def GenTests(api):
           builder='linux_upload_clang'),
       api.post_process(post_process.MustRun, 'package rust'),
       api.post_process(post_process.StepSuccess, 'package rust'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -209,6 +207,5 @@ def GenTests(api):
           builder='linux_upload_clang'),
       api.step_data('package rust', retcode=1),
       api.post_process(post_process.StepFailure, 'package rust'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

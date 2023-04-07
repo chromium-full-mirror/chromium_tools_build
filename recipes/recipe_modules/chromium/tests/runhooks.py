@@ -27,7 +27,6 @@ def GenTests(api):
 
   yield api.test(
       'basic',
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -35,7 +34,6 @@ def GenTests(api):
       'chromeos',
       api.properties(
           target_platform='chromeos', target_cros_boards='x86-generic'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -43,7 +41,6 @@ def GenTests(api):
       'clobber',
       api.properties(clobber='1'),
       api.post_process(post_process.StepSuccess, 'clobber'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -52,7 +49,6 @@ def GenTests(api):
       'clobber_cros_cache_bug',
       api.properties(clobber='1'),
       api.path.exists(api.path['checkout'].join('build', 'cros_cache')),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -68,6 +64,5 @@ def GenTests(api):
       api.post_process(
           post_process.StepEnvContains, 'gclient runhooks',
           {'MAC_TOOLCHAIN_INSTALLER': '[START_DIR]/mac_toolchain'}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

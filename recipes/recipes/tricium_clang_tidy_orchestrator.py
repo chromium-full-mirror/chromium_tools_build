@@ -399,7 +399,6 @@ def GenTests(api):
   yield api.test(
       'skip_reverted_cl',
       test_data(tricium_data=None, commit_message='Revert foo'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DoesNotRun, 'schedule tidy builds'),
       api.post_process(post_process.DropExpectation),
   )
@@ -407,7 +406,6 @@ def GenTests(api):
   yield api.test(
       'success_on_no_tricium_output',
       test_data(tricium_data=None),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(_tricium_has_no_comments),
       api.post_process(post_process.DropExpectation),
   )
@@ -415,7 +413,6 @@ def GenTests(api):
   yield api.test(
       'success_on_empty_tricium_output',
       test_data(tricium_data={name: [] for name in _CHILD_BUILDERS}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(_tricium_has_no_comments),
       api.post_process(post_process.DropExpectation),
   )
@@ -428,7 +425,6 @@ def GenTests(api):
   yield api.test(
       'basic_tidy_output_works',
       test_data(tricium_data={_CHILD_BUILDERS[0]: [comment0]}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS, comment0)),
@@ -441,7 +437,6 @@ def GenTests(api):
           _CHILD_BUILDERS[0]: [comment0],
           _CHILD_BUILDERS[1]: [comment0],
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
@@ -471,7 +466,6 @@ def GenTests(api):
           _CHILD_BUILDERS[0]: [comment0],
           _CHILD_BUILDERS[1]: [comment0, comment1],
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
@@ -505,7 +499,6 @@ def GenTests(api):
               _CHILD_BUILDERS[0]: [comment1],
               _CHILD_BUILDERS[1]: [comment1, comment1_with_new_replacement],
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
@@ -539,7 +532,6 @@ def GenTests(api):
               _CHILD_BUILDERS[0]: [comment1_with_empty_replacement],
               _CHILD_BUILDERS[1]: [comment1_with_empty_replacement],
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
@@ -559,7 +551,6 @@ def GenTests(api):
               _CHILD_BUILDERS[0]: [comment0],
               _CHILD_BUILDERS[1]: [comment0],
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepWarning, 'schedule tidy builds'),
       api.post_process(
           _tricium_has_comment,

@@ -83,6 +83,5 @@ def GenTests(api):
             builder_group=builder_group,
             builder=buildername,
             builder_db=angle.builders.BUILDERS),
-        api.post_check(post_process.StatusSuccess),
         api.post_process(post_process.DropExpectation),
     )

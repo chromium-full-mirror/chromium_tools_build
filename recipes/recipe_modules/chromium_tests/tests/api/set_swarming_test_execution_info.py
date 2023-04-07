@@ -330,6 +330,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'find command lines (without patch)'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

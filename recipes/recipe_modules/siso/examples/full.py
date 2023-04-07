@@ -89,6 +89,7 @@ def GenTests(api):
       api.step_data('compile', retcode=255),
       api.post_process(post_process.StepFailure, 'compile'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
       'ninja_no_C',

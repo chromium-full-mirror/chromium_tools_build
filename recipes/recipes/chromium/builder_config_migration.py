@@ -105,7 +105,6 @@ def GenTests(api):
                   },
               ],
           }),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_groupings in steps['groupings'].cmd)),
       api.post_process(post_process.DropExpectation),
@@ -149,7 +148,6 @@ def GenTests(api):
               }],
               'output_path': '/fake/output/path',
           }),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_snippets in steps['src-side snippets'].cmd)),
       api.post_process(post_process.DropExpectation),

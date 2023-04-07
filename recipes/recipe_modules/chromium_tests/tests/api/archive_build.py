@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StepCommandContains, StepSuccess)
+from recipe_engine.post_process import (DropExpectation, StepCommandContains,
+                                        StepSuccess)
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -54,6 +54,5 @@ def GenTests(api):
       api.post_process(StepSuccess, 'gsutil upload'),
       api.post_process(StepSuccess,
                        'cf_archive_build_test-linux-release-170242.zip'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

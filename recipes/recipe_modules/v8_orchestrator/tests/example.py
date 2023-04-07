@@ -9,8 +9,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
 from recipe_engine.post_process import (DropExpectation, Filter, MustRun,
-                                        ResultReason, StatusSuccess,
-                                        SummaryMarkdown)
+                                        ResultReason, SummaryMarkdown)
 from recipe_engine.recipe_api import Property
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
@@ -54,7 +53,6 @@ def GenTests(api):
       api.post_process(MustRun, 'trigger compilator'),
       api.post_process(MustRun, 'compilator steps'),
       api.post_process(SummaryMarkdown, 'All good!'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -70,7 +68,6 @@ def GenTests(api):
       api.post_check(StepStdinContains, 'trigger compilator', '"bucket": "ci"'),
       api.post_check(StepStdinContains, 'trigger compilator',
                      '"revision": "abcd"'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -120,7 +117,6 @@ def GenTests(api):
                     api.file.read_json(json_content=build_proto_json)),
       api.post_process(StepRealmEquals, 'trigger compilator.led launch',
                        'project:try'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -133,6 +129,5 @@ def GenTests(api):
                     api.file.read_json(json_content=build_proto_json)),
       api.post_process(StepRealmEquals, 'trigger compilator.led launch',
                        'project:ci'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

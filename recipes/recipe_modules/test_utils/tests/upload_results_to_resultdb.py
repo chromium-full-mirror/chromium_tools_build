@@ -358,6 +358,7 @@ def GenTests(api):
               ))),
       api.post_process(post_process.MustRun, 'resultdb not enabled'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   inv_bundle_with_different_test_name = {
@@ -397,4 +398,5 @@ def GenTests(api):
               shards=2,
               failure=False)),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )

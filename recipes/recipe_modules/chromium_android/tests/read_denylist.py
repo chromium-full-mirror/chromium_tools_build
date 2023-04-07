@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
-                                        StatusSuccess, StepCommandContains,
-                                        StepSuccess)
+                                        StepCommandContains, StepSuccess)
 
 DEPS = [
     'chromium_android',
@@ -34,7 +33,6 @@ def GenTests(api):
           'echo',
           'serial2',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
   yield api.test(
@@ -46,6 +44,5 @@ def GenTests(api):
           'serial1',
           'serial2',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

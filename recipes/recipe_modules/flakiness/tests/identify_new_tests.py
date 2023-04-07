@@ -161,10 +161,9 @@ def GenTests(api):
   )
 
   yield api.test(
-      'cross reference infra failure', api.buildbucket.build(basic_build),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      'cross reference infra failure',
+      api.buildbucket.build(basic_build),
+      api.flakiness(check_for_flakiness=True,),
       api.step_data(
           'searching_for_new_tests.process precomputed test history',
           api.file.read_json([{
@@ -188,8 +187,9 @@ def GenTests(api):
           'searching_for_new_tests.Test history query rpc call for '
           'TestSuite.Test4',
           retcode=1,
-      ), api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation))
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'no identification',
@@ -213,9 +213,7 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src',
           change_number=91827,
           patch_set=1),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      api.flakiness(check_for_flakiness=True,),
       api.override_step_data(
           'searching_for_new_tests.gsutil download', retcode=1),
       api.post_process(
@@ -224,7 +222,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRunRE, '.*unpack.*',
                        '.*process precomputed test history.*'),
       # overall build status should remain unaffected by this.
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -236,9 +233,7 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src',
           change_number=91827,
           patch_set=1),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      api.flakiness(check_for_flakiness=True,),
       api.override_step_data(
           'searching_for_new_tests.process precomputed test history',
           retcode=1),
@@ -247,16 +242,13 @@ def GenTests(api):
                         'Aborting the flakiness check.')),
       api.post_process(post_process.StepException, 'searching_for_new_tests'),
       # overall build status should remain unaffected by this.
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'no preliminary new tests',
       api.buildbucket.build(basic_build),
-      api.flakiness(
-          check_for_flakiness=True,
-      ),
+      api.flakiness(check_for_flakiness=True,),
       api.step_data(
           # All build tests are returned from history.
           'searching_for_new_tests.process precomputed test history',
@@ -281,6 +273,5 @@ def GenTests(api):
               'variant_hash': '4hash',
               'invocation': ['invocation/1']
           }])),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

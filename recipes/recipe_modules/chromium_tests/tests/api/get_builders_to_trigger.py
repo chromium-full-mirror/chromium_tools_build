@@ -45,7 +45,6 @@ def GenTests(api):
               builder='fake-tester',
           ).assemble()),
       api.properties(expected=['fake-tester']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -84,6 +83,5 @@ def GenTests(api):
               },
           })),
       api.properties(expected=['fake-tester']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

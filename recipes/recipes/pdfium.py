@@ -945,6 +945,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('unittests', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -954,6 +955,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('embeddertests', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -963,6 +965,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('javascript tests', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -972,6 +975,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('javascript tests (javascript disabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -981,6 +985,7 @@ def GenTests(api):
       api.properties(xfa=True, bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('javascript tests (xfa disabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -990,6 +995,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -999,6 +1005,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (oneshot rendering enabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1008,6 +1015,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (reverse byte order)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1017,6 +1025,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (javascript disabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1026,6 +1035,7 @@ def GenTests(api):
       api.properties(xfa=True, bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (xfa disabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1035,6 +1045,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1044,6 +1055,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (oneshot rendering enabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1053,6 +1065,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (reverse byte order)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1062,6 +1075,7 @@ def GenTests(api):
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (javascript disabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -1071,6 +1085,7 @@ def GenTests(api):
       api.properties(xfa=True, bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (xfa disabled)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

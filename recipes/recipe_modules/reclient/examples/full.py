@@ -262,6 +262,7 @@ def GenTests(api):
                        'postprocess for reclient.verification'),
       api.post_process(
           post_process.Filter('postprocess for reclient.verification')),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -276,6 +277,7 @@ def GenTests(api):
                        'postprocess for reclient.verification'),
       api.post_process(
           post_process.Filter('postprocess for reclient.verification')),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -291,4 +293,5 @@ def GenTests(api):
                        'postprocess for reclient.verification'),
       api.post_process(
           post_process.Filter('postprocess for reclient.verification')),
+      api.expect_status('INFRA_FAILURE'),
   )

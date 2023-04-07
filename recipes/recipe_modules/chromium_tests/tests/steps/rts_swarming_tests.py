@@ -77,6 +77,5 @@ def GenTests(api):
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
               'isolated_tests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           },),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

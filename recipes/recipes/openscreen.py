@@ -630,6 +630,7 @@ def GenTests(api):
       api.step_data(
           'run tests.calculate code coverage.process raw coverage data',
           retcode=0),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'linux64_coverage_debug_no_profraw_does_fail_bot',
@@ -640,6 +641,7 @@ def GenTests(api):
           is_asan=True,
           use_coverage=True,
           is_valid_coverage_test=True),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'linux64_coverage_debug_failed_coverage_init',
@@ -712,6 +714,7 @@ def GenTests(api):
           target_cpu='arm64',
           cast_allow_developer_certificate=True,
           is_ci=True))
+
   failed_result = api.swarming.task_result(
       id='0',
       name=UNIT_TEST_BINARY_NAME,
@@ -719,25 +722,36 @@ def GenTests(api):
       failure=True)
   yield api.test(
       'linux_arm64_debug_with_collect_COMPLETED_and_failed',
-      api.platform('linux', 64), api.buildbucket.try_build('openscreen', 'try'),
+      api.platform('linux', 64),
+      api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, target_cpu='arm64'),
       api.override_step_data('collect unit tests',
-                             api.swarming.collect([failed_result])))
+                             api.swarming.collect([failed_result])),
+      api.expect_status('FAILURE'),
+  )
+
   timeout_result = api.swarming.task_result(
       id='0',
       name=UNIT_TEST_BINARY_NAME,
       state=api.swarming.TaskState.TIMED_OUT)
   yield api.test(
-      'linux_arm64_debug_with_collect_TIMED_OUT', api.platform('linux', 64),
+      'linux_arm64_debug_with_collect_TIMED_OUT',
+      api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, target_cpu='arm64'),
       api.override_step_data('collect unit tests',
-                             api.swarming.collect([timeout_result])))
+                             api.swarming.collect([timeout_result])),
+      api.expect_status('FAILURE'),
+  )
+
   died_result = api.swarming.task_result(
       id='0', name=UNIT_TEST_BINARY_NAME, state=api.swarming.TaskState.BOT_DIED)
   yield api.test(
-      'linux_arm64_debug_with_collect_BOT_DIED', api.platform('linux', 64),
+      'linux_arm64_debug_with_collect_BOT_DIED',
+      api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, target_cpu='arm64'),
       api.override_step_data('collect unit tests',
-                             api.swarming.collect([died_result])))
+                             api.swarming.collect([died_result])),
+      api.expect_status('INFRA_FAILURE'),
+  )

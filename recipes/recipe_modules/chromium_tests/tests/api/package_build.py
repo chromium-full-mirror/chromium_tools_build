@@ -44,7 +44,6 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains, 'package build',
           ['--build-url', 'gs://sample-bucket/chromium.fake/fake-builder']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -67,7 +66,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'package build'),
       api.post_process(post_process.StepCommandContains, 'package build',
                        ['--build-url', 'gs://sample-bucket/fake-perf-builder']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -92,6 +90,5 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains, 'package build for bisect',
           ['--build-url', 'gs://sample-bisect-bucket/fake-bisect-builder']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

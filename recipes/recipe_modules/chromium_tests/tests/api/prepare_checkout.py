@@ -70,7 +70,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'gclient runhooks'),
       api.post_process(post_process.DoesNotRun,
                        'gclient runhooks (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -89,7 +88,6 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun,
                        'read test spec (chromium.perf.json)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -104,7 +102,6 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.post_process(post_process.MustRun, 'gclient runhooks (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -120,7 +117,6 @@ def GenTests(api):
       api.properties(runhooks_suffix='without patch'),
       api.post_process(post_process.MustRun,
                        'gclient runhooks (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -285,6 +281,5 @@ def GenTests(api):
           'fake-builder': {},
           'fake-builder-with-bad-spec': 'invalid-spec',
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

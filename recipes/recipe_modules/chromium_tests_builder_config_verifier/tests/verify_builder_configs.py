@@ -74,7 +74,6 @@ def GenTests(api):
       ctbcv_api.test_case(affected_files=['foo/bar/non-properties-file']),
       api.post_check(post_process.DoesNotRun,
                      'verify foo/bar/non-properties-file'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -90,7 +89,6 @@ def GenTests(api):
       ),
       api.post_check(post_process.DoesNotRun,
                      f'verify {_PROPS_DIR}/bucket/unchanged/properties.json'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -109,7 +107,6 @@ def GenTests(api):
           f'verify {_PROPS_DIR}/bucket/no-builder-config/properties.json',
           step_text=('$build/chromium_tests_builder_config is not set,'
                      ' nothing to verify')),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -142,7 +139,6 @@ def GenTests(api):
           f'verify {_PROPS_DIR}/bucket/same-builder-config/properties.json',
           step_text=('$build/chromium_tests_builder_config is unchanged,'
                      ' nothing to verify')),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -196,7 +192,6 @@ def GenTests(api):
           check_verify,
           f'verify {_PROPS_DIR}/bucket/no-recipe-config/properties.json',
           step_text='no recipe config exists, nothing to verify'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -264,7 +259,6 @@ def GenTests(api):
           check_verify,
           f'verify {_PROPS_DIR}/bucket/matching-config/properties.json',
           step_text='src-side config matches recipe config'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -317,7 +311,6 @@ def GenTests(api):
           check_verify,
           f'verify {_PROPS_DIR}/bucket/matching-config/properties.json',
           step_text='src-side config matches recipe config'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -367,7 +360,6 @@ def GenTests(api):
           check_verify,
           f'verify {_PROPS_DIR}/bucket/matching-config-tester/properties.json',
           step_text='src-side config matches recipe config'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -428,6 +420,7 @@ def GenTests(api):
           post_process.Filter(
               f'verify {_PROPS_DIR}/bucket/not-matching-config/properties.json')
       ),
+      api.expect_status('FAILURE'),
   )
 
   # Some internal builders reuse the CI builder group for try builders
@@ -500,6 +493,5 @@ def GenTests(api):
           check_verify,
           f'verify {_PROPS_DIR}/fake-try-bucket/fake-builder/properties.json',
           step_text='src-side config matches recipe config'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

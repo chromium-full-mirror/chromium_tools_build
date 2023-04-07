@@ -121,4 +121,5 @@ def GenTests(api):
       api.post_check(post_process.StepTextContains, 'task',
                      ['Missing or invalid summary']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )

@@ -447,6 +447,7 @@ def GenTests(api):
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
       api.step_data('compile', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -473,6 +474,7 @@ def GenTests(api):
       props('chromiumos'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-chromiumos'),
       api.step_data('generate compilation database', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

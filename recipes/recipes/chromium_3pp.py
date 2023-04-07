@@ -43,6 +43,5 @@ def GenTests(api):
           post_process.MustRun,
           'Preprocessing third_party/foo',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

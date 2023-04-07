@@ -40,7 +40,6 @@ def GenTests(api):
       'basic',
       api.post_process(post_process.MustRun, 'pre_run MockTest'),
       api.post_process(post_process.MustRun, 'MockTest'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

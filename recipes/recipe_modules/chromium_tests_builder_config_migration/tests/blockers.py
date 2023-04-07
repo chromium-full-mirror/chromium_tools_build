@@ -89,7 +89,6 @@ def GenTests(api):
           }),
           ctbc.TryDatabase.create({}),
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_non_existent_groupings in steps['groupings'].cmd)),
       api.post_process(post_process.DropExpectation),

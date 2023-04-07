@@ -99,7 +99,6 @@ def GenTests(api):
           'rbe-project-1.fetch configs',
           'rbe-project-1.verify',
       ),
-      api.post_check(post_process.StatusSuccess),
   )
 
   yield api.test(

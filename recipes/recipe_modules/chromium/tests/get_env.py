@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StepEnvContains)
+from recipe_engine.post_process import DropExpectation, StepEnvContains
 
 DEPS = [
     'chromium',
@@ -29,7 +28,6 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.platform('mac', 64),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -38,7 +36,6 @@ def GenTests(api):
       api.platform('mac', 64),
       api.properties(chromium_apply_config=['goma_store_only']),
       api.post_process(StepEnvContains, 'test', {'GOMA_STORE_ONLY': 'True'}),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -48,6 +45,5 @@ def GenTests(api):
       api.properties(chromium_apply_config=['goma_large_cache_file']),
       api.post_process(StepEnvContains, 'test',
                        {'GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB': '256'}),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

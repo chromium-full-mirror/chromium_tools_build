@@ -125,7 +125,6 @@ def GenTests(api):
       api.post_check(post_process.StepCommandContains, 'fake-gtest',
                      ['-var', 'reviver_builder:fake-builder']),
       api.post_check(post_process.DoesNotRun, 'fake-script-test'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -174,7 +173,6 @@ def GenTests(api):
       api.post_check(post_process.StepCommandContains, 'fake-gtest',
                      ['-var', 'reviver_builder:fake-builder']),
       api.post_check(post_process.DoesNotRun, 'fake-script-test'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -250,7 +248,6 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'fake-gtest', failing_tests=['foo', 'bar']))),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

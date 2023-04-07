@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, MustRun, StatusSuccess,
-                                        StepEnvContains)
+from recipe_engine.post_process import DropExpectation, MustRun, StepEnvContains
 
 DEPS = [
     'goma',
@@ -60,7 +59,6 @@ def GenTests(api):
       'basic',
       api.buildbucket.ci_build(),
       *EnsureGomaSteps(),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -70,7 +68,6 @@ def GenTests(api):
       api.buildbucket.ci_build(),
       *EnsureGomaSteps(),
       *EnsureGomaEnv({'GOMA_ARBITRARY_TOOLCHAIN_SUPPORT': 'true'}),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -83,7 +80,6 @@ def GenTests(api):
           'GOMA_RPC_EXTRA_PARAMS': '?prod',
           'GOMA_SERVER_HOST': 'goma.chromium.org'
       }),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -93,6 +89,5 @@ def GenTests(api):
       api.buildbucket.ci_build(),
       *EnsureGomaSteps(),
       *EnsureGomaEnv({'GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB': '256'}),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

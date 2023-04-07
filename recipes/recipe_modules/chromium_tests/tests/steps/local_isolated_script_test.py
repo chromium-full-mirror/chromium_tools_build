@@ -95,7 +95,6 @@ def GenTests(api):
       }),
       api.post_process(post_process.StepCommandContains, 'base_unittests',
                        ['rdb']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -133,7 +132,6 @@ def GenTests(api):
           '--relative-cwd', 'out/Release', '--', './base_unittests', '--bar',
           '--isolated-script-test-output'
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -148,7 +146,6 @@ def GenTests(api):
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
           },
           override_compile_targets=['base_unittests_run']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -164,7 +161,6 @@ def GenTests(api):
           },
           expected_pass_fail_counts={},
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -181,7 +177,6 @@ def GenTests(api):
           test_filter=['test1', 'test2'],
           repeat_count=20,
           test_name='blink_web_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
@@ -196,6 +191,5 @@ def GenTests(api):
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
           }),
       api.post_process(verify_isolate_flag),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

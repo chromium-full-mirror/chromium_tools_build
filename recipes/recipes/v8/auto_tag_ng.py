@@ -61,8 +61,9 @@ PROPERTIES = {
 
 class BuildResults:
   def __init__(self):
-      self.success = True
-      self.performed_actions = []
+    self.success = True
+    self.performed_actions = []
+
 
 def RunSteps(api, tracked_branches_count):
   api.gclient.set_config('v8')
@@ -283,6 +284,7 @@ def GenTests(api):
           StepFailure, 'Checking branch 11.2.'
           'Increment version from 11.4.3.3.'
           'Stale version change CL found!'),
+      api.expect_status('FAILURE'),
   )
 
   yield test(

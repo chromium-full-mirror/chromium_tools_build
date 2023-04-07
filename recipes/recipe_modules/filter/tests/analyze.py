@@ -51,7 +51,6 @@ def GenTests(api):
       api.platform('linux', 64),
       api.post_check(post_process.StepCommandContains, 'analyze',
                      [re.compile(r'.+/mb\.py')]),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -62,7 +61,6 @@ def GenTests(api):
           check('FORCE_MAC_TOOLCHAIN' in steps['analyze'].env)),
       api.post_check(post_process.StepCommandContains, 'analyze',
                      [re.compile(r'.+/mb\.py')]),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -86,7 +84,6 @@ def GenTests(api):
       ),
       api.post_check(post_process.StepTextContains, 'analyze',
                      ['No compile necessary (all files ignored)']),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -97,7 +94,6 @@ def GenTests(api):
           expected_affected_test_targets=[],
           expected_affected_compile_targets=[],
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -116,7 +112,6 @@ def GenTests(api):
           expected_affected_test_targets=['test1'],
           expected_affected_compile_targets=['test1', 'compile2'],
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -134,7 +129,6 @@ def GenTests(api):
       ),
       api.post_check(post_process.StepTextContains, 'analyze',
                      ['Analyze disabled: matched exclusion']),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -173,7 +167,6 @@ def GenTests(api):
       api.properties(chromium_apply_config=['gn']),
       api.post_check(post_process.StepCommandContains, 'analyze',
                      [re.compile('.+/build/gyp_chromium')]),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -200,7 +193,6 @@ def GenTests(api):
                      [re.compile('.+/fake-build-output-dir')]),
       api.post_check(post_process.StepCommandContains, 'analyze',
                      ['--phase', 'fake-phase']),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -220,7 +212,6 @@ def GenTests(api):
       ),
       api.post_check(post_process.StepTextContains, 'analyze',
                      ['No compile necessary (all files ignored)']),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -228,6 +219,5 @@ def GenTests(api):
       'empty-affected-file',
       api.platform('linux', 64),
       api.properties(affected_files=['path/to/changed/file1', '']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

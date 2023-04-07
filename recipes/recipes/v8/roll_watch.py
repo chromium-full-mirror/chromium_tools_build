@@ -14,8 +14,8 @@ from PB.go.chromium.org.luci.buildbucket.proto.step import Step
 from PB.recipe_engine.result import RawResult
 
 from recipe_engine.recipe_api import Property
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StepSuccess, StepFailure)
+from recipe_engine.post_process import (DropExpectation, StepSuccess,
+                                        StepFailure)
 
 
 DEPS = [
@@ -407,7 +407,6 @@ def GenTests(api):
       "roller-with-stale-cls",
       roller(default_roller),
       find_fake_cls(default_roller),
-      api.post_process(StatusSuccess),
   )
 
   yield api.test(
@@ -434,7 +433,6 @@ def GenTests(api):
           build(1, SUCCESS),
           build(2, FAILURE),
       ),
-      api.post_process(StatusSuccess),
   )
 
   yield api.test(
@@ -479,6 +477,7 @@ def GenTests(api):
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
           "gerrit Tag CL for no screenshots patch available"),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -497,6 +496,7 @@ def GenTests(api):
           "read patch for linux",
           api.file.read_text('patch contents'),
       ),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -530,6 +530,7 @@ def GenTests(api):
           StepFailure, "Roller: 'experiment'.Checking CL 123."
           "Apply screenshot patches.Roller 'experiment' failed"),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -563,4 +564,5 @@ def GenTests(api):
           "Apply screenshot patches."
           "Roller 'experiment' failed"),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )

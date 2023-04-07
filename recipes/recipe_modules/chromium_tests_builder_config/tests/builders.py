@@ -90,6 +90,5 @@ def GenTests(api):
         api.properties(builder_group=builder_group, buildername=buildername),
         api.chromium_tests_builder_config.generic_build(
             builder_group=builder_group, builder=buildername),
-        api.post_check(post_process.StatusSuccess),
         api.post_process(post_process.DropExpectation),
     )

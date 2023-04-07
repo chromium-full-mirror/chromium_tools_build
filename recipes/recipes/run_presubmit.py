@@ -405,7 +405,6 @@ def GenTests(api):
               'warnings': []
           }),
           times_out_after=60 * 20),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

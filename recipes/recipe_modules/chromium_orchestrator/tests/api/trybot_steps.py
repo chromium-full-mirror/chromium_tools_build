@@ -128,7 +128,6 @@ def GenTests(api):
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.post_process(post_process.MustRun,
                        'run tools/clang/scripts/update.py'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'download src-side deps'),
       api.post_process(post_process.MustRun,
                        'run tools/clang/scripts/update.py'),
@@ -172,7 +171,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -201,7 +199,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation))
 
   yield api.test(
@@ -233,7 +230,6 @@ def GenTests(api):
           'browser_tests', 'without patch', failures=['Test.One']),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -259,7 +255,6 @@ def GenTests(api):
           with_patch=True, is_swarming_phase=False),
       api.post_process(post_process.DoesNotRun,
                        'run tools/clang/scripts/update.py'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -290,7 +285,6 @@ def GenTests(api):
                        'downloading cas digest all_test_binaries'),
       api.post_process(post_process.DoesNotRun,
                        'run tools/clang/scripts/update.py'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -362,7 +356,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -402,7 +395,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           sub_build_status=common_pb.CANCELED, empty_props=True),
       api.post_process(post_process.ResultReasonRE, BUILD_CANCELED_SUMMARY),
-      api.expect_status('INFRA_FAILURE'),
+      api.expect_status('CANCELED'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -455,7 +448,7 @@ def GenTests(api):
       ),
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.expect_status('INFRA_FAILURE'),
+      api.expect_status('CANCELED'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -540,6 +533,7 @@ def GenTests(api):
                        'trigger compilator (with patch)', 'request',
                        ['"rts_setting": "rts-chromium"']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -610,6 +604,7 @@ def GenTests(api):
       ),
       api.post_process(post_process.PropertiesDoNotContain, 'rts_was_used'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -691,7 +686,6 @@ def GenTests(api):
       api.post_process(post_process.LogContains,
                        'trigger compilator (with patch)', 'request',
                        ['fake-try-group', 'fake-compilator']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -725,7 +719,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -769,7 +762,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'content_unittests (without patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -848,7 +840,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1056,7 +1047,6 @@ def GenTests(api):
           'process clang code coverage data for overall test '
           'coverage.generate metadata for overall test coverage in 1 '
           'tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1090,7 +1080,6 @@ def GenTests(api):
           'process clang code coverage data for overall test '
           'coverage.generate metadata for overall test coverage in 1 '
           'tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1132,7 +1121,6 @@ def GenTests(api):
           'process clang code coverage data for overall test '
           'coverage.generate metadata for overall test coverage in 2 '
           'tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1515,7 +1503,6 @@ def GenTests(api):
                   ),
           }),
       api.cq(run_mode='FULL_RUN'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1637,7 +1624,6 @@ def GenTests(api):
       api.cq(run_mode='FULL_RUN', top_level=True),
       api.buildbucket.simulated_search_results(
           [_create_quick_run_build()], step_name='find successful Quick Runs'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1656,6 +1642,7 @@ def GenTests(api):
       api.cq(run_mode='DRY_RUN'),
       api.post_process(post_process.DoesNotRun, 'find successful Quick Runs'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -1675,6 +1662,7 @@ def GenTests(api):
                     api.json.output({'Disable-Rts': ['true']})),
       api.post_process(post_process.DoesNotRun, 'find successful Quick Runs'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -1691,7 +1679,6 @@ def GenTests(api):
           }),
       api.cq(run_mode='DRY_RUN'),
       api.post_process(post_process.MustRun, 'find successful Quick Runs'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1710,7 +1697,6 @@ def GenTests(api):
       api.cq(run_mode='FULL_RUN'),
       api.buildbucket.simulated_search_results(
           [_create_quick_run_build()], step_name='find successful Quick Runs'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1728,7 +1714,6 @@ def GenTests(api):
           }),
       api.cq(run_mode='QUICK_DRY_RUN'),
       api.post_process(post_process.DoesNotRun, 'find successful Quick Runs'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1758,7 +1743,6 @@ def GenTests(api):
           empty_gitiles_commit=True),
       api.post_process(post_process.MustRun,
                        'compilator gitiles_commit missing'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1785,7 +1769,6 @@ def GenTests(api):
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_reused_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1833,7 +1816,6 @@ def GenTests(api):
           'gsutil download Quick Run unit coverage from GS', [
               'gs://code-coverage-data/presubmit/chromium-review.googlesource.com/111111/1/try/fake-orchestrator_unit/123456789/merged.profdata'
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1872,7 +1854,6 @@ def GenTests(api):
                   'browser_tests']))),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1928,7 +1909,6 @@ def GenTests(api):
               is_subsequence(req[0].command, fake_command_lines['browser_tests']
                             ))),
       api.post_process(post_process.MustRun, 'Tests statistics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -2111,6 +2091,5 @@ def GenTests(api):
           ('test new tests for flakiness.'
            'collect tasks (check flakiness shard #0).browser_tests results'),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

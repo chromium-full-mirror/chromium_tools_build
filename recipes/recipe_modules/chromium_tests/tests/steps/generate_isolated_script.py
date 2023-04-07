@@ -124,7 +124,6 @@ def GenTests(api):
           '--isolated-script-test-output',
           '[CLEANUP]/tmp_tmp_1',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -139,7 +138,6 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True,
               },
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -179,7 +177,6 @@ def GenTests(api):
           '--merge-script-stdout-file',
           '/path/to/tmp/merge_script_log',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -225,6 +222,7 @@ def GenTests(api):
           'contains a custom tear down script "path/to/teardown2.py"'
           " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -251,6 +249,7 @@ def GenTests(api):
           'contains a custom set up script "path/to/setup2.py"'
           " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -273,7 +272,6 @@ def GenTests(api):
               '[CACHE]/builder/src/path/to/script.py',
               'trigger',
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -293,6 +291,7 @@ def GenTests(api):
       test_spec_format_error('contains a custom trigger_script "bad"'
                              " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -323,7 +322,6 @@ def GenTests(api):
           'swarming',
           'collect',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -351,7 +349,6 @@ def GenTests(api):
           'swarming',
           'collect',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -363,7 +360,6 @@ def GenTests(api):
               'test': 'gtest_test',
               'description': 'This is a description.'
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains,
                        'base_unittests (with patch)',
                        ['This is a description.']),
@@ -378,7 +374,6 @@ def GenTests(api):
               'test': 'gtest_test',
               'description': 'This is a description.'
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'base_unittests',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
@@ -397,6 +392,7 @@ def GenTests(api):
           ' but that result handler was not found',
           step_name='isolated_scripts spec format error'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -416,6 +412,7 @@ def GenTests(api):
           'contains a custom merge_script "path/to/script.py"'
           " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -432,7 +429,6 @@ def GenTests(api):
                            '--should-be-in-output',
                            '--should-also-be-in-output',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -468,7 +464,6 @@ def GenTests(api):
               },
           }),
       api.post_process(post_process.MustRun, 'custom_webkit_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -509,7 +504,6 @@ def GenTests(api):
               'isolate_name': 'base_unittests_run',
           }),
       api.step_data('base_unittests (experimental)', retcode=1),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -524,7 +518,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'experimental tests not in experiment'),
       api.post_process(post_process.DoesNotRunRE, '.*base_unittests.*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -534,7 +527,6 @@ def GenTests(api):
           'name': 'script_test',
           'ci_only': True,
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'script_test'),
       api.post_process(post_process.StepTextContains, 'script_test',
                        ['This test will not be run on try builders']),
@@ -551,7 +543,6 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True
               },
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'script_test'),
       api.post_process(post_process.StepTextContains, 'script_test',
                        ['This test will not be run on try builders']),
@@ -564,7 +555,6 @@ def GenTests(api):
           'name': 'script_test',
           'ci_only': True,
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'ci_only tests',
                        ['* script_test']),
       api.post_process(post_process.DoesNotRun, 'script_test (with patch)'),
@@ -581,7 +571,6 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True
               },
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'ci_only tests',
                        ['* script_test']),
       api.post_process(post_process.DoesNotRun, 'script_test (with patch)'),
@@ -596,7 +585,6 @@ def GenTests(api):
       }),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'script_test (with patch)'),
       api.post_process(post_process.StepTextContains,
                        'script_test (with patch)',
@@ -617,7 +605,6 @@ def GenTests(api):
           }),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'script_test (with patch)'),
       api.post_process(post_process.StepTextContains,
                        'script_test (with patch)',

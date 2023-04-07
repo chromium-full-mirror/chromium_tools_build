@@ -234,7 +234,6 @@ def GenTests(api):
           steps['summarize_results'].step_summary_text,
           re.search(r"Linux Tests.+with failure:", steps['summarize_results'].
                     step_summary_text))),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -294,7 +293,6 @@ def GenTests(api):
           steps['summarize_results'].step_summary_text,
           re.search(r"not reproduced", steps['summarize_results'].
                     step_summary_text))),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -342,7 +340,6 @@ def GenTests(api):
           steps['summarize_results'].step_summary_text,
           re.search(r"Not Supported test binary: unknown wrapper", steps[
               'summarize_results'].step_summary_text))),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -356,7 +353,6 @@ def GenTests(api):
           task_id='some-task-id',
           failing_sample=UnexpectedTestResult('MockUnitTests.FailTest'),
           reproducing_step_data=not_reproduced_step),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: check(
           steps['summarize_results'].step_summary_text,
           re.search(r"strategy not reproduced", steps['summarize_results'].
@@ -383,7 +379,6 @@ def GenTests(api):
           test_id='ninja://base:base_unittests/MockUnitTests.FailTest',
           parent_step_name='verify_reproducing_step.find_related_builders',
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -407,7 +402,6 @@ def GenTests(api):
           test_id='ninja://base:base_unittests/MockUnitTests.FailTest',
           parent_step_name='verify_reproducing_step.find_related_builders',
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: check(
           'builder_results.json' not in steps['summarize_results'].logs)),
       api.post_process(post_process.DropExpectation),

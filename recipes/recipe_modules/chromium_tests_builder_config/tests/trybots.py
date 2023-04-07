@@ -43,6 +43,5 @@ def GenTests(api):
         ),
         # Supress analysis so that all targets show up as affected and we run
         # recipe code for each configured test
-        api.post_check(post_process.StatusSuccess),
         api.post_process(post_process.DropExpectation),
     )

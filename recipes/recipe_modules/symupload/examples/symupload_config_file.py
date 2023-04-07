@@ -41,5 +41,6 @@ def GenTests(api):
               "[CLEANUP]/symupload-api-key.txt", "--binary-path",
               "[TMP_BASE]/symupload", "--platform", "mac", "--server-urls",
               "https://some.url.com"
-          ]), api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation))
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )

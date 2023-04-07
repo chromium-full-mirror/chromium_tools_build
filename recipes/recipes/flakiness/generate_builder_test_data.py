@@ -146,6 +146,5 @@ def GenTests(api):
                      ('generating historical test data.'
                       'analyze try builder chromium.try:builder1.'
                       'gsutil copy builder1.json.tar.gz to latest')),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

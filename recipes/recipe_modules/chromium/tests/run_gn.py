@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StepCommandContains)
+from recipe_engine.post_process import DropExpectation, StepCommandContains
 
 DEPS = [
   'chromium',
@@ -39,7 +38,6 @@ def GenTests(api):
           '--args=is_debug=false target_cpu="x64" '
           'use_goma=true goma_dir="None"',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -49,7 +47,6 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'gn', [
           'some/other/path/gn',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -62,7 +59,6 @@ def GenTests(api):
           '--args=is_clang=true is_debug=false target_cpu="x64" '
           'use_goma=true goma_dir="None"',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -74,7 +70,6 @@ def GenTests(api):
           '--args=is_debug=false target_os="android" target_cpu="x64" '
           'use_goma=true goma_dir="None"',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -86,7 +81,6 @@ def GenTests(api):
           '--args=is_debug=true target_cpu="x64" '
           'use_goma=true goma_dir="None"',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -97,6 +91,5 @@ def GenTests(api):
           '//out/Debug',
           '--args=is_debug=true target_cpu="x64" use_remoteexec=true',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

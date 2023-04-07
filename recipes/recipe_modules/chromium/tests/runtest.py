@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StepCommandContains,
+from recipe_engine.post_process import (DropExpectation, StepCommandContains,
                                         StepCommandDoesNotContain)
 from RECIPE_MODULES.build.chromium_tests.steps import ResultDB
 
@@ -61,7 +60,6 @@ def GenTests(api):
           '--build-number=123',
           'base_unittests',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -85,7 +83,6 @@ def GenTests(api):
           'python3',
           'RECIPE_REPO[build]/recipes/runtest.py',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -101,7 +98,6 @@ def GenTests(api):
           '--test-platform',
           'android',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -118,7 +114,6 @@ def GenTests(api):
       api.post_process(StepCommandDoesNotContain, 'base_unittests', [
           '--no-xvfb',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -132,7 +127,6 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           '--builder-group=fake-builder-group',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -146,7 +140,6 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           '--parse-gtest-output',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -160,7 +153,6 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           '--run-python-script',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -181,7 +173,6 @@ def GenTests(api):
           '--tool',
           'memcheck',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -196,7 +187,6 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           '--enable-tsan',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -210,7 +200,6 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           '--enable-msan',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -225,7 +214,6 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           '--enable-lsan',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -239,6 +227,5 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'base_unittests', [
           '--enable-asan',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

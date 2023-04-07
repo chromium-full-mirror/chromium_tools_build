@@ -153,7 +153,6 @@ def GenTests(api):
           builder_group='test_group', builder='test_builder'),
       api.properties(test_name='base_unittests'),
       api.post_process(post_process.MustRun, 'test2'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -173,7 +172,6 @@ def GenTests(api):
           }),
       api.chromium_swarming.wait_for_finished_task_set(
           [([], 1), ([['0'], ['1']], 1)], nest_step_name='collect tasks'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -194,7 +192,6 @@ def GenTests(api):
       # as the test_utils logic just calls the regular collect logic on that
       # test.
       api.post_process(post_process.MustRun, 'base_unittests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -212,7 +209,6 @@ def GenTests(api):
       api.chromium_swarming.wait_for_finished_task_set(
           [([], 1), ([], 1), ([], 1), ([], 1), ([], 1), ([['0'], ['1']], 1)],
           nest_step_name='collect tasks'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -319,6 +315,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'base_unittests_invalid_results_2 (retry shards)'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -412,7 +409,6 @@ def GenTests(api):
               # Turning off resultdb should remove invocation IDs from the
               # trigger output.
               resultdb=False)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -440,6 +436,7 @@ def GenTests(api):
                   'base_unittests', failing_tests=['Test.One']))),
       api.post_check(post_process.MustRun, 'abort retry'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -459,10 +456,9 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'enabled_experimental_test', failing_tests=['Test.One']))),
-      api.post_check(lambda check, steps: check(
-          'enabled_experimental_test' in steps[
+      api.post_check(
+          lambda check, steps: check('enabled_experimental_test' in steps[
               'exonerate unrelated test failures'].stdin)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -100,7 +100,6 @@ def GenTests(api):
               regression_test_selection=ctbc.NEVER,
               regression_test_selection_recall=0.95,
           )),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -123,7 +122,6 @@ def GenTests(api):
               regression_test_selection=ctbc.NEVER,
               regression_test_selection_recall=0.95,
           )),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -169,7 +167,6 @@ def GenTests(api):
               regression_test_selection=ctbc.QUICK_RUN_ONLY,
               regression_test_selection_recall=0.5,
           )),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -178,7 +175,6 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='tryserver.migration.testing', builder='foo'),
       api.properties(use_static_dbs=True),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -304,7 +300,6 @@ def GenTests(api):
               regression_test_selection=ctbc.ALWAYS,
               regression_test_selection_recall=0.95,
           )),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -33,7 +33,6 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='test_group', builder='test_buildername'),
       api.post_process(post_process.MustRun, 'analyze'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

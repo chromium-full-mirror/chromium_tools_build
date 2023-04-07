@@ -4,8 +4,7 @@
 
 import collections
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StepSuccess)
+from recipe_engine.post_process import DropExpectation, StepSuccess
 
 DEPS = [
     'chromium',
@@ -45,6 +44,5 @@ def GenTests(api):
           ).assemble()),
       api.post_process(StepSuccess, 'bot_update (without patch)'),
       api.post_process(StepSuccess, 'gclient runhooks (without patch)'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

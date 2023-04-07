@@ -65,7 +65,6 @@ def GenTests(api):
           'git status',
           api.raw_io.stream_output_text('some change', stream='stdout'),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'git commit', 'git cl'),
       api.post_process(
           post_process.Filter('Build gcmole', 'Package gcmole',
@@ -78,7 +77,6 @@ def GenTests(api):
           'git status',
           api.raw_io.stream_output_text('', stream='stdout'),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DoesNotRun, 'git commit', 'git cl'),
       api.post_process(post_process.DropExpectation),
   )

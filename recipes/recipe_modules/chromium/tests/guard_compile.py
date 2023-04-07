@@ -20,7 +20,6 @@ def GenTests(api):
   yield api.test('basic',
                  api.post_check(post_process.MustRun, 'create compile guard'),
                  api.post_check(post_process.MustRun, 'remove compile guard'),
-                 api.post_check(post_process.StatusSuccess),
                  api.post_process(post_process.DropExpectation))
 
   yield api.test('compile-failure',
@@ -42,5 +41,4 @@ def GenTests(api):
       api.path.exists(api.path['checkout'].join('out', 'Release',
                                                 'CR_COMPILE_GUARD.txt')),
       api.post_check(post_process.MustRun, 'remove unreliable output dir'),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation))

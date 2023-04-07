@@ -139,11 +139,13 @@ def GenTests(api):
       'compile_only_compile_failed_test',
       ci_build('linux-clang-builder', test_mode='compile_only'),
       api.step_data('compile', api.legacy_annotation.infra_failure_step),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'compile_and_test_compile_failed_test',
       ci_build('linux-clang-builder'),
       api.step_data('compile', api.legacy_annotation.infra_failure_step),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'win_non_clang_test',
@@ -180,6 +182,7 @@ def GenTests(api):
           builder='win-clang-builder', platform='win', test_mode='trace_tests'),
       api.step_data('GLES 2.0 trace tests',
                     api.legacy_annotation.infra_failure_step),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'invalid_json_test',
@@ -194,6 +197,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data('basic_isolate_tests', retcode=1),
+      api.expect_status('FAILURE'),
   )
   yield api.test(
       'failed_json_test',
@@ -212,4 +216,5 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'basic_isolate_tests', failing_tests=['Test.One']))),
+      api.expect_status('FAILURE'),
   )

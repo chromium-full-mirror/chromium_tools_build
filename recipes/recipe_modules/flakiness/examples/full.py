@@ -377,7 +377,6 @@ def GenTests(api):
           'json.input',
           ['\"priority\": \"29\"'],
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -461,7 +460,6 @@ def GenTests(api):
           inv_bundle=junit_invocations,
           step_name=('test new tests for flakiness.'
                      'chrome_junit_tests results')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -542,7 +540,6 @@ def GenTests(api):
           inv_bundle=junit_nonparameterized_invocation,
           step_name=('test new tests for flakiness.'
                      'chrome_junit_tests results')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -607,7 +604,6 @@ def GenTests(api):
           inv_bundle=script_invocation,
           step_name=('test new tests for flakiness.'
                      'check_network_annotations results')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -705,7 +701,6 @@ def GenTests(api):
           step_name=('test new tests for flakiness.'
                      'collect tasks (check flakiness shard #1).'
                      'ios_chrome_web_eg2tests_module_iPad Air 2 14.4 results')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1078,7 +1073,6 @@ def GenTests(api):
           step_name=(
               'test new tests for flakiness.'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

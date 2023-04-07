@@ -39,4 +39,5 @@ def GenTests(api):
       api.post_process(post_process.StepFailure,
                        'schedule skylab tests.' + REQUESTS[0].name),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )

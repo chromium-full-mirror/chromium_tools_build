@@ -103,11 +103,10 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.builder_group.for_current('chromium.android'),
-      api.post_check(lambda check, steps: check('gsutil Uploading zip file' in
-                                                steps)),
-      api.post_check(lambda check, steps: check('gsutil Uploading LATEST file'
-                                                in steps)),
-      api.post_process(post_process.StatusSuccess),
+      api.post_check(
+          lambda check, steps: check('gsutil Uploading zip file' in steps)),
+      api.post_check(
+          lambda check, steps: check('gsutil Uploading LATEST file' in steps)),
       api.post_process(post_process.DropExpectation),
   )
 

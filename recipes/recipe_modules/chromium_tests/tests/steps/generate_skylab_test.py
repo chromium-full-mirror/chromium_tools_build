@@ -274,12 +274,14 @@ def GenTests(api):
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'failed because of:\n\n- Test.One'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
       'test from fyi builder',
       boilerplate('chrome-test-builds', builder='lacros-amd64-generic-fyi'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -292,6 +294,7 @@ def GenTests(api):
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT',
                        ['Test did not run or failed to report to ResultDB.']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   # CrOS lab has outage and no response from the buildbucket call.
@@ -303,6 +306,7 @@ def GenTests(api):
       api.post_process(post_process.ResultReason,
                        '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** failed.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -312,6 +316,7 @@ def GenTests(api):
           post_process.StepTextContains, 'basic_EVE_TOT',
           ['Test was not scheduled because of absent lacros_gcs_path.']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -326,6 +331,7 @@ def GenTests(api):
       api.post_process(post_process.ResultReason,
                        'Failed to find the %s.isolate.' % TAST_TARGET),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -340,6 +346,7 @@ def GenTests(api):
       api.post_process(post_process.ResultReason,
                        'Failed to parse the %s.isolate' % TAST_TARGET),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -354,6 +361,7 @@ def GenTests(api):
       api.post_process(post_process.ResultReason,
                        'No dependencies attached to target %s.' % TAST_TARGET),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -364,6 +372,7 @@ def GenTests(api):
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -375,6 +384,7 @@ def GenTests(api):
           'This test will not be run on try builders',
       ]),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -408,6 +418,7 @@ def GenTests(api):
                        [('This test is being run due to the'
                          ' Include-Ci-Only-Tests gerrit footer')]),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -430,6 +441,7 @@ def GenTests(api):
           'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
           ['chromium_Telemetry']),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -456,4 +468,5 @@ def GenTests(api):
                   skipped_tests=['Test.One']))),
       api.post_process(post_process.MustRun, 'test_pre_run (without patch)'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )

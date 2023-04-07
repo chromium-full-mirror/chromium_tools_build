@@ -116,7 +116,6 @@ def GenTests(api):
           '--test-launcher-shard-index=0',
           '--test-launcher-total-shards=2',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -164,7 +163,6 @@ def GenTests(api):
           'swarming',
           'collect',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -196,7 +194,6 @@ def GenTests(api):
           'swarming',
           'collect',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -260,7 +257,6 @@ def GenTests(api):
                   }],
               },
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -287,7 +283,6 @@ def GenTests(api):
           lambda check, req: check(req[0].named_caches['cache_name'] ==
                                    '.path/to/named/cache'),
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -309,7 +304,6 @@ def GenTests(api):
           '--merge-script-stdout-file',
           '/path/to/tmp/merge_script_log',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -328,6 +322,7 @@ def GenTests(api):
       test_spec_format_error('contains a custom merge_script "merge_script.py"'
                              " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -352,7 +347,6 @@ def GenTests(api):
               }],
           }),
       api.post_process(post_process.MustRun, 'base_unittests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -381,6 +375,7 @@ def GenTests(api):
           'contains a custom set up script "set_up_script2.py"'
           " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -408,6 +403,7 @@ def GenTests(api):
           'contains a custom tear down script "tear_down_script2.py"'
           " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -429,7 +425,6 @@ def GenTests(api):
               '[CACHE]/builder/src/trigger_script.py',
               'trigger',
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -453,7 +448,6 @@ def GenTests(api):
               '--shards',
               '5',
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -473,6 +467,7 @@ def GenTests(api):
           'contains a custom trigger_script "trigger_script.py"'
           " that doesn't match the expected format"),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -488,7 +483,6 @@ def GenTests(api):
       api.override_step_data(
           'base_unittests (experimental)',
           api.chromium_swarming.canned_summary_output(None, retcode=1)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -506,7 +500,6 @@ def GenTests(api):
               },
               'test': 'base_unittests',
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(NotIdempotent, 'test_pre_run.[trigger] base_unittests'),
       api.post_process(post_process.DropExpectation),
   )
@@ -517,7 +510,6 @@ def GenTests(api):
           'test': 'gtest_test',
           'description': 'This is a description.'
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
@@ -529,7 +521,6 @@ def GenTests(api):
           'test': 'gtest_test',
           'description': 'This is a description.'
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'gtest_test',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
@@ -541,7 +532,6 @@ def GenTests(api):
           'ci_only': True,
           'test': 'gtest_test',
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'ci_only tests',
                        ['* gtest_test']),
       api.post_process(post_process.DoesNotRun, 'gtest_test (with patch)'),
@@ -558,7 +548,6 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True
               },
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepTextContains, 'ci_only tests',
                        ['* gtest_test']),
       api.post_process(post_process.DoesNotRun, 'gtest_test'),
@@ -577,7 +566,6 @@ def GenTests(api):
           }),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'gtest_test (with patch)'),
       api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
                        [('This test is being run due to the'
@@ -593,7 +581,6 @@ def GenTests(api):
       }),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'gtest_test (with patch)'),
       api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
                        [('This test is being run due to the'
@@ -607,7 +594,6 @@ def GenTests(api):
           'ci_only': True,
           'test': 'gtest_test',
       }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'gtest_test'),
       api.post_process(post_process.StepTextContains, 'gtest_test',
                        ['This test will not be run on try builders']),
@@ -624,7 +610,6 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True
               },
           }),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.MustRun, 'gtest_test'),
       api.post_process(post_process.StepTextContains, 'gtest_test',
                        ['This test will not be run on try builders']),
@@ -640,7 +625,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'experimental tests not in experiment'),
       api.post_process(post_process.DoesNotRunRE, '.*gtest_test.*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -651,6 +635,5 @@ def GenTests(api):
           'experiment_percentage': '100',
       }),
       api.override_step_data('gtest_test (experimental)', retcode=1),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

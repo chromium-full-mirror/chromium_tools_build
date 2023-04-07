@@ -31,6 +31,5 @@ def GenTests(api):
       api.post_process(
           post_process.MustRunRE,
           r'.*{}.isolated.gen.json'.format(ALL_TEST_BINARIES_ISOLATE_NAME)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

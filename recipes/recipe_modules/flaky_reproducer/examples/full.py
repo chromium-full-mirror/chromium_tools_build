@@ -39,8 +39,7 @@ def RunSteps(api, config, task_id, build_id, test_name, test_id,
 
 from google.protobuf import timestamp_pb2, struct_pb2
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        ResultReason)
+from recipe_engine.post_process import DropExpectation, ResultReason
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
     common as common_pb2,  # go/pyformat-break
     invocation as invocation_pb2,  #
@@ -367,6 +366,7 @@ def GenTests(api):
               'output.json':
                   api.flaky_reproducer.get_test_data('gtest_good_output.json'),
           })),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -374,6 +374,7 @@ def GenTests(api):
       api.properties(task_id='54321fffffabc123', test_name='NotExists.Test'),
       api.step_data('get_test_result_summary.download swarming outputs',
                     api.raw_io.output_dir({'output.json': b'{}'})),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -418,7 +419,6 @@ def GenTests(api):
               'label': 'flaky-reproduced'
           }]}),
       ),
-      api.post_check(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -436,4 +436,5 @@ def GenTests(api):
           parent_step_name='query_sample_failure_from_luci_analysis'),
       api.post_check(ResultReason, 'No cluster associated with bug.'),
       api.post_process(DropExpectation),
+      api.expect_status('FAILURE'),
   )

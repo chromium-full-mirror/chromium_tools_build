@@ -6,7 +6,7 @@ from PB.recipes.build.gofindit.chromium.single_revision import InputProperties
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        StepCommandContains, StatusSuccess)
+                                        StepCommandContains)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 
@@ -136,7 +136,6 @@ def GenTests(api):
       api.post_process(MustRun, 'bot_update'),
       api.post_process(MustRun, 'compile'),
       api.post_process(MustRun, 'send_result_to_luci_bisection'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -147,6 +146,5 @@ def GenTests(api):
       api.post_process(MustRun, 'clobber'),
       api.post_process(MustRun, 'compile'),
       api.post_process(MustRun, 'send_result_to_luci_bisection'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

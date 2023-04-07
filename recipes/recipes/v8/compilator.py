@@ -204,4 +204,4 @@ def GenTests(api):
   yield (test('cancellation') +
          api.runtime.global_shutdown_on_step('build.compile') +
          api.post_process(ResultReason, CANCELLATION_MESSAGE) +
-         api.expect_status('INFRA_FAILURE') + api.post_process(DropExpectation))
+         api.expect_status('CANCELED') + api.post_process(DropExpectation))

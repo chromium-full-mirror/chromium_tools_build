@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StepCommandContains,
-                                        StatusSuccess)
+from recipe_engine.post_process import DropExpectation, StepCommandContains
 
 DEPS = [
   'archive',
@@ -63,7 +62,6 @@ def GenTests(api):
           '--json-urls',
           '/path/to/tmp/json',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -91,7 +89,6 @@ def GenTests(api):
           '--json-urls',
           '/path/to/tmp/json',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -121,7 +118,6 @@ def GenTests(api):
           '--json-urls',
           '/path/to/tmp/json',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -152,6 +148,5 @@ def GenTests(api):
           '--json-urls',
           '/path/to/tmp/json',
       ]),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

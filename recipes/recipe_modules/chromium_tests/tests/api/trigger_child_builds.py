@@ -75,7 +75,6 @@ def GenTests(api):
       'scheduler',
       builder_with_tester_to_trigger(),
       api.post_check(StepStdinRE, 'trigger', '.*"ref": "refs/heads/main".*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -99,7 +98,6 @@ def GenTests(api):
               id='fake-revision',
           )),
       api.post_check(StepStdinRE, 'trigger', '.*"ref": "fake-ref".*'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -131,6 +129,5 @@ def GenTests(api):
                        led_trigger_prefix + '.led edit (2)'),
       api.post_process(post_process.StepSuccess,
                        led_trigger_prefix + '.led launch'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

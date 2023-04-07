@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (Filter, DoesNotRun, DropExpectation,
-                                        MustRun, StatusSuccess,
-                                        StepCommandContains, StepTextContains)
+                                        MustRun, StepCommandContains,
+                                        StepTextContains)
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
@@ -137,6 +137,7 @@ def GenTests(api):
               api.test_utils.rdb_results(
                   'base_unittests', failing_tests=['Test.One']))),
       api.override_step_data('base_unittests (without patch)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -220,7 +221,6 @@ def GenTests(api):
       api.post_process(StepCommandContains,
                        'telemetry_gpu_unittests (with patch)',
                        ['-task-output-stdout', 'none']),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -258,6 +258,7 @@ def GenTests(api):
           failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results('telemetry_gpu_unittests',
                                                       'without patch'),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -385,6 +386,7 @@ def GenTests(api):
                   },],
               },
           }),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -474,6 +476,7 @@ def GenTests(api):
                   'base_unittests', failing_tests=['Test.One']))),
       api.step_data('compile (without patch)',
                     api.legacy_annotation.infra_failure_step),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -501,9 +504,13 @@ def GenTests(api):
                   },
               },],
           })),
+      api.expect_status('INFRA_FAILURE'),
   )
 
-  for step in ('bot_update', 'gclient runhooks (with patch)'):
+  for step, status in (
+      ('bot_update', 'INFRA_FAILURE'),
+      ('gclient runhooks (with patch)', 'FAILURE'),
+  ):
     yield api.test(
         _sanitize_nonalpha(step) + '_failure',
         api.platform('linux', 64),
@@ -515,6 +522,7 @@ def GenTests(api):
                                 builder='fake-builder',
                             ).assemble()),
         api.step_data(step, retcode=1),
+        api.expect_status(status),
     )
 
   yield api.test(
@@ -533,6 +541,7 @@ def GenTests(api):
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   # Test that the component rev for v8 is correctly applied
@@ -551,6 +560,7 @@ def GenTests(api):
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -569,6 +579,7 @@ def GenTests(api):
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   # Successfully compiling, isolating and running two targets on swarming for a
@@ -798,6 +809,7 @@ def GenTests(api):
       api.step_data('compile (with patch)', retcode=1),
       api.tryserver.gerrit_change_target_ref('refs/heads/experimental/feature'),
       api.post_process(Filter('gerrit fetch current CL info', 'bot_update')),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -832,6 +844,7 @@ def GenTests(api):
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -903,6 +916,7 @@ def GenTests(api):
           'blink_web_tests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'blink_web_tests', 'retry shards with patch', failures=['Test.One']),
+      api.expect_status('FAILURE'),
   )
 
   def check_ordering(check, step_odict):

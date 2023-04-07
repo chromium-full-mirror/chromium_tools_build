@@ -33,6 +33,7 @@ def GenTests(api):
   yield api.test(
       'win',
       api.platform('win', 64),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

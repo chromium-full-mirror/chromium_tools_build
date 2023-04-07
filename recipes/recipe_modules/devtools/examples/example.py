@@ -63,7 +63,6 @@ def GenTests(api):
       'ci_release',
       ci_build(),
       api.post_process(post_process.DoesNotRun, 'upload screenshots'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -88,7 +87,6 @@ def GenTests(api):
                        'E2E tests (Sequential)', [
                            '--jobs=4',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -97,7 +95,6 @@ def GenTests(api):
       api.properties(builder_config='Debug'),
       try_build(),
       api.post_process(post_process.MustRun, 'clean outdir'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -106,6 +103,5 @@ def GenTests(api):
       api.properties(clobber=True),
       try_build(),
       api.post_process(post_process.MustRun, 'clean outdir'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

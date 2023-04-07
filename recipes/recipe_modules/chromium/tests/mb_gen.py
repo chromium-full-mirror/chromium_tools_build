@@ -48,7 +48,6 @@ def GenTests(api):
 
   yield api.test(
       'basic',
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -56,7 +55,6 @@ def GenTests(api):
       'cros_boards',
       api.properties(
           target_platform='chromeos', target_cros_boards='x86-generic'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -68,7 +66,6 @@ def GenTests(api):
                        {'FORCE_MAC_TOOLCHAIN': '1'}),
       api.post_process(post_process.StepEnvContains, 'generate_build_files',
                        {'FORCE_MAC_TOOLCHAIN': '1'}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -85,7 +82,6 @@ def GenTests(api):
                            '--isolate-map-file',
                            'None/override/gn_isolate_map.pyl',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -184,7 +180,6 @@ def GenTests(api):
       api.properties(chromium_apply_config=['mb', 'mb_no_luci_auth']),
       api.post_process(_StepCommandNotContains, 'generate_build_files',
                        '--luci-auth'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -193,7 +188,6 @@ def GenTests(api):
       api.properties(rts_setting='rts-chromium', rts_recall=.98),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        ['--rts', 'rts-chromium']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -202,6 +196,5 @@ def GenTests(api):
       api.properties(rts_setting='rts-ml-chromium', rts_recall=.98),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        ['--rts', 'rts-ml-chromium']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

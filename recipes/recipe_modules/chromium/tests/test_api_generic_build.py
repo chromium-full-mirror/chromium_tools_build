@@ -32,7 +32,6 @@ def GenTests(api):
           expected_parent_builder_group=None,
           expected_parent_buildername=None,
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -46,7 +45,6 @@ def GenTests(api):
           expected_parent_builder_group='fake-group',
           expected_parent_buildername='fake-parent',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -61,6 +59,5 @@ def GenTests(api):
           expected_parent_builder_group='fake-parent-group',
           expected_parent_buildername='fake-parent',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

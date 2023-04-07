@@ -181,15 +181,13 @@ def link_to_parent(api):
 
 
 def GenTests(api):
-  yield (
-    api.v8.test(
-        'client.v8.branches',
-        'V8 Foobar',
-        'branch_sync_failure',
-        git_ref='refs/branch-heads/4.3',
-    ) +
-    api.step_data('initialization.bot_update', retcode=1)
-  )
+  yield (api.v8.test(
+      'client.v8.branches',
+      'V8 Foobar',
+      'branch_sync_failure',
+      git_ref='refs/branch-heads/4.3',
+  ) + api.step_data('initialization.bot_update', retcode=1) +
+         api.expect_status('INFRA_FAILURE'))
 
   # Minimal bot config for a builder. Used to simulate test data for
   # triggered testers.
@@ -266,19 +264,17 @@ def GenTests(api):
     )
   )
 
-  yield (
-    api.v8.test(
-        'tryserver.v8',
-        'v8_foobar_rel_ng_triggered',
-        'failures',
-        parent_buildername='v8_foobar_rel_ng',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec=test_spec,
-        disable_auto_bisect=True,
-    ) +
-    api.override_step_data(
-        'Check', api.v8_tests.output_json(has_failures=True))
-  )
+  yield (api.v8.test(
+      'tryserver.v8',
+      'v8_foobar_rel_ng_triggered',
+      'failures',
+      parent_buildername='v8_foobar_rel_ng',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec=test_spec,
+      disable_auto_bisect=True,
+  ) + api.override_step_data('Check',
+                             api.v8_tests.output_json(has_failures=True)) +
+         api.expect_status('FAILURE'))
 
   yield (
     api.v8.test(
@@ -295,17 +291,16 @@ def GenTests(api):
 
   def TestFailures(flakes):
     flakes_suffix = "_flakes" if flakes else ""
-    return (
-      api.v8.test(
-          'client.v8',
-          'V8 Foobar',
-          'test_failures%s' % flakes_suffix,
-      ) +
-      api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-      api.override_step_data(
-          'Check', api.v8_tests.output_json(has_failures=True, flakes=flakes)) +
-      api.post_process(Filter().include_re(r'.*Check.*'))
-    )
+    return (api.v8.test(
+        'client.v8',
+        'V8 Foobar',
+        'test_failures%s' % flakes_suffix,
+    ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+            api.override_step_data(
+                'Check',
+                api.v8_tests.output_json(has_failures=True, flakes=flakes)) +
+            api.post_process(Filter().include_re(r'.*Check.*')) +
+            api.expect_status('FAILURE'))
 
   yield TestFailures(flakes=False)
   yield TestFailures(flakes=True)
@@ -328,21 +323,18 @@ def GenTests(api):
       api.step_data('Bisect a2.compile', retcode=1) +
       api.expect_status('FAILURE') + api.post_process(DropExpectation))
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'swarming_collect_failure',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec=test_spec,
-    ) +
-    api.step_data(
-        'Check',
-        api.json.output([['warning', 'danger']], name='warnings'),
-        retcode=1,
-    )
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'swarming_collect_failure',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec=test_spec,
+  ) + api.step_data(
+      'Check',
+      api.json.output([['warning', 'danger']], name='warnings'),
+      retcode=1,
+  ) + api.expect_status('FAILURE'))
 
   yield (
     api.v8.test(
@@ -356,41 +348,33 @@ def GenTests(api):
     api.post_process(DropExpectation)
   )
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'one_failure',
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.override_step_data('Check', api.v8_tests.one_failure())
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'one_failure',
+  ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+         api.override_step_data('Check', api.v8_tests.one_failure()) +
+         api.expect_status('FAILURE'))
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'one_failure_build_env_not_supported',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec=test_spec,
-    ) +
-    api.override_step_data('Check', api.v8_tests.one_failure()) +
-    api.properties(parent_gn_args=None)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'one_failure_build_env_not_supported',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec=test_spec,
+  ) + api.override_step_data('Check', api.v8_tests.one_failure()) +
+         api.properties(parent_gn_args=None) + api.expect_status('FAILURE'))
 
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'infra_failure',
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.override_step_data('Check', api.v8_tests.infra_failure()) +
-    api.post_process(StepException, 'Check') +
-    api.post_process(ResultReasonRE, 'Failures or flakes in build.') +
-    api.post_process(DropExpectation)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'infra_failure',
+  ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+         api.override_step_data('Check', api.v8_tests.infra_failure()) +
+         api.post_process(StepException, 'Check') +
+         api.post_process(ResultReasonRE, 'Failures or flakes in build.') +
+         api.post_process(DropExpectation) + api.expect_status('FAILURE'))
 
   # Test flako command line with interesting data.
   win_bot_config = {
@@ -409,32 +393,28 @@ def GenTests(api):
       ],
     }
   """.strip()
-  yield (
-      api.v8.test(
-          'client.v8',
-          'V8 Foobar',
-          'flako',
-          parent_buildername='V8 Foobar - builder',
-          parent_bot_config=win_bot_config,
-          parent_test_spec=flake_test_spec,
-      ) +
-      api.override_step_data('Test262', api.v8_tests.one_flake()) +
-      api.post_process(Filter('Test262 (flakes)'))
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'flako',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=win_bot_config,
+      parent_test_spec=flake_test_spec,
+  ) + api.override_step_data('Test262', api.v8_tests.one_flake()) +
+         api.post_process(Filter('Test262 (flakes)')) +
+         api.expect_status('FAILURE'))
 
   # Test flako command line for number fuzzer.
-  yield (
-      api.v8.test(
-          'client.v8',
-          'V8 Foobar',
-          'flako_numfuzz',
-          parent_buildername='V8 Foobar - builder',
-          parent_bot_config=win_bot_config,
-          parent_test_spec=flake_test_spec,
-      ) +
-      api.override_step_data('Test262', api.v8_tests.one_flake(num_fuzz=True)) +
-      api.post_process(Filter('Test262 (flakes)'))
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'flako_numfuzz',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=win_bot_config,
+      parent_test_spec=flake_test_spec,
+  ) + api.override_step_data('Test262', api.v8_tests.one_flake(num_fuzz=True)) +
+         api.post_process(Filter('Test262 (flakes)')) +
+         api.expect_status('FAILURE'))
 
   yield (
     api.v8.test(
@@ -456,7 +436,8 @@ def GenTests(api):
       parent_buildername='V8 Foobar - builder',
       parent_bot_config=linux_bot_config,
       parent_test_spec='{"tests": [{"name": "jsfunfuzz"}]}',
-  ) + api.override_step_data('Fuzz on Ubuntu-16.04', step_test_data))
+  ) + api.override_step_data('Fuzz on Ubuntu-16.04', step_test_data) +
+         api.expect_status('FAILURE'))
 
   yield (
     api.v8.test(
@@ -524,113 +505,89 @@ def GenTests(api):
   # Bisect a2 -> failures.
   # Bisect a1 -> no failures.
   # Report culprit a2.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bisect',
-        enable_swarming=False,
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.v8_tests.fail('Check') +
-    api.v8_tests.fail('Bisect a2.Retry') +
-    api.time.step(120)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bisect',
+      enable_swarming=False,
+  ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+         api.v8_tests.fail('Check') + api.v8_tests.fail('Bisect a2.Retry') +
+         api.time.step(120) + api.expect_status('FAILURE'))
 
   # The same as above, but overriding changes.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bisect_override_triggers',
-        enable_swarming=False,
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.properties(override_triggers=['a1', 'a2', 'a3']) +
-    api.v8_tests.fail('Check') +
-    api.v8_tests.fail('Bisect a2.Retry') +
-    api.time.step(120)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bisect_override_triggers',
+      enable_swarming=False,
+  ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+         api.properties(override_triggers=['a1', 'a2', 'a3']) +
+         api.v8_tests.fail('Check') + api.v8_tests.fail('Bisect a2.Retry') +
+         api.time.step(120) + api.expect_status('FAILURE'))
 
   # Disable bisection, because the failing test is too long compared to the
   # overall test time.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bisect_tests_too_long',
-        enable_swarming=False,
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.v8_tests.fail('Check') +
-    api.time.step(7)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bisect_tests_too_long',
+      enable_swarming=False,
+  ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+         api.v8_tests.fail('Check') + api.time.step(7) +
+         api.expect_status('FAILURE'))
 
   # Bisect over range a1, a2, a3. Assume a2 is the culprit.
   # Same as above with a swarming builder_tester.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bisect_swarming',
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.v8_tests.fail('Check') +
-    api.v8_tests.fail('Bisect a2.Retry') +
-    api.time.step(120) +
-    api.post_process(MustRun, 'Bisect a0.isolate tests')
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bisect_swarming',
+  ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+         api.v8_tests.fail('Check') + api.v8_tests.fail('Bisect a2.Retry') +
+         api.time.step(120) +
+         api.post_process(MustRun, 'Bisect a0.isolate tests') +
+         api.expect_status('FAILURE'))
 
   # Bisect over range a1, a2, a3. Assume a3 is the culprit. This is a tester
   # and the build for a2 is not available. Steps:
   # Bisect a0 -> no failures.
   # Bisect a1 -> no failures.
   # Report a2 and a3 as possible culprits.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bisect_tester_swarming',
-        parent_buildername='V8 Foobar - builder',
-        parent_bot_config=linux_bot_config,
-        parent_test_spec=test_spec,
-    ) +
-    api.v8_tests.fail('Check') +
-    api.time.step(120)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bisect_tester_swarming',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec=test_spec,
+  ) + api.v8_tests.fail('Check') + api.time.step(120) +
+         api.expect_status('FAILURE'))
 
   # Disable bisection due to a recurring failure. Steps:
   # Bisect a0 -> failures.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bisect_recurring_failure',
-        enable_swarming=False,
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.v8_tests.fail('Check') +
-    api.v8_tests.fail('Bisect a0.Retry') +
-    api.time.step(120)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bisect_recurring_failure',
+      enable_swarming=False,
+  ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+         api.v8_tests.fail('Check') + api.v8_tests.fail('Bisect a0.Retry') +
+         api.time.step(120) + api.expect_status('FAILURE'))
 
   # Disable bisection due to less than two changes.
   yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'bisect_one_change',
-        enable_swarming=False,
-    ) +
-    api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
-    api.v8_tests.fail('Check') +
-    api.scheduler(triggers=[api.v8.example_scheduler_buildbucket_trigger()]) +
-    api.override_step_data(
-        'Bisect.Get change range',
-        api.v8.example_bisection_range_one_change(),
-    ) +
-    api.time.step(120)
-  )
+      api.v8.test(
+          'client.v8',
+          'V8 Foobar',
+          'bisect_one_change',
+          enable_swarming=False,
+      ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
+      api.v8_tests.fail('Check') +
+      api.scheduler(triggers=[api.v8.example_scheduler_buildbucket_trigger()]) +
+      api.override_step_data(
+          'Bisect.Get change range',
+          api.v8.example_bisection_range_one_change(),
+      ) + api.time.step(120) + api.expect_status('FAILURE'))
 
   # Explicitly highlight slow tests not marked as slow.
   yield (
@@ -1065,7 +1022,7 @@ def GenTests(api):
       track_build_dependencies=True,
   ) + api.override_step_data('measurements.perf dashboard post',
                              api.json.output({'status_code': 403})) +
-         api.expect_status('INFRA_FAILURE') + api.post_process(DropExpectation))
+         api.post_process(DropExpectation) + api.expect_status('INFRA_FAILURE'))
 
   # Test windows-specific build steps.
   yield (

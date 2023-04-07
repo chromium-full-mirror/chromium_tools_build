@@ -96,6 +96,5 @@ def GenTests(api):
   yield api.test(
       'one_file',
       test_data(['README.md']),
-      api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

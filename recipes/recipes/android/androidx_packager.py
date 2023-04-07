@@ -102,7 +102,6 @@ def GenTests(api):
                              api.cipd.example_error('error')),
       api.post_process(post_process.MustRun, 'fetch_all'),
       api.post_process(post_process.MustRun, 'create cipd.yaml'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -137,7 +136,6 @@ def GenTests(api):
                              api.cipd.example_search('package1', instances=1)),
       api.post_process(post_process.MustRun, 'fetch_all'),
       api.post_process(post_process.DoesNotRun, 'create cipd.yaml'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -157,6 +155,5 @@ def GenTests(api):
                              api.cipd.example_error('error')),
       api.post_process(post_process.MustRun, 'fetch_all'),
       api.post_process(post_process.MustRun, 'create cipd.yaml'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

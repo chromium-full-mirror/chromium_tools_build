@@ -74,6 +74,7 @@ def GenTests(api):
       common_test_data,
       api.platform.name('linux'),
       api.step_data('ninja', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -81,6 +82,7 @@ def GenTests(api):
       common_test_data,
       api.platform.name('linux'),
       api.step_data('preprocess_for_goma.start_goma', retcode=1),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -88,6 +90,7 @@ def GenTests(api):
       common_test_data,
       api.platform.name('linux'),
       api.step_data('postprocess_for_goma.stop_goma', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

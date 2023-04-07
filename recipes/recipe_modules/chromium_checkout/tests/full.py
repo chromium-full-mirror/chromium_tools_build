@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
-                                        StatusSuccess, StepSuccess)
+                                        StepSuccess)
 
 from RECIPE_MODULES.depot_tools.gclient import (api as gclient, CONFIG_CTX as
                                                 GCLIENT_CONFIG_CTX)
@@ -57,7 +57,6 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -77,7 +76,6 @@ def GenTests(api):
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'bot_update'),
       api.post_process(StepSuccess, 'git diff to analyze patch'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 
@@ -92,7 +90,6 @@ def GenTests(api):
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'bot_update'),
       api.post_process(StepSuccess, 'git diff to analyze patch'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )
 

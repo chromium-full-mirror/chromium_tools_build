@@ -143,6 +143,7 @@ def GenTests(api):
       ),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', '', custom_os='Ubuntu', failures=['Test.Two']),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

@@ -283,6 +283,7 @@ def GenTests(api):
         api.properties(
             buildername=buildername, buildnumber=571, configuration='Release'),
         api.step_data('compare_build_artifacts', retcode=1),
+        api.expect_status('FAILURE'),
     )
 
   for trybotname in DETERMINISTIC_TRYBOTS:
@@ -306,6 +307,7 @@ def GenTests(api):
             ['platform'], 64),
         api.properties(configuration='Release'),
         api.step_data('compare_build_artifacts', retcode=1),
+        api.expect_status('FAILURE'),
     )
 
   yield api.test(

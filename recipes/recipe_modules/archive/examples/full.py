@@ -390,7 +390,6 @@ def GenTests(api):
                 'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
             },
             **{'$build/archive': input_properties}),
-        api.post_process(post_process.StatusSuccess),
         api.post_process(
             post_process.StepCommandContains,
             "Generic Archiving Steps.Move file", [
@@ -440,7 +439,6 @@ def GenTests(api):
       'generic_archive_nothing_to_archive',
       api.properties(
           gcs_archive=True, update_properties={}, **{'$build/archive': {}}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -470,7 +468,6 @@ def GenTests(api):
           'Generic Archiving Steps After Tests.Write latest file',
           ['123456_5e3250aadda2b170692f8e762d43b7e8deadbeef_'
            '20120514125323']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -491,27 +488,22 @@ def GenTests(api):
               'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
           },
           **{'$build/archive': input_properties}),
-      api.post_process(
-          post_process.MustRun,
-          'Generic Archiving Steps.Copy file existing-file.json'),
-      api.post_process(
-          post_process.MustRun,
-          'Generic Archiving Steps.Copy folder existing-dir'),
-      api.post_process(
-          post_process.DoesNotRun,
-          'Generic Archiving Steps.Copy file missing-file.json'),
-      api.post_process(
-          post_process.DoesNotRun,
-          'Generic Archiving Steps.Copy folder missing-dir'),
-      api.post_process(
-          check_stdin, 'Generic Archiving Steps.Create generic archive', [
-              '[CLEANUP]/tmp_tmp_2/existing-file.json',
-              '[CLEANUP]/tmp_tmp_2/existing-dir',
-          ], [
-              '[CLEANUP]/tmp_tmp_2/missing-file.json',
-              '[CLEANUP]/tmp_tmp_2/missing-dir',
-          ]),
-      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.MustRun,
+                       'Generic Archiving Steps.Copy file existing-file.json'),
+      api.post_process(post_process.MustRun,
+                       'Generic Archiving Steps.Copy folder existing-dir'),
+      api.post_process(post_process.DoesNotRun,
+                       'Generic Archiving Steps.Copy file missing-file.json'),
+      api.post_process(post_process.DoesNotRun,
+                       'Generic Archiving Steps.Copy folder missing-dir'),
+      api.post_process(check_stdin,
+                       'Generic Archiving Steps.Create generic archive', [
+                           '[CLEANUP]/tmp_tmp_2/existing-file.json',
+                           '[CLEANUP]/tmp_tmp_2/existing-dir',
+                       ], [
+                           '[CLEANUP]/tmp_tmp_2/missing-file.json',
+                           '[CLEANUP]/tmp_tmp_2/missing-dir',
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -610,7 +602,6 @@ def GenTests(api):
               '/heads/9.7.48@{#1}\", \"v8_revision\": \"1\", \"v8_revision_'
               'git\": \"466dd2d77f6dd56a9174d7389e788cb7367d818d\"}'
           ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -636,7 +627,6 @@ def GenTests(api):
               'got_v8_revision_cp': 'refs/heads/9.7.48@{#1}'
           },
           **{'$build/archive': input_properties}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -661,7 +651,6 @@ def GenTests(api):
               'got_v8_revision_cp': 'refs/heads/9.7.48@{#1}'
           },
           **{'$build/archive': input_properties}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -786,7 +775,6 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'Generic Archiving Steps.gsutil upload dest_dir/',
                        ['-R']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -854,7 +842,6 @@ def GenTests(api):
           gcs_archive=True,
           update_properties={},
           **{'$build/archive': input_properties}),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -882,7 +869,6 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'Generic Archiving Steps.Write latest file',
                        ['1.2.3.4']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -898,11 +884,11 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'Generic Archiving Steps.Write latest file',
                        ['1.2.3.4']),
-      api.post_process(post_process.StepCommandContains,
-                       'Generic Archiving Steps.gsutil upload '
-                       'latest-bucket/x86/latest/latest.txt',
-                       ['gs://latest-bucket/x86/latest/latest.txt']),
-      api.post_process(post_process.StatusSuccess),
+      api.post_process(
+          post_process.StepCommandContains,
+          'Generic Archiving Steps.gsutil upload '
+          'latest-bucket/x86/latest/latest.txt',
+          ['gs://latest-bucket/x86/latest/latest.txt']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -918,7 +904,6 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'Generic Archiving Steps.Write latest file',
                        ['90.1.2.3']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -936,7 +921,6 @@ def GenTests(api):
                        'Generic Archiving Steps.Write latest file',
                        ['90.1.2.3']),
       api.post_process(post_process.StepSuccess, 'Generic Archiving Steps'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -944,5 +928,4 @@ def GenTests(api):
       'test_get_channel_name',
       api.properties(test_get_channel_name=True, channel='canary'),
       api.step_data('get version', api.file.read_text(TEST_CHROME_VERSION)),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation))

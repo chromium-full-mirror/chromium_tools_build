@@ -163,7 +163,6 @@ def GenTests(api):
       'no_files',
       build_with_patch(affected_files=[]),
       api.post_process(post_process.DoesNotRun, 'metrics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -171,7 +170,6 @@ def GenTests(api):
       'no_analysis_non_xml',
       build_with_patch(affected_files=['some/file.txt']),
       api.post_process(post_process.DoesNotRun, 'metrics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -179,7 +177,6 @@ def GenTests(api):
       'no_analysis_xml',
       build_with_patch(affected_files=['some/file.xml']),
       api.post_process(post_process.DoesNotRun, 'metrics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -190,7 +187,6 @@ def GenTests(api):
           skip_footer=True,
           include_diff=False),
       api.post_process(post_process.DoesNotRun, 'bot_update'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -200,7 +196,6 @@ def GenTests(api):
           affected_files=['some/test/test2/histograms.xml'],
           auto_exist_files=False),
       api.post_process(post_process.DoesNotRun, 'metrics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -214,7 +209,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'metrics.load_live_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics.load_test_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -235,7 +229,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
           'metrics.write_results'].output_properties['tricium']),
       api.post_process(post_process.DropExpectation),
@@ -261,7 +254,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
-      api.post_process(post_process.StatusSuccess),
       api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
           'metrics.write_results'].output_properties['tricium']),
       api.post_process(post_process.DropExpectation),

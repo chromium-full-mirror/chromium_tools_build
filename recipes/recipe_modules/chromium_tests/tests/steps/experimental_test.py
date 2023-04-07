@@ -110,7 +110,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'pre_run inner_test (experimental)'),
       api.post_process(post_process.MustRun, 'inner_test (experimental)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -124,7 +123,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'pre_run inner_test (experimental)'),
       api.post_process(post_process.DoesNotRun, 'inner_test (experimental)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -139,7 +137,6 @@ def GenTests(api):
                        'has_valid_results inner_test (experimental)'),
       api.post_process(post_process.DoesNotRun,
                        'failures inner_test (experimental)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -150,7 +147,6 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.properties(experiment_percentage='0', has_valid_results=False),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -161,7 +157,6 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.properties(experiment_percentage='100', failures=['foo']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -172,7 +167,6 @@ def GenTests(api):
           builder='test_buildername',
       ),
       api.properties(experiment_percentage='0', failures=['foo']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -186,7 +180,6 @@ def GenTests(api):
       api.override_step_data('pre_run inner_test (experimental)', retcode=1),
       api.post_process(post_process.MustRun,
                        'pre_run inner_test (experimental)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -199,7 +192,6 @@ def GenTests(api):
       api.properties(experiment_percentage='100'),
       api.override_step_data('inner_test (experimental)', retcode=1),
       api.post_process(post_process.MustRun, 'inner_test (experimental)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -212,7 +204,6 @@ def GenTests(api):
       api.properties(
           experiment_percentage='100', failures=['foo'], abort_on_failure=True),
       api.post_process(post_process.MustRun, 'inner_test (experimental)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -227,6 +218,5 @@ def GenTests(api):
                        'pre_run inner_test (with patch, experimental)'),
       api.post_process(post_process.MustRun,
                        'inner_test (with patch, experimental)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

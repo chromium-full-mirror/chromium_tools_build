@@ -184,7 +184,6 @@ def GenTests(api):
       build_with_patch(affected_files=[], cc=[], is_revert=True),
       api.post_process(post_process.DoesNotRun,
                        'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -196,7 +195,6 @@ def GenTests(api):
           }]),
       api.post_process(post_process.DoesNotRun,
                        'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepSuccess, 'already_in_cc'),
       api.post_process(post_process.DropExpectation),
   )
@@ -206,7 +204,6 @@ def GenTests(api):
       build_with_patch(affected_files=[], cc=[]),
       api.post_process(post_process.DoesNotRun,
                        'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepSuccess, 'no_cc_files_changed'),
       api.post_process(post_process.DropExpectation),
   )
@@ -216,7 +213,6 @@ def GenTests(api):
       build_with_patch(affected_files=['path/to/some/file.txt'], cc=[]),
       api.post_process(post_process.DoesNotRun,
                        'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepSuccess, 'no_cc_files_changed'),
       api.post_process(post_process.DropExpectation),
   )
@@ -231,7 +227,6 @@ def GenTests(api):
       api.post_process(
           post_process.DoesNotRun,
           'oilpan_analyzer.untraced_member.generate_tricium_comment'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -244,6 +239,5 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'oilpan_analyzer.untraced_member.generate_tricium_comment'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -38,7 +38,6 @@ def GenTests(api):
           'some',
           'args',
       ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

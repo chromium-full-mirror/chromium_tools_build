@@ -476,6 +476,7 @@ def GenTests(api):
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
                              api.boringssl.canned_test_output(True)),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -488,6 +489,7 @@ def GenTests(api):
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
                              api.boringssl.canned_test_output(True)),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -500,6 +502,7 @@ def GenTests(api):
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
                              api.boringssl.canned_test_output(True)),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -511,6 +514,7 @@ def GenTests(api):
                              api.boringssl.canned_test_output(False)),
       api.override_step_data('ssl tests',
                              api.boringssl.canned_test_output(True)),
+      api.expect_status('FAILURE'),
   )
 
   # Test that the cleanup step works correctly with test failures.
@@ -524,6 +528,7 @@ def GenTests(api):
                              api.boringssl.canned_test_output(False)),
       api.override_step_data('ssl tests',
                              api.boringssl.canned_test_output(True)),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -535,6 +540,7 @@ def GenTests(api):
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
                              api.boringssl.canned_test_output(False)),
+      api.expect_status('FAILURE'),
   )
 
   # The taskkill step may fail if mspdbsrv has already exitted. This should
@@ -582,6 +588,7 @@ def GenTests(api):
                              api.boringssl.canned_test_output(True)),
       api.override_step_data('ssl tests',
                              api.boringssl.canned_test_output(True)),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

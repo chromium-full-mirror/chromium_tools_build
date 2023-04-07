@@ -78,7 +78,6 @@ def GenTests(api):
           builder_group='chromium.perf',
           builder='linux-perf',
           parent_buildername='linux-builder-perf'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

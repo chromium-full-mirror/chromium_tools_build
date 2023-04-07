@@ -160,7 +160,6 @@ def GenTests(api):
               },
           }),
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_groupings in steps['groupings'].cmd)),
       api.post_process(post_process.DropExpectation),

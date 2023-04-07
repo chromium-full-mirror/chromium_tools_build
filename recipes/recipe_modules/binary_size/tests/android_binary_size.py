@@ -66,7 +66,6 @@ def GenTests(api):
       api.time.seed(constants.TEST_TIME + 7230),
       api.post_process(post_process.MustRun,
                        constants.PATCH_FIXED_BUILD_STEP_NAME),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -127,7 +126,6 @@ def GenTests(api):
                        'Commit log for uploaded revision'),
       api.post_process(post_process.StepSuccess, 'gsutil Downloading zip'),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -136,7 +134,6 @@ def GenTests(api):
       api.binary_size.build('nondefault_targets', override_commit_log=True),
       api.binary_size.properties(
           analyze_targets=['//foo:bar_binary'], compile_targets=['bar_binary']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -156,7 +153,6 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'gclient runhooks (with patch again)'),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -189,7 +185,6 @@ def GenTests(api):
       api.post_process(post_process.StepWarning,
                        constants.EXPECTATIONS_STEP_NAME),
       api.post_check(has_failed_expectations),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -230,7 +225,6 @@ def GenTests(api):
       api.post_process(post_process.StepFailure,
                        constants.EXPECTATIONS_STEP_NAME),
       api.post_check(has_failed_expectations),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -239,7 +233,6 @@ def GenTests(api):
       api.binary_size.build(override_commit_log=True),
       api.override_step_data('Clear Expectation Files', retcode=1),
       api.post_process(post_process.StepSuccess, 'Clear Expectation Files'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -271,6 +264,7 @@ def GenTests(api):
           })),
       api.post_process(post_process.StepFailure, constants.RESULTS_STEP_NAME),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -296,7 +290,6 @@ def GenTests(api):
       api.post_check(has_expected_supersize_link, bucket='fake-results-bucket'),
       api.post_check(
           has_expected_binary_size_url, bucket='fake-results-bucket'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -305,7 +298,6 @@ def GenTests(api):
       api.binary_size.build(override_commit_log=True),
       api.post_process(post_process.MustRun, 'gsutil Downloading zip'),
       api.post_process(post_process.DoesNotRun, 'compile (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -316,7 +308,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'bot_update (2)'),
       api.post_process(post_process.DoesNotRun, 'gsutil Downloading zip'),
       api.post_process(post_process.MustRun, 'compile (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -326,7 +317,6 @@ def GenTests(api):
       api.time.seed(constants.TEST_TIME + 7230),
       api.post_process(post_process.DoesNotRun, 'gsutil Downloading zip'),
       api.post_process(post_process.MustRun, 'compile (without patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -342,7 +332,6 @@ def GenTests(api):
       api.post_check(has_expected_binary_size_url),
       api.post_check(final_step_is_not_nested),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -358,6 +347,5 @@ def GenTests(api):
       api.post_check(has_expected_binary_size_url),
       api.post_check(final_step_is_not_nested),
       api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

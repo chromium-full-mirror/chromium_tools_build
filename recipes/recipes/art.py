@@ -600,12 +600,14 @@ def GenTests(api):
       'target_angler_setup_failure',
       build('angler-armv7-ndebug'),
       api.step_data('setup device', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
       'target_angler_device_pre_run_cleanup_failure',
       build('angler-armv7-ndebug'),
       api.step_data('device pre-run cleanup', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
 #  This test *should* exist, but can't be included as it causes the recipe

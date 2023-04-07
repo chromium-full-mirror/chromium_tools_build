@@ -256,7 +256,6 @@ def GenTests(api):
               },
           }),
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_snippets in steps['src-side snippets'].cmd)),
       api.post_process(post_process.DropExpectation),
@@ -308,7 +307,6 @@ def GenTests(api):
               },
           }),
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_standalone_snippet in steps['src-side snippets'].cmd)),
       api.post_process(post_process.DropExpectation),
@@ -391,7 +389,6 @@ def GenTests(api):
               },
           }),
       ),
-      api.post_check(post_process.StatusSuccess),
       api.post_check(lambda check, steps: \
           check(expected_json in steps['src-side snippets'].cmd)),
       api.post_process(post_process.DropExpectation),

@@ -41,6 +41,7 @@ def GenTests(api):
       api.resultdb.query_test_results(resultdb_pb2.QueryTestResultsResponse()),
       api.post_check(post_process.ResultReason, 'Cannot find TestResult.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -53,6 +54,7 @@ def GenTests(api):
       api.post_check(post_process.ResultReason,
                      'Must specify task_id or build_id.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -65,4 +67,5 @@ def GenTests(api):
       api.post_check(post_process.ResultReason,
                      'Must specify test_name or test_id.'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )

@@ -393,7 +393,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
       api.post_process(post_process.MustRun,
                        'check_static_initializers (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -615,7 +614,6 @@ def GenTests(api):
           'src_side_test_spec_dir',
           'testing/buildbot',
       ),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -751,7 +749,7 @@ def GenTests(api):
       api.runtime.global_shutdown_on_step('isolate tests (with patch)'),
       api.post_process(post_process.ResultReasonRE,
                        '.*causing this build to be canceled.*'),
-      api.expect_status('INFRA_FAILURE'),
+      api.expect_status('CANCELED'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -786,7 +784,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'isolate tests (with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'check_static_initializers (with patch)'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -813,7 +810,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'isolate tests (with patch)'),
       api.post_process(post_process.DoesNotRun, 'swarming trigger properties'),
       api.post_process(post_process.DoesNotRun, 'archive src-side dep paths'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -942,7 +938,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'searching_for_new_tests'),
       api.post_process(post_process.MustRun, 'test new tests for flakiness'),
       api.post_process(post_process.MustRun, 'calculate flake rates'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 

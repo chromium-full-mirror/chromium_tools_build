@@ -117,7 +117,7 @@ def GenTests(api):
       builder_group,
       'Android Tester ARM32 Debug (Nexus 5X)',
       revision=None,
-      suffix='_forced_invalid')
+      suffix='_forced_invalid') + api.expect_status('FAILURE')
   yield generate_builder(
       builder_group, 'iOS Debug', revision=None, suffix='_forced')
 

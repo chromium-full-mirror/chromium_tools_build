@@ -5,8 +5,7 @@
 """Recipe to test v8/node.js integration."""
 
 from recipe_engine.recipe_api import Property
-from recipe_engine.post_process import (Filter, ResultReasonRE, StatusSuccess,
-                                        DropExpectation)
+from recipe_engine.post_process import Filter, ResultReasonRE, DropExpectation
 
 from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
                                                        builds_service_pb2)
@@ -242,24 +241,24 @@ def GenTests(api):
   )
 
   # Test CI builder on V8 group.
-  yield (
-      test(
-          'V8 Foobar',
-          platform='linux',
-          suffix='_trigger_fail',
-          triggers=['v8_foobar_perf'],
-          v8_tot=True,
-      ) + api.buildbucket.simulated_schedule_output(
-          builds_service_pb2.BatchResponse(
-              responses=[dict(error=dict(
-                  code=rpc_code_pb2.PERMISSION_DENIED,
-                  message='foobar',
-              ))],
-          ),
-          step_name='trigger',
-      ) +
-      api.post_process(Filter('trigger', '$result'))
-  )
+  yield (test(
+      'V8 Foobar',
+      platform='linux',
+      suffix='_trigger_fail',
+      triggers=['v8_foobar_perf'],
+      v8_tot=True,
+  ) + api.buildbucket.simulated_schedule_output(
+      builds_service_pb2.BatchResponse(
+          responses=[
+              dict(
+                  error=dict(
+                      code=rpc_code_pb2.PERMISSION_DENIED,
+                      message='foobar',
+                  ))
+          ],),
+      step_name='trigger',
+  ) + api.post_process(Filter('trigger', '$result')) +
+         api.expect_status('INFRA_FAILURE'))
 
   # Test CI builder on V8 group with consistent test failures.
   yield (test(
@@ -295,7 +294,6 @@ def GenTests(api):
       # When this step fails it is retried. The retry's test data passes by
       # default, which is reported as a flake.
       api.step_data('test default', retcode=1) +
-      api.post_process(StatusSuccess) +
       api.post_process(DropExpectation)
   )
 

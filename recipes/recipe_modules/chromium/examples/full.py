@@ -201,6 +201,7 @@ def GenTests(api):
                       },
                   },],
               })),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -221,6 +222,7 @@ def GenTests(api):
           use_goma_module=False,
       ),
       api.step_data('compile', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -243,6 +245,7 @@ def GenTests(api):
       api.override_step_data(
           'compile confirm no-op',
           stdout=api.raw_io.output_text("ninja explain: chrome is dirty\n")),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -271,6 +274,7 @@ def GenTests(api):
                   "compile_error": "COMPILER_PROXY_UNREACHABLE",
               },],
           })),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -301,6 +305,7 @@ def GenTests(api):
                   },
               },],
           })),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -342,6 +347,7 @@ def GenTests(api):
           target_platform='mac',
           configs=['mac_toolchain'],
       ),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

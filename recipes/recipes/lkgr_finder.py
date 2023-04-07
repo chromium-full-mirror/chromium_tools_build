@@ -224,7 +224,11 @@ def GenTests(api):
       api.runtime(is_experimental=True),
   )
 
-  for retcode, suffix in [(0, ''), (1, '_failure'), (2, '_stale')]:
+  for retcode, suffix, status in [
+      (0, '', 'SUCCESS'),
+      (1, '_failure', 'FAILURE'),
+      (2, '_stale', 'FAILURE'),
+  ]:
     yield api.test(
         'custom_properties' + suffix,
         test_props_and_data('custom-lkgr-finder'),
@@ -236,6 +240,7 @@ def GenTests(api):
             lkgr_status_gs_path='custom/lkgr-status'),
         api.post_process(post_process.MustRun, 'calculate custom lkgr'),
         api.post_process(post_process.StatusCodeIn, retcode),
+        api.expect_status(status),
     )
 
   yield api.test(
@@ -243,6 +248,7 @@ def GenTests(api):
       test_props('missing-lkgr-finder'),
       api.post_process(post_process.MustRun, 'configuration missing'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

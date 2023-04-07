@@ -517,6 +517,5 @@ def GenTests(api):
               'gs://chromium-browser-official/chromium-104.0.5112.79-nacl.tar.xz\n'
           )),
       api.post_process(post_process.MustRun, 'no new releases need publishing'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

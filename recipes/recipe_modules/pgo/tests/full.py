@@ -165,7 +165,6 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'Processing PGO .profraw data.Finding profile merge errors'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
@@ -190,7 +189,6 @@ def GenTests(api):
               '/performance_test_suite/performance_test_suite.profdata',
               '/different_test_suite/different_test_suite.profdata'
           ])),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
@@ -215,7 +213,6 @@ def GenTests(api):
               '/performance_test_suite/performance_test_suite.profdata',
               '/different_test_suite/different_test_suite.profdata'
           ])),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
@@ -240,7 +237,6 @@ def GenTests(api):
               '/performance_test_suite/performance_test_suite.profdata',
               '/different_test_suite/different_test_suite.profdata'
           ])),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(
           post_process.StepCommandContains,
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
@@ -366,7 +362,6 @@ def GenTests(api):
               '\\\\performance_test_suite\\\\performance_test_suite.profdata',
               '\\\\different_test_suite\\\\different_test_suite.profdata'
           ])),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   ) + api.post_process(post_process.DoesNotRunRE,
                        '.*gsutil upload artifact to GS.*')

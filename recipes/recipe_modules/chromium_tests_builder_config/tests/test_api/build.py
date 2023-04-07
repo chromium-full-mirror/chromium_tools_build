@@ -61,7 +61,6 @@ def GenTests(api):
           expected_try_db=TryDatabase.create({}),
           expected_platform_name='mac',
           expected_platform_bits=32),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -80,7 +79,6 @@ def GenTests(api):
           expected_try_db=TRY_DB,
           expected_platform_name='mac',
           expected_platform_bits=32),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -97,7 +95,6 @@ def GenTests(api):
           expected_try_db=TryDatabase.create({}),
           expected_platform_name='mac',
           expected_platform_bits=32),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -115,7 +112,6 @@ def GenTests(api):
           expected_try_db=TRY_DB,
           expected_platform_name='mac',
           expected_platform_bits=32),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -130,6 +126,5 @@ def GenTests(api):
           expected_try_db=trybots.TRYBOTS,
           expected_platform_name='linux',
           expected_platform_bits=64),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

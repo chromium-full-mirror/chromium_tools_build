@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DropExpectation, StatusSuccess,
-                                        StepSuccess)
+from recipe_engine.post_process import DropExpectation, StepSuccess
 
 DEPS = [
   'chromium_android',
@@ -21,6 +20,5 @@ def GenTests(api):
       api.post_process(StepSuccess, 'cleanup index.lock'),
       api.post_process(StepSuccess, 'bot_update'),
       api.post_process(StepSuccess, 'clean local files'),
-      api.post_process(StatusSuccess),
       api.post_process(DropExpectation),
   )

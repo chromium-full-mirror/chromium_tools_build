@@ -42,7 +42,6 @@ def GenTests(api):
       api.properties(target_platform='win', host_platform='win'),
       api.path.exists(api.path['tmp_base'].join('symupload.exe')),
       api.symupload(input_properties),
-      api.post_process(post_process.StatusSuccess),
   )
 
   yield api.test(
@@ -60,7 +59,6 @@ def GenTests(api):
           })),
       api.path.exists(api.path['tmp_base'].join('symupload.exe')),
       api.symupload(input_properties),
-      api.post_process(post_process.StatusSuccess),
   )
 
   yield api.test(
@@ -68,7 +66,6 @@ def GenTests(api):
       api.properties(target_platform='mac', host_platform='mac'),
       api.path.exists(api.path['tmp_base'].join('symupload')),
       api.symupload(input_properties),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -86,7 +83,6 @@ def GenTests(api):
       api.properties(target_platform='mac', host_platform='mac'),
       api.symupload(properties.InputProperties()),
       api.post_process(post_process.DoesNotRun, 'symupload'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -98,7 +94,6 @@ def GenTests(api):
       api.symupload(input_properties),
       api.post_process(post_process.DoesNotRun, 'symupload.symupload'),
       api.post_process(post_process.DoesNotRun, 'symupload.symupload_v2'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -123,7 +118,6 @@ def GenTests(api):
                            '--api-key-file',
                            '[CLEANUP]/symupload-api-key.txt',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -138,7 +132,6 @@ def GenTests(api):
                            '--api-key-file',
                            '[CLEANUP]/symupload-api-key.txt',
                        ]),
-      api.post_process(post_process.StatusSuccess),
   )
 
   symupload_data.artifact_type = "dsym"
@@ -153,7 +146,6 @@ def GenTests(api):
                            '--artifact_type',
                            'dsym',
                        ]),
-      api.post_process(post_process.StatusSuccess),
   )
 
   yield api.test(
@@ -167,7 +159,6 @@ def GenTests(api):
                            '[TMP_BASE]/glob1.txt,[TMP_BASE]/glob2.txt,'
                            '[TMP_BASE]/some_artifact.txt',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -184,6 +175,7 @@ def GenTests(api):
       api.step_data('symupload.symupload_v2 (3)', retcode=1),
       api.post_process(post_process.StepFailure, 'symupload'),
       api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -239,7 +231,6 @@ def GenTests(api):
                            '--api-key-file',
                            '[CLEANUP]/symupload-api-key.txt',
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -278,7 +269,6 @@ def GenTests(api):
                            "--server-urls",
                            "https://foo.com",
                        ]),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
