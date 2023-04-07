@@ -69,9 +69,11 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def test_with_patch(name, affected_files):
-    test = api.test(
-        name,
+  def test_data(affected_files):
+    existing_files = [
+        api.path['cache'].join('builder', 'pdfium', x) for x in affected_files
+    ]
+    return sum([
         api.buildbucket.try_build(
             project='pdfium', builder='tricium_pdfium', patch_set=1),
         api.platform('linux', 64),
@@ -88,13 +90,12 @@ def GenTests(api):
                     }
                 }
             }])),
-    )
-    existing_files = [
-        api.path['cache'].join('builder', 'pdfium', x) for x in affected_files
-    ]
-    test += api.path.exists(*existing_files)
-    return test
+        api.path.exists(*existing_files),
+    ], api.empty_test_data())
 
-  yield test_with_patch('one_file', ['README.md']) + api.post_check(
-      post_process.StatusSuccess) + api.post_process(
-          post_process.DropExpectation)
+  yield api.test(
+      'one_file',
+      test_data(['README.md']),
+      api.post_check(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )

@@ -69,9 +69,11 @@ def _should_skip(path):
 
 def GenTests(api):
 
-  def test_with_patch(name, affected_files):
-    test = api.test(
-        name,
+  def test_data(affected_files):
+    existing_files = [
+        api.path['cache'].join('builder', 'src', x) for x in affected_files
+    ]
+    return sum([
         api.chromium.try_build(
             builder_group='tryserver.chromium.linux',
             builder='tricium-simple',
@@ -89,21 +91,24 @@ def GenTests(api):
                     }
                 }
             }])),
-    )
-    existing_files = [
-        api.path['cache'].join('builder', 'src', x) for x in affected_files
-    ]
-    test += api.path.exists(*existing_files)
-    return test
+        api.path.exists(*existing_files)
+    ], api.empty_test_data())
 
-  yield test_with_patch('one_file', ['README.md']) + api.post_check(
-      post_process.StatusSuccess) + api.post_process(
-          post_process.DropExpectation)
+  yield api.test(
+      'one_file',
+      test_data(['README.md']),
+      api.post_check(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield test_with_patch('with_third_party', [
-      'third_party/foo/x.cc',
-      'third_party/blink/web_tests/x.html',
-      'third_party/README.md',
-      'third_party/blink/web_tests/x-expected.png',
-  ]) + api.post_check(post_process.StatusSuccess) + api.post_process(
-      post_process.DropExpectation)
+  yield api.test(
+      'with_third_party',
+      test_data([
+          'third_party/foo/x.cc',
+          'third_party/blink/web_tests/x.html',
+          'third_party/README.md',
+          'third_party/blink/web_tests/x-expected.png',
+      ]),
+      api.post_check(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )

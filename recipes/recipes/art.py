@@ -578,43 +578,44 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def test(name, builder):
-    return api.test(
-        name,
+  def build(builder):
+    return sum([
         api.buildbucket.ci_build(
             project='art',
             builder=builder,
         ),
         api.properties(bot_id='TestSlave'),
-    )
+    ], api.empty_test_data())
 
   for builders in _CONFIG_MAP.values():
     for buildername in builders:
       for clb in (None, True):
-        yield (
-            test(
-                '%s__%s' % (
-                    buildername, ('' if clb else 'no') + 'clobber'),
-                buildername,
-            ) +
-            (api.properties(clobber='') if clb else api.properties())
-          )
-  yield (
-      test('target_angler_setup_failure', 'angler-armv7-ndebug') +
-      api.step_data('setup device', retcode=1))
-  yield (
-      test(
-          'target_angler_device_pre_run_cleanup_failure',
-          'angler-armv7-ndebug') +
-      api.step_data('device pre-run cleanup', retcode=1))
+        yield api.test(
+            '%s__%s' % (buildername, ('' if clb else 'no') + 'clobber'),
+            build(buildername),
+            (api.properties(clobber='') if clb else api.properties()),
+        )
+
+  yield api.test(
+      'target_angler_setup_failure',
+      build('angler-armv7-ndebug'),
+      api.step_data('setup device', retcode=1),
+  )
+
+  yield api.test(
+      'target_angler_device_pre_run_cleanup_failure',
+      build('angler-armv7-ndebug'),
+      api.step_data('device pre-run cleanup', retcode=1),
+  )
+
 #  This test *should* exist, but can't be included as it causes the recipe
 #  simulation to error out, instead of showing that the build should become
 #  purple instead. This may need to be fixed in the simulation test script.
-#  yield (
-#      api.test('invalid buildername') +
+#  yield api.test(
+#     'invalid buildername',
 #      api.properties(
 #        mastername='client.art',
 #        buildername='builder_does_not_exist',
 #        bot_id='TestSlave',
-#      )
+#      ),
 #    )

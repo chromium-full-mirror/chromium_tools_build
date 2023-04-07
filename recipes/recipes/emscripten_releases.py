@@ -114,33 +114,37 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  def test(name):
-    return api.test(
-        name,
-        api.buildbucket.ci_build(
-            project='emscripten-releases',
-            builder='linux',
-            build_number=42,
-        ),
+
+  def build():
+    return api.buildbucket.ci_build(
+        project='emscripten-releases',
+        builder='linux',
+        build_number=42,
     )
 
-  yield test('linux')
-
-  yield (
-      test('linux_buildfail') +
-      api.step_data('Build Wabt', retcode=1) +
-      api.post_process(Filter('postprocess_for_goma.upload_log'))
+  yield api.test(
+      'linux',
+      build(),
   )
 
-  yield (
-      # Check that if the first test fails, the second runs but the
-      # overall result is failure.
-      test('linux_emtest_fail') +
+  yield api.test(
+      'linux_buildfail',
+      build(),
+      api.step_data('Build Wabt', retcode=1),
+      api.post_process(Filter('postprocess_for_goma.upload_log')),
+  )
+
+  # Check that if the first test fails, the second runs but the overall
+  # result is failure.
+  yield api.test(
+      'linux_emtest_fail',
+      build(),
       api.step_data('Emscripten testsuite (upstream)', retcode=1) +
-      api.post_process(Filter('Emscripten testsuite (asm2wasm)',
-                              '$result'))
+      api.post_process(Filter('Emscripten testsuite (asm2wasm)', '$result')),
   )
 
-  yield (
-      test('mac') + api.platform.name('mac')
+  yield api.test(
+      'mac',
+      build(),
+      api.platform.name('mac'),
   )

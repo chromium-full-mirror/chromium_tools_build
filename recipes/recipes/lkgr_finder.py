@@ -213,45 +213,58 @@ def GenTests(api):
         api.gitiles.make_commit_test_data('deadbeef1', 'Commit1')))
 
   for buildername, botconfig in BUILDERS.items():
-    yield (api.test(botconfig['project']) + test_props_and_data(buildername))
+    yield api.test(
+        botconfig['project'],
+        test_props_and_data(buildername),
+    )
 
-  yield (api.test('v8_experimental') + test_props_and_data('V8 lkgr finder') +
-         api.runtime(is_experimental=True))
+  yield api.test(
+      'v8_experimental',
+      test_props_and_data('V8 lkgr finder'),
+      api.runtime(is_experimental=True),
+  )
 
   for retcode, suffix in [(0, ''), (1, '_failure'), (2, '_stale')]:
-    yield (api.test('custom_properties' + suffix) +
-           test_props_and_data('custom-lkgr-finder') +
-           api.step_data('calculate custom lkgr', retcode=retcode) +
-           api.properties(
-               project='custom',
-               repo='https://custom.googlesource.com/src',
-               ref='refs/heads/lkgr',
-               lkgr_status_gs_path='custom/lkgr-status') +
-           api.post_process(post_process.MustRun, 'calculate custom lkgr') +
-           api.post_process(post_process.StatusCodeIn, retcode))
+    yield api.test(
+        'custom_properties' + suffix,
+        test_props_and_data('custom-lkgr-finder'),
+        api.step_data('calculate custom lkgr', retcode=retcode),
+        api.properties(
+            project='custom',
+            repo='https://custom.googlesource.com/src',
+            ref='refs/heads/lkgr',
+            lkgr_status_gs_path='custom/lkgr-status'),
+        api.post_process(post_process.MustRun, 'calculate custom lkgr'),
+        api.post_process(post_process.StatusCodeIn, retcode),
+    )
 
-  yield (api.test('missing_all_properties') +
-         test_props('missing-lkgr-finder') +
-         api.post_process(post_process.MustRun, 'configuration missing') +
-         api.post_process(post_process.DropExpectation))
+  yield api.test(
+      'missing_all_properties',
+      test_props('missing-lkgr-finder'),
+      api.post_process(post_process.MustRun, 'configuration missing'),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (api.test('custom_config') +
-         test_props_and_data('custom-configuration') + api.properties(
-             project='custom',
-             repo='https://custom.googlesource.com/src',
-             ref='refs/heads/lkgr',
-             src_ref='refs/heads/main',
-             config={
-                 'project': 'custom',
-                 'source_url': 'https://custom.googlesource.com/src',
-                 'masters': {
-                     'custom.foo': {
-                         'builders': ['custom-foo-builder',],
-                     },
-                 },
-             }) +
-         api.post_process(post_process.MustRun, 'calculate custom lkgr') +
-         api.post_process(post_process.StepCommandContains,
-                          'calculate custom lkgr', ['--project-config-file']) +
-         api.post_process(post_process.StatusCodeIn, 0) +
-         api.post_process(post_process.DropExpectation))
+  yield api.test(
+      'custom_config',
+      test_props_and_data('custom-configuration'),
+      api.properties(
+          project='custom',
+          repo='https://custom.googlesource.com/src',
+          ref='refs/heads/lkgr',
+          src_ref='refs/heads/main',
+          config={
+              'project': 'custom',
+              'source_url': 'https://custom.googlesource.com/src',
+              'masters': {
+                  'custom.foo': {
+                      'builders': ['custom-foo-builder',],
+                  },
+              },
+          }),
+      api.post_process(post_process.MustRun, 'calculate custom lkgr'),
+      api.post_process(post_process.StepCommandContains,
+                       'calculate custom lkgr', ['--project-config-file']),
+      api.post_process(post_process.StatusCodeIn, 0),
+      api.post_process(post_process.DropExpectation),
+  )

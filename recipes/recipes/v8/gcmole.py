@@ -59,17 +59,26 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield (api.test("default test") + api.override_step_data(
-      'git status',
-      api.raw_io.stream_output_text('some change', stream='stdout'),
-  ) + api.post_process(post_process.StatusSuccess) +
-         api.post_process(post_process.MustRun, 'git commit', 'git cl') +
-         api.post_process(
-             post_process.Filter('Build gcmole', 'Package gcmole',
-                                 'upload_to_google_storage', 'git cl')))
-  yield (api.test("no change test") + api.override_step_data(
-      'git status',
-      api.raw_io.stream_output_text('', stream='stdout'),
-  ) + api.post_process(post_process.StatusSuccess) +
-         api.post_process(post_process.DoesNotRun, 'git commit', 'git cl') +
-         api.post_process(post_process.DropExpectation))
+  yield api.test(
+      "default test",
+      api.override_step_data(
+          'git status',
+          api.raw_io.stream_output_text('some change', stream='stdout'),
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.MustRun, 'git commit', 'git cl'),
+      api.post_process(
+          post_process.Filter('Build gcmole', 'Package gcmole',
+                              'upload_to_google_storage', 'git cl')),
+  )
+
+  yield api.test(
+      "no change test",
+      api.override_step_data(
+          'git status',
+          api.raw_io.stream_output_text('', stream='stdout'),
+      ),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DoesNotRun, 'git commit', 'git cl'),
+      api.post_process(post_process.DropExpectation),
+  )

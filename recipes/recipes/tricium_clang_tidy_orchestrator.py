@@ -336,34 +336,34 @@ def _tricium_has_comment(check, steps, comment):
 
 def GenTests(api):
 
-  def test(name, tricium_data, bot_status_overrides=None, commit_message='foo'):
+  def test_data(tricium_data, bot_status_overrides=None, commit_message='foo'):
 
-    def make_test(*overrides):
-      return api.test(
-          name,
-          api.chromium.try_build(
-              builder_group='tryserver.chromium.linux',
-              builder='linux_chromium_compile_rel_ng',
-              build_number=1234,
-              patch_set=1), api.platform('linux', 64),
-          api.override_step_data(
-              'gerrit changes',
-              api.json.output([{
-                  'revisions': {
-                      'a' * 40: {
-                          '_number': 1,
-                          'commit': {
-                              'author': {
-                                  'email': 'gbiv@google.com',
-                              },
-                              'message': commit_message,
-                          }
-                      }
-                  }
-              }])), *overrides)
+    test_data = sum([
+        api.chromium.try_build(
+            builder_group='tryserver.chromium.linux',
+            builder='linux_chromium_compile_rel_ng',
+            build_number=1234,
+            patch_set=1),
+        api.platform('linux', 64),
+        api.override_step_data(
+            'gerrit changes',
+            api.json.output([{
+                'revisions': {
+                    'a' * 40: {
+                        '_number': 1,
+                        'commit': {
+                            'author': {
+                                'email': 'gbiv@google.com',
+                            },
+                            'message': commit_message,
+                        }
+                    }
+                }
+            }]))
+    ], api.empty_test_data())
 
     if commit_message.startswith('Revert'):
-      return make_test()
+      return test_data
 
     if bot_status_overrides is None:
       bot_status_overrides = {}
@@ -390,52 +390,64 @@ def GenTests(api):
         build_output[n].output.properties['tricium'] = api.json.dumps(
             tricium_section)
 
-    return make_test(
-        api.buildbucket.simulated_collect_output(
-            build_output,
-            step_name='schedule tidy builds.buildbucket.collect',
-        ))
+    test_data += api.buildbucket.simulated_collect_output(
+        build_output,
+        step_name='schedule tidy builds.buildbucket.collect',
+    )
+    return test_data
 
-  yield (
-      test('skip_reverted_cl', tricium_data=None, commit_message='Revert foo') +
-      api.post_process(post_process.StatusSuccess) +
-      api.post_process(post_process.DoesNotRun, 'schedule tidy builds') +
-      api.post_process(post_process.DropExpectation))
+  yield api.test(
+      'skip_reverted_cl',
+      test_data(tricium_data=None, commit_message='Revert foo'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DoesNotRun, 'schedule tidy builds'),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (test('success_on_no_tricium_output', tricium_data=None) +
-         api.post_process(post_process.StatusSuccess) +
-         api.post_process(_tricium_has_no_comments) +
-         api.post_process(post_process.DropExpectation))
+  yield api.test(
+      'success_on_no_tricium_output',
+      test_data(tricium_data=None),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(_tricium_has_no_comments),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (test(
+  yield api.test(
       'success_on_empty_tricium_output',
-      tricium_data={name: [] for name in _CHILD_BUILDERS}) +
-         api.post_process(post_process.StatusSuccess) +
-         api.post_process(_tricium_has_no_comments) +
-         api.post_process(post_process.DropExpectation))
+      test_data(tricium_data={name: [] for name in _CHILD_BUILDERS}),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(_tricium_has_no_comments),
+      api.post_process(post_process.DropExpectation),
+  )
 
   comment0 = _build_tricium_comment_with_defaults(
       category='some category',
       message='some message',
       path='foo.cpp',
   )
-  yield (test(
-      'basic_tidy_output_works', tricium_data={_CHILD_BUILDERS[0]: [comment0]})
-         + api.post_process(post_process.StatusSuccess) + api.post_process(
-             _tricium_has_comment,
-             _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS, comment0))
-         + api.post_process(post_process.DropExpectation))
+  yield api.test(
+      'basic_tidy_output_works',
+      test_data(tricium_data={_CHILD_BUILDERS[0]: [comment0]}),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(
+          _tricium_has_comment,
+          _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS, comment0)),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (test(
+  yield api.test(
       'multibot_tidy_output_works',
-      tricium_data={
+      test_data(tricium_data={
           _CHILD_BUILDERS[0]: [comment0],
           _CHILD_BUILDERS[1]: [comment0],
-      }) + api.post_process(post_process.StatusSuccess) + api.post_process(
+      }),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
-                            _CHILD_BUILDERS, comment0)) +
-         api.post_process(post_process.DropExpectation))
+                            _CHILD_BUILDERS, comment0)),
+      api.post_process(post_process.DropExpectation),
+  )
 
   comment1 = _build_tricium_comment_with_defaults(
       category='some other category',
@@ -453,19 +465,24 @@ def GenTests(api):
           ),),
       ),),
   )
-  yield (test(
+  yield api.test(
       'multibot_multicomment_tidy_output_works',
-      tricium_data={
+      test_data(tricium_data={
           _CHILD_BUILDERS[0]: [comment0],
           _CHILD_BUILDERS[1]: [comment0, comment1],
-      }) + api.post_process(post_process.StatusSuccess) + api.post_process(
+      }),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
                             _CHILD_BUILDERS, comment0),
-      ) + api.post_process(
+      ),
+      api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[1]], _CHILD_BUILDERS, comment1),
-      ) + api.post_process(post_process.DropExpectation))
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
 
   comment1_with_new_replacement = comment1._replace(
       suggestions=(_TriciumSuggestion(
@@ -481,20 +498,26 @@ def GenTests(api):
       ),),)
 
   # crbug.com/1336328
-  yield (test(
+  yield api.test(
       'messages_with_replacements_must_sort',
-      tricium_data={
-          _CHILD_BUILDERS[0]: [comment1],
-          _CHILD_BUILDERS[1]: [comment1, comment1_with_new_replacement],
-      }) + api.post_process(post_process.StatusSuccess) + api.post_process(
+      test_data(
+          tricium_data={
+              _CHILD_BUILDERS[0]: [comment1],
+              _CHILD_BUILDERS[1]: [comment1, comment1_with_new_replacement],
+          }),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
                             _CHILD_BUILDERS, comment1),
-      ) + api.post_process(
+      ),
+      api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[1]], _CHILD_BUILDERS,
                             comment1_with_new_replacement),
-      ) + api.post_process(post_process.DropExpectation))
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
 
   comment1_with_empty_replacement = comment1._replace(
       suggestions=(_TriciumSuggestion(
@@ -509,43 +532,55 @@ def GenTests(api):
           ),),
       ),),)
 
-  yield (test(
+  yield api.test(
       'messages_with_empty_replacements_must_work',
-      tricium_data={
-          _CHILD_BUILDERS[0]: [comment1_with_empty_replacement],
-          _CHILD_BUILDERS[1]: [comment1_with_empty_replacement],
-      }) + api.post_process(post_process.StatusSuccess) + api.post_process(
+      test_data(
+          tricium_data={
+              _CHILD_BUILDERS[0]: [comment1_with_empty_replacement],
+              _CHILD_BUILDERS[1]: [comment1_with_empty_replacement],
+          }),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(
           _tricium_has_comment,
           _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
                             _CHILD_BUILDERS, comment1_with_empty_replacement),
-      ) + api.post_process(post_process.DropExpectation))
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
 
   step_failure = 'FAILURE'
-  yield (test(
+  yield api.test(
       'single_bot_failure',
-      bot_status_overrides={
-          _CHILD_BUILDERS[0]: step_failure,
-      },
-      tricium_data={
-          _CHILD_BUILDERS[0]: [comment0],
-          _CHILD_BUILDERS[1]: [comment0],
-      }) + api.post_process(post_process.StatusSuccess) +
-         api.post_process(post_process.StepWarning, 'schedule tidy builds') +
-         api.post_process(
-             _tricium_has_comment,
-             _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
-                               _CHILD_BUILDERS, comment0),
-         ) + api.post_process(post_process.DropExpectation))
+      test_data(
+          bot_status_overrides={
+              _CHILD_BUILDERS[0]: step_failure,
+          },
+          tricium_data={
+              _CHILD_BUILDERS[0]: [comment0],
+              _CHILD_BUILDERS[1]: [comment0],
+          }),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+      api.post_process(
+          _tricium_has_comment,
+          _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]],
+                            _CHILD_BUILDERS, comment0),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (test(
+  yield api.test(
       'all_bot_failure',
-      bot_status_overrides={
-          builder: step_failure for builder in _CHILD_BUILDERS
-      },
-      tricium_data={builder: [comment0] for builder in _CHILD_BUILDERS}) +
-         api.expect_status('FAILURE') +
-         api.post_process(post_process.StepWarning, 'schedule tidy builds') +
-         api.post_process(
-             _tricium_has_comment,
-             _note_observed_on(_CHILD_BUILDERS, _CHILD_BUILDERS, comment0),
-         ) + api.post_process(post_process.DropExpectation))
+      test_data(
+          bot_status_overrides={
+              builder: step_failure for builder in _CHILD_BUILDERS
+          },
+          tricium_data={builder: [comment0] for builder in _CHILD_BUILDERS}),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+      api.post_process(
+          _tricium_has_comment,
+          _note_observed_on(_CHILD_BUILDERS, _CHILD_BUILDERS, comment0),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )

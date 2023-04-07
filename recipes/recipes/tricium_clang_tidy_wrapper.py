@@ -140,16 +140,20 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def test_with_patch(name,
-                      affected_files,
-                      is_revert=False,
-                      author='gbiv@google.com',
-                      builder_group='tryserver.chromium.tricium',
-                      builder='linux-clang-tidy-rel'):
+  def build_with_patch(affected_files,
+                       is_revert=False,
+                       author='gbiv@google.com',
+                       builder_group='tryserver.chromium.tricium',
+                       builder='linux-clang-tidy-rel'):
     commit_message = 'Revert foo' if is_revert else 'foo'
     commit_message += '\nTriciumTest'
-    test = api.test(
-        name,
+
+    existing_files = [
+        api.path['cache'].join('builder', 'src', x) for x in affected_files
+    ]
+    existing_files.append(api.path['cache'].join('builder', 'src',
+                                                 *_clang_tidy_path))
+    return sum([
         api.chromium.try_build(
             builder_group=builder_group,
             builder=builder,
@@ -171,30 +175,24 @@ def GenTests(api):
                     }
                 }
             }])),
-    )
+        api.path.exists(*existing_files)
+    ], api.empty_test_data())
 
-    existing_files = [
-        api.path['cache'].join('builder', 'src', x) for x in affected_files
-    ]
-
-    existing_files.append(api.path['cache'].join('builder', 'src',
-                                                 *_clang_tidy_path))
-
-    test += api.path.exists(*existing_files)
-
-    return test
-
-  yield (test_with_patch(
+  yield api.test(
       'skip_reverted_cl',
-      affected_files=['path/to/some/cc/file.cpp'],
-      is_revert=True) +
-         api.post_process(post_process.DoesNotRun, 'bot_update') +
-         api.post_process(post_process.StatusSuccess) +
-         api.post_process(post_process.DropExpectation))
+      build_with_patch(
+          affected_files=['path/to/some/cc/file.cpp'], is_revert=True),
+      api.post_process(post_process.DoesNotRun, 'bot_update'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
   # Simple test to improve coverage. All other logic is tested in the
   # tricium_clang_tidy recipe module.
-  yield (test_with_patch('no_files', affected_files=[]) +
-         api.post_process(post_process.DoesNotRun, 'clang-tidy') +
-         api.post_process(post_process.StatusSuccess) +
-         api.post_process(post_process.DropExpectation))
+  yield api.test(
+      'no_files',
+      build_with_patch(affected_files=[]),
+      api.post_process(post_process.DoesNotRun, 'clang-tidy'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )

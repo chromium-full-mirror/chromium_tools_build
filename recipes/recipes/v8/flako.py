@@ -908,25 +908,23 @@ def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
 
 
 def GenTests(api):
-  def test(name, bisect_buildername='V8 Foobar', mode='regression',
-           **properties):
-    return api.test(
-        name,
-        api.properties(
-            bisect_builder_group='foo.v8',
-            bisect_buildername=bisect_buildername,
-            extra_args=['--foo-flag', '--bar-flag'],
-            isolated_name='foo_isolated',
-            mode=mode,
-            repetitions=64,
-            swarming_dimensions=['os:Ubuntu-16.04', 'cpu:x86-64'],
-            test_name='mjsunit/foobar',
-            timeout_sec=20,
-            revision='a0',
-            variant='stress_foo',
-            **properties
-        ),
-    )
+
+  def builder_properties(bisect_buildername='V8 Foobar',
+                         mode='regression',
+                         **properties):
+    return api.properties(
+        bisect_builder_group='foo.v8',
+        bisect_buildername=bisect_buildername,
+        extra_args=['--foo-flag', '--bar-flag'],
+        isolated_name='foo_isolated',
+        mode=mode,
+        repetitions=64,
+        swarming_dimensions=['os:Ubuntu-16.04', 'cpu:x86-64'],
+        test_name='mjsunit/foobar',
+        timeout_sec=20,
+        revision='a0',
+        variant='stress_foo',
+        **properties)
 
   def successful_lookups(*offsets, fallback=False):
     suffix = ' (fallback)' if fallback else ''
@@ -1022,293 +1020,313 @@ def GenTests(api):
   # a4: no cas digest
   # a5: not flaky
   # -> Should result in suspecting range a5..a3.
-  yield (
+  yield api.test(
+      'full_bisect',
       # Test path where total timeout isn't used.
-      test('full_bisect', 'V8 Foobar - builder', total_timeout_sec=0) +
+      builder_properties('V8 Foobar - builder', total_timeout_sec=0),
       # Data for resolving offsets to git hashes. Simulate gitiles page size of
       # 3 commits per call.
-      get_revisions(1, 3) +
-      get_revisions(4, 3) +
+      get_revisions(1, 3),
+      get_revisions(4, 3),
       # CAS digest data simulation for all existing revisions.
-      successful_lookups(1, 2, 3, 5) +
+      successful_lookups(1, 2, 3, 5),
       # Calibration. We check for flakes until enough are found. First only one
       # shard reports 2 failures.
-      is_flaky(1, 1, 2, calibration_attempt=1) +
+      is_flaky(1, 1, 2, calibration_attempt=1),
       # Then 3 shards report 5 failures total.
-      is_flaky(1, 0, 2, calibration_attempt=2) +
-      is_flaky(1, 1, 1, calibration_attempt=2) +
-      is_flaky(1, 2, 2, calibration_attempt=2) +
+      is_flaky(1, 0, 2, calibration_attempt=2),
+      is_flaky(1, 1, 1, calibration_attempt=2),
+      is_flaky(1, 2, 2, calibration_attempt=2),
       # Bisect backwards from a1 until good revision a5 is found.
-      is_flaky(2, 0, 3) +
+      is_flaky(2, 0, 3),
       # Bisect into a5..a2.
-      is_flaky(3, 0, 3) +
-      verify_suspects(5, 3) +
-      drop_test_step_expectations()
+      is_flaky(3, 0, 3),
+      verify_suspects(5, 3),
+      drop_test_step_expectations(),
   )
 
   # Similar to above but fewer corner cases. This is for simulating bisection
   # going into the upper half of a git range, which has different code paths
   # above.
-  yield (
-      test('full_bisect_upper') +
+  yield api.test(
+      'full_bisect_upper',
+      builder_properties(),
       # Data for resolving offsets to git hashes. Simulate gitiles page size of
       # 8, fetching all data in the first call.
-      get_revisions(1, 8) +
+      get_revisions(1, 8),
       # CAS digest data simulation for all revisions.
-      successful_lookups(0, 1, 3, 4, 5, 7) +
+      successful_lookups(0, 1, 3, 4, 5, 7),
       # Calibration.
-      is_flaky(0, 0, 5, calibration_attempt=1) +
+      is_flaky(0, 0, 5, calibration_attempt=1),
       # Bisect backwards from a0 until good revision a7 is found.
-      is_flaky(1, 0, 3) +
-      is_flaky(3, 0, 3) +
+      is_flaky(1, 0, 3),
+      is_flaky(3, 0, 3),
       # Bisect into a7..a3.
-      is_flaky(4, 0, 2) +
-      verify_suspects(5, 4) +
-      api.post_process(DropExpectation)
+      is_flaky(4, 0, 2),
+      verify_suspects(5, 4),
+      api.post_process(DropExpectation),
   )
 
   # Test bisecting through a large range of missing builds.
-  yield (
-      test('large_gap') +
-      get_revisions(1, 4) +
+  yield api.test(
+      'large_gap',
+      builder_properties(),
+      get_revisions(1, 4),
       # Simulate a large gap between #0 and #4..
-      successful_lookups(0, 4) +
+      successful_lookups(0, 4),
       # Bad build #0 wile #4 is a good build using default test data.
-      is_flaky(0, 0, 5, calibration_attempt=1) +
+      is_flaky(0, 0, 5, calibration_attempt=1),
       # Check that bisect continues properly after not finding a build in one
       # half.
-      api.post_process(MustRun, 'No builds in #4..#2') +
-      api.post_process(MustRun, 'No builds in #2..#1') +
+      api.post_process(MustRun, 'No builds in #4..#2'),
+      api.post_process(MustRun, 'No builds in #2..#1'),
       # Check that CAS lookup is cached for the negative case. We look only
       # once for a build that's not found.
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #2') +
-      api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2 (2)') +
-      verify_suspects(4, 0) +
-      api.post_process(DropExpectation)
+      api.post_process(MustRun, 'gsutil lookup cas_digests for #2'),
+      api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2 (2)'),
+      verify_suspects(4, 0),
+      api.post_process(DropExpectation),
   )
 
   # Progression testing with the revisions from ToT not overlapping with
   # the known bad revision. The flake is fixed at ToT.
-  yield (
-      test('progression', mode='progression') +
+  yield api.test(
+      'progression',
+      builder_properties(mode='progression'),
       # Progression testing fetches ToT at a-9. No initial overlap with a0.
       # Iterate until a0 is reached.
-      init_head(-9, 4, head_offset=0) +
-      init_head(-5, 4, head_offset=4) +
-      init_head(-1, 4, head_offset=8) +
+      init_head(-9, 4, head_offset=0),
+      init_head(-5, 4, head_offset=4),
+      init_head(-1, 4, head_offset=8),
       # Simulate existing builds.
-      successful_lookups(-9, -8, -7, -5, 0) +
+      successful_lookups(-9, -8, -7, -5, 0),
       # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1) +
+      is_flaky(0, 0, 5, calibration_attempt=1),
       # The flake still reproduces until -7.
-      is_flaky(-5, 0, 2) +
-      is_flaky(-7, 0, 2) +
-      verify_fixed(-7, -8) +
-      drop_test_step_expectations()
+      is_flaky(-5, 0, 2),
+      is_flaky(-7, 0, 2),
+      verify_fixed(-7, -8),
+      drop_test_step_expectations(),
   )
 
   # Progression testing with the revisions from ToT overlapping with
   # the known bad revision.
-  yield (
-      test('progression_overlap', mode='progression') +
+  yield api.test(
+      'progression_overlap',
+      builder_properties(mode='progression'),
       # Revision at offset 1 is looked up because there is no CAS digest at 0
       # in this test. The call will fetch some more revisions that we won't
       # need.
-      get_revisions(1, 3) +
+      get_revisions(1, 3),
       # Progression testing fetches ToT at a-6. Here we simulate the fetched
       # range to overlap with what we already fetched above.
-      init_head(-6, 8) +
+      init_head(-6, 8),
       # CAS digest data simulation for all revisions. We simulate missing a
       # couple of builds, e.g. at 0.
-      successful_lookups(-5, -4, -2, 1) +
+      successful_lookups(-5, -4, -2, 1),
       # Calibration with successful repro at offset 1.
-      is_flaky(1, 0, 5, calibration_attempt=1) +
+      is_flaky(1, 0, 5, calibration_attempt=1),
       # The flake still reproduces at -2. For -3 there's no build, resulting
       # in a fixed range of -2..-4.
-      is_flaky(-2, 0, 3) +
-      verify_fixed(-2, -4) +
-      api.post_process(DropExpectation)
+      is_flaky(-2, 0, 3),
+      verify_fixed(-2, -4),
+      api.post_process(DropExpectation),
   )
 
   # Progression testing where flake still reproduces.
-  yield (
-      test('progression_still_reproduces', mode='progression') +
+  yield api.test(
+      'progression_still_reproduces',
+      builder_properties(mode='progression'),
       # Initial fetch covers all required revisions.
-      init_head(-3, 4) +
+      init_head(-3, 4),
       # Simulate existing builds.
-      successful_lookups(-3, 0) +
+      successful_lookups(-3, 0),
       # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1) +
+      is_flaky(0, 0, 5, calibration_attempt=1),
       # The flake still reproduces.
-      is_flaky(-3, 0, 2) +
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+      is_flaky(-3, 0, 2),
+      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Progression testing with a too large gap between known bad revision
   # and ToT.
-  yield (
-      test('progression_large_gap', mode='progression') +
+  yield api.test(
+      'progression_large_gap',
+      builder_properties(mode='progression'),
       # Progression testing fetches ToT at a commit with an offset to
       # a0 larger than MAX_HEAD_OFFSET.
-      init_head(-MAX_HEAD_OFFSET - 1, MAX_HEAD_OFFSET, head_offset=0) +
-      successful_lookups(0) +
-      is_flaky(0, 0, 5, calibration_attempt=1) +
+      init_head(-MAX_HEAD_OFFSET - 1, MAX_HEAD_OFFSET, head_offset=0),
+      successful_lookups(0),
+      is_flaky(0, 0, 5, calibration_attempt=1),
       api.post_process(
           SummaryMarkdown,
           f'Could not connect the known bad revision to refs/heads/main. '
-          f'Looked in over {MAX_HEAD_OFFSET} commits.') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+          f'Looked in over {MAX_HEAD_OFFSET} commits.'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Combine progression and regression testing.
-  yield (
-      test('combined', mode='combined') +
+  yield api.test(
+      'combined',
+      builder_properties(mode='combined'),
       # Initial fetch covers all required revisions.
-      init_head(-3, 4) +
+      init_head(-3, 4),
       # Simulate existing builds.
-      successful_lookups(-3, 0, 1, 2, 3) +
+      successful_lookups(-3, 0, 1, 2, 3),
       # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1) +
+      is_flaky(0, 0, 5, calibration_attempt=1),
       # The flake still reproduces.
-      is_flaky(-3, 0, 2) +
+      is_flaky(-3, 0, 2),
       # Data for regression testing.
-      get_revisions(1, 3) +
-      is_flaky(1, 0, 3) +
-      is_flaky(2, 0, 3) +
-      verify_suspects(3, 2) +
-      api.post_process(SummaryMarkdownRE, r'Flake still reproduces') +
-      api.post_process(
-          SummaryMarkdownRE,
-          re.escape(f'Suspecting [#3..#2]({REPO}/+log/a3..a2)')) +
-      api.post_process(StatusSuccess) +
-      api.post_process(DropExpectation)
+      get_revisions(1, 3),
+      is_flaky(1, 0, 3),
+      is_flaky(2, 0, 3),
+      verify_suspects(3, 2),
+      api.post_process(SummaryMarkdownRE, r'Flake still reproduces'),
+      api.post_process(SummaryMarkdownRE,
+                       re.escape(f'Suspecting [#3..#2]({REPO}/+log/a3..a2)')),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   # Combine progression and regression testing but flake is already fixed.
-  yield (
-      test('combined_fixed', mode='combined') +
+  yield api.test(
+      'combined_fixed',
+      builder_properties(mode='combined'),
       # Progression testing fetches ToT at a-3.
-      init_head(-3, 4) +
+      init_head(-3, 4),
       # Simulate existing builds.
-      successful_lookups(-3, -2, -1, 0) +
+      successful_lookups(-3, -2, -1, 0),
       # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1) +
-      is_flaky(-1, 0, 2) +
-      verify_fixed(-1, -2) +
-      api.post_process(
-          SummaryMarkdown, f'Fixed in [#-1..#-2]({REPO}/+log/a-1..a-2)') +
-      api.post_process(StatusSuccess) +
-      api.post_process(DropExpectation)
+      is_flaky(0, 0, 5, calibration_attempt=1),
+      is_flaky(-1, 0, 2),
+      verify_fixed(-1, -2),
+      api.post_process(SummaryMarkdown,
+                       f'Fixed in [#-1..#-2]({REPO}/+log/a-1..a-2)'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   # Simulate not finding any cas_digests.
-  yield (
-      test('no_cas_digests') +
+  yield api.test(
+      'no_cas_digests',
+      builder_properties(),
       sum((get_revisions(i, 1) for i in range(1, MAX_CAS_OFFSET)),
-           api.empty_test_data()) +
-      api.post_process(SummaryMarkdown, 'Couldn\'t find cas_digests.') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+          api.empty_test_data()),
+      api.post_process(SummaryMarkdown, 'Couldn\'t find cas_digests.'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Simulate not returning a JSON output after many iterations.
-  yield (
-      test('long_bisection_with_no_json_output') +
-      successful_lookups(0) +
-      is_flaky(0, 0, 5, calibration_attempt=1) +
-      sum((one_bisect_iteration(i)
-          for i in range(1, 10)), api.empty_test_data()) +
-      is_flaky(511, 0, 1, no_output=True) +
+  yield api.test(
+      'long_bisection_with_no_json_output',
+      builder_properties(),
+      successful_lookups(0),
+      is_flaky(0, 0, 5, calibration_attempt=1),
+      sum((one_bisect_iteration(i) for i in range(1, 10)),
+          api.empty_test_data()),
+      is_flaky(511, 0, 1, no_output=True),
       api.post_process(
           SummaryMarkdown,
-          'Unable to retrieve from CAS, probably went out of retention') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+          'Unable to retrieve from CAS, probably went out of retention'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Simulate not returning a JSON output after a few iterations.
-  yield (
-      test('short_bisection_with_no_json_output') +
-      successful_lookups(0) +
-      is_flaky(0, 0, 5, calibration_attempt=1) +
-      sum((one_bisect_iteration(i)
-          for i in range(1, 5)), api.empty_test_data()) +
-      is_flaky(15, 0, 1, no_output=True) +
-      api.post_process(
-          SummaryMarkdownRE,
-          'Infra Failure.*missing shard results.*') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'short_bisection_with_no_json_output',
+      builder_properties(),
+      successful_lookups(0),
+      is_flaky(0, 0, 5, calibration_attempt=1),
+      sum((one_bisect_iteration(i) for i in range(1, 5)),
+          api.empty_test_data()),
+      is_flaky(15, 0, 1, no_output=True),
+      api.post_process(SummaryMarkdownRE,
+                       'Infra Failure.*missing shard results.*'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Simulate repro-only mode reproducing a flake.
-  yield (
-      test('repro_only', mode='repro') + successful_lookups(0) +
-      is_flaky(0, 0, 1, calibration_attempt=1) +
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.') +
-      api.post_process(StatusSuccess) + api.post_process(
+  yield api.test(
+      'repro_only', builder_properties(mode='repro'), successful_lookups(0),
+      is_flaky(0, 0, 1, calibration_attempt=1),
+      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+      api.post_process(StatusSuccess),
+      api.post_process(
           Filter(
               'calibration attempt 1.check mjsunit/foobar at #0.'
               '[trigger] check mjsunit/foobar at #0 - shard 0 on Ubuntu-16.04'))
   )
 
   # Simulate repro-only mode not reproducing a flake.
-  yield (
-      test('repro_only_failed', mode='repro') +
-      successful_lookups(0) +
-      api.post_process(SummaryMarkdown, 'Could not reproduce flake.') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'repro_only_failed',
+      builder_properties(mode='repro'),
+      successful_lookups(0),
+      api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Simulate repro-only mode with no revision property given.
-  yield (
-      test('repro_only_tot', mode='repro') +
-      api.properties(revision=None) +
-      init_head(0, 4, head_offset=0) +
-      successful_lookups(0) +
-      is_flaky(0, 0, 1, calibration_attempt=1) +
-      api.post_process(MustRun, 'init head #0') +
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.') +
-      api.post_process(StatusSuccess) +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'repro_only_tot',
+      builder_properties(mode='repro'),
+      api.properties(revision=None),
+      init_head(0, 4, head_offset=0),
+      successful_lookups(0),
+      is_flaky(0, 0, 1, calibration_attempt=1),
+      api.post_process(MustRun, 'init head #0'),
+      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   # Simulate repro-only mode using a fallback debug builder.
-  yield (
-      test('repro_only_fallback', 'V8 Foobar - debug builder', mode='repro') +
-      get_revisions(1, 2) +
-      successful_lookups(1, fallback=True) +
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #0') +
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #0 (fallback)') +
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #1') +
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #1 (fallback)') +
-      api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2') +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'repro_only_fallback',
+      builder_properties('V8 Foobar - debug builder', mode='repro'),
+      get_revisions(1, 2),
+      successful_lookups(1, fallback=True),
+      api.post_process(MustRun, 'gsutil lookup cas_digests for #0'),
+      api.post_process(MustRun, 'gsutil lookup cas_digests for #0 (fallback)'),
+      api.post_process(MustRun, 'gsutil lookup cas_digests for #1'),
+      api.post_process(MustRun, 'gsutil lookup cas_digests for #1 (fallback)'),
+      api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2'),
+      api.post_process(DropExpectation),
   )
 
   # Simulate repro-only mode reproducing a flake by regexp.
-  yield (
-      test('repro_regexp_match', mode='repro', failure_regexp='foo.*bar') +
-      successful_lookups(0) +
-      is_flaky(0, 0, 1, calibration_attempt=1,
-               output_prefix='has foo and bar in the output...\n') +
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.') +
-      api.post_process(StatusSuccess) +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'repro_regexp_match',
+      builder_properties(mode='repro', failure_regexp='foo.*bar'),
+      successful_lookups(0),
+      is_flaky(
+          0,
+          0,
+          1,
+          calibration_attempt=1,
+          output_prefix='has foo and bar in the output...\n'),
+      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+      api.post_process(StatusSuccess),
+      api.post_process(DropExpectation),
   )
 
   # Simulate repro-only mode not reproducing a flake by regexp.
-  yield (
-      test('repro_regexp_no_match', mode='repro', failure_regexp='foo.*bar') +
-      successful_lookups(0) +
-      is_flaky(0, 0, 1, calibration_attempt=1) +
-      api.post_process(SummaryMarkdown, 'Could not reproduce flake.') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'repro_regexp_no_match',
+      builder_properties(mode='repro', failure_regexp='foo.*bar'),
+      successful_lookups(0),
+      is_flaky(0, 0, 1, calibration_attempt=1),
+      api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Simulate running tasks on Android and verify correct dimensions.
@@ -1325,73 +1343,80 @@ def GenTests(api):
     'device_type:bullhead',
     'pool:chromium.tests',
   ]
-  yield (
-      test('android_dimensions', mode='repro') +
-      api.properties(swarming_dimensions=swarming_dimensions) +
-      successful_lookups(0) +
-      api.post_process(check_dimensions) +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'android_dimensions',
+      builder_properties(mode='repro'),
+      api.properties(swarming_dimensions=swarming_dimensions),
+      successful_lookups(0),
+      api.post_process(check_dimensions),
+      api.post_process(DropExpectation),
   )
 
   # Simulate not finding enough flakes during calibration.
   # Also test cutting off overly long test names in step names.
   long_test_name = (29 * '*') + 'too_long'
   shortened_test_name = (29 * '*') + '...'
-  yield (
-      test('no_confidence', num_shards=8) +
-      api.properties(test_name=long_test_name) +
-      successful_lookups(0) +
-      is_flaky(0, 0, 0, calibration_attempt=1, test_name=shortened_test_name) +
-      is_flaky(0, 1, 2, calibration_attempt=2, test_name=shortened_test_name) +
-      is_flaky(0, 2, 1, calibration_attempt=3, test_name=shortened_test_name) +
-      is_flaky(0, 1, 3, calibration_attempt=4, test_name=shortened_test_name) +
-      is_flaky(0, 0, 3, calibration_attempt=5, test_name=shortened_test_name) +
-      api.post_process(SummaryMarkdown, 'Could not reach enough confidence.') +
-      api.post_process(StatusAnyFailure) +
-      api.post_process(DropExpectation)
+  yield api.test(
+      'no_confidence',
+      builder_properties(num_shards=8),
+      api.properties(test_name=long_test_name),
+      successful_lookups(0),
+      is_flaky(0, 0, 0, calibration_attempt=1, test_name=shortened_test_name),
+      is_flaky(0, 1, 2, calibration_attempt=2, test_name=shortened_test_name),
+      is_flaky(0, 2, 1, calibration_attempt=3, test_name=shortened_test_name),
+      is_flaky(0, 1, 3, calibration_attempt=4, test_name=shortened_test_name),
+      is_flaky(0, 0, 3, calibration_attempt=5, test_name=shortened_test_name),
+      api.post_process(SummaryMarkdown, 'Could not reach enough confidence.'),
+      api.post_process(StatusAnyFailure),
+      api.post_process(DropExpectation),
   )
 
   # Simulate triggering of the recipe by the flake verification bot.
-  yield (
-      test(
-          'verify_flake',
+  yield api.test(
+      'verify_flake',
+      builder_properties(
           mode='repro',
           swarming_priority=40,
           num_shards=2,
           swarming_expiration=7200,
           total_timeout_sec=240,
-          max_calibration_attempts=1) + successful_lookups(0) +
-      is_flaky(0, 0, 0, calibration_attempt=1) +
-      is_flaky(0, 1, 1, calibration_attempt=1) +
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.') +
-      api.post_process(StatusSuccess) + api.post_process(
+          max_calibration_attempts=1),
+      successful_lookups(0),
+      is_flaky(0, 0, 0, calibration_attempt=1),
+      is_flaky(0, 1, 1, calibration_attempt=1),
+      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+      api.post_process(StatusSuccess),
+      api.post_process(
           Filter(
               'calibration attempt 1.check mjsunit/foobar at #0.'
               '[trigger] check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04',
               'calibration attempt 1.check mjsunit/foobar at #0.'
-              'check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04')))
+              'check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04')),
+  )
 
-  yield (
-      test('bisect_attempt_with_wrong_commit_position') +
+  yield api.test(
+      'bisect_attempt_with_wrong_commit_position',
+      builder_properties(),
       api.step_data(
           'get revision #1',
           _gitiles_log(
               ('a1', 'Cr-Commit-Position-Incorrect: refs/heads/main@{#42}')),
-      ) +
-      api.expect_exception('ValueError') +
-      api.post_process(DropExpectation)
+      ),
+      api.expect_exception('ValueError'),
+      api.post_process(DropExpectation),
   )
 
-  yield (
-      test('bisect_attempt_with_revert_commit_position') +
+  yield api.test(
+      'bisect_attempt_with_revert_commit_position',
+      builder_properties(),
       api.step_data(
           'get revision #1',
           _gitiles_log(('a1', '> Cr-Commit-Position: refs/heads/main@{#42}\n'
-                              'Cr-Commit-Position: refs/heads/main@{#100}')),
-      ) +
-      successful_lookups(0, 1) +
-      is_flaky(0, 0, 5, calibration_attempt=1) +
-      api.post_process(MustRun, 'Checking #1 (commit position: 100)') +
-      api.post_process(DoesNotRun, 'Checking #1 (commit position: 42)') +
-      api.post_process(DropExpectation)
+                        'Cr-Commit-Position: refs/heads/main@{#100}')),
+      ),
+      successful_lookups(0, 1),
+      is_flaky(0, 0, 5, calibration_attempt=1),
+      api.post_process(MustRun, 'Checking #1 (commit position: 100)'),
+      api.post_process(DoesNotRun, 'Checking #1 (commit position: 42)'),
+      api.post_process(DropExpectation),
   )

@@ -144,18 +144,16 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  def test(name, results, ui_test_name=None):
-    return api.test(
-        name,
+
+  def test_data(results, ui_test_name=None):
+    return sum([
         api.step_data(
             'read flake config',
             api.gitiles.make_encoded_file(api.json.dumps(TEST_CONFIG))),
         api.step_data('read V8 ToT revision',
                       api.gitiles.make_log_test_data('deadbeef')),
         api.buildbucket.generic_build(
-            project='v8',
-            bucket='try.triggered',
-            builder='v8_verify_flakes'),
+            project='v8', bucket='try.triggered', builder='v8_verify_flakes'),
         api.buildbucket.simulated_schedule_output(
             builds_service_pb2.BatchResponse(
                 responses=[dict(schedule_build=dict(id=123))],),
@@ -165,27 +163,32 @@ def GenTests(api):
                 api.buildbucket.ci_build_message(build_id=123, status=result)
                 for result in results
             ],
-            step_name='collect builds.' + (ui_test_name or
-                                           'FunctionCallSample')),
-    )
+            step_name='collect builds.' +
+            (ui_test_name or 'FunctionCallSample')),
+    ], api.empty_test_data())
 
-  yield (
-      test('success', ['SUCCESS']) +
-      api.post_process(StatusSuccess)
+  yield api.test(
+      'success',
+      test_data(['SUCCESS']),
+      api.post_process(StatusSuccess),
   )
 
-  yield (test('failure', ['FAILURE']) +
-         api.post_process(StepFailure, 'FunctionCallSample') +
-         api.expect_status('FAILURE') + api.post_process(
-             ResultReasonRE,
-             'Some flakes failed to reproduce: FunctionCallSample') +
-         api.post_process(DropExpectation))
+  yield api.test(
+      'failure',
+      test_data(['FAILURE']),
+      api.post_process(StepFailure, 'FunctionCallSample'),
+      api.expect_status('FAILURE'),
+      api.post_process(ResultReasonRE,
+                       'Some flakes failed to reproduce: FunctionCallSample'),
+      api.post_process(DropExpectation),
+  )
 
-  yield (
-      test('infra_failure', ['INFRA_FAILURE']) +
-      api.post_process(StepException, 'FunctionCallSample') +
-      api.post_process(StatusSuccess) +
-      api.post_process(Filter().include_re(r'.*FunctionCallSample.*'))
+  yield api.test(
+      'infra_failure',
+      test_data(['INFRA_FAILURE']),
+      api.post_process(StepException, 'FunctionCallSample'),
+      api.post_process(StatusSuccess),
+      api.post_process(Filter().include_re(r'.*FunctionCallSample.*')),
   )
 
   yield api.test(
@@ -196,12 +199,15 @@ def GenTests(api):
       api.post_process(DropExpectation),
   )
 
-  yield (
-      test('too_many_flakes', ['SUCCESS'] * 20, ui_test_name='baz') +
+  yield api.test(
+      'too_many_flakes',
+      test_data(['SUCCESS'] * 20, ui_test_name='baz'),
       api.override_step_data(
           'read flake config',
-          api.gitiles.make_encoded_file(api.json.dumps(
-            [{'test_name': 'foo/bar/baz'}] * 20))) +
-      api.post_process(MustRun, 'Too many flake configs') +
-      api.post_process(DropExpectation)
+          api.gitiles.make_encoded_file(
+              api.json.dumps([{
+                  'test_name': 'foo/bar/baz'
+              }] * 20))),
+      api.post_process(MustRun, 'Too many flake configs'),
+      api.post_process(DropExpectation),
   )

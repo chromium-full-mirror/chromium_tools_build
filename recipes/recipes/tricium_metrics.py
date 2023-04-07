@@ -130,115 +130,100 @@ def RunSteps(api):
 
 def GenTests(api):
 
-  def test_with_patch(name,
-                      affected_files,
-                      include_diff=True,
-                      auto_exist_files=True,
-                      include_parse=False,
-                      skip_footer=False,
-                      test_footer=False):
-    test = (
-        api.test(name) + api.properties.tryserver(
-            build_config='Release',
-            buildername='tricium-metrics-analysis',
-            buildnumber='1234',
-            patch_set=1))
+  def build_with_patch(affected_files,
+                       include_diff=True,
+                       auto_exist_files=True,
+                       include_parse=False,
+                       skip_footer=False,
+                       test_footer=False):
+    test_data = api.buildbucket.try_build()
 
     skip_footer_json = {'Tricium-Skip-Metrics': True} if skip_footer else {}
-    test += api.override_step_data('parse description',
-                                   api.json.output(skip_footer_json))
+    test_data += api.override_step_data('parse description',
+                                        api.json.output(skip_footer_json))
 
     if include_diff:
-      test += api.step_data('git diff to analyze patch',
-                            api.raw_io.stream_output('\n'.join(affected_files)))
+      test_data += api.step_data(
+          'git diff to analyze patch',
+          api.raw_io.stream_output('\n'.join(affected_files)))
 
     if include_parse:
       test_footer_json = {'Tricium-Test': True} if test_footer else {}
-      test += api.override_step_data('metrics.parse description',
-                                     api.json.output(test_footer_json))
+      test_data += api.override_step_data('metrics.parse description',
+                                          api.json.output(test_footer_json))
 
     if auto_exist_files:
-      test += api.path.exists(*[
-          api.path['cache'].join('builder', 'src', x) for x in affected_files
-      ])
+      test_data += api.path.exists(
+          *
+          [api.path['cache'].join('builder', 'src', x) for x in affected_files])
 
-    return test
+    return test_data
 
-  yield (test_with_patch('no_files', affected_files=[]) + api.post_process(
-      post_process.DoesNotRun, 'metrics') + api.post_process(
-          post_process.StatusSuccess) + api.post_process(
-              post_process.DropExpectation))
+  yield api.test(
+      'no_files',
+      build_with_patch(affected_files=[]),
+      api.post_process(post_process.DoesNotRun, 'metrics'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (
-      test_with_patch('no_analysis_non_xml', affected_files=['some/file.txt']) +
-      api.post_process(post_process.DoesNotRun, 'metrics') + api.post_process(
-          post_process.StatusSuccess) + api.post_process(
-              post_process.DropExpectation))
+  yield api.test(
+      'no_analysis_non_xml',
+      build_with_patch(affected_files=['some/file.txt']),
+      api.post_process(post_process.DoesNotRun, 'metrics'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (test_with_patch('no_analysis_xml', affected_files=['some/file.xml']) +
-         api.post_process(post_process.DoesNotRun, 'metrics') +
-         api.post_process(post_process.StatusSuccess) + api.post_process(
-             post_process.DropExpectation))
+  yield api.test(
+      'no_analysis_xml',
+      build_with_patch(affected_files=['some/file.xml']),
+      api.post_process(post_process.DoesNotRun, 'metrics'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (test_with_patch(
+  yield api.test(
       'no_analysis_skip_footer',
-      affected_files=['some/test/test2/histograms.xml'],
-      skip_footer=True,
-      include_diff=False) + api.post_process(
-          post_process.DoesNotRun, 'bot_update') + api.post_process(
-              post_process.StatusSuccess) + api.post_process(
-                  post_process.DropExpectation))
+      build_with_patch(
+          affected_files=['some/test/test2/histograms.xml'],
+          skip_footer=True,
+          include_diff=False),
+      api.post_process(post_process.DoesNotRun, 'bot_update'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (test_with_patch(
+  yield api.test(
       'removed_file',
-      affected_files=['some/test/test2/histograms.xml'],
-      auto_exist_files=False) + api.post_process(
-          post_process.DoesNotRun, 'metrics') + api.post_process(
-              post_process.StatusSuccess) + api.post_process(
-                  post_process.DropExpectation))
+      build_with_patch(
+          affected_files=['some/test/test2/histograms.xml'],
+          auto_exist_files=False),
+      api.post_process(post_process.DoesNotRun, 'metrics'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (
-      test_with_patch(
-          'test_version_if_footer',
+  yield api.test(
+      'test_version_if_footer',
+      build_with_patch(
           affected_files=['some/test/test2/histograms.xml'],
           include_parse=True,
-          test_footer=True) + api.step_data('metrics.metrics_output',
-                                            api.file.read_json({})) +
-      api.post_process(post_process.DoesNotRun, 'metrics.load_live_analyzer') +
-      api.post_process(post_process.StepSuccess, 'metrics.load_test_analyzer') +
-      api.post_process(post_process.StepSuccess, 'metrics') + api.post_process(
-          post_process.StatusSuccess) + api.post_process(
-              post_process.DropExpectation))
+          test_footer=True),
+      api.step_data('metrics.metrics_output', api.file.read_json({})),
+      api.post_process(post_process.DoesNotRun, 'metrics.load_live_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics.load_test_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
 
-  yield (
-      test_with_patch(
-          'analyze_xml_live',
+  yield api.test(
+      'analyze_xml_live',
+      build_with_patch(
           affected_files=['some/test/test2/histograms.xml'],
-          include_parse=True) + api.step_data(
-              'metrics.metrics_output',
-              api.file.read_json({
-                  "comments": [{
-                      "category": "Metrics/Removed",
-                      "message": "[ERROR]: Removed",
-                      "path": "testdata/src/test/histograms.xml"
-                  }]
-              })) +
-      api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer') +
-      api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer') +
-      api.post_process(post_process.StepSuccess, 'metrics') +
-      api.post_process(post_process.StatusSuccess) +
-      api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
-          'metrics.write_results'].output_properties['tricium']) +
-      api.post_process(post_process.DropExpectation))
-
-  yield (
-      test_with_patch(
-          'show_file_path_not_found_but_succeed',
-          affected_files=['some/test/test2/histograms.xml'],
-          include_parse=True) +
-      # Simulate a file missing error, this could happen if users add a new file
-      # Make sure the exception is captured and the analyzer shouldn't fail.
-      api.step_data('git show', retcode=128) + api.step_data(
+          include_parse=True),
+      api.step_data(
           'metrics.metrics_output',
           api.file.read_json({
               "comments": [{
@@ -246,11 +231,38 @@ def GenTests(api):
                   "message": "[ERROR]: Removed",
                   "path": "testdata/src/test/histograms.xml"
               }]
-          })) +
-      api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer') +
-      api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer') +
-      api.post_process(post_process.StepSuccess, 'metrics') +
-      api.post_process(post_process.StatusSuccess) +
+          })),
+      api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics'),
+      api.post_process(post_process.StatusSuccess),
       api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
-          'metrics.write_results'].output_properties['tricium']) +
-      api.post_process(post_process.DropExpectation))
+          'metrics.write_results'].output_properties['tricium']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'show_file_path_not_found_but_succeed',
+      build_with_patch(
+          affected_files=['some/test/test2/histograms.xml'],
+          include_parse=True),
+      # Simulate a file missing error, this could happen if users add a new file
+      # Make sure the exception is captured and the analyzer shouldn't fail.
+      api.step_data('git show', retcode=128),
+      api.step_data(
+          'metrics.metrics_output',
+          api.file.read_json({
+              "comments": [{
+                  "category": "Metrics/Removed",
+                  "message": "[ERROR]: Removed",
+                  "path": "testdata/src/test/histograms.xml"
+              }]
+          })),
+      api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
+          'metrics.write_results'].output_properties['tricium']),
+      api.post_process(post_process.DropExpectation),
+  )
