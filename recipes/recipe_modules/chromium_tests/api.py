@@ -396,13 +396,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # TODO(crbug.com/1429167) - Removing the block below when we don't
     # need to check earlier commits in Pinpoint. Let's aim at M114
     except Exception:
-      if targets_spec_file == 'chromium.perf.pinpoint.json':
-        targets_spec_path = targets_spec_dir.join('chromium.perf.json')
-        spec_result = self.m.json.read(
-            'read test spec (%s)' % self.m.path.basename(targets_spec_path),
-            targets_spec_path,
-            infra_step=True,
-            step_test_data=lambda: self.m.json.test_api.output({}))
+      if targets_spec_file != 'chromium.perf.pinpoint.json':
+        raise
+      targets_spec_path = targets_spec_dir.join('chromium.perf.json')
+      spec_result = self.m.json.read(
+          'read test spec (%s)' % self.m.path.basename(targets_spec_path),
+          targets_spec_path,
+          infra_step=True,
+          step_test_data=lambda: self.m.json.test_api.output({}))
     spec_result.presentation.step_text = 'path: %s' % targets_spec_path
     targets_spec = spec_result.json.output
 

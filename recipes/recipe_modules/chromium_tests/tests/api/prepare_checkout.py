@@ -74,6 +74,23 @@ def GenTests(api):
   )
 
   yield api.test(
+      'fail-to-read-targets-spec',
+      api.platform('linux', 64),
+      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.override_step_data(
+          'read test spec (fake-group.json)',
+          retcode=1,
+      ),
+      api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'pinpoint_without_new_config',
       api.chromium.generic_build(
           builder_group='chromium.perf.pinpoint', builder='fake-builder'),
