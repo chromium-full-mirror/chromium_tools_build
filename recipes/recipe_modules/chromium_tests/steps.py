@@ -2858,6 +2858,9 @@ class SkylabTestSpec(TestSpec):
   # to Skylab now, so we do not expect a lot of failures from our artifact.
   # Revisit this when we integrate CQ to Skylab.
   retries = attrib(int, default=3)
+  # Only applies to Tast tests.
+  # When set to non zero, failed test will be immediatelly retried.
+  test_level_retries = attrib(int, default=0)
   # The timeout for the test in second. Default is one hour.
   timeout_sec = attrib(int, default=3600)
   # The runtime timeout sent to the test execution environment.

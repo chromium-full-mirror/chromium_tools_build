@@ -147,9 +147,11 @@ def GenTests(api):
   def test_args_for_shard(name,
                           shard,
                           shard_count=SHARD_COUNT,
-                          max_run_sec=TAST_MAX_RUN_SEC):
+                          max_run_sec=TAST_MAX_RUN_SEC,
+                          test_level_retries=0):
     return 'resultdb_settings={} '\
         'tast_expr_b64={} '\
+        'retries={} '\
         'exe_rel_path=out/Release/chrome '\
         'tast_expr_file=tast_expr_file.filter '\
         'tast_expr_key=default '\
@@ -157,7 +159,8 @@ def GenTests(api):
         'shard_index={} '\
         'total_shards={}'.format(
             b64_encode(json.dumps(gen_skylab_rdb(name))),
-            b64_encode(LACROS_TAST_EXPR), max_run_sec, shard, shard_count)
+            b64_encode(LACROS_TAST_EXPR), test_level_retries, max_run_sec,
+            shard, shard_count)
 
   yield api.test(
       'basic',
