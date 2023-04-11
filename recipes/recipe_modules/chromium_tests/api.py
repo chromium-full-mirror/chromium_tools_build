@@ -2008,12 +2008,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """Compile and run tests for chromium_trybot recipe.
 
     Args:
-      builders: All the builders which exist.
-      mirrored_bots: The set of mirrored bots.
+      builder_id: A BuilderId for identifying a builder.
+      builder_config: A BuilderConfig for accessing the static builder
+        configuration.
       deapply_changes: A function which deapplies changes to the code being
         tested.
-      tests: A list of tests to run on this bot. Before using this argument,
-        please talk to martiniss@.
+      root_solution_revision: Git revision of Chromium to check out.
 
     Returns:
       - A RawResult object with the status of the build and
@@ -2294,12 +2294,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """Builds targets affected by change.
 
     Args:
-      builders: An optional mapping from <group, buildername> to
-                build/test settings. For an example of defaults for chromium,
-                see scripts/slave/recipe_modules/chromium_tests/chromium.py
-      mirrored_bots: An optional mapping from <group, buildername> of the
-                     trybot to configurations of the mirrored CI bot. Defaults
-                     are in ChromiumTestsApi.
+      builder_id: A BuilderId for identifying a builder.
+      builder_config: A BuilderConfig for accessing the static builder
+        configuration.
+      root_solution_revision: Git revision of Chromium to check out.
       isolate_output_files_for_coverage: Whether to also upload all test
         binaries and other required code coverage output files to one hash. If
         code_coverage.instrument sets skipping_coverage to True, then this
