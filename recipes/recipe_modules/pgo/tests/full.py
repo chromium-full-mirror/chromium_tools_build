@@ -48,13 +48,15 @@ def RunSteps(api):
                     })
         },
     })
+    builder_id = BuilderId.create_for_group('chrome.pgo', 'lacros-eve-pgo')
     builder_config = builder_config_module.BuilderConfig.create(
-        builders,
-        builder_ids=[
-            BuilderId.create_for_group('chrome.pgo', 'lacros-eve-pgo'),
+        builders, builder_ids=[
+            builder_id,
         ])
+    api.path.mock_add_paths('/b/some/random/path/llvm-profdata')
   else:
-    _, builder_config = api.chromium_tests_builder_config.lookup_builder()
+    builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
+    )
 
   api.chromium_tests.configure_build(builder_config)
   # Fake path.
@@ -106,7 +108,7 @@ def RunSteps(api):
     api.code_coverage.shard_merge(
         step, test.target_name, additional_merge=getattr(test, '_merge', None))
 
-  api.pgo.process_pgo_data(tests)
+  api.pgo.process_pgo_data(tests, builder_id)
 
   # coverage only
   _ = api.pgo.using_pgo
@@ -223,6 +225,8 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  gn_args = '\n'.join(('cros_target_cxx = \"/b/some/random/path/llvm-nm\"',))
+
   yield api.test(
       'basic_lacros',
       api.chromium.generic_build(
@@ -230,6 +234,9 @@ def GenTests(api):
       api.pgo(use_pgo=True),
       api.platform('linux', 64, arch='arm'),
       api.properties(mock_merged_profdata=True, use_lacros=True),
+      api.step_data(
+          'searching cros llvm toolchain.lookup GN args',
+          stdout=api.raw_io.output_text(gn_args)),
       api.override_step_data(
           'validate benchmark results and profile data.searching for '
           'profdata files',

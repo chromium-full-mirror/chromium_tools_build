@@ -10,6 +10,7 @@ DEPS = [
     'depot_tools/git',
     'depot_tools/gitiles',
     'depot_tools/gsutil',
+    'gn',
     'profiles',
     'recipe_engine/buildbucket',
     'recipe_engine/context',

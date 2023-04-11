@@ -21,6 +21,8 @@ class ProfilesApi(recipe_api.RecipeApi):
     self._profile_subdirs = {}
     # Path to checkout
     self._src_dir = None
+    # Path to llvm-profdata executable
+    self._llvm_profdata_exec = None
 
   @property
   def src_dir(self):
@@ -61,7 +63,14 @@ class ProfilesApi(recipe_api.RecipeApi):
 
   @property
   def llvm_profdata_exec(self):
-    return self.llvm_exec_path('llvm-profdata')
+    if not self._llvm_profdata_exec:
+      return self.llvm_exec_path('llvm-profdata')
+
+    return self._llvm_profdata_exec
+
+  @llvm_profdata_exec.setter
+  def llvm_profdata_exec(self, value):
+    self._llvm_profdata_exec = value
 
   @staticmethod
   def normalize(key):
