@@ -2,26 +2,10 @@
 # come to the wrong place. The correct location for that is:
 # https://chromium.googlesource.com/chromium/src/+/HEAD/build/OWNERS
 
+# Folks primarily on the Chrome Browser Infra team.
 bpastene@chromium.org
-bpastene@google.com
-efoo@chromium.org
 estaab@chromium.org
 estaab@google.com
 gatong@chromium.org
 gatong@google.com
 gbeaty@chromium.org
-iannucci@chromium.org
-iannucci@google.com
-jam@chromium.org
-jsca@chromium.org
-jsca@google.com
-mark@chromium.org
-maruel@chromium.org
-maruel@google.com
-qyearsley@google.com
-thakis@chromium.org
-vadimsh@chromium.org
-vadimsh@google.com
-
-# For python3 migration.
-tikuta@chromium.org

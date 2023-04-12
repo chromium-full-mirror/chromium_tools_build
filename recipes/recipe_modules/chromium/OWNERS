@@ -1,9 +1,1 @@
-# Note: This module has had a LOT of people poking around in it. This list
-# should be sufficient to cover general reviews, but also take a look at
-# git-blame to see who may have a more recent idea of the particular change
-# you're working on.
-
-machenbach@chromium.org
-tikuta@chromium.org
-
 per-file reclient.py=file://recipes/reclient/OWNERS
