@@ -47,6 +47,7 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
+      "--verbose",
       "--host",
       "https://webrtc-review.googlesource.com",
       "--json_file",
@@ -78,7 +79,7 @@
       }
     },
     "name": "gerrit fetch current CL info",
-    "timeout": 60,
+    "timeout": 360,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -237,6 +238,7 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
+      "--verbose",
       "--host",
       "https://webrtc-review.googlesource.com",
       "--json_file",
@@ -267,7 +269,7 @@
       }
     },
     "name": "gerrit changes",
-    "timeout": 60,
+    "timeout": 360,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -2647,6 +2649,7 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
+      "--verbose",
       "--host",
       "https://webrtc-review.googlesource.com",
       "--json_file",
@@ -2677,7 +2680,7 @@
       }
     },
     "name": "gerrit changes (2)",
-    "timeout": 60,
+    "timeout": 360,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",

@@ -23,6 +23,7 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
+      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",

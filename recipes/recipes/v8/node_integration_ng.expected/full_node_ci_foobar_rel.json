@@ -8,6 +8,7 @@
       "vpython3",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
+      "--verbose",
       "--host",
       "https://chromium-review.googlesource.com",
       "--json_file",
@@ -39,7 +40,7 @@
       }
     },
     "name": "initialization.gerrit fetch current CL info",
-    "timeout": 60,
+    "timeout": 360,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@[@@@",
