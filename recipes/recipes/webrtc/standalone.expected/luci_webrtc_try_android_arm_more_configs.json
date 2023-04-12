@@ -465,7 +465,7 @@
     },
     "name": "git diff to analyze patch",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@foo.cc@@@",
+      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
@@ -1824,7 +1824,7 @@
     },
     "name": "git diff to analyze patch (2)",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@foo.cc@@@",
+      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
@@ -3096,7 +3096,7 @@
     },
     "name": "git diff to analyze patch (3)",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@foo.cc@@@",
+      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
       "@@@STEP_LOG_END@files@@@"
     ]
   },
