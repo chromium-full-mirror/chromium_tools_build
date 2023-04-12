@@ -385,9 +385,7 @@
     "cmd": [
       "go",
       "run",
-      "util/all_tests.go",
-      "-json-output",
-      "/path/to/tmp/json"
+      "util/all_tests.go"
     ],
     "cwd": "[START_DIR]/boringssl",
     "env": {
@@ -416,19 +414,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "unit tests",
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@boringssl.test_results (invalid)@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@boringssl.test_results (exception)@@@"
-    ]
+    "name": "unit tests"
   },
   {
     "cmd": [
       "go",
       "test",
-      "-json-output",
-      "/path/to/tmp/json",
       "-pipe",
       "-fuzzer",
       "-shim-config",
@@ -461,12 +452,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssl tests",
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@boringssl.test_results (invalid)@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@boringssl.test_results (exception)@@@"
-    ]
+    "name": "ssl tests"
   },
   {
     "name": "$result"

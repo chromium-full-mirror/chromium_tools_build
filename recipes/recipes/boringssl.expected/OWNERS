@@ -1,1 +1,4 @@
-file://recipes/recipe_modules/boringssl/OWNERS
+agl@chromium.org
+bbe@chromium.org
+davidben@chromium.org
+svaldez@chromium.org

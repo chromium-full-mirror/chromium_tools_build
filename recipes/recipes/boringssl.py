@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from recipe_engine.recipe_api import Property
 
 DEPS = [
-    'boringssl',
     'chromium',
     'depot_tools/bot_update',
     'depot_tools/gclient',
@@ -185,16 +184,6 @@ class _Config:
     return env
 
 
-def _LogFailingTests(api, step_result):
-  if (step_result.boringssl.test_results.valid and
-      step_result.retcode <= api.boringssl.MAX_FAILURES_EXIT_STATUS):
-    failures = step_result.boringssl.test_results.unexpected_failures
-    p = step_result.presentation
-    p.step_text += api.presentation_utils.format_step_text([
-        ['unexpected_failures:', failures.keys()],
-    ])
-
-
 @contextmanager
 def _CleanupMSVC(api):
   try:
@@ -335,21 +324,25 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
             all_tests_args += ['-sde', '-sde-path', sde_path]
           if config.android:
             api.step('unit tests', [
-                'go', 'run',
-                api.path.join('util', 'run_android_tests.go'), '-build-dir',
-                build_dir, '-adb', adb_path, '-suite', 'unit',
-                '-all-tests-args', ' '.join(all_tests_args), '-json-output',
-                api.boringssl.test_results()
+                'go',
+                'run',
+                api.path.join('util', 'run_android_tests.go'),
+                '-build-dir',
+                build_dir,
+                '-adb',
+                adb_path,
+                '-suite',
+                'unit',
+                '-all-tests-args',
+                ' '.join(all_tests_args),
             ])
           else:
             api.step(
                 'unit tests', msvc_prefix + [
-                    'go', 'run',
-                    api.path.join('util', 'all_tests.go'), '-json-output',
-                    api.boringssl.test_results()
+                    'go',
+                    'run',
+                    api.path.join('util', 'all_tests.go'),
                 ] + all_tests_args)
-
-          _LogFailingTests(api, api.step.active_result)
 
       # Run the SSL tests.
       if config.run_ssl_tests:
@@ -365,20 +358,21 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
         if config.android:
           with api.context(cwd=src, env=env):
             api.step('ssl tests', [
-                'go', 'run',
-                api.path.join('util', 'run_android_tests.go'), '-build-dir',
-                build_dir, '-adb', adb_path, '-suite', 'ssl', '-runner-args',
-                ' '.join(runner_args), '-json-output',
-                api.boringssl.test_results()
+                'go',
+                'run',
+                api.path.join('util', 'run_android_tests.go'),
+                '-build-dir',
+                build_dir,
+                '-adb',
+                adb_path,
+                '-suite',
+                'ssl',
+                '-runner-args',
+                ' '.join(runner_args),
             ])
         else:
           with api.context(cwd=runner_dir, env=env):
-            api.step(
-                'ssl tests', msvc_prefix +
-                ['go', 'test', '-json-output',
-                 api.boringssl.test_results()] + runner_args)
-
-        _LogFailingTests(api, api.step.active_result)
+            api.step('ssl tests', msvc_prefix + ['go', 'test'] + runner_args)
 
 
 def _CIBuild(api, builder):
@@ -435,10 +429,6 @@ def GenTests(api):
         _CIBuild(api, buildername),
         mock_go_tests,
         api.properties(**props),
-        api.override_step_data('unit tests',
-                               api.boringssl.canned_test_output(True)),
-        api.override_step_data('ssl tests',
-                               api.boringssl.canned_test_output(True)),
     )
 
   yield api.test(
@@ -447,10 +437,6 @@ def GenTests(api):
       _CIBuild(api, 'linux'),
       mock_go_tests,
       api.path.exists(api.path['checkout'].join('util', 'bot', 'cmake')),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
   )
 
   yield api.test(
@@ -461,8 +447,6 @@ def GenTests(api):
       api.properties(
           cmake_args={"CMAKE_BUILD_TYPE": "RelWithAsserts"},
           run_ssl_tests=False),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
   )
 
   yield api.test(
@@ -472,10 +456,6 @@ def GenTests(api):
       mock_go_tests,
       api.properties(cmake_args={"BUILD_SHARED_LIBS": "1"}),
       api.override_step_data('check imported libraries', retcode=1),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
       api.expect_status('FAILURE'),
   )
 
@@ -485,10 +465,6 @@ def GenTests(api):
       _CIBuild(api, 'linux'),
       mock_go_tests,
       api.override_step_data('check filenames', retcode=1),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
       api.expect_status('FAILURE'),
   )
 
@@ -498,10 +474,6 @@ def GenTests(api):
       _CIBuild(api, 'linux'),
       mock_go_tests,
       api.override_step_data('go tests', retcode=1),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
       api.expect_status('FAILURE'),
   )
 
@@ -510,10 +482,7 @@ def GenTests(api):
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
       mock_go_tests,
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(False)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
+      api.override_step_data('unit tests', retcode=1),
       api.expect_status('FAILURE'),
   )
 
@@ -524,10 +493,7 @@ def GenTests(api):
       _CIBuild(api, 'win64'),
       mock_go_tests,
       api.properties(msvc_target='x64'),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(False)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
+      api.override_step_data('unit tests', retcode=1),
       api.expect_status('FAILURE'),
   )
 
@@ -536,10 +502,7 @@ def GenTests(api):
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
       mock_go_tests,
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(False)),
+      api.override_step_data('ssl tests', retcode=1),
       api.expect_status('FAILURE'),
   )
 
@@ -551,10 +514,6 @@ def GenTests(api):
       _CIBuild(api, 'win64'),
       mock_go_tests,
       api.properties(msvc_target='x64'),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
       api.override_step_data('taskkill mspdbsrv', retcode=1),
   )
 
@@ -571,10 +530,6 @@ def GenTests(api):
       _CIBuild(api, 'linux'),
       mock_go_tests,
       api.properties(check_stack=True),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
   )
 
   yield api.test(
@@ -584,10 +539,6 @@ def GenTests(api):
       mock_go_tests,
       api.properties(check_stack=True),
       api.override_step_data('check stack', retcode=1),
-      api.override_step_data('unit tests',
-                             api.boringssl.canned_test_output(True)),
-      api.override_step_data('ssl tests',
-                             api.boringssl.canned_test_output(True)),
       api.expect_status('FAILURE'),
   )
 

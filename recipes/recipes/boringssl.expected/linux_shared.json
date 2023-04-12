@@ -415,9 +415,7 @@
     "cmd": [
       "go",
       "run",
-      "util/all_tests.go",
-      "-json-output",
-      "/path/to/tmp/json"
+      "util/all_tests.go"
     ],
     "cwd": "[START_DIR]/boringssl",
     "env": {
@@ -443,57 +441,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "unit tests",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@boringssl.test_results@{@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_passes\": 9001, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_regressions\": 0, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"path_separator\": \"/\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"tests\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"bad\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-bad-probably.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"flake\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"slow.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"SLOW\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"SLOW\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"timeout-then-crash.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"CRASH\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"CRASH\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-flakey.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"good\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-awesome.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"tricky\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-maybe-not-awesome.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"version\": 3@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@}@@@",
-      "@@@STEP_LOG_END@boringssl.test_results@@@"
-    ]
+    "name": "unit tests"
   },
   {
     "cmd": [
       "go",
       "test",
-      "-json-output",
-      "/path/to/tmp/json",
       "-pipe"
     ],
     "cwd": "[START_DIR]/boringssl/ssl/test/runner",
@@ -520,50 +473,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssl tests",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@boringssl.test_results@{@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_passes\": 9001, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"num_regressions\": 0, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"path_separator\": \"/\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"tests\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"bad\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-bad-probably.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"flake\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"slow.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"SLOW\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"SLOW\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"timeout-then-crash.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"CRASH\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"CRASH\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-flakey.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"good\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-awesome.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    \"tricky\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      \"totally-maybe-not-awesome.html\": {@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"actual\": \"PASS\", @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@        \"expected\": \"PASS\"@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@      }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@    }@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  }, @@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@  \"version\": 3@@@",
-      "@@@STEP_LOG_LINE@boringssl.test_results@}@@@",
-      "@@@STEP_LOG_END@boringssl.test_results@@@"
-    ]
+    "name": "ssl tests"
   },
   {
     "name": "$result"
