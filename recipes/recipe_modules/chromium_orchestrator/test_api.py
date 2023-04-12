@@ -245,22 +245,6 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         step_name='fetch compilator build proto',
     )
 
-  def get_read_build_proto_json(self,
-                                with_patch=True,
-                                status=common_pb.SUCCESS,
-                                summary='',
-                                **kwargs):
-    output_props = self.get_compilator_output_props(
-        with_patch=with_patch, **kwargs)
-    build_proto_json = {
-        'status': status,
-        'summary': summary,
-        'output': {
-            'properties': output_props,
-        },
-    }
-    return build_proto_json
-
   def override_led_get_builder(self):
     job_def = job.Definition()
     build = job_def.buildbucket.bbagent_args.build
