@@ -8,7 +8,6 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import base64
 import datetime
 import getpass
 import glob
@@ -36,15 +35,6 @@ import bot_utils
 
 # The Google Cloud Storage bucket to store logs related to goma.
 GOMA_LOG_GS_BUCKET = 'chrome-goma-log'
-
-# Platform dependent location of the unpacked infra-python package.
-# TODO(crbug/1236339): We should move away from using this package, as it's
-# deprecated.
-INFRA_PYTHON_DIR = {
-    # os.name: run_cmd to use.
-    'nt': 'C:\\infra-python\\',
-    'posix': '/opt/infra-python/',
-}
 
 # <cmd>.<host>.<user>.log.<severity>.<yyyy><mm><dd>-<hh><mm><ss>.<xxxxx>
 FILENAME_TIMESTAMP_PATTERN = re.compile(
@@ -445,55 +435,6 @@ def GetCompilerProxyStartTime():
     Or, returns None if not a glog file.
   """
   return GetLogFileTimestamp(GetLatestGomaCompilerProxyInfo())
-
-
-def SendCountersToTsMon(counters):
-  """Send goma status counter to ts_mon.
-
-  Args:
-    counters: a list of data which is sent to ts_mon.
-  """
-
-  if not counters:
-    print('No counter to send to ts_mon is specified')
-    return
-
-  try:
-    infra_python_dir = INFRA_PYTHON_DIR.get(os.name)
-    if not infra_python_dir:
-      print('Unknown os.name: %s' % os.name)
-      return
-
-    counters_json = []
-    for c in counters:
-      c_json = json.dumps(c)
-      # base64 encode on windows because it doesn't like json
-      # on the command-line.
-      if os.name == 'nt':
-        c_json = base64.b64encode(c_json)
-      counters_json.append('--counter')
-      counters_json.append(c_json)
-
-    cmd = [
-        'vpython3', '-vpython-spec',
-        'infra/tools/send_ts_mon_values/standalone.vpython3', '-m',
-        'infra.tools.send_ts_mon_values', '--verbose', '--ts-mon-target-type',
-        'task', '--ts-mon-task-service-name', 'goma-client',
-        '--ts-mon-task-job-name', 'default'
-    ]
-    cmd.extend(counters_json)
-    cmd_filter = chromium_utils.FilterCapture()
-    retcode = chromium_utils.RunCommand(
-        cmd, filter_obj=cmd_filter, max_time=30, cwd=infra_python_dir
-    )
-    if retcode:
-      print('Execution of send_ts_mon_values failed with code %s' % retcode)
-      print('\n'.join(cmd_filter.text))
-  except Exception as ex:
-    print(
-        'error while sending counters to ts_mon: counter=%s: %s' %
-        (counters, ex)
-    )
 
 
 def MakeGomaStatusCounter(

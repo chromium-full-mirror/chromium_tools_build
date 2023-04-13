@@ -554,7 +554,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     finally:
       upload_ninja_log_args = [
           '--gsutil-py-path', self.m.depot_tools.gsutil_py_path,
-          '--skip-sendgomatsmon', '--ninja-log-outdir', ninja_log_outdir,
+          '--ninja-log-outdir', ninja_log_outdir,
           '--ninja-log-command-file',
           self.m.json.input(ninja_command), '--build-exit-status',
           compile_exit_status, '--ninja-log-compiler',

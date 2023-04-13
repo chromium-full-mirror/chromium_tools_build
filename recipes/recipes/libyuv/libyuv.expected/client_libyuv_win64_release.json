@@ -211,7 +211,6 @@
       "RECIPE_REPO[build]\\recipes\\upload_goma_logs.py",
       "--gsutil-py-path",
       "RECIPE_REPO[depot_tools]\\gsutil.py",
-      "--skip-sendgomatsmon",
       "--ninja-log-outdir",
       "[CACHE]\\builder\\src\\out\\Release_x64",
       "--ninja-log-command-file",

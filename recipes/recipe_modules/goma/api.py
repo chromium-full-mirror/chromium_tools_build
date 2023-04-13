@@ -513,8 +513,6 @@ class GomaApi(recipe_api.RecipeApi):
       build_exit_status: Exit status of ninja or other build commands like
                          make. (e.g. 0)
       name: Step name of log upload.
-      skip_sendgomatsmon:
-        Represents whether sending log to goma tsmon.
     """
 
     args = [

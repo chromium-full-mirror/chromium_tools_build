@@ -77,14 +77,6 @@ def main():
       help='path of json file generated from'
       ' ./goma_ctl.py jsonstatus'
   )
-  parser.add_argument(
-      '--skip-sendgomatsmon',
-      action='store_true',
-      help='Represent whether send jsonstatus'
-      ' and goma or compile.py exit_status log to TsMon.'
-      ' This option is used when no need to send goma status'
-      ' to monitoring server.'
-  )
 
   parser.add_argument(
       '--gsutil-py-path',
@@ -125,7 +117,6 @@ def main():
   )
 
   args = parser.parse_args()
-  tsmon_counters = []
 
   override_gsutil = None
   if args.gsutil_py_path:
@@ -178,43 +169,6 @@ def main():
         args.build_exit_status, args.goma_crash_report_id_file, args.build_id,
         args.build_step_name, args.bqupload_path,
     )
-
-  if args.goma_stats_file:
-    counter = goma_utils.MakeGomaExitStatusCounter(
-        args.goma_stats_file,
-        goma_crash_report=args.goma_crash_report_id_file,
-        builder=args.buildbot_buildername,
-        builder_id=builder_id,
-    )
-    if counter:
-      tsmon_counters.append(counter)
-
-  if not args.skip_sendgomatsmon:
-    # In the case of goma_start is failed,
-    # we want log to investigate failed reason.
-    # So, let me send some logs instead of
-    # error in parse_args() using required option.
-    assert args.json_status is not None and os.path.exists(args.json_status)
-    counter = goma_utils.MakeGomaStatusCounter(
-        args.json_status,
-        args.build_exit_status,
-        builder=args.buildbot_buildername,
-        builder_id=builder_id,
-    )
-    if counter:
-      tsmon_counters.append(counter)
-
-    counter = goma_utils.MakeGomaFailureReasonCounter(
-        args.json_status,
-        args.build_exit_status,
-        builder=args.buildbot_buildername,
-        builder_id=builder_id,
-    )
-    if counter:
-      tsmon_counters.append(counter)
-
-  if tsmon_counters:
-    goma_utils.SendCountersToTsMon(tsmon_counters)
 
   return 0
 
