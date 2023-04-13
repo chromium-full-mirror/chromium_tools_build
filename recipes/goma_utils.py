@@ -475,8 +475,8 @@ def SendCountersToTsMon(counters):
       counters_json.append(c_json)
 
     cmd = [
-        'vpython', '-vpython-spec',
-        'infra/tools/send_ts_mon_values/standalone.vpython', '-m',
+        'vpython3', '-vpython-spec',
+        'infra/tools/send_ts_mon_values/standalone.vpython3', '-m',
         'infra.tools.send_ts_mon_values', '--verbose', '--ts-mon-target-type',
         'task', '--ts-mon-task-service-name', 'goma-client',
         '--ts-mon-task-job-name', 'default'
