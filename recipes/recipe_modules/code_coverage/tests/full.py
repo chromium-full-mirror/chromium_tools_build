@@ -57,10 +57,6 @@ def RunSteps(api):
   if api.properties.get('mock_javascript_lcov_path', True):
     api.path.mock_add_paths(
         api.chromium.output_dir.join('coverage').join('lcov.info'))
-  if api.properties.get('mock_javascript_metadata_path', True):
-    api.path.mock_add_paths(
-        api.chromium.output_dir.join('devtools_code_coverage').join(
-            'all.json.gz'))
   if api.properties.get('build_dir'):
     api.code_coverage.build_dir = api.properties.get('build_dir')
 
@@ -257,14 +253,17 @@ def GenTests(api):
           ).assemble()),
       api.code_coverage(
           use_javascript_coverage=True, export_coverage_to_zoss=True),
-      api.post_process(post_process.MustRun,
-                       'process javascript coverage.create zoss metadata json'),
       api.post_process(
           post_process.MustRun,
-          'process javascript coverage.gsutil export coverage data to zoss'),
+          'process javascript coverage (overall).create zoss metadata json'),
       api.post_process(
           post_process.MustRun,
-          'process javascript coverage.gsutil export metadata to zoss'),
+          'process javascript coverage (overall).gsutil export coverage data to zoss'
+      ),
+      api.post_process(
+          post_process.MustRun,
+          'process javascript coverage (overall).gsutil export metadata to zoss'
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -280,9 +279,10 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.code_coverage(use_javascript_coverage=True),
-      api.post_process(post_process.MustRun, 'process javascript coverage'),
+      api.post_process(post_process.MustRun,
+                       'process javascript coverage (overall)'),
       api.post_process(
-          post_process.MustRun, 'process javascript coverage.'
+          post_process.MustRun, 'process javascript coverage (overall).'
           'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
@@ -301,9 +301,36 @@ def GenTests(api):
       api.code_coverage(use_javascript_coverage=True),
       api.properties(mock_javascript_lcov_path=False),
       api.post_check(lambda check, steps: check(steps[
-          'process javascript coverage'].output_properties[
+          'process javascript coverage (overall)'].output_properties[
               'process_coverage_data_failure'] == True)),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'process javascript coverage for per-cl',
+      api.chromium.try_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.code_coverage(use_javascript_coverage=True),
+      api.properties(files_to_instrument=[
+          'some/path/to/file.js',
+          'some/other/path/to/file.js',
+      ]),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'generate line number mapping from bot to Gerrit'),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'Generate JavaScript coverage metadata'),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 

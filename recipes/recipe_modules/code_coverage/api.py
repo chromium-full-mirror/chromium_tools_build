@@ -724,12 +724,34 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           raise
 
   def process_javascript_coverage_data(self):
-    with self.m.step.nest('process javascript coverage'):
+    with self.m.step.nest('process javascript coverage (%s)' %
+                          self._current_processing_test_type):
       try:
         coverage_dir = self.build_dir.join('coverage')
         if not self.m.path.exists('%s/lcov.info' % coverage_dir):
           raise self.m.step.StepFailure("Required lcov.info is missing at %s" %
                                         coverage_dir)
+        cmd = [
+            'python3',
+            self.resource('generate_coverage_metadata_for_javascript.py'),
+            '--src-path',
+            self.src_dir,
+            '--output-dir',
+            coverage_dir,
+            '--coverage-dir',
+            coverage_dir,
+        ]
+        if self._is_per_cl_coverage:
+          cmd.append('--source-files')
+          cmd.extend(self._eligible_files)
+          cmd.extend(['--diff-mapping-path', self.bot_to_gerrit_mapping_file])
+        else:
+          dir_metadata_path = self._generate_dir_metadata()
+          cmd.extend([
+              '--dir-metadata-path',
+              dir_metadata_path,
+          ])
+        self.m.step('Generate JavaScript coverage metadata', cmd)
         self._persist_coverage_artifacts(source_dir=coverage_dir)
         # Upload data to zoss to show it on code search
         if self._export_coverage_to_zoss:
