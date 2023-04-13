@@ -77,7 +77,11 @@ class ChromiumDashApi(recipe_api.RecipeApi):
         {'platform': platform, 'channel': release_channel, 'num': num},
         step_name, default_test_data)
 
-  def milestones(self, num, step_name=None, only_branched=False):
+  def milestones(self,
+                 num,
+                 step_name=None,
+                 only_branched=False,
+                 only_active=False):
     """Fetch milestones from chromiumdash.
 
     Args:
@@ -95,5 +99,7 @@ class ChromiumDashApi(recipe_api.RecipeApi):
     args = {'num': num}
     if only_branched:
       args.update({'only_branched': 'true'})
+    if only_active:
+      args.update({'only_active': 'true'})
     return self._get_json(
         self.MILESTONE_ENDPOINT, args, step_name, default_test_data)

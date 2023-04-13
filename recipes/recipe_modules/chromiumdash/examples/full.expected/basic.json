@@ -33,6 +33,20 @@
       "-u",
       "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
       "--url",
+      "https://chromiumdash.appspot.com/fetch_milestones?num=0&only_active=true",
+      "--status-json",
+      "/path/to/tmp/json",
+      "--outfile",
+      "/path/to/tmp/json"
+    ],
+    "name": "GET https://chromiumdash.appspot.com/fetch_milestones?num=0&only_active=true"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
+      "--url",
       "https://chromiumdash.appspot.com/fetch_commits?commit=abcdefg",
       "--status-json",
       "/path/to/tmp/json",
