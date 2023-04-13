@@ -1637,6 +1637,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           mb_config_path=mb_config_path,
           mb_phase=mb_phase)
 
+    if self.m.pgo.using_pgo:
+      is_cros = self.m.chromium.c.TARGET_PLATFORM == 'chromeos'
+      self.m.pgo.configure_llvm_tooling_path(builder_id, is_cros=is_cros)
+
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('compile')
@@ -2714,7 +2718,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.code_coverage.process_coverage_data(tests)
 
       if self.m.pgo.using_pgo:
-        self.m.pgo.process_pgo_data(tests, builder_id)
+        self.m.pgo.process_pgo_data(tests)
 
       test_success = True
       if test_failure_summary:

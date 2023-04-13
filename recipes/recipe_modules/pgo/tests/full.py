@@ -59,6 +59,8 @@ def RunSteps(api):
     )
 
   api.chromium_tests.configure_build(builder_config)
+  api.pgo.configure_llvm_tooling_path(builder_id, is_cros=use_lacros)
+
   # Fake path.
   api.profiles.src_dir = api.path['start_dir']
   # We're forcing the root profile dir to '/', such that the file.listdir
@@ -108,7 +110,7 @@ def RunSteps(api):
     api.code_coverage.shard_merge(
         step, test.target_name, additional_merge=getattr(test, '_merge', None))
 
-  api.pgo.process_pgo_data(tests, builder_id)
+  api.pgo.process_pgo_data(tests)
 
   # coverage only
   _ = api.pgo.using_pgo
@@ -244,6 +246,11 @@ def GenTests(api):
               '/performance_test_suite/performance_test_suite.profdata',
               '/different_test_suite/different_test_suite.profdata'
           ])),
+      api.post_process(
+          post_process.StepCommandContains,
+          ('Processing PGO .profraw data.'
+           'merge all profile files into a single .profdata'),
+          ['--llvm-profdata', '/b/some/random/path/llvm-profdata']),
       api.post_process(
           post_process.StepCommandContains,
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
