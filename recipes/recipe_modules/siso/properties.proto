@@ -24,16 +24,7 @@ message InputProperties {
   // RBE instance name (example: "default_instance").
   string reapi_instance = 4;
 
-  // GCS bucket for deps log (example: "siso-deps-log").
-  string deps_log_bucket = 5;
-
   // Features
-  
-  // Enable cloud trace.
-  bool enable_cloud_trace = 6;
-
-  // Enable cloud profiler.
-  bool enable_cloud_profiler = 7;
 
   // Specify a cache silo key.
   // This allows remote build caches to be segregated.
@@ -41,6 +32,6 @@ message InputProperties {
   string action_salt = 8;
 
   // Siso experiments ids.
-  // https://chrome-internal.googlesource.com/infra/infra_internal/+/e0f85c8938a8b31c43a843e70cecb154252bf0e5/go/src/infra_internal/experimental/siso/build/experiments.go#13
+  // https://chromium.googlesource.com/infra/infra/+/bdc94f6a432b49b0c8412994c095901f816532b8/go/src/infra/build/siso/build/experiments.go#17
   repeated string experiments = 9;
 }

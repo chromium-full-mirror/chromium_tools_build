@@ -46,22 +46,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'cloud_trace',
-      api.properties(build_command=['ninja', '-C', 'out/Release'],),
-      api.siso.properties(enable_cloud_trace=True),
-      api.post_process(post_process.StepCommandContains, 'compile',
-                       ['--enable_cloud_trace']),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
-      'cloud_profiler',
-      api.properties(build_command=['ninja', '-C', 'out/Release'],),
-      api.siso.properties(enable_cloud_profiler=True),
-      api.post_process(post_process.StepCommandContains, 'compile',
-                       ['--enable_cloud_profiler']),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
       'action_salt',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(action_salt='xxx'),
@@ -70,7 +54,7 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'sisoexperiments',
+      'experiments',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(experiments=['no-file-access-trace']),
   )

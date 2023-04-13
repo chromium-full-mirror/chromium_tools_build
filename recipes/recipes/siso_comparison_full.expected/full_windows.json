@@ -632,7 +632,7 @@
   },
   {
     "cmd": [],
-    "name": "install infra_internal/experimental/siso"
+    "name": "install infra/build/siso"
   },
   {
     "cmd": [
@@ -644,7 +644,7 @@
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]\\cipd_tool\\infra_internal\\experimental\\siso\\latest"
+      "[START_DIR]\\cipd_tool\\infra\\build\\siso\\latest"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "infra_step": true,
@@ -660,7 +660,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "install infra_internal/experimental/siso.ensure package directory",
+    "name": "install infra/build/siso.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -670,9 +670,9 @@
       "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]\\cipd_tool\\infra_internal\\experimental\\siso\\latest",
+      "[START_DIR]\\cipd_tool\\infra\\build\\siso\\latest",
       "-ensure-file",
-      "infra_internal/experimental/siso/${platform} latest",
+      "infra/build/siso/${platform} latest",
       "-max-threads",
       "0",
       "-json-output",
@@ -692,7 +692,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "install infra_internal/experimental/siso.ensure_installed",
+    "name": "install infra/build/siso.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -700,7 +700,7 @@
       "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\", @@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/experimental/siso/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/build/siso/resolved-platform\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    ]@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
@@ -710,34 +710,12 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra_internal\\experimental\\siso\\latest\\siso-toolchain-chromium-browser-clang"
-    ],
-    "cwd": "[CACHE]\\builder\\src",
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "setup toolchain for siso"
-  },
-  {
-    "cmd": [
-      "[START_DIR]\\cipd_tool\\infra_internal\\experimental\\siso\\latest\\siso",
+      "[START_DIR]\\cipd_tool\\infra\\build\\siso\\latest\\siso",
       "ninja",
       "--project",
       "test-rbe-project",
       "--reapi_instance",
       "default_instance",
-      "--deps_log_bucket",
-      "siso-deps-log-experiments",
-      "--enable_cloud_logging",
       "-upload_build_pprof=false",
       "-re_cache_enable_read=false",
       "-C",
@@ -1008,34 +986,12 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra_internal\\experimental\\siso\\latest\\siso-toolchain-chromium-browser-clang"
-    ],
-    "cwd": "[CACHE]\\builder\\src",
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "setup toolchain for siso (2)"
-  },
-  {
-    "cmd": [
-      "[START_DIR]\\cipd_tool\\infra_internal\\experimental\\siso\\latest\\siso",
+      "[START_DIR]\\cipd_tool\\infra\\build\\siso\\latest\\siso",
       "ninja",
       "--project",
       "test-rbe-project",
       "--reapi_instance",
       "default_instance",
-      "--deps_log_bucket",
-      "siso-deps-log-experiments",
-      "--enable_cloud_logging",
       "-upload_build_pprof=false",
       "-C",
       "[CACHE]\\builder\\src\\out\\Release",

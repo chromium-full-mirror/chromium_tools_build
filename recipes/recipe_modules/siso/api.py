@@ -25,12 +25,13 @@ class SisoApi(recipe_api.RecipeApi):
     """True if siso is configured."""
     return self._props.project and self._props.reapi_instance
 
+  # TODO(b/277863911): use CIPD siso installed under third_party/siso.
   def _ensure_siso(self):
     """ensure siso is installed."""
 
     assert self.enabled, 'siso is not configured'
     self._siso_path = self.m.cipd.ensure_tool(
-        'infra_internal/experimental/siso/${platform}',
+        'infra/build/siso/${platform}',
         self._props.siso_version)
 
   def run_ninja(self,
@@ -58,11 +59,6 @@ class SisoApi(recipe_api.RecipeApi):
     """
     assert self.enabled, 'siso is not configured'
 
-    # setup for toolchain
-    # TODO(b/253142009): run this in gclient runhooks?
-    self.m.step('setup toolchain for siso',
-                [self._siso_toolchain_chromium_browser_clang], **kwargs)
-
     self._assert_ninja_command(ninja_command)
     ninja_dir = self._ninja_dir(ninja_command)
     cmd = [
@@ -80,16 +76,6 @@ class SisoApi(recipe_api.RecipeApi):
         '--reapi_instance',
         self._props.reapi_instance,
     ])
-    if self._props.deps_log_bucket:
-      cmd.extend([
-          '--deps_log_bucket',
-          self._props.deps_log_bucket,
-      ])
-    cmd.extend(['--enable_cloud_logging'])
-    if self._props.enable_cloud_trace:
-      cmd.extend(['--enable_cloud_trace'])
-    if self._props.enable_cloud_profiler:
-      cmd.extend(['--enable_cloud_profiler'])
     if self._props.action_salt:
       cmd.extend([
           '--action_salt',
@@ -100,7 +86,7 @@ class SisoApi(recipe_api.RecipeApi):
     cmd.extend(ninja_command[1:])
     env = ninja_env or {}
     if len(self._props.experiments) > 0:
-      env['SISOEXPERIMENTS'] = ','.join(self._props.experiments)
+      env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     try:
       with self.m.context(env=env):
         ninja_step_result = self.m.step(name or 'compile', cmd, **kwargs)
@@ -157,10 +143,3 @@ class SisoApi(recipe_api.RecipeApi):
     # TODO(ukai): decide path used in product tree.
     self._ensure_siso()
     return self._siso_path
-
-  @property
-  def _siso_toolchain_chromium_browser_clang(self):
-    self._ensure_siso()
-    return self.m.path.join(
-        self.m.path.dirname(self._siso_path),
-        'siso-toolchain-chromium-browser-clang')
