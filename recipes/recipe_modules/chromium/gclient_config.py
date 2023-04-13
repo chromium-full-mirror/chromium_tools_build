@@ -487,11 +487,6 @@ def use_rust(c):
 
 
 @CONFIG_CTX()
-def checkout_clang_libs(c):
-  c.solutions[0].custom_vars['checkout_clang_libs'] = 'True'
-
-
-@CONFIG_CTX()
 def checkout_rust(c):
   c.solutions[0].custom_vars['checkout_rust'] = 'True'
 

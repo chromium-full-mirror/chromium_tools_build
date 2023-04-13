@@ -135,11 +135,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'checkout_clang_libs',
-      api.properties(apply_gclient_config='checkout_clang_libs'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
       'checkout_rust',
       api.properties(apply_gclient_config='checkout_rust'),
       api.post_process(post_process.DropExpectation),
