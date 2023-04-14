@@ -423,6 +423,9 @@ class ReclientApi(recipe_api.RecipeApi):
     if self._scandeps_server:
       env['RBE_depsscanner_address'] = "exec://" + self._scandeps_server_bin_path
 
+    if self._ensure_verified:
+      env['RBE_mismatch_ignore_config_path'] = self._ignored_mismatches_path
+
     with self.m.context(env=env):
       yield
 
@@ -519,7 +522,7 @@ class ReclientApi(recipe_api.RecipeApi):
       self._mismatch = 'No TotalVerified found in the metrics.'
     if total_verified == 0:
       self._mismatch = 'No compiles are verified.'
-    num_mismatches = stats.verification.total_mismatches
+    num_mismatches = stats.verification.total_mismatches - stats.verification.total_ignored_mismatches
     if num_mismatches > 0:
       self._mismatch = '%d action(s) mismatched' % num_mismatches
 
@@ -703,6 +706,10 @@ class ReclientApi(recipe_api.RecipeApi):
   @property
   def _health_check_path(self):
     return self.resource('perform_health_check.py')
+
+  @property
+  def _ignored_mismatches_path(self):
+    return self.resource('ignored_mismatches.textproto')
 
   def _get_cloudtail_pid_file(self, log_name):
     return self._tmp_base_dir.join('cloudtail_' + log_name + '.pid')

@@ -1,0 +1,11 @@
+# Verified and ignored mismatches for reclient compare builders
+# Each rule should have a comment with a bug for that mismatch
+
+# crbug/1373836
+rules {
+    output_file_path_rule_spec {
+        path_pattern {
+            expression: "obj/third_party/swiftshader/third_party/llvm-10\\.0/swiftshader_llvm_most/Attributes\\.o"
+        }
+    }
+}

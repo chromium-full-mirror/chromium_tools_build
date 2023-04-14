@@ -40,13 +40,18 @@ def RunSteps(api):
   _ = api.reclient.jobs
 
 
-def MakeTestRBEStats(num_records=0, total_verified=None, total_mismatches=None):
+def MakeTestRBEStats(num_records=0,
+                     total_verified=None,
+                     total_mismatches=None,
+                     total_ignored_mismatches=None):
   stats = stats_pb.Stats(num_records=num_records)
   if total_verified is not None:
     stats.stats.add(
         name='LocalMetadata.Verification.TotalVerified', count=total_verified)
   if total_mismatches is not None:
     stats.verification.total_mismatches = total_mismatches
+  if total_ignored_mismatches is not None:
+    stats.verification.total_ignored_mismatches = total_ignored_mismatches
   return stats.SerializeToString()
 
 
@@ -294,4 +299,23 @@ def GenTests(api):
       api.post_process(
           post_process.Filter('postprocess for reclient.verification')),
       api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
+      'ensure_verified_mismatches_ignored',
+      api.buildbucket.ci_build(project='chromium', builder='Linux reclient'),
+      api.reclient.properties(ensure_verified=True),
+      api.step_data(
+          'postprocess for reclient.load rbe_metrics.pb',
+          api.file.read_raw(
+              content=MakeTestRBEStats(
+                  num_records=1,
+                  total_verified=1,
+                  total_mismatches=1,
+                  total_ignored_mismatches=1))),
+      api.post_process(post_process.StepSuccess,
+                       'postprocess for reclient.verification'),
+      api.post_process(
+          post_process.Filter('postprocess for reclient.verification')),
+      api.post_process(post_process.DropExpectation),
   )
