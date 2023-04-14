@@ -75,7 +75,6 @@ PYTHON2_FILES = (
     'recipes/results_dashboard.py',
     'recipes/runisolatedtest.py',
     'recipes/tee.py',
-    'recipes/unittests/__init__.py',
     'recipes/unittests/bot_utils_test.py',
     'recipes/unittests/recipe_test.py',
     'recipes/unittests/results_dashboard_test.py',
