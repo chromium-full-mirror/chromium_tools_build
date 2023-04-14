@@ -173,12 +173,11 @@ _SPEC = {
     'mac-test':
         try_spec.TrySpec.create(
             mirrors=[
-                # Not enough capacity on Mac AMD https://crbug.com/1380184.
-                # try_spec.TryMirror.create(
-                #     builder_group='angle',
-                #     buildername='mac-test',
-                #     tester='mac-amd',
-                # ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='mac-test',
+                    tester='mac-amd',
+                ),
                 try_spec.TryMirror.create(
                     builder_group='angle',
                     buildername='mac-test',
