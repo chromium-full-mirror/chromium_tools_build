@@ -23,7 +23,7 @@ class SisoApi(recipe_api.RecipeApi):
   @property
   def enabled(self):
     """True if siso is configured."""
-    return self._props.project and self._props.reapi_instance
+    return self._props.project
 
   # TODO(b/277863911): use CIPD siso installed under third_party/siso.
   def _ensure_siso(self):
@@ -72,10 +72,11 @@ class SisoApi(recipe_api.RecipeApi):
           '--reapi_address',
           self._props.reapi_address,
       ])
-    cmd.extend([
-        '--reapi_instance',
-        self._props.reapi_instance,
-    ])
+    if self._props.reapi_instance:
+      cmd.extend([
+          '--reapi_instance',
+          self._props.reapi_instance,
+      ])
     if self._props.action_salt:
       cmd.extend([
           '--action_salt',
