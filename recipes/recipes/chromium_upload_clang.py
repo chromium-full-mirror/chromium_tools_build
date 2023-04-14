@@ -40,13 +40,6 @@ BUILDERS = {
 
                         # Required to build the builtins.a for Fuchsia.
                         'fuchsia_no_hooks',
-
-                        # Fetch Rust compiler sources to build rustc.
-                        'checkout_rust_toolchain_deps',
-
-                        # 'checkout_bazel' is required by tools/rust/build_crubit.py
-                        # (see also https://crbug.com/1329611).
-                        'checkout_bazel'
                     ],
                 ),
         },
@@ -63,13 +56,6 @@ BUILDERS = {
                     gclient_apply_config=[
                         # Required to build the builtins.a for Fuchsia.
                         'fuchsia_no_hooks',
-
-                        # Fetch Rust compiler sources to build rustc.
-                        'checkout_rust_toolchain_deps',
-
-                        # 'checkout_bazel' is required by tools/rust/build_crubit.py
-                        # (see also https://crbug.com/1329611).
-                        'checkout_bazel'
                     ],
                 ),
             'mac_upload_clang_arm':
@@ -82,13 +68,6 @@ BUILDERS = {
                     gclient_apply_config=[
                         # Required to build the builtins.a for Fuchsia.
                         'fuchsia_no_hooks',
-
-                        # Fetch Rust compiler sources to build rustc.
-                        'checkout_rust_toolchain_deps',
-
-                        # 'checkout_bazel' is required by tools/rust/build_crubit.py
-                        # (see also https://crbug.com/1329611).
-                        'checkout_bazel'
                     ],
                 ),
         },
@@ -102,14 +81,6 @@ BUILDERS = {
                         'TARGET_PLATFORM': 'win',
                         'TARGET_BITS': 32,
                     },
-                    gclient_apply_config=[
-                        # Fetch Rust compiler sources to build rustc.
-                        'checkout_rust_toolchain_deps',
-
-                        # 'checkout_bazel' is required by tools/rust/build_crubit.py
-                        # (see also https://crbug.com/1329611).
-                        'checkout_bazel'
-                    ],
                 ),
         },
     },
@@ -159,32 +130,17 @@ def RunSteps(api):
                                                'package.py')
       ] + args)
 
-      args = ['--upload']
-      if api.buildbucket.builder_name in ARM_MAC_BUILDERS:
-        args += ['--build-mac-arm']
-      api.step(
-          'package rust',
-          [
-              'python3', api.path['checkout'].join('tools', 'rust',
-                                                   'package_rust.py')
-          ] + args,
-          # Rust build errors intentionally do not fail the bot.
-          raise_on_failure=False)
-
 
 def GenTests(api):
-  for test in api.chromium.gen_tests_for_builders(BUILDERS):
-    yield test
-
   yield api.test(
       'mac',
       api.platform.name('mac'),
       api.chromium.try_build(
-          builder_group='tryserver.chromium.mac', builder='mac_upload_clang'),
+          builder_group='tryserver.chromium.mac',
+          builder='mac_upload_clang_arm'),
       api.post_process(post_process.MustRun, 'install xcode'),
       api.post_process(post_process.MustRun, 'select XCode'),
-      api.post_process(post_process.MustRun, 'package rust'),
-      api.post_process(post_process.StepSuccess, 'package rust'),
+      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -194,18 +150,6 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='tryserver.chromium.linux',
           builder='linux_upload_clang'),
-      api.post_process(post_process.MustRun, 'package rust'),
-      api.post_process(post_process.StepSuccess, 'package rust'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'rust failure does not fail build',
-      api.platform.name('linux'),
-      api.chromium.try_build(
-          builder_group='tryserver.chromium.linux',
-          builder='linux_upload_clang'),
-      api.step_data('package rust', retcode=1),
-      api.post_process(post_process.StepFailure, 'package rust'),
+      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
