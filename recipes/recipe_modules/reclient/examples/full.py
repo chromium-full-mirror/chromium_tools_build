@@ -51,7 +51,9 @@ def MakeTestRBEStats(num_records=0,
   if total_mismatches is not None:
     stats.verification.total_mismatches = total_mismatches
   if total_ignored_mismatches is not None:
-    stats.verification.total_ignored_mismatches = total_ignored_mismatches
+    stats.stats.add(
+        name='LocalMetadata.Verification.TotalIgnoredMismatches',
+        count=total_ignored_mismatches)
   return stats.SerializeToString()
 
 

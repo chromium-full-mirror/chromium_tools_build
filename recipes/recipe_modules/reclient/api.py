@@ -522,7 +522,11 @@ class ReclientApi(recipe_api.RecipeApi):
       self._mismatch = 'No TotalVerified found in the metrics.'
     if total_verified == 0:
       self._mismatch = 'No compiles are verified.'
-    num_mismatches = stats.verification.total_mismatches - stats.verification.total_ignored_mismatches
+    num_mismatches = stats.verification.total_mismatches
+    ignored_mismatches = StatsValue(
+        'LocalMetadata.Verification.TotalIgnoredMismatches')
+    if ignored_mismatches is not None:
+      num_mismatches -= ignored_mismatches
     if num_mismatches > 0:
       self._mismatch = '%d action(s) mismatched' % num_mismatches
 
