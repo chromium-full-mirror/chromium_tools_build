@@ -1,7 +1,8 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Recipe to compare siso build performance with reclient and goma.
+"""Recipe to measure build step performance.
+   See also go/build-perf-builder
 """
 
 from recipe_engine import post_process
@@ -25,7 +26,6 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'reclient',
-    'siso',
 ]
 
 
@@ -40,63 +40,31 @@ def _get_builder_id(api):
                                              buildername)
 
 
-def _compile_with_siso(api, target, with_remote_cache):
-  api.chromium.mb_gen(_get_builder_id(api), phase='siso', recursive_lookup=True)
-
-  step_name = 'Build %s' % target
-  ninja_command = ['ninja', '-C', api.chromium.output_dir, target]
-  siso_args = ['-upload_build_pprof=false']
-  if with_remote_cache:
-    step_name += ' with remote cache (siso)'
-  else:
-    step_name += ' without remote cache (siso)'
-    siso_args += ['-re_cache_enable_read=false']
-  try:
-    with api.context(cwd=api.path['checkout']):
-      return api.siso.run_ninja(
-          ninja_command=ninja_command, name=step_name, siso_args=siso_args)
-  finally:
-    _rm_build_dir(api)
-
-
-def _run_siso_builds(api, target):
-  # First build without remote cache.
-  raw_result = _compile_with_siso(api, target, with_remote_cache=False)
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
-
-  # Second build with remote cache produced by the previous build.
-  return _compile_with_siso(api, target, with_remote_cache=True)
-
-
-def _compile_with_reclient(api, target, with_remote_cache):
-  api.chromium.mb_gen(
-      _get_builder_id(api), phase='reclient', recursive_lookup=True)
-  step_name = 'Build %s' % target
+def _compile(api, targets, with_remote_cache):
+  api.chromium.mb_gen(_get_builder_id(api), recursive_lookup=True)
+  step_name = 'Build %s' % ','.join(targets)
   env = {}
   if with_remote_cache:
-    step_name += ' with remote cache (reclient)'
+    step_name += ' with remote cache'
   else:
-    step_name += ' without remote cache (reclient)'
+    step_name += ' without remote cache'
     env['RBE_remote_accept_cache'] = "false"
   try:
     with api.context(env=env):
-      return api.chromium.compile([target],
-                                  name=step_name,
-                                  use_goma_module=False,
-                                  use_reclient=True)
+      return api.chromium.compile(
+          targets, name=step_name, use_goma_module=False, use_reclient=True)
   finally:
     _rm_build_dir(api)
 
 
-def _run_reclient_builds(api, target):
+def _compile_with_and_without_remote_cache(api, targets):
   # First build without remote cache.
-  raw_result = _compile_with_reclient(api, target, with_remote_cache=False)
+  raw_result = _compile(api, targets, with_remote_cache=False)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   # Second build with remote cache produced by the previous build.
-  return _compile_with_reclient(api, target, with_remote_cache=True)
+  return _compile(api, targets, with_remote_cache=True)
 
 
 def RunSteps(api):
@@ -113,22 +81,22 @@ def RunSteps(api):
   if api.code_coverage.using_coverage:
     api.code_coverage.src_dir = api.chromium_checkout.src_dir
     api.code_coverage.instrument([])
+
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
   _rm_build_dir(api)
 
-  raw_result = _run_siso_builds(api, 'all')
+  # Build target: all
+  raw_result = _compile_with_and_without_remote_cache(api, ['all'])
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  raw_result = _run_reclient_builds(api, 'all')
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
-
-  # TODO(b/248132996): Add goma builds
-
-  return raw_result
+  # Build target: chrome or chrome_public_apk
+  chrome_targets = ['chrome']
+  if builder_config.chromium_config == 'android':
+    chrome_targets = ['chrome_public_apk']
+  return _compile_with_and_without_remote_cache(api, chrome_targets)
 
 
 def _sanitize_nonalpha(text):
@@ -155,7 +123,6 @@ def GenTests(api):
                   build_gs_bucket=None,
               ),
               **builder).assemble()),
-      api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
   )
@@ -172,7 +139,6 @@ def GenTests(api):
                   build_gs_bucket=None,
               ),
               **builder).assemble()),
-      api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
   )
@@ -189,30 +155,27 @@ def GenTests(api):
                   build_gs_bucket=None,
               ),
               **builder).assemble()),
-      api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
   )
 
-  for client in ['siso', 'reclient']:
-    for with_remote_cache in [True, False]:
-      step = 'Build all %s remote cache (%s)' % ('with' if with_remote_cache
-                                                 else 'without', client)
-
-      yield api.test(
-          '%s_compile_fail' % (_sanitize_nonalpha(step)),
-          api.chromium.ci_build(**builder),
-          ctbc_api.properties(
-              ctbc_api.properties_assembler_for_ci_builder(
-                  builder_spec=ctbc.BuilderSpec.create(
-                      gclient_config='chromium',
-                      chromium_config='chromium',
-                      build_gs_bucket=None,
-                  ),
-                  **builder).assemble()),
-          api.siso.properties(),
-          api.reclient.properties(),
-          api.step_data(step, retcode=1),
-          api.expect_status('FAILURE'),
-          api.post_process(post_process.DropExpectation),
-      )
+  for step in [
+      'Build all without remote cache', 'Build all with remote cache',
+      'Build chrome without remote cache', 'Build chrome with remote cache'
+  ]:
+    yield api.test(
+        '%s_compile_fail' % (_sanitize_nonalpha(step)),
+        api.chromium.ci_build(**builder),
+        ctbc_api.properties(
+            ctbc_api.properties_assembler_for_ci_builder(
+                builder_spec=ctbc.BuilderSpec.create(
+                    gclient_config='chromium',
+                    chromium_config='chromium',
+                    build_gs_bucket=None,
+                ),
+                **builder).assemble()),
+        api.reclient.properties(),
+        api.step_data(step, retcode=1),
+        api.expect_status('FAILURE'),
+        api.post_process(post_process.DropExpectation),
+    )
