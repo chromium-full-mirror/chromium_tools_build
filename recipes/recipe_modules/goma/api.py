@@ -279,7 +279,7 @@ class GomaApi(recipe_api.RecipeApi):
 
     cloudtail_args = [
         'python3',
-        self.resource('cloudtail_utils.py'), 'start', '--cloudtail-path',
+        self.resource('cloudtail.py'), 'start', '--cloudtail-path',
         self.cloudtail_exe, '--pid-file',
         self.m.raw_io.output_text(leak_to=self.cloudtail_pid_file)
     ]
@@ -325,7 +325,7 @@ class GomaApi(recipe_api.RecipeApi):
         name='stop cloudtail',
         cmd=[
             'python3',
-            self.resource('cloudtail_utils.py'), 'stop', '--killed-pid-file',
+            self.resource('cloudtail.py'), 'stop', '--killed-pid-file',
             self.cloudtail_pid_file
         ],
         infra_step=True)

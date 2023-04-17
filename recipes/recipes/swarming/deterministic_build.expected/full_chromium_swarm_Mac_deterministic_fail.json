@@ -656,7 +656,7 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail_utils.py",
+      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
       "start",
       "--cloudtail-path",
       "cloudtail",
@@ -964,7 +964,7 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail_utils.py",
+      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
       "stop",
       "--killed-pid-file",
       "[TMP_BASE]/cloudtail.pid"
@@ -1242,7 +1242,7 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail_utils.py",
+      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
       "start",
       "--cloudtail-path",
       "cloudtail",
@@ -1550,7 +1550,7 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail_utils.py",
+      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
       "stop",
       "--killed-pid-file",
       "[TMP_BASE]/cloudtail.pid"
