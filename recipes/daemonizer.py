@@ -152,9 +152,9 @@ def main():
 
   if args.action == 'restart':
     return restart(args.cmd, args.pid_file_path)
-  elif args.action == 'daemonize':
+  if args.action == 'daemonize':
     return daemonize(args.cmd, None)
-  elif args.action == 'stop':
+  if args.action == 'stop':
     return stop(args.pid_file_path)
 
 

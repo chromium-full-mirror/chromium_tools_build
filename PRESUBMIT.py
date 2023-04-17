@@ -45,15 +45,7 @@ def CheckFreeze(input_api, output_api):
 # it so that they are invoked using python3 or vpython3).
 PYTHON2_FILES = (
     'recipes/bot_utils.py',
-    'recipes/build_directory.py',
-    'recipes/crash_utils.py',
-    'recipes/daemonizer.py',
     'recipes/recipe_modules/adb/resources/list_devices.py',
-    'recipes/recipe_modules/chromium_android/resources/archive_build.py',
-    (
-        'recipes/recipe_modules/chromium_android/resources/'
-        'authorize_adb_devices.py'
-    ),
     'recipes/recipe_modules/chromium_swarming/resources/merge_api.py',
     'recipes/recipe_modules/chromium_swarming/resources/noop_merge.py',
     (
@@ -70,20 +62,14 @@ PYTHON2_FILES = (
     'recipes/recipe_modules/findit/resources/check_target_existence.py',
     'recipes/recipe_modules/symupload/resources/symupload.py',
     'recipes/recipe_modules/symupload/unittests/symupload_test.py',
-    'recipes/recipes/dawn.resources/hash_testcases.py',
-    'recipes/recipes/swarming/deterministic_build.resources/move.py',
     'recipes/results_dashboard.py',
     'recipes/runisolatedtest.py',
-    'recipes/tee.py',
     'recipes/unittests/bot_utils_test.py',
     'recipes/unittests/recipe_test.py',
     'recipes/unittests/results_dashboard_test.py',
     'recipes/unittests/runisolatedtest_test.py',
-    'recipes/xvfb.py',
     'scripts/common/__init__.py',
     'scripts/common/chromium_utils.py',
-    'scripts/common/gtest_utils.py',
-    'scripts/common/unittests/gtest_utils_test.py',
 )
 
 

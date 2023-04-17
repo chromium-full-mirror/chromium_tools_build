@@ -115,11 +115,11 @@ def StartVirtualX(slave_build_name, build_dir):
       for l in proc.communicate()[0].splitlines():
         print('> %s' % l)
       raise Exception(logs)
-    else:
-      print('xdisplaycheck succeeded after %d seconds.' % checktime)
-      print('xdisplaycheck output:')
-      for l in logs.splitlines():
-        print('> %s' % l)
+
+    print('xdisplaycheck succeeded after %d seconds.' % checktime)
+    print('xdisplaycheck output:')
+    for l in logs.splitlines():
+      print('> %s' % l)
     print('...OK')
 
   # Some ChromeOS tests need a window manager.

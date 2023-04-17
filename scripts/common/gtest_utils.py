@@ -37,7 +37,7 @@ def CompressList(lines, max_length, middle_replacement):
           lines[len(lines) - (max_length - remove_from_start):])
 
 
-class GTestLogParser(object):
+class GTestLogParser:
   """This helper class process GTest test output."""
 
   def __init__(self):
@@ -463,7 +463,7 @@ class GTestLogParser(object):
       self._parsing_failures = True
 
 
-class GTestJSONParser(object):
+class GTestJSONParser:
   # Limit of output snippet lines. Avoids flooding the logs with amount
   # of output that gums up the infrastructure.
   OUTPUT_SNIPPET_LINES_LIMIT = 5000

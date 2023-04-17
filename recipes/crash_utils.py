@@ -27,7 +27,7 @@ def print_new_crash_files(new_crash_files):
 def list_crash_logs():
   """List all the crash files stored in the user directory."""
   reports_dir = os.path.expanduser('~/Library/Logs/DiagnosticReports')
-  result = [x for x in chromium_utils.LocateFiles('*.crash', reports_dir)]
+  result = chromium_utils.LocateFiles('*.crash', reports_dir)
   return result
 
 
