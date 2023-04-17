@@ -252,7 +252,7 @@ def main():
   logging.info('Writing fulfilled JavaScript coverage metadata to %s',
                params.output_dir)
   with open(os.path.join(params.output_dir, 'all.json.gz'), 'w') as f:
-    f.write(zlib.compress(json.dumps(data)))
+    f.write(zlib.compress(json.dumps(data).encode()))
 
 
 if __name__ == '__main__':
