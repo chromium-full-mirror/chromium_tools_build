@@ -31,7 +31,7 @@ class GomaApi(recipe_api.RecipeApi):
   """
 
   def __init__(self, properties, **kwargs):
-    super(GomaApi, self).__init__(**kwargs)
+    super().__init__(**kwargs)
     self._goma_dir = None
 
     # Optionally allow developers running recipes locally to override the goma
@@ -228,8 +228,7 @@ class GomaApi(recipe_api.RecipeApi):
         self._goma_dir = self.default_client_path
         Download('${platform}', self._goma_dir)
         if additional_platforms:
-          assert isinstance(additional_platforms, list) or isinstance(
-              additional_platforms, tuple)
+          assert isinstance(additional_platforms, (list, tuple))
           self._additional_platforms = additional_platforms
           for platform in self._additional_platforms:
             Download(platform, self._extra_package_path.join(platform))

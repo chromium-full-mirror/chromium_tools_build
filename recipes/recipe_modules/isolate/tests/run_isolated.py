@@ -19,7 +19,11 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, env, resultdb):
+def RunSteps(
+    api,
+    env,
+    resultdb,  # pylint: disable=redefined-outer-name
+):
   api.isolate.run_isolated(
       'run_isolated',
       'isolate_hash',

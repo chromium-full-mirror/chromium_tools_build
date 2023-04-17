@@ -17,7 +17,7 @@ class IsolateApi(recipe_api.RecipeApi):
   """APIs for interacting with isolates."""
 
   def __init__(self, **kwargs):
-    super(IsolateApi, self).__init__(**kwargs)
+    super().__init__(**kwargs)
     # TODO(maruel): Delete this recipe and use upstream isolated instead.
     # https://crbug.com/944904
     self._isolated_tests = {}

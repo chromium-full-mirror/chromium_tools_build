@@ -68,20 +68,12 @@ PYTHON2_FILES = (
 
 def GetFilesToSkip(input_api):
   return list(input_api.DEFAULT_FILES_TO_SKIP) + [
-      r'.*recipes/.*/build.*/.',
-      r'.*recipes/.*/isolate.*/.',
-      r'.*depot_tools/.*',
-      r'.*goma/.*',
-      r'.*scripts/release/.*',
-      r'.*recipes/recipes.py$',
-      r'.*recipes/recipes/.*_autogen.py$',
-
-      # Exclude all "...recipe_deps" directories.
-      #
-      # These directories are created by recipe engine.
-      # Each is an independent recipe checkout. If Pylint is run on
-      # these, it will hang forever, so we must exclude them.
-      r'^(.*/)?\..*recipe_deps/.*',
+      # recipes.py and the .recipe_deps directory are created by the recipe
+      # engine, so should not be checked as part of this repo
+      r'^recipes/recipes\.py$',
+      r'^recipes/\.recipe_deps/.*',
+      # *_pb2.py files are generated from proto files and should not be linted
+      r'.*_pb2.py$',
   ]
 
 

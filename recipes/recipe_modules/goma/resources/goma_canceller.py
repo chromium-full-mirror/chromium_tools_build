@@ -34,6 +34,7 @@ def main():
 
   while True:
     time.sleep(1)
+    # pylint: disable=subprocess-run-check
     p = subprocess.run(['python3', sys.argv[1], 'status'],
                        capture_output=True,
                        text=True)
