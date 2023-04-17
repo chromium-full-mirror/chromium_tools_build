@@ -64,6 +64,7 @@ class SisoApi(recipe_api.RecipeApi):
     cmd = [
         self.siso_path,
         'ninja',
+        '--enable_cloud_logging',
         '--project',
         self._props.project,
     ]

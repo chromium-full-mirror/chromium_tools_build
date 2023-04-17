@@ -55,6 +55,7 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra/build/siso/latest/siso",
       "ninja",
+      "--enable_cloud_logging",
       "--project",
       "test-rbe-project",
       "--reapi_instance",
