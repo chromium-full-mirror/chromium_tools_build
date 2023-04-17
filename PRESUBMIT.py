@@ -46,13 +46,6 @@ def CheckFreeze(input_api, output_api):
 PYTHON2_FILES = (
     'recipes/bot_utils.py',
     'recipes/recipe_modules/adb/resources/list_devices.py',
-    'recipes/recipe_modules/chromium_swarming/resources/merge_api.py',
-    'recipes/recipe_modules/chromium_swarming/resources/noop_merge.py',
-    (
-        'recipes/recipe_modules/chromium_swarming/unittests/'
-        'common_merge_script_tests.py'
-    ),
-    'recipes/recipe_modules/chromium_swarming/unittests/noop_merge_test.py',
     (
         'recipes/recipe_modules/cronet/resources/'
         'upload_perf_dashboard_results_test.py'

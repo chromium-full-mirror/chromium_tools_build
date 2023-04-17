@@ -12,7 +12,7 @@ import unittest
 class CommandLineTest(unittest.TestCase):
 
   def __init__(self, methodName, module):
-    super(CommandLineTest, self).__init__(methodName)
+    super().__init__(methodName)
     self._module = module
 
   def setUp(self):
