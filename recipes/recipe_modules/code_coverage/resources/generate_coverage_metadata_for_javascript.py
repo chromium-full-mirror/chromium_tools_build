@@ -112,7 +112,7 @@ def _to_compressed_file_record(lcov_lines):
       assert line_number > 0, "Invalid line number in DA line %s" % line
       assert line_number not in exec_count, "Unexpected line number in DA line %s" % line
       exec_count[line_number] = execution_count
-    elif line == END_OF_RECORD_MARKER:
+    elif line.startswith(END_OF_RECORD_MARKER):
       lines = _to_compressed_format(exec_count)
       data = {
           'path': path,
