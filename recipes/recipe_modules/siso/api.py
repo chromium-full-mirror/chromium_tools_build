@@ -17,22 +17,11 @@ class SisoApi(recipe_api.RecipeApi):
   def __init__(self, props, **kwargs):
     super().__init__(**kwargs)
     self._props = props
-    # Initialization is delayed until ensure_siso.
-    self._siso_path = None
 
   @property
   def enabled(self):
     """True if siso is configured."""
     return self._props.project
-
-  # TODO(b/277863911): use CIPD siso installed under third_party/siso.
-  def _ensure_siso(self):
-    """ensure siso is installed."""
-
-    assert self.enabled, 'siso is not configured'
-    self._siso_path = self.m.cipd.ensure_tool(
-        'infra/build/siso/${platform}',
-        self._props.siso_version)
 
   def run_ninja(self,
                 ninja_command,
@@ -142,6 +131,4 @@ class SisoApi(recipe_api.RecipeApi):
 
   @property
   def siso_path(self):
-    # TODO(ukai): decide path used in product tree.
-    self._ensure_siso()
-    return self._siso_path
+    return self.m.path['checkout'].join('third_party', 'siso', 'siso')

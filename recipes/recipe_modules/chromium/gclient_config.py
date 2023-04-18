@@ -481,6 +481,13 @@ def reclient_clang_scan_deps(c):
   cv['reclient_version'] = reclient.CLANG_SCAN_DEPS_VERSION
 
 
+# This configuration installs CIPD siso package.
+@CONFIG_CTX()
+def checkout_siso(c):
+  cv = c.solutions[0].custom_vars
+  cv['checkout_siso'] = 'True'
+
+
 @CONFIG_CTX()
 def use_rust(c):
   c.solutions[0].custom_vars['use_rust'] = 'True'
