@@ -190,9 +190,9 @@
   },
   {
     "cmd": [
-      "vpython",
+      "vpython3",
       "-vpython-spec",
-      ".vpython",
+      ".vpython3",
       "-m",
       "infra.services.lkgr_finder",
       "--project=chromium",
