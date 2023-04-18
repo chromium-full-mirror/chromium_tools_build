@@ -3,15 +3,15 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'crossbench', 'url': 'https://chromium.googlesource.com/crossbench'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'crossbench', 'url': 'https://chromium.googlesource.com/crossbench'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"crossbench\"}",
       "--git-cache-dir",
-      "[CACHE]/git",
+      "[CACHE]\\git",
       "--cleanup-dir",
-      "[CLEANUP]/bot_update",
+      "[CLEANUP]\\bot_update",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
@@ -74,10 +74,10 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
+      "RECIPE_REPO[depot_tools]\\gclient.py",
       "runhooks"
     ],
-    "cwd": "[START_DIR]/crossbench",
+    "cwd": "[START_DIR]\\crossbench",
     "env_suffixes": {
       "PATH": [
         "RECIPE_REPO[depot_tools]"
@@ -87,126 +87,30 @@
   },
   {
     "cmd": [],
-    "name": "Download Chrome Binaries"
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "gs://chromium-browser-snapshots/Linux_x64/LAST_CHANGE",
-      "[CLEANUP]/chrome_tmp_1"
-    ],
-    "infra_step": true,
-    "name": "Download Chrome Binaries.gsutil download",
+    "name": "Download Chrome Binaries",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_EXCEPTION@@@"
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]/chrome_tmp_1/LAST_CHANGE",
-      "/path/to/tmp/"
-    ],
-    "infra_step": true,
-    "name": "Download Chrome Binaries.read latest chrome version",
+    "cmd": [],
+    "name": "RECIPE CRASH (Uncaught exception)",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@LAST_CHANGE@@@"
+      "@@@STEP_EXCEPTION@@@",
+      "The recipe has crashed at point 'Uncaught exception'!",
+      "",
+      "Traceback (most recent call last):",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 24, in RunSteps",
+      "    chrome_app_path, chrome_driver_path = download_chrome(api)",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 98, in download_chrome",
+      "    raise NotImplementedError('Unsupported platform: %s' % (key,))",
+      "NotImplementedError('Unsupported platform: ('win', 'intel', 64)')"
     ]
   },
   {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "gs://chromium-browser-snapshots/Linux_x64//chrome-linux.zip",
-      "[CLEANUP]/chrome_tmp_1"
-    ],
-    "infra_step": true,
-    "name": "Download Chrome Binaries.gsutil download (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "unzip",
-      "[CLEANUP]/chrome_tmp_1/chrome-linux.zip",
-      "-d",
-      "[CLEANUP]/chrome_tmp_1/zip"
-    ],
-    "name": "Download Chrome Binaries.Extract archive",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "chmod",
-      "-R",
-      "+x",
-      "[CLEANUP]/chrome_tmp_1/zip"
-    ],
-    "name": "Download Chrome Binaries.Update permissions for [CLEANUP]/chrome_tmp_1/zip",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "gs://chromium-browser-snapshots/Linux_x64//chromedriver_linux64.zip",
-      "[CLEANUP]/chrome_tmp_1"
-    ],
-    "infra_step": true,
-    "name": "Download Chrome Binaries.gsutil download (3)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "unzip",
-      "[CLEANUP]/chrome_tmp_1/chromedriver_linux64.zip",
-      "-d",
-      "[CLEANUP]/chrome_tmp_1/zip"
-    ],
-    "name": "Download Chrome Binaries.Extract archive (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "crossbench/tests/end2end/runner.py",
-      "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome-linux/chrome",
-      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver_linux64/chromedriver"
-    ],
-    "name": "Run End2End Tests"
-  },
-  {
+    "failure": {
+      "humanReason": "Uncaught Exception: NotImplementedError('Unsupported platform: ('win', 'intel', 64)')"
+    },
     "name": "$result"
   }
 ]

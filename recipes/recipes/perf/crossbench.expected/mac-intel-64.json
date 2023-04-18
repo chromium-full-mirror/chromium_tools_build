@@ -98,7 +98,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "gs://chromium-browser-snapshots/Linux_x64/LAST_CHANGE",
+      "gs://chromium-browser-snapshots/Mac/LAST_CHANGE",
       "[CLEANUP]/chrome_tmp_1"
     ],
     "infra_step": true,
@@ -134,7 +134,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "gs://chromium-browser-snapshots/Linux_x64//chrome-linux.zip",
+      "gs://chromium-browser-snapshots/Mac//chrome-mac.zip",
       "[CLEANUP]/chrome_tmp_1"
     ],
     "infra_step": true,
@@ -146,7 +146,7 @@
   {
     "cmd": [
       "unzip",
-      "[CLEANUP]/chrome_tmp_1/chrome-linux.zip",
+      "[CLEANUP]/chrome_tmp_1/chrome-mac.zip",
       "-d",
       "[CLEANUP]/chrome_tmp_1/zip"
     ],
@@ -176,7 +176,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "gs://chromium-browser-snapshots/Linux_x64//chromedriver_linux64.zip",
+      "gs://chromium-browser-snapshots/Mac//chromedriver_mac64.zip",
       "[CLEANUP]/chrome_tmp_1"
     ],
     "infra_step": true,
@@ -188,7 +188,7 @@
   {
     "cmd": [
       "unzip",
-      "[CLEANUP]/chrome_tmp_1/chromedriver_linux64.zip",
+      "[CLEANUP]/chrome_tmp_1/chromedriver_mac64.zip",
       "-d",
       "[CLEANUP]/chrome_tmp_1/zip"
     ],
@@ -201,8 +201,8 @@
     "cmd": [
       "vpython3",
       "crossbench/tests/end2end/runner.py",
-      "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome-linux/chrome",
-      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver_linux64/chromedriver"
+      "--test-browser-path=[CLEANUP]/chrome_tmp_1/zip/chrome-mac/Chromium.app",
+      "--test-driver-path=[CLEANUP]/chrome_tmp_1/zip/chromedriver_mac64/chromedriver"
     ],
     "name": "Run End2End Tests"
   },
