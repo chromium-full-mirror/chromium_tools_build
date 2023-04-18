@@ -122,7 +122,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
   api.file.ensure_directory('mkdirs builder/lw', checkout_dir.join('lw'))
   args = [
       '-vpython-spec',
-      '.vpython3',
+      '.vpython',
       '-m',
       'infra.services.lkgr_finder',
       '--project=%s' % project,
@@ -155,7 +155,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
   try:
     with api.context(cwd=checkout_dir.join('infra')):
       api.step(
-          'calculate %s lkgr' % project, ['vpython3'] + args,
+          'calculate %s lkgr' % project, ['vpython'] + args,
           step_test_data=lambda: step_test_data)
   finally:
     step_result = api.step.active_result

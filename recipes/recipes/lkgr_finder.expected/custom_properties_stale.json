@@ -190,9 +190,9 @@
   },
   {
     "cmd": [
-      "vpython3",
+      "vpython",
       "-vpython-spec",
-      ".vpython3",
+      ".vpython",
       "-m",
       "infra.services.lkgr_finder",
       "--project=custom",
