@@ -6,6 +6,8 @@
       "--enable_cloud_logging",
       "--project",
       "test-rbe-project",
+      "--deps_log",
+      "[CACHE]/siso/deps_log",
       "--reapi_instance",
       "default_instance",
       "-C",

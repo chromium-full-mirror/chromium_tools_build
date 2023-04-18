@@ -56,6 +56,8 @@ class SisoApi(recipe_api.RecipeApi):
         '--enable_cloud_logging',
         '--project',
         self._props.project,
+        '--deps_log',
+        self._deps_log,
     ]
     if self._props.reapi_address:
       cmd.extend([
@@ -127,7 +129,16 @@ class SisoApi(recipe_api.RecipeApi):
     for i, arg in enumerate(ninja_command):
       if arg == '-C':
         return ninja_command[i + 1]
+
     return "."
+
+  @property
+  def _cache_dir(self):
+    return self.m.path['cache'].join('siso')
+
+  @property
+  def _deps_log(self):
+    return self._cache_dir.join('deps_log')
 
   @property
   def siso_path(self):
