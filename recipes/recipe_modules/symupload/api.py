@@ -105,7 +105,7 @@ class SymuploadApi(recipe_api.RecipeApi):
 
     cmd = [
         'python3',
-        self.resource('symupload.py'),
+        self.resource('symupload_script.py'),
         '--artifacts',
         ','.join(artifacts),
         '--api-key-file',

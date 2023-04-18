@@ -113,7 +113,7 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::symupload]/resources/symupload.py",
+      "RECIPE_MODULE[build::symupload]/resources/symupload_script.py",
       "--artifacts",
       "[TMP_BASE]/glob1.txt,[TMP_BASE]/glob2.txt,[TMP_BASE]/some_artifact.txt",
       "--api-key-file",

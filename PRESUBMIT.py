@@ -45,8 +45,6 @@ def CheckFreeze(input_api, output_api):
 # it so that they are invoked using python3 or vpython3).
 PYTHON2_FILES = (
     'recipes/bot_utils.py',
-    'recipes/recipe_modules/symupload/resources/symupload.py',
-    'recipes/recipe_modules/symupload/unittests/symupload_test.py',
     'recipes/runisolatedtest.py',
     'recipes/unittests/bot_utils_test.py',
     'recipes/unittests/recipe_test.py',
