@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Functions for adding results to perf dashboard.
 
 NOTE: This file is deprecated and no longer maintained by the
@@ -55,8 +54,9 @@ def LuciAuthTokenGeneratorCallback(service_account_file):
   if service_account_file:
     args += ['-service-account-json', service_account_file]
   else:
-    print ('service_account_file is not set. '
-           'Use LUCI swarming task service account')
+    print(
+        'service_account_file is not set. '
+        'Use LUCI swarming task service account')
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   if p.wait() == 0:
     return p.stdout.read()
@@ -66,8 +66,12 @@ def LuciAuthTokenGeneratorCallback(service_account_file):
         (p.stdout.read(), p.stderr.read()))
 
 
-def SendResults(data, url, build_dir, json_url_file=None,
-                send_as_histograms=False, oauth_token=None):
+def SendResults(data,
+                url,
+                build_dir,
+                json_url_file=None,
+                send_as_histograms=False,
+                oauth_token=None):
   """Sends results to the Chrome Performance Dashboard.
 
   This function tries to send the given data to the dashboard, in addition to
@@ -100,7 +104,6 @@ def SendResults(data, url, build_dir, json_url_file=None,
     dashboard_url = _DashboardUrl(url, data)
     with open(json_url_file, 'w') as f:
       json.dump(dashboard_url if dashboard_url else '', f)
-
 
   # Print any errors; if there was a fatal error, it should be an exception.
   for error in errors:
@@ -219,11 +222,16 @@ def MakeHistogramSetWithDiagnostics(histograms_file, chromium_checkout_path,
                                     perf_dashboard_machine_group):
   add_diagnostics_args = []
   add_diagnostics_args.extend([
-      '--benchmarks', test_name,
-      '--bots', bot,
-      '--builds', buildnumber,
-      '--masters', perf_dashboard_machine_group,
-      '--is_reference_build', 'true' if is_reference_build else '',
+      '--benchmarks',
+      test_name,
+      '--bots',
+      bot,
+      '--builds',
+      buildnumber,
+      '--masters',
+      perf_dashboard_machine_group,
+      '--is_reference_build',
+      'true' if is_reference_build else '',
   ])
 
   url = _MakeStdioUrl(test_name, buildername, buildnumber)
@@ -239,9 +247,10 @@ def MakeHistogramSetWithDiagnostics(histograms_file, chromium_checkout_path,
   # Subprocess only accepts string args
   add_diagnostics_args = [str(v) for v in add_diagnostics_args]
 
-  add_reserved_diagnostics_path = os.path.join(
-      chromium_checkout_path, 'src', 'third_party', 'catapult', 'tracing',
-      'bin', 'add_reserved_diagnostics')
+  add_reserved_diagnostics_path = os.path.join(chromium_checkout_path, 'src',
+                                               'third_party', 'catapult',
+                                               'tracing', 'bin',
+                                               'add_reserved_diagnostics')
   cmd = [sys.executable, add_reserved_diagnostics_path] + add_diagnostics_args
 
   subprocess.call(cmd)
@@ -253,8 +262,12 @@ def MakeHistogramSetWithDiagnostics(histograms_file, chromium_checkout_path,
   return hs
 
 
-def MakeListOfPoints(charts, bot, test_name, buildername,
-                     buildnumber, supplemental_columns,
+def MakeListOfPoints(charts,
+                     bot,
+                     test_name,
+                     buildername,
+                     buildnumber,
+                     supplemental_columns,
                      perf_dashboard_machine_group,
                      revisions_dict=None):
   """Constructs a list of point dictionaries to send.
@@ -281,7 +294,8 @@ def MakeListOfPoints(charts, bot, test_name, buildername,
 
   for chart_name, chart_data in sorted(charts.items()):
     point_id, revision_columns = _RevisionNumberColumns(
-      revisions_dict if revisions_dict is not None else chart_data, prefix='r_')
+        revisions_dict if revisions_dict is not None else chart_data,
+        prefix='r_')
 
     for trace_name, trace_values in sorted(chart_data['traces'].items()):
       is_important = trace_name in chart_data.get('important', [])
@@ -351,8 +365,7 @@ def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
     if key.startswith('a_'):
       supplemental[key.replace('a_', '', 1)] = supplemental_dict[key]
 
-  supplemental.update(
-      _GetStdioUriColumn(test_name, buildername, buildnumber))
+  supplemental.update(_GetStdioUriColumn(test_name, buildername, buildnumber))
 
   # TODO(sullivan): The android recipe sends "test_name.reference"
   # while the desktop one just sends "test_name" for ref builds. Need
@@ -380,10 +393,8 @@ def _MakeStdioUrl(test_name, buildername, buildnumber):
     return ''
 
   return '%sbuilders/%s/builds/%s/steps/%s/logs/stdio' % (
-      _GetBuildBotUrl(),
-      urllib.quote(buildername),
-      urllib.quote(str(buildnumber)),
-      urllib.quote(test_name))
+      _GetBuildBotUrl(), urllib.quote(buildername),
+      urllib.quote(str(buildnumber)), urllib.quote(test_name))
 
 
 def _GetStdioUriColumn(test_name, buildername, buildnumber):
@@ -524,9 +535,8 @@ def _SendResultsJson(url, results_json, oauth_token):
       raise SendResultsRetryException(traceback.format_exc())
 
     if response.status != 200:
-      raise SendResultsFatalException(
-          'HTTP Response %d: %s' % (response.status, response.reason)
-      )
+      raise SendResultsFatalException('HTTP Response %d: %s' %
+                                      (response.status, response.reason))
   except httplib2.HttpLib2Error:
     raise SendResultsRetryException(traceback.format_exc())
 
@@ -555,10 +565,11 @@ def _SendHistogramJson(url, histogramset_json, oauth_token):
       raise SendResultsRetryException(traceback.format_exc())
 
     if response.status != 200:
-      raise SendResultsFatalException('HTTP Response %d: %s' % (
-          response.status, response.reason))
+      raise SendResultsFatalException('HTTP Response %d: %s' %
+                                      (response.status, response.reason))
   except httplib2.HttpLib2Error:
     raise SendResultsRetryException(traceback.format_exc())
+
 
 def _DashboardUrl(url, data):
   """Returns link to the dashboard if possible.
@@ -573,13 +584,12 @@ def _DashboardUrl(url, data):
   if not data:
     return None
   if isinstance(data, list):
-    master, bot, test, revision = (
-        data[0]['master'], data[0]['bot'], data[0]['test'], data[0]['revision'])
+    master, bot, test, revision = (data[0]['master'], data[0]['bot'],
+                                   data[0]['test'], data[0]['revision'])
   else:
-    master, bot, test, revision = (
-        data['master'], data['bot'], data['chart_data']['benchmark_name'],
-        data['point_id'])
-  results_link = url + RESULTS_LINK_PATH % (
-      urllib.quote(master), urllib.quote(bot), urllib.quote(test.split('/')[0]),
-      revision)
+    master, bot, test, revision = (data['master'], data['bot'],
+                                   data['chart_data']['benchmark_name'],
+                                   data['point_id'])
+  results_link = url + RESULTS_LINK_PATH % (urllib.quote(
+      master), urllib.quote(bot), urllib.quote(test.split('/')[0]), revision)
   return results_link

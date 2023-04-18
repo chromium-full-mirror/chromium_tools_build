@@ -45,22 +45,26 @@ def CheckFreeze(input_api, output_api):
 # it so that they are invoked using python3 or vpython3).
 PYTHON2_FILES = (
     'recipes/bot_utils.py',
+    'recipes/recipe_modules/disk/resources/statvfs.py',
+    'recipes/recipe_modules/symupload/resources/symupload.py',
+    'recipes/recipe_modules/symupload/unittests/symupload_test.py',
+    'recipes/runisolatedtest.py',
+    'recipes/unittests/bot_utils_test.py',
+    'recipes/unittests/recipe_test.py',
+    'recipes/unittests/runisolatedtest_test.py',
+    'scripts/common/__init__.py',
+    'scripts/common/chromium_utils.py',
+
+    # TODO(crbug.com/1434362) The following files need to be migrated to
+    # python3; there are bytes vs str issues and dict ordering issues that need
+    # to be resolved
+    'recipes/recipe_modules/cronet/resources/results_dashboard.py',
+    'recipes/recipe_modules/cronet/resources/results_dashboard_test.py',
+    'recipes/recipe_modules/cronet/resources/upload_perf_dashboard_results.py',
     (
         'recipes/recipe_modules/cronet/resources/'
         'upload_perf_dashboard_results_test.py'
     ),
-    'recipes/recipe_modules/cronet/resources/upload_perf_dashboard_results.py',
-    'recipes/recipe_modules/disk/resources/statvfs.py',
-    'recipes/recipe_modules/symupload/resources/symupload.py',
-    'recipes/recipe_modules/symupload/unittests/symupload_test.py',
-    'recipes/results_dashboard.py',
-    'recipes/runisolatedtest.py',
-    'recipes/unittests/bot_utils_test.py',
-    'recipes/unittests/recipe_test.py',
-    'recipes/unittests/results_dashboard_test.py',
-    'recipes/unittests/runisolatedtest_test.py',
-    'scripts/common/__init__.py',
-    'scripts/common/chromium_utils.py',
 )
 
 

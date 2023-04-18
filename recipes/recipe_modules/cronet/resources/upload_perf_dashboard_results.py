@@ -14,6 +14,8 @@ import os
 import re
 import sys
 
+import results_dashboard
+
 ROOT_DIR = os.path.normpath(
     os.path.join(__file__, '..', '..', '..', '..', '..'))
 sys.path.extend([
@@ -22,7 +24,6 @@ sys.path.extend([
 ])
 
 import bot_utils
-import results_dashboard
 
 
 def _GetMainRevision(commit_pos, build_dir, revision=None):
