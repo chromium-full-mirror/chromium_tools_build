@@ -470,7 +470,7 @@
   },
   {
     "cmd": [
-      "python",
+      "python3",
       "RECIPE_MODULE[build::adb]/resources/list_devices.py",
       "['[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb', 'devices']",
       "/path/to/tmp/json"

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 DEPS = [
-    'adb',
     'archive',
     'build',
     'builder_group',

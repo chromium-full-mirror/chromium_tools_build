@@ -14,7 +14,6 @@ DEPS = [
     'depot_tools/git',
     'depot_tools/gsutil',
     'depot_tools/tryserver',
-    'adb',
     'build',
     'builder_group',
     'gn',

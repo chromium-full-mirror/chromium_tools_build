@@ -28,7 +28,7 @@ class AdbApi(recipe_api.RecipeApi):
 
   def list_devices(self, step_test_data=None, **kwargs):
     cmd = [
-        'python',
+        'python3',
         self.resource('list_devices.py'),
         repr([
             str(self.adb_path()),

@@ -5,7 +5,6 @@
 from PB.recipe_modules.build.chromium_tests import properties
 
 DEPS = [
-    'adb',
     'archive',
     'build',
     'builder_group',

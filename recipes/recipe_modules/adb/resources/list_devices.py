@@ -19,7 +19,7 @@ logging.basicConfig(level=0)
 cmd = eval(sys.argv[1])
 outFileName = sys.argv[2]
 
-output = subprocess.check_output(cmd)
+output = subprocess.check_output(cmd, text=True)
 devices = []
 for line in output.splitlines():
   logging.info(line)
