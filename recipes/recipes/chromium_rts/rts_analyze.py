@@ -15,6 +15,7 @@ DEPS = [
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/time',
 ]
@@ -49,28 +50,41 @@ def RunSteps(api):
 
   bq_cmd = [
       "bq", "query", "--project_id=" + _CLOUD_PROJECT_ID, "--format=json",
-      "--max_rows=10", "--nouse_legacy_sql", builder_suite_query
+      "--max_rows=10000", "--nouse_legacy_sql", builder_suite_query
   ]
   step_result = api.step(
       'get builder suites', bq_cmd, timeout=60, stdout=api.json.output())
   builder_suites = step_result.stdout
 
+  futures = []
   for builder_suite in builder_suites:
     test_suite = builder_suite['test_suite']
     builder = builder_suite['builder']
-    api.step(
-        f'analyze {test_suite} on {builder}',
-        [
-            exec_path,
-            'analyze',
-            f'-rejections={rejections_dir}',
-            f'-durations={durations_dir}',
-            f'-builder={builder}',
-            f'-testSuite={test_suite}',
-        ],
-    )
+    futures.append(
+        api.futures.spawn_immediate(_analzye_builder_suite, api, builder,
+                                    test_suite, rejections_dir, durations_dir,
+                                    exec_path))
+
+  # Check future's exception.
+  for f in futures:
+    f.result()
 
   return result_pb2.RawResult(status=common_pb.SUCCESS,)
+
+
+def _analzye_builder_suite(api, builder, test_suite, rejections_dir,
+                           durations_dir, exec_path):
+  step_result = api.step(
+      f'analyze {test_suite} on {builder}', [
+          exec_path,
+          'analyze',
+          f'-rejections={rejections_dir}',
+          f'-durations={durations_dir}',
+          f'-builder={builder}',
+          f'-testSuite={test_suite}',
+      ],
+      stdout=api.raw_io.output_text())
+  step_result.presentation.step_text = step_result.stdout
 
 
 def _fetch_model_data(api, exec_path, rejection_date_range,
@@ -93,7 +107,6 @@ def _fetch_model_data(api, exec_path, rejection_date_range,
               str(exec_path),
               'fetch-rejections',
               f'-out={rejections_dir}',
-              '-ignore-file',
           ] + _date_range_flags(rejection_date_range),
       ),
       api.futures.spawn_immediate(
@@ -104,7 +117,6 @@ def _fetch_model_data(api, exec_path, rejection_date_range,
               'fetch-durations',
               f'-frac={TEST_DURATION_DATA_PERCENTAGE / 100.0 :.3f}',
               f'-out={durations_dir}',
-              '-ignore-file',
           ] + _date_range_flags(duration_date_range),
       ),
   ])
@@ -139,6 +151,25 @@ def GenTests(api):
               'builder': 'android-nougat-x86-rel',
               'test_suite': 'chrome_public_test_apk'
           }])),
+      api.step_data(
+          'analyze browser_tests on linux-chromeos-rel',
+          stdout=api.raw_io.output_text('''
+Rejection:
+     Most affected test: +Inf distance
+     https://chromium-review.googlesource.com/c/4398410/4
+       //chrome/browser/media/encrypted_media_browsertest.cc
+     Failed and not selected tests:
+       - builder:win-rel | os:Windows-10-19045 | test_suite:browser_tests
+         in //chrome/browser/media/encrypted_media_browsertest.cc
+           ninja://chrome/test:browser_tests/MediaFoundationEncryptedMediaTest.Playback_EncryptedAudioCbcs_MediaTypeUnsupported
+ ChangeRecall | Savings
+ ----------------------
+  99.16%      |   8.37% 
+ based on 837 rejections, 862565 test failures, 2 years 52 days 20 hours 22 minutes 37 seconds testing time
+ ''')),
+      api.step_data(
+          'analyze chrome_public_test_apk on android-nougat-x86-rel',
+          stdout=api.raw_io.output_text('Fake data with no summary')),
       api.post_process(post_process.MustRun,
                        'analyze browser_tests on linux-chromeos-rel'),
       api.post_process(
@@ -151,17 +182,12 @@ def GenTests(api):
 
 builder_suite_query = '''
 SELECT
-  cq_builders.builder AS builder,
-  (
-    SELECT
-      SPLIT(tag, ':')[OFFSET(1)]
-    FROM UNNEST(s.request.tags) tag
-    WHERE STARTS_WITH(tag, 'test_suite:')
-  ) AS test_suite,
-FROM `chromium-swarm.swarming.task_results_summary` s
+  (SELECT v.value FROM tr.variant AS v WHERE v.key = 'builder') AS builder,
+  (SELECT v.value FROM tr.variant AS v WHERE v.key = 'test_suite') AS test_suite,
+FROM chrome-luci-data.chromium.try_test_results tr
   INNER JOIN `chrome-trooper-analytics.metrics.cq_builders` cq_builders
-    ON (SELECT SPLIT(tag, ':')[OFFSET(1)] FROM UNNEST(s.request.tags) tag WHERE STARTS_WITH(tag, 'buildername:')) = cq_builders.builder
-WHERE DATE(end_time) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
+    ON (SELECT v.value FROM tr.variant AS v WHERE v.key = 'builder') = cq_builders.builder
+WHERE DATE(tr.partition_time) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY)
 GROUP BY builder, test_suite
-ORDER BY SUM(s.duration) DESC
+ORDER BY COUNT(*) DESC
 '''
