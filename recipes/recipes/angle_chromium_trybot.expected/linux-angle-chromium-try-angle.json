@@ -35,7 +35,7 @@
       }
     },
     "name": "gerrit fetch current CL info",
-    "timeout": 360,
+    "timeout": 480,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -216,7 +216,7 @@
       }
     },
     "name": "gerrit changes",
-    "timeout": 360,
+    "timeout": 480,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -835,7 +835,7 @@
       }
     },
     "name": "gerrit changes (2)",
-    "timeout": 360,
+    "timeout": 480,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -2291,7 +2291,7 @@
       }
     },
     "name": "gerrit changes (3)",
-    "timeout": 360,
+    "timeout": 480,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
