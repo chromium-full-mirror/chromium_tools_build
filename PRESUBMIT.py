@@ -52,7 +52,6 @@ PYTHON2_FILES = (
     ),
     'recipes/recipe_modules/cronet/resources/upload_perf_dashboard_results.py',
     'recipes/recipe_modules/disk/resources/statvfs.py',
-    'recipes/recipe_modules/findit/resources/check_target_existence.py',
     'recipes/recipe_modules/symupload/resources/symupload.py',
     'recipes/recipe_modules/symupload/unittests/symupload_test.py',
     'recipes/results_dashboard.py',
