@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (c) 2014 The Chromium Authors. All Rights Reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -21,4 +22,4 @@ data = {
     'used': (stats.f_blocks - stats.f_bavail) * stats.f_frsize,
 }
 json.dump(data, sys.stdout)
-print ''  # put \n
+print()  # put \n
