@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,10 +19,10 @@ VERBOSE_ARG = ['--verbose'] if VERBOSE else []
 ALLOWED_ARGS = 1 if VERBOSE else 0
 
 if len(sys.argv) > ALLOWED_ARGS+1:
-  print 'It looks like you\'re manually invoking this test script. Please note'
-  print 'that this is just a wrapper to enable `git cl presubmit` testing.'
-  print
-  print 'To interact with the recipes, please use %s directly.' % RECIPES_PY
+  print('It looks like you\'re manually invoking this test script. Please note')
+  print('that this is just a wrapper to enable `git cl presubmit` testing.')
+  print()
+  print('To interact with the recipes, please use %s directly.' % RECIPES_PY)
   sys.exit(1)
 
 MODULE_ALLOWLIST = ['attr']

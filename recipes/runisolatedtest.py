@@ -147,9 +147,9 @@ def main(argv):
     )
 
     return run_test_isolated(isolate_script, test_exe, original_command)
-  else:
-    logging.info('Running test normally')
-    return run_command(original_command)
+
+  logging.info('Running test normally')
+  return run_command(original_command)
 
 
 if '__main__' == __name__:

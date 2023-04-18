@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python3
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -21,14 +21,14 @@ from recipes import runisolatedtest
 class TestAll(unittest.TestCase):
 
   def setUp(self):
-    super(TestAll, self).setUp()
+    super().setUp()
     self._run_command = runisolatedtest.run_command
     self.tempdir = tempfile.mkdtemp(prefix='runisolatedtest')
 
   def tearDown(self):
     runisolatedtest.run_command = self._run_command
     shutil.rmtree(self.tempdir)
-    super(TestAll, self).tearDown()
+    super().tearDown()
 
   def test_arguments(self):
     actual = []
