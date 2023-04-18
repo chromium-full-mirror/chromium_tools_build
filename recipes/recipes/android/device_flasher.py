@@ -97,33 +97,77 @@ def _GetSwarmingBots(api, flash_criteria):
   return swarming_bots
 
 
+def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
+  task_request = api.swarming.task_request()
+  task_request = task_request.with_slice(
+      0, task_request[0].with_dimensions(pool=pool, id=bot_id))
+  # TODO: Form the task request to flash the device in the same way as
+  # http://go/cci-trooper/procedures/Android_Device_Issues.md#reflash
+  return task_request
+
+
 def _ProcessBot(api, bot, flash_criteria):
   task_request = None
 
-  if flash_criteria.max_uid_threshold:
-    device_type, device_os = None, None
-    if bot.dimensions:
-      device_type = bot.dimensions.get('device_type', [None])[-1]
-      device_os = bot.dimensions.get('device_os', [None])[-1]
-    if device_type and device_os and _LookupImage(api, device_type, device_os):
-      # TODO
-      # - Get the max_uid from the bot.state
-      # - If the max_uid reaches the threshold, create a task request which will
-      #   flash the device in the same way as
-      #   http://go/cci-trooper/procedures/Android_Device_Issues.md#reflash
-      pass
+  if not flash_criteria.max_uid_threshold:  # pragma: no cover
+    return task_request
+
+  pool, device_type, device_os = None, None, None
+  if bot.dimensions:
+    pool = bot.dimensions['pool'][-1]
+    device_type = bot.dimensions['device_type'][-1]
+    device_os = bot.dimensions['device_os'][-1]
+  if not (pool and device_type and device_os and
+          _LookupImage(api, device_type, device_os)):
+    return task_request
+
+  # Default bot's max_uid to UID_LOWER_LIMIT, in case bot does not have this
+  # prop, e.g. in fastboot mode.
+  max_uid = UID_LOWER_LIMIT
+
+  if bot.state and 'devices' in bot.state:
+    # Note that one Android swarming bot will have at most *one* device.
+    for _, device_state in bot.state['devices'].items():
+      max_uid = device_state['max_uid']
+  if max_uid and max_uid >= flash_criteria.max_uid_threshold:
+    step = api.step.empty(
+        'Create flash task for %s' % bot.bot_id,
+        step_text='max_uid (%d) reaches threshold %d' %
+        (max_uid, flash_criteria.max_uid_threshold))
+    step.presentation.links['bot UI: %s' % bot.bot_id] = bot.bot_ui_link
+    task_request = _CreateFlashTaskRequest(api, bot.bot_id, pool, device_type,
+                                           device_os)
 
   return task_request
 
 
-def _RunTasks(api, tasks_by_host, task_num_per_host, dry_run):
-  task_results = []
+def _RunTasks(api, tasks_by_host, dry_run):
+  """Trigger the tasks group by group and collect the results.
 
-  # TODO
-  # - Split the tasks into chucks so that one host will run at most
-  #   <task_num_per_host> tasks at a time.
-  # - Trigger and collect tasks chuck by chunk.
-  # - Return all the task results
+  One Android host machine hosts up to 7 devices. The machine may run of disk
+  space or hit IO bound if 7 devices are flashed all together. To avoid that,
+  we split them into subgroups where each subgroup contains at most 3 devices
+  from the same host.
+  """
+  task_results = []
+  counter = -1
+  while True:
+    subgroup = []
+    counter += 1
+    for host_machine, tasks in tasks_by_host.items():
+      subgroup.extend(tasks[:3])
+      tasks_by_host[host_machine] = tasks[3:]
+    if not subgroup:
+      break
+    if dry_run:  # pragma: no cover
+      task_jsons = [t.to_jsonish() for t in subgroup]
+      api.step.empty('Trigger flash task group %d (dry_run)' % counter,
+                     log_text=api.json.dumps(task_jsons, indent=2))
+    else:
+      tasks = api.swarming.trigger(
+          'Trigger flash task group %d' % counter, subgroup)
+      task_results.extend(api.swarming.collect(
+          'Collect results for task group %d' % counter, tasks))
 
   return task_results
 
@@ -137,10 +181,15 @@ def RunSteps(api, properties):
       tasks_by_host = collections.defaultdict(list)
       swarming_bots = _GetSwarmingBots(api, flash_criteria)
       for bot in swarming_bots:
-        _ProcessBot(api, bot, flash_criteria)
-        # TODO: group the task by the host_machine
+        task_request = _ProcessBot(api, bot, flash_criteria)
+        if task_request:
+          # bot_id for Android follows the format "<host_machine>--device{1,7}"
+          # We group the task by the host_machine.
+          # TODO: Switch to get host_machine from "authenticated_as"
+          host_machine = bot.bot_id.split('--device')[0]
+          tasks_by_host[host_machine].append(task_request)
 
-      _RunTasks(api, tasks_by_host, 3, properties.dry_run)
+      _RunTasks(api, tasks_by_host, properties.dry_run)
 
       # TODO: Display the successfull and failed tasks
 
@@ -151,7 +200,7 @@ def GenTests(api):
       'basic',
       api.properties(flash_criteria=[{
           'pool': 'chromium.tests',
-          'device_type': 'walleye|sailfish',
+          'device_type': 'walleye',
           'device_os': 'PQ3A.190801.002',
           'max_uid_threshold': 18000,
       }]),
@@ -172,19 +221,6 @@ def GenTests(api):
                   }},
               ),
               api.swarming.generate_bot_json(
-                  'no-image--device1',
-                  dimensions={
-                      'pool': ['chromium.tests'],
-                      'device_type': ['sailfish'],
-                      'device_os': ['P', 'PQ3A.190801.002'],
-                  },
-                  state={'devices': {
-                      'device_serial': {
-                          'max_uid': 17000,
-                      }
-                  }},
-              ),
-              api.swarming.generate_bot_json(
                   'dead--device3',
                   is_dead=True,
               ),
@@ -195,21 +231,18 @@ def GenTests(api):
               # TODO: Add a bot in maintenance once
               # https://crrev.com/c/4383489 lands.
           ])),
-      api.override_step_data(
-          'Process flash criteria 0.'
-          'gsutil lookup image for sailfish, PQ3A.190801.002',
-          stderr=api.raw_io.output_text(GSUTIL_NO_MATCH_TXT),
-          retcode=1,
-      ),
+      api.post_process(
+          post_process.MustRun,
+          'Process flash criteria 0.Create flash task for flash--device1'),
       api.post_process(post_process.DropExpectation),
       status="SUCCESS",
   )
 
   yield api.test(
-      'lookup-image-caching',
+      'lookup-image',
       api.properties(flash_criteria=[{
           'pool': 'chromium.tests',
-          'device_type': 'walleye',
+          'device_type': 'walleye|sailfish',
           'device_os': 'PQ3A.190801.002',
           'max_uid_threshold': 18000,
       }]),
@@ -232,6 +265,14 @@ def GenTests(api):
                       'device_os': ['P', 'PQ3A.190801.002'],
                   },
               ),
+              api.swarming.generate_bot_json(
+                  'no-image--device1',
+                  dimensions={
+                      'pool': ['chromium.tests'],
+                      'device_type': ['sailfish'],
+                      'device_os': ['P', 'PQ3A.190801.002'],
+                  },
+              ),
           ])),
       api.post_process(post_process.MustRun,
                        'Process flash criteria 0.'
@@ -240,6 +281,19 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'Process flash criteria 0.'
                        'gsutil lookup image for walleye, PQ3A.190801.002 (2)'),
+      # Check when no image exists
+      api.override_step_data(
+          'Process flash criteria 0.'
+          'gsutil lookup image for sailfish, PQ3A.190801.002',
+          stderr=api.raw_io.output_text(GSUTIL_NO_MATCH_TXT),
+          retcode=1),
+      api.post_process(post_process.StepWarning,
+                       'Process flash criteria 0.'
+                       'gsutil lookup image for sailfish, PQ3A.190801.002'),
+      api.post_process(post_process.StepTextContains,
+                       'Process flash criteria 0.'
+                       'gsutil lookup image for sailfish, PQ3A.190801.002',
+                       ['matches no object']),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
   )
