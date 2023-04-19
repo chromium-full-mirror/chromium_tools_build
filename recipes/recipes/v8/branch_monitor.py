@@ -6,11 +6,14 @@
 Recipe for checking that V8 is rolled in Chromium in a timely manner.
 """
 
-from datetime import datetime
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 
 from recipe_engine.recipe_api import Property
 from recipe_engine.post_process import (DropExpectation, StepFailure,
                                         ResultReason)
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine.result import RawResult
 
 DEPS = [
     'chromiumdash',
@@ -36,31 +39,82 @@ PROPERTIES = {
 }
 
 
+@dataclass
+class CommitTime:
+  revision: str
+  commit_time: datetime
+  time_gap: timedelta
+
+  def __str__(self):
+    return f'{self.revision} {self.commit_time} ({self.formated_time_gap})'
+
+  def overdue_message(self):
+    return f'Revision {self.revision} was not rolled for {self.formated_time_gap}'
+
+  def is_overdue(self, max_gap_seconds):
+    return self.time_gap.total_seconds() > max_gap_seconds
+
+  @property
+  def formated_time_gap(self):
+    return str(self.time_gap).split(".")[0]
+
+
+@dataclass
+class BranchResult:
+  branch: str
+  commits_not_rolled: int
+  overdue_commits: int
+
+  def summary(self):
+    if self.is_overdue:
+      return f'{self.branch}: {self.overdue_commits} overdue commits'
+    return f'{self.branch}: {self.commits_not_rolled} commits not rolled'
+
+  @property
+  def is_overdue(self):
+    return self.overdue_commits > 0
+
+
 def RunSteps(api, max_gap_seconds):
+  now = api.time.utcnow()
   branches = api.chromiumdash.milestones(0, only_active=True)
   if not branches:
     raise api.step.StepFailure('No branches found')
 
-  branches_in_sync = all( # pylint: disable=use-a-generator
-      [check_branch(api, branch, max_gap_seconds) for branch in branches])
-  if not branches_in_sync:
-    raise api.step.StepFailure('Some branches are falling behind')
+  branch_results = [
+      check_branch(api, branch, max_gap_seconds, now) for branch in branches
+  ]
+  overdue_branches = [br for br in branch_results if br.is_overdue]
+
+  status = common_pb.FAILURE if overdue_branches else common_pb.SUCCESS
+  return RawResult(
+      status=status,
+      summary_markdown='\n'.join(b.summary() for b in branch_results))
 
 
-def check_branch(api, branch, max_gap_seconds):
+def check_branch(api, branch, max_gap_seconds, now):
   chromium_branch = branch['chromium_branch']
   assert branch['v8_branch'].endswith('-lkgr')
   v8_branch = branch['v8_branch'][:-len('-lkgr')]
 
-  with api.step.nest(f'branch {v8_branch} ({chromium_branch})'):
+  with api.step.nest(f'branch {v8_branch} ({chromium_branch})') as step:
     deps_file = download_chromium_deps(api, chromium_branch)
     last_rolled_revision = read_last_rolled_revision(api, deps_file)
     commits_not_rolled = get_commits_not_rolled(api, last_rolled_revision,
                                                 v8_branch)
-    return all([ # pylint: disable=use-a-generator
-        check_commit(api, commit, max_gap_seconds)
-        for commit in commits_not_rolled
-    ])
+    commit_times = [commit_time(commit, now) for commit in commits_not_rolled]
+    step.presentation.step_text = '\n'.join(str(c) for c in commit_times)
+
+    overdue_commits = [
+        ct for ct in commit_times if ct.is_overdue(max_gap_seconds)
+    ]
+
+    for ct in overdue_commits:
+      step_result = api.step(ct.overdue_message(), [])
+      step_result.presentation.status = api.step.FAILURE
+
+    return BranchResult(v8_branch, len(commits_not_rolled),
+                        len(overdue_commits))
 
 
 def download_chromium_deps(api, chromium_branch):
@@ -93,22 +147,11 @@ def get_commits_not_rolled(api, last_rolled_revision, v8_branch):
   return commits
 
 
-def check_commit(api, commit, max_gap_seconds):
-  commit_time = datetime.strptime(commit['committer']['time'],
+def commit_time(commit, now):
+  committer_time = datetime.strptime(commit['committer']['time'],
                                   '%a %b %d %H:%M:%S %Y')
-  time_gap = api.time.utcnow() - commit_time
-
-  step_result = api.step(f'checking revision {commit["commit"]}', [])
-  step_result.presentation.logs['rev time'] = str(commit_time)
-  step_result.presentation.logs['time gap'] = str(time_gap)
-
-  if time_gap.total_seconds() > max_gap_seconds:
-    step_result = api.step(
-        f'Revision {commit["commit"]} was not rolled for '
-        f'{time_gap}', [])
-    step_result.presentation.status = api.step.FAILURE
-    return False
-  return True
+  time_gap = now - committer_time
+  return CommitTime(commit['commit'], committer_time, time_gap)
 
 
 def GenTests(api):
@@ -177,12 +220,13 @@ def GenTests(api):
       ),
       api.step_data('branch 10.3 (5555).Get roll gap', fake_commit()),
       api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
+      api.time.seed(apr_10_2023_09 + 60 * 60 * 24 * 8),
       api.post_process(
           StepFailure,
-          "branch 11.4 (6666).Revision deadbeef was not rolled for 7 days,"
-          " 20:48:24"),
-      api.time.seed(apr_10_2023_09 + 60 * 60 * 24 * 8),
+          "branch 11.4 (6666).Revision deadbeef was not rolled for 7 days, 20:48:22"
+      ),
       api.expect_status('FAILURE'),
-      api.post_process(ResultReason, "Some branches are falling behind"),
+      api.post_process(ResultReason,
+                       '10.3: 1 overdue commits\n11.4: 1 overdue commits'),
       api.post_process(DropExpectation),
   )
