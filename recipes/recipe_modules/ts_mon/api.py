@@ -99,18 +99,13 @@ class TSMonApi(recipe_api.RecipeApi):
 
     serialized_data = '\n'.join(self.m.json.dumps(d) for d in metric_data)
     with self.m.context(cwd=self._send_ts_mon_pkg_path):
-      # TODO(crbug.com/1411311): Can be removed, after the ts_mon script is
-      # migrated to py3 and/or all clients disabled python2.
-      experiments = self.m.buildbucket.build.input.experiments
-      is_py3_only = 'luci.buildbucket.omit_python2' in experiments
-      binary = 'vpython3' if is_py3_only else 'vpython'
-
       result = self.m.step(
           step_name, [
-              binary,
+              'vpython3',
               '-vpython-spec',
-              self._send_ts_mon_pkg_path.join(
-                  'infra', 'tools', 'send_ts_mon_values', 'standalone.vpython'),
+              self._send_ts_mon_pkg_path.join('infra', 'tools',
+                                              'send_ts_mon_values',
+                                              'standalone.vpython3'),
               '-m',
               'infra.tools.send_ts_mon_values',
               '--ts-mon-target-type',
