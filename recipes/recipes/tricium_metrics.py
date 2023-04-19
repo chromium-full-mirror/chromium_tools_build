@@ -29,11 +29,14 @@ DEPS = [
 
 def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path):
   packages_dir = api.path['cleanup'].join('packages')
-  version = 'test' if bool(api.tryserver.get_footer('Tricium-Test')) else 'live'
+  test = bool(api.tryserver.get_footer('Tricium-Test'))
+  pkg = 'infra/tricium/legacy_functions/metrics/linux-amd64'
+  if test:
+    pkg = 'experimental/tricium/legacy_functions/metrics/linux-amd64'
 
-  with api.step.nest('load_' + version + '_analyzer'):
+  with api.step.nest('load_' + ('test' if test else 'prod') + '_analyzer'):
     ensure_file = api.cipd.EnsureFile()
-    ensure_file.add_package('infra/tricium/function/metrics', version)
+    ensure_file.add_package(pkg, version='latest')
     api.cipd.ensure(packages_dir, ensure_file)
 
   metrics = packages_dir.join('metrics_analyzer')
@@ -206,7 +209,7 @@ def GenTests(api):
           include_parse=True,
           test_footer=True),
       api.step_data('metrics.metrics_output', api.file.read_json({})),
-      api.post_process(post_process.DoesNotRun, 'metrics.load_live_analyzer'),
+      api.post_process(post_process.DoesNotRun, 'metrics.load_prod_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics.load_test_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
       api.post_process(post_process.DropExpectation),
@@ -227,7 +230,7 @@ def GenTests(api):
               }]
           })),
       api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
-      api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics.load_prod_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
       api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
           'metrics.write_results'].output_properties['tricium']),
@@ -252,7 +255,7 @@ def GenTests(api):
               }]
           })),
       api.post_process(post_process.DoesNotRun, 'metrics.load_test_analyzer'),
-      api.post_process(post_process.StepSuccess, 'metrics.load_live_analyzer'),
+      api.post_process(post_process.StepSuccess, 'metrics.load_prod_analyzer'),
       api.post_process(post_process.StepSuccess, 'metrics'),
       api.post_check(lambda check, steps: '[ERROR]: Removed' in steps[
           'metrics.write_results'].output_properties['tricium']),
