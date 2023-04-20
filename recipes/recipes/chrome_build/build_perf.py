@@ -125,6 +125,14 @@ def GenTests(api):
               **builder).assemble()),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.StepSuccess,
+                       'Build all without remote cache'),
+      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
+      api.post_process(post_process.StepSuccess,
+                       'Build chrome without remote cache'),
+      api.post_process(post_process.StepSuccess,
+                       'Build chrome with remote cache'),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -141,6 +149,14 @@ def GenTests(api):
               **builder).assemble()),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.StepSuccess,
+                       'Build all without remote cache'),
+      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
+      api.post_process(post_process.StepSuccess,
+                       'Build chrome_public_apk without remote cache'),
+      api.post_process(post_process.StepSuccess,
+                       'Build chrome_public_apk with remote cache'),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -157,6 +173,14 @@ def GenTests(api):
               **builder).assemble()),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.StepSuccess,
+                       'Build all without remote cache'),
+      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
+      api.post_process(post_process.StepSuccess,
+                       'Build chrome without remote cache'),
+      api.post_process(post_process.StepSuccess,
+                       'Build chrome with remote cache'),
+      api.post_process(post_process.DropExpectation),
   )
 
   for step in [
