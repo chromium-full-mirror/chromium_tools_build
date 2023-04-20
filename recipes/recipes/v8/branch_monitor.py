@@ -46,17 +46,21 @@ class CommitTime:
   time_gap: timedelta
 
   def __str__(self):
-    return f'{self.revision} {self.commit_time} ({self.formated_time_gap})'
+    return f'{self.revision[:8]} {self.time_gap_hours}h'
 
   def overdue_message(self):
-    return f'Revision {self.revision} was not rolled for {self.formated_time_gap}'
+    return f'Revision {self.revision} was not rolled for {self.formatted_time_gap}'
 
   def is_overdue(self, max_gap_seconds):
     return self.time_gap.total_seconds() > max_gap_seconds
 
   @property
-  def formated_time_gap(self):
+  def formatted_time_gap(self):
     return str(self.time_gap).split(".")[0]
+
+  @property
+  def time_gap_hours(self):
+    return self.time_gap.total_seconds() // 3600
 
 
 @dataclass
@@ -67,8 +71,10 @@ class BranchResult:
 
   def summary(self):
     if self.is_overdue:
-      return f'{self.branch}: {self.overdue_commits} overdue commits'
-    return f'{self.branch}: {self.commits_not_rolled} commits not rolled'
+      return f'{self.overdue_commits} overdue revs in {self.branch}'
+    if self.commits_not_rolled:
+      return f'{self.commits_not_rolled} revs not rolled in {self.branch}'
+    return None
 
   @property
   def is_overdue(self):
@@ -89,7 +95,9 @@ def RunSteps(api, max_gap_seconds):
   status = common_pb.FAILURE if overdue_branches else common_pb.SUCCESS
   return RawResult(
       status=status,
-      summary_markdown='\n'.join(b.summary() for b in branch_results))
+      summary_markdown='; '.join(
+          b.summary() for b in branch_results if b.summary()),
+  )
 
 
 def check_branch(api, branch, max_gap_seconds, now):
@@ -103,7 +111,7 @@ def check_branch(api, branch, max_gap_seconds, now):
     commits_not_rolled = get_commits_not_rolled(api, last_rolled_revision,
                                                 v8_branch)
     commit_times = [commit_time(commit, now) for commit in commits_not_rolled]
-    step.presentation.step_text = '\n'.join(str(c) for c in commit_times)
+    step.presentation.step_text = '; '.join(str(c) for c in commit_times)
 
     overdue_commits = [
         ct for ct in commit_times if ct.is_overdue(max_gap_seconds)
@@ -177,6 +185,11 @@ def GenTests(api):
         },],
     })
 
+  def no_commits():
+    return api.json.output({
+        'log': [],
+    })
+
   apr_10_2023_09 = 1681110000
 
   yield api.test(
@@ -208,6 +221,24 @@ def GenTests(api):
   )
 
   yield api.test(
+      "branches in sync - no commits",
+      fake_branches(),
+      api.step_data(
+          'branch 10.3 (5555).fetch refs/branch-heads/5555:DEPS',
+          api.gitiles.make_encoded_file('DEPS'),
+      ),
+      api.step_data(
+          'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
+          api.gitiles.make_encoded_file('DEPS'),
+      ),
+      api.step_data('branch 10.3 (5555).Get roll gap', no_commits()),
+      api.step_data('branch 11.4 (6666).Get roll gap', no_commits()),
+      api.time.seed(apr_10_2023_09),
+      api.expect_status('SUCCESS'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
       "branches out of sync",
       fake_branches(),
       api.step_data(
@@ -227,6 +258,6 @@ def GenTests(api):
       ),
       api.expect_status('FAILURE'),
       api.post_process(ResultReason,
-                       '10.3: 1 overdue commits\n11.4: 1 overdue commits'),
+                       '1 overdue revs in 10.3; 1 overdue revs in 11.4'),
       api.post_process(DropExpectation),
   )
