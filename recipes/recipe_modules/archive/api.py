@@ -491,10 +491,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     inserted into the URL."""
     return self._legacy_url(True, gs_bucket_name, extra_url_components)
 
-  def _create_targz_archive_for_upload(self, build_dir, files, directories):
+  def _create_targz_archive_for_upload(self, archive_data, build_dir, files,
+                                       directories):
     """Adds files and dirs to a tar.gz file to be uploaded.
 
     Args:
+      archive_data: An instance of
+                    archive/properties.proto:InputProperties.archive_datas.
       build_dir: The absolute path to the build output directory.
       files: List of files to include. Paths are relative to |build_dir|.
       directories: List of directories to include. Paths are relative to
@@ -512,13 +515,23 @@ class ArchiveApi(recipe_api.RecipeApi):
     for directory in directories:
       pkg.add_directory(build_dir.join(directory))
 
-    pkg.tar('Create tar.gz archive')
+    try:
+      pkg.tar('Create tar.gz archive')
+    except Exception:
+      # Don't fail the build if there are no files to compress, and
+      # skip_empty_source is enabled.
+      if archive_data.skip_empty_source:
+        pass
+
     return output
 
-  def _create_zip_archive_for_upload(self, build_dir, files, directories):
+  def _create_zip_archive_for_upload(self, archive_data, build_dir, files,
+                                     directories):
     """Adds files and directories to a zip file to be uploaded.
 
     Args:
+      archive_data: An instance of
+                    archive/properties.proto:InputProperties.archive_datas.
       build_dir: The absolute path to the build output directory.
       files: List of files to include. Paths are relative to |build_dir|.
       directories: List of directories to include. Paths are relative to
@@ -539,7 +552,13 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     # An exception will be raised if there's an error, so we can assume that
     # this step succeeds.
-    package.zip('Create generic archive')
+    try:
+      package.zip('Create generic archive')
+    except Exception:
+      # Don't fail the build if there are no files to compress, and
+      # skip_empty_source is enabled.
+      if archive_data.skip_empty_source:
+        pass
 
     return output_path
 
@@ -1026,7 +1045,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       }
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_TAR_GZ:
       archive_file = self._create_targz_archive_for_upload(
-          base_path, expanded_files, updated_dirs)
+          archive_data, base_path, expanded_files, updated_dirs)
       uploads = {archive_file: gcs_path}
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_RECURSIVE:
       if not archive_data.dirs:
@@ -1057,7 +1076,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       uploads = {archive_file: gcs_path}
     else:
       archive_file = self._create_zip_archive_for_upload(
-          base_path, expanded_files, updated_dirs)
+          archive_data, base_path, expanded_files, updated_dirs)
       uploads = {archive_file: gcs_path}
 
     # Report artifacts that require provenance.

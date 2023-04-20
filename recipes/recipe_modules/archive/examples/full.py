@@ -551,6 +551,53 @@ def GenTests(api):
 
   input_properties = properties.InputProperties()
   archive_data = properties.ArchiveData()
+  archive_data.files.extend(['missing-file.json'])
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_ZIP
+  archive_data.skip_empty_source = True
+  input_properties.archive_datas.extend([archive_data])
+
+  yield api.test(
+      'generic_archive_pass_zip_with_empty_source',
+      api.properties(
+          gcs_archive=True,
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          **{'$build/archive': input_properties}),
+      api.post_process(post_process.DoesNotRun,
+                       'Generic Archiving Steps.Copy file missing-file.json'),
+      api.step_data(
+          'Generic Archiving Steps.Create generic archive', retcode=1),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.files.extend(['missing-file.json'])
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_TAR_GZ
+  archive_data.skip_empty_source = True
+  input_properties.archive_datas.extend([archive_data])
+
+  yield api.test(
+      'generic_archive_pass_tar_gz_with_empty_source',
+      api.properties(
+          gcs_archive=True,
+          update_properties={
+              'got_revision': TEST_HASH_MAIN,
+              'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+          },
+          **{'$build/archive': input_properties}),
+      api.post_process(post_process.DoesNotRun,
+                       'Generic Archiving Steps.Copy file missing-file.json'),
+      api.step_data('Generic Archiving Steps.Create tar.gz archive', retcode=1),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
   archive_data.dirs.extend(['anydir'])
   archive_data.gcs_bucket = 'any-bucket'
   archive_data.gcs_path = ('x86/{%position%}_{%commit%}_{%timestamp%}_'
