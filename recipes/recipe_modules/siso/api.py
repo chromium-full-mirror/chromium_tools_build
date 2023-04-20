@@ -57,7 +57,7 @@ class SisoApi(recipe_api.RecipeApi):
         '--project',
         self._props.project,
         '--deps_log',
-        self._deps_log,
+        self.deps_log,
     ]
     if self._props.reapi_address:
       cmd.extend([
@@ -141,7 +141,7 @@ class SisoApi(recipe_api.RecipeApi):
     return self.m.path['cache'].join('siso')
 
   @property
-  def _deps_log(self):
+  def deps_log(self):
     return self._cache_dir.join('deps_log')
 
   @property

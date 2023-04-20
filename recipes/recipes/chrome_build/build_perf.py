@@ -47,6 +47,8 @@ def _compile(api, targets, with_remote_cache):
   if with_remote_cache:
     step_name += ' with remote cache'
   else:
+    api.file.rmtree('rmtree %s' % api.reclient.deps_cache_path,
+                    api.reclient.deps_cache_path)
     step_name += ' without remote cache'
     env['RBE_remote_accept_cache'] = "false"
   try:

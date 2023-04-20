@@ -48,6 +48,8 @@ def _compile_with_siso(api, target, with_remote_cache):
   if with_remote_cache:
     step_name += ' with remote cache'
   else:
+    api.file.rmtree('rmtree %s' % api.siso.deps_log,
+                  api.siso.deps_log)
     step_name += ' without remote cache'
     siso_args += ['-re_cache_enable_read=false']
   try:
