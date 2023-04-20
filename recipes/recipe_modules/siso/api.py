@@ -69,6 +69,8 @@ class SisoApi(recipe_api.RecipeApi):
           '--reapi_instance',
           self._props.reapi_instance,
       ])
+    if self._props.enable_cloud_profiler:
+      cmd.append('--enable_cloud_profiler')
     if self._props.action_salt:
       cmd.extend([
           '--action_salt',

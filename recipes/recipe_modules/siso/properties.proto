@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package recipe_modules.build.siso;
 
-// NEXT ID TO USE: 10
+// NEXT ID TO USE: 7
 message InputProperties {
   // Backend config
 
@@ -29,4 +29,7 @@ message InputProperties {
   // Siso experiments ids.
   // https://chromium.googlesource.com/infra/infra/+/bdc94f6a432b49b0c8412994c095901f816532b8/go/src/infra/build/siso/build/experiments.go#17
   repeated string experiments = 5;
+
+  // monitoring/observability
+  bool enable_cloud_profiler = 6;
 }
