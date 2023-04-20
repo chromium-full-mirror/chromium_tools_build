@@ -175,36 +175,6 @@ class GetGitRevisionTest(unittest.TestCase):
         bot_utils._GetGitCommitPositionFromLog(BLINK_LOG), '180728'
     )
 
-  def test_GetCommitPosFromBuildPropTest(self):
-    """Tests related to getting a commit position from build properties."""
-    # pylint: disable=W0212
-    self.assertEqual(
-        bot_utils._GetCommitPos({'got_revision_cp': 'refs/heads/main@{#12345}'}
-                               ),
-        12345,
-    )
-    # pylint: disable=W0212
-    self.assertIsNone(bot_utils._GetCommitPos({'got_revision': 12345}))
-
-
-class TelemetryRevisionTest(unittest.TestCase):
-
-  def test_GetPerfDashboardRevisions(self):
-    point_id = 1470050195
-    revision = '294850'
-    build_properties = {
-        'got_webrtc_revision': None,
-        'got_v8_revision': 'undefined',
-        'git_revision': '9a7b354',
-    }
-    versions = bot_utils.GetPerfDashboardRevisions(
-        build_properties, revision, point_id
-    )
-    self.assertEqual(
-        {'rev': '294850', 'git_revision': '9a7b354', 'point_id': 1470050195},
-        versions,
-    )
-
 
 if __name__ == '__main__':
   unittest.main()

@@ -115,10 +115,10 @@ def SlaveBuildName(chrome_dir):
   """Extracts the build name of this slave (e.g., 'chrome-release') from the
   leaf subdir of its build directory.
   """
-  return os.path.basename(SlaveBaseDir(chrome_dir))
+  return os.path.basename(_SlaveBaseDir(chrome_dir))
 
 
-def SlaveBaseDir(chrome_dir):
+def _SlaveBaseDir(chrome_dir):
   """Finds the full path to the build slave's base directory (e.g.
   'c:/b/chrome/chrome-release').  This is assumed to be the parent of the
   shallowest 'build' directory in the chrome_dir path.
@@ -150,7 +150,7 @@ def GetStagingDir(start_dir):
   full path.
   """
   start_dir = os.path.abspath(start_dir)
-  staging_dir = os.path.join(SlaveBaseDir(start_dir), 'chrome_staging')
+  staging_dir = os.path.join(_SlaveBaseDir(start_dir), 'chrome_staging')
   chromium_utils.MaybeMakeDirectory(staging_dir)
   return staging_dir
 
@@ -177,7 +177,7 @@ def _GSUtilSetup():
   return gsutil
 
 
-def GSUtilGetMetadataField(name, provider_prefix=None):
+def _GSUtilGetMetadataField(name, provider_prefix=None):
   """Returns: (str) the metadata field to use with Google Storage
 
   The Google Storage specification for metadata can be found at:
@@ -256,7 +256,7 @@ def GSUtilCopy(
   if cache_control:
     metadata['Cache-Control'] = cache_control
   for k, v in sorted(metadata.items(), key=lambda x: x[0]):
-    field = GSUtilGetMetadataField(k)
+    field = _GSUtilGetMetadataField(k)
     param = (field) if v is None else ('%s:%s' % (field, v))
     command += ['-h', param]
   command.extend(['cp'])
@@ -429,18 +429,6 @@ def RemoveChromeTemporaryFiles():
     )
 
 
-def GetPerfDashboardRevisions(build_properties, main_revision, point_id=None):
-  """Fills in the same revisions fields that process_log_utils does."""
-  return GetPerfDashboardRevisionsWithProperties(
-      build_properties.get('got_webrtc_revision'),
-      build_properties.get('got_v8_revision'),
-      build_properties.get('version'),
-      build_properties.get('git_revision'),
-      main_revision,
-      point_id,
-  )
-
-
 def GetPerfDashboardRevisionsWithProperties(
     got_webrtc_revision,
     got_v8_revision,
@@ -463,28 +451,6 @@ def GetPerfDashboardRevisionsWithProperties(
     if not versions[key] or versions[key] == 'undefined':
       del versions[key]
   return versions
-
-
-def GetMainRevision(build_properties, build_dir, revision=None):
-  """Return revision to use as the numerical x-value in the perf dashboard.
-
-  This will be used as the value of "rev" in the data passed to
-  results_dashboard.SendResults.
-
-  In order or priority, this function could return:
-    1. The value of the --revision flag (IF it can be parsed as an int).
-    2. The value of "got_revision_cp" in build properties.
-    3. An SVN number, git commit position, or git commit hash.
-  """
-  if revision and revision.isdigit():
-    return revision
-  commit_pos_num = _GetCommitPos(build_properties)
-  if commit_pos_num is not None:
-    return commit_pos_num
-  # TODO(sullivan,qyearsley): Don't fall back to _GetRevision if it returns
-  # a git commit, since this should be a numerical revision. Instead, abort
-  # and fail.
-  return GetRevision(os.path.dirname(os.path.abspath(build_dir)))
 
 
 def GetRevision(in_directory):
@@ -519,14 +485,6 @@ def GetRevision(in_directory):
   except xml.parsers.expat.ExpatError:
     return ''
   return ''
-
-
-def _GetCommitPos(build_properties):
-  """Extracts the commit position from the build properties, if its there."""
-  if 'got_revision_cp' not in build_properties:
-    return None
-  commit_pos = build_properties['got_revision_cp']
-  return int(re.search(r'{#(\d+)}', commit_pos).group(1))
 
 
 def _GetGitCommitPositionFromLog(log):
