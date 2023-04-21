@@ -40,6 +40,9 @@ def _get_builder_id(api):
 
 
 def _compile(api, step_name, target, with_remote_cache):
+  # TODO(b/253142009): support Windows with Siso native builds.
+  if api.platform.is_win:
+    return
   api.chromium.mb_gen(
       _get_builder_id(api), recursive_lookup=True, phase='builtin')
 
@@ -86,7 +89,7 @@ def _run_builds(api, target, with_reproxy=None):
         api, step_name, target, with_remote_cache=False)
   else:
     raw_result = _compile(api, step_name, target, with_remote_cache=False)
-  if raw_result.status != common_pb.SUCCESS:
+  if raw_result and raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   # Second build with remote cache produced by the previous build.
@@ -120,11 +123,11 @@ def RunSteps(api):
 
   # Build target: all
   raw_result = _run_builds(api, 'all', with_reproxy=False)
-  if raw_result.status != common_pb.SUCCESS:
+  if raw_result and raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   raw_result = _run_builds(api, 'all', with_reproxy=True)
-  if raw_result.status != common_pb.SUCCESS:
+  if raw_result and raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   # Build target: chrome or chrome_public_apk
@@ -132,7 +135,7 @@ def RunSteps(api):
   if builder_config.chromium_config == 'android':
     target_chrome = 'chrome_public_apk'
   raw_result = _run_builds(api, target_chrome, with_reproxy=False)
-  if raw_result.status != common_pb.SUCCESS:
+  if raw_result and raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   return _run_builds(api, target_chrome, with_reproxy=True)
@@ -233,13 +236,6 @@ def GenTests(api):
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache'),
-      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome without remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome with remote cache'),
       api.post_process(post_process.StepSuccess,
                        'Build all without remote cache with reproxy'),
       api.post_process(post_process.StepSuccess,
