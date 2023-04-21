@@ -504,7 +504,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                    |build_dir|.
 
     Returns:
-      Absolute path to the archive file.
+      Absolute path to the archive file or None if files and dirs do not exist
+      and skip_empty_source is enabled.
     """
     tmp_dir = self.m.path.mkdtemp()
     output = tmp_dir.join('artifact.tar.gz')
@@ -519,9 +520,9 @@ class ArchiveApi(recipe_api.RecipeApi):
       pkg.tar('Create tar.gz archive')
     except Exception:
       # Don't fail the build if there are no files to compress, and
-      # skip_empty_source is enabled.
+      # skip_empty_source is enabled. Return an empty path.
       if archive_data.skip_empty_source:
-        pass
+        return None
 
     return output
 
@@ -538,7 +539,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                    |build_dir|.
 
     Returns:
-      Absolute path to the archive file.
+      Absolute path to the archive file or None if files and dirs do not exist
+      and skip_empty_source is enabled.
     """
     # Create a temporary directory to hold the zipped archive.
     temp_dir = self.m.path.mkdtemp()
@@ -556,9 +558,9 @@ class ArchiveApi(recipe_api.RecipeApi):
       package.zip('Create generic archive')
     except Exception:
       # Don't fail the build if there are no files to compress, and
-      # skip_empty_source is enabled.
+      # skip_empty_source is enabled. Return an empty path.
       if archive_data.skip_empty_source:
-        pass
+        return None
 
     return output_path
 
@@ -1020,6 +1022,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     # Get map of local file path to upload -> destination file path in GCS
     # bucket.
+    uploads = {}
     if archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_FILES:
       if archive_data.dirs:
         self.m.step.empty(
@@ -1046,7 +1049,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_TAR_GZ:
       archive_file = self._create_targz_archive_for_upload(
           archive_data, base_path, expanded_files, updated_dirs)
-      uploads = {archive_file: gcs_path}
+      if archive_file:
+        uploads = {archive_file: gcs_path}
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_RECURSIVE:
       if not archive_data.dirs:
         self.m.step.empty(
@@ -1077,7 +1081,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     else:
       archive_file = self._create_zip_archive_for_upload(
           archive_data, base_path, expanded_files, updated_dirs)
-      uploads = {archive_file: gcs_path}
+      if archive_file:
+        uploads = {archive_file: gcs_path}
 
     # Report artifacts that require provenance.
     if (archive_data.requires_provenance and

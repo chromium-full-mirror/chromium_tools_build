@@ -569,6 +569,8 @@ def GenTests(api):
                        'Generic Archiving Steps.Copy file missing-file.json'),
       api.step_data(
           'Generic Archiving Steps.Create generic archive', retcode=1),
+      api.post_process(post_process.DoesNotRun,
+                       'Generic Archiving Steps.gsutil upload '),
       api.expect_status('SUCCESS'),
       api.post_process(post_process.DropExpectation),
   )
@@ -592,6 +594,8 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'Generic Archiving Steps.Copy file missing-file.json'),
       api.step_data('Generic Archiving Steps.Create tar.gz archive', retcode=1),
+      api.post_process(post_process.DoesNotRun,
+                       'Generic Archiving Steps.gsutil upload '),
       api.expect_status('SUCCESS'),
       api.post_process(post_process.DropExpectation),
   )
