@@ -519,6 +519,7 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
         'upload',
         '-f',
         '--use-commit-queue',
+        '--no-python2-post-upload-hooks',
         '--bypass-hooks',
         '--send-mail',
     ]
