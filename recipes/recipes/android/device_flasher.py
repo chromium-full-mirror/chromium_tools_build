@@ -56,7 +56,6 @@ def _LookupImage(api, device_type, device_os):
     api.gsutil.list(
         image_url,
         name='lookup image for %s, %s' % (device_type, device_os),
-        #raise_on_failure=False,
         stderr=api.raw_io.output_text())
     return True
   except api.step.StepFailure as e:
@@ -89,8 +88,7 @@ def _GetSwarmingBots(api, flash_criteria):
   # TODO: Add bot_id to the dimensions, if present.
   for bot in bots:
     # Skip bots that are dead, quarantined, or in maintenance
-    # TODO: Add bot.in_maintenance after https://crrev.com/c/4383489 lands.
-    if bot.is_dead or bot.quarantined:
+    if bot.is_dead or bot.quarantined or bot.in_maintenance:
       continue
     swarming_bots.append(bot)
 
@@ -98,11 +96,36 @@ def _GetSwarmingBots(api, flash_criteria):
 
 
 def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
-  task_request = api.swarming.task_request()
+  gs_image_path = '%s/%s/%s.zip' % (BASE_IMAGE_URI, device_type, device_os)
+  # TODO: Swith to use the latest catapult repo, i.e.
+  #  - checkout catapult
+  #  - isolate dependent files
+  #  - replace cipd with isolate in task_slice.
+  bash_command = ' && '.join([
+      './cipd_gsutil/gsutil cp %s .' % gs_image_path,
+      'unzip %s.zip' % device_os,
+      # TODO: Add "--wait" once crrev.com/c/4337956 is included in 3pp package
+      'vpython3 cipd_devil/devil/devil/android/tools/flash_device.py -w -v .',
+  ])
+  command = ['bash', '-c', bash_command]
+  task_request = (
+      api.swarming.task_request().
+      with_name('Flash %s (%s) to %s' % (bot_id, device_type, device_os)).
+      with_priority(0)  # Make sure the flash task is prior than test tasks
+  )
   task_request = task_request.with_slice(
-      0, task_request[0].with_dimensions(pool=pool, id=bot_id))
-  # TODO: Form the task request to flash the device in the same way as
-  # http://go/cci-trooper/procedures/Android_Device_Issues.md#reflash
+      0, task_request[0].
+      with_dimensions(pool=pool, id=bot_id).
+      with_cipd_ensure_file(
+          api.cipd.EnsureFile().
+          add_package(
+              'infra/3pp/tools/gsutil', 'latest', subdir='cipd_gsutil').
+          add_package(
+              'infra/3pp/chromium/third_party/catapult/devil/linux-amd64',
+              'latest', subdir='cipd_devil')
+      ).
+      with_command(command)
+  )
   return task_request
 
 
@@ -173,6 +196,7 @@ def _RunTasks(api, tasks_by_host, dry_run):
 
 
 def RunSteps(api, properties):
+  has_failure = False
   for index, flash_criteria in enumerate(properties.flash_criteria):
     with api.step.nest('Process flash criteria %d' % index) as parent_prep:
       parent_prep.step_text = json_format.MessageToJson(
@@ -189,12 +213,36 @@ def RunSteps(api, properties):
           host_machine = bot.bot_id.split('--device')[0]
           tasks_by_host[host_machine].append(task_request)
 
-      _RunTasks(api, tasks_by_host, properties.dry_run)
+      task_results = _RunTasks(api, tasks_by_host, properties.dry_run)
+      failed_results = [r for r in task_results if not r.success]
+      if failed_results:
+        has_failure = True
+        step = api.step.empty(
+            'Failed tasks', status='FAILURE', raise_on_failure=False)
+        for result in failed_results:
+          step.presentation.links[result.name] = '%s/task?id=%s' % (
+              api.swarming.current_server, result.id)
 
-      # TODO: Display the successfull and failed tasks
+  if has_failure:
+    api.step.empty(
+        'Some flash tasks failed. See above steps for details',
+        status='FAILURE')
 
 
 def GenTests(api):
+
+  walleye_dimensions = {
+      'pool': ['chromium.tests'],
+      'device_type': ['walleye'],
+      'device_os': ['P', 'PQ3A.190801.002'],
+  }
+  sailfish_dimensions = {
+      'pool': ['chromium.tests'],
+      'device_type': ['sailfish'],
+      'device_os': ['P', 'PQ3A.190801.002'],
+  }
+  flash_state = {'devices': {'device_serial': {'max_uid': 19000}}}
+  no_flash_state = {'devices': {'device_serial': {'max_uid': 17000}}}
 
   yield api.test(
       'basic',
@@ -209,31 +257,52 @@ def GenTests(api):
           api.json.output([
               api.swarming.generate_bot_json(
                   'flash--device1',
-                  dimensions={
-                      'pool': ['chromium.tests'],
-                      'device_type': ['walleye'],
-                      'device_os': ['P', 'PQ3A.190801.002'],
-                  },
-                  state={'devices': {
-                      'device_serial': {
-                          'max_uid': 19000,
-                      }
-                  }},
+                  dimensions=walleye_dimensions,
+                  state=flash_state,
+              ),
+              api.swarming.generate_bot_json(
+                  'no-flash--device1',
+                  dimensions=walleye_dimensions,
+                  state=no_flash_state,
               ),
               api.swarming.generate_bot_json(
                   'dead--device3',
                   is_dead=True,
+                  dimensions=walleye_dimensions,
+                  state=flash_state,
               ),
               api.swarming.generate_bot_json(
                   'quarantined--device3',
                   quarantined=True,
+                  dimensions=walleye_dimensions,
+                  state=flash_state,
               ),
-              # TODO: Add a bot in maintenance once
-              # https://crrev.com/c/4383489 lands.
+              api.swarming.generate_bot_json(
+                  'maintenance--device4',
+                  maintenance_msg='I am in maintenance.',
+                  dimensions=walleye_dimensions,
+                  state=flash_state,
+              ),
           ])),
       api.post_process(
           post_process.MustRun,
-          'Process flash criteria 0.Create flash task for flash--device1'),
+          'Process flash criteria 0.Create flash task for flash--device1'
+      ),
+      api.post_process(
+          post_process.DoesNotRun,
+          'Process flash criteria 0.Create flash task for no-flash--device1'
+      ),
+      api.post_process(
+          post_process.DoesNotRun,
+          'Process flash criteria 0.Create flash task for dead--device1'),
+      api.post_process(
+          post_process.DoesNotRun,
+          'Process flash criteria 0.Create flash task for quarantined--device1'
+      ),
+      api.post_process(
+          post_process.DoesNotRun,
+          'Process flash criteria 0.Create flash task for maintenance--device1'
+      ),
       api.post_process(post_process.DropExpectation),
       status="SUCCESS",
   )
@@ -251,27 +320,15 @@ def GenTests(api):
           api.json.output([
               api.swarming.generate_bot_json(
                   'flash--device1',
-                  dimensions={
-                      'pool': ['chromium.tests'],
-                      'device_type': ['walleye'],
-                      'device_os': ['P', 'PQ3A.190801.002'],
-                  },
+                  dimensions=walleye_dimensions,
               ),
               api.swarming.generate_bot_json(
                   'flash--device2',
-                  dimensions={
-                      'pool': ['chromium.tests'],
-                      'device_type': ['walleye'],
-                      'device_os': ['P', 'PQ3A.190801.002'],
-                  },
+                  dimensions=walleye_dimensions,
               ),
               api.swarming.generate_bot_json(
                   'no-image--device1',
-                  dimensions={
-                      'pool': ['chromium.tests'],
-                      'device_type': ['sailfish'],
-                      'device_os': ['P', 'PQ3A.190801.002'],
-                  },
+                  dimensions=sailfish_dimensions,
               ),
           ])),
       api.post_process(post_process.MustRun,
@@ -296,4 +353,46 @@ def GenTests(api):
                        ['matches no object']),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
+  )
+
+  yield api.test(
+      'run-tasks',
+      api.properties(flash_criteria=[{
+          'pool': 'chromium.tests',
+          'device_type': 'walleye',
+          'device_os': 'PQ3A.190801.002',
+          'max_uid_threshold': 18000,
+      }]),
+      api.override_step_data(
+          'Process flash criteria 0.List Android bots',
+          api.json.output([
+              api.swarming.generate_bot_json(
+                  'flash--device%d' % index,
+                  dimensions=walleye_dimensions,
+                  state=flash_state,
+              ) for index in range(4)
+          ])),
+      api.post_process(
+          post_process.LogContains,
+          'Process flash criteria 0.Trigger flash task group 0',
+          'json.input',
+          ['Flash flash--device%d' % index for index in range(3)]),
+      api.post_process(
+          post_process.MustRun,
+          'Process flash criteria 0.Collect results for task group 0'),
+      api.post_process(
+          post_process.LogContains,
+          'Process flash criteria 0.Trigger flash task group 1',
+          'json.input',
+          ['Flash flash--device3']),
+      api.override_step_data(
+          'Process flash criteria 0.Collect results for task group 1',
+          api.swarming.collect([
+              api.swarming.task_result(
+                  id=1, name='Flash flash--device4', failure=True)
+          ])),
+      api.post_process(post_process.MustRun,
+                       'Some flash tasks failed. See above steps for details'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
   )
