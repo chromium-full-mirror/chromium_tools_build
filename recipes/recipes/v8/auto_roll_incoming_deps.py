@@ -144,9 +144,9 @@ class DepUpdate:
 
 def get_subject(autoroller_config, is_trusted):
   subject = autoroller_config['subject']
-  if is_trusted:
-    return "%s (trusted)" % subject
-  return "%s (reviewed)" % subject
+  suffix = 'trusted' if is_trusted else 'reviewed'
+  return f'{subject} ({suffix})'
+
 
 def abandon_active_cls(api, autoroller_config):
   """Ensure no other active roll exists. If it does, abandon the old one."""
@@ -233,7 +233,7 @@ def get_deps(api, base_url, name, project_name):
   # path/to/deps: repo@revision
   with api.context(cwd=api.v8.checkout_root):
     step_result = api.gclient(
-        'get %s deps' % name,
+        f'get {name} deps',
         ['revinfo', '--deps', 'all', '--spec', spec],
         stdout=api.raw_io.output_text(),
     )
@@ -243,7 +243,7 @@ def get_deps(api, base_url, name, project_name):
   for line in step_result.stdout.strip().splitlines():
     tokens = line.strip().split(' ')
     if len(tokens) != 2:
-      raise Exception("malformatted DEPS entry '%s'" % tokens)
+      raise Exception(f"malformatted DEPS entry '{tokens}'")
 
     key, value = tokens
 
@@ -290,8 +290,10 @@ def get_recent_instance_id(api, package_name):
 def get_tot_revision(api, name, target_loc):
   def ls_remote(branch):
     step_result = api.git(
-        'ls-remote', target_loc, 'refs/heads/%s' % branch,
-        name='look up %s (%s)' % (name.replace('/', '_'), branch),
+        'ls-remote',
+        target_loc,
+        f'refs/heads/{branch}',
+        name=f'look up {name.replace("/", "_")} ({branch})',
         stdout=api.raw_io.output_text(),
     )
     return step_result.stdout.strip()
@@ -302,6 +304,13 @@ def get_tot_revision(api, name, target_loc):
     head = ls_remote(branch).split('\t')[0]
     if head:
       return head
+
+
+def get_commit_log(api, repo, commit):
+  subject = commit["message"].splitlines()[0]
+  author = commit["author"]["name"]
+  commit_url = api.url.join(repo, f'+/{commit["commit"][:7]}')
+  return f"{subject} ({author})\n{commit_url}"
 
 
 def commit_messages_log_entries(api, repo, from_commit, to_commit):
@@ -329,18 +338,13 @@ def commit_messages_log_entries(api, repo, from_commit, to_commit):
   })
   commits, _ = api.gitiles.log(
       url=repo,
-      ref='%s..%s' % (from_commit, to_commit),
+      ref=f'{from_commit}..{to_commit}',
       step_test_data=step_test_data,
   )
-  # Format commit log as:
-  # <first line of commit message> (<author name>)
-  # <url with short hash>
-  commit_log = lambda commit: '%s (%s)\n%s' % (
-      commit['message'].splitlines()[0],
-      commit['author']['name'],
-      api.url.join(repo, '+/%s' % commit['commit'][:7]))
   ellipse = [] if len(commits) < MAX_COMMIT_LOG_ENTRIES else ['...']
-  return [commit_log(c) for c in commits[:MAX_COMMIT_LOG_ENTRIES]] + ellipse
+  return [
+      get_commit_log(api, repo, c) for c in commits[:MAX_COMMIT_LOG_ENTRIES]
+  ] + ellipse
 
 
 def get_dependency_version_source(
@@ -419,8 +423,9 @@ def get_dep_updates(api, autoroller_config):
       # updating other DEPS and creating roll CL, hence just create a failing
       # step and continue.
       if target_location != chromium_location:
-        message = 'dep %s has changed repo from %s to %s' % (
-            target_name, target_location, chromium_location)
+        message = (
+            f'dep {target_name} has changed repo from {target_location} to '
+            f'{chromium_location}')
         step_result = api.step(message, cmd=None)
         step_result.presentation.status = api.step.FAILURE
         failed_deps.append(target_name)
@@ -506,7 +511,7 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
     args.extend(['-m', commit_line])
 
   if not set_bot_commit:
-    args.extend(['-m', 'R=%s' % ','.join(reviewers)])
+    args.extend(['-m', f'R={",".join(reviewers)}'])
 
   kwargs = {'stdout': api.raw_io.output_text()}
   with api.context(
@@ -547,7 +552,7 @@ def update_dependencies(api, step, updates, autoroller_config, trusted):
   3. Create the rolling CLs, using bot-commit for trusted dependency updates
   """
   updates = [u for u in updates if trusted == u.is_trusted]
-  step.presentation.step_text = '%s update(s)' % len(updates)
+  step.presentation.step_text = f'{len(updates)} update(s)'
 
   if not updates:
     return
@@ -557,9 +562,10 @@ def update_dependencies(api, step, updates, autoroller_config, trusted):
   commit_lines = []
   for update in updates:
     with api.context(cwd=api.path['checkout']):
+      clean_name = update.name.replace('/', '_')
       step_result = api.gclient(
-          'setdep %s' % update.name.replace('/', '_'),
-          ['setdep', '-r', '%s@%s' % (update.name, update.next_version)],
+          f'setdep {clean_name}',
+          ['setdep', '-r', f'{update.name}@{update.next_version}'],
           ok_ret='any',
       )
 
@@ -588,22 +594,21 @@ def update_chromium_pin(api, step, autoroller_config):
   with api.context(cwd=api.path['checkout']):
     for var_name, url in sorted(CHROMIUM_PINS.items()):
       step_result = api.gclient(
-          'get %s deps' % var_name,
-          ['getdep', '--var=%s' % var_name],
+          f'get {var_name} deps', ['getdep', f'--var={var_name}'],
           stdout=api.raw_io.output_text())
       # The first line contains the commit position number. Strip the rest.
       current_number = int(step_result.stdout.strip().splitlines()[0].strip())
-      new_number = int(api.url.get_text(
-          url,
-          step_name='check latest %s' % var_name,
-          default_test_data='123').output)
+      new_number = int(
+          api.url.get_text(
+              url,
+              step_name=f'check latest {var_name}',
+              default_test_data='123').output)
       if new_number > current_number:
         change_count += 1
-        api.gclient(
-            'set %s deps' % var_name,
-            ['setdep', '--var=%s=%d' % (var_name, new_number)])
+        api.gclient(f'set {var_name} deps',
+                    ['setdep', f'--var={var_name}={new_number}'])
 
-  step.presentation.step_text = '%s update(s)' % change_count
+  step.presentation.step_text = f'{change_count} update(s)'
 
   upload_cl(
       api,
@@ -620,7 +625,7 @@ def handle_failed_deps(api, failed_deps):
   if not failed_deps:
     return
 
-  message = 'Failed to update deps: %s' % ', '.join(failed_deps)
+  message = f'Failed to update deps: {", ".join(failed_deps)}'
   raise api.step.StepFailure(message)
 
 
@@ -780,9 +785,9 @@ remote:"""
             api.raw_io.stream_output_text('', stream='stdout'),
         ),
         api.override_step_data(
-            'Find updated deps.look up mock-tot-retsam-rolled (%s)' % RETSAM,
+            f'Find updated deps.look up mock-tot-retsam-rolled ({RETSAM})',
             api.raw_io.stream_output_text(
-                'deadbeef\trefs/heads/' + RETSAM, stream='stdout'),
+                f'deadbeef\trefs/heads/{RETSAM}', stream='stdout'),
         ),
         api.override_step_data(
             'Find updated deps.look up tools_clang (main)',
