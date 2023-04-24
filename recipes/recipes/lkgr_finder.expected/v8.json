@@ -87,36 +87,6 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
-      "runhooks"
-    ],
-    "cwd": "[CACHE]/builder/infra",
-    "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "project/cron/V8 lkgr finder/8945511751514863184"
-    },
-    "env_suffixes": {
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "gclient runhooks"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
       "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
       "--json-file",
       "/path/to/tmp/json",
