@@ -4,6 +4,7 @@
 
 import re
 
+from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 from RECIPE_MODULES.build import chromium
 
@@ -16,6 +17,7 @@ PROPERTIES = InputProperties
 DEPS = [
     'build',
     'chromium',
+    'gn',
     'infra/codesearch',
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
@@ -62,6 +64,11 @@ TRYBOT_SPEC = freeze({
 })
 
 
+def _use_reclient(api, gn_args):
+  args = api.gn.parse_gn_args(gn_args)
+  return args.get('use_remoteexec') == 'true'
+
+
 def _get_revision(api):  # pragma: no cover
   """Returns the git commit hash of the project.
   """
@@ -83,19 +90,8 @@ def _get_commit_position(api):
   return rev
 
 
-def generate_compilation_database(api,
-                                  out_path,
-                                  compile_commands_json_file,
-                                  targets,
-                                  builder_group,
-                                  buildername,
-                                  mb_config_path=None):
-  api.chromium.mb_gen(
-      chromium.BuilderId.create_for_group(builder_group, buildername),
-      build_dir=out_path,
-      name='generate build files',
-      mb_config_path=mb_config_path)
-
+def generate_compilation_database(api, out_path, compile_commands_json_file,
+                                  targets):
   try:
     step_result = api.step('generate compilation database', [
         'python3', '-u', api.path['checkout'].join(
@@ -107,18 +103,7 @@ def generate_compilation_database(api,
   return step_result
 
 
-def generate_gn_compilation_database(api,
-                                     out_path,
-                                     targets,
-                                     builder_group,
-                                     buildername,
-                                     mb_config_path=None):
-  api.chromium.mb_gen(
-      chromium.BuilderId.create_for_group(builder_group, buildername),
-      build_dir=out_path,
-      name='generate build files',
-      mb_config_path=mb_config_path)
-
+def generate_gn_compilation_database(api, out_path, targets):
   with api.context(cwd=api.path['checkout'], env=api.chromium.get_env()):
     export_compile_cmd = '--export-compile-commands'
     if targets:
@@ -254,6 +239,11 @@ def RunSteps(api, properties):
     # by that step may be deleted (if they've been unchanged for the past week).
     api.codesearch.cleanup_old_generated()
 
+  gn_args = api.chromium.mb_gen(
+      chromium.BuilderId.create_for_group(builder_id.group, builder_id.builder),
+      build_dir=out_path,
+      name='generate build files')
+
   if platform == 'webview':
     # Experiment to use gn gen to generate compilation database, it supports
     # target list.
@@ -261,11 +251,7 @@ def RunSteps(api, properties):
     # target list.
     webview_gn_targets = ['//android_webview:system_webview_apk']
     generate_gn_compilation_database(
-        api=api,
-        out_path=out_path,
-        targets=targets,
-        builder_group=builder_id.group,
-        buildername=builder_id.builder)
+        api=api, out_path=out_path, targets=targets)
     generate_gn_target_list(api, out_path, gn_targets_json_file,
                             webview_gn_targets)
   else:
@@ -273,9 +259,7 @@ def RunSteps(api, properties):
         api=api,
         out_path=out_path,
         compile_commands_json_file=compile_commands_json_file,
-        targets=targets,
-        builder_group=builder_id.group,
-        buildername=builder_id.builder)
+        targets=targets)
     generate_gn_target_list(api, out_path, gn_targets_json_file)
 
   # Prepare Java Kythe output directory
@@ -286,6 +270,8 @@ def RunSteps(api, properties):
   api.file.write_text(
       'create sentinel file', sentinel_path, 'cr-cs-sentinel',
       include_log=False)
+
+  use_reclient = _use_reclient(api, gn_args)
 
   # If the compile fails, abort execution and don't upload the pack. When we
   # upload an incomplete (due to compile failures) pack to Kythe, it fails
@@ -300,7 +286,8 @@ def RunSteps(api, properties):
     raw_result = api.chromium.compile(
         targets,
         name='compile%s' % name_suffix,
-        use_goma_module=True,
+        use_goma_module=not use_reclient,
+        use_reclient=use_reclient,
         out_dir='out',
         target=gen_repo_out_dir)
   if raw_result.status != common_pb.SUCCESS:
@@ -396,7 +383,10 @@ def GenTests(api):
             gen_repo_branch='main',
             gen_repo_out_dir='%s-Debug' % platform,
             internal=internal,
-        ))
+        ),
+        **{'$build/reclient': {
+            'instance': 'fake-reclient-instance',
+        }})
 
   for platform in ('android', 'lacros', 'linux', 'fuchsia', 'chromiumos', 'mac',
                    'ios', 'win', 'webview'):
@@ -419,6 +409,20 @@ def GenTests(api):
           api.properties(
               root_solution_revision='a' * 40,
               root_solution_revision_timestamp=1531887759),
+      )
+
+      yield api.test(
+          'full_%s_reclient' % (_sanitize_nonalpha(buildername)),
+          props(platform, internal),
+          api.chromium.generic_build(builder=buildername),
+          api.step_data(
+              'lookup GN args',
+              stdout=api.raw_io.output_text('use_remoteexec = true')),
+          api.step_data('generate gn target list',
+                        api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+          api.post_process(post_process.DoesNotRun, 'preprocess for goma'),
+          api.post_process(post_process.MustRun, 'preprocess for reclient'),
+          api.post_process(post_process.DropExpectation),
       )
 
   yield api.test(
