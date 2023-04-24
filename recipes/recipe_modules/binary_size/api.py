@@ -12,12 +12,33 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from . import constants
 
 
+def _linkify_filenames(url, filename_map):
+  for filename, archived_url in filename_map.items():
+    url = url.replace('{{' + filename + '}}', archived_url)
+  return url
+
+
 def _normalize_name(v):
   # The real normalization function is in the infra/infra repo in
   # //luci/client/libs/logdog/streamname.py. This is a not so close
   # approximation that only works if you don't look too hard (eg: does not
   # handle case where first character is illegal).
   return re.sub(r'[^0-9A-Za-z:\-\./]', '_', v)
+
+
+def _parse_gs_zip_path(gs_zip_path):
+  """Get (timestamp, revision sha) from gs zip path.
+
+    Args:
+      String path like the following:
+        'android-binary-size/commit_size_analysis/' +
+        '1592001045_551be50f2e3dae7dd1b31522fce7a91374c0efab.zip'
+
+    Returns:
+      tuple of (timestamp, revision sha)
+    """
+  m = re.search(r'.*\/(.*)_(.*)\.zip', gs_zip_path)
+  return int(m.group(1)), m.group(2)
 
 
 class BinarySizeApi(recipe_api.RecipeApi):
@@ -51,17 +72,17 @@ class BinarySizeApi(recipe_api.RecipeApi):
     return int(self.m.commit_position.parse(cp_footer[0])[1])
 
   def android_binary_size(self, *args, **kwargs):
-    return self.binary_size(is_fuchsia=False, *args, **kwargs)
+    return self._binary_size(is_fuchsia=False, *args, **kwargs)
 
   def fuchsia_binary_size(self, *args, **kwargs):
-    return self.binary_size(is_fuchsia=True, *args, **kwargs)
+    return self._binary_size(is_fuchsia=True, *args, **kwargs)
 
-  def binary_size(self,
-                  chromium_config,
-                  gclient_config,
-                  chromium_apply_configs=None,
-                  gclient_apply_configs=None,
-                  is_fuchsia=False):
+  def _binary_size(self,
+                   chromium_config,
+                   gclient_config,
+                   chromium_apply_configs=None,
+                   gclient_apply_configs=None,
+                   is_fuchsia=False):
     """Determines the increase in binary size caused by the patch under test.
 
     To do so, this function:
@@ -136,9 +157,9 @@ class BinarySizeApi(recipe_api.RecipeApi):
       if not use_gs_analysis:  # pragma: no cover
         bot_update_step = self.m.chromium_checkout.ensure_checkout()
       else:
-        gs_zip_path = self._check_for_recent_tot_analysis()
+        gs_zip_path = self._get_recent_tot_analysis_path()
         if gs_zip_path:
-          recent_upload_revision = self._parse_gs_zip_path(gs_zip_path)[1]
+          recent_upload_revision = _parse_gs_zip_path(gs_zip_path)[1]
 
           # Check to see if the patch's parent revision is newer than the
           # recently uploaded revision.
@@ -151,7 +172,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
               url, patch_parent_revision, for_uploaded_rev=False)
           if not patch_cp or patch_cp > uploaded_cp:
             use_gs_analysis = False
-
           else:
             self.m.gclient.c.solutions[0].revision = recent_upload_revision
 
@@ -185,7 +205,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
       self.m.chromium.ensure_goma()
       staging_dir = self.m.path.mkdtemp('binary-size-trybot')
-      expectations_result_path = staging_dir.join('expectations_result.json')
 
       # expectations_without_patch_json is never set when using cached reference
       # builds (via use_gs_analysis). This is fine since we expect
@@ -199,8 +218,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result
 
-      expectations_with_patch_json = self._check_for_failed_expectation_files(
-          expectations_result_path, suffix)
+      expectations_with_patch_json = self._get_failed_expectations(suffix)
 
       if use_gs_analysis and gs_zip_path:
         without_results_dir = self._download_recent_tot_analysis(
@@ -222,9 +240,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
             self.m.step.empty(constants.PATCH_FIXED_BUILD_STEP_NAME)
             return None
 
-        expectations_without_patch_json = (
-            self._check_for_failed_expectation_files(expectations_result_path,
-                                                     suffix))
+        expectations_without_patch_json = self._get_failed_expectations(suffix)
 
         # Re-apply patch so that the diff scripts can be tested via tryjobs.
         # We could build without-patch first to avoid having to apply the patch
@@ -237,16 +253,14 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
       with self.m.context(cwd=self.m.path['checkout']):
         size_results_path = staging_dir.join('size_results.json')
-        self._create_diffs(
-            author,
-            review_subject,
-            review_url,
-            without_results_dir,
-            with_results_dir,
-            size_results_path,
-            staging_dir,
-            is_fuchsia=is_fuchsia)
-        expectation_success = self._maybe_fail_for_expectation_files(
+        if is_fuchsia:
+          self._create_diffs_fuchsia(author, without_results_dir,
+                                     with_results_dir, size_results_path)
+        else:
+          self._create_diffs_android(author, review_subject, review_url,
+                                     without_results_dir, with_results_dir,
+                                     size_results_path, staging_dir)
+        expectation_success = self._check_expectations(
             expectations_with_patch_json, expectations_without_patch_json,
             allow_expectations_regressions)
         binary_size_result = self._check_for_undocumented_increase(
@@ -266,7 +280,13 @@ class BinarySizeApi(recipe_api.RecipeApi):
           if binary_size_result.presentation.status != self.m.step.SUCCESS:
             raise self.m.step.StepFailure(constants.FAILED_CHECK_MESSAGE)
 
-  def _get_android_size_analysis_command(self, staging_dir):
+  def get_android_size_analysis_command(self, staging_dir):
+    """Returns the Android command to compute size analysis files.
+
+    Args:
+      staging_dir: Staging directory to pass input files and retrieve output
+        size analysis files (e.g., .size and size JSON files).
+    """
     generator_script = self.m.path['checkout'].join(
         'tools', 'binary_size', 'generate_commit_size_analysis.py')
     cmd = [generator_script]
@@ -278,12 +298,17 @@ class BinarySizeApi(recipe_api.RecipeApi):
     cmd += ['--chromium-output-directory', self.m.chromium.output_dir]
     return cmd
 
-  def _get_fuchsia_size_analysis_command(self, staging_dir):
+  def get_fuchsia_size_analysis_command(self, staging_dir):
+    """Returns the Fuchsia command to compute size analysis files.
+
+    Args:
+      staging_dir: Staging directory to pass input files and retrieve output
+        size analysis files (e.g., .size and size JSON files).
+    """
     generator_script = self.m.path['checkout'].join(
         'build', 'fuchsia', 'binary_sizes.py')
     cmd = [generator_script]
     cmd += ['--build-out-dir', self.m.chromium.output_dir]
-
 
     size_path = self.m.path['checkout'].join('tools', 'fuchsia', 'size_tests',
                                              'fyi_sizes.json')
@@ -297,52 +322,35 @@ class BinarySizeApi(recipe_api.RecipeApi):
     ]
     return cmd
 
-  def get_size_analysis_command(self, staging_dir, is_fuchsia=False):
-    """Returns the command to compute size analysis files.
+  def _get_recent_tot_analysis_path(self):
+    """Get recent size analysis results path or None if none are valid."""
 
-    Args:
-      staging_dir: Staging directory to pass input files and and retrieve output
-        size analysis files (e.g., .size and size JSON files).
-    """
-    if is_fuchsia:
-      return self._get_fuchsia_size_analysis_command(staging_dir)
-    return self._get_android_size_analysis_command(staging_dir)
-
-  def _parse_gs_zip_path(self, gs_zip_path):
-    # Returns (timestamp, revision sha)
-    # Example path: 'android-binary-size/commit_size_analysis/
-    # 1592001045_551be50f2e3dae7dd1b31522fce7a91374c0efab.zip'
-    m = re.search(r'.*\/(.*)_(.*)\.zip', gs_zip_path)
-    return int(m.group(1)), m.group(2)
-
-  def _check_for_recent_tot_analysis(self):
     gs_directory = 'android-binary-size/commit_size_analysis/'
 
-    def generate_test_data():
-      yield ('android-binary-size/commit_size_analysis/'
-             '{}_551be50f2e3dae7dd1b31522fce7a91374c0efab.zip'.format(
-                 constants.TEST_TIME))
+    test_data = ('android-binary-size/commit_size_analysis/'
+                 '{}_551be50f2e3dae7dd1b31522fce7a91374c0efab.zip'.format(
+                     constants.TEST_TIME))
 
     lines = self.m.gsutil.cat(
         'gs://{bucket}/{source}'.format(
             bucket=self.results_bucket, source=gs_directory + 'LATEST'),
         stdout=self.m.raw_io.output_text(),
         step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-            '\n'.join(generate_test_data())),
+            test_data),
         name='cat LATEST').stdout.splitlines()
 
     # If the LATEST file has blank data, it's likely to have been manually
     # cleared to invalidate the latest gs:// results to indicate that
     # significant binary package restructure has taken place.
     if not lines or not lines[0].strip():
-      return
+      return None
 
     gs_zip_path = lines[0]
-    latest_upload_timestamp = self._parse_gs_zip_path(gs_zip_path)[0]
+    latest_upload_timestamp = _parse_gs_zip_path(gs_zip_path)[0]
 
     # If the most recent upload was created over 2 hours ago, don't use it
     if int(self.m.time.time()) - int(latest_upload_timestamp) > 7200:
-      return
+      return None
 
     return gs_zip_path
 
@@ -371,9 +379,11 @@ class BinarySizeApi(recipe_api.RecipeApi):
     results_dir = staging_dir.join(results_basename)
     self.m.file.ensure_directory('mkdir ' + results_basename, results_dir)
 
-    self.m.step(
-        name='Generate commit size analysis files',
-        cmd=self.get_size_analysis_command(results_dir, is_fuchsia))
+    if is_fuchsia:
+      cmd = self.get_fuchsia_size_analysis_command(results_dir)
+    else:
+      cmd = self.get_android_size_analysis_command(results_dir)
+    self.m.step(name='Generate commit size analysis files', cmd=cmd)
 
     return results_dir, None
 
@@ -383,49 +393,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
                                        allow_regressions,
                                        is_fuchsia=False):
     step_result = self.m.json.read(
-        constants.RESULT_JSON_STEP_NAME, results_path,
-        step_test_data=lambda: self.m.json.test_api.output({
-          'status_code': 0,
-          'summary': '\n!summary!',
-          'archive_filenames': [ 'result.ndjson', 'result.txt' ],
-          'links': [
-              {
-                  'name': 'Resource Sizes Diff (high-level metrics)',
-                  'lines': ['!resource_sizes!'],
-                  'log_name': 'resource_sizes_log',
-              }, {
-                  'name': 'SuperSize Text Diff',
-                  'lines': [u'!supersize text with \u0394!'],
-              }, {
-                  'name': 'Dex Method Diff',
-                  'lines': ['!dex_methods!'],
-                  'log_name': 'dex_methods_log',
-              }, {
-                  'name': 'Supersize HTML Diff',
-                  'url': 'https://foo.com/{{result.ndjson}}',
-              },
-          ],
-          'gerrit_plugin_details': {
-            'listings': [
-                {
-                    'name': 'Normalised APK size',
-                    'delta': '500 bytes',
-                    'allowed': True,
-                    'log_name': 'resource_sizes_log',
-                },
-            ],
-            'extras': [
-                {
-                    'text': 'Supersize HTML Diff',
-                    'url': 'https://foo.com/{{result.ndjson}}',
-                },
-                {
-                    'text': 'SuperSize Text Diff',
-                    'url': '{{result.txt}}',
-                },
-            ],
-          }
-      }))
+        constants.RESULT_JSON_STEP_NAME,
+        results_path,
+        step_test_data=lambda: self.m.json.test_api.output(constants.
+                                                           TEST_RESULT_JSON))
     result_json = step_result.json.output
     # Upload files (.ndjson) to storage bucket.
     filename_map = {}
@@ -442,7 +413,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           logname_map[link['log_name']] = self._synthesize_log_link(
               constants.RESULTS_STEP_NAME, link['name'])
       else:
-        url = self._linkify_filenames(link['url'], filename_map)
+        url = _linkify_filenames(link['url'], filename_map)
         step_result.presentation.links[link['name']] = url
 
     gerrit_plugin_details = result_json.get('gerrit_plugin_details')
@@ -453,7 +424,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       for extra in gerrit_plugin_details['extras']:
         if 'url' in extra:
           url = extra['url']
-          url = self._linkify_filenames(url, filename_map)
+          url = _linkify_filenames(url, filename_map)
           extra['url'] = url
       step_result.presentation.properties[
           constants.PLUGIN_OUTPUT_PROPERTY_NAME] = gerrit_plugin_details
@@ -469,11 +440,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
         step_result.presentation.status = self.m.step.FAILURE
     return step_result
 
-  def _linkify_filenames(self, url, filename_map):
-    for filename, archived_url in filename_map.items():
-      url = url.replace('{{' + filename + '}}', archived_url)
-    return url
-
   def _synthesize_log_link(self, step_name, log_name):
     normalized_log_name = _normalize_name(log_name)
     normalized_step_name = _normalize_name(step_name)
@@ -484,22 +450,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
                                                    normalized_step_name,
                                                    normalized_log_name)
     return url
-
-  def _create_diffs(self,
-                    author,
-                    review_subject,
-                    review_url,
-                    before_dir,
-                    after_dir,
-                    results_path,
-                    staging_dir,
-                    is_fuchsia=False):
-    if is_fuchsia:
-      return self._create_diffs_fuchsia(author, before_dir, after_dir,
-                                        results_path)
-    return self._create_diffs_android(author, review_subject, review_url,
-                                      before_dir, after_dir, results_path,
-                                      staging_dir)
 
   def _create_diffs_android(self, author, review_subject, review_url,
                             before_dir, after_dir, results_path, staging_dir):
@@ -549,7 +499,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     return constants.ARCHIVED_URL_FMT.format(
         bucket=self.results_bucket, dest=gs_dest)
 
-  def _check_for_failed_expectation_files(self, results_path, suffix):
+  def _get_failed_expectations(self, suffix):
     with self.m.context(cwd=self.m.chromium.output_dir):
       checker_script = self.resource('trybot_failed_expectations_checker.py')
 
@@ -571,39 +521,42 @@ class BinarySizeApi(recipe_api.RecipeApi):
           step_test_data=TEST_DATA)
       return step_result.json.output
 
-  def _maybe_fail_for_expectation_files(self,
-                                        expectations_with_patch_json,
-                                        expectations_without_patch_json,
-                                        allow_expectations_regressions=False):
+  def _check_expectations(self,
+                          expectations_with_patch_json,
+                          expectations_without_patch_json,
+                          allow_expectations_regressions=False):
     with self.m.step.nest(constants.EXPECTATIONS_STEP_NAME) as presentation:
       if expectations_with_patch_json['success']:
         presentation.step_text += '<br/>Expectations are up-to-date.'
-      else:
-        presentation.logs['failed expectations'] = (
-            expectations_with_patch_json['failed_messages'])
-        # For android-internal-binary-size, expectations are diffs against base
-        # expectations in //src, and sometimes changes to the base files can
-        # cause the diffs to become stale. Don't fail trybots in this case.
-        if expectations_with_patch_json != expectations_without_patch_json:
-          presentation.step_text += (
-              '<br/>Expectations file need to be updated.')
-          if (expectations_without_patch_json and
-              not expectations_without_patch_json['success']):
-            presentation.step_text += (
-                '<br/>Note: Expectations did not match both with and '
-                'without patch. You need to update the expecations to '
-                'account for your change as well as some unrelated changes '
-                '(this is fine / normal).')
-          presentation.status = self.m.step.FAILURE
-          return allow_expectations_regressions
+        return True
 
+      presentation.logs['failed expectations'] = (
+          expectations_with_patch_json['failed_messages'])
+
+      if expectations_with_patch_json == expectations_without_patch_json:
         presentation.status = self.m.step.WARNING
         presentation.step_text += (
             '<br/>Expectations did not match without patch either.')
-    return True
+        return True
+
+      presentation.step_text += '<br/>Expectations file need to be updated.'
+      presentation.status = self.m.step.FAILURE
+
+      # For android-internal-binary-size, expectations are diffs against base
+      # expectations in //src, and sometimes changes to the base files can
+      # cause the diffs to become stale. Don't fail trybots in this case.
+      if (expectations_without_patch_json and
+          not expectations_without_patch_json['success']):
+        presentation.step_text += (
+            '<br/>Note: Expectations did not match both with and '
+            'without patch. You need to update the expecations to '
+            'account for your change as well as some unrelated changes '
+            '(this is fine / normal).')
+
+      return allow_expectations_regressions
 
   def _clear_failed_expectation_files(self):
-    """Clear expectation files from a previous run of the bot"""
+    """Clear expectation files from a previous build."""
 
     checker_script = self.resource('trybot_failed_expectations_checker.py')
 

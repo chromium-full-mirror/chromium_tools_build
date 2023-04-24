@@ -61,7 +61,7 @@ def RunSteps(api):
     staging_dir = api.path.mkdtemp('binary-size-generator-tot')
     api.step(
         name='Generate commit size analysis files',
-        cmd=api.binary_size.get_size_analysis_command(staging_dir))
+        cmd=api.binary_size.get_android_size_analysis_command(staging_dir))
 
     zip_path = staging_dir.join('analysis_files.zip')
     api.zip.directory(

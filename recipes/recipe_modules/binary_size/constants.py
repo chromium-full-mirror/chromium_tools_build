@@ -40,6 +40,49 @@ TEST_BUILDNUMBER = 200
 TEST_TIME_FMT = '2016/02/02'
 TEST_RECENT_UPLOAD_CP = 862979
 TEST_PATCH_PARENT_CP = 862960
+TEST_RESULT_JSON = {
+    'status_code': 0,
+    'summary': '\n!summary!',
+    'archive_filenames': ['result.ndjson', 'result.txt'],
+    'links': [
+        {
+            'name': 'Resource Sizes Diff (high-level metrics)',
+            'lines': ['!resource_sizes!'],
+            'log_name': 'resource_sizes_log',
+        },
+        {
+            'name': 'SuperSize Text Diff',
+            'lines': [u'!supersize text with \u0394!'],
+        },
+        {
+            'name': 'Dex Method Diff',
+            'lines': ['!dex_methods!'],
+            'log_name': 'dex_methods_log',
+        },
+        {
+            'name': 'Supersize HTML Diff',
+            'url': 'https://foo.com/{{result.ndjson}}',
+        },
+    ],
+    'gerrit_plugin_details': {
+        'listings': [{
+            'name': 'Normalised APK size',
+            'delta': '500 bytes',
+            'allowed': True,
+            'log_name': 'resource_sizes_log',
+        },],
+        'extras': [
+            {
+                'text': 'Supersize HTML Diff',
+                'url': 'https://foo.com/{{result.ndjson}}',
+            },
+            {
+                'text': 'SuperSize Text Diff',
+                'url': '{{result.txt}}',
+            },
+        ],
+    }
+}
 
 # Failure codes for Fuchsia binary size
 FUCHSIA_SIZE_FAILURE = 1
