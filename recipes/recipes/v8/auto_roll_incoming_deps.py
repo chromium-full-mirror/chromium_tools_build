@@ -2,8 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+from PB.recipe_engine import result as result_pb2
+
 from recipe_engine.post_process import (DoesNotRun, DoesNotRunRE,
-                                        DropExpectation, MustRun)
+                                        DropExpectation, MustRun,
+                                        SummaryMarkdown)
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, Dict, Single, List
 
@@ -555,7 +559,7 @@ def update_dependencies(api, step, updates, autoroller_config, trusted):
   step.presentation.step_text = f'{len(updates)} update(s)'
 
   if not updates:
-    return
+    return len(updates)
 
   discard_local_changes(api)
 
@@ -584,11 +588,12 @@ def update_dependencies(api, step, updates, autoroller_config, trusted):
       commit_lines=commit_lines,
       bugs_label=autoroller_config.get('bugs', None),
   )
+  return len(updates)
 
 
 def update_chromium_pin(api, step, autoroller_config):
-  """Updates the values of gclient variables chromium_(win|mac|mac_arm|linux) with the
-  latest prebuilt versions.
+  """Updates the values of gclient variables chromium_(win|mac|mac_arm|linux)
+  with the latest prebuilt versions.
   """
   change_count = 0
   with api.context(cwd=api.path['checkout']):
@@ -620,6 +625,8 @@ def update_chromium_pin(api, step, autoroller_config):
       bugs_label=autoroller_config.get('bugs', None),
   )
 
+  return change_count
+
 
 def handle_failed_deps(api, failed_deps):
   if not failed_deps:
@@ -638,6 +645,7 @@ def set_defaults(autoroller_config):
 
 def RunSteps(api, autoroller_config):
   set_defaults(autoroller_config)
+  summary = []
 
   with api.step.nest('Setup'):
     abandon_active_cls(api, autoroller_config)
@@ -649,10 +657,16 @@ def RunSteps(api, autoroller_config):
     updates, failed = get_dep_updates(api, autoroller_config)
 
   with api.step.nest('Update trusted deps') as step:
-    update_dependencies(api, step, updates, autoroller_config, trusted=True)
+    trusted_updates = update_dependencies(
+        api, step, updates, autoroller_config, trusted=True)
+    if trusted_updates:
+      summary.append(f'{trusted_updates} trusted dep(s)')
 
   with api.step.nest('Update reviewed deps') as step:
-    update_dependencies(api, step, updates, autoroller_config, trusted=False)
+    reviewed_updates = update_dependencies(
+        api, step, updates, autoroller_config, trusted=False)
+    if reviewed_updates:
+      summary.append(f'{reviewed_updates} reviewed dep(s)')
 
   with api.step.nest('Check failed deps'):
     handle_failed_deps(api, failed)
@@ -660,7 +674,15 @@ def RunSteps(api, autoroller_config):
   if autoroller_config['roll_chromium_pin']:
     with api.step.nest('Roll chromium pin') as step:
       discard_local_changes(api)
-      update_chromium_pin(api, step, autoroller_config)
+      pin_updates = update_chromium_pin(api, step, autoroller_config)
+    if pin_updates:
+      summary.append(f'{pin_updates} chromium pin(s)')
+
+  result = result_pb2.RawResult()
+  result.status = common_pb2.SUCCESS
+  if summary:
+    result.summary_markdown = 'updated ' + ', '.join(summary)
+  return result
 
 
 def GenTests(api):
@@ -833,7 +855,11 @@ remote:"""
 
 
   # Happy path
-  yield api.test(*template('default'))
+  yield api.test(*template('default') + [
+      api.post_process(
+          SummaryMarkdown,
+          'updated 4 trusted dep(s), 6 reviewed dep(s), 1 chromium pin(s)'),
+  ])
 
   # Stale rolls: If active roll CLs exists in gerrit, we abandon those first
   yield api.test(*(template('no-stale-roll') + [

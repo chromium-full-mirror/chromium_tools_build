@@ -2425,6 +2425,7 @@
     ]
   },
   {
-    "name": "$result"
+    "name": "$result",
+    "summaryMarkdown": "updated 4 trusted dep(s), 6 reviewed dep(s), 1 chromium pin(s)"
   }
 ]
