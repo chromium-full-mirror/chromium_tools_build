@@ -20,41 +20,6 @@ from common import chromium_utils
 
 _BUILD_DIR = ROOT_DIR
 
-# Note: The git-svn id / cr pos is intentionally modified.
-# Also commit messages modified to be < 80 char.
-# TODO(eyaich): Udpate example logs as they are out of date.  Source of truth
-# is now git so the git-svn-id entry is no longer present.  Remove BLINK_LOG
-# once we remove the blink revision concept
-CHROMIUM_LOG = """
-Update GPU rasterization device whitelist
-
-This replaces the whitelisting of all Qualcomm GPUs on
-Android 4.4 with whitelisting all Android 4.4 devices
-with GL ES version >= 3.0.
-
-BUG=405646
-
-Review URL: https://codereview.chromium.org/468103003
-
-Cr-Commit-Position: refs/heads/main@{#291141}
-git-svn-id: svn://svn.chromium.org/chrome/trunk/src@291140 0039d316-1c4b-4281
-"""
-
-BLINK_LOG = """
-[Sheriff-o-matic] Remove race condition on the commit list.
-
-By always modifying the same list of commits, we ensure that data binding
-
-As well, renamed "revisionLog" to "commitLog" everywhere, to better reflect
-
-BUG=405327
-NOTRY=true
-
-Review URL: https://codereview.chromium.org/485253004
-
-git-svn-id: svn://svn.chromium.org/blink/trunk@180728 bbb929c8-8fbe-4397-9dbb-9
-"""
-
 
 class TestGetZipFileNames(unittest.TestCase):
 
@@ -160,20 +125,6 @@ class TestGSUtil(unittest.TestCase):
         'file://foo',
         'file://bar/foo',
     ])
-
-
-class GetGitRevisionTest(unittest.TestCase):
-  """Tests related to getting revisions from a directory."""
-
-  def test_GitSvnCase(self):
-    # pylint: disable=W0212
-    self.assertEqual(
-        bot_utils._GetGitCommitPositionFromLog(CHROMIUM_LOG), '291141'
-    )
-    # pylint: disable=W0212
-    self.assertEqual(
-        bot_utils._GetGitCommitPositionFromLog(BLINK_LOG), '180728'
-    )
 
 
 if __name__ == '__main__':

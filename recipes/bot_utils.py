@@ -13,7 +13,6 @@ import glob
 import optparse
 import os
 import re
-import subprocess
 import sys
 import tempfile
 
@@ -22,13 +21,6 @@ from common import chromium_utils
 # These codes used to distinguish true errors from script warnings.
 ERROR_EXIT_CODE = 1
 WARNING_EXIT_CODE = 88
-
-# Regex matching git comment lines containing svn revision info.
-_GIT_SVN_ID_RE = re.compile(r'^git-svn-id: .*@([0-9]+) .*$')
-# Regex for the default branch commit position.
-_GIT_CR_POS_RE = re.compile(
-    r'^Cr-Commit-Position: refs/heads/(?:master|main)@{#(\d+)}$'
-)
 
 # Global variables set by command-line arguments (AddArgs, AddOpts).
 _ARGS_GSUTIL_PY_PATH = None
@@ -427,127 +419,6 @@ def RemoveChromeTemporaryFiles():
     raise NotImplementedError(
         'Platform "%s" is not currently supported.' % sys.platform
     )
-
-
-def GetPerfDashboardRevisionsWithProperties(
-    got_webrtc_revision,
-    got_v8_revision,
-    version,
-    git_revision,
-    main_revision,
-    point_id=None,
-):
-  """Fills in the same revisions fields that process_log_utils does."""
-
-  versions = {}
-  versions['rev'] = main_revision
-  versions['webrtc_git'] = got_webrtc_revision
-  versions['v8_rev'] = got_v8_revision
-  versions['ver'] = version
-  versions['git_revision'] = git_revision
-  versions['point_id'] = point_id
-  # There are a lot of "bad" revisions to check for, so clean them all up here.
-  for key in versions.keys():
-    if not versions[key] or versions[key] == 'undefined':
-      del versions[key]
-  return versions
-
-
-def GetRevision(in_directory):
-  """Returns the SVN revision, git commit position, or git hash.
-
-  Args:
-    in_directory: A directory in the repository to be checked.
-
-  Returns:
-    An SVN revision as a string if the given directory is in a SVN repository,
-    or a git commit position number, or if that's not available, a git hash.
-    If all of that fails, an empty string is returned.
-  """
-  import xml.dom.minidom
-  if not os.path.exists(os.path.join(in_directory, '.svn')):
-    if _IsGitDirectory(in_directory):
-      svn_rev = _GetGitCommitPosition(in_directory)
-      if svn_rev:
-        return svn_rev
-      return _GetGitRevision(in_directory)
-    else:
-      return ''
-
-  # Note: Not thread safe: http://bugs.python.org/issue2320
-  output = subprocess.Popen(['svn', 'info', '--xml'],
-                            cwd=in_directory,
-                            shell=(sys.platform == 'win32'),
-                            stdout=subprocess.PIPE).communicate()[0]
-  try:
-    dom = xml.dom.minidom.parseString(output)
-    return dom.getElementsByTagName('entry')[0].getAttribute('revision')
-  except xml.parsers.expat.ExpatError:
-    return ''
-  return ''
-
-
-def _GetGitCommitPositionFromLog(log):
-  """Returns either the commit position or svn rev from a git log."""
-  # Parse from the bottom up, in case the commit message embeds the message
-  # from a different commit (e.g., for a revert).
-  for r in [_GIT_CR_POS_RE, _GIT_SVN_ID_RE]:
-    for line in reversed(log.splitlines()):
-      m = r.match(line.strip())
-      if m:
-        return m.group(1)
-  return None
-
-
-def _GetGitCommitPosition(dir_path):
-  """Extracts the commit position or svn revision number of the HEAD commit."""
-  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
-  p = subprocess.Popen(
-      [git_exe, 'log', '-n', '1', '--pretty=format:%B', 'HEAD'],
-      cwd=dir_path,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-  )
-  (log, _) = p.communicate()
-  if p.returncode != 0:
-    return None
-  return _GetGitCommitPositionFromLog(log)
-
-
-def _GetGitRevision(in_directory):
-  """Returns the git hash tag for the given directory.
-
-  Args:
-    in_directory: The directory where git is to be run.
-
-  Returns:
-    The git SHA1 hash string.
-  """
-  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
-  p = subprocess.Popen([git_exe, 'rev-parse', 'HEAD'],
-                       cwd=in_directory,
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT)
-  (stdout, _) = p.communicate()
-  return stdout.strip()
-
-
-def _IsGitDirectory(dir_path):
-  """Checks whether the given directory is in a git repository.
-
-  Args:
-    dir_path: The directory path to be tested.
-
-  Returns:
-    True if given directory is in a git repository, False otherwise.
-  """
-  git_exe = 'git.bat' if sys.platform.startswith('win') else 'git'
-  with open(os.devnull, 'w') as devnull:
-    p = subprocess.Popen([git_exe, 'rev-parse', '--git-dir'],
-                         cwd=dir_path,
-                         stdout=devnull,
-                         stderr=devnull)
-    return p.wait() == 0
 
 
 def AddArgs(parser):
