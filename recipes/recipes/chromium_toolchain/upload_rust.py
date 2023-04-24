@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(jwata): switch to chromium_toolchain/upload_rust.py
-
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 
