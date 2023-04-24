@@ -315,7 +315,7 @@ def _determine_affected_recipes(api, affected_files, recipes, recipes_py_path,
     StepFailure if analyzing the recipes fails.
   """
   cmd = [
-      'vpython',
+      'vpython3',
       recipes_py_path,
       '--package',
       recipes_cfg_path,

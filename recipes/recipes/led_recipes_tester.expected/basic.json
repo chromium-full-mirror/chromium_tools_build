@@ -506,7 +506,7 @@
   },
   {
     "cmd": [
-      "vpython",
+      "vpython3",
       "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/refs/heads/main/recipe_engine/recipes.py",
       "--package",
       "[CACHE]/builder/baz/infra/config/recipes.cfg",
