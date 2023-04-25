@@ -155,11 +155,7 @@
       "--build-url",
       "gs://chromium-libyuv/client.libyuv/Android Release/full-build-linux.zip",
       "--build_revision",
-      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "--builder-group",
-      "client.libyuv",
-      "--build-number",
-      "1337"
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
     ],
     "infra_step": true,
     "luci_context": {

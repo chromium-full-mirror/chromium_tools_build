@@ -27,35 +27,9 @@ class TestGetZipFileNames(unittest.TestCase):
     chromium_utils.OverridePlatformName(sys.platform)
 
   def testNormalBuildName(self):
-    (base_name, version_suffix) = bot_utils.GetZipFileNames('', None, None, 123)
-    self._verifyBaseName(base_name)
+    (base_name, version_suffix) = bot_utils.GetZipFileNames(123)
+    self.assertEqual(base_name, f'full-build-{sys.platform}')
     self.assertEqual('_123', version_suffix)
-
-  def testNormalBuildNameTryBot(self):
-    (base_name, version_suffix) = bot_utils.GetZipFileNames(
-        'master.tryserver.chromium.linux', 666, None, 123
-    )
-    self._verifyBaseName(base_name)
-    self.assertEqual('_666', version_suffix)
-
-  def testNormalBuildNameTryBotExtractNoParentBuildNumber(self):
-
-    def dummy():
-      bot_utils.GetZipFileNames(
-          'master.tryserver.chromium.linux', 666, None, 123, extract=True
-      )
-
-    self.assertRaises(Exception, dummy)
-
-  def testNormalBuildNameTryBotExtractWithParentBuildNumber(self):
-    (base_name, version_suffix) = bot_utils.GetZipFileNames(
-        'master.tryserver.chromium.linux', 666, 999, 123, extract=True
-    )
-    self._verifyBaseName(base_name)
-    self.assertEqual('_999', version_suffix)
-
-  def _verifyBaseName(self, base_name):
-    self.assertEqual('full-build-%s' % sys.platform, base_name)
 
 
 class TestGetBuildRevisions(unittest.TestCase):

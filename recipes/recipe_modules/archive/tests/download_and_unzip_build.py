@@ -6,7 +6,6 @@ from recipe_engine.post_process import DropExpectation, StepCommandContains
 
 DEPS = [
     'archive',
-    'builder_group',
     'recipe_engine/path',
     'recipe_engine/properties',
 ]
@@ -25,7 +24,6 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic',
-      api.builder_group.for_current('test_group'),
       api.properties(
           parent_buildername='example_buildername',
           parent_buildnumber=1.0,
@@ -36,19 +34,12 @@ def GenTests(api):
           'gs://bucket_name/example_buildername/full-build-linux.zip',
           '--build_revision',
           'example_sha',
-          '--builder-group',
-          'test_group',
-          '--parent-build-number',
-          '1',
-          '--build-number',
-          '123',
       ]),
       api.post_process(DropExpectation),
   )
 
   yield api.test(
       'build_archive_url',
-      api.builder_group.for_current('test_group'),
       api.properties(
           parent_buildername='example_buildername',
           parentname='example_buildername',
@@ -57,12 +48,8 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'extract build', [
           '--build-archive-url',
           'https://example/url',
-          '--builder-group',
-          'test_group',
           '--parent-builder-name',
           'example_buildername',
-          '--build-number',
-          '123',
       ]),
       api.post_process(DropExpectation),
   )

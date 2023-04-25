@@ -60,13 +60,7 @@ def GetBuildUrl(options, build_revision):
   if options.build_archive_url:
     return options.build_archive_url, None
 
-  base_filename, version_suffix = bot_utils.GetZipFileNames(
-      options.builder_group,
-      options.build_number,
-      options.parent_build_number,
-      build_revision,
-      extract=True
-  )
+  base_filename, version_suffix = bot_utils.GetZipFileNames(build_revision)
 
   replace_dict = {
       'base_filename': base_filename,
@@ -175,10 +169,6 @@ def main():
       help='path to the top-level sources directory'
   )
   option_parser.add_option('--build-dir', help='ignored')
-  option_parser.add_option('--builder-group', help='Name of the builder group.')
-  option_parser.add_option(
-      '--build-number', type=int, help='Buildbot build number.'
-  )
   option_parser.add_option(
       '--parent-build-dir',
       help='Path to build directory on parent buildbot '
@@ -189,9 +179,6 @@ def main():
   )
   option_parser.add_option(
       '--parent-slave-name', help='Name of parent buildbot slave.'
-  )
-  option_parser.add_option(
-      '--parent-build-number', type=int, help='Buildbot parent build number.'
   )
   option_parser.add_option(
       '--build-url', help='Base url where to find the build to extract'
@@ -228,20 +215,12 @@ def main():
     print('--gsutil-py-path must be specified')
     return 1
 
-  if not options.builder_group:
-    options.builder_group = options.build_properties.get('builder_group', '')
-  if not options.build_number:
-    options.build_number = options.build_properties.get('buildnumber')
   if not options.parent_build_dir:
     options.parent_build_dir = options.build_properties.get('parent_builddir')
   if not options.parent_builder_name:
     options.parent_builder_name = options.build_properties.get('parentname')
   if not options.parent_slave_name:
     options.parent_slave_name = options.build_properties.get('parentslavename')
-  if not options.parent_build_number:
-    options.parent_build_number = int_if_given(
-        options.build_properties.get('parent_buildnumber')
-    )
   if not options.build_url:
     options.build_url = options.build_properties.get('build_url')
   if not options.target:
@@ -257,12 +236,6 @@ def main():
     return 1
 
   return real_main(options)
-
-
-def int_if_given(value):
-  if value is None:
-    return None
-  return int(value)
 
 
 if '__main__' == __name__:

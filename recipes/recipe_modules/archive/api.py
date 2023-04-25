@@ -389,9 +389,6 @@ class ArchiveApi(recipe_api.RecipeApi):
       if build_revision:
         args.extend(['--build_revision', build_revision])
 
-    if self.m.builder_group.for_current:
-      args.extend(['--builder-group', self.m.builder_group.for_current])
-
     properties = (
         ('parent_builddir', '--parent-build-dir'),
         ('parentname', '--parent-builder-name'),
@@ -402,13 +399,6 @@ class ArchiveApi(recipe_api.RecipeApi):
     for property_name, switch_name in properties:
       if self.m.properties.get(property_name):
         args.extend([switch_name, self.m.properties[property_name]])
-
-    if self.m.properties.get('parent_buildnumber'):
-      args.extend([
-          '--parent-build-number',
-          int(self.m.properties.get('parent_buildnumber')),
-      ])
-    args.extend(['--build-number', self.m.buildbucket.build.number])
 
     cmd = [
         'python3',

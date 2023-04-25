@@ -379,12 +379,8 @@ def Archive(options):
   else:
     build_revision = options.build_revision
 
-  unversioned_base_name, version_suffix = bot_utils.GetZipFileNames(
-      options.builder_group,
-      options.build_number,
-      options.parent_build_number,
-      build_revision,
-      use_try_buildnumber=True,
+  unversioned_base_name, version_suffix = (
+      bot_utils.GetZipFileNames(build_revision)
   )
 
   print('Full Staging in %s' % staging_dir)
@@ -513,14 +509,7 @@ def AddOptions(option_parser):
       help='Only includes include file list'
       'and regex whitelist match provided'
   )
-  option_parser.add_option('--builder-group', help='Name of the builder group.')
   option_parser.add_option('--slave-name', help='Name of the buildbot slave.')
-  option_parser.add_option(
-      '--build-number', type=int, help='Buildbot build number.'
-  )
-  option_parser.add_option(
-      '--parent-build-number', type=int, help='Buildbot parent build number.'
-  )
   option_parser.add_option(
       '--revision-dir',
       help='Directory path that shall be used to decide '
@@ -596,16 +585,8 @@ def main(argv):
     print('--gsutil-py-path must be specified')
     return 1
 
-  if not options.builder_group:
-    options.builder_group = options.build_properties.get('builder_group', '')
   if not options.slave_name:
     options.slave_name = options.build_properties.get('slavename')
-  if not options.build_number:
-    options.build_number = options.build_properties.get('buildnumber')
-  if not options.parent_build_number:
-    options.parent_build_number = options.build_properties.get(
-        'parent_buildumber'
-    )
   if not options.target:
     options.target = options.build_properties.get('target', 'Release')
   if not options.build_url:

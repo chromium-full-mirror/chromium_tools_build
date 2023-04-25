@@ -21,9 +21,6 @@ import bot_utils
 class MockOptions:
   build_properties = {}
   build_archive_url = None
-  builder_group = 'chromium.fyi'
-  build_number = 456
-  parent_build_number = 789
   parent_builder_name = 'Builder'
   parent_slave_name = 'slave'
   parent_build_dir = '/b/foo'
@@ -37,8 +34,8 @@ class ExtractBuildTest(unittest.TestCase):
   def testGetBuildUrl(self):
     options = MockOptions()
 
-    base_filename, version_suffix = bot_utils.GetZipFileNames(
-        '', None, None, build_revision=self._build_revision, extract=True
+    base_filename, version_suffix = (
+        bot_utils.GetZipFileNames(self._build_revision)
     )
 
     gs_url_without_slash = 'gs://foo/Win'

@@ -606,11 +606,7 @@
       "--build-url",
       "gs://fake-gs-bucket/fake-group/fake-builder/full-build-linux.zip",
       "--build_revision",
-      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
-      "--builder-group",
-      "fake-group",
-      "--build-number",
-      "0"
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789"
     ],
     "env": {
       "CHROME_HEADLESS": "1"

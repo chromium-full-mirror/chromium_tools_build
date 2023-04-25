@@ -6,7 +6,6 @@ from PB.recipe_modules.build.archive import properties
 
 DEPS = [
     'build',
-    'builder_group',
     'chromium',
     'chromium_checkout',
     'depot_tools/depot_tools',

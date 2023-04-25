@@ -30,7 +30,6 @@ def _setup_testdir(testdir):
   options.target = 'Debug'
   options.src_dir = os.path.join(testdir, 'src')
   options.staging_dir = os.path.join(testdir, 'staging')
-  options.builder_group = 'lorem'
   options.slave_name = 'ipsum'
   options.build_revision = 'dolor'
 
