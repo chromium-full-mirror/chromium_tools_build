@@ -71,28 +71,51 @@ class BinarySizeApi(recipe_api.RecipeApi):
       return None
     return int(self.m.commit_position.parse(cp_footer[0])[1])
 
-  def android_binary_size(self, *args, **kwargs):
-    return self._binary_size(is_fuchsia=False, *args, **kwargs)
+  def android_binary_size(self, **kwargs):
+    return self._binary_size(
+        binary_size_footer=constants.ANDROID_BINARY_SIZE_FOOTER_KEY,
+        diff_func=self._create_diffs_android,
+        analysis_cmd_func=self.get_android_size_analysis_command,
+        analysis_warning_statuses={},
+        **kwargs)
 
-  def fuchsia_binary_size(self, *args, **kwargs):
-    return self._binary_size(is_fuchsia=True, *args, **kwargs)
+  def fuchsia_binary_size(self):
+    return self._binary_size(
+        chromium_config='chromium',
+        chromium_apply_configs=['mb'],
+        gclient_config='chromium',
+        gclient_apply_configs=['fuchsia_arm64'],
+        binary_size_footer=constants.FUCHSIA_BINARY_SIZE_FOOTER_KEY,
+        diff_func=self._create_diffs_fuchsia,
+        analysis_cmd_func=self.get_fuchsia_size_analysis_command,
+        # Fuchsia ignores roller failures, but these should be indicated anyway.
+        # See crbug.com/1355914
+        analysis_warning_statuses={
+            constants.FUCHSIA_ROLLER_WARNING:
+                'Ignore roller errors for Fuchsia.'
+        })
 
   def _binary_size(self,
+                   *,
                    chromium_config,
+                   chromium_apply_configs=(),
                    gclient_config,
-                   chromium_apply_configs=None,
-                   gclient_apply_configs=None,
-                   is_fuchsia=False):
+                   gclient_apply_configs=(),
+                   binary_size_footer,
+                   diff_func,
+                   analysis_cmd_func,
+                   analysis_warning_statuses,
+                   try_gs_analysis=False):
     """Determines the increase in binary size caused by the patch under test.
 
     To do so, this function:
      - syncs with the patch
      - exits early if none of the configured analyze targets were affected.
      - builds the configured compile targets with the patch
-     - measures the size of the configured APK with the patch
+     - measures the size of the configured targets with the patch
      - syncs without the patch
      - builds the same targets without the patch
-     - measures the size of the configured APK without the patch
+     - measures the size of the configured targets without the patch
      - reapplies the patch and compares the results
 
     In general, this recipe is responsible only for driving the execution of
@@ -104,15 +127,23 @@ class BinarySizeApi(recipe_api.RecipeApi):
     Args:
       chromium_config: A string containing the name of the chromium
         recipe_module config to use.
-      gclient_config: A string containing the name of the gclient
-        recipe_module config to use.
       chromium_apply_configs: An optional list of strings containing the names
         of additional chromium recipe_module configs to apply.
+      gclient_config: A string containing the name of the gclient
+        recipe_module config to use.
       gclient_apply_configs: An optional list of strings containing the names
         of additional gclient recipe_module configs to apply.
-      is_fuchsia: Optional flag indicating this is a WebEngine size check.
-        This will skip using GS for analysis, and modify the binary size
-        measurement scripts.
+      binary_size_footer: A string with the gerrit footer to allow for size
+        regressions.
+      diff_func: Function that takes (author, review_subject, review_url,
+        before_dir, after_dir, results_path, staging_dir) and generates
+        diffs in results_path.
+      analysis_cmd_func: Function that takes a staging_dir and returns a
+        command to perform a size analysis.
+      analysis_warning_statuses: Dict of {status_code: int -> message: string}
+        items for diff analysis statuses that should only be warnings.
+      try_gs_analysis: bool, whether to try to use previously computed size
+        results from tip of tree to skip building without patch.
     """
     assert self.m.tryserver.is_tryserver
 
@@ -121,15 +152,15 @@ class BinarySizeApi(recipe_api.RecipeApi):
     is_trunk_builder = (
         self.m.buildbucket.build.builder.project == 'chromium' and
         self.m.buildbucket.build.builder.bucket == 'try')
-    use_gs_analysis = (gclient_config == 'chromium' and is_trunk_builder and
-                       not is_fuchsia)
+    try_gs_analysis = (
+        try_gs_analysis and gclient_config == 'chromium' and is_trunk_builder)
 
     with self.m.chromium.chromium_layout():
       self.m.gclient.set_config(gclient_config)
-      for gclient_apply_config in gclient_apply_configs or []:
+      for gclient_apply_config in gclient_apply_configs:
         self.m.gclient.apply_config(gclient_apply_config)
       self.m.chromium.set_config(chromium_config)
-      for chromium_apply_config in chromium_apply_configs or []:
+      for chromium_apply_config in chromium_apply_configs:
         self.m.chromium.apply_config(chromium_apply_config)
       self.m.chromium_android.set_config('base_config')
 
@@ -143,10 +174,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       review_url = self.m.tryserver.gerrit_change_review_url
       is_revert = review_subject.startswith('Revert')
       commit_footers = self.m.tryserver.get_footers(patch_text=commit_message)
-      # get_footer returns a list of footer values.
-      binary_size_footer = constants.ANDROID_BINARY_SIZE_FOOTER_KEY
-      if is_fuchsia:
-        binary_size_footer = constants.FUCHSIA_BINARY_SIZE_FOOTER_KEY
+      # get_footer returns a dict of footer keys and values.
       has_size_footer = bool(commit_footers.get(binary_size_footer))
       allow_size_regressions = is_revert or has_size_footer
 
@@ -154,26 +182,15 @@ class BinarySizeApi(recipe_api.RecipeApi):
           commit_footers.get(constants.SKIP_EXPECTATIONS_FOOTER_KEY))
       allow_expectations_regressions = is_revert or has_expectations_footer
 
-      if not use_gs_analysis:  # pragma: no cover
+      gs_zip_path = None
+      if not try_gs_analysis:
         bot_update_step = self.m.chromium_checkout.ensure_checkout()
       else:
-        gs_zip_path = self._get_recent_tot_analysis_path()
+        patch_parent_revision = revision_info['commit']['parents'][0]['commit']
+        gs_zip_path, recent_upload_revision = self._get_recent_tot_analysis_path(
+            patch_parent_revision)
         if gs_zip_path:
-          recent_upload_revision = _parse_gs_zip_path(gs_zip_path)[1]
-
-          # Check to see if the patch's parent revision is newer than the
-          # recently uploaded revision.
-          patch_parent_revision = revision_info['commit']['parents'][0][
-              'commit']
-          url = self.m.gclient.c.solutions[0].url
-          uploaded_cp = self.get_commit_position(
-              url, recent_upload_revision, for_uploaded_rev=True)
-          patch_cp = self.get_commit_position(
-              url, patch_parent_revision, for_uploaded_rev=False)
-          if not patch_cp or patch_cp > uploaded_cp:
-            use_gs_analysis = False
-          else:
-            self.m.gclient.c.solutions[0].revision = recent_upload_revision
+          self.m.gclient.c.solutions[0].revision = recent_upload_revision
 
         try:
           bot_update_step = self.m.chromium_checkout.ensure_checkout(
@@ -184,7 +201,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           # CL patch is incompatible with revision used in recently uploaded
           # analysis. Use the most recent trunk commit instead.
           self.m.gclient.c.solutions[0].revision = None
-          use_gs_analysis = False
+          gs_zip_path = None
           bot_update_step = self.m.chromium_checkout.ensure_checkout()
 
       suffix = ' (with patch)'
@@ -196,11 +213,11 @@ class BinarySizeApi(recipe_api.RecipeApi):
       if not self.m.filter.analyze(affected_files, self._analyze_targets,
                                    None)[0]:
         step_result = self.m.step.active_result
-        step_result.presentation.properties[constants
-                                            .PLUGIN_OUTPUT_PROPERTY_NAME] = {
-                                                'listings': [],
-                                                'extras': [],
-                                            }
+        step_result.presentation.properties[
+            constants.PLUGIN_OUTPUT_PROPERTY_NAME] = {
+                'listings': [],
+                'extras': [],
+            }
         return
 
       self.m.chromium.ensure_goma()
@@ -213,18 +230,16 @@ class BinarySizeApi(recipe_api.RecipeApi):
       # case use_gs_analysis == False.
       expectations_without_patch_json = None
       with_results_dir, raw_result = self._build_and_measure(
-          True, staging_dir, is_fuchsia)
+          True, staging_dir, analysis_cmd_func)
 
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result
 
       expectations_with_patch_json = self._get_failed_expectations(suffix)
 
-      if use_gs_analysis and gs_zip_path:
+      if gs_zip_path:
         without_results_dir = self._download_recent_tot_analysis(
-            gs_zip_path,
-            staging_dir,
-        )
+            gs_zip_path, staging_dir)
       else:
         with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
           self.m.bot_update.deapply_patch(bot_update_step)
@@ -234,7 +249,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
           self.m.chromium.runhooks(name='runhooks' + suffix)
           without_results_dir, raw_result = self._build_and_measure(
-              False, staging_dir, is_fuchsia)
+              False, staging_dir, analysis_cmd_func)
 
           if raw_result and raw_result.status != common_pb.SUCCESS:
             self.m.step.empty(constants.PATCH_FIXED_BUILD_STEP_NAME)
@@ -253,32 +268,23 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
       with self.m.context(cwd=self.m.path['checkout']):
         size_results_path = staging_dir.join('size_results.json')
-        if is_fuchsia:
-          self._create_diffs_fuchsia(author, without_results_dir,
-                                     with_results_dir, size_results_path)
-        else:
-          self._create_diffs_android(author, review_subject, review_url,
-                                     without_results_dir, with_results_dir,
-                                     size_results_path, staging_dir)
+
+        diff_func(author, review_subject, review_url, without_results_dir,
+                  with_results_dir, size_results_path, staging_dir)
         expectation_success = self._check_expectations(
             expectations_with_patch_json, expectations_without_patch_json,
             allow_expectations_regressions)
+
         binary_size_result = self._check_for_undocumented_increase(
-            size_results_path,
-            staging_dir,
-            allow_size_regressions,
-            is_fuchsia=is_fuchsia)
+            size_results_path, staging_dir, allow_size_regressions,
+            analysis_warning_statuses)
 
         if not expectation_success:
           raise self.m.step.StepFailure(constants.FAILED_CHECK_MESSAGE)
 
-        if is_fuchsia:
-          if binary_size_result.presentation.status == self.m.step.FAILURE:
-            raise self.m.step.StepFailure(
-                binary_size_result.presentation.step_text)
-        else:
-          if binary_size_result.presentation.status != self.m.step.SUCCESS:
-            raise self.m.step.StepFailure(constants.FAILED_CHECK_MESSAGE)
+        if binary_size_result.presentation.status == self.m.step.FAILURE:
+          raise self.m.step.StepFailure(
+              binary_size_result.presentation.step_text)
 
   def get_android_size_analysis_command(self, staging_dir):
     """Returns the Android command to compute size analysis files.
@@ -322,8 +328,16 @@ class BinarySizeApi(recipe_api.RecipeApi):
     ]
     return cmd
 
-  def _get_recent_tot_analysis_path(self):
-    """Get recent size analysis results path or None if none are valid."""
+  def _get_recent_tot_analysis_path(self, patch_parent_revision):
+    """Get recent size analysis results path and latest revision.
+
+    Args:
+      patch_parent_revision: String, parent revision of patch.
+
+    Returns:
+      (results_path: string, latest_revision: string) or (None, None) if no
+        recent size analysis results are valid.
+    """
 
     gs_directory = 'android-binary-size/commit_size_analysis/'
 
@@ -343,16 +357,28 @@ class BinarySizeApi(recipe_api.RecipeApi):
     # cleared to invalidate the latest gs:// results to indicate that
     # significant binary package restructure has taken place.
     if not lines or not lines[0].strip():
-      return None
+      return None, None
 
     gs_zip_path = lines[0]
-    latest_upload_timestamp = _parse_gs_zip_path(gs_zip_path)[0]
+    latest_upload_timestamp, latest_upload_revision = (
+        _parse_gs_zip_path(gs_zip_path))
 
     # If the most recent upload was created over 2 hours ago, don't use it
     if int(self.m.time.time()) - int(latest_upload_timestamp) > 7200:
-      return None
+      return None, None
 
-    return gs_zip_path
+    # Check to see if the patch's parent revision is newer than the
+    # recently uploaded revision. We can't use the uploaded results
+    # in that case.
+    url = self.m.gclient.c.solutions[0].url
+    uploaded_cp = self.get_commit_position(
+        url, latest_upload_revision, for_uploaded_rev=True)
+    patch_cp = self.get_commit_position(
+        url, patch_parent_revision, for_uploaded_rev=False)
+    if not patch_cp or patch_cp > uploaded_cp:
+      return None, None
+
+    return gs_zip_path, latest_upload_revision
 
   def _download_recent_tot_analysis(self, gs_zip_path, staging_dir):
     local_zip = self.m.path.mkstemp()
@@ -366,7 +392,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     self.m.zip.unzip('Unzipping tot analysis', local_zip, results_dir)
     return results_dir
 
-  def _build_and_measure(self, with_patch, staging_dir, is_fuchsia):
+  def _build_and_measure(self, with_patch, staging_dir, analysis_cmd_func):
     suffix = ' (with patch)' if with_patch else ' (without patch)'
     results_basename = 'with_patch' if with_patch else 'without_patch'
 
@@ -379,19 +405,14 @@ class BinarySizeApi(recipe_api.RecipeApi):
     results_dir = staging_dir.join(results_basename)
     self.m.file.ensure_directory('mkdir ' + results_basename, results_dir)
 
-    if is_fuchsia:
-      cmd = self.get_fuchsia_size_analysis_command(results_dir)
-    else:
-      cmd = self.get_android_size_analysis_command(results_dir)
-    self.m.step(name='Generate commit size analysis files', cmd=cmd)
+    self.m.step(
+        name='Generate commit size analysis files',
+        cmd=analysis_cmd_func(results_dir))
 
     return results_dir, None
 
-  def _check_for_undocumented_increase(self,
-                                       results_path,
-                                       staging_dir,
-                                       allow_regressions,
-                                       is_fuchsia=False):
+  def _check_for_undocumented_increase(self, results_path, staging_dir,
+                                       allow_regressions, warning_statuses):
     step_result = self.m.json.read(
         constants.RESULT_JSON_STEP_NAME,
         results_path,
@@ -430,12 +451,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
           constants.PLUGIN_OUTPUT_PROPERTY_NAME] = gerrit_plugin_details
 
     if not allow_regressions and result_json['status_code'] != 0:
-      # Fuchsia ignores roller failures, but these should be indicated anyway.
-      # See crbug.com/1355914
-      if (is_fuchsia and
-          result_json['status_code'] == constants.FUCHSIA_ROLLER_WARNING):
+      warning = warning_statuses.get(result_json['status_code'])
+      if warning:
         step_result.presentation.status = self.m.step.WARNING
-        step_result.presentation.step_text += '<br/>Ignore roller errors for Fuchsia.<br/>'
+        step_result.presentation.step_text += '<br/>{}<br/>'.format(warning)
       else:
         step_result.presentation.status = self.m.step.FAILURE
     return step_result
@@ -471,7 +490,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
       cmd += ['--staging-dir', staging_dir]
       self.m.step(name='Generate diffs', cmd=cmd)
 
-  def _create_diffs_fuchsia(self, author, before_dir, after_dir, results_path):
+  def _create_diffs_fuchsia(self, author, review_subject, review_url,
+                            before_dir, after_dir, results_path, staging_dir):
     checker_script = self.m.path['checkout'].join(
         'build', 'fuchsia', 'binary_size_differ.py')
     with self.m.context(env={'PYTHONUNBUFFERED': '1'}):
@@ -536,7 +556,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
       if expectations_with_patch_json == expectations_without_patch_json:
         presentation.status = self.m.step.WARNING
         presentation.step_text += (
-            '<br/>Expectations did not match without patch either.')
+            '<br/>Expectations have failures but they are the same failures '
+            'with and without patch, so ignoring.')
         return True
 
       presentation.step_text += '<br/>Expectations file need to be updated.'

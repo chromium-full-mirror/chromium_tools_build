@@ -11,11 +11,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  return api.binary_size.fuchsia_binary_size(
-      chromium_config='chromium',
-      chromium_apply_configs=['mb'],
-      gclient_config='chromium',
-      gclient_apply_configs=['fuchsia_arm64'])
+  return api.binary_size.fuchsia_binary_size()
 
 
 def GenTests(api):
