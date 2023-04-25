@@ -1028,6 +1028,7 @@
   },
   {
     "cmd": [
+      "vpython3",
       "[START_DIR]/src/third_party/catapult/devil/devil/android/tools/device_status.py",
       "--json-output",
       "/path/to/tmp/json",
@@ -1186,6 +1187,7 @@
   },
   {
     "cmd": [
+      "vpython3",
       "[START_DIR]/src/third_party/catapult/devil/devil/android/tools/device_status.py",
       "--json-output",
       "/path/to/tmp/json",
@@ -1517,6 +1519,7 @@
   },
   {
     "cmd": [
+      "vpython3",
       "[START_DIR]/src/third_party/catapult/devil/devil/android/tools/device_status.py",
       "--json-output",
       "/path/to/tmp/json",

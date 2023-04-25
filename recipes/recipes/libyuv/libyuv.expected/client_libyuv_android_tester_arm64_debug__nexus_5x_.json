@@ -352,6 +352,7 @@
   },
   {
     "cmd": [
+      "vpython3",
       "[CACHE]/builder/src/third_party/catapult/devil/devil/android/tools/device_status.py",
       "--json-output",
       "/path/to/tmp/json",

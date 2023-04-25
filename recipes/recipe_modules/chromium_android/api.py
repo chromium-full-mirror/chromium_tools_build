@@ -412,9 +412,9 @@ class AndroidApi(recipe_api.RecipeApi):
         result = self.m.step(
             'device_status',
             [
-                self.m.path['checkout'].join('third_party', 'catapult', 'devil',
-                                             'devil', 'android', 'tools',
-                                             'device_status.py')
+                'vpython3', self.m.path['checkout'].join(
+                    'third_party', 'catapult', 'devil', 'devil', 'android',
+                    'tools', 'device_status.py')
             ] + args,
             step_test_data=lambda: self.m.json.test_api.output([{
                 "battery": {
