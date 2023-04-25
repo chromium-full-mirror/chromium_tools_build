@@ -11,8 +11,6 @@
       "[CACHE]/chrome_staging",
       "--src-dir",
       "None",
-      "--bot-utils-gsutil-py-path",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
       "--use-build-url-name",
       "--build-url",
       "gs://dummy-bucket/Linux Release/full-build.zip",

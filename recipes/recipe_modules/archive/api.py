@@ -66,7 +66,6 @@ class ArchiveApi(recipe_api.RecipeApi):
         '--src-dir',
         src_dir,
     ]
-    args += self.m.build.bot_utils_args
     if 'build_archive_url' in self.m.properties:
       args.extend([
           '--use-build-url-name', '--build-url',
@@ -383,7 +382,6 @@ class ArchiveApi(recipe_api.RecipeApi):
         '--src-dir',
         src_dir,
     ]
-    args += self.m.build.bot_utils_args
     if build_archive_url:
       args.extend(['--build-archive-url', build_archive_url])
     else:

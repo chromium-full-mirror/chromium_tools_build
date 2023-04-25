@@ -1303,8 +1303,6 @@
       "[CACHE]/chrome_staging",
       "--src-dir",
       "[CACHE]/builder/src",
-      "--bot-utils-gsutil-py-path",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
       "--build-url",
       "gs://chromium-libyuv/client.libyuv/Android Debug",
       "--build_revision",

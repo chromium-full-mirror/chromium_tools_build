@@ -626,8 +626,6 @@
       "Release",
       "--src-dir",
       "[CACHE]\\builder\\src",
-      "--bot-utils-gsutil-py-path",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "--build-url",
       "gs://fake-gs-bucket/fake-group/fake-builder/full-build-win32.zip",
       "--build_revision",

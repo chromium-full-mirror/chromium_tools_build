@@ -272,11 +272,9 @@ def MakeVersionedArchive(zip_file, file_suffix, options):
 
 
 def UploadToGoogleStorage(
-    versioned_file, revision_file, build_url, gs_acl, gsutil_py_path=None
+    versioned_file, revision_file, build_url, gs_acl, gsutil_py_path
 ):
-  override_gsutil = None
-  if gsutil_py_path:
-    override_gsutil = [sys.executable, gsutil_py_path]
+  override_gsutil = [sys.executable, gsutil_py_path]
 
   if bot_utils.GSUtilCopyFile(versioned_file, build_url, gs_acl=gs_acl,
                               override_gsutil=override_gsutil):
@@ -592,10 +590,11 @@ def main(argv):
   option_parser = optparse.OptionParser()
   AddOptions(option_parser)
   chromium_utils.AddPropertiesOptions(option_parser)
-  bot_utils_callback = bot_utils.AddOpts(option_parser)
 
   options, args = option_parser.parse_args(argv)
-  bot_utils_callback(options)
+  if not options.gsutil_py_path:
+    print('--gsutil-py-path must be specified')
+    return 1
 
   if not options.builder_group:
     options.builder_group = options.build_properties.get('builder_group', '')
