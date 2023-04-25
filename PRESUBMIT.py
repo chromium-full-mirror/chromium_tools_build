@@ -44,11 +44,6 @@ def CheckFreeze(input_api, output_api):
 # work to eliminate this list by migrating scripts to python3 (updating
 # it so that they are invoked using python3 or vpython3).
 PYTHON2_FILES = (
-    'recipes/bot_utils.py',
-    'recipes/unittests/bot_utils_test.py',
-    'scripts/common/__init__.py',
-    'scripts/common/chromium_utils.py',
-
     # TODO(crbug.com/1434362) The following files need to be migrated to
     # python3; there are bytes vs str issues and dict ordering issues that need
     # to be resolved

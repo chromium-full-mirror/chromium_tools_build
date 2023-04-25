@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python3
 # Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,8 +6,7 @@
 import os
 import sys
 import unittest
-
-import mock
+from unittest import mock
 
 ROOT_DIR = os.path.normpath(os.path.join(__file__, '..', '..', '..'))
 sys.path.extend([
@@ -24,7 +23,7 @@ _BUILD_DIR = ROOT_DIR
 class TestGetZipFileNames(unittest.TestCase):
 
   def setUp(self):
-    super(TestGetZipFileNames, self).setUp()
+    super().setUp()
     chromium_utils.OverridePlatformName(sys.platform)
 
   def testNormalBuildName(self):
@@ -63,17 +62,13 @@ class TestGetBuildRevisions(unittest.TestCase):
 
   def testNormal(self):
     build_revision = bot_utils.GetBuildRevisions(_BUILD_DIR)
-    self.assertTrue(build_revision > 0)
-
-  def testWebKitDir(self):
-    build_revision = bot_utils.GetBuildRevisions(_BUILD_DIR)
-    self.assertTrue(build_revision > 0)
+    self.assertTrue(build_revision)
 
   def testRevisionDir(self):
     build_revision = bot_utils.GetBuildRevisions(
         _BUILD_DIR, revision_dir=_BUILD_DIR
     )
-    self.assertTrue(build_revision > 0)
+    self.assertTrue(build_revision)
 
 
 @mock.patch(

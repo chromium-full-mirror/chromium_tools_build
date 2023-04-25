@@ -364,8 +364,7 @@ def RemoveDirectory(*path):
   def RemoveWithRetry_non_win(rmfunc, path):
     if os.path.islink(path):
       return os.remove(path)
-    else:
-      return rmfunc(path)
+    return rmfunc(path)
 
   remove_with_retry = RemoveWithRetry_non_win
 
@@ -572,7 +571,7 @@ def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
     zip_file = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED,
                                allowZip64=True)
     try:
-      os.path.walk(archive_dir, _Addfiles, zip_file)
+      os.walk(archive_dir, _Addfiles, zip_file)
     finally:
       zip_file.close()
   else:
@@ -710,21 +709,21 @@ def RunAndPrintDots(function):
   return Hook
 
 
-class RunCommandFilter(object):
+class RunCommandFilter:
   """Class that should be subclassed to provide a filter for RunCommand."""
   # Method could be a function
   # pylint: disable=R0201
 
-  def FilterLine(self, a_line):
+  def FilterLine(self, line):
     """Called for each line of input.  The \n is included on a_line.  Should
     return what is to be recorded as the output for this line.  A result of
     None suppresses the line."""
-    return a_line
+    return line
 
-  def FilterDone(self, last_bits):
+  def FilterDone(self, remaining_text):
     """Acts just like FilterLine, but is called with any data collected after
     the last newline of the command."""
-    return last_bits
+    return remaining_text
 
 
 class FilterCapture(RunCommandFilter):
@@ -736,8 +735,8 @@ class FilterCapture(RunCommandFilter):
   def FilterLine(self, line):
     self.text.append(line.rstrip())
 
-  def FilterDone(self, text):
-    self.text.append(text)
+  def FilterDone(self, remaining_text):
+    self.text.append(remaining_text)
 
 
 def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
@@ -881,144 +880,161 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
     assert proc.returncode is not None
     return proc.returncode
 
-  else:
-    if not (parser_func or filter_obj):
-      filter_obj = RunCommandFilter()
+  if not (parser_func or filter_obj):
+    filter_obj = RunCommandFilter()
 
-    # Start the initial process.
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, bufsize=0, **kwargs)
-    proc_handles = [proc]
+  # Start the initial process.
+  proc = subprocess.Popen(
+      command,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT,
+      bufsize=0,
+      **kwargs
+  )
+  proc_handles = [proc]
 
-    if pipes:
-      pipe_number = 0
-      for pipe in pipes:
-        pipe_number = pipe_number + 1
-        if pipe_number == len(pipes) and not (parser_func or filter_obj):
-          # The last pipe process needs to output to sys.stdout or filter
-          stdout = sys.stdout
+  if pipes:
+    pipe_number = 0
+    for pipe in pipes:
+      pipe_number = pipe_number + 1
+      if pipe_number == len(pipes) and not (parser_func or filter_obj):
+        # The last pipe process needs to output to sys.stdout or filter
+        stdout = sys.stdout
+      else:
+        # Output to a pipe, since another pipe is on top of us.
+        stdout = subprocess.PIPE
+      pipe_proc = subprocess.Popen(
+          pipe,
+          stdin=proc_handles[0].stdout,
+          stdout=stdout,
+          stderr=subprocess.STDOUT
+      )
+      proc_handles.insert(0, pipe_proc)
+
+    # Allow proc to receive a SIGPIPE if the piped process exits.
+    for handle in proc_handles[1:]:
+      handle.stdout.close()
+
+  log_event = threading.Event()
+
+  # Launch and start the reader thread.
+  thread = threading.Thread(
+      target=ProcessRead,
+      args=(proc_handles[0], sys.stdout),
+      kwargs={
+          'parser_func': parser_func, 'filter_obj': filter_obj,
+          'log_event': log_event
+      }
+  )
+
+  kill_lock = threading.Lock()
+
+  def term_then_kill(handle, initial_timeout, numtimeouts, interval):
+
+    def timed_check():
+      for _ in range(numtimeouts):
+        if handle.poll() is not None:
+          return True
+        time.sleep(interval)
+
+    handle.terminate()
+    time.sleep(initial_timeout)
+    timed_check()
+    if handle.poll() is None:
+      handle.kill()
+    timed_check()
+    return handle.poll() is not None
+
+  def kill_proc(proc_handles, message=None):
+    with kill_lock:
+      if proc_handles:
+        killed = term_then_kill(proc_handles[0], 0.1, 5, 1)
+
+        if message:
+          print(message, file=sys.stderr)
+
+        if not killed:
+          print('could not kill pid %d!' % proc_handles[0].pid, file=sys.stderr)
         else:
-          # Output to a pipe, since another pipe is on top of us.
-          stdout = subprocess.PIPE
-        pipe_proc = subprocess.Popen(pipe, stdin=proc_handles[0].stdout,
-                                     stdout=stdout, stderr=subprocess.STDOUT)
-        proc_handles.insert(0, pipe_proc)
+          print(
+              'program finished with exit code %d' %
+              (proc_handles[0].returncode),
+              file=sys.stderr
+          )
 
-      # Allow proc to receive a SIGPIPE if the piped process exits.
-      for handle in proc_handles[1:]:
-        handle.stdout.close()
+        # Prevent other timeouts from double-killing.
+        del proc_handles[:]
 
-    log_event = threading.Event()
+  def timeout_func(timeout, proc_handles, log_event, finished_event):
+    while log_event.wait(timeout):
+      log_event.clear()
+      if finished_event.is_set():
+        return
 
-    # Launch and start the reader thread.
-    thread = threading.Thread(target=ProcessRead,
-                              args=(proc_handles[0], sys.stdout),
-                              kwargs={'parser_func': parser_func,
-                                      'filter_obj': filter_obj,
-                                      'log_event': log_event})
+    message = (
+        'command timed out: %d seconds without output, attempting to '
+        'kill' % timeout
+    )
+    kill_proc(proc_handles, message)
 
-    kill_lock = threading.Lock()
-
-    def term_then_kill(handle, initial_timeout, numtimeouts, interval):
-      def timed_check():
-        for _ in range(numtimeouts):
-          if handle.poll() is not None:
-            return True
-          time.sleep(interval)
-
-      handle.terminate()
-      time.sleep(initial_timeout)
-      timed_check()
-      if handle.poll() is None:
-        handle.kill()
-      timed_check()
-      return handle.poll() is not None
-
-
-    def kill_proc(proc_handles, message=None):
-      with kill_lock:
-        if proc_handles:
-          killed = term_then_kill(proc_handles[0], 0.1, 5, 1)
-
-          if message:
-            print(message, file=sys.stderr)
-
-          if not killed:
-            print(
-                'could not kill pid %d!' % proc_handles[0].pid, file=sys.stderr
-            )
-          else:
-            print(
-                'program finished with exit code %d' %
-                (proc_handles[0].returncode),
-                file=sys.stderr
-            )
-
-          # Prevent other timeouts from double-killing.
-          del proc_handles[:]
-
-    def timeout_func(timeout, proc_handles, log_event, finished_event):
-      while log_event.wait(timeout):
-        log_event.clear()
-        if finished_event.is_set():
-          return
-
-      message = ('command timed out: %d seconds without output, attempting to '
-                 'kill' % timeout)
+  def maxtimeout_func(timeout, proc_handles, finished_event):
+    if not finished_event.wait(timeout):
+      message = ('command timed out: %d seconds elapsed' % timeout)
       kill_proc(proc_handles, message)
 
-    def maxtimeout_func(timeout, proc_handles, finished_event):
-      if not finished_event.wait(timeout):
-        message = ('command timed out: %d seconds elapsed' % timeout)
-        kill_proc(proc_handles, message)
+  timeout_thread = None
+  maxtimeout_thread = None
+  finished_event = threading.Event()
 
-    timeout_thread = None
-    maxtimeout_thread = None
-    finished_event = threading.Event()
+  if timeout:
+    timeout_thread = threading.Thread(
+        target=timeout_func,
+        args=(timeout, proc_handles, log_event, finished_event)
+    )
+    timeout_thread.daemon = True
+  if max_time:
+    maxtimeout_thread = threading.Thread(
+        target=maxtimeout_func, args=(max_time, proc_handles, finished_event)
+    )
+    maxtimeout_thread.daemon = True
 
-    if timeout:
-      timeout_thread = threading.Thread(target=timeout_func,
-                                        args=(timeout, proc_handles, log_event,
-                                              finished_event))
-      timeout_thread.daemon = True
-    if max_time:
-      maxtimeout_thread = threading.Thread(target=maxtimeout_func,
-                                           args=(max_time, proc_handles,
-                                                 finished_event))
-      maxtimeout_thread.daemon = True
+  thread.start()
+  if timeout_thread:
+    timeout_thread.start()
+  if maxtimeout_thread:
+    maxtimeout_thread.start()
 
-    thread.start()
-    if timeout_thread:
-      timeout_thread.start()
-    if maxtimeout_thread:
-      maxtimeout_thread.start()
+  # Wait for the commands to terminate.
+  for handle in proc_handles:
+    handle.wait()
+    assert handle.returncode is not None
 
-    # Wait for the commands to terminate.
-    for handle in proc_handles:
-      handle.wait()
-      assert handle.returncode is not None
+  # Wake up timeout threads.
+  finished_event.set()
+  log_event.set()
 
-    # Wake up timeout threads.
-    finished_event.set()
-    log_event.set()
+  thread.join()
 
-    thread.join()
+  # Check whether any of the sub commands has failed.
+  for handle in proc_handles:
+    assert handle.returncode is not None
+    if handle.returncode:
+      return handle.returncode
 
-    # Check whether any of the sub commands has failed.
-    for handle in proc_handles:
-      assert handle.returncode is not None
-      if handle.returncode:
-        return handle.returncode
-
-    assert proc.returncode is not None
-    return proc.returncode
+  assert proc.returncode is not None
+  return proc.returncode
 
 
 def GetStatusOutput(command, **kwargs):
   """Runs the command list, returning its result and output."""
-  proc = subprocess.Popen(command, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT, bufsize=1,
-                          **kwargs)
+  proc = subprocess.Popen(
+      command,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT,
+      bufsize=1,
+      text=True,
+      **kwargs
+  )
   output = proc.communicate()[0]
   result = proc.returncode
 
