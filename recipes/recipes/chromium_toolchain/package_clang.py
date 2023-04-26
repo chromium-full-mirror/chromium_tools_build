@@ -5,6 +5,7 @@
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 
+from PB.recipes.build.chromium_toolchain.package import InputProperties
 from RECIPE_MODULES.build import chromium
 
 DEPS = [
@@ -21,6 +22,8 @@ DEPS = [
     'recipe_engine/runtime',
     'recipe_engine/step',
 ]
+
+PROPERTIES = InputProperties
 
 BUILDERS = {
     'tryserver.chromium.linux': {
@@ -108,7 +111,7 @@ ARM_MAC_BUILDERS = (
 )
 
 
-def RunSteps(api):
+def RunSteps(api, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
 
   api.chromium_checkout.ensure_checkout(bot_config)
@@ -119,9 +122,15 @@ def RunSteps(api):
 
   with api.osx_sdk('ios'):
     with api.depot_tools.on_path():
-      args = ['--upload']
+      # TODO(crbug.com/1362511): enable upload.
+      args = []
+      if api.buildbucket.builder_name not in BUILDERS['official.toolchain'][
+          'builders'].keys():
+        args = ['--upload']
       if api.buildbucket.builder_name in ARM_MAC_BUILDERS:
         args += ['--build-mac-arm']
+      if properties.llvm_revision:
+        args += ['--revision', properties.llvm_revision]
       api.step('package clang', [
           'python3', api.path['checkout'].join('tools', 'clang', 'scripts',
                                                'package.py')
@@ -148,5 +157,19 @@ def GenTests(api):
           builder_group='tryserver.chromium.linux',
           builder='linux_upload_clang'),
       api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'official',
+      api.platform.name('linux'),
+      api.chromium.ci_build(
+          builder_group='official.toolchain',
+          builder='toolchain-packager-linux'),
+      api.properties(llvm_revision='abcd'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.StepCommandRE, 'package clang', [
+          'python3', '.*/tools/clang/scripts/package.py', '--revision', 'abcd'
+      ]),
       api.post_process(post_process.DropExpectation),
   )

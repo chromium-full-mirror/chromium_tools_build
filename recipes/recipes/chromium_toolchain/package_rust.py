@@ -5,6 +5,7 @@
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 
+from PB.recipes.build.chromium_toolchain.package import InputProperties
 from RECIPE_MODULES.build import chromium
 
 DEPS = [
@@ -21,6 +22,8 @@ DEPS = [
     'recipe_engine/runtime',
     'recipe_engine/step',
 ]
+
+PROPERTIES = InputProperties
 
 BUILDERS = {
     'tryserver.chromium.linux': {
@@ -113,7 +116,7 @@ ARM_MAC_BUILDERS = (
 )
 
 
-def RunSteps(api):
+def RunSteps(api, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
 
   api.chromium_checkout.ensure_checkout(bot_config)
@@ -127,6 +130,7 @@ def RunSteps(api):
       args = ['--upload']
       if api.buildbucket.builder_name in ARM_MAC_BUILDERS:
         args += ['--build-mac-arm']
+      # TODO: specify --revision as package_clang.py does.
       api.step('package rust', [
           'python3', api.path['checkout'].join('tools', 'rust',
                                                'package_rust.py')
