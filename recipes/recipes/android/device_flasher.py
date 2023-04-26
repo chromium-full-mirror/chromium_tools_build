@@ -213,7 +213,7 @@ def RunSteps(api, properties):
           host_machine = bot.bot_id.split('--device')[0]
           tasks_by_host[host_machine].append(task_request)
 
-      task_results = _RunTasks(api, tasks_by_host, properties.dry_run)
+      task_results = _RunTasks(api, tasks_by_host, flash_criteria.dry_run)
       failed_results = [r for r in task_results if not r.success]
       if failed_results:
         has_failure = True

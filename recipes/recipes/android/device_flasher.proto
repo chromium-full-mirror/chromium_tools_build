@@ -27,12 +27,12 @@ message FlashCriteria {
   // Note that the range of a valid UID is 10000 ~ 19999.
   // A value below 10000 means to flash the device regardless of its max UID.
   optional int32 max_uid_threshold = 5;
+
+  // When True, don't perform the flash task for this flash criteria.
+  optional bool dry_run = 6;
 }
 
 message InputProperties {
   // Use these criteria to lookup and flash devices.
   repeated FlashCriteria flash_criteria = 1;
-
-  // When True, don't perform the flash task.
-  optional bool dry_run = 2;
 }
