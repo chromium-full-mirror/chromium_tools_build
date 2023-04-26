@@ -115,10 +115,6 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
   with api.context(cwd=checkout_dir):
     api.bot_update.ensure_checkout()
 
-  # TODO(https://crbug.com/1413695): Drop this.
-  if api.buildbucket.builder_name != 'V8 lkgr finder':
-    api.gclient.runhooks()
-
   current_lkgr = api.gitiles.commit_log(
       repo, ref, step_name='read lkgr from ref')['commit']
 
