@@ -104,8 +104,8 @@ def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
   bash_command = ' && '.join([
       './cipd_gsutil/gsutil cp %s .' % gs_image_path,
       'unzip %s.zip' % device_os,
-      # TODO: Add "--wait" once crrev.com/c/4337956 is included in 3pp package
-      'vpython3 cipd_devil/devil/devil/android/tools/flash_device.py -w -v .',
+      'vpython3 cipd_devil/devil/devil/android/tools/flash_device.py '\
+      '-w --wait -v .',
   ])
   command = ['bash', '-c', bash_command]
   task_request = (
