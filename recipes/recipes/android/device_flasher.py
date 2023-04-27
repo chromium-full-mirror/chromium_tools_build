@@ -199,7 +199,7 @@ def RunSteps(api, properties):
   has_failure = False
   for index, flash_criteria in enumerate(properties.flash_criteria):
     with api.step.nest('Process flash criteria %d' % index) as parent_prep:
-      parent_prep.step_text = json_format.MessageToJson(
+      parent_prep.step_text = '\n```\n%s\n```' % json_format.MessageToJson(
           flash_criteria, indent=2)
 
       tasks_by_host = collections.defaultdict(list)
