@@ -199,8 +199,9 @@ def RunSteps(api, properties):
   has_failure = False
   for index, flash_criteria in enumerate(properties.flash_criteria):
     with api.step.nest('Process flash criteria %d' % index) as parent_prep:
-      parent_prep.step_text = json_format.MessageToJson(
-          flash_criteria, indent=2)
+      parent_prep.step_summary_text = '\n\n```\n%s\n```' % (
+          json_format.MessageToJson(
+              flash_criteria, indent=2, preserving_proto_field_name=True))
 
       tasks_by_host = collections.defaultdict(list)
       swarming_bots = _GetSwarmingBots(api, flash_criteria)
