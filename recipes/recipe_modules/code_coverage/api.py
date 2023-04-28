@@ -47,7 +47,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     # The list of mimic builder names to be uploaded.
     self._mimic_builder_names = []
     # The bucket to which code coverage data should be uploaded.
-    self._gs_bucket = properties.coverage_gs_bucket or constants.DEFAULT_BUCKET_NAME
+    self._gs_bucket = (
+        properties.coverage_gs_bucket or constants.DEFAULT_BUCKET_NAME)
     # List of test types to run in a builder. By default, it runs overall
     # coverage. This is only used in Clang coverage at present.
     self._test_types = properties.coverage_test_types or ['overall']
@@ -440,7 +441,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       skip_step = None
       if len(candidate_files) > MAX_CANDIDATE_FILES:
         # Skip instrumentation if there are too many files because:
-        # 1. They cause problems such as crash due to too many cmd line arguments.
+        # 1. They cause problems such as crash due to too many cmd line
+        #    arguments.
         # 2. These CLs typically does mechanial refactorings, and coverage
         #    information is useless.
         # 3. Has non-trivial performance implications in terms of CQ cycle time.
@@ -997,6 +999,106 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     return chromium_swarming.MergeScript(
         script=self.m.profiles.merge_results_script, args=args)
+
+  def _download_profdata(self):
+    """ Downloads the fuzzing coverage profdata file. """
+    profdata_path = self.m.path.mkdtemp().join('raw-profdata.json')
+    self.m.gsutil.download(
+        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
+        constants.DEFAULT_FUZZ_SRC_PROFDATA_FILE_NAME,
+        profdata_path,
+        name="download profdata")
+    return profdata_path
+
+  def _download_llvm_cov(self):
+    """ Downloads the llvm_cov binary.
+
+    Ordinarily, when this module is invoked as part of the Chromium recipe,
+    self.cov_executable is already set and can be used freely. However, due
+    to the constraints on how we run our fuzzing jobs, we don't use the
+    Chromium recipe, and thus those various self fields are never initialized.
+
+    Therefore in the case of fuzzing coverage, we download llvm-cov so we can
+    use it.
+    """
+    llvm_cov = self.m.path.mkdtemp().join(
+        constants.DEFAULT_FUZZ_SRC_LLVM_COV_NAME)
+    self.m.gsutil.download(
+        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
+        constants.DEFAULT_FUZZ_SRC_LLVM_COV_NAME,
+        llvm_cov,
+        name="download llvm cov")
+
+    # Set permissions on the binary we've just downloaded.
+    llvm_cov = str(self.m.path.abspath(llvm_cov))
+    self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
+
+    return llvm_cov
+
+  def _download_fuzz_build_dir(self):
+    zipfile = self.m.path.mkdtemp().join('build_directory.zip')
+
+    self.m.gsutil.download(
+        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
+        constants.DEFAULT_FUZZ_SRC_BUILD_ARCHIVE_NAME,
+        zipfile,
+        name="download build directory")
+
+    build_dir = self.m.path.mkdtemp()
+    with self.m.step.nest("Extracting build_dir") as step_result:
+      step_result.logs['extraction logs'] = "Extracting build %s to %s" % (
+          zipfile, build_dir)
+      self.m.archive.extract("unzip", zipfile, build_dir, archive_type="zip")
+      return build_dir
+
+  def _download_fuzz_src_dir(self):
+    zipfile = self.m.path.mkdtemp().join('src_directory.zip')
+    self.m.gsutil.download(
+        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
+        constants.DEFAULT_FUZZ_SRC_SRC_ARCHIVE_NAME,
+        zipfile,
+        name="download src directory")
+    src_dir = self.m.path.mkdtemp()
+    with self.m.step.nest("Extracting src_dir") as step_result:
+      step_result.logs['extraction logs'] = "Extracting srcfiles %s to %s" % (
+          zipfile, src_dir)
+      self.m.archive.extract("unzip", zipfile, src_dir, archive_type="zip")
+      return src_dir
+
+  def _upload_fuzz_coverage_data(self):
+    self.m.gsutil.upload(
+        self.metadata_dir,
+        self._gs_bucket,
+        'fuzz_coverage',
+        link_name='Coverage Metadata',
+        args=['-r'],
+        multithreaded=True,
+        name='upload fuzz coverage metadata')
+
+  def get_chromium_fuzz_coverage(self):
+    """ Generates fuzz coverage information. """
+    llvm_raw_data = self._download_profdata()
+    my_llvm_cov = self._download_llvm_cov()
+    my_build_dir = self._download_fuzz_build_dir()
+    my_src_dir = self._download_fuzz_src_dir()
+    cmd = [
+        'vpython3',
+        self.resource('generate_coverage_metadata.py'),
+        '--output-dir',
+        self.metadata_dir,
+        '--build-dir',
+        my_build_dir,
+        '--llvm-cov',
+        my_llvm_cov,
+        '--src-path',
+        my_src_dir,
+        '--profdata-path',
+        llvm_raw_data,
+        '--fuzz',
+    ]
+    self.m.step('generate coverage metadata', cmd)
+
+    self._upload_fuzz_coverage_data()
 
   def _compose_gs_path_for_coverage_data(self, data_type, mimic_builder_name):
     build = self.m.buildbucket.build

@@ -5,6 +5,12 @@
 
 DEFAULT_BUCKET_NAME = 'code-coverage-data'
 
+DEFAULT_FUZZ_SRC_BUCKET_NAME = 'locally-generated-coverage-reports'
+DEFAULT_FUZZ_SRC_PROFDATA_FILE_NAME = 'latest_profdata.json'
+DEFAULT_FUZZ_SRC_BUILD_ARCHIVE_NAME = 'latest_build_archive.zip'
+DEFAULT_FUZZ_SRC_LLVM_COV_NAME = 'llvm-cov'
+DEFAULT_FUZZ_SRC_SRC_ARCHIVE_NAME = 'latest_src_archive.zip'
+
 # GCS bucket corresponding to go/kalypsi. Uploading data to this bucket
 # enables showing coverage metrics in code search.
 ZOSS_BUCKET_NAME = "ng3-metrics"

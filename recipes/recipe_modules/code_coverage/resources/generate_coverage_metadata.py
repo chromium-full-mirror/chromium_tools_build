@@ -630,6 +630,11 @@ def _split_llvm_data_in_shards(data, shard_size=500):
   return shards
 
 
+def _get_data_from_path(data_path):
+  with open(data_path) as f:
+    return json.load(f)
+
+
 def _generate_metadata(src_path,
                        output_dir,
                        profdata_path,
@@ -641,7 +646,8 @@ def _generate_metadata(src_path,
                        diff_mapping=None,
                        exclusions=None,
                        third_party_inclusion_subdirs=None,
-                       arch=None):
+                       arch=None,
+                       is_fuzz_coverage=False):
   """Generates code coverage metadata.
 
   Args:
@@ -661,6 +667,11 @@ def _generate_metadata(src_path,
     third_party_inclusion_subdirs (list): List of third_party subdirs to be
               included in the aggregation
     arch: A string indicating the architecture of the binaries.
+    is_fuzz_coverage: A bool indicating whether we are generating fuzz coverage
+                      data. When True, it will (1) use the passed-in profdata
+                      file rather than generating one, and (2) unset
+                      `third_party_inclusion_subdirs`, `component_mapping`,
+                      `diff_mapping`, `binaries`, and `arch`.
 
   Returns:
     A tuple (data, summaries) where:
@@ -671,9 +682,22 @@ def _generate_metadata(src_path,
   """
   logging.info('Generating coverage metadata ...')
   start_time = time.time()
-  raw_data = _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir,
-                                    binaries, sources, output_dir, exclusions,
-                                    arch)
+  raw_data = ''
+  if not is_fuzz_coverage:
+    raw_data = _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir,
+                                      binaries, sources, output_dir, exclusions,
+                                      arch)
+  else:
+    logging.info(
+        "A profdata file was provided. Skipping _get_raw_coverage_data.")
+    logging.info('The variable llvm_cov_path is %s' % llvm_cov_path)
+    raw_data = _get_data_from_path(profdata_path)
+    third_party_inclusion_subdirs = None
+    component_mapping = None
+    diff_mapping = None
+    binaries = []
+    arch = None
+
   data = _cleanup_coverage_data(src_path, raw_data)
   _write_coverage_to_disk(output_dir, 'coverage.json', data)
 
@@ -707,7 +731,7 @@ def _generate_metadata(src_path,
   summaries = _get_per_target_coverage_summary(profdata_path, llvm_cov_path,
                                                build_dir, binaries, arch)
 
-  if diff_mapping is None:
+  if (diff_mapping is None) and not is_fuzz_coverage:
     repository_util.AddGitRevisionsToCoverageFilesMetadata(
         files_coverage, src_path, 'DEPS')
 
@@ -836,13 +860,15 @@ def _parse_args(args):
       type=str,
       help='architecture of binaries',
   )
+  parser.add_argument('--llvm-raw-data', type=str, help='llvm raw data')
+  parser.add_argument(
+      '--fuzz',
+      action='store_true',
+      help='indicates whether we are generating fuzzing coverage')
   return parser.parse_args(args=args)
 
 
-def main():
-  params = _parse_args(sys.argv[1:])
-
-  # Validate parameters
+def _validate_params_for_code_coverage(params):
   if not os.path.exists(params.build_dir):
     raise RuntimeError('Build directory %s must exist' % params.build_dir)
   if not os.path.exists(params.output_dir):
@@ -865,6 +891,11 @@ def main():
   if params.diff_mapping_path and not os.path.isfile(params.diff_mapping_path):
     raise RuntimeError('Diff mapping %s is missing' % params.diff_mapping_path)
 
+
+def main():
+  params = _parse_args(sys.argv[1:])
+  _validate_params_for_code_coverage(params)
+
   component_mapping = None
   if params.dir_metadata_path:
     with open(params.dir_metadata_path) as f:
@@ -886,11 +917,26 @@ def main():
       'component_mapping (for full-repo coverage) and diff_mapping '
       '(for per-cl coverage) cannot be specified at the same time.')
 
-  data, summaries = _generate_metadata(
-      params.src_path, params.output_dir, params.profdata_path, params.llvm_cov,
-      params.build_dir, params.binaries, component_mapping, abs_sources,
-      diff_mapping, params.exclusion_pattern,
-      params.third_party_inclusion_subdirs, params.arch)
+  data = ''
+  summaries = ''
+
+  if (params.fuzz):
+    data, summaries = _generate_metadata(
+        params.src_path,
+        params.output_dir,
+        params.profdata_path,
+        params.llvm_cov,
+        params.build_dir, [],
+        component_mapping,
+        abs_sources,
+        diff_mapping=diff_mapping,
+        is_fuzz_coverage=params.fuzz)
+  else:
+    data, summaries = _generate_metadata(
+        params.src_path, params.output_dir, params.profdata_path,
+        params.llvm_cov, params.build_dir, params.binaries, component_mapping,
+        abs_sources, diff_mapping, params.exclusion_pattern,
+        params.third_party_inclusion_subdirs, params.arch)
 
   with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
     f.write(zlib.compress(json.dumps(data).encode()))

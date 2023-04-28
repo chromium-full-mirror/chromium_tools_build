@@ -1,7 +1,12 @@
 [
   {
     "cmd": [],
-    "name": "process fuzz coverage"
+    "name": "process fuzz coverage",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@fuzz coverage logs@Could not process fuzz coverage@@@",
+      "@@@STEP_LOG_END@fuzz coverage logs@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
   },
   {
     "cmd": [
@@ -193,46 +198,8 @@
     ],
     "name": "process fuzz coverage.generate coverage metadata",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0777",
-      "[CLEANUP]/tmp_tmp_7/overall"
-    ],
-    "infra_step": true,
-    "name": "process fuzz coverage.ensure metadata dir for overall tests (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "-m",
-      "----",
-      "cp",
-      "-r",
-      "[CLEANUP]/tmp_tmp_7/overall",
-      "gs://code-coverage-data/fuzz_coverage"
-    ],
-    "infra_step": true,
-    "name": "process fuzz coverage.gsutil upload fuzz coverage metadata",
-    "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@Coverage Metadata@https://console.cloud.google.com/storage/browser/code-coverage-data/fuzz_coverage@@@"
+      "@@@STEP_FAILURE@@@"
     ]
   },
   {

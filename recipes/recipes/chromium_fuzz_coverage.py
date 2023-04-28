@@ -15,14 +15,28 @@ verified to work, this recipe will be expanded to support:
 (5) to be displayed on the Chrome coverage dashboard.
 """
 
+from recipe_engine import recipe_api, post_process
+from recipe_engine.post_process import DropExpectation
+
 DEPS = [
-    "recipe_engine/step",
+    'code_coverage',
+    'recipe_engine/step',
 ]
 
 
 def RunSteps(api):
-  api.step("list directory contents", ["ls"])
+  with api.step.nest('process fuzz coverage') as step_result:
+    try:
+      api.code_coverage.get_chromium_fuzz_coverage()
+    except api.step.StepFailure:
+      step_result.logs['fuzz coverage logs'] = "Could not process fuzz coverage"
 
 
 def GenTests(api):
-  yield api.test("basic")
+  yield api.test(
+      "basic", api.post_process(post_process.MustRun, 'process fuzz coverage'))
+  yield api.test(
+      "failure",
+      api.step_data(
+          'process fuzz coverage.generate coverage metadata', retcode=1),
+  )
