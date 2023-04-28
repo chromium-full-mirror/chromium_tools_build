@@ -55,7 +55,6 @@ V8_EXECUTABLES = [
   'v8_simple_json_fuzzer',
   'v8_simple_multi_return_fuzzer',
   'v8_simple_parser_fuzzer',
-  'v8_simple_regexp_builtins_fuzzer',
   'v8_simple_regexp_fuzzer',
   'v8_simple_wasm_async_fuzzer',
   'v8_simple_wasm_code_fuzzer',
