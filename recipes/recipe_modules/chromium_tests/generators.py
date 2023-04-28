@@ -384,7 +384,7 @@ def generator_common(chromium_tests_api, raw_test_spec, swarming_delegate,
 def generate_gtests(chromium_tests_api,
                     builder_group,
                     buildername,
-                    targets_specs_by_builder,
+                    targets_spec,
                     got_revisions,
                     isolated_tests_only,
                     checkout_path,
@@ -403,7 +403,6 @@ def generate_gtests(chromium_tests_api,
 
   def get_tests(api):
     del api
-    targets_spec = targets_specs_by_builder.get(buildername, {})
     return [canonicalize_test(t) for t in targets_spec.get('gtest_tests', [])]
 
   for raw_spec in get_tests(chromium_tests_api):
@@ -467,7 +466,7 @@ def generate_gtests_from_one_spec(chromium_tests_api, builder_group,
 def generate_junit_tests(chromium_tests_api,
                          builder_group,
                          buildername,
-                         targets_specs_by_builder,
+                         targets_spec,
                          got_revisions,
                          isolated_tests_only,
                          checkout_path,
@@ -477,7 +476,6 @@ def generate_junit_tests(chromium_tests_api,
 
   del got_revisions, scripts_compile_targets_fn
 
-  targets_spec = targets_specs_by_builder.get(buildername, {})
   for raw_spec in targets_spec.get('junit_tests', []):
     resultdb = _handle_resultdb(chromium_tests_api, raw_spec)
 
@@ -497,7 +495,7 @@ def generate_junit_tests(chromium_tests_api,
 def generate_script_tests(chromium_tests_api,
                           builder_group,
                           buildername,
-                          targets_specs_by_builder,
+                          targets_spec,
                           got_revisions,
                           isolated_tests_only,
                           checkout_path,
@@ -508,7 +506,6 @@ def generate_script_tests(chromium_tests_api,
   # Unused arguments
   del got_revisions
 
-  targets_spec = targets_specs_by_builder.get(buildername, {})
   for raw_spec in targets_spec.get('scripts', []):
     resultdb = _handle_resultdb(chromium_tests_api, raw_spec)
     kwargs = {}
@@ -529,14 +526,13 @@ def generate_script_tests(chromium_tests_api,
 def generate_isolated_script_tests(chromium_tests_api,
                                    builder_group,
                                    buildername,
-                                   targets_specs_by_builder,
+                                   targets_spec,
                                    got_revisions,
                                    isolated_tests_only,
                                    checkout_path,
                                    scripts_compile_targets_fn=None):
   del scripts_compile_targets_fn
 
-  targets_spec = targets_specs_by_builder.get(buildername, {})
   for raw_spec in targets_spec.get('isolated_scripts', []):
     for test_spec in generate_isolated_script_tests_from_one_spec(
         chromium_tests_api, builder_group, buildername, raw_spec, got_revisions,
@@ -619,7 +615,7 @@ def generate_isolated_script_tests_from_one_spec(chromium_tests_api,
 def generate_skylab_tests(chromium_tests_api,
                           builder_group,
                           buildername,
-                          targets_specs_by_builder,
+                          targets_spec,
                           got_revisions,
                           isolated_tests_only,
                           checkout_path,
@@ -665,7 +661,6 @@ def generate_skylab_tests(chromium_tests_api,
     return steps.SkylabTestSpec.create(
         skylab_test_spec.get('name'), **common_skylab_kwargs)
 
-  targets_spec = targets_specs_by_builder.get(buildername, {})
   for raw_spec in targets_spec.get('skylab_tests', []):
     test_spec = generate_skylab_tests_from_one_spec(builder_group, buildername,
                                                     raw_spec)

@@ -266,8 +266,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     tests = {}
 
     for builder_id in builder_config.builder_ids_in_scope_for_testing:
+      targets_spec = targets_specs_by_builder_by_group[builder_id.group].get(
+          builder_id.builder, {})
       builder_tests = self.generate_tests_from_targets_spec(
-          targets_specs_by_builder_by_group[builder_id.group],
+          targets_spec,
           builder_id.builder,
           builder_id.group,
           scripts_compile_targets_fn,
@@ -347,8 +349,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return update_step, targets_config
 
-  def generate_tests_from_targets_spec(self, targets_specs_by_builder,
-                                       buildername, builder_group,
+  def generate_tests_from_targets_spec(self, targets_spec, buildername,
+                                       builder_group,
                                        scripts_compile_targets_fn,
                                        got_revisions, isolated_tests_only,
                                        checkout_path):
@@ -361,7 +363,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
               self,
               builder_group,
               buildername,
-              targets_specs_by_builder,
+              targets_spec,
               got_revisions,
               isolated_tests_only,
               checkout_path,
