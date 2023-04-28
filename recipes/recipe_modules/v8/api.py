@@ -215,18 +215,19 @@ class ProdTrigger(Trigger):
 
 
 class LedTrigger(Trigger):
-  def buildbucket(self, requests, project='v8', bucket=None,
-                  step_name=None):
+  def buildbucket(self, requests, project=None, bucket=None, step_name=None):
     bucket = bucket or self.api.buildbucket.build.builder.bucket
+    project = project or self.api.buildbucket.build.builder.project
     for builder_name, properties in requests:
       self.api.led.trigger_builder(project, bucket, builder_name, properties)
     return []  # Empty list of production buildbucket builds.
 
   def scheduler(self, builders, properties, test_spec):
     bucket = self.api.buildbucket.build.builder.bucket
+    project = self.api.buildbucket.build.builder.project
     for builder_name in builders:
       self.api.led.trigger_builder(
-          'v8',
+          project,
           bucket,
           builder_name,
           dict(properties, **test_spec.as_properties_dict(builder_name)),
