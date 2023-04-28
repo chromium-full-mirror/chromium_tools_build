@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from . import steps
+
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
                                              mapping, sequence)
 from RECIPE_MODULES.build import chromium
@@ -26,11 +28,7 @@ class TargetsConfig:
   # to fail, so we don't apply any constraints to the value here to limit the
   # blast radius of bad changes
   _targets_specs = attrib(mapping[str, ...])
-  # The elements of the values should be chromium_tests.steps.Test instances,
-  # but that would cause an import cycle. It's not expected that anyone will be
-  # creating TargetsConfigs manually, so don't enforce the type, just trust that
-  # the chromium_tests generators will return back the correct type
-  _tests = attrib(mapping[chromium.BuilderId, sequence])
+  _tests = attrib(mapping[chromium.BuilderId, sequence[steps.Test]])
 
   @classmethod
   def create(cls, **kwargs):
