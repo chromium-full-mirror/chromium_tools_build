@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
 from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -22,6 +23,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'recipe_engine/time',
 ]
 
 COMMIT_MESSAGE = """
@@ -42,14 +44,30 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_checkout.ensure_checkout()
 
-  # TODO(kimstephanie): Check if it's been at least 7 days since the last
-  # submitted reshard CL
+  # Check if it's been at least 7 days since the last merged reshard CL
+  last_merged_change_list = api.gerrit.get_changes(
+      name='get last merged change',
+      host='https://chromium-review.googlesource.com',
+      query_params=[('uploader', 'chromium-autosharder'), ('status', 'merged')],
+      limit=1,
+  )
+  if last_merged_change_list:
+    last_merged_date = datetime.date.fromtimestamp(
+        last_merged_change_list[0]['updated'])
+    current_date = datetime.date.fromtimestamp(api.time.time())
+    if (current_date - last_merged_date).days < 7:
+      return result_pb2.RawResult(
+          status=common_pb.SUCCESS,
+          summary_markdown=(
+              'Skipping autosharder CL creation because it has been less '
+              'than 7 days since the last merged CL.'),
+      )
 
   # Check to see if there's already an active autosharder CL
   changes = api.gerrit.get_changes(
+      name='get active changes',
       host='https://chromium-review.googlesource.com',
       query_params=[('uploader', 'chromium-autosharder'), ('status', 'open')],
-      o_params=['SUBMITTABLE'],
   )
 
   if changes:
@@ -62,7 +80,6 @@ def RunSteps(api):
       )
 
     issue_num = changes[0]['_number']
-    ready_to_submit = changes[0]['submittable']
     with api.context(cwd=api.chromium_checkout.src_dir):
       status_step = api.git_cl(
           'status', ['--issue', issue_num, '--field', 'status'],
@@ -72,8 +89,8 @@ def RunSteps(api):
               'commit', stream='stdout'))
       cl_status = status_step.stdout.strip()
       status_step.presentation.step_text = cl_status
-    # Exit if currently open CL is running a CQ attempt or ready to submit
-    if cl_status in ['dry-run', 'commit'] or ready_to_submit:
+    # Exit if currently open CL is running a CQ attempt
+    if cl_status in ['dry-run', 'commit']:
       return result_pb2.RawResult(
           status=common_pb.SUCCESS,
           summary_markdown=(
@@ -149,14 +166,17 @@ def RunSteps(api):
 
 
 def GenTests(api):
+  current_timestamp = 1682914288
+
   yield api.test(
       'basic',
+      api.time.seed(current_timestamp),
       api.override_step_data(
-          'gerrit changes',
+          'gerrit get last merged change',
           api.json.output([{
               'subject': 'Autosharder CL',
               '_number': '12345',
-              'submittable': False,
+              'updated': current_timestamp - 86400 * 8,
           }]),
       ),
       api.post_process(post_process.MustRun, 'git cl status'),
@@ -169,8 +189,17 @@ def GenTests(api):
 
   yield api.test(
       'no_change',
+      api.time.seed(current_timestamp),
       api.override_step_data(
-          'gerrit changes',
+          'gerrit get last merged change',
+          api.json.output([{
+              'subject': 'Autosharder CL',
+              '_number': '12345',
+              'updated': current_timestamp - 86400 * 8,
+          }]),
+      ),
+      api.override_step_data(
+          'gerrit get active changes',
           stdout=api.raw_io.output_text(''),
       ),
       api.override_step_data(
@@ -184,15 +213,38 @@ def GenTests(api):
   )
 
   yield api.test(
-      'too_many_existing_cls',
+      'less_than_7_days_since_last_merged',
+      api.time.seed(current_timestamp),
       api.override_step_data(
-          'gerrit changes',
+          'gerrit get last merged change',
           api.json.output([{
               'subject': 'Autosharder CL',
               '_number': '12345',
+              'updated': current_timestamp - 86400 * 2,
+          }]),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'too_many_existing_cls',
+      api.time.seed(current_timestamp),
+      api.override_step_data(
+          'gerrit get last merged change',
+          api.json.output([{
+              'subject': 'Autosharder CL',
+              '_number': '12345',
+              'updated': current_timestamp - 86400 * 8,
+          }]),
+      ),
+      api.override_step_data(
+          'gerrit get active changes',
+          api.json.output([{
+              'subject': 'Autosharder CL',
+              '_number': '12346',
           }, {
               'subject': 'Autosharder CL',
-              '_number': '12349'
+              '_number': '12347'
           }]),
       ),
       api.post_process(post_process.DoesNotRun, 'query optimal shards'),
@@ -205,8 +257,17 @@ def GenTests(api):
 
   yield api.test(
       'no_existing_cl',
+      api.time.seed(current_timestamp),
       api.override_step_data(
-          'gerrit changes',
+          'gerrit get last merged change',
+          api.json.output([{
+              'subject': 'Autosharder CL',
+              '_number': '12345',
+              'updated': current_timestamp - 86400 * 8,
+          }]),
+      ),
+      api.override_step_data(
+          'gerrit get active changes',
           stdout=api.raw_io.output_text(''),
       ),
       api.post_process(post_process.MustRun, 'query optimal shards'),
@@ -217,13 +278,31 @@ def GenTests(api):
   )
 
   yield api.test(
-      'current_dry_run',
+      'no_landed_CL_yet',
+      api.time.seed(current_timestamp),
       api.override_step_data(
-          'gerrit changes',
+          'gerrit get last merged change',
+          stdout=api.raw_io.output_text(''),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'current_dry_run',
+      api.time.seed(current_timestamp),
+      api.override_step_data(
+          'gerrit get last merged change',
           api.json.output([{
               'subject': 'Autosharder CL',
               '_number': '12345',
-              'submittable': False,
+              'updated': current_timestamp - 86400 * 8,
+          }]),
+      ),
+      api.override_step_data(
+          'gerrit get active changes',
+          api.json.output([{
+              'subject': 'Autosharder CL',
+              '_number': '12346',
           }]),
       ),
       api.override_step_data(
@@ -238,13 +317,21 @@ def GenTests(api):
   )
 
   yield api.test(
-      'existing_nonsubmittable_waiting_cl',
+      'existing_waiting_cl',
+      api.time.seed(current_timestamp),
       api.override_step_data(
-          'gerrit changes',
+          'gerrit get last merged change',
           api.json.output([{
               'subject': 'Autosharder CL',
               '_number': '12345',
-              'submittable': False,
+              'updated': current_timestamp - 86400 * 8,
+          }]),
+      ),
+      api.override_step_data(
+          'gerrit get active changes',
+          api.json.output([{
+              'subject': 'Autosharder CL',
+              '_number': '12346',
           }]),
       ),
       api.override_step_data(
@@ -255,22 +342,5 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'query optimal shards'),
       api.post_process(post_process.MustRun, 'regenerate test specs'),
       api.post_process(post_process.MustRun, 'git cl upload'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'existing_submittable_cl',
-      api.override_step_data(
-          'gerrit changes',
-          api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'submittable': True,
-          }]),
-      ),
-      api.post_process(post_process.DoesNotRun, 'query optimal shards'),
-      api.post_process(post_process.DoesNotRun, 'regenerate test specs'),
-      api.post_process(post_process.DoesNotRun, 'git cl set-close'),
-      api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
   )
