@@ -24,26 +24,7 @@ BUILDERS = freeze({
             'REPO_URL': 'https://chromium.googlesource.com/chromium/src.git',
             'REPO_NAME': 'src',
         },
-        'cronet_kwargs': {
-            'PERF_ID': 'android_cronet_local_test_builder',
-        },
         'use_goma': False,
-    },
-    'android-cronet-marshmallow-arm64-perf-rel': {
-        'recipe_config': 'arm64_builder_mb',
-        'run_perf_tests': True,
-        'kwargs': {
-            'BUILD_CONFIG': 'Release',
-            'REPO_NAME': 'src',
-        },
-        'cronet_kwargs': {
-            'PERF_ID': 'android_cronet_m64_perf',
-        },
-        'chromium_apply_config': ['cronet_official'],
-        # Explicitly set remote execution flags to avoid incorrect settings
-        # during the goma->reclient migration.
-        'use_goma': False,
-        'use_reclient': True,
     },
 })
 
@@ -52,7 +33,6 @@ def RunSteps(api):
   builder_config = BUILDERS.get(api.buildbucket.builder_name, {})
   recipe_config = builder_config['recipe_config']
   kwargs = builder_config.get('kwargs', {})
-  cronet_kwargs = builder_config.get('cronet_kwargs', {})
 
   use_goma = builder_config.get('use_goma', False)
   use_reclient = builder_config.get('use_reclient', True)
@@ -64,10 +44,6 @@ def RunSteps(api):
   raw_result = api.cronet.build(use_goma=use_goma, use_reclient=use_reclient)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
-
-  if builder_config.get('run_perf_tests'):
-    return api.cronet.run_perf_tests(cronet_kwargs['PERF_ID'], use_goma,
-                                     use_reclient)
 
 
 def _sanitize_nonalpha(text):

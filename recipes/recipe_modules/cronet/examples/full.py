@@ -58,8 +58,8 @@ def RunSteps(api):
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  cronet.upload_package(kwargs['BUILD_CONFIG'])
-  return cronet.run_perf_tests('sample-perf-id')
+  return cronet.upload_package(kwargs['BUILD_CONFIG'])
+
 
 def GenTests(api):
   for builder in BUILDERS:

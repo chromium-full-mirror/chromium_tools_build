@@ -20,7 +20,7 @@ def GenTests(api):
   yield api.test(
       'compile_failure',
       api.properties.generic(buildername='local_test'),
-      api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
+      api.expect_exception('NotImplementedError'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

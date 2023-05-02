@@ -39,23 +39,6 @@ def CheckFreeze(input_api, output_api):
 
   return []
 
-# A list of file that are executed using python2. Tests for these are
-# run using vpython2 and lints are performed with pylint 1.5. We should
-# work to eliminate this list by migrating scripts to python3 (updating
-# it so that they are invoked using python3 or vpython3).
-PYTHON2_FILES = (
-    # TODO(crbug.com/1434362) The following files need to be migrated to
-    # python3; there are bytes vs str issues and dict ordering issues that need
-    # to be resolved
-    'recipes/recipe_modules/cronet/resources/results_dashboard.py',
-    'recipes/recipe_modules/cronet/resources/results_dashboard_test.py',
-    'recipes/recipe_modules/cronet/resources/upload_perf_dashboard_results.py',
-    (
-        'recipes/recipe_modules/cronet/resources/'
-        'upload_perf_dashboard_results_test.py'
-    ),
-)
-
 
 def GetFilesToSkip(input_api):
   return list(input_api.DEFAULT_FILES_TO_SKIP) + [
@@ -105,56 +88,22 @@ def CheckPylintOnCommit(input_api, output_api):
   lints = input_api.canned_checks.RunPylint(
       input_api,
       output_api,
-      files_to_skip=GetFilesToSkip(input_api) + list(PYTHON2_FILES),
+      files_to_skip=GetFilesToSkip(input_api),
       disabled_warnings=disabled_warnings,
       extra_paths_list=extra_paths_list,
   )
-  if PYTHON2_FILES:
-    lints.extend(
-        input_api.canned_checks.RunPylint(
-            input_api,
-            output_api,
-            files_to_check=PYTHON2_FILES,
-            disabled_warnings=disabled_warnings,
-            extra_paths_list=extra_paths_list,
-            version='1.5',
-        )
-    )
   return lints
 
 
 def _GetTests(input_api, output_api, test_files):
-  python2_files = set(join(input_api, f) for f in PYTHON2_FILES)
-  non_python2_test_files = []
-  python2_test_files = []
-  for t in sorted(test_files):
-    if t in python2_files:
-      python2_test_files.append(t)
-    else:
-      non_python2_test_files.append(t)
-
-  tests = []
-  tests.extend(
-      input_api.canned_checks.GetUnitTests(
-          input_api,
-          output_api,
-          non_python2_test_files,
-          run_on_python3=True,
-          run_on_python2=False,
-          skip_shebang_check=True,
-      )
+  return input_api.canned_checks.GetUnitTests(
+      input_api,
+      output_api,
+      sorted(test_files),
+      run_on_python3=True,
+      run_on_python2=False,
+      skip_shebang_check=True,
   )
-  tests.extend(
-      input_api.canned_checks.GetUnitTests(
-          input_api,
-          output_api,
-          python2_test_files,
-          run_on_python2=True,
-          run_on_python3=False,
-          skip_shebang_check=True,
-      )
-  )
-  return tests
 
 
 # The following tests invoke recipes.py which isn't safe in parallel, so they'll
