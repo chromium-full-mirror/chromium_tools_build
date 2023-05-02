@@ -155,7 +155,7 @@ def GenTests(api):
 
     if include_parse:
       test_footer_json = {'Tricium-Test': True} if test_footer else {}
-      test_data += api.override_step_data('metrics.parse description',
+      test_data += api.override_step_data('parse description',
                                           api.json.output(test_footer_json))
 
     if auto_exist_files:
