@@ -149,6 +149,46 @@
   },
   {
     "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:perf"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "set rdb sources",
+    "stdin": "{\"invocation\": {\"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {}}}}, \"updateMask\": \"sourceSpec\"}",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\", @@@",
+      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {}@@@",
+      "@@@STEP_LOG_LINE@json.input@      }@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  }, @@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [
       "python3",
       "-u",
       "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
@@ -1662,7 +1702,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"dummy_test/Windows-10/[dummy has/Perf Win 10/-1\", \"priority\": \"25\", \"realm\": \"webrtc:perf\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:perf\", \"build_is_experimental:false\", \"builder_group:client.webrtc.perf\", \"buildername:Perf Win 10\", \"data:[dummy hash for dummy_test/1]\", \"name:dummy_test\", \"ninja_target:\", \"project:webrtc\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:webrtc.perf:Perf Win 10\", \"stepname:dummy_test on Windows-10\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"waterfall_builder_group:client.webrtc.perf\", \"waterfall_buildername:Perf Win 10\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"1]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:Perf Win 10\", \"-var\", \"os:Windows-10\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test on Windows-10\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"result_adapter.exe\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"./dummy_cmd\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Windows-10\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"out\\\\Win64_Builder_Clang\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"dummy_test/Windows-10/[dummy has/Perf Win 10/-1\", \"priority\": \"25\", \"realm\": \"webrtc:perf\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:perf\", \"build_is_experimental:false\", \"builder_group:client.webrtc.perf\", \"buildername:Perf Win 10\", \"data:[dummy hash for dummy_test/1]\", \"name:dummy_test\", \"ninja_target:\", \"project:webrtc\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:webrtc.perf:Perf Win 10\", \"stepname:dummy_test on Windows-10\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"waterfall_builder_group:client.webrtc.perf\", \"waterfall_buildername:Perf Win 10\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"1]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:Perf Win 10\", \"-var\", \"os:Windows-10\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test on Windows-10\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"--\", \"result_adapter.exe\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"./dummy_cmd\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Windows-10\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"out\\\\Win64_Builder_Clang\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1755,6 +1795,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"result_adapter.exe\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"gtest\", @@@",

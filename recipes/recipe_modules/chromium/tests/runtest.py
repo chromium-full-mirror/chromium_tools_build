@@ -79,6 +79,7 @@ def GenTests(api):
           'stream',
           '-coerce-negative-duration',
           '-exonerate-unexpected-pass',
+          '-inherit-sources',
           '--',
           'python3',
           'RECIPE_REPO[build]/recipes/runtest.py',

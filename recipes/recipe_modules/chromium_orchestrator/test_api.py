@@ -110,6 +110,13 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                 'ec4fc70b29359beb0490e/168',
             'src_side_test_spec_dir':
                 'testing/buildbot',
+            "gitiles_commit": {
+                "commitHash": "b740e9b724f3756c4ea0825eebf299e0a685225e",
+                "host": "chromium.googlesource.com",
+                "position": "1138017",
+                "project": "chromium/src",
+                "ref": "refs/heads/main"
+            }
         }
         if with_patch:
           if not affected_files:

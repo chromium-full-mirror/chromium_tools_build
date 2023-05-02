@@ -445,6 +445,7 @@ def GenTests(api):
                   '-location-tags-file',
                   '../../testing/location_tags.json',
                   '-exonerate-unexpected-pass',
+                  '-inherit-sources',
                   '--',
               ] + fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
@@ -494,9 +495,10 @@ def GenTests(api):
                   'step_name:%s on Ubuntu-16.04' % fake_test, '-tag',
                   'target_platform:linux', '-coerce-negative-duration',
                   '-location-tags-file', '../../testing/location_tags.json',
-                  '-exonerate-unexpected-pass', '--', 'result_adapter', 'gtest',
-                  '-result-file', '${ISOLATED_OUTDIR}/output.json',
-                  '-artifact-directory', '${ISOLATED_OUTDIR}', '--'
+                  '-exonerate-unexpected-pass', '-inherit-sources', '--',
+                  'result_adapter', 'gtest', '-result-file',
+                  '${ISOLATED_OUTDIR}/output.json', '-artifact-directory',
+                  '${ISOLATED_OUTDIR}', '--'
               ] + fake_command_lines[fake_test]))),
       api.post_process(post_process.DropExpectation),
   )

@@ -163,4 +163,5 @@ class ResultDB:
         require_build_inv=require_build_inv,
         exonerate_unexpected_pass=configs.exonerate_unexpected_pass,
         include=configs.include,
+        inherit_sources=True,
     )

@@ -133,7 +133,7 @@ def GenTests(api):
           'test_suite:junit_test', '-tag', 'step_name:junit_test', '-tag',
           'target_platform:android', '-coerce-negative-duration', '-new',
           '-realm', 'chromium:ci', '-include', '-exonerate-unexpected-pass',
-          '--'
+          '-inherit-sources', '--'
       ]),
       api.post_process(post_process.StepCommandContains, 'junit_test',
                        ['--foo=bar']),
@@ -158,7 +158,7 @@ def GenTests(api):
           'builder:test-builder', '-var', 'test_suite:junit_test', '-tag',
           'step_name:junit_test', '-tag', 'target_platform:android',
           '-coerce-negative-duration', '-new', '-realm', 'chromium:ci',
-          '-include', '-exonerate-unexpected-pass', '--'
+          '-include', '-exonerate-unexpected-pass', '-inherit-sources', '--'
       ]),
       api.post_process(post_process.StepCommandContains, 'junit_test',
                        ['--foo=bar']),
