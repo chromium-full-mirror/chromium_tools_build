@@ -33,21 +33,15 @@ def RunSteps(api):
       exonerate_unexpected_pass=False)
   api.assertions.assertEqual(
       rdb.wrap(api, cmd),
-      ['rdb', 'stream', '-inherit-sources', '--'] + cmd,
+      ['rdb', 'stream', '--'] + cmd,
   )
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, test_location_base='//path'),
-      [
-          'rdb', 'stream', '-test-location-base', '//path', '-inherit-sources',
-          '--'
-      ] + cmd,
+      ['rdb', 'stream', '-test-location-base', '//path', '--'] + cmd,
   )
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, test_id_prefix='blink_web_tests'),
-      [
-          'rdb', 'stream', '-test-id-prefix', 'blink_web_tests',
-          '-inherit-sources', '--'
-      ] + cmd,
+      ['rdb', 'stream', '-test-id-prefix', 'blink_web_tests', '--'] + cmd,
   )
   api.assertions.assertEqual(
       rdb.wrap(
@@ -55,8 +49,7 @@ def RunSteps(api):
           cmd,
           coerce_negative_duration=True,
           exonerate_unexpected_pass=False),
-      ['rdb', 'stream', '-coerce-negative-duration', '-inherit-sources', '--'] +
-      cmd,
+      ['rdb', 'stream', '-coerce-negative-duration', '--'] + cmd,
   )
 
   # step_name
@@ -66,8 +59,7 @@ def RunSteps(api):
       exonerate_unexpected_pass=False)
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, step_name='test1'),
-      ['rdb', 'stream', '-tag', 'step_name:test1', '-inherit-sources', '--'] +
-      cmd,
+      ['rdb', 'stream', '-tag', 'step_name:test1', '--'] + cmd,
   )
 
   # base_tags
@@ -78,14 +70,11 @@ def RunSteps(api):
       exonerate_unexpected_pass=False)
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, base_tags=[('k2', 'v2')]),
-      [
-          'rdb', 'stream', '-tag', 'k1:v1', '-tag', 'k2:v2', '-inherit-sources',
-          '--'
-      ] + cmd,
+      ['rdb', 'stream', '-tag', 'k1:v1', '-tag', 'k2:v2', '--'] + cmd,
   )
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, base_tags=[('k1', 'v1')]),
-      ['rdb', 'stream', '-tag', 'k1:v1', '-inherit-sources', '--'] + cmd,
+      ['rdb', 'stream', '-tag', 'k1:v1', '--'] + cmd,
   )
 
   # base_variant
@@ -96,14 +85,11 @@ def RunSteps(api):
       exonerate_unexpected_pass=False)
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, base_variant={"k1": "v2"}),
-      ['rdb', 'stream', '-var', 'k1:v2', '-inherit-sources', '--'] + cmd,
+      ['rdb', 'stream', '-var', 'k1:v2', '--'] + cmd,
   )
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, base_variant={"k2": "v2"}),
-      [
-          'rdb', 'stream', '-var', 'k1:v1', '-var', 'k2:v2', '-inherit-sources',
-          '--'
-      ] + cmd,
+      ['rdb', 'stream', '-var', 'k1:v1', '-var', 'k2:v2', '--'] + cmd,
   )
 
   # result_format
@@ -113,7 +99,7 @@ def RunSteps(api):
       exonerate_unexpected_pass=False)
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, result_format='gtest'),
-      ['rdb', 'stream', '-inherit-sources', '--'] + [
+      ['rdb', 'stream', '--'] + [
           'result_adapter', 'gtest', '-result-file',
           '${ISOLATED_OUTDIR}/output.json', '-artifact-directory',
           '${ISOLATED_OUTDIR}', '--'
@@ -121,7 +107,7 @@ def RunSteps(api):
   )
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, result_format='gtest', test_id_as_test_location=True),
-      ['rdb', 'stream', '-inherit-sources', '--'] +
+      ['rdb', 'stream', '--'] +
       # test_id_as_test_location should be ignore, as the format is not json.
       [
           'result_adapter',
@@ -135,7 +121,7 @@ def RunSteps(api):
   )
   api.assertions.assertEqual(
       rdb.wrap(api, cmd, result_format='json', test_id_as_test_location=True),
-      ['rdb', 'stream', '-inherit-sources', '--'] + [
+      ['rdb', 'stream', '--'] + [
           'result_adapter', 'json', '-result-file',
           '${ISOLATED_OUTDIR}/output.json', '-artifact-directory',
           '${ISOLATED_OUTDIR}', '-test-location', '--'

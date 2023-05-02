@@ -1288,7 +1288,6 @@
       "angle:ci",
       "-include",
       "-exonerate-unexpected-pass",
-      "-inherit-sources",
       "--",
       "vpython3",
       "[START_DIR]/swarming.client/run_isolated.py",

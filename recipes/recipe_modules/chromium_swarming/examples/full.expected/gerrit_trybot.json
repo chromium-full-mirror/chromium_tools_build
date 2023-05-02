@@ -526,54 +526,6 @@
   },
   {
     "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateInvocation",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "set rdb sources",
-    "stdin": "{\"invocation\": {\"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"123456\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"7\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {}}}}, \"updateMask\": \"sourceSpec\"}",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\", @@@",
-      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"changelists\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@          {@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"change\": \"123456\", @@@",
-      "@@@STEP_LOG_LINE@json.input@            \"host\": \"chromium-review.googlesource.com\", @@@",
-      "@@@STEP_LOG_LINE@json.input@            \"patchset\": \"7\", @@@",
-      "@@@STEP_LOG_LINE@json.input@            \"project\": \"chromium/src\"@@@",
-      "@@@STEP_LOG_LINE@json.input@          }@@@",
-      "@@@STEP_LOG_LINE@json.input@        ], @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {}@@@",
-      "@@@STEP_LOG_LINE@json.input@      }@@@",
-      "@@@STEP_LOG_LINE@json.input@    }@@@",
-      "@@@STEP_LOG_LINE@json.input@  }, @@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
-    "cmd": [
       "tools/luci-go/isolate",
       "archive",
       "-isolate",
@@ -677,7 +629,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"hello_world/Windows-10/hash_for_w/linux/1\", \"priority\": \"30\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver\", \"buildername:linux\", \"buildnumber:1\", \"data:hash_for_win/size\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:hello_world\", \"os:win\", \"spec_name:chromium.try:linux\", \"stepname:hello_world on Windows-10\", \"test_suite:chromium_test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"hash_for_win\", \"size_bytes\": \"size\"}}, \"cipd_input\": {\"packages\": [{\"package_name\": \"cool/package\", \"path\": \".\", \"version\": \"vers\"}, {\"package_name\": \"super/awesome/pkg\", \"path\": \"bin\", \"version\": \"git_revision:deadbeef\"}]}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:linux\", \"-var\", \"os:Windows-10\", \"-var\", \"test_suite:chromium_test\", \"-tag\", \"step_name:hello_world on Windows-10\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"--\", \"--foo\", \"42\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Windows-10\"}, {\"key\": \"pool\", \"value\": \"foo\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}, {\"key\": \"TESTING\", \"value\": \"1\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"joe\"}]}",
+      "{\"requests\": [{\"name\": \"hello_world/Windows-10/hash_for_w/linux/1\", \"priority\": \"30\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:tryserver\", \"buildername:linux\", \"buildnumber:1\", \"data:hash_for_win/size\", \"gerrit:https://chromium-review.googlesource.com/c/123456/7\", \"name:hello_world\", \"os:win\", \"spec_name:chromium.try:linux\", \"stepname:hello_world on Windows-10\", \"test_suite:chromium_test\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"hash_for_win\", \"size_bytes\": \"size\"}}, \"cipd_input\": {\"packages\": [{\"package_name\": \"cool/package\", \"path\": \".\", \"version\": \"vers\"}, {\"package_name\": \"super/awesome/pkg\", \"path\": \"bin\", \"version\": \"git_revision:deadbeef\"}]}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:linux\", \"-var\", \"os:Windows-10\", \"-var\", \"test_suite:chromium_test\", \"-tag\", \"step_name:hello_world on Windows-10\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"--foo\", \"42\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Windows-10\"}, {\"key\": \"pool\", \"value\": \"foo\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}, {\"key\": \"TESTING\", \"value\": \"1\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}], \"user\": \"joe\"}]}",
       "-json-output",
       "/path/to/tmp/json",
       "-verbose"
@@ -778,7 +730,6 @@
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\", @@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--foo\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"42\"@@@",

@@ -13,7 +13,6 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
-    'recipe_engine/resultdb',
     'recipe_engine/runtime',
     'recipe_engine/step',
 ]

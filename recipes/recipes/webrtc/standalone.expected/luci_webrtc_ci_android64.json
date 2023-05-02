@@ -131,46 +131,6 @@
   },
   {
     "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateInvocation",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "set rdb sources",
-    "stdin": "{\"invocation\": {\"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {}}}}, \"updateMask\": \"sourceSpec\"}",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\", @@@",
-      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {}@@@",
-      "@@@STEP_LOG_LINE@json.input@      }@@@",
-      "@@@STEP_LOG_LINE@json.input@    }@@@",
-      "@@@STEP_LOG_LINE@json.input@  }, @@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "-u",
       "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
@@ -1845,7 +1805,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Android64/-1\", \"priority\": \"25\", \"realm\": \"webrtc:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.webrtc\", \"buildername:Android64\", \"data:[dummy hash for dummy_test/dummy size]\", \"name:dummy_test\", \"ninja_target:\", \"project:webrtc\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:webrtc.ci:Android64\", \"stepname:dummy_test on Ubuntu-16.04\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"waterfall_builder_group:client.webrtc\", \"waterfall_buildername:Android64\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:Android64\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test on Ubuntu-16.04\", \"-tag\", \"target_platform:android\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"dummy_test/Ubuntu-16.04/[dummy has/Android64/-1\", \"priority\": \"25\", \"realm\": \"webrtc:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:client.webrtc\", \"buildername:Android64\", \"data:[dummy hash for dummy_test/dummy size]\", \"name:dummy_test\", \"ninja_target:\", \"project:webrtc\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:webrtc.ci:Android64\", \"stepname:dummy_test on Ubuntu-16.04\", \"test_id_prefix:\", \"test_suite:dummy_test\", \"waterfall_builder_group:client.webrtc\", \"waterfall_buildername:Android64\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for dummy_test\", \"size_bytes\": \"dummy size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:Android64\", \"-var\", \"os:Ubuntu-16.04\", \"-var\", \"test_suite:dummy_test\", \"-tag\", \"step_name:dummy_test on Ubuntu-16.04\", \"-tag\", \"target_platform:android\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"result_adapter\", \"gtest\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"os\", \"value\": \"Ubuntu-16.04\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1938,7 +1898,6 @@
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\", @@@",
-      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"result_adapter\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"gtest\", @@@",

@@ -131,46 +131,6 @@
   },
   {
     "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateInvocation",
-      "-include-update-token"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "set rdb sources",
-    "stdin": "{\"invocation\": {\"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {}}}}, \"updateMask\": \"sourceSpec\"}",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\", @@@",
-      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {}@@@",
-      "@@@STEP_LOG_LINE@json.input@      }@@@",
-      "@@@STEP_LOG_LINE@json.input@    }@@@",
-      "@@@STEP_LOG_LINE@json.input@  }, @@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "-u",
       "RECIPE_MODULE[recipe_engine::json]/resources/read.py",

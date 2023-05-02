@@ -9,9 +9,6 @@ from recipe_engine import recipe_api
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools.gclient import api as gclient
 
-from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
-from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_pb
-
 
 class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
@@ -124,8 +121,6 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
       callback(update_step.json.output['manifest'])
 
-    self.update_rdb_invocation()
-
     return update_step
 
   def _report_gclient_config(self, gclient_config):
@@ -149,31 +144,3 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     step = self.m.step('gclient config', [])
     step.presentation.logs['config'] = self.m.json.dumps(
         gclient_config.as_jsonish(include_hidden=True), indent=2).split('\n')
-
-  def update_rdb_invocation(self, gitiles_commit=None):
-    """Update the rdb invocation to include the SourceSpec being used.
-
-    Args:
-      gitiles_commit: (GitilesCommit) gitiles commit position that has been
-        checked out.
-    """
-    bb_gitiles_commit = gitiles_commit or self.m.buildbucket.build.output.gitiles_commit
-    self.m.resultdb.update_invocation(
-        step_name='set rdb sources',
-        source_spec=invocation_pb.SourceSpec(
-            sources=invocation_pb.Sources(
-                gitiles_commit=common_rdb_pb.GitilesCommit(
-                    host=bb_gitiles_commit.host,
-                    project=bb_gitiles_commit.project,
-                    commit_hash=bb_gitiles_commit.id,
-                    ref=bb_gitiles_commit.ref,
-                    position=bb_gitiles_commit.position,
-                ),
-                changelists=[
-                    common_rdb_pb.GerritChange(
-                        host=change.host,
-                        project=change.project,
-                        change=change.change,
-                        patchset=change.patchset)
-                    for change in self.m.buildbucket.build.input.gerrit_changes
-                ])))

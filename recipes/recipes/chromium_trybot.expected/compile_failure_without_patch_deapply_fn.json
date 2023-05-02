@@ -505,63 +505,6 @@
     ]
   },
   {
-    "cmd": [
-      "rdb",
-      "rpc",
-      "luci.resultdb.v1.Recorder",
-      "UpdateInvocation",
-      "-include-update-token"
-    ],
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "set rdb sources",
-    "stdin": "{\"invocation\": {\"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec\"}",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.input@{@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\", @@@",
-      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"changelists\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@          {@@@",
-      "@@@STEP_LOG_LINE@json.input@            \"change\": \"456789\", @@@",
-      "@@@STEP_LOG_LINE@json.input@            \"host\": \"chromium-review.googlesource.com\", @@@",
-      "@@@STEP_LOG_LINE@json.input@            \"patchset\": \"12\", @@@",
-      "@@@STEP_LOG_LINE@json.input@            \"project\": \"chromium/src\"@@@",
-      "@@@STEP_LOG_LINE@json.input@          }@@@",
-      "@@@STEP_LOG_LINE@json.input@        ], @@@",
-      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@          \"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", @@@",
-      "@@@STEP_LOG_LINE@json.input@          \"host\": \"fake.org\", @@@",
-      "@@@STEP_LOG_LINE@json.input@          \"position\": \"170242\", @@@",
-      "@@@STEP_LOG_LINE@json.input@          \"project\": \"src\", @@@",
-      "@@@STEP_LOG_LINE@json.input@          \"ref\": \"refs/heads/main\"@@@",
-      "@@@STEP_LOG_LINE@json.input@        }@@@",
-      "@@@STEP_LOG_LINE@json.input@      }@@@",
-      "@@@STEP_LOG_LINE@json.input@    }@@@",
-      "@@@STEP_LOG_LINE@json.input@  }, @@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec\"@@@",
-      "@@@STEP_LOG_LINE@json.input@}@@@",
-      "@@@STEP_LOG_END@json.input@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "ensure_goma"
   },
@@ -1501,7 +1444,6 @@
       "chromium:try",
       "-include",
       "-exonerate-unexpected-pass",
-      "-inherit-sources",
       "--",
       "[CACHE]/builder/src/tools/resultdb/result_adapter",
       "gtest",
