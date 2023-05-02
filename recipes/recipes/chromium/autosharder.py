@@ -151,8 +151,13 @@ def RunSteps(api):
       '--bypass-hooks',
       '--no-python2-post-upload-hooks',
       '-r',
-      # TODO(kimstephanie): Assign to sshrimp
-      'kimstephanie@google.com',
+      'sshrimp@google.com',
+      '--cc',
+      ','.join([
+          'kimstephanie@google.com',
+          'gatong@google.com',
+          'estaab@google.com',
+      ]),
       '--send-email',
   ]
 
