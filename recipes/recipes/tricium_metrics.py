@@ -27,7 +27,8 @@ DEPS = [
 ]
 
 
-def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path):
+def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
+                        commit_message):
   packages_dir = api.path['cleanup'].join('packages')
   test = bool(api.tryserver.get_footer('Tricium-Test'))
   pkg = 'infra/tricium/legacy_functions/metrics/linux-amd64'
@@ -44,8 +45,9 @@ def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path):
   enums_path = api.path.join('tools', 'metrics', 'histograms',
                              'enums.xml')
   api.step('metrics', [
-      metrics, '-input', src_dir, '-output', out_dir, '-previous',
-      prev_dir, '-patch', patch_path, '-enums', enums_path, '--'
+      metrics, '-input', src_dir, '-output', out_dir, '-previous', prev_dir,
+      '-patch', patch_path, '-enums', enums_path, '-message', commit_message,
+      '--'
   ] + metrics_paths)
 
   # This is where the Tricium metrics analyzer should write all results to.
@@ -128,7 +130,8 @@ def RunSteps(api):
 
       # Run the metrics analyzer.
       with api.step.nest('metrics'):
-        _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path)
+        _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
+                            api.tryserver.get_change_description())
 
 
 def GenTests(api):
