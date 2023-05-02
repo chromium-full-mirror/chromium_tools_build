@@ -40,7 +40,7 @@ def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
     ensure_file.add_package(pkg, version='latest')
     api.cipd.ensure(packages_dir, ensure_file)
 
-  metrics = packages_dir.join('metrics_analyzer')
+  metrics = packages_dir.join('metrics')
   out_dir = api.path['cleanup'].join('out')
   enums_path = api.path.join('tools', 'metrics', 'histograms',
                              'enums.xml')
