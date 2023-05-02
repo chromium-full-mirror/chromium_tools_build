@@ -139,24 +139,21 @@ def GenTests(api):
   def build_with_patch(affected_files,
                        include_diff=True,
                        auto_exist_files=True,
-                       include_parse=False,
                        skip_footer=False,
                        test_footer=False):
     test_data = api.buildbucket.try_build()
 
-    skip_footer_json = {'Tricium-Skip-Metrics': True} if skip_footer else {}
-    test_data += api.override_step_data('parse description',
-                                        api.json.output(skip_footer_json))
+    footer_json = {}
+    if skip_footer:
+      footer_json['Tricium-Skip-Metrics'] = [True]
+    if test_footer:
+      footer_json['Tricium-Test'] = [True]
+    test_data += api.tryserver.get_footers(footer_json)
 
     if include_diff:
       test_data += api.step_data(
           'git diff to analyze patch',
           api.raw_io.stream_output('\n'.join(affected_files)))
-
-    if include_parse:
-      test_footer_json = {'Tricium-Test': True} if test_footer else {}
-      test_data += api.override_step_data('parse description',
-                                          api.json.output(test_footer_json))
 
     if auto_exist_files:
       test_data += api.path.exists(
@@ -209,7 +206,6 @@ def GenTests(api):
       'test_version_if_footer',
       build_with_patch(
           affected_files=['some/test/test2/histograms.xml'],
-          include_parse=True,
           test_footer=True),
       api.step_data('metrics.metrics_output', api.file.read_json({})),
       api.post_process(post_process.DoesNotRun, 'metrics.load_prod_analyzer'),
@@ -221,8 +217,7 @@ def GenTests(api):
   yield api.test(
       'analyze_xml_live',
       build_with_patch(
-          affected_files=['some/test/test2/histograms.xml'],
-          include_parse=True),
+          affected_files=['some/test/test2/histograms.xml']),
       api.step_data(
           'metrics.metrics_output',
           api.file.read_json({
@@ -243,8 +238,7 @@ def GenTests(api):
   yield api.test(
       'show_file_path_not_found_but_succeed',
       build_with_patch(
-          affected_files=['some/test/test2/histograms.xml'],
-          include_parse=True),
+          affected_files=['some/test/test2/histograms.xml']),
       # Simulate a file missing error, this could happen if users add a new file
       # Make sure the exception is captured and the analyzer shouldn't fail.
       api.step_data('git show', retcode=128),
