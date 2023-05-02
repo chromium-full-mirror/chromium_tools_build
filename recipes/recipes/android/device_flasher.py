@@ -116,6 +116,7 @@ def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
   task_request = task_request.with_slice(
       0, task_request[0].
       with_dimensions(pool=pool, id=bot_id).
+      with_expiration_secs(20*60).
       with_cipd_ensure_file(
           api.cipd.EnsureFile().
           add_package(
