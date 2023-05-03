@@ -5,7 +5,6 @@
 DEPS = [
   'recipe_engine/buildbucket',
   'recipe_engine/context',
-  'recipe_engine/cipd',
   'recipe_engine/file',
   'recipe_engine/path',
   'recipe_engine/properties',
@@ -49,10 +48,6 @@ _TARGET_DEVICE_MAP = {
         'bitness': 32,
         'product': 'arm_krait',
     },
-    'qemu-riscv64': {
-        'bitness': 64,
-        'product': 'qemu',
-    },
 }
 
 
@@ -72,9 +67,6 @@ def clobber(api):
   if 'clobber' in api.properties:
     api.file.rmtree('clobber', api.context.cwd.join('out'))
 
-def ensure_qemu(api):
-  api.cipd.ensure_tool(
-      'fuchsia/third_party/qemu/${platform}', 'latest')
 
 def setup_host_x86(api,
                    debug,
@@ -222,10 +214,9 @@ def setup_target(api,
                  device,
                  debug,
                  concurrent_collector=True,
-                 gcstress=False,
                  generational_cc=True,
                  heap_poisoning=False,
-                 on_virtual_machine=False):
+                 gcstress=False):
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.join('art', 'tools')
   # The path to the chroot directory on the device where ART and its
@@ -281,16 +272,6 @@ def setup_target(api,
   else:
     env.update({ 'ART_HEAP_POISONING' : 'false' })
 
-  if on_virtual_machine:
-    env.update({
-      'ART_TEST_SSH_USER': 'ubuntu',
-      'ART_TEST_SSH_HOST': 'localhost',
-      'ART_TEST_SSH_PORT': '10001',
-      'ART_TEST_ON_VM': 'true'
-    })
-  else:
-    env.update({ 'ART_TEST_ON_VM' : 'false' })
-
 
   bitness = _TARGET_DEVICE_MAP[device]['bitness']
   env.update(
@@ -303,8 +284,6 @@ def setup_target(api,
 
   checkout(api)
   clobber(api)
-  if on_virtual_machine:
-    ensure_qemu(api)
 
   gtest_env = env.copy()
   gtest_env.update({ 'ART_TEST_NO_SYNC': 'true' })
@@ -325,15 +304,6 @@ def setup_target(api,
     api.step(
         'build target',
         [art_tools.join('buildbot-build.sh'), '--target', '--installclean'])
-
-  if on_virtual_machine:
-    with api.context(env=env):
-      api.step('create the virtual machine',
-               [art_tools.join('buildbot-vm.sh'), 'create'])
-      api.step('boot the virtual machine',
-               [art_tools.join('buildbot-vm.sh'), 'boot'])
-      api.step('copy ssh keys over to the virtual machine',
-               [art_tools.join('buildbot-vm.sh'), 'setup-ssh'])
 
   with api.step.defer_results():
     with api.context(env=test_env):
@@ -448,11 +418,6 @@ def setup_target(api,
 
       api.step('device post-run cleanup',
                [art_tools.join('buildbot-cleanup-device.sh')])
-
-    if on_virtual_machine:
-      with api.context(env=env):
-        api.step('shut down virtual machine',
-                 [art_tools.join('buildbot-vm.sh'), 'quit'])
 
 
 _CONFIG_MAP = {
@@ -586,11 +551,6 @@ _CONFIG_MAP = {
             'device': 'bullhead-armv7',
             'debug': False,
             'gcstress': True,
-        },
-        'qemu-riscv64-ndebug': {
-            'device': 'qemu-riscv64',
-            'debug': False,
-            'on_virtual_machine': True,
         },
     },
 }
