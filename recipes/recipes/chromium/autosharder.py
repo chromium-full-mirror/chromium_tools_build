@@ -48,7 +48,7 @@ def RunSteps(api):
   last_merged_change_list = api.gerrit.get_changes(
       name='get last merged change',
       host='https://chromium-review.googlesource.com',
-      query_params=[('uploader', 'chromium-autosharder'), ('status', 'merged')],
+      query_params=[('owner', 'chromium-autosharder'), ('status', 'merged')],
       limit=1,
   )
   if last_merged_change_list:
