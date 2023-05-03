@@ -33,12 +33,4 @@ def GenTests(api):
       api.buildbucket.build(build),
   )
 
-  yield api.test(
-      'failure_no_bot_os',
-      api.buildbucket.generic_build(),
-      api.step_data(
-          'get_bot_os',
-          api.raw_io.stream_output_text(
-              'Unable to get bot OS from swarming task dimensions.')),
-      status='FAILURE',
-  )
+  yield api.test('fallback_bot_os', api.buildbucket.generic_build())

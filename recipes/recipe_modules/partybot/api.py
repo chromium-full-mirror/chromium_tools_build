@@ -21,15 +21,14 @@ class PartyBot(recipe_api.RecipeApi):
     for dim in self.m.buildbucket.build.infra.swarming.task_dimensions:
       if dim.key == "os":
         bot_os = dim.value
+
     if not bot_os:
-      # This is one of the nicest ways to raise an error and stop the build if
-      # the data is unpopulated
-      self.m.step.empty(
-          'get_bot_os',
-          status="FAILURE",
-          log_name='stdout',
-          log_text="Unable to get bot OS from swarming task dimensions.",
-          raise_on_failure=True)
+      # Fall back to using something else instead, which we probably do have access
+      # to. This is less ideal, but will keep the build alive in cases where this
+      # field is less important like the Chromium recipe. This field is mostly used
+      # to make it clear what data was collected from where and separate data.
+      bot_os = self.m.buildbucket.build.builder.builder
+
     return bot_os
 
   def run(self, chrome_src, output, bqtable, owners=False, version="latest"):
@@ -66,14 +65,14 @@ class PartyBot(recipe_api.RecipeApi):
                     "field1": "1234"
                 }, {
                     "field2": "1234"
-                }], name='deps')))
+                }], name="deps")))
 
-    dep_rows = []
-    for row in result.json.outputs.get('deps'):
-      dep_rows.append(json.dumps(row))
+      dep_rows = []
+      for row in result.json.outputs.get("deps"):
+        dep_rows.append(json.dumps(row))
 
     self.m.step(
-        'upload dependencies to BigQuery',
+        'upload third party dependencies to BigQuery',
         [bqupload, bqtable],
         stdin=self.m.raw_io.input(data='\n'.join(dep_rows)),
     )
