@@ -290,7 +290,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-tester': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(post_process.StepSuccess, 'extract build'),
@@ -814,8 +816,20 @@ def GenTests(api):
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-tester': {
-                  'gtest_tests':
-                      ['base_unittests', 'target1', 'target2', 'target3'],
+                  'gtest_tests': [
+                      {
+                          'test': 'base_unittests',
+                      },
+                      {
+                          'test': 'target1',
+                      },
+                      {
+                          'test': 'target2',
+                      },
+                      {
+                          'test': 'target3',
+                      },
+                  ],
               },
           }),
       api.override_step_data(

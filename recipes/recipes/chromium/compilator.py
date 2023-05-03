@@ -643,7 +643,9 @@ def GenTests(api):
               rts_setting='rts-chromium')),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(
@@ -681,7 +683,9 @@ def GenTests(api):
               rts_setting='rts-ml-chromium')),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(
@@ -719,7 +723,9 @@ def GenTests(api):
           rts_setting='rts-chromium'),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(

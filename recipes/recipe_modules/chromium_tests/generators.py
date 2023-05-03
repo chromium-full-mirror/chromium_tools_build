@@ -392,11 +392,7 @@ def generate_gtests(chromium_tests_api,
   del scripts_compile_targets_fn
 
   def canonicalize_test(test):
-    if isinstance(test, str):
-      canonical_test = {'test': test}
-    else:
-      canonical_test = dict(test)
-
+    canonical_test = dict(test)
     canonical_test.setdefault('shard_index', 0)
     canonical_test.setdefault('total_shards', 1)
     return canonical_test

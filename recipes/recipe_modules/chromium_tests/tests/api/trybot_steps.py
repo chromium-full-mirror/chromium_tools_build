@@ -164,7 +164,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(post_process.StepSuccess,
@@ -194,7 +196,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.properties(root_solution_revision='refs/branch-heads/4472'),
@@ -288,11 +292,14 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=None,
       ),
-      api.chromium_tests.read_targets_spec('tryserver.chromium.unmirrored', {
-          'unmirrored-chromium-rel': {
-              'gtest_tests': ['bogus_unittests'],
-          },
-      }),
+      api.chromium_tests.read_targets_spec(
+          'tryserver.chromium.unmirrored', {
+              'unmirrored-chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'bogus_unittests',
+                  }],
+              },
+          }),
       api.post_process(post_process.MustRun, 'bogus_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
   )
@@ -548,7 +555,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.code_coverage(use_clang_coverage=True),
@@ -594,7 +603,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.code_coverage(use_clang_coverage=True),
@@ -645,7 +656,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.code_coverage(use_clang_coverage=True),
@@ -756,14 +769,25 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
               'fake-builder': {
-                  'gtest_tests':
-                      ['base_unittests1', 'base_unittests2', 'base_unittests3'],
+                  'gtest_tests': [
+                      {
+                          'test': 'base_unittests1',
+                      },
+                      {
+                          'test': 'base_unittests2',
+                      },
+                      {
+                          'test': 'base_unittests3',
+                      },
+                  ],
               },
           }),
       api.chromium_tests.change_size_limit(2),
@@ -803,7 +827,9 @@ def GenTests(api):
       api.properties(dry_run=True),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(post_process.StepSuccess,
@@ -839,7 +865,9 @@ def GenTests(api):
       ),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(post_process.MustRun, 'quick run options'),
@@ -970,7 +998,9 @@ def GenTests(api):
       ),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.step_data('parse description',

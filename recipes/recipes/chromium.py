@@ -65,7 +65,9 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'gtest_tests': [
-                      'base_unittests',
+                      {
+                          'test': 'base_unittests',
+                      },
                       {
                           'test': 'browser_tests',
                           'shard_index': 0,
@@ -1040,7 +1042,9 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'gtest_tests': [
-                      'base_unittests',
+                      {
+                          'test': 'base_unittests',
+                      },
                       {
                           'test': 'browser_tests',
                           'shard_index': 0,
@@ -1076,7 +1080,9 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'gtest_tests': [
-                      'aura_unittests',
+                      {
+                          'test': 'aura_unittests',
+                      },
                       {
                           'test': 'browser_tests',
                           'shard_index': 0,
@@ -1113,7 +1119,9 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'gtest_tests': [
-                      'base_unittests',
+                      {
+                          'test': 'base_unittests',
+                      },
                       {
                           'test': 'browser_tests',
                           'shard_index': 0,
@@ -1149,7 +1157,9 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'gtest_tests': [
-                      'base_unittests',
+                      {
+                          'test': 'base_unittests',
+                      },
                       {
                           'test': 'browser_tests',
                           'shard_index': 0,

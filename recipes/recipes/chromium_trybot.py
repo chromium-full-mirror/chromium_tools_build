@@ -128,7 +128,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.override_step_data(
@@ -466,7 +468,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.override_step_data(
@@ -491,7 +495,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.override_step_data('compile (with patch)', retcode=1),
@@ -537,7 +543,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
@@ -575,7 +583,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
@@ -639,7 +649,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.filter.no_dependency(),
@@ -662,7 +674,9 @@ def GenTests(api):
       api.filter.exclude_everything(),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.post_process(Filter('analyze', 'compile (with patch)')),
@@ -740,7 +754,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.filter.analyze_output(
@@ -765,7 +781,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.override_step_data(
@@ -803,7 +821,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
@@ -840,7 +860,9 @@ def GenTests(api):
           ).assemble()),
       api.chromium_tests.read_targets_spec('fake-group', {
           'fake-builder': {
-              'gtest_tests': ['base_unittests'],
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
           },
       }),
       api.step_data('compile (with patch)', retcode=1),
