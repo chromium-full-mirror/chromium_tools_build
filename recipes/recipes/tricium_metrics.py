@@ -96,7 +96,9 @@ def RunSteps(api):
           if api.path.basename(path) in metrics_filenames
       ]
 
-      if not metrics_paths:
+      commit_message = api.tryserver.get_change_description()
+
+      if not metrics_paths and 'OBSOLETE_HISTOGRAM' not in commit_message:
         api.step.empty(
             'no_metrics_paths',
             step_text=(
@@ -131,7 +133,7 @@ def RunSteps(api):
       # Run the metrics analyzer.
       with api.step.nest('metrics'):
         _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
-                            api.tryserver.get_change_description())
+                            commit_message)
 
 
 def GenTests(api):
