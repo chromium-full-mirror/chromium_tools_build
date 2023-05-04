@@ -489,15 +489,5 @@ def checkout_siso(c):
 
 
 @CONFIG_CTX()
-def use_rust(c):
-  c.solutions[0].custom_vars['use_rust'] = 'True'
-
-
-@CONFIG_CTX()
 def checkout_rust(c):
   c.solutions[0].custom_vars['checkout_rust'] = 'True'
-
-
-@CONFIG_CTX()
-def fetch_android_chromium_rust_toolchain(c):
-  c.solutions[0].custom_vars['fetch_android_chromium_rust_toolchain'] = 'True'
