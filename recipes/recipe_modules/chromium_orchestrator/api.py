@@ -592,6 +592,19 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           'Compilator was canceled before the parent orchestrator was canceled.'
       )
 
+    # Update the invocation so tests will inherit source position from the
+    # orchestrator's invocation
+    if sub_build.output.HasField('gitiles_commit'):
+      self.m.chromium_checkout.update_rdb_invocation(
+          gitiles_commit=sub_build.output.gitiles_commit)
+    else:
+      # If the compilator didn't have a commit position we want to know about
+      # it but not fail the build
+      self.m.step.empty(
+          'compilator gitiles_commit missing',
+          status='FAILURE',
+          raise_on_failure=False)
+
     swarming_prop_key = 'swarming_trigger_properties'
     if is_swarming_phase and swarming_prop_key in sub_build.output.properties:
       output_props = MessageToDict(sub_build.output.properties)

@@ -188,6 +188,26 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "set rdb sources"
+  },
+  {
+    "cmd": [],
+    "name": "set rdb sources.missing gitiles commit info",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@gitiles_commit@@@@",
+      "@@@STEP_LOG_END@gitiles_commit@@@",
+      "@@@STEP_LOG_LINE@gerrit_changes@[host: \"webrtc-review.googlesource.com\"@@@",
+      "@@@STEP_LOG_LINE@gerrit_changes@project: \"src\"@@@",
+      "@@@STEP_LOG_LINE@gerrit_changes@change: 123456@@@",
+      "@@@STEP_LOG_LINE@gerrit_changes@patchset: 7@@@",
+      "@@@STEP_LOG_LINE@gerrit_changes@]@@@",
+      "@@@STEP_LOG_END@gerrit_changes@@@",
+      "@@@SET_BUILD_PROPERTY@failed_rdb_invocation_update@true@@@"
+    ]
+  },
+  {
     "cmd": [
       "python3",
       "-u",

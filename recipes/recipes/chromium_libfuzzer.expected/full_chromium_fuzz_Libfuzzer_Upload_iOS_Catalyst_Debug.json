@@ -299,6 +299,22 @@
   },
   {
     "cmd": [],
+    "name": "set rdb sources"
+  },
+  {
+    "cmd": [],
+    "name": "set rdb sources.missing gitiles commit info",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@gitiles_commit@@@@",
+      "@@@STEP_LOG_END@gitiles_commit@@@",
+      "@@@STEP_LOG_LINE@gerrit_changes@[]@@@",
+      "@@@STEP_LOG_END@gerrit_changes@@@",
+      "@@@SET_BUILD_PROPERTY@failed_rdb_invocation_update@true@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "ensure xcode",
     "~followup_annotations": [
       "@@@STEP_TEXT@Ensuring Xcode version 12345 in [CACHE]/xcode_ios_12345.app@@@"

@@ -414,7 +414,7 @@ def GenTests(api):
                       compilator_watcher_git_revision='e841fc',
                   ),
           }),
-      api.runtime.global_shutdown_on_step('compilator steps (with patch)'),
+      api.runtime.global_shutdown_on_step('compilator gitiles_commit missing'),
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(
           sub_build_status=common_pb.INFRA_FAILURE, empty_props=True),

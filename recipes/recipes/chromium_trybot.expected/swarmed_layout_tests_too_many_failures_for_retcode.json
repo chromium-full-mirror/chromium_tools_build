@@ -506,6 +506,68 @@
   },
   {
     "cmd": [],
+    "name": "set rdb sources"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "rpc",
+      "luci.resultdb.v1.Recorder",
+      "UpdateInvocation",
+      "-include-update-token"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "set rdb sources.update invocation",
+    "stdin": "{\"invocation\": {\"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"chromium/src\"}], \"gitilesCommit\": {\"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@json.input@{@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\", @@@",
+      "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"changelists\": [@@@",
+      "@@@STEP_LOG_LINE@json.input@          {@@@",
+      "@@@STEP_LOG_LINE@json.input@            \"change\": \"456789\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"host\": \"chromium-review.googlesource.com\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"patchset\": \"12\", @@@",
+      "@@@STEP_LOG_LINE@json.input@            \"project\": \"chromium/src\"@@@",
+      "@@@STEP_LOG_LINE@json.input@          }@@@",
+      "@@@STEP_LOG_LINE@json.input@        ], @@@",
+      "@@@STEP_LOG_LINE@json.input@        \"gitilesCommit\": {@@@",
+      "@@@STEP_LOG_LINE@json.input@          \"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"host\": \"fake.org\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"position\": \"170242\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"project\": \"src\", @@@",
+      "@@@STEP_LOG_LINE@json.input@          \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@json.input@        }@@@",
+      "@@@STEP_LOG_LINE@json.input@      }@@@",
+      "@@@STEP_LOG_LINE@json.input@    }@@@",
+      "@@@STEP_LOG_LINE@json.input@  }, @@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec\"@@@",
+      "@@@STEP_LOG_LINE@json.input@}@@@",
+      "@@@STEP_LOG_END@json.input@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "ensure_goma"
   },
   {
@@ -1753,7 +1815,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"blink_web_tests (with patch)/Linux/[dummy has/fake-try-builder/571\", \"priority\": \"30\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:fake-try-group\", \"buildername:fake-try-builder\", \"buildnumber:571\", \"data:[dummy hash for blink_web_tests/size]\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:blink_web_tests\", \"ninja_target:\", \"patch_project:chromium/src\", \"project:chromium\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:chromium.try:fake-try-builder\", \"stepname:blink_web_tests (with patch)\", \"test_id_prefix:\", \"test_suite:blink_web_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-builder\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for blink_web_tests\", \"size_bytes\": \"size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-try-builder\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:blink_web_tests\", \"-tag\", \"step_name:blink_web_tests (with patch)\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"blink_web_tests (with patch)/Linux/[dummy has/fake-try-builder/571\", \"priority\": \"30\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:fake-try-group\", \"buildername:fake-try-builder\", \"buildnumber:571\", \"data:[dummy hash for blink_web_tests/size]\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:blink_web_tests\", \"ninja_target:\", \"patch_project:chromium/src\", \"project:chromium\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:chromium.try:fake-try-builder\", \"stepname:blink_web_tests (with patch)\", \"test_id_prefix:\", \"test_suite:blink_web_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-builder\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for blink_web_tests\", \"size_bytes\": \"size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-try-builder\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:blink_web_tests\", \"-tag\", \"step_name:blink_web_tests (with patch)\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1853,6 +1915,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"@@@",
@@ -2580,7 +2643,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"blink_web_tests (retry shards with patch)/Linux/[dummy has/fake-try-builder/571\", \"priority\": \"29\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:fake-try-group\", \"buildername:fake-try-builder\", \"buildnumber:571\", \"data:[dummy hash for blink_web_tests/size]\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:blink_web_tests\", \"ninja_target:\", \"patch_project:chromium/src\", \"project:chromium\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:chromium.try:fake-try-builder\", \"stepname:blink_web_tests (retry shards with patch)\", \"test_id_prefix:\", \"test_suite:blink_web_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-builder\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for blink_web_tests\", \"size_bytes\": \"size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-try-builder\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:blink_web_tests\", \"-tag\", \"step_name:blink_web_tests (retry shards with patch)\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"blink_web_tests (retry shards with patch)/Linux/[dummy has/fake-try-builder/571\", \"priority\": \"29\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:fake-try-group\", \"buildername:fake-try-builder\", \"buildnumber:571\", \"data:[dummy hash for blink_web_tests/size]\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:blink_web_tests\", \"ninja_target:\", \"patch_project:chromium/src\", \"project:chromium\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:chromium.try:fake-try-builder\", \"stepname:blink_web_tests (retry shards with patch)\", \"test_id_prefix:\", \"test_suite:blink_web_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-builder\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for blink_web_tests\", \"size_bytes\": \"size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-try-builder\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:blink_web_tests\", \"-tag\", \"step_name:blink_web_tests (retry shards with patch)\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -2680,6 +2743,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"@@@",
@@ -4010,7 +4074,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"blink_web_tests (without patch)/Linux/[dummy has/fake-try-builder/571\", \"priority\": \"29\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:fake-try-group\", \"buildername:fake-try-builder\", \"buildnumber:571\", \"data:[dummy hash for blink_web_tests/size]\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:blink_web_tests\", \"ninja_target:\", \"patch_project:chromium/src\", \"project:chromium\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:chromium.try:fake-try-builder\", \"stepname:blink_web_tests (without patch)\", \"test_id_prefix:\", \"test_suite:blink_web_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-builder\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for blink_web_tests\", \"size_bytes\": \"size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-try-builder\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:blink_web_tests\", \"-tag\", \"step_name:blink_web_tests (without patch)\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\", \"--gtest_repeat=10\", \"--test-launcher-retry-limit=0\", \"--isolated-script-test-filter=Test.One\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"blink_web_tests (without patch)/Linux/[dummy has/fake-try-builder/571\", \"priority\": \"29\", \"realm\": \"chromium:try\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:try\", \"build_is_experimental:false\", \"builder_group:fake-try-group\", \"buildername:fake-try-builder\", \"buildnumber:571\", \"data:[dummy hash for blink_web_tests/size]\", \"gerrit:https://chromium-review.googlesource.com/c/456789/12\", \"name:blink_web_tests\", \"ninja_target:\", \"patch_project:chromium/src\", \"project:chromium\", \"purpose:ManualTS\", \"purpose:pre-commit\", \"spec_name:chromium.try:fake-try-builder\", \"stepname:blink_web_tests (without patch)\", \"test_id_prefix:\", \"test_suite:blink_web_tests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-builder\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"[dummy hash for blink_web_tests\", \"size_bytes\": \"size]\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-try-builder\", \"-var\", \"os:Linux\", \"-var\", \"test_suite:blink_web_tests\", \"-tag\", \"step_name:blink_web_tests (without patch)\", \"-tag\", \"target_platform:linux\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\", \"--gtest_repeat=10\", \"--test-launcher-retry-limit=0\", \"--isolated-script-test-filter=Test.One\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"os\", \"value\": \"Linux\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -4110,6 +4174,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-location-tags-file\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"../../testing/location_tags.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"-exonerate-unexpected-pass\", @@@",
+      "@@@STEP_LOG_LINE@json.input@              \"-inherit-sources\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", @@@",
       "@@@STEP_LOG_LINE@json.input@              \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\", @@@",

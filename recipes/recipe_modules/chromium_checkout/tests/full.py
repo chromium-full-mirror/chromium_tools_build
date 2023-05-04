@@ -4,6 +4,7 @@
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         StepSuccess)
+from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.depot_tools.gclient import (api as gclient, CONFIG_CTX as
                                                 GCLIENT_CONFIG_CTX)
@@ -20,6 +21,11 @@ DEPS = [
     'recipe_engine/step',
 ]
 
+PROPERTIES = {
+    'ignore_input_commit': Property(kind=bool, default=False),
+    'set_output_commit': Property(kind=bool, default=True),
+}
+
 
 @GCLIENT_CONFIG_CTX()
 def revision_resolver(c):
@@ -28,10 +34,12 @@ def revision_resolver(c):
   c.revisions['src-internal'] = gclient.RevisionFallbackChain('refs/heads/main')
 
 
-def RunSteps(api):
+def RunSteps(api, ignore_input_commit, set_output_commit):
   api.gclient.set_config(api.properties.get('gclient_config', 'chromium'))
 
-  api.chromium_checkout.ensure_checkout()
+  api.chromium_checkout.ensure_checkout(
+      ignore_input_commit=ignore_input_commit,
+      set_output_commit=set_output_commit)
 
   api.step('details', [])
   api.step.active_result.presentation.logs['details'] = [
@@ -102,5 +110,20 @@ def GenTests(api):
       api.properties(gclient_config='revision_resolver'),
       api.post_check(verify_revision_resolver_in_log,
                      "*RevisionFallbackChain*"),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'no-output-commit',
+      api.buildbucket.try_build(),
+      api.platform('linux', 64),
+      api.properties(ignore_input_commit=True, set_output_commit=False),
+      api.post_check(verify_checkout_dir,
+                     api.path['cache'].join('builder', 'src')),
+      api.post_process(DoesNotRun, 'taskkill'),
+      api.post_process(StepSuccess, 'gclient config'),
+      api.post_process(StepSuccess, 'gerrit fetch current CL info'),
+      api.post_process(StepSuccess, 'bot_update'),
+      api.post_process(StepSuccess, 'git diff to analyze patch'),
       api.post_process(DropExpectation),
   )

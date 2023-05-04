@@ -9,6 +9,9 @@ from recipe_engine import recipe_api
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools.gclient import api as gclient
 
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_pb
+
 
 class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
@@ -121,6 +124,9 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
       callback(update_step.json.output['manifest'])
 
+    self.update_rdb_invocation(
+        gitiles_commit=self.m.buildbucket.build.output.gitiles_commit)
+
     return update_step
 
   def _report_gclient_config(self, gclient_config):
@@ -144,3 +150,46 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     step = self.m.step('gclient config', [])
     step.presentation.logs['config'] = self.m.json.dumps(
         gclient_config.as_jsonish(include_hidden=True), indent=2).split('\n')
+
+  def update_rdb_invocation(self, gitiles_commit):
+    """Update the rdb invocation to include the SourceSpec being used.
+
+    Args:
+      gitiles_commit: (buildbucket.GitilesCommit) gitiles commit position that
+        has been checked out.
+    """
+    with self.m.step.nest('set rdb sources'):
+      if not all([
+          gitiles_commit.host, gitiles_commit.project, gitiles_commit.id,
+          gitiles_commit.ref, gitiles_commit.position
+      ]):
+        step_result = self.m.step.empty('missing gitiles commit info')
+        # TODO(sshrimp): Remove excess debug info. The gitiles_commit might not
+        # be set if it's not the primary checkout, however,
+        # self.m.buildbucket.build.output will still contain an empty object
+        # set this  property so we can check for all edge cases
+        step_result.presentation.properties[
+            'failed_rdb_invocation_update'] = True
+        step_result.presentation.logs['gitiles_commit'] = str(gitiles_commit)
+        step_result.presentation.logs['gerrit_changes'] = str(
+            self.m.buildbucket.build.input.gerrit_changes)
+        return
+      self.m.resultdb.update_invocation(
+          step_name='update invocation',
+          source_spec=invocation_pb.SourceSpec(
+              sources=invocation_pb.Sources(
+                  gitiles_commit=common_rdb_pb.GitilesCommit(
+                      host=gitiles_commit.host,
+                      project=gitiles_commit.project,
+                      commit_hash=gitiles_commit.id,
+                      ref=gitiles_commit.ref,
+                      position=gitiles_commit.position,
+                  ),
+                  changelists=[
+                      common_rdb_pb.GerritChange(
+                          host=change.host,
+                          project=change.project,
+                          change=change.change,
+                          patchset=change.patchset) for change in
+                      self.m.buildbucket.build.input.gerrit_changes
+                  ])))
