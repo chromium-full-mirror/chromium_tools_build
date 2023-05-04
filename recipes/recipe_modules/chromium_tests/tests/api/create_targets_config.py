@@ -68,6 +68,11 @@ FAKE_TARGETS_SPEC = {
             'isolate_coverage_data': True,
         },
     ],
+    'skylab_tests': [{
+        'cros_board': 'eve',
+        'cros_img': 'eve-release/R89-13631.0.0',
+        'name': 'basic_EVE_TOT',
+    }],
 }
 
 
@@ -122,7 +127,7 @@ def GenTests(api):
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
               'browser_tests_no_swarm', 'android_webview_junit_tests',
-              'check_static_initializers'
+              'check_static_initializers', 'basic_EVE_TOT'
           ],
       ),
       fake_targets_spec(),
@@ -146,7 +151,7 @@ def GenTests(api):
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
               'browser_tests_no_swarm', 'android_webview_junit_tests',
-              'check_static_initializers'
+              'check_static_initializers', 'basic_EVE_TOT'
           ],
           targets_spec_dir=api.chromium_checkout.src_dir.join('infra/specs'),
       ),

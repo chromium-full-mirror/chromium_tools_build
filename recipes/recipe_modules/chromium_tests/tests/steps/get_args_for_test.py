@@ -9,6 +9,7 @@ DEPS = [
     'depot_tools/gclient',
     'depot_tools/tryserver',
     'recipe_engine/assertions',
+    'recipe_engine/path',
     'recipe_engine/properties',
 ]
 
@@ -26,8 +27,10 @@ def RunSteps(api):
   single_spec = api.properties.get('single_spec')
   test_spec = single_spec if single_spec else {}
 
-  test_args = generators.get_args_for_test(api.chromium_tests, test_spec,
-                                           update_step.presentation.properties)
+  generator = generators.Generator(api.chromium_tests,
+                                   update_step.presentation.properties,
+                                   api.path['checkout'])
+  test_args = generator._get_args_for_test(test_spec)
   if 'expected_args' in api.properties:
     # For some reason, we get expected_args as a tuple instead of a list
     api.assertions.assertEqual(

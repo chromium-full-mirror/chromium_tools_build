@@ -7,6 +7,7 @@ import collections
 import contextlib
 import itertools
 import traceback
+from typing import Iterable
 from urllib.parse import urlencode
 
 from recipe_engine import recipe_api, step_data
@@ -265,18 +266,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           spec_file, targets_spec_dir=targets_spec_dir)
     tests = {}
 
+    generator = generators.Generator(self, got_revisions, checkout_path,
+                                     isolated_tests_only,
+                                     scripts_compile_targets_fn)
+
     for builder_id in builder_config.builder_ids_in_scope_for_testing:
       targets_spec = targets_specs_by_builder_by_group[builder_id.group].get(
           builder_id.builder, {})
-      builder_tests = self.generate_tests_from_targets_spec(
-          targets_spec,
-          builder_id.builder,
-          builder_id.group,
-          scripts_compile_targets_fn,
-          got_revisions,
-          isolated_tests_only,
-          checkout_path,
-      )
+      builder_tests = self._generate_tests_from_targets_spec(
+          generator, builder_id.group, builder_id.builder, targets_spec)
       tests[builder_id] = builder_tests
 
     return TargetsConfig.create(
@@ -349,25 +347,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return update_step, targets_config
 
-  def generate_tests_from_targets_spec(self, targets_spec, buildername,
-                                       builder_group,
-                                       scripts_compile_targets_fn,
-                                       got_revisions, isolated_tests_only,
-                                       checkout_path):
-    test_specs = []
-
-    # TODO(phajdan.jr): Switch everything to scripts generators and simplify.
-    for generator in generators.ALL_GENERATORS:
-      test_specs.extend(
-          generator(
-              self,
-              builder_group,
-              buildername,
-              targets_spec,
-              got_revisions,
-              isolated_tests_only,
-              checkout_path,
-              scripts_compile_targets_fn=scripts_compile_targets_fn))
+  def _generate_tests_from_targets_spec(
+      self,
+      generator: generators.Generator,
+      builder_group: str,
+      builder: str,
+      targets_spec: generators.TargetsSpec,
+  ) -> Iterable[steps.Test]:
+    test_specs = list(generator.generate(builder_group, builder, targets_spec))
 
     tests = []
     test_specs_by_disabled_reason = collections.defaultdict(list)
