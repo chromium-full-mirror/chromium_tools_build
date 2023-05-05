@@ -23,4 +23,13 @@ message InputProperties {
 
   // fast mode only collects the full dependency tree not the artifacts.
   bool fast_mode = 5;
+
+  // version of the partybot CIPD module to use
+  string partybot_version = 6;
+
+  // bq table for third party dependencies collected during the run
+  string bq_thirdparty_table = 7;
+
+  // version of the SSCI CIPD module to use
+  string ssci_version = 8;
 }
