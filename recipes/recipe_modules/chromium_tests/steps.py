@@ -2578,10 +2578,6 @@ class SwarmingIsolatedScriptTestSpec(SwarmingTestSpec):
 
 class SwarmingIsolatedScriptTest(SwarmingTest):
 
-  def __init__(self, spec, chromium_tests_api):
-    super().__init__(spec, chromium_tests_api)
-    self._isolated_script_results = None
-
   def compile_targets(self):
     return self.spec.override_compile_targets or [self.target_name]
 
