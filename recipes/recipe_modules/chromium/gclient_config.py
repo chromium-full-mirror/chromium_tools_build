@@ -292,13 +292,20 @@ def angle_top_of_tree(c):  # pragma: no cover
   # TODO(tandrii): I think patch_projects in bare_chromium fixed this.
   c.revisions['src/third_party/angle'] = 'HEAD'
 
+
+class DawnRevisionResolver(gclient_api.RevisionResolver):
+
+  def resolve(self, properties):  # pragma: no cover
+    return properties.get('dawn_ref', 'HEAD')
+
+
 @CONFIG_CTX()
 def dawn_top_of_tree(c):  # pragma: no cover
   """Configures the top-of-tree Dawn in a Chromium checkout.
 
   Sets up ToT instead of the DEPS-pinned revision for Dawn.
   """
-  c.revisions['src/third_party/dawn'] = 'HEAD'
+  c.revisions['src/third_party/dawn'] = DawnRevisionResolver()
 
 
 @CONFIG_CTX()
