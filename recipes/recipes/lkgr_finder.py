@@ -102,8 +102,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
         step_text=('lkgr_finder requires `project`, `repo`, and `ref` '
                    'properties to be set.'))
 
-  api.gclient.set_config('infra')
-  api.gclient.c.revisions['infra'] = 'HEAD'
+  api.gclient.set_config('infra_superproject')
 
   # Projects can define revision mappings that conflict with infra revision
   # mapping, so we overide them here to only map infra's revision so that it
