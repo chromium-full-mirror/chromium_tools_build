@@ -135,8 +135,8 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'),
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.generate '
@@ -403,8 +403,8 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'),
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -549,8 +549,8 @@ def GenTests(api):
                     retcode=1),
       api.post_check(lambda check, steps: check(steps[
           'process clang code coverage data '
-          'for overall test coverage.gsutil '
-          'upload coverage metadata'
+          'for overall test coverage.'
+          'gsutil Upload coverage artifacts'
           ''].output_properties['process_coverage_data_failure'] == True)),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
@@ -576,8 +576,8 @@ def GenTests(api):
                     retcode=1),
       api.post_check(lambda check, steps: check(steps[
           'process clang code coverage data '
-          'for overall test coverage.gsutil '
-          'upload coverage metadata'
+          'for overall test coverage.'
+          'gsutil Upload coverage artifacts'
           ''].output_properties['process_coverage_data_failure'] == True)),
       api.post_process(post_process.DropExpectation),
   )
@@ -850,7 +850,7 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'),
+          'Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.generate '
@@ -911,8 +911,8 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'),
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.generate '
@@ -969,8 +969,8 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'),
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.generate '
@@ -1060,8 +1060,8 @@ def GenTests(api):
            'metadata for unit test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for unit test coverage.gsutil '
-          'upload coverage metadata'),
+          'process clang code coverage data for unit test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1186,8 +1186,8 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'),
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1206,8 +1206,8 @@ def GenTests(api):
       api.swarming.properties(task_id='some-task-id'),
       api.code_coverage(use_clang_coverage=True),
       api.post_check(lambda check, steps: check('some-task-id' in steps[
-          'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'].cmd[-1])),
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'].cmd[-1])),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1224,7 +1224,7 @@ def GenTests(api):
       api.properties(build_dir='my/custom/build/dir'),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.gsutil '
-          'upload coverage metadata'),
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )

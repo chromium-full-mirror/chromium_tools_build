@@ -725,7 +725,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           # Do not raise coverage steps exception for per-cl coverage.
           raise
 
-  def process_javascript_coverage_data(self):
+  def process_javascript_coverage_data(self, **kwargs):
     with self.m.step.nest('process javascript coverage (%s)' %
                           self._current_processing_test_type):
       try:
@@ -754,7 +754,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               dir_metadata_path,
           ])
         self.m.step('Generate JavaScript coverage metadata', cmd)
-        self._persist_coverage_artifacts(source_dir=coverage_dir)
+        self._persist_coverage_artifacts(source_dir=coverage_dir, **kwargs)
         # Upload data to zoss to show it on code search
         if self._export_coverage_to_zoss:
           self.m.gsutil.upload(
@@ -1138,7 +1138,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       ])
     return dir_metadata
 
-  def _generate_and_upload_metadata(self, binaries, profdata_path):
+  def _generate_and_upload_metadata(self, binaries, profdata_path, **kwargs):
     """Generates the coverage info in metadata format."""
     cmd = [
         'vpython3',
@@ -1203,23 +1203,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             multithreaded=True,
             name='export metadata to zoss')
 
-      gs_path = self._compose_gs_path_for_coverage_data(
-          data_type='metadata',
-          mimic_builder_name=self._compose_current_mimic_builder_name())
-      upload_step = self.m.gsutil.upload(
-          self.metadata_dir,
-          self._gs_bucket,
-          gs_path,
-          link_name='Coverage Metadata',
-          args=['-r'],
-          multithreaded=True,
-          name='upload coverage metadata')
-      upload_step.presentation.links['metadata report'] = (
-          'https://storage.cloud.google.com/%s/%s/index.html' %
-          (self._gs_bucket, gs_path))
-      self._coverage_metadata_gs_paths.append(gs_path)
-      self._mimic_builder_names.append(
-          self._compose_current_mimic_builder_name())
+      self._persist_coverage_artifacts(source_dir=self.metadata_dir, **kwargs)
 
   def _compose_gs_path_for_zoss_upload(self, builder, build_id):
     commit = self.m.buildbucket.build.input.gitiles_commit
