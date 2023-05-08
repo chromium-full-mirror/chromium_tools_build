@@ -92,11 +92,16 @@ def _incremental_build_with_one_day_changes(api, target):
       return api.chromium_build_perf.build(target, with_remote_cache=True)
 
 
-def _clean_build(api, target):
-  """Steps to run a clean build."""
-  with api.step.nest('Clean build'):
+def _clean_builds(api, target):
+  """Steps to run clean builds."""
+  with api.step.nest('Clean builds'):
     api.chromium_build_perf.remove_build_dir()
-    return api.chromium_build_perf.build(target, with_remote_cache=False)
+    raw_result = api.chromium_build_perf.build(target, with_remote_cache=False)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
+
+    api.chromium_build_perf.remove_build_dir()
+    return api.chromium_build_perf.build(target, with_remote_cache=True)
 
 
 def RunSteps(api):
@@ -126,7 +131,7 @@ def RunSteps(api):
 
   # TODO(b/270902505): add incremenal build with a patch.
 
-  return _clean_build(api, target)
+  return _clean_builds(api, target)
 
 
 def GenTests(api):
@@ -146,7 +151,8 @@ def GenTests(api):
         % target,
         'Incremental build with 1-day of changes.Build %s with remote cache' %
         target,
-        'Clean build.Build %s without remote cache' % target,
+        'Clean builds.Build %s without remote cache' % target,
+        'Clean builds.Build %s with remote cache' % target,
     ]
 
   def _success_builds(target):
