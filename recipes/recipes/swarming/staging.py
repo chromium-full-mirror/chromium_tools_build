@@ -51,7 +51,8 @@ def RunSteps(api):
       api.chromium_tests_builder_config.lookup_builder())
 
   api.chromium_tests.configure_build(builder_config)
-  update_step = api.chromium_checkout.ensure_checkout(builder_config)
+  update_step = api.chromium_checkout.ensure_checkout(
+      builder_config, set_output_commit=True)
 
   targets_config = (
       api.chromium_tests.create_targets_config(
