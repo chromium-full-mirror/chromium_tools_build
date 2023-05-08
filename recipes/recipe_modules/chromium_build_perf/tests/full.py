@@ -25,8 +25,11 @@ def RunSteps(api):
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
 
-  api.chromium_build_perf.clean_build('all', with_remote_cache=True)
-  api.chromium_build_perf.clean_build('all', with_remote_cache=False)
+  api.chromium_build_perf.build('all', with_remote_cache=True)
+  api.chromium_build_perf.build('all', with_remote_cache=False)
+  api.chromium_build_perf.build(
+      'all', with_remote_cache=False, step_name_suffix=' suffix')
+  api.chromium_build_perf.remove_build_dir()
 
 
 def GenTests(api):

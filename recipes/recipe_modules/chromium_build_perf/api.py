@@ -9,13 +9,14 @@ from recipe_engine import recipe_api
 
 class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
-  def clean_build(self, target, with_remote_cache):
-    """Run a build with a clean build dir.
+  def build(self, target, with_remote_cache, step_name_suffix=None):
+    """Run a build.
 
         Args:
           target: Build target.
           with_remote_cache: Use remote action caches if it's True,
                              Do not use, otherwise.
+          step_name_suffix: suffix of the step name.
 
         Returns:
           A RawResult object with the compile step's status and failure message
@@ -23,9 +24,6 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
         Raises:
           - InfraFailure when an unexpected failure occured.
     """
-    # Ensure removing the build dir.
-    self._rm_build_dir()
-
     builder_id = chromium.BuilderId.create_for_group(
         self.m.builder_group.for_current, self.m.buildbucket.builder_name)
     self.m.chromium.mb_gen(builder_id, recursive_lookup=True)
@@ -38,15 +36,15 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
                          self.m.reclient.deps_cache_path)
       step_name += ' without remote cache'
       env['RBE_remote_accept_cache'] = "false"
-    try:
-      with self.m.context(env=env):
-        return self.m.chromium.compile([target],
-                                       name=step_name,
-                                       use_goma_module=False,
-                                       use_reclient=True)
-    finally:
-      self._rm_build_dir()
+    if step_name_suffix:
+      step_name += step_name_suffix
+    with self.m.context(env=env):
+      return self.m.chromium.compile([target],
+                                     name=step_name,
+                                     use_goma_module=False,
+                                     use_reclient=True)
 
-  def _rm_build_dir(self):
+  def remove_build_dir(self):
+    """Remove build dir."""
     self.m.file.rmtree('rmtree %s' % str(self.m.chromium.output_dir),
                        str(self.m.chromium.output_dir))
