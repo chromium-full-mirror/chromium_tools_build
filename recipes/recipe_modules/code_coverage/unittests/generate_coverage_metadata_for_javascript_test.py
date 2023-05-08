@@ -198,6 +198,45 @@ class GenerateCoverageMetadataForJavaScriptTest(unittest.TestCase):
         'coverage_dir', 'path_to_src', self.COMPONENT_MAPPING)
     self.assertDictEqual(expected_output, actual_output)
 
+  def test_to_compressed_file_record_with_diff_mapping(self):
+    diff_mapping = {
+        'mydir/myfile1.js': {
+            '2': [10, 'A line added by the patch.'],
+            '3': [11, 'Another added line.'],
+            '5': [12, 'One more line.']
+        }
+    }
+
+    records = generator._to_compressed_file_record(self.MOCK_LCOV_DATA,
+                                                   ['mydir/myfile1.js'],
+                                                   diff_mapping)
+
+    expected_record = {
+        'path':
+            '//mydir/myfile1.js',
+        'summaries': [{
+            'covered': 2,
+            'name': 'line',
+            'total': 3,
+        }],
+        'lines': [
+            {
+                'first': 10,
+                'last': 10,
+                'count': 0,
+            },
+            {
+                'first': 11,
+                'last': 12,
+                'count': 4,
+            },
+        ]
+    }
+
+    self.maxDiff = None
+    self.assertEqual(len(records), 1)
+    self.assertDictEqual(expected_record, records[0])
+
 
 if __name__ == '__main__':
   unittest.main()

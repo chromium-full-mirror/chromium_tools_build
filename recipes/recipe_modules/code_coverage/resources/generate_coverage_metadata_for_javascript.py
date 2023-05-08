@@ -85,7 +85,17 @@ def _to_compressed_format(line_data):
   return lines
 
 
-def _to_compressed_file_record(lcov_lines):
+def _rebase_exec_count(exec_count, line_mapping):
+  rebased_exec_count = {}
+  for line_num, count in exec_count.items():
+    if str(line_num) not in line_mapping:
+      continue
+    rebased_line_num = line_mapping[str(line_num)][0]
+    rebased_exec_count[rebased_line_num] = count
+  return rebased_exec_count
+
+
+def _to_compressed_file_record(lcov_lines, sources=None, diff_mapping=None):
   """Converts the given JS file coverage data to coverage metadata format.
 
   Coverage metadata format:
@@ -101,8 +111,7 @@ def _to_compressed_file_record(lcov_lines):
       # SF:<path to source file name>
       assert not path, "Unexpected new SF line %s" % line
       assert not exec_count, "Unexpected exec_count for SF line %s" % line
-      file_name = line.lstrip(SF_MARKER)
-      path = '//' + file_name
+      path = line.lstrip(SF_MARKER)
     elif line.startswith(DA_MARKER):
       # DA:<line number>,<execution count>[,<checksum>]
       assert path, "Unexpected new DA line %s" % line
@@ -113,9 +122,16 @@ def _to_compressed_file_record(lcov_lines):
       assert line_number not in exec_count, "Unexpected line number in DA line %s" % line
       exec_count[line_number] = execution_count
     elif line.startswith(END_OF_RECORD_MARKER):
+      if sources and path not in sources:
+        path = ''
+        exec_count = {}
+        continue
+      if diff_mapping is not None and path in diff_mapping:
+        line_mapping = diff_mapping[path]
+        exec_count = _rebase_exec_count(exec_count, line_mapping)
       lines = _to_compressed_format(exec_count)
       data = {
-          'path': path,
+          'path': '//' + path,
           'lines': lines,
           'summaries': [_get_line_coverage_metric_summary(lines)]
       }
@@ -132,7 +148,11 @@ def _get_raw_coverage_data(coverage_file):
   return coverage_data
 
 
-def generate_json_coverage_metadata(coverage_dir, src_path, component_mapping):
+def generate_json_coverage_metadata(coverage_dir,
+                                    src_path,
+                                    component_mapping,
+                                    sources=None,
+                                    diff_mapping=None):
   """Generate a JSON output representing JavaScript code coverage.
 
   JSON format conforms to the proto:
@@ -149,7 +169,7 @@ def generate_json_coverage_metadata(coverage_dir, src_path, component_mapping):
   data = {}
   coverage_file = '%s/%s' % (coverage_dir, COVERAGE_FILE_NAME)
   raw_data = _get_raw_coverage_data(coverage_file)
-  data['files'] = _to_compressed_file_record(raw_data)
+  data['files'] = _to_compressed_file_record(raw_data, sources, diff_mapping)
   if not data['files']:
     raise Exception('No coverage data associated with source files found.')
   # Add git revision and timestamp per source file.
@@ -244,10 +264,9 @@ def main():
       'Either component_mapping (for full-repo coverage) or diff_mapping '
       '(for per-cl coverage) must be specified.')
 
-  # TODO(benreich): Use the diff_mapping and source_files whilst
-  #                 generating coverages.
   data = generate_json_coverage_metadata(params.coverage_dir, params.src_path,
-                                         component_mapping)
+                                         component_mapping, params.source_files,
+                                         diff_mapping)
 
   logging.info('Writing fulfilled JavaScript coverage metadata to %s',
                params.output_dir)
