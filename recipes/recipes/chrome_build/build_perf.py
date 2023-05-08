@@ -14,6 +14,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 DEPS = [
     'builder_group',
     'chromium',
+    'chromium_build_perf',
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
@@ -29,44 +30,15 @@ DEPS = [
 ]
 
 
-def _rm_build_dir(api):
-  api.file.rmtree('rmtree %s' % str(api.chromium.output_dir),
-                  str(api.chromium.output_dir))
-
-
-def _get_builder_id(api):
-  buildername = api.buildbucket.builder_name
-  return chromium.BuilderId.create_for_group(api.builder_group.for_current,
-                                             buildername)
-
-
-def _compile(api, targets, with_remote_cache):
-  api.chromium.mb_gen(_get_builder_id(api), recursive_lookup=True)
-  step_name = 'Build %s' % ','.join(targets)
-  env = {}
-  if with_remote_cache:
-    step_name += ' with remote cache'
-  else:
-    api.file.rmtree('rmtree %s' % api.reclient.deps_cache_path,
-                    api.reclient.deps_cache_path)
-    step_name += ' without remote cache'
-    env['RBE_remote_accept_cache'] = "false"
-  try:
-    with api.context(env=env):
-      return api.chromium.compile(
-          targets, name=step_name, use_goma_module=False, use_reclient=True)
-  finally:
-    _rm_build_dir(api)
-
-
-def _compile_with_and_without_remote_cache(api, targets):
+def _compile_with_and_without_remote_cache(api, target):
   # First build without remote cache.
-  raw_result = _compile(api, targets, with_remote_cache=False)
+  raw_result = api.chromium_build_perf.clean_build(
+      target, with_remote_cache=False)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   # Second build with remote cache produced by the previous build.
-  return _compile(api, targets, with_remote_cache=True)
+  return api.chromium_build_perf.clean_build(target, with_remote_cache=True)
 
 
 def RunSteps(api):
@@ -74,8 +46,10 @@ def RunSteps(api):
   solution_path = api.path['cache'].join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
+  builder_id = chromium.BuilderId.create_for_group(
+      api.builder_group.for_current, api.buildbucket.builder_name)
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
-      _get_builder_id(api), use_try_db=False)
+      builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
 
   api.chromium_checkout.ensure_checkout()
@@ -87,18 +61,16 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
-  _rm_build_dir(api)
-
   # Build target: all
-  raw_result = _compile_with_and_without_remote_cache(api, ['all'])
+  raw_result = _compile_with_and_without_remote_cache(api, 'all')
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   # Build target: chrome or chrome_public_apk
-  chrome_targets = ['chrome']
+  chrome_target = 'chrome'
   if builder_config.chromium_config == 'android':
-    chrome_targets = ['chrome_public_apk']
-  return _compile_with_and_without_remote_cache(api, chrome_targets)
+    chrome_target = 'chrome_public_apk'
+  return _compile_with_and_without_remote_cache(api, chrome_target)
 
 
 def _sanitize_nonalpha(text):
