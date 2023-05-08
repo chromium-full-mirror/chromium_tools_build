@@ -1883,8 +1883,6 @@ class SwarmingTestSpec(TestSpec):
   isolate_profile_data = attrib(bool, False)
   named_caches = attrib(mapping[str, str], default={})
   shards = attrib(int, default=1)
-  _quickrun_shards = attrib(int, default=None)
-  _inverse_quickrun_shards = attrib(int, default=None)
   service_account = attrib(str, default=None)
   idempotent = attrib(bool, default=None)
 
@@ -1914,14 +1912,6 @@ class SwarmingTestSpec(TestSpec):
     if self.extra_suffix:
       return '%s %s' % (self._name, self.extra_suffix)
     return self._name
-
-  @property
-  def quickrun_shards(self):
-    return self._quickrun_shards or self.shards
-
-  @property
-  def inverse_quickrun_shards(self):
-    return self._inverse_quickrun_shards or self.quickrun_shards
 
   def with_shards(self, shards):
     return attr.evolve(self, shards=int(shards))
@@ -2075,29 +2065,21 @@ class SwarmingTest(Test):
     args = test_options.add_args(extra_args, self.option_flags)
 
     add_one_test_shard_enabled = False
-    # If we're in quick run or inverse quick run set the shard count to any
-    # available quickrun shards
-    if (self.api.m.cq.active and
-        self.api.m.cq.run_mode == self.api.m.cq.QUICK_DRY_RUN):
-      shards = self.spec.quickrun_shards
-    elif self.is_inverted_rts:
-      shards = self.spec.inverse_quickrun_shards
-    else:
-      shards = self.spec.shards
+    shards = self.spec.shards
 
-      # When this experiment is enabled, we want to trigger suites with one
-      # additional shard so that we can go back and query for test overhead
-      # estimations.
-      # See go/nplus1shardsproposal
-      # For now, only add a shard if the suite already runs with multiple shards
-      # Although rare, some suites may be swarmed but unable to work properly
-      # with more than one shard.
-      buildbucket_experiments = self.api.m.buildbucket.build.input.experiments
-      add_one_test_shard_enabled = (
-          'chromium.add_one_test_shard' in buildbucket_experiments and
-          suffix in ['with patch', 'retry shards with patch'] and shards > 1)
-      if add_one_test_shard_enabled:
-        shards += 1
+    # When this experiment is enabled, we want to trigger suites with one
+    # additional shard so that we can go back and query for test overhead
+    # estimations.
+    # See go/nplus1shardsproposal
+    # For now, only add a shard if the suite already runs with multiple shards
+    # Although rare, some suites may be swarmed but unable to work properly
+    # with more than one shard.
+    buildbucket_experiments = self.api.m.buildbucket.build.input.experiments
+    add_one_test_shard_enabled = (
+        'chromium.add_one_test_shard' in buildbucket_experiments and
+        suffix in ['with patch', 'retry shards with patch'] and shards > 1)
+    if add_one_test_shard_enabled:
+      shards += 1
 
     if tests_to_retry:
       # The filter list is eventually passed to the binary over the command

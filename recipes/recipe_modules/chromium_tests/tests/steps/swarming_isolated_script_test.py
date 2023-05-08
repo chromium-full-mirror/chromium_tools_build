@@ -66,17 +66,11 @@ def RunSteps(api):
             'gpu': '8086',
             'os': 'Linux',
         }),
-        isolate_coverage_data=isolate_coverage_data,
-        quickrun_shards=api.properties.get('quickrun_shards', 0),
-        inverse_quickrun_shards=api.properties.get('inverse_quickrun_shards',
-                                                   0))
+        isolate_coverage_data=isolate_coverage_data)
     override_shards = api.properties.get('shards')
     if override_shards:
       test_spec = test_spec.with_shards(override_shards)
     test = test_spec.get_test(api.chromium_tests)
-    if 'inverse_quickrun_shards' in api.properties:
-      test.inverted_raw_cmd = ['run', 'inverted.filter']
-      test.is_inverted_rts = True
     api.chromium_swarming.set_default_dimension('pool', 'foo')
     assert test.runs_on_swarming
     assert test.shards > 0
@@ -564,48 +558,4 @@ def GenTests(api):
                   }]
               })),
       api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'quickrun_shards',
-      arbitrary_tester(),
-      api.properties(
-          **{
-              "$recipe_engine/cq": {
-                  "active": True,
-                  "runMode": "QUICK_DRY_RUN",
-                  "topLevel": True
-              }
-          }),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
-          },
-          run_without_patch=True,
-          quickrun_shards=2),
-      api.step_data(
-          'test_pre_run (with patch).[trigger] base_unittests on Intel GPU on '
-          'Linux (with patch)',
-          retcode=1,
-      ),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('INFRA_FAILURE'),
-  )
-
-  yield api.test(
-      'inverse_quickrun_shards',
-      arbitrary_tester(),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
-          },
-          run_without_patch=True,
-          inverse_quickrun_shards=2),
-      api.step_data(
-          'test_pre_run (with patch).[trigger] base_unittests on Intel GPU on '
-          'Linux (with patch)',
-          retcode=1,
-      ),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('INFRA_FAILURE'),
   )
