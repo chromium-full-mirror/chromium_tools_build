@@ -728,7 +728,15 @@
       "-ssci-version",
       "397a2597cdc237f3026e6143b683be4b9ab60540",
       "-output-file",
-      "/path/to/tmp/json"
+      "/path/to/tmp/json",
+      "-chromium-src",
+      "None",
+      "-product",
+      "myproject",
+      "-platform",
+      "linux",
+      "-arch",
+      "intel64"
     ],
     "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/ssci/latest",
     "luci_context": {
