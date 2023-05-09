@@ -8,6 +8,9 @@
 import copy
 from datetime import datetime, timedelta
 
+from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
+from PB.go.chromium.org.luci.buildbucket.proto import builder_common as builder_common_pb
+from PB.go.chromium.org.luci.buildbucket.proto import builds_service as builds_service_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -92,6 +95,88 @@ def _incremental_build_with_one_day_changes(api, target):
       return api.chromium_build_perf.build(target, with_remote_cache=True)
 
 
+def _incremental_builds_with_patch(api, target):
+  """Steps to run incremenatl builds with a patch, which represent builds with
+     local modifications.
+
+  It builds for each revision of the git history excluding bot commits.
+  Remote caches are disabled to pretend that the patches are new changes.
+  """
+  with api.step.nest('Incremental builds with patch'):
+    # Get a revision from the last successful job of this builder.
+    builds = api.buildbucket.search(
+        builds_service_pb.BuildPredicate(
+            builder=api.buildbucket.build.builder,
+            status=common_pb.Status.SUCCESS),
+        limit=1)
+    last_rev = None
+    if builds:
+      last_rev = builds[0].input.gitiles_commit.id
+
+    # List up commits between the current revision and the last revision.
+    max_builds = 100
+    gitlog_args = ['log', '-n=%d' % max_builds, "--format='%H %ae'"]
+    if last_rev:
+      cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
+      gitlog_args += ['%s..%s' % (last_rev, cur_rev)]
+    gitlog_result = api.git(
+        *gitlog_args,
+        stdout=api.raw_io.output_text(),
+        step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+            'abcd foo@google.com\n'
+            'efgh bot@example.gserviceaccount.com\n'
+            'ijkl bar@chromium.org\n'))
+    commits = gitlog_result.stdout.strip().split('\n')
+    gitlog_result.presentation.logs['commits'] = commits
+
+    def gitiles_url(rev):
+      return 'https://%s/%s/+/%s' % (api.buildbucket.gitiles_commit.host,
+                                     api.buildbucket.gitiles_commit.project,
+                                     rev)
+
+    revs = []
+    for commit in commits:
+      if not commit:
+        continue
+      rev, email = commit.split(' ')
+      # Exclude bot commits.
+      if email.endswith('gserviceaccount.com'):
+        gitlog_result.presentation.links[rev + ' (excluded)'] = gitiles_url(rev)
+      else:
+        revs.append(rev)
+        gitlog_result.presentation.links[rev] = gitiles_url(rev)
+
+    if not revs:
+      gitlog_result.presentation.step_text = 'No commits to build'
+      return
+
+    # Run a build at each revision.
+    cfg = copy.deepcopy(api.gclient.c)
+    api.chromium_build_perf.remove_build_dir()
+    raw_result = None
+    for i, rev in enumerate(revs):
+      if i == 0:
+        # The warm up builds at base revision won't be included
+        # in perf metrics.
+        with_remote_cache = True
+        step_name_suffix = ' at base revision (warmup)'
+      else:
+        # It assumes that remote caches are not available
+        # for incremental builds with local modifications.
+        with_remote_cache = False
+        step_name_suffix = ''
+
+      cfg.revisions['src'] = rev
+      api.gclient.sync(cfg)
+      raw_result = api.chromium_build_perf.build(
+          target,
+          with_remote_cache=with_remote_cache,
+          step_name_suffix=step_name_suffix)
+      if raw_result.status != common_pb.SUCCESS:
+        return raw_result
+    return raw_result
+
+
 def _clean_builds(api, target):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
@@ -124,14 +209,17 @@ def RunSteps(api):
   if builder_config.chromium_config == 'android':
     target = 'chrome_public_apk'
 
+  # Clean builds.
+  raw_result = _clean_builds(api, target)
+  if raw_result.status != common_pb.SUCCESS:
+    return raw_result
+
   # Incrmenal build with 1-day of changes. a.k.a morning build.
   raw_result = _incremental_build_with_one_day_changes(api, target)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  # TODO(b/270902505): add incremenal build with a patch.
-
-  return _clean_builds(api, target)
+  return _incremental_builds_with_patch(api, target)
 
 
 def GenTests(api):
@@ -145,14 +233,17 @@ def GenTests(api):
 
   def _build_steps(target):
     return [
+        'Clean builds.Build %s without remote cache' % target,
+        'Clean builds.Build %s with remote cache' % target,
         'Incremental build with 1-day of changes.Build %s with remote cache at current revision (warmup)'
         % target,
         'Incremental build with 1-day of changes.Build %s with remote cache at base revision (warmup)'
         % target,
         'Incremental build with 1-day of changes.Build %s with remote cache' %
         target,
-        'Clean builds.Build %s without remote cache' % target,
-        'Clean builds.Build %s with remote cache' % target,
+        'Incremental builds with patch.Build %s with remote cache at base revision (warmup)'
+        % target,
+        'Incremental builds with patch.Build %s without remote cache' % target,
     ]
 
   def _success_builds(target):
@@ -160,6 +251,19 @@ def GenTests(api):
         api.post_process(post_process.StepSuccess, s)
         for s in _build_steps(target)
     ]
+
+  def _buildbucket_search_results():
+    return api.buildbucket.simulated_search_results(
+        [
+            build_pb.Build(
+                input=build_pb.Build.Input(
+                    gitiles_commit=common_pb.GitilesCommit(
+                        host='chromium.googlesource.com',
+                        project='chromium/src',
+                        id='abcd',
+                        ref='refs/heads/main')))
+        ],
+        step_name='Incremental builds with patch.buildbucket.search')
 
   yield api.test(
       'full_linux',
@@ -173,6 +277,7 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      _buildbucket_search_results(),
       *_success_builds('chrome'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
@@ -196,7 +301,25 @@ def GenTests(api):
   )
 
   yield api.test(
-      'full_android',
+      'no_gitlogs_for_incremental_builds_with_patch',
+      api.chromium.ci_build(**builder),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket=None,
+              ),
+              **builder).assemble()),
+      api.reclient.properties(),
+      api.step_data('Incremental builds with patch.git log',
+                    api.raw_io.stream_output_text('')),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'android',
       api.chromium.ci_build(**builder),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_ci_builder(
@@ -208,6 +331,7 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      _buildbucket_search_results(),
       *_success_builds('chrome_public_apk'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
