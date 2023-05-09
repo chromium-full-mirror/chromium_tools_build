@@ -98,7 +98,6 @@ def GenTests(api):
           builder='chromium_presubmit',
           git_repo='https://chromium.googlesource.com/chromium/src'),
       api.step_data('presubmit', api.json.output({})),
-      api.step_data('presubmit py3', api.json.output({})),
   )
 
   yield api.test(
@@ -111,7 +110,6 @@ def GenTests(api):
       api.properties(
           repository_url='https://chromium.googlesource.com/chromium/src.git',),
       api.step_data('presubmit', api.json.output({})),
-      api.step_data('presubmit py3', api.json.output({})),
   )
 
   yield api.test(
@@ -123,7 +121,6 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src'),
       api.cq(run_mode=api.cq.DRY_RUN),
       api.step_data('presubmit', api.json.output({})),
-      api.step_data('presubmit py3', api.json.output({})),
       # TODO(yiwzhang): drop the expectation and assert this build is
       # reusable here once it becomes easier to check output properties.
   )
@@ -137,7 +134,6 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src'),
       api.cq(run_mode=api.cq.FULL_RUN),
       api.step_data('presubmit', api.json.output({})),
-      api.step_data('presubmit py3', api.json.output({})),
       # TODO(yiwzhang): drop the expectation and assert this build is *NOT*
       # reusable here once it becomes easier to check output properties.
   )
