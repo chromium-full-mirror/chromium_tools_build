@@ -100,8 +100,6 @@ def RunSteps(api):
     ]
     if test_name == 'blink_web_tests':
       result.presentation.logs['details'].append(
-          'pass_fail_counts: %r' % test.pass_fail_counts(suffix='with patch'))
-      result.presentation.logs['details'].append(
           'has_valid_results: %r' % test.has_valid_results('with patch'))
 
     if 'expected_has_valid_results' in api.properties:

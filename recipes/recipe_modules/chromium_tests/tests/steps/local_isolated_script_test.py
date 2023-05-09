@@ -67,11 +67,6 @@ def RunSteps(api):
         'uses_isolate: %r' % test.uses_isolate,
     ]
 
-    if 'expected_pass_fail_counts' in api.properties:
-      api.assertions.assertEqual(
-          test.pass_fail_counts(''),
-          api.properties['expected_pass_fail_counts'])
-
   if invalid_suites or failed_suites:
     raise StepFailure('failure in ' + test.name)
 
@@ -146,21 +141,6 @@ def GenTests(api):
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
           },
           override_compile_targets=['base_unittests_run']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'pass_fail_counts',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-          },
-          expected_pass_fail_counts={},
-      ),
       api.post_process(post_process.DropExpectation),
   )
 

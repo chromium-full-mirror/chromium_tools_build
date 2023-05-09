@@ -742,29 +742,6 @@ class Test:
 
     return not self._rdb_results[suffix].invalid
 
-  def pass_fail_counts(self, suffix):
-    """Returns a dictionary of pass and fail counts for each test.
-
-    Format looks like:
-    {
-      'test1': {
-        'pass_count': int,
-        'fail_count': int,
-      },
-      ...
-    }
-    """
-    results = self.get_rdb_results(suffix)
-    pass_fail_counts = {}
-    for t in results.all_tests:
-      pass_fail_counts[t.test_name] = {
-          'pass_count':
-              len([s for s in t.statuses if s == test_result_pb2.PASS]),
-          'fail_count':
-              len([s for s in t.statuses if s != test_result_pb2.PASS]),
-      }
-    return pass_fail_counts
-
   def shards_to_retry_with(self, original_num_shards, num_tests_to_retry):
     """Calculates the number of shards to run when retrying this test.
 
@@ -1167,9 +1144,6 @@ class TestWrapper(Test):  # pragma: no cover
   def notrun_failures(self, suffix):
     return self._test.notrun_failures(suffix)
 
-  def pass_fail_counts(self, suffix):
-    return self._test.pass_fail_counts(suffix)
-
   @property
   def uses_local_devices(self):
     return self._test.uses_local_devices
@@ -1384,13 +1358,6 @@ class ExperimentalTest(TestWrapper):
       super().notrun_failures(self._experimental_suffix(suffix))
     return set()
 
-  def pass_fail_counts(self, suffix):
-    if self._actually_has_valid_results(suffix):
-      # Call the wrapped test's implementation in case it has side effects,
-      # but ignore the result.
-      super().pass_fail_counts(self._experimental_suffix(suffix))
-    return {}
-
   def get_invocation_names(self, suffix):
     return super().get_invocation_names(self._experimental_suffix(suffix))
 
@@ -1550,16 +1517,6 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
               'The recipe expected the result to contain the key \'failures\'.'
               ' Contents are:\n%s' %
               self.api.m.json.dumps(result.json.output, indent=2)))
-
-    # Most scripts do not emit 'successes'. If they start emitting 'successes',
-    # then we can create a proper results dictionary.
-    pass_fail_counts = {}
-    for failing_test in failures:
-      pass_fail_counts.setdefault(failing_test, {
-          'pass_count': 0,
-          'fail_count': 0
-      })
-      pass_fail_counts[failing_test]['fail_count'] += 1
 
     self.update_failure_on_exit(suffix, result.retcode != 0)
 
@@ -2786,9 +2743,6 @@ class MockTest(Test):
   def deterministic_failures(self, suffix):
     """Use same logic as failures for the Mock test."""
     return self.failures(suffix)
-
-  def pass_fail_counts(self, suffix):
-    return {}
 
   def compile_targets(self):  # pragma: no cover
     return []
