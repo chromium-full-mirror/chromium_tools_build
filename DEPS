@@ -10,8 +10,8 @@ hooks = [
     "name": "vpython_sync",
     "pattern": ".",
     "action": [
-      "vpython",
-      "-vpython-spec", "build/.vpython",
+      "vpython3",
+      "-vpython-spec", "build/.vpython3",
       "-vpython-tool", "install",
     ],
   },
