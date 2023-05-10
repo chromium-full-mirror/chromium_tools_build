@@ -436,13 +436,6 @@ class Test:
     # trigger a retry of the shard to avoid data cannibalization
     self._weak_luci_analysis_flaky_failures = set()
 
-    # A map from suffix [e.g. 'with patch'] to the name of the recipe engine
-    # step that was invoked in run(). This makes the assumption that run() only
-    # emits a single recipe engine step, and that the recipe engine step is the
-    # one that best represents the run of the tests. This is used by FindIt to
-    # look up the failing step for a test suite from buildbucket.
-    self._suffix_step_name_map = {}
-
     # Used to track results of tests as reported by RDB. Separate from
     # _deterministic_failures above as that is populated by parsing the tests'
     # JSON results, while this field is populated entirely by RDB's API. Also
@@ -701,10 +694,6 @@ class Test:
   def run(self, suffix):  # pragma: no cover
     """Run the test.
 
-    Implementations of this method must populate
-    self._suffix_step_name_map[suffix] with the name of the recipe engine step
-    that best represents the work performed by this Test.
-
     suffix is 'with patch' or 'without patch'
 
     Returns:
@@ -832,23 +821,6 @@ class Test:
         'have valid results.')
     return set(
         t.test_name for t in self._rdb_results[suffix].unexpected_skipped_tests)
-
-  def name_of_step_for_suffix(self, suffix):
-    """Returns the name of the step most relevant to the given suffix run.
-
-    Most Tests will run multiple recipe engine steps. The name of the most
-    relevant step is stored in  self._suffix_step_name_map. This method returns
-    that step.
-
-    This method should only be called if the suffix is known to have run.
-
-    Returns:
-      step_name: The name of the step that best represents 'running' the test.
-
-    Raises:
-      KeyError if the name is not present for the given suffix.
-    """
-    return self._suffix_step_name_map[suffix]
 
   @property
   def uses_local_devices(self):
@@ -1122,9 +1094,6 @@ class TestWrapper(Test):  # pragma: no cover
   def compile_targets(self):
     return self._test.compile_targets()
 
-  def name_of_step_for_suffix(self, suffix):
-    return self._test.name_of_step_for_suffix(suffix)
-
   def pre_run(self, suffix):
     return self._test.pre_run(suffix)
 
@@ -1306,11 +1275,6 @@ class ExperimentalTest(TestWrapper):
       return super().pre_run(self._experimental_suffix(suffix))
     except self.api.m.step.StepFailure:
       pass
-
-  #override
-  def name_of_step_for_suffix(self, suffix):
-    experimental_suffix = self._experimental_suffix(suffix)
-    return super().name_of_step_for_suffix(experimental_suffix)
 
   #override
   @recipe_api.composite_step
@@ -1504,8 +1468,6 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
 
     status = result.presentation.status
 
-    self._suffix_step_name_map[suffix] = '.'.join(result.name_tokens)
-
     failures = None
     if result.json.output:
       failures = result.json.output.get('failures')
@@ -1677,7 +1639,6 @@ class LocalGTestTest(LocalTest):
     # TODO(kbr): add functionality to generate_gtest to be able to force running
     # these local gtests via isolate from the src-side JSON files.
     # crbug.com/584469
-    self._suffix_step_name_map[suffix] = '.'.join(step_result.name_tokens)
     self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
     self.update_inv_name_from_stderr(step_result.stderr, suffix)
@@ -2234,9 +2195,9 @@ class SwarmingTest(Test):
     """Waits for launched test to finish and collects the results."""
     step_result, _ = (
         self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
-    self._suffix_step_name_map[suffix] = '.'.join(step_result.name_tokens)
 
     metadata = self.step_metadata(suffix)
+    metadata['full_step_name'] = '.'.join(step_result.name_tokens)
     step_result.presentation.logs['step_metadata'] = (self.api.m.json.dumps(
         metadata, indent=2, sort_keys=True)).splitlines()
 
@@ -2251,7 +2212,6 @@ class SwarmingTest(Test):
   def step_metadata(self, suffix=None):
     data = super().step_metadata(suffix)
     if suffix is not None:
-      data['full_step_name'] = self._suffix_step_name_map[suffix]
       data['patched'] = suffix in ('with patch', 'retry shards with patch')
       data['dimensions'] = self._tasks[suffix].request[0].dimensions
       data['swarm_task_ids'] = self._tasks[suffix].get_task_ids()
@@ -2322,15 +2282,6 @@ class SwarmingGTestTest(SwarmingTest):
     self._apply_swarming_task_config(task, suffix, '--gtest_filter', ':',
                                      extra_args)
     return task
-
-  @recipe_api.composite_step
-  def run(self, suffix):
-    """Waits for launched test to finish and collects the results."""
-    step_result = super().run(suffix)
-    step_name = '.'.join(step_result.name_tokens)
-    self._suffix_step_name_map[suffix] = step_name
-
-    return step_result
 
 
 @attrs()
@@ -2474,7 +2425,6 @@ class LocalIsolatedScriptTest(LocalTest):
 
     status = step_result.presentation.status
 
-    self._suffix_step_name_map[suffix] = '.'.join(step_result.name_tokens)
     self.update_inv_name_from_stderr(step_result.stderr, suffix)
     self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
@@ -2631,7 +2581,6 @@ class AndroidJunitTest(LocalTest):
       step_result = f.result
       raise
     finally:
-      self._suffix_step_name_map[suffix] = '.'.join(step_result.name_tokens)
       self.update_inv_name_from_stderr(step_result.stderr, suffix)
       self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
@@ -2720,11 +2669,7 @@ class MockTest(Test):
   @recipe_api.composite_step
   def run(self, suffix):
     with self._mock_exit_codes():
-      try:
-        step_result = self.api.m.step(self.step_name(suffix), None)
-      finally:
-        result = self.api.m.step.active_result
-        self._suffix_step_name_map[suffix] = '.'.join(result.name_tokens)
+      step_result = self.api.m.step(self.step_name(suffix), None)
 
     _present_info_messages(step_result.presentation, self)
 
@@ -2903,7 +2848,6 @@ class SkylabTest(Test):
             suffix, step, self.api.m.step.FAILURE,
             'Test was not scheduled because of absent lacros_gcs_path.')
 
-      self._suffix_step_name_map[suffix] = self.step_name(suffix)
       bb_url = 'https://ci.chromium.org/b/%d'
       rdb_results = self._rdb_results.get(suffix)
       if rdb_results.total_tests_ran:

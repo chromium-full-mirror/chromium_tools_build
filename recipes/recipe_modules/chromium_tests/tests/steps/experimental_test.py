@@ -82,9 +82,6 @@ def RunSteps(api):
   experimental_test.get_invocation_names(suffix)
   experimental_test.update_rdb_results(suffix, {})
 
-  step_name = experimental_test.name_of_step_for_suffix(suffix)
-  api.assertions.assertTrue(step_name)
-
   assert experimental_test.has_valid_results('')
   assert not experimental_test.failures('')
   assert not experimental_test.deterministic_failures('')
