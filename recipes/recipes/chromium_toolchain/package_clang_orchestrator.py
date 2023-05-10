@@ -8,19 +8,25 @@ from recipe_engine import post_process
 
 DEPS = [
     'recipe_engine/buildbucket',
+    'recipe_engine/step',
     'recipe_engine/url',
 ]
 
 
 def RunSteps(api):
-  url = 'https://chromium.googlesource.com/external/github.com/llvm/llvm-project/+/refs/heads/main?format=JSON'
+  repo = 'https://chromium.googlesource.com/external/github.com/llvm/llvm-project'
+  head_url = repo + '/+/refs/heads/main?format=JSON'
   rev = api.url.get_json(
-      url,
+      head_url,
+      step_name='get the latest llvm revision',
       log=True,
       strip_prefix=api.url.GERRIT_JSON_PREFIX,
       default_test_data={
           'commit': 'abcd'
       }).output['commit']
+  rev_url = '%s/+/%s' % (repo, rev)
+  step = api.step.empty('revision ' + rev)
+  step.presentation.links['Gitiles URL'] = rev_url
 
   packge_builders = [
       'toolchain-packager-linux',
