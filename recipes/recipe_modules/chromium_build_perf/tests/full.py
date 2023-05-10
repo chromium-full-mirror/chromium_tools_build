@@ -31,6 +31,7 @@ def RunSteps(api):
       'all', with_remote_cache=False, step_name_suffix=' suffix')
   api.chromium_build_perf.build('all', with_remote_cache=False, revision='abcd')
   api.chromium_build_perf.remove_build_dir()
+  api.chromium_build_perf.remove_deps_cache()
 
 
 def GenTests(api):

@@ -39,8 +39,6 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     if with_remote_cache:
       step_name += ' with remote cache'
     else:
-      self.m.file.rmtree('rmtree %s' % self.m.reclient.deps_cache_path,
-                         self.m.reclient.deps_cache_path)
       step_name += ' without remote cache'
       env['RBE_remote_accept_cache'] = "false"
     if step_name_suffix:
@@ -57,6 +55,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     """Remove build dir."""
     self.m.file.rmtree('rmtree %s' % str(self.m.chromium.output_dir),
                        str(self.m.chromium.output_dir))
+
+  def remove_deps_cache(self):
+    """Remove deps cache."""
+    self.m.file.rmtree('rmtree %s' % self.m.reclient.deps_cache_path,
+                       self.m.reclient.deps_cache_path)
 
   def _checkout(self, revision):
     cfg = copy.deepcopy(self.m.gclient.c)

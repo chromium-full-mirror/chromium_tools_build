@@ -69,8 +69,9 @@ def _incremental_build_with_one_day_changes(api, target):
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    # Clean up build dir.
+    # Clean up build dir and deps cache.
     api.chromium_build_perf.remove_build_dir()
+    api.chromium_build_perf.remove_deps_cache()
 
     # Run a warm up build for local build dir at the base revision.
     raw_result = api.chromium_build_perf.build(
@@ -145,6 +146,7 @@ def _incremental_builds_with_patch(api, target):
 
     # Run a build at each revision.
     api.chromium_build_perf.remove_build_dir()
+    api.chromium_build_perf.remove_deps_cache()
     raw_result = None
     for i, rev in enumerate(revs):
       if i == 0:
@@ -172,6 +174,7 @@ def _clean_builds(api, target):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
     api.chromium_build_perf.remove_build_dir()
+    api.chromium_build_perf.remove_deps_cache()
     raw_result = api.chromium_build_perf.build(target, with_remote_cache=False)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
