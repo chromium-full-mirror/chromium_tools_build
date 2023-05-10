@@ -174,22 +174,23 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         step_result.presentation.logs['gerrit_changes'] = str(
             self.m.buildbucket.build.input.gerrit_changes)
         return
-      self.m.resultdb.update_invocation(
-          step_name='update invocation',
-          source_spec=invocation_pb.SourceSpec(
-              sources=invocation_pb.Sources(
-                  gitiles_commit=common_rdb_pb.GitilesCommit(
-                      host=gitiles_commit.host,
-                      project=gitiles_commit.project,
-                      commit_hash=gitiles_commit.id,
-                      ref=gitiles_commit.ref,
-                      position=gitiles_commit.position,
-                  ),
-                  changelists=[
-                      common_rdb_pb.GerritChange(
-                          host=change.host,
-                          project=change.project,
-                          change=change.change,
-                          patchset=change.patchset) for change in
-                      self.m.buildbucket.build.input.gerrit_changes
-                  ])))
+      if self.m.resultdb.enabled:
+        self.m.resultdb.update_invocation(
+            step_name='update invocation',
+            source_spec=invocation_pb.SourceSpec(
+                sources=invocation_pb.Sources(
+                    gitiles_commit=common_rdb_pb.GitilesCommit(
+                        host=gitiles_commit.host,
+                        project=gitiles_commit.project,
+                        commit_hash=gitiles_commit.id,
+                        ref=gitiles_commit.ref,
+                        position=gitiles_commit.position,
+                    ),
+                    changelists=[
+                        common_rdb_pb.GerritChange(
+                            host=change.host,
+                            project=change.project,
+                            change=change.change,
+                            patchset=change.patchset) for change in
+                        self.m.buildbucket.build.input.gerrit_changes
+                    ])))
