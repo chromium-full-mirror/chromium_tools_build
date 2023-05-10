@@ -5,7 +5,6 @@
    See also go/chrome-developer-build-metrics
 """
 
-import copy
 from datetime import datetime, timedelta
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
@@ -23,7 +22,6 @@ DEPS = [
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
-    'depot_tools/gclient',
     'depot_tools/git',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -62,37 +60,30 @@ def _incremental_build_with_one_day_changes(api, target):
         step_test_data=lambda: api.raw_io.test_api.stream_output_text(
             'abcd\nefgh\n')).stdout.split()[0]
 
-    with api.context(cwd=api.path['cache'].join('builder')):
-      cfg = copy.deepcopy(api.gclient.c)
+    # Run a warm up build for remote caches at the current revision.
+    raw_result = api.chromium_build_perf.build(
+        target,
+        with_remote_cache=True,
+        step_name_suffix=' at current revision (warmup)',
+        revision=cur_rev)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
 
-      # Run a warm up build for remote caches at the current revision.
-      cfg.revisions['src'] = cur_rev
-      api.gclient.sync(cfg)
-      raw_result = api.chromium_build_perf.build(
-          target,
-          with_remote_cache=True,
-          step_name_suffix=' at current revision (warmup)')
-      if raw_result.status != common_pb.SUCCESS:
-        return raw_result
+    # Clean up build dir.
+    api.chromium_build_perf.remove_build_dir()
 
-      # Clean up build dir.
-      api.chromium_build_perf.remove_build_dir()
+    # Run a warm up build for local build dir at the base revision.
+    raw_result = api.chromium_build_perf.build(
+        target,
+        with_remote_cache=True,
+        step_name_suffix=' at base revision (warmup)',
+        revision=base_rev)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
 
-      # Run a warm up build for local build dir at the base revision.
-      cfg = copy.deepcopy(api.gclient.c)
-      cfg.revisions['src'] = base_rev
-      api.gclient.sync(cfg)
-      raw_result = api.chromium_build_perf.build(
-          target,
-          with_remote_cache=True,
-          step_name_suffix=' at base revision (warmup)')
-      if raw_result.status != common_pb.SUCCESS:
-        return raw_result
-
-      # Incremental build with remote caches at the current revision.
-      cfg.revisions['src'] = cur_rev
-      api.gclient.sync(cfg)
-      return api.chromium_build_perf.build(target, with_remote_cache=True)
+    # Incremental build with remote caches at the current revision.
+    return api.chromium_build_perf.build(
+        target, with_remote_cache=True, revision=cur_rev)
 
 
 def _incremental_builds_with_patch(api, target):
@@ -126,7 +117,9 @@ def _incremental_builds_with_patch(api, target):
             'abcd foo@google.com\n'
             'efgh bot@example.gserviceaccount.com\n'
             'ijkl bar@chromium.org\n'))
-    commits = gitlog_result.stdout.strip().split('\n')
+    commits = [
+        commit.strip("'") for commit in gitlog_result.stdout.strip().split('\n')
+    ]
     gitlog_result.presentation.logs['commits'] = commits
 
     def gitiles_url(rev):
@@ -151,7 +144,6 @@ def _incremental_builds_with_patch(api, target):
       return
 
     # Run a build at each revision.
-    cfg = copy.deepcopy(api.gclient.c)
     api.chromium_build_perf.remove_build_dir()
     raw_result = None
     for i, rev in enumerate(revs):
@@ -166,12 +158,11 @@ def _incremental_builds_with_patch(api, target):
         with_remote_cache = False
         step_name_suffix = ''
 
-      cfg.revisions['src'] = rev
-      api.gclient.sync(cfg)
       raw_result = api.chromium_build_perf.build(
           target,
           with_remote_cache=with_remote_cache,
-          step_name_suffix=step_name_suffix)
+          step_name_suffix=step_name_suffix,
+          revision=rev)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     return raw_result

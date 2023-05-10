@@ -3,13 +3,19 @@
 # found in the LICENSE file.
 """APIs for taking Chrome build performance metrics."""
 
+import copy
+
 from RECIPE_MODULES.build import chromium
 from recipe_engine import recipe_api
 
 
 class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
-  def build(self, target, with_remote_cache, step_name_suffix=None):
+  def build(self,
+            target,
+            with_remote_cache,
+            step_name_suffix=None,
+            revision=None):
     """Run a build.
 
         Args:
@@ -17,6 +23,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
           with_remote_cache: Use remote action caches if it's True,
                              Do not use, otherwise.
           step_name_suffix: suffix of the step name.
+          revision: revision of the checkout to build.
 
         Returns:
           A RawResult object with the compile step's status and failure message
@@ -38,7 +45,9 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       env['RBE_remote_accept_cache'] = "false"
     if step_name_suffix:
       step_name += step_name_suffix
-    with self.m.context(env=env):
+    with self.m.context(env=env, cwd=self.m.path['cache'].join('builder')):
+      if revision:
+        self._checkout(revision)
       return self.m.chromium.compile([target],
                                      name=step_name,
                                      use_goma_module=False,
@@ -48,3 +57,8 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     """Remove build dir."""
     self.m.file.rmtree('rmtree %s' % str(self.m.chromium.output_dir),
                        str(self.m.chromium.output_dir))
+
+  def _checkout(self, revision):
+    cfg = copy.deepcopy(self.m.gclient.c)
+    cfg.revisions['src'] = revision
+    self.m.gclient.sync(cfg)

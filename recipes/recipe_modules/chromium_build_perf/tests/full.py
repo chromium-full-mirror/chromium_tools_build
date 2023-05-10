@@ -29,6 +29,7 @@ def RunSteps(api):
   api.chromium_build_perf.build('all', with_remote_cache=False)
   api.chromium_build_perf.build(
       'all', with_remote_cache=False, step_name_suffix=' suffix')
+  api.chromium_build_perf.build('all', with_remote_cache=False, revision='abcd')
   api.chromium_build_perf.remove_build_dir()
 
 

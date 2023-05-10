@@ -5,8 +5,10 @@
 DEPS = [
     'builder_group',
     'chromium',
+    'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/path',
     'reclient',
 ]
