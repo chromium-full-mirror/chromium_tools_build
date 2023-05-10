@@ -158,8 +158,9 @@
   },
   {
     "cmd": [
-      "vpython",
+      "vpython3",
       "RECIPE_REPO[depot_tools]/presubmit_support.py",
+      "--use-python3",
       "--issue",
       "456789",
       "--patchset",
@@ -201,50 +202,6 @@
       "@@@STEP_LOG_LINE@json.output@  \"warnings\": []@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "RECIPE_REPO[depot_tools]/presubmit_support.py",
-      "--issue",
-      "456789",
-      "--patchset",
-      "12",
-      "--gerrit_url",
-      "https://chromium-review.googlesource.com",
-      "--gerrit_project",
-      "angle",
-      "--gerrit_branch",
-      "refs/heads/main",
-      "--gerrit_fetch",
-      "--root",
-      "[CACHE]/builder/angle_presubmit/angle",
-      "--commit",
-      "--verbose",
-      "--verbose",
-      "--skip_canned",
-      "CheckTreeIsOpen",
-      "--upstream",
-      "11a9215ec620218c8e8d409263469091431ff0d4",
-      "--json_output",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[CACHE]/builder/angle_presubmit",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "name": "presubmit py3",
-    "timeout": 654,
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
     ]
   },
   {

@@ -216,8 +216,9 @@
       "rdb",
       "stream",
       "--",
-      "vpython",
+      "vpython3",
       "RECIPE_REPO[depot_tools]/presubmit_support.py",
+      "--use-python3",
       "--issue",
       "123456",
       "--patchset",
@@ -271,65 +272,6 @@
       "@@@STEP_LOG_LINE@json.output@  \"warnings\": []@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "stream",
-      "--",
-      "vpython3",
-      "RECIPE_REPO[depot_tools]/presubmit_support.py",
-      "--issue",
-      "123456",
-      "--patchset",
-      "7",
-      "--gerrit_url",
-      "https://chromium-review.googlesource.com",
-      "--gerrit_project",
-      "infra/luci/luci-py",
-      "--gerrit_branch",
-      "refs/heads/main",
-      "--gerrit_fetch",
-      "--root",
-      "[CACHE]/builder/Luci_py_Presubmit/infra/luci",
-      "--commit",
-      "--verbose",
-      "--verbose",
-      "--skip_canned",
-      "CheckTreeIsOpen",
-      "--upstream",
-      "a4a409648021adff84b93440fe26364814cdf1b4",
-      "--json_output",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[CACHE]/builder/Luci_py_Presubmit",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "project:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "presubmit py3",
-    "timeout": 900,
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
     ]
   },
   {
