@@ -119,7 +119,7 @@
       "rdb",
       "stream",
       "--",
-      "vpython",
+      "vpython3",
       "RECIPE_REPO[depot_tools]/presubmit_support.py",
       "--all",
       "--no_diffs",
@@ -165,60 +165,6 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "rdb",
-      "stream",
-      "--",
-      "vpython3",
-      "RECIPE_REPO[depot_tools]/presubmit_support.py",
-      "--all",
-      "--no_diffs",
-      "--verbose",
-      "--root",
-      "[CACHE]/builder/chromium_presubmit/s",
-      "--commit",
-      "--skip_canned",
-      "CheckTreeIsOpen",
-      "--upstream",
-      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
-      "--skip_canned",
-      "CheckOwners",
-      "--json_output",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[CACHE]/builder/chromium_presubmit",
-    "env": {
-      "PRESUBMIT_SKIP_NETWORK": "True"
-    },
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "presubmit py3",
-    "timeout": 480,
-    "~followup_annotations": [
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
     ]
   },
   {
