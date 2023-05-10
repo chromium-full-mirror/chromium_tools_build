@@ -154,7 +154,7 @@
   },
   {
     "cmd": [
-      "vpython3",
+      "vpython",
       "RECIPE_REPO[depot_tools]/presubmit_support.py",
       "--issue",
       "456789",
@@ -189,6 +189,50 @@
       ]
     },
     "name": "presubmit",
+    "timeout": 654,
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/presubmit_support.py",
+      "--issue",
+      "456789",
+      "--patchset",
+      "12",
+      "--gerrit_url",
+      "https://chromium-review.googlesource.com",
+      "--gerrit_project",
+      "v8/v8",
+      "--gerrit_branch",
+      "refs/heads/infra/config",
+      "--gerrit_fetch",
+      "--root",
+      "[CACHE]/builder/v8_presubmit_infra_config/v8",
+      "--commit",
+      "--verbose",
+      "--verbose",
+      "--skip_canned",
+      "CheckTreeIsOpen",
+      "--upstream",
+      "f2cbea7e89a45f46819777bb78a1f5bd0241f64c",
+      "--json_output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/v8_presubmit_infra_config",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "presubmit py3",
     "timeout": 654,
     "~followup_annotations": [
       "@@@STEP_LOG_END@json.output (invalid)@@@",

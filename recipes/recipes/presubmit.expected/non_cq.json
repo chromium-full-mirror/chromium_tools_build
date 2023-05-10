@@ -205,7 +205,7 @@
       "rdb",
       "stream",
       "--",
-      "vpython3",
+      "vpython",
       "RECIPE_REPO[depot_tools]/presubmit_support.py",
       "--issue",
       "123456",
@@ -256,6 +256,65 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "--",
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/presubmit_support.py",
+      "--issue",
+      "123456",
+      "--patchset",
+      "7",
+      "--gerrit_url",
+      "https://chromium-review.googlesource.com",
+      "--gerrit_project",
+      "chromium/src",
+      "--gerrit_branch",
+      "refs/heads/main",
+      "--gerrit_fetch",
+      "--root",
+      "[CACHE]/builder/chromium_presubmit/s",
+      "--commit",
+      "--verbose",
+      "--verbose",
+      "--skip_canned",
+      "CheckTreeIsOpen",
+      "--upstream",
+      "a0f1490a20d0211c997b44bc357e1972deab8ae3",
+      "--json_output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/chromium_presubmit",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "presubmit py3",
+    "timeout": 480,
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
     ]
   },
   {
