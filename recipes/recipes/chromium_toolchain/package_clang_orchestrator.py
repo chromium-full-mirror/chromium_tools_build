@@ -23,10 +23,10 @@ def RunSteps(api):
       }).output['commit']
 
   packge_builders = [
-      'toolchain-pakager-linux',
-      'toolchain-pakager-mac',
-      'toolchain-pakager-mac-arm',
-      'toolchain-pakager-windows',
+      'toolchain-packager-linux',
+      'toolchain-packager-mac',
+      'toolchain-packager-mac-arm',
+      'toolchain-packager-windows',
   ]
 
   requests = [
