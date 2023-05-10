@@ -27,13 +27,13 @@ DEPS = [
 def RunSteps(api):
   test_name = api.properties.get('test_name') or 'base_unittests'
 
-  isolate_coverage_data = api.properties.get('isolate_coverage_data', False)
+  isolate_profile_data = api.properties.get('isolate_profile_data', False)
 
   resultdb = steps.ResultDB(result_format='json')
   test_spec = steps.LocalIsolatedScriptTestSpec.create(
       test_name,
       override_compile_targets=api.properties.get('override_compile_targets'),
-      isolate_coverage_data=isolate_coverage_data,
+      isolate_profile_data=isolate_profile_data,
       resultdb=resultdb)
 
   test = test_spec.get_test(api.chromium_tests)
@@ -160,13 +160,13 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'isolate_coverage_data',
+      'isolate_profile_data',
       api.chromium.ci_build(
           builder_group='test_group',
           builder='test_buildername',
       ),
       api.properties(
-          isolate_coverage_data=True,
+          isolate_profile_data=True,
           swarm_hashes={
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
           }),

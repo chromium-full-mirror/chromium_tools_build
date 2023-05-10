@@ -58,14 +58,14 @@ FAKE_TARGETS_SPEC = {
             'swarming': {
                 'can_use_on_swarming_builders': True,
             },
-            'isolate_coverage_data': True,
+            'isolate_profile_data': True,
         },
         {
             'name': 'browser_tests_no_swarm',
             'swarming': {
                 'can_use_on_swarming_builders': False,
             },
-            'isolate_coverage_data': True,
+            'isolate_profile_data': True,
         },
     ],
     'skylab_tests': [{

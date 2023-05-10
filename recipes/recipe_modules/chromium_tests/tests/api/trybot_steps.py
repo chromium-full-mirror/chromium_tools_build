@@ -568,7 +568,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
-                      'isolate_coverage_data': True,
+                      'isolate_profile_data': True,
                       'test': 'base_unittests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
@@ -616,7 +616,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
-                      'isolate_coverage_data': True,
+                      'isolate_profile_data': True,
                       'test': 'base_unittests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
@@ -669,7 +669,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
-                      'isolate_coverage_data': True,
+                      'isolate_profile_data': True,
                       'test': 'base_unittests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,

@@ -47,7 +47,7 @@ def RunSteps(api):
   test_spec = steps.SwarmingGTestTestSpec.create(
       'base_unittests',
       override_compile_targets=api.properties.get('override_compile_targets'),
-      isolate_coverage_data=api.properties.get('isolate_coverage_data', False))
+      isolate_profile_data=api.properties.get('isolate_profile_data', False))
   test = test_spec.get_test(api.chromium_tests)
 
   test_options = steps.TestOptions.create()
@@ -154,13 +154,13 @@ def GenTests(api):
   # )
 
   yield api.test(
-      'isolate_coverage_data',
+      'isolate_profile_data',
       api.chromium.ci_build(
           builder_group='test_group',
           builder='test_buildername',
       ),
       api.properties(
-          isolate_coverage_data=True,
+          isolate_profile_data=True,
           swarm_hashes={
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           }),

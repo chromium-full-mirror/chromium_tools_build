@@ -412,7 +412,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
-                      'isolate_coverage_data': True,
+                      'isolate_profile_data': True,
                       'test': 'base_unittests',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
@@ -462,7 +462,7 @@ def GenTests(api):
               'fake-builder': {
                   'isolated_scripts': [{
                       'name': 'performance_test_suite',
-                      'isolate_coverage_data': True,
+                      'isolate_profile_data': True,
                       'test': 'performance_test_suite',
                       'swarming': {
                           'can_use_on_swarming_builders': True,
@@ -511,7 +511,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'gtest_tests': [{
-                      'isolate_coverage_data': True,
+                      'isolate_profile_data': True,
                       'test': 'chrome_public_test_apk',
                       'swarming': {
                           'can_use_on_swarming_builders': True,

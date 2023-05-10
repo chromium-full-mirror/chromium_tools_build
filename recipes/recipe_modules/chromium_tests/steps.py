@@ -1145,10 +1145,6 @@ class TestWrapper(Test):  # pragma: no cover
     return self._test.runs_on_swarming
 
   @property
-  def isolate_coverage_data(self):
-    return self._test.isolate_coverage_data
-
-  @property
   def isolate_profile_data(self):
     return self._test.isolate_profile_data
 
@@ -1767,8 +1763,6 @@ class SwarmingTestSpec(TestSpec):
     * merge - An optional script used for merging results between the
       test's swarming tasks.
     * args - Arguments to be passed to the test.
-    * isolate_coverage_data - Whether to isolate coverage profile data
-      during task execution.
     * isolate_profile_data - Whether to isolate profile data during task
       execution.
     * named_caches - Named caches to mount for the test's swarming
@@ -1797,7 +1791,6 @@ class SwarmingTestSpec(TestSpec):
   tear_down = attrib(sequence[TearDownScript], default=())
   merge = attrib(chromium_swarming.MergeScript, default=None)
   args = attrib(command_args, default=())
-  isolate_coverage_data = attrib(bool, False)
   isolate_profile_data = attrib(bool, False)
   named_caches = attrib(mapping[str, str], default={})
   shards = attrib(int, default=1)
@@ -1939,15 +1932,8 @@ class SwarmingTest(Test):
     return self.target_name
 
   @property
-  def isolate_coverage_data(self):
-    return bool(self.spec.isolate_coverage_data)
-
-  @property
   def isolate_profile_data(self):
-    # TODO(crbug.com/1075823) - delete isolate_coverage_data once deprecated.
-    # Release branches will still be setting isolate_coverage_data under
-    # src/testing. Deprecation expected after M83.
-    return self.spec.isolate_profile_data or self.isolate_coverage_data
+    return self.spec.isolate_profile_data
 
   @property
   def shards(self):
@@ -2301,8 +2287,6 @@ class LocalIsolatedScriptTestSpec(TestSpec):
       * 'default' - JSONResultsHandler
       * 'layout tests' - LayoutTestResultsHandler
       * 'fake' - FakeCustomResultsHandler
-    * isolate_coverage_data - Whether to isolate coverage profile data
-      during task execution.
     * isolate_profile_data - Whether to isolate profile data during task
       execution.
   """
@@ -2313,7 +2297,6 @@ class LocalIsolatedScriptTestSpec(TestSpec):
   tear_down = attrib(sequence[TearDownScript], default=())
   results_handler_name = attrib(
       enum(ALLOWED_RESULT_HANDLER_NAMES), default='default')
-  isolate_coverage_data = attrib(bool, False)
   isolate_profile_data = attrib(bool, False)
 
   @property
@@ -2348,10 +2331,7 @@ class LocalIsolatedScriptTest(LocalTest):
 
   @property
   def isolate_profile_data(self):
-    # TODO(crbug.com/1075823) - delete isolate_coverage_data once deprecated
-    # Release branches will still be setting isolate_coverage_data under
-    # src/testing. Deprecation expected after M83.
-    return self.spec.isolate_profile_data or self.spec.isolate_coverage_data
+    return self.spec.isolate_profile_data
 
   def compile_targets(self):
     return self.spec.override_compile_targets or [self.spec.target_name]

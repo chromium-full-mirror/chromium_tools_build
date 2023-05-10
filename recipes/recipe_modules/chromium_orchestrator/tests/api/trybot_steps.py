@@ -639,7 +639,7 @@ def GenTests(api):
                       'swarming': {
                           'can_use_on_swarming_builders': True,
                       },
-                      'isolate_coverage_data': True,
+                      'isolate_profile_data': True,
                   },],
                   'isolated_scripts': [{
                       'isolate_name': 'angle_unittests',

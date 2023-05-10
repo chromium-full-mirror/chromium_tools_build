@@ -57,7 +57,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
             }],
             'shards': shards,
         },
-        'isolate_coverage_data': True,
+        'isolate_profile_data': True,
     } for test in tests]
     tester_dict = targets_spec.setdefault(tester or builder, {})
     tester_dict['gtest_tests'] = gtest_tests

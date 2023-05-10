@@ -66,8 +66,7 @@ def RunSteps(api):
         suite_name,
         test_id_prefix=test_id_prefix,
         override_compile_targets=api.properties.get('override_compile_targets'),
-        isolate_coverage_data=api.properties.get('isolate_coverage_data',
-                                                 False))
+        isolate_profile_data=api.properties.get('isolate_profile_data', False))
     # For coverage that the suite opts out Flake Endorser.
     if i == 5:
       test_spec = attr.evolve(test_spec, check_flakiness_for_new_tests=False)

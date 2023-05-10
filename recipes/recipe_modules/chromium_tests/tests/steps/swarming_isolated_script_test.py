@@ -52,7 +52,7 @@ def RunSteps(api):
     else:
       # Needed for a test
       test_name = 'base_unittests'
-    isolate_coverage_data = api.properties.get('isolate_coverage_data', False)
+    isolate_profile_data = api.properties.get('isolate_profile_data', False)
     test_spec = steps.SwarmingIsolatedScriptTestSpec.create(
         name=test_name,
         waterfall_builder_group='waterfall_builder_group',
@@ -66,7 +66,7 @@ def RunSteps(api):
             'gpu': '8086',
             'os': 'Linux',
         }),
-        isolate_coverage_data=isolate_coverage_data)
+        isolate_profile_data=isolate_profile_data)
     override_shards = api.properties.get('shards')
     if override_shards:
       test_spec = test_spec.with_shards(override_shards)
@@ -158,13 +158,13 @@ def GenTests(api):
   )
 
   yield api.test(
-      'isolate_coverage_data',
+      'isolate_profile_data',
       arbitrary_tester(),
       api.properties(
           swarm_hashes={
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           },
-          isolate_coverage_data=True,
+          isolate_profile_data=True,
       ),
       api.post_check(
           api.swarming.check_triggered_request,

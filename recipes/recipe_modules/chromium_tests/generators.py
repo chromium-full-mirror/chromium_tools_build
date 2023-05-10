@@ -476,9 +476,7 @@ class Generator:
 
     def gtest_swarming_delegate(raw_test_spec, **kwargs):
       kwargs.update(gtest_delegate_common(raw_test_spec))
-      kwargs['isolate_profile_data'] = (
-          raw_test_spec.get('isolate_coverage_data') or
-          raw_test_spec.get('isolate_profile_data'))
+      kwargs['isolate_profile_data'] = raw_test_spec.get('isolate_profile_data')
 
       kwargs['resultdb'] = attr.evolve(
           kwargs['resultdb'], result_format='gtest')
@@ -562,9 +560,8 @@ class Generator:
       # to GN.
       common_kwargs['override_compile_targets'] = raw_test_spec.get(
           'override_compile_targets', None)
-      common_kwargs['isolate_profile_data'] = (
-          raw_test_spec.get('isolate_coverage_data') or
-          raw_test_spec.get('isolate_profile_data'))
+      common_kwargs['isolate_profile_data'] = raw_test_spec.get(
+          'isolate_profile_data')
 
       # TODO(tansell): Remove this once custom handling of results is no longer
       # needed.
