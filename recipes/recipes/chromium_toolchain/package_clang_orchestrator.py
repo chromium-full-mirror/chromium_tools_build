@@ -39,6 +39,7 @@ def RunSteps(api):
       api.buildbucket.schedule_request(
           builder=b,
           bucket='official.toolchain',
+          can_outlive_parent=False,
           properties={
               'llvm_revision': rev,
           }) for b in packge_builders
