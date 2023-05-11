@@ -31,9 +31,6 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
         Raises:
           - InfraFailure when an unexpected failure occured.
     """
-    builder_id = chromium.BuilderId.create_for_group(
-        self.m.builder_group.for_current, self.m.buildbucket.builder_name)
-    self.m.chromium.mb_gen(builder_id, recursive_lookup=True)
     step_name = 'Build ' + target
     env = {}
     if with_remote_cache:
@@ -51,8 +48,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
                                      use_goma_module=False,
                                      use_reclient=True)
 
-  def remove_build_dir(self):
-    """Remove build dir."""
+  def recreate_build_dir(self):
+    """Remove and create a build dir."""
+    builder_id = chromium.BuilderId.create_for_group(
+        self.m.builder_group.for_current, self.m.buildbucket.builder_name)
+    self.m.chromium.mb_gen(builder_id, recursive_lookup=True)
     self.m.file.rmtree('rmtree %s' % str(self.m.chromium.output_dir),
                        str(self.m.chromium.output_dir))
 
