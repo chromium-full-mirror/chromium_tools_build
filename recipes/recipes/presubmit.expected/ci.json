@@ -121,7 +121,6 @@
       "--",
       "vpython3",
       "RECIPE_REPO[depot_tools]/presubmit_support.py",
-      "--use-python3",
       "--all",
       "--no_diffs",
       "--verbose",

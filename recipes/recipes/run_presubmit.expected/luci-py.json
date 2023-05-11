@@ -218,7 +218,6 @@
       "--",
       "vpython3",
       "RECIPE_REPO[depot_tools]/presubmit_support.py",
-      "--use-python3",
       "--issue",
       "123456",
       "--patchset",
