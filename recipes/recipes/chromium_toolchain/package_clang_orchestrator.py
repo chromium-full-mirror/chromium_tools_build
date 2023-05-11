@@ -43,7 +43,12 @@ def RunSteps(api):
               'llvm_revision': rev,
           }) for b in packge_builders
   ]
-  api.buildbucket.run(requests, timeout=5 * 60 * 60)  # timeout=5h
+  api.buildbucket.run(
+      requests,
+      timeout=5 * 60 * 60,  # timeout=5h
+      raise_if_unsuccessful=True,
+      url_title_fn=lambda b: b.builder.builder,
+  )
 
 
 def GenTests(api):
