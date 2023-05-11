@@ -2235,7 +2235,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       log_step = self.m.step.empty('RTS was used')
       log_step.presentation.properties['rts_was_used'] = True
 
-      self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
+      compatible_run_modes = ('chromium.dry_run_rts'
+                              in self.m.buildbucket.build.input.experiments)
+      if compatible_run_modes:
+        self.m.cq.allow_reuse_for(self.m.cq.DRY_RUN, self.m.cq.QUICK_DRY_RUN)
+      else:
+        self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
     return tests
 
   def get_quickrun_options(self, builder_config, inverted_rts=False):
@@ -2246,10 +2251,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     props = self.m.properties.get('$recipe_engine/cq', None)
     if props:
       run_mode = props.get('run_mode', props.get('runMode'))
+    experiment_active = False
+    if run_mode == self.m.cq.DRY_RUN:
+      experiment_active = ('chromium.dry_run_rts'
+                           in self.m.buildbucket.build.input.experiments)
 
     rts_setting = None
     use_rts = (
-        (run_mode == self.m.cq.QUICK_DRY_RUN and
+        (experiment_active or run_mode == self.m.cq.QUICK_DRY_RUN and
          builder_config.regression_test_selection == try_spec.QUICK_RUN_ONLY) or
         builder_config.regression_test_selection == try_spec.ALWAYS)
 
@@ -2261,6 +2270,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         rts_setting = 'rts-chromium'
 
       step_result = self.m.step('quick run options', [])
+      if experiment_active:
+        step_result.presentation.step_text = 'RTS was enabled by an experiment'
 
       step_result.presentation.properties['rts_setting'] = rts_setting
       step_result.presentation.links[

@@ -877,6 +877,122 @@ def GenTests(api):
   )
 
   yield api.test(
+      'rts enabled on dry run experiment',
+      api.properties(
+          **{
+              "$recipe_engine/cq": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "DRY_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium.dry_run_rts'],
+      ),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'can_use_on_swarming_builders': True,
+                      }
+                  }],
+              },
+          }),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'quick run options'),
+      api.post_process(post_process.StepTextContains, 'quick run options',
+                       ['RTS was enabled by an experiment']),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_setting',
+                       'rts-chromium'),
+      api.post_process(
+          post_process.PropertyEquals, '$recipe_engine/cq/output', {
+              "reusability": {
+                  "modeAllowlist": ["DRY_RUN", "QUICK_DRY_RUN"]
+              },
+              'reuse': [{
+                  'modeRegexp': 'DRY_RUN'
+              }, {
+                  'modeRegexp': 'QUICK_DRY_RUN'
+              }]
+          }),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'rts on dry run experiment reused by quick run',
+      api.properties(
+          **{
+              "$recipe_engine/cq": {
+                  "active": True,
+                  "dryRun": True,
+                  "runMode": "QUICK_DRY_RUN",
+                  "topLevel": True
+              }
+          }),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='tryserver.chromium.test',
+          builder='rts-rel',
+          builder_db=_TEST_BUILDERS,
+          try_db=_TEST_TRYBOTS,
+          experiments=['chromium.dry_run_rts'],
+      ),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'chromium-rel': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'can_use_on_swarming_builders': True,
+                      }
+                  }],
+              },
+          }),
+      api.step_data(
+          'find rts command lines (with patch)',
+          api.json.output({
+              'base_unittests': [
+                  './%s' % 'base_unittests', '--fake-without-patch-flag',
+                  '--fake-log-file', '$ISOLATED_OUTDIR/fake.log',
+                  '-filter=base_unittests.filter'
+              ]
+          })),
+      api.post_process(post_process.MustRun, 'quick run options'),
+      api.post_process(post_process.MustRun, 'RTS was used'),
+      api.post_process(post_process.PropertyEquals, 'rts_setting',
+                       'rts-chromium'),
+      api.post_process(
+          post_process.PropertyEquals, '$recipe_engine/cq/output', {
+              "reusability": {
+                  "modeAllowlist": ["DRY_RUN", "QUICK_DRY_RUN"]
+              },
+              'reuse': [{
+                  'modeRegexp': 'DRY_RUN'
+              }, {
+                  'modeRegexp': 'QUICK_DRY_RUN'
+              }]
+          }),
+      api.post_process(post_process.PropertyEquals, 'rts_was_used', True),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'quick run rts',
       api.properties(
           **{
