@@ -50,11 +50,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
   def recreate_build_dir(self):
     """Remove and create a build dir."""
+    self.m.file.rmtree('rmtree %s' % str(self.m.chromium.output_dir),
+                       str(self.m.chromium.output_dir))
     builder_id = chromium.BuilderId.create_for_group(
         self.m.builder_group.for_current, self.m.buildbucket.builder_name)
     self.m.chromium.mb_gen(builder_id, recursive_lookup=True)
-    self.m.file.rmtree('rmtree %s' % str(self.m.chromium.output_dir),
-                       str(self.m.chromium.output_dir))
 
   def remove_deps_cache(self):
     """Remove deps cache."""
