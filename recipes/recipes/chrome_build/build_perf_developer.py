@@ -95,18 +95,16 @@ def _incremental_builds_with_patch(api, target):
   Remote caches are disabled to pretend that the patches are new changes.
   """
   with api.step.nest('Incremental builds with patch'):
-    # Get a revision from the last successful job of this builder.
+    # Get a revision from the last job of this builder.
     builds = api.buildbucket.search(
-        builds_service_pb.BuildPredicate(
-            builder=api.buildbucket.build.builder,
-            status=common_pb.Status.SUCCESS),
+        builds_service_pb.BuildPredicate(builder=api.buildbucket.build.builder),
         limit=1)
     last_rev = None
     if builds:
       last_rev = builds[0].input.gitiles_commit.id
 
     # List up commits between the current revision and the last revision.
-    max_builds = 100
+    max_builds = 50
     gitlog_args = ['log', '-n', max_builds, "--format='%H %ae'", '--reverse']
     if last_rev:
       cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
