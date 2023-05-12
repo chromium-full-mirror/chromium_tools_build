@@ -1033,6 +1033,29 @@ def GenTests(api):
                   '--test-launcher-filter-file=base_unittests.filter'
               ]
           })),
+      api.step_data('log rts heuristics.gerrit get reviewer status', api.json.output(
+        [
+          {
+            "approvals": {
+                "Auto-Submit": " 0",
+                "Commit-Queue": " 0",
+                "Quick-Run": " 0"
+            },
+            "_account_id": 1111,
+            "name": "Author Person",
+            "email": "someone@chromium.org"
+         },
+          {
+            "approvals": {
+                "Code-Review": " 0",
+                "Commit-Queue": " 0",
+                "Quick-Run": " 0"
+            },
+            "_account_id": 222,
+            "name": "Reviewer Person",
+            "email": "someoneelse@chromium.org"
+         }
+        ])),
       api.post_check(
           api.swarming.check_triggered_request,
           'test_pre_run (with patch).[trigger] base_unittests (with patch)',

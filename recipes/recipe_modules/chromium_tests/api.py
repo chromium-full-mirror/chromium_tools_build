@@ -2243,7 +2243,43 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
     return tests
 
+  def log_rts_heuristics(self):
+    # TODO(https://crbug.com/1445185): Remove this after we have enough data to
+    # evaluate these heuristics
+    try:
+      with self.m.step.nest('log rts heuristics') as presentation:
+        gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
+        reviewers = self.m.gerrit.call_raw_api(
+            f'https://{gerrit_change.host}',
+            f'/changes/{gerrit_change.change}/reviewers/',
+            method='GET',
+            name='get reviewer status')
+        reviewers = [
+            reviewer for reviewer in reviewers
+            if reviewer.get('approvals', {}).get('Code-Review') and
+            not reviewer.get('approvals', {}).get('Auto-Submit')
+        ]
+        presentation.logs['reviewers'] = self.m.json.dumps(reviewers, indent=4)
+        presentation.properties['reviewers'] = len(reviewers)
+
+        change = self.m.gerrit.get_changes(
+            f'https://{gerrit_change.host}',
+            query_params=[
+                ('change', gerrit_change.change),
+            ],
+            limit=1)
+        has_review_started = False
+        if len(change) > 0:
+          has_review_started = change[0].get('has_review_started', False)
+        presentation.properties['has_review_started'] = has_review_started
+    except Exception:
+      # This is purely informational, we don't want to fail the build and the
+      # abscense of output properties can be used to identify if the heuristic
+      # is not available
+      pass
+
   def get_quickrun_options(self, builder_config, inverted_rts=False):
+    self.log_rts_heuristics()
     # TODO(sshrimp): cq.active/cq.run_mode no longer works from the compilator
     # this should go back to using that module when gerrit no longer skips
     # copying tags on reruns and cq.active no longer checks created_by

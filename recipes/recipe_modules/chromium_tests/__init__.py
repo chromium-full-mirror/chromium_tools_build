@@ -15,6 +15,7 @@ DEPS = [
     'chromium_swarming',
     'code_coverage',
     'depot_tools/bot_update',
+    'depot_tools/gerrit',
     'depot_tools/gclient',
     'depot_tools/gsutil',
     'depot_tools/tryserver',
