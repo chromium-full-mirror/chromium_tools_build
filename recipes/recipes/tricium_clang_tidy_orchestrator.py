@@ -26,7 +26,8 @@ DEPS = [
 # trade-off between coverage/cost and enable them.
 _CHILD_BUILDERS = (
     'android-clang-tidy-rel',
-    'linux-chromeos-clang-tidy-rel',
+    # TODO(1444563): Add back once error count is brought back down.
+    #'linux-chromeos-clang-tidy-rel',
     'linux-clang-tidy-rel',
     #'linux-lacros-clang-tidy-rel',
     #'fuchsia-clang-tidy-rel',
@@ -173,10 +174,7 @@ def _build_textual_bot_list(bots, conjunction):
   if len(bots) == 1:
     return bots[0]
 
-  if len(bots) == 2:
-    return ' '.join((bots[0], conjunction, bots[1]))
-
-  return '%s, %s %s' % (', '.join(bots[:-1]), conjunction, bots[-1])
+  return ' '.join((', '.join(bots[:-1]), conjunction, bots[-1]))
 
 
 def _note_observed_on(platforms, all_platforms, lint):
