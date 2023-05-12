@@ -1437,8 +1437,8 @@ class V8Api(recipe_api.RecipeApi):
     if self.m.properties.get('dry_run') or self.m.runtime.is_experimental:
       self.m.step('Dry-run commit', cmd=None)
     else:
-      upload_cmd = ['cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
-          '--no-autocc', '--no-python2-post-upload-hooks']
+      upload_cmd = [
+          'cl', 'upload', '-f', '--bypass-hooks', '--send-mail', '--no-autocc']
       if bot_commit:
         upload_cmd.append('--set-bot-commit')
       self.m.git(*upload_cmd)

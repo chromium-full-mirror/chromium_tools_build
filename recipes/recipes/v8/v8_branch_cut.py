@@ -73,8 +73,7 @@ def update_infra_config(api, definitions):
         api.step('Lucicfg format', ['lucicfg', 'format'])
         api.step('Lucicfg generate', ['lucicfg', 'main.star'])
         api.v8.git_output('commit', '-am', 'Branch cut')
-        api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
-                          '--no-python2-post-upload-hooks',)
+        api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail')
         issue = get_issue(api)
         parent_step.presentation.links[issue] = issue
 

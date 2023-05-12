@@ -401,7 +401,6 @@
       "--bypass-hooks",
       "--send-mail",
       "--no-autocc",
-      "--no-python2-post-upload-hooks",
       "--set-bot-commit"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -709,7 +708,6 @@
       "--bypass-hooks",
       "--send-mail",
       "--no-autocc",
-      "--no-python2-post-upload-hooks",
       "--set-bot-commit"
     ],
     "cwd": "[CACHE]/builder/v8",
