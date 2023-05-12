@@ -68,9 +68,23 @@ class CronetApi(recipe_api.RecipeApi):
       return 'chromium-cronet/experimental/%s' % platform
     return 'chromium-cronet/%s' % platform
 
+  def get_default_cronet_dir(self):
+    return self.m.path['checkout'].join('out',
+                                        self.m.chromium_android.c.BUILD_CONFIG,
+                                        'cronet')
+
+  def generate_changelist(self, cronetdir=None):
+    cronetdir = cronetdir or self.get_default_cronet_dir()
+    cmd = [
+        'python3',
+        self.resource('generate_changelist.py'), "--git_dir",
+        self.m.path['checkout'], "--output_file",
+        cronetdir.join('CHANGELIST')
+    ]
+    return self.m.step('generate changelist file', cmd)
+
   def upload_package(self, build_config, cronetdir=None, platform='android'):
-    cronetdir = cronetdir or self.m.path['checkout'].join(
-        'out', self.m.chromium_android.c.BUILD_CONFIG, 'cronet')
+    cronetdir = cronetdir or self.get_default_cronet_dir()
     destdir = self.get_version() + '/' + build_config
     # Upload cronet version first to ensure that destdir is created.
     self.m.gsutil.upload(

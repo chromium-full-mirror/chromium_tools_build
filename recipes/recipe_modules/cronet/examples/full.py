@@ -52,6 +52,7 @@ def RunSteps(api):
   cronet = api.cronet
   cronet.init_and_sync(recipe_config, kwargs,
                        chromium_apply_config=chromium_apply_config)
+  cronet.generate_changelist()
 
   use_goma = builder_config.get('use_goma', True)
   raw_result = cronet.build(use_goma=use_goma)

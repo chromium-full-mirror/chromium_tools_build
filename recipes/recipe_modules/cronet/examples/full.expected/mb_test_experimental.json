@@ -230,6 +230,29 @@
     "name": "clean local files"
   },
   {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::cronet]/resources/generate_changelist.py",
+      "--git_dir",
+      "[START_DIR]/src",
+      "--output_file",
+      "[START_DIR]/src/out/Release/cronet/CHANGELIST"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "generate changelist file"
+  },
+  {
     "cmd": [],
     "name": "ensure_goma"
   },
