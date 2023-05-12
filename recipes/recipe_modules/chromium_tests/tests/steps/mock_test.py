@@ -15,8 +15,7 @@ from RECIPE_MODULES.build.chromium_tests import steps
 
 def RunSteps(api):
   test_spec = steps.MockTestSpec.create(
-      name=api.properties.get('test_name', 'MockTest'),
-      abort_on_failure=api.properties.get('abort_on_failure', False))
+      name=api.properties.get('test_name', 'MockTest'))
   test = test_spec.get_test(api.chromium_tests)
 
   test.pre_run('')
@@ -26,10 +25,7 @@ def RunSteps(api):
   except api.step.InfraFailure:
     api.step.empty('infra failure in %s' % test.name)
   except api.step.StepFailure:
-    if test.abort_on_failure:
-      api.step.empty('fatal step failure in %s' % test.name)
-    else:
-      api.step.empty('step failure in %s' % test.name)
+    api.step.empty('step failure in %s' % test.name)
 
 
 def GenTests(api):
@@ -49,16 +45,6 @@ def GenTests(api):
       api.chromium_tests.override_step_data(
           'base_unittests', retcode=failure_code),
       api.post_process(post_process.MustRun, 'step failure in base_unittests'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'failure_abort',
-      api.properties(abort_on_failure=True, test_name='base_unittests'),
-      api.chromium_tests.override_step_data(
-          'base_unittests', retcode=failure_code),
-      api.post_process(post_process.MustRun,
-                       'fatal step failure in base_unittests'),
       api.post_process(post_process.DropExpectation),
   )
 

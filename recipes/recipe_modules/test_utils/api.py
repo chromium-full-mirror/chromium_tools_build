@@ -1080,15 +1080,14 @@ class TestGroup:
     """
     raise NotImplementedError()
 
-  def _run_func(self, test, test_func, api, suffix, raise_on_failure):
+  def _run_func(self, test_func, api, suffix):
     """Runs a function on a test, and handles errors appropriately."""
     try:
       test_func(suffix)
     except api.step.InfraFailure:
       raise
     except api.step.StepFailure:
-      if raise_on_failure and test.abort_on_failure:
-        raise
+      pass
 
   def include_rdb_invocation(self, suffix,
                              step_name='include test invocations'):
@@ -1170,12 +1169,12 @@ class LocalGroup(TestGroup):
   def pre_run(self, api, suffix):
     """Executes the |pre_run| method of each test."""
     for t in self._test_suites:
-      self._run_func(t, t.pre_run, api, suffix, False)
+      self._run_func(t.pre_run, api, suffix)
 
   def run(self, api, suffix):
     """Executes the |run| method of each test."""
     for t in self._test_suites:
-      self._run_func(t, t.run, api, suffix, True)
+      self._run_func(t.run, api, suffix)
       self.fetch_rdb_results(t, suffix, api.flakiness)
 
     self.include_rdb_invocation(
@@ -1283,7 +1282,7 @@ class SkylabGroup(TestGroup):
       # can not separate the flaky tests and deterministic failures.
       self.fetch_rdb_results(
           t, suffix, api.flakiness, force_fetch_all_results=True)
-      self._run_func(t, t.run, api, suffix, True)
+      self._run_func(t.run, api, suffix)
 
     self.include_rdb_invocation(
         suffix, step_name='include skylab_test_runner invocations')

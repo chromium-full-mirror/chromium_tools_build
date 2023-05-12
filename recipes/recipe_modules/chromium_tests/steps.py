@@ -477,11 +477,6 @@ class Test:
         'This test %s does not support test options objects yet' % type(self))
 
   @property
-  def abort_on_failure(self):
-    """If True, abort build when test fails."""
-    return False
-
-  @property
   def name(self):
     return self.spec.name
 
@@ -1060,10 +1055,6 @@ class TestWrapper(Test):  # pragma: no cover
     self._test.test_options = value
 
   @property
-  def abort_on_failure(self):
-    return self._test.abort_on_failure
-
-  @property
   def name(self):
     return self._test.name
 
@@ -1260,10 +1251,6 @@ class ExperimentalTest(TestWrapper):
     should be safe.
     """
     return super().has_valid_results(self._experimental_suffix(suffix))
-
-  @property
-  def abort_on_failure(self):
-    return False
 
   #override
   def pre_run(self, suffix):
@@ -2581,7 +2568,6 @@ class MockTestSpec(TestSpec):
   """Spec for a mock test.
 
   Attributes:
-    * abort_on_failure - Whether the test should be aborted on failure.
     * failures - The test cases to report as failures.
     * has_valid_results - Whether the test has valid results.
     * per_suffix_failures - A mapping of suffix to the test cases to
@@ -2593,7 +2579,6 @@ class MockTestSpec(TestSpec):
       |get_invocation_names| method.
   """
 
-  abort_on_failure = attrib(bool, default=False)
   failures = attrib(sequence[str], default=())
   has_valid_results = attrib(bool, default=True)
   per_suffix_failures = attrib(mapping[str, sequence[str]], default={})
@@ -2682,10 +2667,6 @@ class MockTest(Test):
   @property
   def supports_inverted_rts(self):
     return self.spec.supports_rts
-
-  @property
-  def abort_on_failure(self):
-    return self.spec.abort_on_failure
 
 
 @attrs()

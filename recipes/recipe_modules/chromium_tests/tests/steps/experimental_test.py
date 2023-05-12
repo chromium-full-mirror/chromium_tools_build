@@ -51,7 +51,6 @@ def RunSteps(api):
   )
   mock_test_spec = steps.MockTestSpec.create(
       'inner_test',
-      abort_on_failure=api.properties.get('abort_on_failure', False),
       has_valid_results=api.properties.get('has_valid_results', True),
       failures=api.properties.get('failures'),
       option_flags=option_flags)
@@ -85,7 +84,6 @@ def RunSteps(api):
   assert experimental_test.has_valid_results('')
   assert not experimental_test.failures('')
   assert not experimental_test.deterministic_failures('')
-  assert not experimental_test.abort_on_failure
 
   experimental_test_spec = experimental_test_spec.add_info_message(
       'This is an experimental test')
@@ -187,18 +185,6 @@ def GenTests(api):
       ),
       api.properties(experiment_percentage='100'),
       api.override_step_data('inner_test (experimental)', retcode=1),
-      api.post_process(post_process.MustRun, 'inner_test (experimental)'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'abort_on_failure',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          experiment_percentage='100', failures=['foo'], abort_on_failure=True),
       api.post_process(post_process.MustRun, 'inner_test (experimental)'),
       api.post_process(post_process.DropExpectation),
   )

@@ -36,7 +36,6 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as rdb_common
 
 PROPERTIES = {
-    'abort_on_failure': Property(default=False),
     'test_swarming': Property(default=False),
     'test_skylab': Property(default=False),
     'test_experimental': Property(default=False),
@@ -47,7 +46,7 @@ PROPERTIES = {
 
 
 def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
-             abort_on_failure, retry_failed_shards, retry_invalid_shards):
+             retry_failed_shards, retry_invalid_shards):
   api.chromium.set_config('chromium')
   api.chromium.set_build_properties({
       'got_webrtc_revision': 'webrtc_sha',
@@ -119,8 +118,7 @@ def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
     ]
   else:
     test_specs = [
-        steps.MockTestSpec.create(
-            name=test_name, abort_on_failure=abort_on_failure),
+        steps.MockTestSpec.create(name=test_name),
         steps.MockTestSpec.create(name='test2')
     ]
 
@@ -269,17 +267,6 @@ def GenTests(api):
       api.properties(test_name='base_unittests'),
       api.override_step_data('base_unittests', retcode=failure_code),
       api.post_process(post_process.MustRun, 'test2'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'failure_abort',
-      api.chromium.generic_build(
-          builder_group='test_group', builder='test_builder'),
-      api.properties(test_name='base_unittests', abort_on_failure=True),
-      api.override_step_data('base_unittests', retcode=failure_code),
-      api.post_process(post_process.DoesNotRun, 'test2'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
