@@ -52,8 +52,9 @@ def RunSteps(api):
       limit=1,
   )
   if last_merged_change_list:
-    last_merged_date = datetime.date.fromtimestamp(
-        last_merged_change_list[0]['updated'])
+    last_merged_date = datetime.datetime.strptime(
+        last_merged_change_list[0]['updated'],
+        '%Y-%m-%d %H:%M:%S.%f000').date()
     current_date = datetime.date.fromtimestamp(api.time.time())
     if (current_date - last_merged_date).days < 7:
       return result_pb2.RawResult(
@@ -180,9 +181,14 @@ def GenTests(api):
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'updated': current_timestamp - 86400 * 8,
+              'subject':
+                  'Autosharder CL',
+              '_number':
+                  '12345',
+              'updated':
+                  datetime.date.fromtimestamp(current_timestamp -
+                                              86400 * 8).strftime(
+                                                  '%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.post_process(post_process.MustRun, 'git cl status'),
@@ -199,9 +205,14 @@ def GenTests(api):
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'updated': current_timestamp - 86400 * 8,
+              'subject':
+                  'Autosharder CL',
+              '_number':
+                  '12345',
+              'updated':
+                  datetime.date.fromtimestamp(current_timestamp -
+                                              86400 * 8).strftime(
+                                                  '%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -224,9 +235,14 @@ def GenTests(api):
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'updated': current_timestamp - 86400 * 2,
+              'subject':
+                  'Autosharder CL',
+              '_number':
+                  '12345',
+              'updated':
+                  datetime.date.fromtimestamp(current_timestamp -
+                                              86400 * 2).strftime(
+                                                  '%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.post_process(post_process.DropExpectation),
@@ -238,9 +254,14 @@ def GenTests(api):
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'updated': current_timestamp - 86400 * 8,
+              'subject':
+                  'Autosharder CL',
+              '_number':
+                  '12345',
+              'updated':
+                  datetime.date.fromtimestamp(current_timestamp -
+                                              86400 * 8).strftime(
+                                                  '%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -267,9 +288,14 @@ def GenTests(api):
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'updated': current_timestamp - 86400 * 8,
+              'subject':
+                  'Autosharder CL',
+              '_number':
+                  '12345',
+              'updated':
+                  datetime.date.fromtimestamp(current_timestamp -
+                                              86400 * 8).strftime(
+                                                  '%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -299,9 +325,14 @@ def GenTests(api):
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'updated': current_timestamp - 86400 * 8,
+              'subject':
+                  'Autosharder CL',
+              '_number':
+                  '12345',
+              'updated':
+                  datetime.date.fromtimestamp(current_timestamp -
+                                              86400 * 8).strftime(
+                                                  '%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -328,9 +359,14 @@ def GenTests(api):
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{
-              'subject': 'Autosharder CL',
-              '_number': '12345',
-              'updated': current_timestamp - 86400 * 8,
+              'subject':
+                  'Autosharder CL',
+              '_number':
+                  '12345',
+              'updated':
+                  datetime.date.fromtimestamp(current_timestamp -
+                                              86400 * 8).strftime(
+                                                  '%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
