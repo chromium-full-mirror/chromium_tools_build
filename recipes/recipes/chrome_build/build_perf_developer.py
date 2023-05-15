@@ -97,7 +97,9 @@ def _incremental_builds_with_patch(api, target):
   with api.step.nest('Incremental builds with patch'):
     # Get a revision from the last job of this builder.
     builds = api.buildbucket.search(
-        builds_service_pb.BuildPredicate(builder=api.buildbucket.build.builder),
+        builds_service_pb.BuildPredicate(
+            builder=api.buildbucket.build.builder,
+            status=common_pb.Status.ENDED_MASK),
         limit=1)
     last_rev = None
     if builds:
