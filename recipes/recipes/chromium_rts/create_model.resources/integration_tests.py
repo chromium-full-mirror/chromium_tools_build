@@ -66,7 +66,9 @@ def temp_dir():
 
 @contextlib.contextmanager
 def code_change(checkout_dir):
-  file_name = os.path.join(checkout_dir, 'chrome', 'browser', 'browser.cc')
+  file_name = os.path.join(checkout_dir, 'chrome', 'browser', 'ui',
+                           'browser.cc')
+  assert os.path.isfile(file_name), file_name
   add_blank_line(file_name)
   try:
     git(checkout_dir, 'add', file_name)
