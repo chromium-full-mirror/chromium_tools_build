@@ -30,6 +30,7 @@ tests this can be disabled by adding this footer to your CL message:
 
     Disable-Rts: True
 
+See https://bit.ly/regression-test-selection for more information on RTS
 '''
 
 
