@@ -50,7 +50,7 @@ def RunSteps(api):
   ]
   builds = api.buildbucket.run(
       requests,
-      timeout=5 * 60 * 60,  # timeout=5h
+      timeout=6 * 60 * 60 + 60 * 10,  # max execuation timeout + buffer.
       url_title_fn=lambda b: b.builder.builder,
   )
 
