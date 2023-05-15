@@ -307,52 +307,6 @@ class Generator:
     kwargs['name'] = name
     kwargs['resultdb'] = self._handle_resultdb(raw_test_spec)
 
-    processed_set_ups = []
-    for s in raw_test_spec.get('setup', []):
-      script = s.get('script')
-      if script:
-        if script.startswith('//'):
-          set_up = dict(s)
-          set_up['script'] = self._checkout_path.join(script[2:].replace(
-              '/', self._chromium_tests_api.m.path.sep))
-          processed_set_ups.append(steps.SetUpScript.create(**set_up))
-        else:
-          self._chromium_tests_api.m.step.empty(
-              'test spec format error',
-              status=self._chromium_tests_api.m.step.FAILURE,
-              log_name='details',
-              log_text=textwrap.wrap(
-                  textwrap.dedent("""\
-                      The test target "%s" contains a custom set up script "%s"
-                      that doesn't match the expected format. Custom set up script
-                      entries should be a path relative to the top-level chromium
-                      src directory and should start with "//".
-                      """ % (name, script))))
-    kwargs['set_up'] = processed_set_ups
-
-    processed_tear_downs = []
-    for t in raw_test_spec.get('teardown', []):
-      script = t.get('script')
-      if script:
-        if script.startswith('//'):
-          tear_down = dict(t)
-          tear_down['script'] = self._checkout_path.join(script[2:].replace(
-              '/', self._chromium_tests_api.m.path.sep))
-          processed_tear_downs.append(steps.TearDownScript.create(**tear_down))
-        else:
-          self._chromium_tests_api.m.step.empty(
-              'test spec format error',
-              status=self._chromium_tests_api.m.step.FAILURE,
-              log_name='details',
-              log_text=textwrap.wrap(
-                  textwrap.dedent("""\
-                      The test target "%s" contains a custom tear down script "%s"
-                      that doesn't match the expected format. Custom tear down
-                      script entries should be a path relative to the top-level
-                      chromium src directory and should start with "//".
-                      """ % (name, script))))
-    kwargs['tear_down'] = processed_tear_downs
-
     swarming_spec = raw_test_spec.get('swarming', {})
     if not swarming_spec.get('can_use_on_swarming_builders'):
       test_spec = local_delegate(raw_test_spec, **kwargs)

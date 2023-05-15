@@ -151,20 +151,6 @@ def GenTests(api):
               'merge': {
                   'script': '//path/to/script.py',
               },
-              'setup': [{
-                  'name': 'setup1',
-                  'script': '//path/to/setup1.py'
-              }, {
-                  'name': 'setup2',
-                  'script': '//path/to/setup2.py'
-              }],
-              'teardown': [{
-                  'name': 'teardown1',
-                  'script': '//path/to/teardown1.py'
-              }, {
-                  'name': 'teardown2',
-                  'script': '//path/to/teardown2.py'
-              }],
               'swarming': {
                   'can_use_on_swarming_builders': True,
               },
@@ -196,60 +182,6 @@ def GenTests(api):
           'test_pre_run.[trigger] base_unittests', lambda check, req: check(
               req.service_account == 'test-account@serviceaccount.com')),
       api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'bad tear down',
-      ci_build(
-          test_spec={
-              'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
-              'merge': {
-                  'script': '//path/to/script.py',
-              },
-              'teardown': [{
-                  'name': 'teardown1',
-                  'script': '//path/to/teardown1.py'
-              }, {
-                  'name': 'teardown2',
-                  'script': 'path/to/teardown2.py'
-              }],
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
-          }),
-      test_spec_format_error(
-          'contains a custom tear down script "path/to/teardown2.py"'
-          " that doesn't match the expected format"),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'bad set up',
-      ci_build(
-          test_spec={
-              'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
-              'merge': {
-                  'script': '//path/to/script.py',
-              },
-              'setup': [{
-                  'name': 'setup1',
-                  'script': '//path/to/setup1.py'
-              }, {
-                  'name': 'setup2',
-                  'script': 'path/to/setup2.py'
-              }],
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
-          }),
-      test_spec_format_error(
-          'contains a custom set up script "path/to/setup2.py"'
-          " that doesn't match the expected format"),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
   )
 
   yield api.test(

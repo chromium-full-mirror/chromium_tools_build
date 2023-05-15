@@ -24,37 +24,11 @@ def RunSteps(api):
   if api.properties.get('local_gtest'):
     test_specs.append(steps.LocalGTestTestSpec.create('base_unittests'))
   if api.properties.get('swarming_gtest'):
-    test_specs.append(
-        steps.SwarmingGTestTestSpec.create(
-            'base_unittests',
-            set_up=[
-                steps.SetUpScript.create(
-                    name='set_up',
-                    script=api.path['cache'].join('set_up_script'),
-                    args=[])
-            ],
-            tear_down=[
-                steps.TearDownScript.create(
-                    name='tear_down',
-                    script=api.path['cache'].join('tear_down_script'),
-                    args=[])
-            ]))
+    test_specs.append(steps.SwarmingGTestTestSpec.create('base_unittests'))
   if api.properties.get('local_isolated_script_test'):
     test_specs.append(
         steps.LocalIsolatedScriptTestSpec.create(
             'base_unittests',
-            set_up=[
-                steps.SetUpScript.create(
-                    name='set_up',
-                    script=api.path['cache'].join('set_up_script'),
-                    args=[])
-            ],
-            tear_down=[
-                steps.TearDownScript.create(
-                    name='tear_down',
-                    script=api.path['cache'].join('tear_down_script'),
-                    args=[])
-            ],
             override_compile_targets=['base_unittests_run']))
   if api.properties.get('script_test'):
     test_specs.append(
@@ -150,8 +124,6 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(swarming_gtest=True),
-      api.post_process(post_process.StepSuccess, 'set_up'),
-      api.post_process(post_process.StepSuccess, 'tear_down'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -171,8 +143,6 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(local_isolated_script_test=True,),
-      api.post_process(post_process.StepSuccess, 'set_up'),
-      api.post_process(post_process.StepSuccess, 'tear_down'),
       api.post_process(post_process.DropExpectation),
   )
 

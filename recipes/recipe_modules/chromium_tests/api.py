@@ -1268,19 +1268,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.m.code_coverage.src_dir = self.m.chromium_checkout.src_dir
       self.m.profiles.src_dir = self.m.chromium_checkout.src_dir
 
-      for test in (tests or []):
-        for set_up_step in (test.set_up or []):
-          self.m.step(set_up_step.name,
-                      ['python', set_up_step.script] + list(set_up_step.args))
       try:
         yield
       finally:
-        for test in (tests or []):
-          for tear_down_step in (test.tear_down or []):
-            self.m.step(
-                tear_down_step.name,
-                (['python', tear_down_step.script] + list(tear_down_step.args)))
-
         checkout_dir = self.m.chromium_checkout.src_dir
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
           if require_device_steps:

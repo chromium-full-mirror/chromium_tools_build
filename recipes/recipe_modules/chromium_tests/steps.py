@@ -456,14 +456,6 @@ class Test:
     self._is_inverted_rts = False
 
   @property
-  def set_up(self):
-    return None
-
-  @property
-  def tear_down(self):
-    return None
-
-  @property
   def option_flags(self):
     return _DEFAULT_OPTION_FLAGS
 
@@ -1035,14 +1027,6 @@ class TestWrapper(Test):  # pragma: no cover
     self._test = test
 
   @property
-  def set_up(self):
-    return self._test.set_up
-
-  @property
-  def tear_down(self):
-    return self._test.tear_down
-
-  @property
   def option_flags(self):
     return self._test.option_flags
 
@@ -1478,47 +1462,6 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
 
 
 @attrs()
-class SetUpScript:
-  """Configuration of a script to run before test execution.
-
-  Attributes:
-    * name - The name of the step to execute the script.
-    * script - The path to the script.
-    * args - The command-line arguments to pass to the script.
-  """
-
-  name = attrib(str)
-  script = attrib(Path)
-  args = attrib(command_args, default=())
-
-  @classmethod
-  def create(cls, **kwargs):
-    """Create a SetUpScript with attributes initialized with kwargs."""
-    return cls(**kwargs)
-
-
-@attrs()
-class TearDownScript:
-  """Configuration of a script to run after test execution.
-
-  Attributes:
-    * name - The name of the step to execute the script.
-    * script - The path to the script.
-    * args - The command-line arguments to pass to the script.
-  """
-
-  name = attrib(str)
-  script = attrib(Path)
-  args = attrib(command_args, default=())
-
-  @classmethod
-  def create(cls, **kwargs):
-    """Create a TearDownScript with attributes initialized with kwargs.
-    """
-    return cls(**kwargs)
-
-
-@attrs()
 class LocalGTestTestSpec(TestSpec):
   """A spec for a test that runs a gtest-based test locally.
 
@@ -1534,8 +1477,6 @@ class LocalGTestTestSpec(TestSpec):
     * use_xvfb - Whether to use the X virtual frame buffer. Only has an
       effect on Linux. Mostly harmless to set this, except on GPU
       builders.
-    * set_up - Scripts to run before running the test.
-    * tear_down - Scripts to run after running the test.
   """
 
   args = attrib(command_args, default=())
@@ -1543,8 +1484,6 @@ class LocalGTestTestSpec(TestSpec):
   android_shard_timeout = attrib(int, default=None)
   commit_position_property = attrib(str, default='got_revision_cp')
   use_xvfb = attrib(bool, default=True)
-  set_up = attrib(sequence[SetUpScript], default=())
-  tear_down = attrib(sequence[TearDownScript], default=())
 
   @property
   def test_class(self):
@@ -1557,14 +1496,6 @@ class LocalGTestTest(LocalTest):
   @Test.test_options.setter
   def test_options(self, value):
     self._test_options = value
-
-  @property
-  def set_up(self):
-    return self.spec.set_up
-
-  @property
-  def tear_down(self):
-    return self.spec.tear_down
 
   @property
   def option_flags(self):
@@ -1745,8 +1676,6 @@ class SwarmingTestSpec(TestSpec):
       allow the task to be silent (no stdout or stderr).
     * trigger_script - An optional script used for triggering the test's
       swarming tasks.
-    * set_up - Scripts to run before running the test.
-    * tear_down - Scripts to run after running the test.
     * merge - An optional script used for merging results between the
       test's swarming tasks.
     * args - Arguments to be passed to the test.
@@ -1774,8 +1703,6 @@ class SwarmingTestSpec(TestSpec):
   hard_timeout = attrib(int, default=None)
   io_timeout = attrib(int, default=None)
   trigger_script = attrib(chromium_swarming.TriggerScript, default=None)
-  set_up = attrib(sequence[SetUpScript], default=())
-  tear_down = attrib(sequence[TearDownScript], default=())
   merge = attrib(chromium_swarming.MergeScript, default=None)
   args = attrib(command_args, default=())
   isolate_profile_data = attrib(bool, False)
@@ -1901,14 +1828,6 @@ class SwarmingTest(Test):
       os = self.spec.dimensions.get('os', '')
       return os.startswith('Windows')
     return False
-
-  @property
-  def set_up(self):
-    return self.spec.set_up
-
-  @property
-  def tear_down(self):
-    return self.spec.tear_down
 
   @property
   def runs_on_swarming(self):
@@ -2266,8 +2185,6 @@ class LocalIsolatedScriptTestSpec(TestSpec):
     * override_compile_targets - An optional list of compile targets to
       be built to run the test. If not provided the `target_name`
       attribute of the spec will be the only compile target.
-    * set_up - Scripts to run before running the test.
-    * tear_down - Scripts to run after running the test.
     * results_handler_name - A name identifying the type of
       `ResultsHandler` that will be used for processing the test
       results:
@@ -2280,8 +2197,6 @@ class LocalIsolatedScriptTestSpec(TestSpec):
 
   args = attrib(command_args, default=())
   override_compile_targets = attrib(sequence[str], default=())
-  set_up = attrib(sequence[SetUpScript], default=())
-  tear_down = attrib(sequence[TearDownScript], default=())
   results_handler_name = attrib(
       enum(ALLOWED_RESULT_HANDLER_NAMES), default='default')
   isolate_profile_data = attrib(bool, False)
@@ -2298,14 +2213,6 @@ class LocalIsolatedScriptTest(LocalTest):
     super().__init__(spec, chromium_tests_api)
     self.raw_cmd = []
     self.relative_cwd = None
-
-  @property
-  def set_up(self):
-    return self.spec.set_up
-
-  @property
-  def tear_down(self):
-    return self.spec.tear_down
 
   @property
   def option_flags(self):
