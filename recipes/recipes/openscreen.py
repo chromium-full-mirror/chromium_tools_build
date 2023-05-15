@@ -54,6 +54,12 @@ FLEX_CI_POOL = 'luci.flex.ci'
 POOL_DIMENSION = 'pool'
 
 
+# This is almost certainly not right, but api.path objects are absolute paths on
+# the bot, not the relative paths required by swarming tasks.
+def OutputRelativePath(binary_name):
+  return './out/{}/{}'.format(BUILD_CONFIG, binary_name)
+
+
 class RepositoryPaths:
   """Container for checkout_path dependent repository paths, such as
      unit test binary location.
@@ -229,22 +235,35 @@ def CheckSwarmingResults(api, name, results):
       result.analyze()
 
 
-def GenerateRequest(api, binary, digest, dimensions):
-  """Generates a swarming request to run a |binary| from out/Default using
-  the CAS digest |digest|.
+class SwarmRequest:
+  """A class to represent the data necessary to generate a swarming request.
+
+  Attributes:
+    cas_digest: the digest used to download the executables for this request
+        from CAS, the test storage server.
+    binary_path (string): the path to the binary to execute.
+    task_name (string): the name to be used for the task steps associated with
+        this request.
+  """
+
+  def __init__(self, cas_digest, binary_path, task_name):
+    self.cas_digest = cas_digest
+    self.binary_path = binary_path
+    self.task_name = task_name
+
+
+def TriggerTest(api, dimensions, swarm_request):
+  """Triggers a swarming test request.
 
   Args:
       api (recipe_api.RecipeApi): API generated from recipe dependencies.
-      binary (str): Binary to execute, such as unittests.
-      digest (str): CAS digest to download as part of execution.
       dimensions (dict of str=>str): Dimensions to be used to generate a
           request. Must be valid swarming selection dimensions to be
           unpacked as **kwargs, such as pool or os.
-
-  Returns:
-    TaskRequest: task request to execute on swarming bot.
+      swarm_request(SwarmRequest): the information used to start the swarming
+          request.
   """
-  request = api.swarming.task_request().with_name(binary)
+  request = api.swarming.task_request().with_name(swarm_request.task_name)
 
   # Quick note about the swarming API. Swarming Tasks are composed of "slices"
   # made of individual TaskRequest objects. The task_request() getter returns
@@ -253,44 +272,10 @@ def GenerateRequest(api, binary, digest, dimensions):
   # For more information, see the swarming guide:
   # https://chromium.googlesource.com/infra/luci/luci-py/+/main/appengine/swarming/doc/User-Guide.md#task #pylint: disable=line-too-long
   task_slice = request[0].with_command([
-      './out/{}/{}'.format(BUILD_CONFIG, binary)
-  ]).with_dimensions(**dimensions).with_cas_input_root(digest)
+      swarm_request.binary_path
+  ]).with_dimensions(**dimensions).with_cas_input_root(swarm_request.cas_digest)
 
   request = request.with_slice(0, task_slice)
-  return request
-
-
-class SwarmRequest:
-  """A class to represent the data necessary to generate a swarming request.
-
-  Attributes:
-    cas_digest: the digest used to download the executables for this request
-        from CAS, the test storage server.
-    binary_name (string): the name of the binary to execute.
-    task_name (string): the name to be used for the task steps associated with
-        this request.
-  """
-
-  def __init__(self, cas_digest, binary_name, task_name):
-    self.cas_digest = cas_digest
-    self.binary_name = binary_name
-    self.task_name = task_name
-
-
-def TriggerTest(api, paths, dimensions, swarm_request):
-  """Triggers a swarming test request.
-
-  Args:
-      api (recipe_api.RecipeApi): API generated from recipe dependencies.
-      paths (RepositoryPaths): Checkout-dependent repository files.
-      dimensions (dict of str=>str): Dimensions to be used to generate a
-          request. Must be valid swarming selection dimensions to be
-          unpacked as **kwargs, such as pool or os.
-      swarm_request(SwarmRequest): the information used to start the swarming
-          request.
-  """
-  request = GenerateRequest(api, swarm_request.binary_name,
-                            swarm_request.cas_digest, dimensions)
   return api.swarming.trigger(
       f'trigger {swarm_request.task_name}', requests=[request])
 
@@ -331,12 +316,14 @@ def SwarmTests(api, paths, dimensions):
   """
 
   cas_digest = UploadOpenscreenTestFilesToCas(api, paths)
-  unit_tests_request = SwarmRequest(cas_digest, UNIT_TEST_BINARY_NAME,
+  unit_tests_request = SwarmRequest(cas_digest,
+                                    OutputRelativePath(UNIT_TEST_BINARY_NAME),
                                     'unit tests')
-  e2e_tests_request = SwarmRequest(cas_digest, E2E_TEST_BINARY_NAME,
+  e2e_tests_request = SwarmRequest(cas_digest,
+                                   OutputRelativePath(E2E_TEST_BINARY_NAME),
                                    'e2e tests')
-  unit_test_metadata = TriggerTest(api, paths, dimensions, unit_tests_request)
-  e2e_test_metadata = TriggerTest(api, paths, dimensions, e2e_tests_request)
+  unit_test_metadata = TriggerTest(api, dimensions, unit_tests_request)
+  e2e_test_metadata = TriggerTest(api, dimensions, e2e_tests_request)
 
   # Generate, trigger, and collect results for a request to run the cast
   # standalone end to end tests, if certificate support is configured for this
@@ -346,7 +333,7 @@ def SwarmTests(api, paths, dimensions):
   if (cast_certificate_enabled):
     cast_request = SwarmRequest(cas_digest, CAST_E2E_TEST_SCRIPT_NAME,
                                 'cast streaming e2e tests')
-    cast_metadata = TriggerTest(api, paths, dimensions, cast_request)
+    cast_metadata = TriggerTest(api, dimensions, cast_request)
     CollectTest(api, paths, dimensions, cast_request, cast_metadata)
 
   CollectTest(api, paths, dimensions, unit_tests_request, unit_test_metadata)
