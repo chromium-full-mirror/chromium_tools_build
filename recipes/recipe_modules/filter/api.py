@@ -182,7 +182,7 @@ class FilterApi(recipe_api.RecipeApi):
     with self.m.context(env=self.m.chromium.c.gyp_env.as_jsonish()):
       return self.m.step(
           'analyze', [
-              'python',
+              'python3',
               self.m.path['checkout'].join('build', 'gyp_chromium'),
               '--analyzer',
               self.m.json.input(analyze_input),
