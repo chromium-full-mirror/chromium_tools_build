@@ -42,8 +42,7 @@ def GenTests(api):
     return (api.v8.test(builder_group, builder_name) + api.step_data(
         'Code coverage.read build config',
         api.json.output({
-            'is_debug': is_debug,
-            'dcheck_always_on': False,
+            'DEBUG_defined': is_debug,
             'target_cpu': target_cpu
         })) + api.post_process(
             post_process.StepEnvContains,

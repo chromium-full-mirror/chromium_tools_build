@@ -894,8 +894,8 @@ class V8Api(recipe_api.RecipeApi):
     """Returns the given build type: 'debug' if gn args is_debug or
     dcheck_always_on are set, 'release' otherwise.
     """
-    debug = (self.build_config['is_debug'] or
-             self.build_config['dcheck_always_on'])
+    debug = (self.build_config.get('is_DEBUG_defined', False) or
+             self.build_config.get('DEBUG_defined', False))
     return 'debug' if debug else 'release'
 
   def maybe_create_clusterfuzz_archive(self, update_step):
