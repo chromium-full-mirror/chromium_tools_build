@@ -150,7 +150,6 @@ def RunSteps(api):
   upload_args = [
       '--cq-dry-run',
       '--bypass-hooks',
-      '--no-python2-post-upload-hooks',
       '--enable-auto-submit',
       '-r',
       'sshrimp@google.com',
