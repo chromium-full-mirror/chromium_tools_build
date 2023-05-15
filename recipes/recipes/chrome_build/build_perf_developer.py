@@ -34,7 +34,7 @@ DEPS = [
 
 
 def _incremental_build_with_one_day_changes(api, target):
-  """Steps to run an incremenatl build with 1-day of changes
+  """Steps to run an incremental build with 1-day of changes
      (a.k.a morning build).
   """
   time_format = '%Y-%m-%d %H:%M:%S %z'
@@ -88,7 +88,7 @@ def _incremental_build_with_one_day_changes(api, target):
 
 
 def _incremental_builds_with_patch(api, target):
-  """Steps to run incremenatl builds with a patch, which represent builds with
+  """Steps to run incremental builds with a patch, which represent builds with
      local modifications.
 
   It builds for each revision of the git history excluding bot commits.
@@ -208,7 +208,7 @@ def RunSteps(api):
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  # Incrmenal build with 1-day of changes. a.k.a morning build.
+  # Incremental build with 1-day of changes. a.k.a morning build.
   raw_result = _incremental_build_with_one_day_changes(api, target)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
