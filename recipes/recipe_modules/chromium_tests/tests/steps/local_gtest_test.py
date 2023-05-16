@@ -49,7 +49,6 @@ def RunSteps(api):
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [
         'compile_targets: %r' % test.compile_targets(),
-        'step_metadata: %s' % api.json.dumps(test.step_metadata('with patch')),
         'uses_local_devices: %r' % test.uses_local_devices,
     ]
 

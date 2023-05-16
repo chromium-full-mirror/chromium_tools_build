@@ -825,17 +825,6 @@ class Test:
     # test names for Quick Run and Inverted Quick Run
     return step_name
 
-  def step_metadata(self, suffix=None):
-    data = {
-        'waterfall_builder_group': self.spec.waterfall_builder_group,
-        'waterfall_buildername': self.spec.waterfall_buildername,
-        'canonical_step_name': self.canonical_name,
-        'isolate_target_name': self.isolate_target,
-    }
-    if suffix is not None:
-      data['patched'] = suffix in ('with patch', 'retry shards with patch')
-    return data
-
   def with_patch_failures_including_retry(self):
     return self.failures_including_retry('with patch')
 
@@ -1091,9 +1080,6 @@ class TestWrapper(Test):  # pragma: no cover
   @property
   def uses_local_devices(self):
     return self._test.uses_local_devices
-
-  def step_metadata(self, suffix=None):
-    return self._test.step_metadata(suffix=suffix)
 
   @property
   def target_name(self):
@@ -2088,7 +2074,7 @@ class SwarmingTest(Test):
     step_result, _ = (
         self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
 
-    metadata = self.step_metadata(suffix)
+    metadata = self._step_metadata(suffix)
     metadata['full_step_name'] = '.'.join(step_result.name_tokens)
     step_result.presentation.logs['step_metadata'] = (self.api.m.json.dumps(
         metadata, indent=2, sort_keys=True)).splitlines()
@@ -2101,8 +2087,13 @@ class SwarmingTest(Test):
 
     return step_result
 
-  def step_metadata(self, suffix=None):
-    data = super().step_metadata(suffix)
+  def _step_metadata(self, suffix):
+    data = {
+        'waterfall_builder_group': self.spec.waterfall_builder_group,
+        'waterfall_buildername': self.spec.waterfall_buildername,
+        'canonical_step_name': self.canonical_name,
+        'isolate_target_name': self.isolate_target,
+    }
     if suffix is not None:
       data['patched'] = suffix in ('with patch', 'retry shards with patch')
       data['dimensions'] = self._tasks[suffix].request[0].dimensions
