@@ -482,11 +482,6 @@ class Test:
     return self.spec.target_name
 
   @property
-  def full_test_target(self):
-    """A fully qualified Ninja target, e.g. "//chrome/test:browser_tests"."""
-    return self.spec.full_test_target
-
-  @property
   def check_flakiness_for_new_tests(self):
     """Whether to check flakiness for new tests in try jobs.
 
@@ -1030,10 +1025,6 @@ class TestWrapper(Test):  # pragma: no cover
   @property
   def name(self):
     return self._test.name
-
-  @property
-  def full_test_target(self):
-    return self._test.full_test_target
 
   @property
   def check_flakiness_for_new_tests(self):
@@ -2012,7 +2003,7 @@ class SwarmingTest(Test):
 
     # Add tags.
     tags = {
-        'ninja_target': [self.full_test_target or ''],
+        'ninja_target': [self.spec.full_test_target or ''],
         # TODO(crbug/1106965): remove test_id_prefix from tags, if deriver
         # gets turned down.
         'test_id_prefix': [self.test_id_prefix or ''],
