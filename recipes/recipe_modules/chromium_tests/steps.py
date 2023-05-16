@@ -498,14 +498,6 @@ class Test:
     return self.spec.test_id_prefix
 
   @property
-  def resultdb(self):
-    """Configuration of ResultDB integration in the test.
-
-    Returns a ResultDB instance.
-    """
-    return self.spec.resultdb
-
-  @property
   def isolate_target(self):
     """Returns isolate target name. Defaults to None."""
     return None
@@ -1033,10 +1025,6 @@ class TestWrapper(Test):  # pragma: no cover
   @property
   def test_id_prefix(self):
     return self._test.test_id_prefix
-
-  @property
-  def result_db(self):
-    return self._test.result_db
 
   @property
   def canonical_name(self):
@@ -2049,7 +2037,7 @@ class SwarmingTest(Test):
     self._tasks[suffix] = self.create_task(suffix, task_input)
 
     # Export TARGET_PLATFORM to resultdb tags
-    resultdb = self.resultdb
+    resultdb = self.spec.resultdb
     if (self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM):
       resultdb = attr.evolve(
           resultdb,
