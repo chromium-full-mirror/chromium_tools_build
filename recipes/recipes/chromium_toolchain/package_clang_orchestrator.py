@@ -8,6 +8,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
 from PB.go.chromium.org.luci.buildbucket.proto import builder_common as builder_common_pb
 from PB.go.chromium.org.luci.buildbucket.proto import builds_service as builds_service_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine.result import RawResult
 from recipe_engine import post_process
 
 DEPS = [
@@ -55,31 +56,30 @@ def RunSteps(api):
   )
 
   # Summarize build results.
-  success = []
   failure = []
   infra_failure = []
+  summary_md = ''
   for b in builds:
-    if b.status == common_pb.Status.SUCCESS:
-      success.append(b)
-    elif b.status == common_pb.Status.INFRA_FAILURE:
-      infra_failure.append(b)
+    summary_md += '%s (%s)\\' % (b.builder.builder,
+                                 common_pb.Status.Name(b.status))
+    if b.status == common_pb.SUCCESS:
+      pass
+    elif b.status == common_pb.INFRA_FAILURE:
+      infra_failure.append(b.builder.builder)
     else:
-      failure.append(b)
+      failure.append(b.builder.builder)
 
-  status = api.step.SUCCESS
-  step_text = 'All packagers completed successfully'
   if any(infra_failure):
-    status = api.step.INFRA_FAILURE
-    step_text = 'Infra failure happened'
+    status = common_pb.INFRA_FAILURE
+    summary_md = 'Some packagers failed for infra failure\\' + summary_md
   elif any(failure):
-    status = api.step.FAILURE
-    step_text = "Some packagers couldn't completed successfully"
+    status = common_pb.FAILURE
+    summary_md = "Some packagers couldn't complete successfully\\" + summary_md
+  else:
+    status = common_pb.SUCCESS
+    summary_md = 'All packagers completed successfully\\' + summary_md
 
-  summary_step = api.step.empty('summary', status=status, step_text=step_text)
-  for b in builds:
-    link_text = '%s (%s)' % (b.builder.builder, common_pb.Status.Name(b.status))
-    summary_step.presentation.links[link_text] = api.buildbucket.build_url(
-        build_id=b.id)
+  return RawResult(status=status, summary_markdown=summary_md)
 
 
 def GenTests(api):
