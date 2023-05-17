@@ -588,38 +588,6 @@ class Test:
     """Returns the chromium_tests RecipeApi object associated with the test."""
     return self._chromium_tests_api
 
-  def prep_local_rdb(self, temp=None, include_artifacts=True):
-    """Returns a ResultDB instance suitable for local test runs.
-
-    Main difference between remote swarming runs and local test runs (ie:
-    ScriptTests and LocalIsolatedScriptTests) is the location of a temp
-    result file and the location of the result_adapter binary.
-
-    Args:
-      api: Recipe API object.
-      temp: Path to temp file to store results.
-      include_artifacts: If True, add the parent dir of temp as an artifact dir.
-    """
-    temp = temp or self.api.m.path.mkstemp()
-    artifact_dir = self.api.m.path.dirname(temp) if include_artifacts else ''
-    base_tags = None
-    if (self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM):
-      base_tags = (('target_platform', self.api.m.chromium.c.TARGET_PLATFORM),)
-    resultdb = attr.evolve(
-        self.spec.resultdb,
-        artifact_directory=artifact_dir,
-        base_tags=base_tags,
-        base_variant=dict(
-            self.spec.resultdb.base_variant or {},
-            test_suite=self.canonical_name),
-        result_adapter_path=str(self.api.m.path['checkout'].join(
-            'tools', 'resultdb', 'result_adapter')),
-        result_file=self.api.m.path.abspath(temp),
-        # Give each local test suite its own invocation to make it easier to
-        # fetch results.
-        include=True)
-    return resultdb
-
   @abc.abstractmethod
   def get_invocation_names(self, _suffix):
     """Returns the invocation names tracking the test's results in RDB."""
@@ -1282,7 +1250,39 @@ class LocalTest(Test):
     inv = self._suffix_to_invocation_names.get(suffix)
     return [inv] if inv else []
 
-  def update_inv_name_from_stderr(self, stderr, suffix):
+  def _prep_local_rdb(self, temp=None, include_artifacts=True):
+    """Returns a ResultDB instance suitable for local test runs.
+
+    Main difference between remote swarming runs and local test runs (ie:
+    ScriptTests and LocalIsolatedScriptTests) is the location of a temp
+    result file and the location of the result_adapter binary.
+
+    Args:
+      api: Recipe API object.
+      temp: Path to temp file to store results.
+      include_artifacts: If True, add the parent dir of temp as an artifact dir.
+    """
+    temp = temp or self.api.m.path.mkstemp()
+    artifact_dir = self.api.m.path.dirname(temp) if include_artifacts else ''
+    base_tags = None
+    if (self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM):
+      base_tags = (('target_platform', self.api.m.chromium.c.TARGET_PLATFORM),)
+    resultdb = attr.evolve(
+        self.spec.resultdb,
+        artifact_directory=artifact_dir,
+        base_tags=base_tags,
+        base_variant=dict(
+            self.spec.resultdb.base_variant or {},
+            test_suite=self.canonical_name),
+        result_adapter_path=str(self.api.m.path['checkout'].join(
+            'tools', 'resultdb', 'result_adapter')),
+        result_file=self.api.m.path.abspath(temp),
+        # Give each local test suite its own invocation to make it easier to
+        # fetch results.
+        include=True)
+    return resultdb
+
+  def _update_inv_name_from_stderr(self, stderr, suffix):
     """Scans the given stderr for a local test for the test's invocation name.
 
     And updates self._suffix_to_invocation_names with the name.
@@ -1366,7 +1366,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
                        self.api.m.json.input(tests_to_retry)
                       ])  # pragma: no cover
 
-    resultdb = self.prep_local_rdb()
+    resultdb = self._prep_local_rdb()
 
     step_test_data = lambda: (
         self.api.m.json.test_api.output({
@@ -1419,7 +1419,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
         self.api.m.presentation_utils.format_step_text([['failures:',
                                                          failures]]))
 
-    self.update_inv_name_from_stderr(result.stderr, suffix)
+    self._update_inv_name_from_stderr(result.stderr, suffix)
 
     _present_info_messages(result.presentation, self)
 
@@ -1484,7 +1484,7 @@ class LocalGTestTest(LocalTest):
     if tests_to_retry:
       args = _merge_arg(args, '--gtest_filter', ':'.join(tests_to_retry))
 
-    resultdb = self.prep_local_rdb(include_artifacts=False)
+    resultdb = self._prep_local_rdb(include_artifacts=False)
     gtest_results_file = self.api.m.json.output(
         add_json_log=False, leak_to=resultdb.result_file)
 
@@ -1520,7 +1520,7 @@ class LocalGTestTest(LocalTest):
     # crbug.com/584469
     self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
-    self.update_inv_name_from_stderr(step_result.stderr, suffix)
+    self._update_inv_name_from_stderr(step_result.stderr, suffix)
 
     _present_info_messages(step_result.presentation, self)
 
@@ -2253,7 +2253,7 @@ class LocalIsolatedScriptTest(LocalTest):
           'stdout': self.api.m.raw_io.output_text(),
       })
 
-    resultdb = self.prep_local_rdb(temp=temp)
+    resultdb = self._prep_local_rdb(temp=temp)
 
     step_result = self.api.m.isolate.run_isolated(
         self.step_name(suffix),
@@ -2269,7 +2269,7 @@ class LocalIsolatedScriptTest(LocalTest):
 
     status = step_result.presentation.status
 
-    self.update_inv_name_from_stderr(step_result.stderr, suffix)
+    self._update_inv_name_from_stderr(step_result.stderr, suffix)
     self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
     _present_info_messages(step_result.presentation, self)
@@ -2412,7 +2412,7 @@ class AndroidJunitTest(LocalTest):
         step_test_data=step_test_data,
         stderr=self.api.m.raw_io.output_text(
             add_output_log=True, name='stderr'),
-        resultdb=self.prep_local_rdb())
+        resultdb=self._prep_local_rdb())
 
   @recipe_api.composite_step
   def run(self, suffix):
@@ -2425,7 +2425,7 @@ class AndroidJunitTest(LocalTest):
       step_result = f.result
       raise
     finally:
-      self.update_inv_name_from_stderr(step_result.stderr, suffix)
+      self._update_inv_name_from_stderr(step_result.stderr, suffix)
       self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
       _present_info_messages(step_result.presentation, self)
