@@ -290,7 +290,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       patterns = [
           # Following are scripts based tests that don't build any binaries.
           ['blink_python_tests', None],
-          ['blink_wpt_tests', None],
           ['extension_docserver_python_unittests', None],
           ['fuchsia_pytype', None],
           ['grit_python_unittests', None],
@@ -311,6 +310,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['xr_browser_tests', 'xr_browser_tests_binary'],
           ['content_shell_crash_test', 'content_shell'],
           ['.*blink_web_tests', 'content_shell'],
+          ['.*blink_wpt_tests', 'content_shell'],
           ['.*_ozone', target[:-len('_ozone')]],
           ['.*_eg2tests_module', 'ios_chrome_eg2tests'],
           ['.*', target],
