@@ -48,8 +48,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           goma_failfast=Single(bool, empty_val=False, required=False),
           goma_max_active_fail_fallback_tasks=Single(
               int, empty_val=None, required=False),
-          goma_enable_global_file_stat_cache=Single(
-              bool, empty_val=False, required=False),
           goma_enable_cache_silo=Single(bool, empty_val=False, required=False),
           prune_venv=Single(bool, empty_val=False, required=False),
           reclient_deps_cache_by_step=Single(
@@ -261,13 +259,6 @@ def ninja(c):
 @config_ctx()
 def goma_failfast(c):
   c.compile_py.goma_failfast = True
-
-
-@config_ctx()
-def goma_enable_global_file_stat_cache(c):
-  # Do not enable this if some src files are modified for recompilation
-  # while running goma daemon.
-  c.compile_py.goma_enable_global_file_stat_cache = True
 
 
 @config_ctx()

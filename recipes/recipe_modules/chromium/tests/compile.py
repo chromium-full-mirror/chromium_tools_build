@@ -30,7 +30,6 @@ def RunSteps(api, use_goma):
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
   api.chromium.apply_config('goma_hermetic_fallback')
-  api.chromium.apply_config('goma_enable_global_file_stat_cache')
 
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)

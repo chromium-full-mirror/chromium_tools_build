@@ -681,9 +681,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       if self.c.compile_py.goma_hermetic:
         goma_env['GOMA_HERMETIC'] = self.c.compile_py.goma_hermetic
 
-      if self.c.compile_py.goma_enable_global_file_stat_cache:
-        goma_env['GOMA_ENABLE_GLOBAL_FILE_STAT_CACHE'] = 'true'
-
       if self.c.compile_py.goma_max_active_fail_fallback_tasks:
         goma_env['GOMA_MAX_ACTIVE_FAIL_FALLBACK_TASKS'] = (
             self.c.compile_py.goma_max_active_fail_fallback_tasks)
