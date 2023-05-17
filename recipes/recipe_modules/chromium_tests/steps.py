@@ -673,55 +673,6 @@ class Test:
 
     return not self._rdb_results[suffix].invalid
 
-  def shards_to_retry_with(self, original_num_shards, num_tests_to_retry):
-    """Calculates the number of shards to run when retrying this test.
-
-    Args:
-      original_num_shards: The number of shards used to run the test when it
-                           first ran.
-      num_tests_to_retry: The number of tests we're trying to retry.
-
-    Returns:
-      The number of shards to use when retrying tests that failed.
-
-    Note that this assumes this test has run 'with patch', and knows how many
-    tests ran in that case. It doesn't make sense to ask how this test should
-    run when retried, if it hasn't run already.
-    """
-    with_patch_total = self._rdb_results['with patch'].total_tests_ran
-    with_patch_retry_total = (
-        self._rdb_results['retry shards with patch'].total_tests_ran
-        if 'retry shards with patch' in self._rdb_results else 0)
-    total_tests_ran = max(with_patch_total, with_patch_retry_total)
-    assert total_tests_ran, (
-        "We cannot compute the total number of tests to re-run if no tests "
-        "were run 'with patch'. Expected the results tracker to contain key "
-        "'total_tests_ran', but it didn't")
-
-    # We want to approximately match the previous shard load. Using only one
-    # shard can lead to a single shard running many more tests than it
-    # normally does. As the number of tests to retry approaches the total
-    # number of total tests ran, we get closer to running with the same number
-    # of shards as we originally were triggered with.
-    # Note that this technically breaks when we're running a tryjob on a CL
-    # which changes the number of tests to be run.
-    # Clamp to be 1 < value < original_num_shards, so that we don't trigger too
-    # many shards, or 0 shards.
-    #
-    # Since we repeat failing tests REPEAT_COUNT_FOR_FAILING_TESTS times, we
-    # artificially inflate the number of shards by that factor, since we expect
-    # tests to take that much longer to run.
-    #
-    # We never allow more than num_test_to_retry shards, since that would leave
-    # shards doing nothing.
-    return int(
-        min(
-            min(
-                max(
-                    original_num_shards * REPEAT_COUNT_FOR_FAILING_TESTS *
-                    (float(num_tests_to_retry) / total_tests_ran), 1),
-                original_num_shards), num_tests_to_retry))
-
   def failures(self, suffix):
     """Return tests that failed at least once (set of strings)."""
     failure_msg = (
@@ -1831,6 +1782,55 @@ class SwarmingTest(Test):
     """
     raise NotImplementedError()  # pragma: no cover
 
+  def _shards_to_retry_with(self, original_num_shards, num_tests_to_retry):
+    """Calculates the number of shards to run when retrying this test.
+
+    Args:
+      original_num_shards: The number of shards used to run the test when it
+                           first ran.
+      num_tests_to_retry: The number of tests we're trying to retry.
+
+    Returns:
+      The number of shards to use when retrying tests that failed.
+
+    Note that this assumes this test has run 'with patch', and knows how many
+    tests ran in that case. It doesn't make sense to ask how this test should
+    run when retried, if it hasn't run already.
+    """
+    with_patch_total = self._rdb_results['with patch'].total_tests_ran
+    with_patch_retry_total = (
+        self._rdb_results['retry shards with patch'].total_tests_ran
+        if 'retry shards with patch' in self._rdb_results else 0)
+    total_tests_ran = max(with_patch_total, with_patch_retry_total)
+    assert total_tests_ran, (
+        "We cannot compute the total number of tests to re-run if no tests "
+        "were run 'with patch'. Expected the results tracker to contain key "
+        "'total_tests_ran', but it didn't")
+
+    # We want to approximately match the previous shard load. Using only one
+    # shard can lead to a single shard running many more tests than it
+    # normally does. As the number of tests to retry approaches the total
+    # number of total tests ran, we get closer to running with the same number
+    # of shards as we originally were triggered with.
+    # Note that this technically breaks when we're running a tryjob on a CL
+    # which changes the number of tests to be run.
+    # Clamp to be 1 < value < original_num_shards, so that we don't trigger too
+    # many shards, or 0 shards.
+    #
+    # Since we repeat failing tests REPEAT_COUNT_FOR_FAILING_TESTS times, we
+    # artificially inflate the number of shards by that factor, since we expect
+    # tests to take that much longer to run.
+    #
+    # We never allow more than num_test_to_retry shards, since that would leave
+    # shards doing nothing.
+    return int(
+        min(
+            min(
+                max(
+                    original_num_shards * REPEAT_COUNT_FOR_FAILING_TESTS *
+                    (float(num_tests_to_retry) / total_tests_ran), 1),
+                original_num_shards), num_tests_to_retry))
+
   def _apply_swarming_task_config(self, task, suffix, filter_flag,
                                   filter_delimiter, extra_args):
     """Applies shared configuration for swarming tasks.
@@ -1870,7 +1870,7 @@ class SwarmingTest(Test):
       if expected_filter_length < char_limit:
         test_list = filter_delimiter.join(tests_to_retry)
         args = _merge_arg(args, filter_flag, test_list)
-        shards = self.shards_to_retry_with(shards, len(tests_to_retry))
+        shards = self._shards_to_retry_with(shards, len(tests_to_retry))
 
     task.extra_args.extend(args)
     task.shards = shards
