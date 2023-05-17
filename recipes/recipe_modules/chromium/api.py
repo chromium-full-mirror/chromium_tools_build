@@ -112,8 +112,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     if self.c.env.PATH:
       ret['PATH'] = self.m.path.pathsep.join([str(p) for p in self.c.env.PATH] +
                                              ['%(PATH)s'])
-    if self.c.env.GOMA_STORE_ONLY:
-      ret['GOMA_STORE_ONLY'] = self.c.env.GOMA_STORE_ONLY
     if self.c.env.FORCE_MAC_TOOLCHAIN:
       ret['FORCE_MAC_TOOLCHAIN'] = self.c.env.FORCE_MAC_TOOLCHAIN
     if self.c.env.GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB:
