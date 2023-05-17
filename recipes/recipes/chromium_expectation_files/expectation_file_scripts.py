@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
+
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         LogContains, ResultReason,
                                         StepCommandRE, StepFailure, StepSuccess)
@@ -58,33 +60,46 @@ def RunSteps(api, properties):
     update_step = api.bot_update.ensure_checkout(refs=['refs/heads/main'])
     callback(update_step.json.output['manifest'])
   api.gclient.runhooks()
-  api.git(
-      'config',
-      'user.name',
-      'Expectation File Editor',
-      name='set git config user.name')
-  api.git.new_branch(MAIN_BRANCH, name='create main branch')
 
   failures = []
-  for script_invocation in properties.scripts:
-    with api.step.nest(script_invocation.step_name):
-      # We don't care about the specific branch name, just that there won't be
-      # any overlap.
-      api.git.new_branch(str(api.time.time()), name='create script branch')
-      try:
-        with api.context(cwd=api.path['checkout']):
-          _RunScript(api, script_invocation)
-      except api.step.StepFailure as e:
-        failures.append(e)
-      finally:
-        api.git('reset', '--hard', 'HEAD', name='reset to HEAD')
-        api.git('checkout', MAIN_BRANCH, name='return to main branch')
+  # Most scripts will be executed from chromium/src, but it is possible to
+  # run elsewhere in other repos as long as `git cl upload` works for that repo.
+  script_batches = collections.defaultdict(list)
+  for s in properties.scripts:
+    script_batches[_GetScriptWorkingDirectory(api, s)].append(s)
+  for working_directory, invocations in script_batches.items():
+    with api.context(cwd=working_directory):
+      api.git(
+          'config',
+          'user.name',
+          'Expectation File Editor',
+          name='set git config user.name')
+      api.git.new_branch(MAIN_BRANCH, name='create main branch')
+
+      for script_invocation in invocations:
+        with api.step.nest(script_invocation.step_name):
+          # We don't care about the specific branch name, just that there won't
+          # be any overlap.
+          api.git.new_branch(str(api.time.time()), name='create script branch')
+          try:
+            _RunScript(api, script_invocation)
+          except api.step.StepFailure as e:
+            failures.append(e)
+          finally:
+            api.git('reset', '--hard', 'HEAD', name='reset to HEAD')
+            api.git('checkout', MAIN_BRANCH, name='return to main branch')
 
   if failures:
     exception_type = api.step.InfraFailure if any(
         isinstance(f, api.step.InfraFailure)
         for f in failures) else api.step.StepFailure
     raise exception_type('%d script invocation(s) failed' % len(failures))
+
+
+def _GetScriptWorkingDirectory(api, script_invocation):
+  if script_invocation.working_directory:
+    return api.path['checkout'].join(script_invocation.working_directory)
+  return api.path['checkout']
 
 
 def _RunScript(api, script_invocation):
@@ -247,6 +262,10 @@ def _validate_script_invocation(message, ctx):
 @VALIDATORS.register(ScriptInvocation.ReviewerList)
 def _validate_reviewer_list(message, ctx):
   ctx.validate_repeated_field(message, 'reviewer')
+
+
+def StepCwdEquals(check, step_odict, step, cwd):
+  check('cwd for step %s equaled %s' % (step, cwd), step_odict[step].cwd == cwd)
 
 
 def GenTests(api):
@@ -856,5 +875,122 @@ def GenTests(api):
       api.post_process(StepFailure,
                        'step_name.Script added/removed a file: A path/to/file'),
       api.expect_status('FAILURE'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'happy_path_flake_finder_with_working_directory',
+      api.properties(
+          InputProperties(scripts=[
+              ScriptInvocation(
+                  step_name='step_name',
+                  script='some/script.py',
+                  script_type=ScriptInvocation.ScriptType.FLAKE_FINDER,
+                  submit_type=ScriptInvocation.SubmitType.MANUAL,
+                  reviewer_list=ScriptInvocation.ReviewerList(reviewer=['r']),
+                  cl_title='cl_title',
+                  args=['--some-arg'],
+                  working_directory='third_party/dawn',
+              )
+          ])),
+      api.post_process(StepCommandRE, 'step_name.run script', [
+          '.*some/script.py',
+          '--some-arg',
+          '--result-output-file',
+          '.*',
+          '--bypass-up-to-date-check',
+      ]),
+      api.post_process(StepCwdEquals, 'step_name.run script',
+                       '[START_DIR]/src/third_party/dawn'),
+      api.post_process(StepCommandRE, 'step_name.upload cl', [
+          '.*',
+          '.*',
+          'upload',
+          '--force',
+          '--send-mail',
+          '--no-python2-post-upload-hooks',
+          '--reviewers',
+          'r',
+          '--message-file',
+          ('cl_title\n\nAutogenerated CL from running:\n\n'
+           '//some/script.py --some-arg\n\n'),
+      ]),
+      api.post_process(StepCwdEquals, 'step_name.upload cl',
+                       '[START_DIR]/src/third_party/dawn'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'happy_path_flake_finder_multiple_scripts_with_working_directory',
+      api.properties(
+          InputProperties(scripts=[
+              ScriptInvocation(
+                  step_name='without_working_directory',
+                  script='some/script.py',
+                  script_type=ScriptInvocation.ScriptType.FLAKE_FINDER,
+                  submit_type=ScriptInvocation.SubmitType.MANUAL,
+                  reviewer_list=ScriptInvocation.ReviewerList(reviewer=['r']),
+                  cl_title='cl_title',
+                  args=['--some-arg'],
+              ),
+              ScriptInvocation(
+                  step_name='with_working_directory',
+                  script='some/script.py',
+                  script_type=ScriptInvocation.ScriptType.FLAKE_FINDER,
+                  submit_type=ScriptInvocation.SubmitType.MANUAL,
+                  reviewer_list=ScriptInvocation.ReviewerList(reviewer=['r']),
+                  cl_title='cl_title',
+                  args=['--some-arg'],
+                  working_directory='third_party/dawn',
+              )
+          ])),
+      api.post_process(StepCommandRE, 'without_working_directory.run script', [
+          '.*some/script.py',
+          '--some-arg',
+          '--result-output-file',
+          '.*',
+          '--bypass-up-to-date-check',
+      ]),
+      api.post_process(StepCwdEquals, 'without_working_directory.run script',
+                       '[START_DIR]/src'),
+      api.post_process(StepCommandRE, 'without_working_directory.upload cl', [
+          '.*',
+          '.*',
+          'upload',
+          '--force',
+          '--send-mail',
+          '--no-python2-post-upload-hooks',
+          '--reviewers',
+          'r',
+          '--message-file',
+          ('cl_title\n\nAutogenerated CL from running:\n\n'
+           '//some/script.py --some-arg\n\n'),
+      ]),
+      api.post_process(StepCwdEquals, 'without_working_directory.upload cl',
+                       '[START_DIR]/src'),
+      api.post_process(StepCommandRE, 'with_working_directory.run script', [
+          '.*some/script.py',
+          '--some-arg',
+          '--result-output-file',
+          '.*',
+          '--bypass-up-to-date-check',
+      ]),
+      api.post_process(StepCwdEquals, 'with_working_directory.run script',
+                       '[START_DIR]/src/third_party/dawn'),
+      api.post_process(StepCommandRE, 'with_working_directory.upload cl', [
+          '.*',
+          '.*',
+          'upload',
+          '--force',
+          '--send-mail',
+          '--no-python2-post-upload-hooks',
+          '--reviewers',
+          'r',
+          '--message-file',
+          ('cl_title\n\nAutogenerated CL from running:\n\n'
+           '//some/script.py --some-arg\n\n'),
+      ]),
+      api.post_process(StepCwdEquals, 'with_working_directory.upload cl',
+                       '[START_DIR]/src/third_party/dawn'),
       api.post_process(DropExpectation),
   )

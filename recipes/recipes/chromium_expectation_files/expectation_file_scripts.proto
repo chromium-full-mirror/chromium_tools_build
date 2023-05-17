@@ -54,4 +54,9 @@ message ScriptInvocation {
 
   // Arguments to pass to the script.
   repeated string args = 9;
+
+  // The directory to run the script and commit/upload from as a path relative
+  // to chromium/src. If not specified, will be run from Chromium's root
+  // directory.
+  optional string working_directory = 10;
 }
