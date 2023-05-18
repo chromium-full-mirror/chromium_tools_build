@@ -2225,7 +2225,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       log_step = self.m.step.empty('RTS was used')
       log_step.presentation.properties['rts_was_used'] = True
 
-      compatible_run_modes = ('chromium.dry_run_rts'
+      compatible_run_modes = ('chromium_rts.dry_run_rts'
                               in self.m.buildbucket.build.input.experiments)
       if compatible_run_modes:
         self.m.cq.allow_reuse_for(self.m.cq.DRY_RUN, self.m.cq.QUICK_DRY_RUN)
@@ -2279,7 +2279,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       run_mode = props.get('run_mode', props.get('runMode'))
     experiment_active = False
     if run_mode == self.m.cq.DRY_RUN:
-      experiment_active = ('chromium.dry_run_rts'
+      experiment_active = ('chromium_rts.dry_run_rts'
                            in self.m.buildbucket.build.input.experiments)
 
     rts_setting = None

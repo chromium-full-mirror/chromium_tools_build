@@ -892,7 +892,7 @@ def GenTests(api):
           builder='rts-rel',
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
-          experiments=['chromium.dry_run_rts'],
+          experiments=['chromium_rts.dry_run_rts'],
       ),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
@@ -951,7 +951,7 @@ def GenTests(api):
           builder='rts-rel',
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
-          experiments=['chromium.dry_run_rts'],
+          experiments=['chromium_rts.dry_run_rts'],
       ),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
