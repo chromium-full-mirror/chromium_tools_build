@@ -6,6 +6,7 @@ from recipe_engine import post_process
 
 from PB.recipe_modules.recipe_engine.led.properties import InputProperties
 
+import PB.go.chromium.org.foundry_x.re_client.api.proxy.log as log_pb
 import PB.go.chromium.org.foundry_x.re_client.api.stats.stats as stats_pb
 
 DEPS = [
@@ -43,7 +44,8 @@ def RunSteps(api):
 def MakeTestRBEStats(num_records=0,
                      total_verified=None,
                      total_mismatches=None,
-                     total_ignored_mismatches=None):
+                     total_ignored_mismatches=None,
+                     mismatches=None):
   stats = stats_pb.Stats(num_records=num_records)
   if total_verified is not None:
     stats.stats.add(
@@ -54,6 +56,8 @@ def MakeTestRBEStats(num_records=0,
     stats.stats.add(
         name='LocalMetadata.Verification.TotalIgnoredMismatches',
         count=total_ignored_mismatches)
+  if mismatches is not None:
+    stats.verification.mismatches.extend(mismatches)
   return stats.SerializeToString()
 
 
@@ -295,7 +299,16 @@ def GenTests(api):
           'postprocess for reclient.load rbe_metrics.pb',
           api.file.read_raw(
               content=MakeTestRBEStats(
-                  num_records=1, total_verified=1, total_mismatches=1))),
+                  num_records=1,
+                  total_verified=1,
+                  total_mismatches=1,
+                  mismatches=[
+                      log_pb.Verification.Mismatch(
+                          path="abc/xyz",
+                          local_digests=["11111"],
+                          remote_digests=["22222"],
+                      )
+                  ]))),
       api.post_process(post_process.StepException,
                        'postprocess for reclient.verification'),
       api.post_process(
@@ -319,5 +332,57 @@ def GenTests(api):
                        'postprocess for reclient.verification'),
       api.post_process(
           post_process.Filter('postprocess for reclient.verification')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ensure_verified_mismatches_fallbacks',
+      api.buildbucket.ci_build(project='chromium', builder='Linux reclient'),
+      api.reclient.properties(ensure_verified=True),
+      api.step_data(
+          'postprocess for reclient.load rbe_metrics.pb',
+          api.file.read_raw(
+              content=MakeTestRBEStats(
+                  num_records=1,
+                  total_verified=1,
+                  total_mismatches=1,
+                  mismatches=[
+                      log_pb.Verification.Mismatch(
+                          path="abc/xyz", local_digests=["123456"])
+                  ]))),
+      api.post_process(post_process.StepSuccess,
+                       'postprocess for reclient.verification'),
+      api.post_process(
+          post_process.Filter('postprocess for reclient.verification')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ensure_verified_mismatches_fallbacks_ignored',
+      api.buildbucket.ci_build(project='chromium', builder='Linux reclient'),
+      api.reclient.properties(ensure_verified=True),
+      api.step_data(
+          'postprocess for reclient.load rbe_metrics.pb',
+          api.file.read_raw(
+              content=MakeTestRBEStats(
+                  num_records=2,
+                  total_verified=2,
+                  total_mismatches=2,
+                  total_ignored_mismatches=1,
+                  mismatches=[
+                      log_pb.Verification.Mismatch(
+                          path="abc1/xyz",
+                          local_digests=["123456"],
+                          ignored=True),
+                      log_pb.Verification.Mismatch(
+                          path="abc2/xyz",
+                          local_digests=["123456"],
+                          remote_digests=["999999"])
+                  ]))),
+      api.post_process(post_process.StepException,
+                       'postprocess for reclient.verification'),
+      api.post_process(
+          post_process.Filter('postprocess for reclient.verification')),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

@@ -529,6 +529,10 @@ class ReclientApi(recipe_api.RecipeApi):
         'LocalMetadata.Verification.TotalIgnoredMismatches')
     if ignored_mismatches is not None:
       num_mismatches -= ignored_mismatches
+    num_fallbacks = sum(
+        len(mismatch.remote_digests) == 0 and not mismatch.ignored
+        for mismatch in stats.verification.mismatches)
+    num_mismatches -= num_fallbacks
     if num_mismatches > 0:
       self._mismatch = '%d action(s) mismatched' % num_mismatches
 
