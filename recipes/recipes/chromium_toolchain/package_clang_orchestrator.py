@@ -60,8 +60,8 @@ def RunSteps(api):
   infra_failure = []
   summary_md = ''
   for b in builds:
-    summary_md += '%s (%s)\\' % (b.builder.builder,
-                                 common_pb.Status.Name(b.status))
+    summary_md += '%s (%s)<br/>' % (b.builder.builder,
+                                    common_pb.Status.Name(b.status))
     if b.status == common_pb.SUCCESS:
       pass
     elif b.status == common_pb.INFRA_FAILURE:
@@ -71,13 +71,13 @@ def RunSteps(api):
 
   if any(infra_failure):
     status = common_pb.INFRA_FAILURE
-    summary_md = 'Some packagers failed for infra failure\\' + summary_md
+    summary_md = 'Some packagers failed for infra failure<br/>' + summary_md
   elif any(failure):
     status = common_pb.FAILURE
-    summary_md = "Some packagers couldn't complete successfully\\" + summary_md
+    summary_md = "Some packagers couldn't complete successfully<br/>" + summary_md
   else:
     status = common_pb.SUCCESS
-    summary_md = 'All packagers completed successfully\\' + summary_md
+    summary_md = 'All packagers completed successfully<br/>' + summary_md
 
   return RawResult(status=status, summary_markdown=summary_md)
 
