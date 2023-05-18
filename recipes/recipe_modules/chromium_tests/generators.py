@@ -54,7 +54,7 @@ class Generator:
       builder_group: str,
       builder: str,
       targets_spec: TargetsSpec,
-  ) -> Iterable[steps.TestSpecBase]:
+  ) -> Iterable[steps.AbstractTestSpec]:
 
     def generate_inner():
       for key, handler in (
@@ -78,8 +78,8 @@ class Generator:
   def _handle_experimental(
       self,
       raw_test_spec: _RawTestSpec,
-      test_spec: steps.TestSpecBase,
-  ) -> steps.TestSpecBase:
+      test_spec: steps.AbstractTestSpec,
+  ) -> steps.AbstractTestSpec:
     experiment_percentage = raw_test_spec.get('experiment_percentage')
     if experiment_percentage is None:
       return test_spec
@@ -89,8 +89,8 @@ class Generator:
   def _handle_ci_only(
       self,
       raw_test_spec: _RawTestSpec,
-      test_spec: steps.TestSpecBase,
-  ) -> steps.TestSpecBase:
+      test_spec: steps.AbstractTestSpec,
+  ) -> steps.AbstractTestSpec:
     """Handle the ci_only attribute of test specs.
 
     Args:

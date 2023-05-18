@@ -29,3 +29,5 @@ PROPERTIES = properties.InputProperties
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True
+
+from .util import RDBResults
