@@ -4510,8 +4510,6 @@
       "RECIPE_MODULE[build::chromium_tests]/resources/archive_layout_test_results.py",
       "--results-dir",
       "[START_DIR]/layout-test-results",
-      "--build-dir",
-      "[CACHE]/builder/src/out",
       "--build-number",
       "571",
       "--builder-name",
@@ -4520,8 +4518,6 @@
       "gs://chromium-layout-test-archives",
       "--staging-dir",
       "[CACHE]/chrome_staging",
-      "--revision",
-      "f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--task-ids",
       "2",
       "--step-name",
@@ -4547,9 +4543,7 @@
     },
     "name": "archive results for blink_web_tests (without patch)",
     "~followup_annotations": [
-      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28without%20patch%29/full_results_jsonp.js@@@",
-      "@@@STEP_LINK@layout_test_results (to be deprecated)@https://test-results.appspot.com/data/layout_results/fake-try-builder/571/blink_web_tests%20%28without%20patch%29/layout-test-results/results.html@@@",
-      "@@@STEP_LINK@(zip) (to be deprecated)@https://test-results.appspot.com/data/layout_results/fake-try-builder/571/blink_web_tests%20%28without%20patch%29/layout-test-results.zip@@@"
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28without%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {

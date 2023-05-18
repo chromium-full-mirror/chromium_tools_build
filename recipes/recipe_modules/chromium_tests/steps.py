@@ -1510,8 +1510,6 @@ def _archive_layout_test_results(api,
       api.chromium_tests.resource('archive_layout_test_results.py'),
       '--results-dir',
       results_dir,
-      '--build-dir',
-      api.chromium.c.build_dir,
       '--build-number',
       buildnumber,
       '--builder-name',
@@ -1520,11 +1518,7 @@ def _archive_layout_test_results(api,
       f'gs://{gcs_bucket}',
       '--staging-dir',
       api.path['cache'].join('chrome_staging'),
-      '--revision',
-      api.chromium.build_properties['got_revision'],
   ]
-  if not api.tryserver.is_tryserver:
-    cmd.append('--store-latest')
   if swarm_task_ids:
     cmd.extend(['--task-ids', ','.join(swarm_task_ids)])
 
@@ -1549,18 +1543,7 @@ def _archive_layout_test_results(api,
       sanitized_buildername, buildnumber, urllib.parse.quote(step_name))
   web_test_results = f"{base}?json={path_full_results_jsonp}"
   archive_result.presentation.links['web_test_results'] = web_test_results
-
-  base = ("https://test-results.appspot.com/data/layout_results/%s/%s" %
-          (sanitized_buildername, buildnumber))
-  base += '/' + urllib.parse.quote(step_name)
-
-  archive_result.presentation.links[
-      'layout_test_results (to be deprecated)'] = (
-          base + '/layout-test-results/results.html')
-  archive_result.presentation.links['(zip) (to be deprecated)'] = (
-      base + '/layout-test-results.zip')
-
-  return base + '/layout-test-results/results.html'
+  return web_test_results
 
 
 @attrs()
