@@ -210,7 +210,7 @@ def TriggerHardwareTests(api, got_revision, checkout_path,
       request.with_slice(
           0,
           request[0].with_command([
-              'python', 'buildbot/buildbot_selector.py'
+              'python3', 'buildbot/buildbot_selector.py'
           ]).with_relative_cwd('native_client').with_dimensions(
               **dimensions).with_env_vars(**environment_vars)
           .with_cas_input_root(isolated_digest).with_expiration_secs(
