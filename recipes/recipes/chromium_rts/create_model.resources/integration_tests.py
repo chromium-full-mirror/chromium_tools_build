@@ -66,8 +66,8 @@ def temp_dir():
 
 @contextlib.contextmanager
 def code_change(checkout_dir):
-  file_name = os.path.join(checkout_dir, 'chrome', 'browser', 'ui',
-                           'browser.cc')
+  file_name = os.path.join(checkout_dir, 'chrome', 'browser', 'ui', 'zoom',
+                           'chrome_zoom_level_otr_delegate.cc')
   assert os.path.isfile(file_name), file_name
   add_blank_line(file_name)
   try:

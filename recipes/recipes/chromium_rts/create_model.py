@@ -13,6 +13,8 @@ DEPS = [
     'chromium',  # to import gclient configs
     'chromium_checkout',
     'depot_tools/gclient',
+    'depot_tools/gsutil',
+    'infra/zip',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',
@@ -81,7 +83,13 @@ def RunSteps(api):
       ],
   )
 
-  run_integration_tests(api, exec_path, model_dir, checkout_dir)
+  # Upload the training data for inspection if we need to diagnose the model
+  archive_training_data(api)
+
+  step_result = run_integration_tests(api, exec_path, model_dir, checkout_dir)
+  # Still create the cipd package so we can inspect it if the build failed
+  # but don't move the ref to latest so broken models don't end up in builds
+  should_update_ref = step_result.presentation.status == api.m.step.SUCCESS
 
   # TODO(crbug.com/1172372): ensure the new model is not significantly worse
   # than the current one.
@@ -92,18 +100,33 @@ def RunSteps(api):
     for platform, pkg_dir in exec_pkg_paths.items():
       futures.append(
           api.futures.spawn_immediate(create_cipd_package, api, platform,
-                                      pkg_dir, model_dir))
+                                      pkg_dir, model_dir, should_update_ref))
   # Check success.
   for f in futures:
     f.result()
 
   return result_pb2.RawResult(
-      status=common_pb.SUCCESS,
+      status=step_result.presentation.status,
       summary_markdown=compose_build_summary(api, model_dir),
   )
 
 
-def create_cipd_package(api, platform, exec_pkg_dir, model_dir):
+def archive_training_data(api):
+  zip_out = api.path['cleanup'].join('rts-chromium-model-data',
+                                     'rts-chromium-model-data.zip')
+  api.zip.directory('zip model dir',
+                    api.path['cleanup'].join('rts-chromium-model-data'),
+                    zip_out)
+  api.gsutil.upload(
+      zip_out,
+      'chrome-rts',
+      api.path.join('rts-chromium-model-data', api.buildbucket.build.number),
+      raise_on_failure=False,
+      use_retry_wrapper=False,
+      name='archive model data')
+
+
+def create_cipd_package(api, platform, exec_pkg_dir, model_dir, update_ref):
   with api.step.nest('Upload CIPD package - %s' % platform):
     # Copy the model files, such that create_cipd_package can be called for
     # different platforms concurrently.
@@ -127,16 +150,15 @@ def create_cipd_package(api, platform, exec_pkg_dir, model_dir):
     )
     pkg.add_dir(pkg_dir)
 
-    # Skip the actual upload if it is an experimental build.
-    if not api.runtime.is_experimental:  # pragma: no branch
-      api.cipd.create_from_pkg(
-          pkg,
-          refs=['latest'],
-          tags={
-              'build':
-                  'https://ci.chromium.org/b/%d' % api.buildbucket.build.id,
-          },
-      )
+    pin = api.cipd.create_from_pkg(
+        pkg,
+        tags={
+            'build': 'https://ci.chromium.org/b/%d' % api.buildbucket.build.id,
+        },
+    )
+    # Skip the ref update if it is an experimental build.
+    if not api.runtime.is_experimental and update_ref:  # pragma: no branch
+      api.cipd.set_ref(pin.package, version=pin.instance_id, refs=['latest'])
 
 
 def install_rts_executables(api):
@@ -294,16 +316,20 @@ def compose_build_summary(api, model_dir):
 
 
 def run_integration_tests(api, exec_path, model_dir, checkout_dir):
-  api.step('integration_tests', [
-      'python3',
-      api.resource('integration_tests.py'),
-      '--rts-exec',
-      exec_path,
-      '--model-dir',
-      model_dir,
-      '--chromium-checkout',
-      checkout_dir,
-  ])
+  return api.step(
+      'integration_tests',
+      [
+          'python3',
+          api.resource('integration_tests.py'),
+          '--rts-exec',
+          exec_path,
+          '--model-dir',
+          model_dir,
+          '--chromium-checkout',
+          checkout_dir,
+      ],
+      raise_on_failure=False,
+  )
 
 
 def GenTests(api):
