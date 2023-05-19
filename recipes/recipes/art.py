@@ -64,6 +64,18 @@ def checkout(api):
     api.repo.init('https://android.googlesource.com/platform/manifest', '-b',
                   'master-art')
     api.repo.sync('-f', '-c', '-j%d' % (REPO_SYNC_JOBS), "--no-tags")
+
+    build_input = api.buildbucket.build.input
+    if build_input.gerrit_changes:
+      for change in build_input.gerrit_changes:
+        api.repo(
+          ['download', change.project, f"{change.change}/{change.patchset}"],
+          f"checkout change ref: {change.change}/{change.patchset}",
+        )
+
+    # TODO(b/283282132): Add codepath for checking out revision with
+    # build_input.gitiles_commit
+
     api.repo.manifest()
 
 
@@ -632,6 +644,14 @@ def GenTests(api):
             build(buildername),
             (api.properties(clobber='') if clb else api.properties()),
         )
+
+  yield api.test(
+    'target_angler_try',
+    sum([api.buildbucket.try_build(
+      project='art',
+      builder='angler-armv7-ndebug',
+    )], api.empty_test_data())
+  )
 
   yield api.test(
       'target_angler_setup_failure',
