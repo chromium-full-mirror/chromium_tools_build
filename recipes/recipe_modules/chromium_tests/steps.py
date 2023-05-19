@@ -9,7 +9,7 @@ test and can be used to create the test object, which actually knows how
 to execute a test. Test objects can also be decorated with test
 wrappers, which can modify the execution of the test.
 
-The class `AbstractTestSpec` is the root of the class hierarchy for test
+The class `TestSpecBase` is the root of the class hierarchy for test
 specs and test wrapper specs. It defines the single method `get_test`
 which is how the test or wrapped test is obtained from the spec.
 
@@ -21,25 +21,25 @@ implements the `get_test` method in terms of the `test_wrapper_class`
 property, which concrete subclasses must override to return the class of
 the test wrapper type.
 
-The class `AbstractTest` is the root of the class hierarchy for tests
-and test wrappers. All test types inherit from `Test` and all test
-wrapper types inherit from `TestWrapper`, which are both abstract base
-classes. Each concrete test type or test wrapper type has an associated
-spec type that contains the input details for the test or test wrapper.
+The class `Test` is the root of the class hierarchy for tests and test
+wrappers. All test types inherit from `Test` and all test wrapper types
+inherit from `TestWrapper`, which are both abstract base classes. Each
+concrete test type or test wrapper type has an associated spec type that
+contains the input details for the test or test wrapper and is the only
+argument to the __init__ method of the test type or test wrapper type.
 """
 
 import abc
 import attr
 import contextlib
 import hashlib
-import inspect
 import re
 import string
 import struct
-from typing import AbstractSet, Iterable, Optional, Tuple
 import urllib
 
-from recipe_engine import recipe_api, step_data
+from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 from .resultdb import ResultDB
 
@@ -47,7 +47,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 
-from RECIPE_MODULES.build import chromium_swarming, test_utils
+from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, command_args, enum,
                                              mapping, sequence)
 
@@ -254,8 +254,10 @@ def _present_info_messages(presentation, test):
   presentation.step_text = '\n'.join(messages)
 
 
-class DisabledReason(abc.ABC):
+class DisabledReason:
   """Abstract base class for identifying why a test is disabled."""
+
+  __metaclass__ = abc.ABCMeta
 
   def __repr__(self):
     return type(self).__name__
@@ -284,8 +286,10 @@ class _CiOnly(DisabledReason):
 CI_ONLY = _CiOnly()
 
 
-class AbstractTestSpec(abc.ABC):
+class TestSpecBase:
   """Abstract base class for specs for tests and wrapped tests."""
+
+  __metaclass__ = abc.ABCMeta
 
   @abc.abstractmethod
   def get_test(self, chromium_tests_api):
@@ -302,355 +306,8 @@ class AbstractTestSpec(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
 
-class AbstractTest(abc.ABC):
-  """Abstract base class for tests and wrapped tests."""
-
-  @property
-  @abc.abstractmethod
-  def name(self) -> str:
-    """The name of the test's step without a phase suffix.
-
-    Additional suffixes may be present (e.g. os and GPU for swarming
-    tests).
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def canonical_name(self) -> str:
-    """Canonical name of the test, no suffix attached."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def step_name(self, suffix: str) -> str:
-    """Helper to uniformly combine tests's name with a suffix.
-
-    Note this step_name is not necessarily the same as the step_name in actual
-    builds, since there could be post-processing on the step_name by other
-    apis, like swarming (see api.chromium_swarming.get_step_name()).
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def target_name(self) -> str:
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def compile_targets(self) -> Iterable[str]:
-    """the compile targets needed by this test."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def uses_local_devices(self) -> bool:
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def isolate_target(self) -> Optional[str]:
-    """The name of the isolate to create for the test."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  def uses_isolate(self) -> bool:
-    """Returns true if the test is run via an isolate.
-
-    This does not need to be overridden in any subclasses. Overriding
-    isolate_target to return a non-false value will cause the test to
-    report that it uses isolate.
-    """
-    return bool(self.isolate_target)
-
-  @property
-  @abc.abstractmethod
-  def runs_on_swarming(self) -> bool:
-    """Whether or not the test runs on swarming."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def is_skylabtest(self) -> bool:
-    """Whether or not the test runs on skylab."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def supports_rts(self) -> bool:
-    """Determine whether the test supports RTS.
-
-    Regression Test Selection (RTS) is a mode of operation where a subset of the
-    tests are run. This should be checked before trying to set is_rts to enable
-    RTS.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def is_rts(self) -> bool:
-    """Determine whether the test is currently running with RTS.
-
-    Regression Test Selection (RTS) is a mode of operation where a subset of the
-    tests are run. This property determines whether this mode is enabled or not.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @is_rts.setter
-  @abc.abstractmethod
-  def is_rts(self, value: bool) -> None:
-    """Set whether the test is currently running with RTS.
-
-    Regression Test Selection (RTS) is a mode of operation where a subset of the
-    tests are run. This property will enable running only the tests selected by
-    RTS.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def supports_inverted_rts(self) -> bool:
-    """Determine whether the test supports inverted RTS.
-
-    Inverse Regression Test Selection (RTS) is a mode of operation where the
-    subset of the tests skipped in a previous RTS build are run. This should be
-    checked before trying to set is_inverted_rts to enable RTS.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def is_inverted_rts(self) -> bool:
-    """Determine whether the test is currently running with inverted RTS.
-
-    Inverse Regression Test Selection (RTS) is a mode of operation where the
-    subset of the tests skipped in a previous RTS build are run. This property
-    determines whether this mode is enabled or not.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @is_inverted_rts.setter
-  @abc.abstractmethod
-  def is_inverted_rts(self, value: bool) -> None:
-    """Set whether the test is currently running with inverted RTS.
-
-    Inverse Regression Test Selection (RTS) is a mode of operation where the
-    subset of the tests skipped in a previous RTS build are run. This property
-    will enable running only the tests that would have been skipped by RTS.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def test_id_prefix(self) -> str:
-    """Prefix of test_id in ResultDB. e.g.
-
-    "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/"
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def option_flags(self) -> TestOptionFlags:
-    """Get the flags that the test uses for TestOptions."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def test_options(self) -> TestOptions:
-    """Get the test options that will be used when running the test."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @test_options.setter
-  @abc.abstractmethod
-  def test_options(self, value: TestOptions) -> None:
-    """Set the test options that will be used when running the test."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def pre_run(self, suffix: str) -> None:
-    """Steps to execute before running the test."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def run(self, suffix: str) -> step_data.StepData:
-    """Run the test."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def get_invocation_names(self, suffix: str) -> Iterable[str]:
-    """Returns the invocation names tracking the test's results in RDB."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def failure_on_exit(self, suffix: str) -> bool:
-    """Returns True if the test (or any of its shards) exited non-zero.
-
-    Used to determine the result of the test in the absence of anything
-    uploaded to RDB.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def has_valid_results(self, suffix: str) -> bool:
-    """Returns True if results (failures) are valid.
-
-    This makes it possible to distinguish between the case of no failures
-    and the test failing to even report its results in machine-readable
-    format.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def get_rdb_results(self, suffix: str) -> test_utils.RDBResults:
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def update_rdb_results(
-      self,
-      suffix: str,
-      results: test_utils.RDBResults,
-  ) -> None:
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def failures(self, suffix: str) -> AbstractSet[str]:
-    """Return tests that failed at least once."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def notrun_failures(self, suffix: str) -> AbstractSet[str]:
-    """Returns tests that had status NOTRUN/UNKNOWN.
-
-    FindIt has special logic for handling for tests with status NOTRUN/UNKNOWN.
-    This method returns test for which every test run had a result of either
-    NOTRUN or UNKNOWN.
-
-    Returns:
-      not_run_tests: A set of strings. Only valid if valid_results is True.
-    """
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def known_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def add_known_luci_analysis_flaky_failures(
-      self,
-      test_names: Iterable[str],
-  ) -> None:
-    """Add known flaky failures on ToT."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def weak_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def add_weak_luci_analysis_flaky_failure(self, test_name: str) -> None:
-    """Add known weak flaky failures."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @property
-  @abc.abstractmethod
-  def check_flakiness_for_new_tests(self) -> bool:
-    """Whether to check flakiness for new tests in try jobs."""
-    raise NotImplementedError()  # pragma: no cover
-
-  def failures_including_retry(
-      self,
-      suffix: str,
-  ) -> Tuple[bool, Optional[AbstractSet[str]]]:
-    """Returns test failures after retries.
-
-    This method only considers tests to be failures if every test run fails,
-    if the test runner retried tests, they're still considered successes as long
-    as they didn't cause step failures.
-
-    It also considers retried shards and the known flaky tests on tip of tree
-    when determining if a test failed, which is to say that a test is determined
-    as a failure if and only if it succeeded neither original run or retry and
-    is NOT known to be flaky on tip of tree.
-
-    Returns: A tuple (valid_results, failures).
-      valid_results: A Boolean indicating whether results are valid.
-      failures: A set of strings. Only valid if valid_results is True.
-    """
-    original_run_valid = self.has_valid_results(suffix)
-    if original_run_valid:
-      failures = self.deterministic_failures(suffix)
-    retry_suffix = 'retry shards'
-    if suffix:
-      retry_suffix = ' '.join([retry_suffix, suffix])
-    retry_shards_valid = self.has_valid_results(retry_suffix)
-    if retry_shards_valid:
-      retry_shards_failures = self.deterministic_failures(retry_suffix)
-
-    if original_run_valid and retry_shards_valid:
-      # TODO(martiniss): Maybe change this behavior? This allows for failures
-      # in 'retry shards with patch' which might not be reported to devs, which
-      # may confuse them.
-      return True, (
-          set(failures).intersection(retry_shards_failures) -
-          self.known_luci_analysis_flaky_failures)
-
-    if original_run_valid:
-      return True, set(failures) - self.known_luci_analysis_flaky_failures
-
-    if retry_shards_valid:
-      return True, set(
-          retry_shards_failures) - self.known_luci_analysis_flaky_failures
-
-    return False, None
-
-  def with_patch_failures_including_retry(
-      self) -> Tuple[bool, Optional[AbstractSet[str]]]:
-    return self.failures_including_retry('with patch')
-
-  # TODO(crbug.com/1040596): Remove this method and update callers to use
-  # |deterministic_failures('with patch')| once the bug is fixed.
-  #
-  # Currently, the sematics of this method is only a subset of
-  # |deterministic_failures('with patch')| due to that it's missing tests that
-  # failed "with patch", but passed in "retry shards with patch".
-  def has_failures_to_summarize(self) -> bool:
-    _, failures = self.failures_including_retry('with patch')
-    return bool(failures or self.known_luci_analysis_flaky_failures)
-
-  def without_patch_failures_to_ignore(self) -> Tuple[bool, AbstractSet[str]]:
-    """Returns test failures that should be ignored.
-
-    Tests that fail in 'without patch' should be ignored, since they're failing
-    without the CL patched in. If a test is flaky, it is treated as a failing
-    test.
-
-    Returns: A tuple (valid_results, failures_to_ignore).
-      valid_results: A Boolean indicating whether failures_to_ignore is valid.
-      failures_to_ignore: A set of strings. Only valid if valid_results is True.
-    """
-    results = self.get_rdb_results('without patch')
-    if not self.has_valid_results('without patch') or not results:
-      return (False, None)
-
-    ignored_failures = set()
-    for test in results.all_tests:
-      for i, status in enumerate(test.statuses):
-        expected = test.expectednesses[i]
-        if status != test_result_pb2.PASS and not expected:
-          ignored_failures.add(test.test_name)
-          break
-
-    return (True, ignored_failures)
-
-
 @attrs()
-class TestSpec(AbstractTestSpec):
+class TestSpec(TestSpecBase):
   """Abstract base class for specs for tests.
 
   Attributes:
@@ -737,7 +394,7 @@ class TestSpec(AbstractTestSpec):
     return attr.evolve(self, info_messages=self.info_messages + (message,))
 
 
-class Test(AbstractTest):
+class Test:
   """
   Base class for a test suite that can be run locally or remotely.
 
@@ -799,31 +456,33 @@ class Test(AbstractTest):
     self._is_inverted_rts = False
 
   @property
-  def option_flags(self) -> TestOptionFlags:
+  def option_flags(self):
     return _DEFAULT_OPTION_FLAGS
 
   @property
-  def test_options(self) -> TestOptions:
+  def test_options(self):
     return self._test_options
 
   @test_options.setter
-  def test_options(self, value: TestOptions) -> None:
-    self._test_options = value
+  def test_options(self, value):  # pragma: no cover
+    raise NotImplementedError(
+        'This test %s does not support test options objects yet' % type(self))
 
   @property
-  def name(self) -> str:
+  def name(self):
     return self.spec.name
 
   @property
-  def canonical_name(self) -> str:
+  def canonical_name(self):
+    """Canonical name of the test, no suffix attached."""
     return self.spec.canonical_name
 
   @property
-  def target_name(self) -> str:
+  def target_name(self):
     return self.spec.target_name
 
   @property
-  def check_flakiness_for_new_tests(self) -> bool:
+  def check_flakiness_for_new_tests(self):
     """Whether to check flakiness for new tests in try jobs.
 
     Default True unless specified in test spec json files.
@@ -831,64 +490,97 @@ class Test(AbstractTest):
     return self.spec.check_flakiness_for_new_tests
 
   @property
-  def test_id_prefix(self) -> str:
+  def test_id_prefix(self):
+    """Prefix of test_id in ResultDB. e.g.
+
+    "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/"
+    """
     return self.spec.test_id_prefix
 
   @property
-  def isolate_target(self) -> Optional[str]:
-    """Returns isolate target name.
-
-    Test types that use isolate should override this to return the
-    appropriate isolate target.
-    """
+  def isolate_target(self):
+    """Returns isolate target name. Defaults to None."""
     return None
 
   @property
-  def supports_rts(self) -> bool:
+  def uses_isolate(self):
+    """Returns true if the test is run via an isolate.
+
+    This does not need to be overridden in any subclasses. Overriding
+    isolate_target to return a non-false value will cause the test to
+    report that it uses isolate.
+    """
+    return bool(self.isolate_target)
+
+  @property
+  def supports_rts(self):
     """Determine whether the test supports RTS.
 
-    Test types that support RTS should override this.
+    Regression Test Selection (RTS) is a mode of operation where a subset of the
+    tests are run. This should be checked before trying to set is_rts to enable
+    RTS.
     """
     return False
 
   @property
-  def is_rts(self) -> bool:
+  def is_rts(self):
+    """Determine whether the test is currently running with RTS.
+
+    Regression Test Selection (RTS) is a mode of operation where a subset of the
+    tests are run. This property determines whether this mode is enabled or not.
+    """
     return self._is_rts
 
   @is_rts.setter
-  def is_rts(self, value: bool) -> None:
+  def is_rts(self, value):
+    """Set whether the test is currently running with RTS.
+
+    Regression Test Selection (RTS) is a mode of operation where a subset of the
+    tests are run. This property will enable running only the tests selected by
+    RTS.
+    """
     if value:
       assert self.supports_rts and not self.is_inverted_rts
     self._is_rts = value
 
   @property
-  def supports_inverted_rts(self) -> bool:
+  def supports_inverted_rts(self):
     """Determine whether the test supports inverted RTS.
 
-    Test types that support inverse RTS should override this.
+    Inverse Regression Test Selection (RTS) is a mode of operation where the
+    subset of the tests skipped in a previous RTS build are run. This should be
+    checked before trying to set is_inverted_rts to enable RTS.
     """
     return False
 
   @property
-  def is_inverted_rts(self) -> bool:
+  def is_inverted_rts(self):
+    """Determine whether the test is currently running with inverted RTS.
+
+    Inverse Regression Test Selection (RTS) is a mode of operation where the
+    subset of the tests skipped in a previous RTS build are run. This property
+    determines whether this mode is enabled or not.
+    """
     return self._is_inverted_rts
 
   @is_inverted_rts.setter
-  def is_inverted_rts(self, value: bool) -> None:
+  def is_inverted_rts(self, value):
+    """Set whether the test is currently running with inverted RTS.
+
+    Inverse Regression Test Selection (RTS) is a mode of operation where the
+    subset of the tests skipped in a previous RTS build are run. This property
+    will enable running only the tests that would have been skipped by RTS.
+    """
     if value:
       assert self.supports_inverted_rts and not self.is_rts
     self._is_inverted_rts = value
 
   @property
-  def is_skylabtest(self) -> bool:
+  def is_skylabtest(self):
     return False
 
   @property
   def runs_on_swarming(self):
-    """Whether or not the test runs on swarming.
-
-    Test types that run on swarming should override this.
-    """
     return False
 
   @property
@@ -896,50 +588,93 @@ class Test(AbstractTest):
     """Returns the chromium_tests RecipeApi object associated with the test."""
     return self._chromium_tests_api
 
-  def get_rdb_results(self, suffix: str) -> test_utils.RDBResults:
+  @abc.abstractmethod
+  def get_invocation_names(self, _suffix):
+    """Returns the invocation names tracking the test's results in RDB."""
+    raise NotImplementedError()  # pragma: no cover
+
+  def get_rdb_results(self, suffix):
     return self._rdb_results.get(suffix)
 
-  def update_rdb_results(
-      self,
-      suffix: str,
-      results: test_utils.RDBResults,
-  ) -> None:
+  def update_rdb_results(self, suffix, results):
     self._rdb_results[suffix] = results
 
   @property
-  def known_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
+  def known_luci_analysis_flaky_failures(self):
     return self._known_luci_analysis_flaky_failures
 
   @property
-  def weak_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
+  def weak_luci_analysis_flaky_failures(self):
     return self._weak_luci_analysis_flaky_failures
 
-  def add_known_luci_analysis_flaky_failures(
-      self,
-      test_names: Iterable[str],
-  ) -> None:
+  def add_known_luci_analysis_flaky_failures(self, test_names):
+    """Add known flaky failures on ToT
+
+    Args:
+      test_names: Iterable of string test names
+    """
     self._known_luci_analysis_flaky_failures.update(test_names)
 
-  def add_weak_luci_analysis_flaky_failure(self, test_name: str) -> None:
+  def add_weak_luci_analysis_flaky_failure(self, test_name):
+    """Add known weak flaky failures
+
+    Args:
+      test_names: String of a test name
+    """
     self._weak_luci_analysis_flaky_failures.add(test_name)
 
-  def _update_failure_on_exit(self, suffix, failure_on_exit):
+  def compile_targets(self):
+    """List of compile targets needed by this test."""
+    raise NotImplementedError()  # pragma: no cover
+
+  def pre_run(self, suffix):  # pragma: no cover
+    """Steps to execute before running the test."""
+    del suffix
+    return []
+
+  @recipe_api.composite_step
+  def run(self, suffix):  # pragma: no cover
+    """Run the test.
+
+    suffix is 'with patch' or 'without patch'
+
+    Returns:
+      step.StepData for the step representing the test that ran, or None if
+        there was an error when preparing the test.
+    """
+    raise NotImplementedError()
+
+  def update_failure_on_exit(self, suffix, failure_on_exit):
     self._failure_on_exit_suffix_map[suffix] = failure_on_exit
     rdb_results = self._rdb_results.get(suffix)
     if rdb_results:
       self._rdb_results[suffix] = rdb_results.with_failure_on_exit(
           failure_on_exit)
 
-  def failure_on_exit(self, suffix: str) -> bool:
+  def failure_on_exit(self, suffix):
+    """Returns True if the test (or any of its shards) exited non-zero.
+
+    Used to determine the result of the test in the absence of anything
+    uploaded to RDB. For safety, assume any test that fails to update
+    _failure_on_exit_suffix_map resulted in a failure.
+    """
     return self._failure_on_exit_suffix_map.get(suffix, True)
 
-  def has_valid_results(self, suffix: str) -> bool:
+  def has_valid_results(self, suffix):
+    """
+    Returns True if results (failures) are valid.
+
+    This makes it possible to distinguish between the case of no failures
+    and the test failing to even report its results in machine-readable
+    format.
+    """
     if suffix not in self._rdb_results:
       return False
 
     return not self._rdb_results[suffix].invalid
 
-  def failures(self, suffix: str) -> AbstractSet[str]:
+  def failures(self, suffix):
+    """Return tests that failed at least once (set of strings)."""
     failure_msg = (
         'There is no data for the test run suffix ({0}). This should never '
         'happen as all calls to failures() should first check that the data '
@@ -948,17 +683,32 @@ class Test(AbstractTest):
     return set(
         t.test_name for t in self._rdb_results[suffix].unexpected_failing_tests)
 
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix):
+    """Return tests that failed on every test run(set of strings)."""
+    return set(self.deterministic_failures_map(suffix).keys())
+
+  def deterministic_failures_map(self, suffix):
+    """Maps test_name to test_id for tests that failed on every test run"""
     failure_msg = (
         'There is no data for the test run suffix ({0}). This should never '
         'happen as all calls to deterministic_failures() should first check '
         'that the data exists.'.format(suffix))
     assert suffix in self._rdb_results, failure_msg
     return {
-        t.test_name for t in self._rdb_results[suffix].unexpected_failing_tests
+        t.test_name: t.test_id
+        for t in self._rdb_results[suffix].unexpected_failing_tests
     }
 
-  def notrun_failures(self, suffix: str) -> AbstractSet[str]:
+  def notrun_failures(self, suffix):
+    """Returns tests that had status NOTRUN/UNKNOWN.
+
+    FindIt has special logic for handling for tests with status NOTRUN/UNKNOWN.
+    This method returns test for which every test run had a result of either
+    NOTRUN or UNKNOWN.
+
+    Returns:
+      not_run_tests: A set of strings. Only valid if valid_results is True.
+    """
     assert self.has_valid_results(suffix), (
         'notrun_failures must only be called when the test run is known to '
         'have valid results.')
@@ -966,14 +716,101 @@ class Test(AbstractTest):
         t.test_name for t in self._rdb_results[suffix].unexpected_skipped_tests)
 
   @property
-  def uses_local_devices(self) -> bool:
-    return False
+  def uses_local_devices(self):
+    return False  # pragma: no cover
 
-  def step_name(self, suffix: str) -> str:
+  def step_name(self, suffix):
+    """Helper to uniformly combine tests's name with a suffix.
+
+    Note this step_name is not necessarily the same as the step_name in actual
+    builds, since there could be post-processing on the step_name by other
+    apis, like swarming (see api.chromium_swarming.get_step_name()).
+    """
     step_name = _add_suffix(self.name, suffix)
     # TODO(sshrimp): After findit has been turned down we should modify the
     # test names for Quick Run and Inverted Quick Run
     return step_name
+
+  def with_patch_failures_including_retry(self):
+    return self.failures_including_retry('with patch')
+
+  def failures_including_retry(self, suffix):
+    """Returns test failures after retries.
+
+    This method only considers tests to be failures if every test run fails,
+    if the test runner retried tests, they're still considered successes as long
+    as they didn't cause step failures.
+
+    It also considers retried shards and the known flaky tests on tip of tree
+    when determining if a test failed, which is to say that a test is determined
+    as a failure if and only if it succeeded neither original run or retry and
+    is NOT known to be flaky on tip of tree.
+
+    Returns: A tuple (valid_results, failures).
+      valid_results: A Boolean indicating whether results are valid.
+      failures: A set of strings. Only valid if valid_results is True.
+    """
+    original_run_valid = self.has_valid_results(suffix)
+    if original_run_valid:
+      failures = self.deterministic_failures(suffix)
+    retry_suffix = 'retry shards'
+    if suffix:
+      retry_suffix = ' '.join([retry_suffix, suffix])
+    retry_shards_valid = self.has_valid_results(retry_suffix)
+    if retry_shards_valid:
+      retry_shards_failures = self.deterministic_failures(retry_suffix)
+
+    if original_run_valid and retry_shards_valid:
+      # TODO(martiniss): Maybe change this behavior? This allows for failures
+      # in 'retry shards with patch' which might not be reported to devs, which
+      # may confuse them.
+      return True, (
+          set(failures).intersection(retry_shards_failures) -
+          self.known_luci_analysis_flaky_failures)
+
+    if original_run_valid:
+      return True, set(failures) - self.known_luci_analysis_flaky_failures
+
+    if retry_shards_valid:
+      return True, set(
+          retry_shards_failures) - self.known_luci_analysis_flaky_failures
+
+    return False, None
+
+  # TODO(crbug.com/1040596): Remove this method and update callers to use
+  # |deterministic_failures('with patch')| once the bug is fixed.
+  #
+  # Currently, the sematics of this method is only a subset of
+  # |deterministic_failures('with patch')| due to that it's missing tests that
+  # failed "with patch", but passed in "retry shards with patch".
+  def has_failures_to_summarize(self):
+    _, failures = self.failures_including_retry('with patch')
+    return bool(failures or self.known_luci_analysis_flaky_failures)
+
+  def without_patch_failures_to_ignore(self):
+    """Returns test failures that should be ignored.
+
+    Tests that fail in 'without patch' should be ignored, since they're failing
+    without the CL patched in. If a test is flaky, it is treated as a failing
+    test.
+
+    Returns: A tuple (valid_results, failures_to_ignore).
+      valid_results: A Boolean indicating whether failures_to_ignore is valid.
+      failures_to_ignore: A set of strings. Only valid if valid_results is True.
+    """
+    results = self.get_rdb_results('without patch')
+    if not self.has_valid_results('without patch') or not results:
+      return (False, None)
+
+    ignored_failures = set()
+    for test in results.all_tests:
+      for i, status in enumerate(test.statuses):
+        expected = test.expectednesses[i]
+        if status != test_result_pb2.PASS and not expected:
+          ignored_failures.add(test.test_name)
+          break
+
+    return (True, ignored_failures)
 
   def _tests_to_retry(self, suffix):
     """Computes the tests to run on an invocation of the test suite.
@@ -1006,7 +843,7 @@ class Test(AbstractTest):
     # all the tests fail to pass a suffix.
     return None
 
-  def _present_rdb_results(self, step_result, rdb_results):
+  def present_rdb_results(self, step_result, rdb_results):
     """Add a summary of test failures tracked in RDB to the given step_result.
 
     This duplicates info present in the "Test Results" tab in the new Milo UI.
@@ -1027,14 +864,14 @@ class Test(AbstractTest):
 
 
 @attrs()
-class TestWrapperSpec(AbstractTestSpec):
+class TestWrapperSpec(TestSpecBase):
   """Abstract base class for specs for test wrappers.
 
   Attributes:
     * test_spec - The spec for the wrapped test.
   """
 
-  _test_spec = attrib(AbstractTestSpec)
+  test_spec = attrib(TestSpecBase)
 
   @classmethod
   def create(cls, test_spec, **kwargs):
@@ -1050,12 +887,11 @@ class TestWrapperSpec(AbstractTestSpec):
   def get_test(self, chromium_tests_api):
     """Get the test described by the spec."""
     return self.test_wrapper_class(self,
-                                   self._test_spec.get_test(chromium_tests_api),
-                                   chromium_tests_api)
+                                   self.test_spec.get_test(chromium_tests_api))
 
   @property
   def disabled_reason(self):
-    return self._test_spec.disabled_reason
+    return self.test_spec.disabled_reason
 
   @abc.abstractproperty
   def test_wrapper_class(self):
@@ -1065,113 +901,120 @@ class TestWrapperSpec(AbstractTestSpec):
   @property
   def name(self):
     """The name of the test."""
-    return self._test_spec.name
+    return self.test_spec.name
 
   def disable(self, disabled_reason):
-    return attr.evolve(self, test_spec=self._test_spec.disable(disabled_reason))
+    return attr.evolve(self, test_spec=self.test_spec.disable(disabled_reason))
 
   def add_info_message(self, m):
-    return attr.evolve(self, test_spec=self._test_spec.add_info_message(m))
+    return attr.evolve(self, test_spec=self.test_spec.add_info_message(m))
 
 
-class _TestDelegateAbstractMeta(abc.ABCMeta):
-  """A metaclass that delegates abstract methods to a wrapped test.
+class TestWrapper(Test):  # pragma: no cover
+  """ A base class for Tests that wrap other Tests.
 
-  When a new class is created by this metaclass, any abstractmethod
-  defined in the new class' bases will be overridden with a method that
-  will call the method with the same name on the instance's _test
-  attribute. Properties will be similarly overriden to get/set the
-  attribute of the same name from the instance's test attribute.
+  By default, all functionality defers to the wrapped Test.
   """
 
-  def __new__(cls, class_name, bases, namespace, /, **kwargs):
-    for base in bases:
-      for name, value in inspect.getmembers(base, cls._is_abstractmethod):
-        if name not in namespace:
-          if isinstance(value, property):
-            delegate = cls._test_wrapper_delegate_property(name, value)
-          else:
-            delegate = cls._test_wrapper_delegate_method(name)
-          namespace[name] = delegate
-    return super().__new__(cls, class_name, bases, namespace, **kwargs)
-
-  @staticmethod
-  def _is_abstractmethod(obj):
-    # How abc.ABC determines if a method is abstract, see
-    # https://docs.python.org/3.8/library/abc.html#abc.abstractmethod
-    return getattr(obj, '__isabstractmethod__', False)
-
-  @staticmethod
-  def _test_wrapper_delegate_method(name):
-
-    def wrapped(self, *args, **kwargs):
-      return getattr(self._test, name)(*args, **kwargs)
-
-    return wrapped
-
-  @classmethod
-  def _test_wrapper_delegate_property(cls, name, prop):
-    fget = prop.fget
-    if cls._is_abstractmethod(fget):
-
-      def fget(self):
-        return getattr(self._test, name)
-
-    fset = prop.fset
-    if cls._is_abstractmethod(fset):
-
-      def fset(self, value):
-        return setattr(self._test, name, value)
-
-    return property(fget, fset)
-
-
-class TestWrapper(
-    AbstractTest,
-    # This handles delegating abstract methods in the base classes to _test
-    metaclass=_TestDelegateAbstractMeta,
-):
-  """A base class for wrapping Tests to modify behavior.
-
-  All abstract methods in base classes are automatically overriden to
-  defer to the wrapped test. Subclasses are free to override the
-  behavior for these methods.
-  """
-
-  def __init__(self, spec, test, chromium_tests_api):
+  def __init__(self, spec, test):
+    super().__init__(test.name, test.api)
     self.spec = spec
     self._test = test
-    self._chromium_tests_api = chromium_tests_api
 
   @property
-  def api(self):
-    """Returns the chromium_tests RecipeApi object associated with the test."""
-    return self._chromium_tests_api
+  def option_flags(self):
+    return self._test.option_flags
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
   @property
-  def raw_cmd(self) -> Iterable[str]:
+  def test_options(self):
+    return self._test.test_options
+
+  @test_options.setter
+  def test_options(self, value):
+    self._test.test_options = value
+
+  @property
+  def name(self):
+    return self._test.name
+
+  @property
+  def check_flakiness_for_new_tests(self):
+    return self._test.check_flakiness_for_new_tests
+
+  @property
+  def test_id_prefix(self):
+    return self._test.test_id_prefix
+
+  @property
+  def canonical_name(self):
+    return self._test.canonical_name
+
+  @property
+  def isolate_target(self):
+    return self._test.isolate_target
+
+  def compile_targets(self):
+    return self._test.compile_targets()
+
+  def pre_run(self, suffix):
+    return self._test.pre_run(suffix)
+
+  @recipe_api.composite_step
+  def run(self, suffix):
+    return self._test.run(suffix)
+
+  def has_valid_results(self, suffix):
+    return self._test.has_valid_results(suffix)
+
+  def failures(self, suffix):
+    return self._test.failures(suffix)
+
+  def deterministic_failures(self, suffix):
+    return self._test.deterministic_failures(suffix)
+
+  def notrun_failures(self, suffix):
+    return self._test.notrun_failures(suffix)
+
+  @property
+  def uses_local_devices(self):
+    return self._test.uses_local_devices
+
+  @property
+  def target_name(self):
+    return self._test.target_name
+
+  @property
+  def raw_cmd(self):
     return self._test.raw_cmd
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
   @raw_cmd.setter
-  def raw_cmd(self, value: Iterable[str]) -> None:
+  def raw_cmd(self, value):
     self._test.raw_cmd = value
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
   @property
-  def relative_cwd(self) -> str:
+  def relative_cwd(self):
     return self._test.relative_cwd
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
-  @relative_cwd.setter
-  def relative_cwd(self, value: str) -> None:
+  @raw_cmd.setter
+  def relative_cwd(self, value):
     self._test.relative_cwd = value
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
   @property
-  def isolate_profile_data(self) -> bool:
+  def runs_on_swarming(self):
+    return self._test.runs_on_swarming
+
+  @property
+  def isolate_profile_data(self):
     return self._test.isolate_profile_data
+
+  def get_invocation_names(self, suffix):
+    return self._test.get_invocation_names(suffix)
+
+  def get_rdb_results(self, suffix):
+    return self._test.get_rdb_results(suffix)
+
+  def update_rdb_results(self, suffix, results):
+    return self._test.update_rdb_results(suffix, results)
 
 
 class _NotInExperiment(DisabledReason):
@@ -1277,11 +1120,8 @@ class ExperimentalTest(TestWrapper):
     """
     return super().has_valid_results(self._experimental_suffix(suffix))
 
-  def step_name(self, suffix: str) -> str:
-    return self._test.step_name(self._experimental_suffix(suffix))
-
   #override
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix):
     try:
       return super().pre_run(self._experimental_suffix(suffix))
     except self.api.m.step.StepFailure:
@@ -1289,28 +1129,28 @@ class ExperimentalTest(TestWrapper):
 
   #override
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     try:
       return super().run(self._experimental_suffix(suffix))
-    except self.api.m.step.StepFailure as e:
-      return e.result
+    except self.api.m.step.StepFailure:
+      pass
 
   #override
-  def has_valid_results(self, suffix: str) -> bool:
+  def has_valid_results(self, suffix):
     # Call the wrapped test's implementation in case it has side effects, but
     # ignore the result.
     super().has_valid_results(self._experimental_suffix(suffix))
     return True
 
   #override
-  def failure_on_exit(self, suffix: str) -> bool:
+  def failure_on_exit(self, suffix):
     # Call the wrapped test's implementation in case it has side effects, but
     # ignore the result.
     super().failure_on_exit(self._experimental_suffix(suffix))
     return False
 
   #override
-  def failures(self, suffix: str) -> AbstractSet[str]:
+  def failures(self, suffix):
     if self._actually_has_valid_results(suffix):
       # Call the wrapped test's implementation in case it has side effects,
       # but ignore the result.
@@ -1318,7 +1158,7 @@ class ExperimentalTest(TestWrapper):
     return []
 
   #override
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix):
     if self._actually_has_valid_results(suffix):
       # Call the wrapped test's implementation in case it has side effects,
       # but ignore the result.
@@ -1326,27 +1166,20 @@ class ExperimentalTest(TestWrapper):
     return []
 
   #override
-  def notrun_failures(
-      self,
-      suffix: str,
-  ) -> AbstractSet[str]:  # pragma: no cover
+  def notrun_failures(self, suffix):  # pragma: no cover
     if self._actually_has_valid_results(suffix):
       # Call the wrapped test's implementation in case it has side effects,
       # but ignore the result.
       super().notrun_failures(self._experimental_suffix(suffix))
     return set()
 
-  def get_invocation_names(self, suffix: str) -> Iterable[str]:
+  def get_invocation_names(self, suffix):
     return super().get_invocation_names(self._experimental_suffix(suffix))
 
-  def get_rdb_results(self, suffix: str) -> test_utils.RDBResults:
+  def get_rdb_results(self, suffix):
     return super().get_rdb_results(self._experimental_suffix(suffix))
 
-  def update_rdb_results(
-      self,
-      suffix: str,
-      results: test_utils.RDBResults,
-  ) -> None:
+  def update_rdb_results(self, suffix, results):
     return super().update_rdb_results(
         self._experimental_suffix(suffix), results)
 
@@ -1358,14 +1191,13 @@ class LocalTest(Test):
   RDB invocations. All of which is intended to be shared with any subclasses.
   """
 
+  # pylint: disable=abstract-method
+
   def __init__(self, spec, chromium_tests_api):
     super().__init__(spec, chromium_tests_api)
     self._suffix_to_invocation_names = {}
 
-  def pre_run(self, suffix: str) -> None:
-    del suffix
-
-  def get_invocation_names(self, suffix: str) -> Iterable[str]:
+  def get_invocation_names(self, suffix):
     inv = self._suffix_to_invocation_names.get(suffix)
     return [inv] if inv else []
 
@@ -1461,7 +1293,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
   All new tests are strongly encouraged to use this infrastructure.
   """
 
-  def compile_targets(self) -> Iterable[str]:
+  def compile_targets(self):
     if self.spec.override_compile_targets:
       return self.spec.override_compile_targets
 
@@ -1476,7 +1308,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
     ]
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     run_args = []
 
     tests_to_retry = self._tests_to_retry(suffix)
@@ -1531,7 +1363,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
               ' Contents are:\n%s' %
               self.api.m.json.dumps(result.json.output, indent=2)))
 
-    self._update_failure_on_exit(suffix, result.retcode != 0)
+    self.update_failure_on_exit(suffix, result.retcode != 0)
 
     _, failures = self.api.m.test_utils.limit_failures(failures)
     result.presentation.step_text += (
@@ -1577,20 +1409,23 @@ class LocalGTestTestSpec(TestSpec):
 
 class LocalGTestTest(LocalTest):
 
+  @Test.test_options.setter
+  def test_options(self, value):
+    self._test_options = value
 
   @property
-  def option_flags(self) -> TestOptionFlags:
+  def option_flags(self):
     return _GTEST_OPTION_FLAGS
 
   @property
-  def uses_local_devices(self) -> bool:
-    return True
+  def uses_local_devices(self):
+    return True  # pragma: no cover
 
-  def compile_targets(self) -> Iterable[str]:
+  def compile_targets(self):
     return self.spec.override_compile_targets or [self.spec.target_name]
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -1634,7 +1469,7 @@ class LocalGTestTest(LocalTest):
     # TODO(kbr): add functionality to generate_gtest to be able to force running
     # these local gtests via isolate from the src-side JSON files.
     # crbug.com/584469
-    self._update_failure_on_exit(suffix, step_result.retcode != 0)
+    self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
     self._update_inv_name_from_stderr(step_result.stderr, suffix)
 
@@ -1894,39 +1729,34 @@ class SwarmingTest(Test):
     return False
 
   @property
-  def runs_on_swarming(self) -> bool:
+  def runs_on_swarming(self):
     return True
 
   @property
-  def isolate_target(self) -> str:
+  def isolate_target(self):
     return self.target_name
 
   @property
-  def isolate_profile_data(self) -> bool:
+  def isolate_profile_data(self):
     return self.spec.isolate_profile_data
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
   @property
-  def shards(self) -> int:
+  def shards(self):
     return self.spec.shards
 
   @property
-  def supports_rts(self) -> bool:
+  def supports_rts(self):
     return bool(self.rts_raw_cmd)
 
   @property
-  def supports_inverted_rts(self) -> bool:
+  def supports_inverted_rts(self):
     return bool(self.inverted_raw_cmd)
 
-  @abc.abstractmethod
-  def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-  ) -> chromium_swarming.SwarmingTask:
+  def create_task(self, suffix, cas_input_root):
     """Creates a swarming task. Must be overridden in subclasses.
 
     Args:
+      api: Caller's API.
       suffix: Suffix added to the test name.
       cas_input_root: Hash or digest of the isolated test to be run.
 
@@ -2164,16 +1994,16 @@ class SwarmingTest(Test):
                 self.spec.service_account or '').with_tags(tags))
     return task
 
-  def get_task(self, suffix: str) -> chromium_swarming.SwarmingTask:
+  def get_task(self, suffix):
     return self._tasks.get(suffix)
 
-  def get_invocation_names(self, suffix: str) -> Iterable[str]:
+  def get_invocation_names(self, suffix):
     task = self.get_task(suffix)
     if task:
       return task.get_invocation_names()
     return []
 
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix):
     """Launches the test on Swarming."""
     assert suffix not in self._tasks, ('Test %s was already triggered' %
                                        self.step_name(suffix))
@@ -2187,7 +2017,7 @@ class SwarmingTest(Test):
                      self.isolate_target))
 
     # Create task.
-    self._tasks[suffix] = self._create_task(suffix, task_input)
+    self._tasks[suffix] = self.create_task(suffix, task_input)
 
     # Export TARGET_PLATFORM to resultdb tags
     resultdb = self.spec.resultdb
@@ -2201,7 +2031,7 @@ class SwarmingTest(Test):
         self._tasks[suffix], resultdb=resultdb)
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     """Waits for launched test to finish and collects the results."""
     step_result, _ = (
         self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
@@ -2211,12 +2041,11 @@ class SwarmingTest(Test):
     step_result.presentation.logs['step_metadata'] = (self.api.m.json.dumps(
         metadata, indent=2, sort_keys=True)).splitlines()
 
-    self._update_failure_on_exit(suffix,
-                                 bool(self._tasks[suffix].failed_shards))
+    self.update_failure_on_exit(suffix, bool(self._tasks[suffix].failed_shards))
 
     _present_info_messages(step_result.presentation, self)
 
-    self._present_rdb_results(step_result, self._rdb_results.get(suffix))
+    self.present_rdb_results(step_result, self._rdb_results.get(suffix))
 
     return step_result
 
@@ -2254,17 +2083,17 @@ class SwarmingGTestTestSpec(SwarmingTestSpec):
 class SwarmingGTestTest(SwarmingTest):
 
   @property
-  def option_flags(self) -> TestOptionFlags:
+  def option_flags(self):
     return _GTEST_OPTION_FLAGS
 
-  def compile_targets(self) -> Iterable[str]:
+  @Test.test_options.setter
+  def test_options(self, value):
+    self._test_options = value
+
+  def compile_targets(self):
     return self.spec.override_compile_targets or [self.spec.target_name]
 
-  def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-  ) -> chromium_swarming.SwarmingTask:
+  def create_task(self, suffix, cas_input_root):
     json_override = None
     # TODO(crbug.com/1255217): Remove this android exception when logcats and
     # tombstones are in resultdb.
@@ -2339,21 +2168,29 @@ class LocalIsolatedScriptTest(LocalTest):
     self.relative_cwd = None
 
   @property
-  def option_flags(self) -> TestOptionFlags:
+  def option_flags(self):
     return (_BLINK_WEB_TESTS_OPTION_FLAGS if 'blink_web_tests' in self.name else
             _ISOLATED_SCRIPT_OPTION_FLAGS)
 
   @property
-  def isolate_target(self) -> bool:
+  def isolate_target(self):
     return self.target_name
 
-  def compile_targets(self) -> Iterable[str]:
+  @property
+  def isolate_profile_data(self):
+    return self.spec.isolate_profile_data
+
+  def compile_targets(self):
     return self.spec.override_compile_targets or [self.spec.target_name]
+
+  @Test.test_options.setter
+  def test_options(self, value):
+    self._test_options = value
 
   # TODO(nednguyen, kbr): figure out what to do with Android.
   # (crbug.com/533480)
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -2381,7 +2218,7 @@ class LocalIsolatedScriptTest(LocalTest):
             '"invocations/build-inv"', 'stderr'))
 
     kwargs = {}
-    if self.spec.isolate_profile_data:
+    if self.isolate_profile_data:
       kwargs.update({
           # Targets built with 'use_clang_coverage' will look at this
           # environment variable to determine where to write the profile dumps.
@@ -2416,7 +2253,7 @@ class LocalIsolatedScriptTest(LocalTest):
     status = step_result.presentation.status
 
     self._update_inv_name_from_stderr(step_result.stderr, suffix)
-    self._update_failure_on_exit(suffix, step_result.retcode != 0)
+    self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
     _present_info_messages(step_result.presentation, self)
 
@@ -2457,19 +2294,20 @@ class SwarmingIsolatedScriptTestSpec(SwarmingTestSpec):
 
 class SwarmingIsolatedScriptTest(SwarmingTest):
 
-  def compile_targets(self) -> Iterable[str]:
+  def compile_targets(self):
     return self.spec.override_compile_targets or [self.target_name]
 
   @property
-  def option_flags(self) -> TestOptionFlags:
+  def option_flags(self):
     return (_BLINK_WEB_TESTS_OPTION_FLAGS if 'blink_web_tests' in self.name else
             _ISOLATED_SCRIPT_OPTION_FLAGS)
 
-  def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-  ) -> chromium_swarming.SwarmingTask:
+  @Test.test_options.setter
+  def test_options(self, value):
+    self._test_options = value
+
+  def create_task(self, suffix, cas_input_root):
+
     if self.is_inverted_rts:
       cmd = self.inverted_raw_cmd
     elif self.is_rts:
@@ -2488,7 +2326,7 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
     return task
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     step_result = super().run(suffix)
     results = step_result.json.output
 
@@ -2537,10 +2375,11 @@ class AndroidJunitTestSpec(TestSpec):
 class AndroidJunitTest(LocalTest):
 
   @property
-  def uses_local_devices(self) -> bool:
+  def uses_local_devices(self):
     return False
 
-  def _run_tests(self, suffix, json_results_file):
+  #override
+  def run_tests(self, suffix, json_results_file):
     step_test_data = lambda: (
         self.api.m.test_utils.test_api.canned_gtest_output(True) + self.api.m.
         raw_io.test_api.stream_output_text(
@@ -2559,18 +2398,18 @@ class AndroidJunitTest(LocalTest):
         resultdb=self._prep_local_rdb())
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     assert self.api.m.chromium.c.TARGET_PLATFORM == 'android'
 
     json_results_file = self.api.m.test_utils.gtest_results(add_json_log=False)
     try:
-      step_result = self._run_tests(suffix, json_results_file)
+      step_result = self.run_tests(suffix, json_results_file)
     except self.api.m.step.StepFailure as f:
       step_result = f.result
       raise
     finally:
       self._update_inv_name_from_stderr(step_result.stderr, suffix)
-      self._update_failure_on_exit(suffix, step_result.retcode != 0)
+      self.update_failure_on_exit(suffix, step_result.retcode != 0)
 
       _present_info_messages(step_result.presentation, self)
 
@@ -2580,7 +2419,7 @@ class AndroidJunitTest(LocalTest):
 
     return step_result
 
-  def compile_targets(self) -> Iterable[str]:
+  def compile_targets(self):
     return self.spec.compile_targets
 
 
@@ -2629,11 +2468,11 @@ class MockTest(Test):
     self._failures = list(spec.failures)
 
   @property
-  def option_flags(self) -> TestOptionFlags:
+  def option_flags(self):
     return self.spec.option_flags
 
   @property
-  def runs_on_swarming(self) -> bool:  # pragma: no cover
+  def runs_on_swarming(self):  # pragma: no cover
     return self.spec.runs_on_swarming
 
   @contextlib.contextmanager
@@ -2648,12 +2487,12 @@ class MockTest(Test):
       self._failures.append('test_failure')
       raise
 
-  def pre_run(self, suffix: str) -> None:
+  def pre_run(self, suffix):
     with self._mock_exit_codes():
       self.api.m.step('pre_run {}'.format(self.step_name(suffix)), None)
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
     with self._mock_exit_codes():
       step_result = self.api.m.step(self.step_name(suffix), None)
 
@@ -2661,32 +2500,32 @@ class MockTest(Test):
 
     return step_result
 
-  def has_valid_results(self, suffix: str) -> bool:
+  def has_valid_results(self, suffix):
     if suffix in self.spec.per_suffix_valid:  # pragma: no cover
       return self.spec.per_suffix_valid[suffix]
     return self.spec.has_valid_results
 
-  def failures(self, suffix: str) -> AbstractSet[str]:
+  def failures(self, suffix):
     if suffix in self.spec.per_suffix_failures:  # pragma: no cover
       return self.spec.per_suffix_failures[suffix]
     return set(self._failures)
 
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix):
     """Use same logic as failures for the Mock test."""
     return self.failures(suffix)
 
-  def compile_targets(self) -> Iterable[str]:  # pragma: no cover
+  def compile_targets(self):  # pragma: no cover
     return []
 
-  def get_invocation_names(self, suffix: str) -> Iterable[str]:
+  def get_invocation_names(self, _suffix):
     return self.spec.invocation_names
 
   @property
-  def supports_rts(self) -> bool:
+  def supports_rts(self):
     return self.spec.supports_rts
 
   @property
-  def supports_inverted_rts(self) -> bool:
+  def supports_inverted_rts(self):
     return self.spec.supports_rts
 
 
@@ -2793,26 +2632,24 @@ class SkylabTest(Test):
     self.telemetry_shard_index = None
 
   @property
-  def is_skylabtest(self) -> bool:
+  def is_skylabtest(self):
     return True
 
-  # TODO(gbeaty) Add an interface for skylab tests, include this method
   @property
-  def is_tast_test(self) -> bool:
+  def is_tast_test(self):
     return bool(self.spec.tast_expr)
 
-  # TODO(gbeaty) Add an interface for skylab tests, include this method
   @property
-  def is_GPU_test(self) -> bool:
+  def is_GPU_test(self):
     return self.spec.autotest_name == 'chromium_Graphics'
 
   def _raise_failed_step(self, suffix, step, status, failure_msg):
     step.presentation.status = status
     step.presentation.step_text += failure_msg
-    self._update_failure_on_exit(suffix, True)
+    self.update_failure_on_exit(suffix, True)
     raise self.api.m.step.StepFailure(status)
 
-  def get_invocation_names(self, suffix: str) -> Iterable[str]:
+  def get_invocation_names(self, suffix):
     # TODO(crbug.com/1248693): Use the invocation included by the parent builds.
     del suffix
     invocation_names = []
@@ -2822,15 +2659,8 @@ class SkylabTest(Test):
                                 attempt_runner_build.id)
     return invocation_names
 
-  def pre_run(self, suffix: str) -> None:
-    # SkylabTestGroup never actually calls pre_run, so just call the
-    # unimplemented super version
-    # The super method is abstract, so we have to override it
-    # pylint: disable=useless-super-delegation
-    super().pre_run(suffix)  # pragma: no cover
-
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix):
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
       _present_info_messages(step, self)
@@ -2844,7 +2674,7 @@ class SkylabTest(Test):
       if rdb_results.total_tests_ran:
         # If any test result was reported by RDB, the test run completed
         # its lifecycle as expected.
-        self._update_failure_on_exit(suffix, False)
+        self.update_failure_on_exit(suffix, False)
       else:
         if self.ctp_build_ids:
           for i, ctp_build in enumerate(self.ctp_build_ids):
@@ -2857,7 +2687,7 @@ class SkylabTest(Test):
 
       if rdb_results.unexpected_failing_tests:
         step.presentation.status = self.api.m.step.FAILURE
-      self._present_rdb_results(step, rdb_results)
+      self.present_rdb_results(step, rdb_results)
 
       shard_runners = list(self.test_runner_builds.values())
       shard_runners.sort(key=lambda b: b[0].create_time.seconds)
@@ -2892,7 +2722,7 @@ class SkylabTest(Test):
 
     return step
 
-  def compile_targets(self) -> Iterable[str]:
+  def compile_targets(self):
     t = [self.spec.target_name]
     if self.is_tast_test:
       t.append('chrome')

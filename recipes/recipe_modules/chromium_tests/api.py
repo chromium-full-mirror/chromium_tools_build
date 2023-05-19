@@ -140,7 +140,7 @@ class Task:
   # that can run tests [possibly remotely via swarming] and parse the
   # results. Running tests multiple times is not idempotent the
   # results of previous runs affect future runs.
-  test_suites = attrib(sequence[steps.AbstractTest])
+  test_suites = attrib(sequence[steps.Test])
 
   # Holds state on build properties. Used to pass state between methods.
   bot_update_step = attrib(step_data.StepData)
@@ -353,7 +353,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_group: str,
       builder: str,
       targets_spec: generators.TargetsSpec,
-  ) -> Iterable[steps.AbstractTest]:
+  ) -> Iterable[steps.Test]:
     test_specs = list(generator.generate(builder_group, builder, targets_spec))
 
     tests = []
@@ -2129,7 +2129,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Args:
        builder_config: The configuration of the running builder.
        test_objects_by_suffix: A dict mapping from test suffixes to lists of
-         steps.AbstractTest objects.
+         steps.Test objects.
 
     Returns:
       A RawResult object with the status of the build and failure message if

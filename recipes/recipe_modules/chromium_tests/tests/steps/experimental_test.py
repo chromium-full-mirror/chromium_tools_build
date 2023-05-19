@@ -68,11 +68,6 @@ def RunSteps(api):
 
   experimental_test = experimental_test_spec.get_test(api.chromium_tests)
 
-  api.assertions.assertEqual(
-      experimental_test.step_name(''), 'inner_test (experimental)')
-  api.assertions.assertEqual(
-      experimental_test.step_name('foo'), 'inner_test (foo, experimental)')
-
   api.assertions.assertEqual(experimental_test.option_flags, option_flags)
 
   api.step.empty('Configured experimental test %s' % experimental_test.name)
@@ -93,7 +88,7 @@ def RunSteps(api):
   experimental_test_spec = experimental_test_spec.add_info_message(
       'This is an experimental test')
   api.assertions.assertEqual(
-      experimental_test_spec._test_spec._test_spec.info_messages,
+      experimental_test_spec.test_spec.test_spec.info_messages,
       ('This is an experimental test',))
 
 
