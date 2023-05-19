@@ -65,3 +65,4 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     cfg = copy.deepcopy(self.m.gclient.c)
     cfg.revisions['src'] = revision
     self.m.gclient.sync(cfg)
+    self.m.chromium.runhooks()
