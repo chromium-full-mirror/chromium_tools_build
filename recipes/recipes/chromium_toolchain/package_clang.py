@@ -110,6 +110,9 @@ ARM_MAC_BUILDERS = (
     'toolchain-packager-mac-arm',
 )
 
+# GCS bucket where the official packagers upload archives.
+GCS_BUCKET_PROD = 'chromium-browser-toolchain-prod'
+
 
 def RunSteps(api, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
@@ -122,11 +125,10 @@ def RunSteps(api, properties):
 
   with api.osx_sdk('ios'):
     with api.depot_tools.on_path():
-      # TODO(crbug.com/1362511): enable upload.
-      args = []
-      if api.buildbucket.builder_name not in BUILDERS['official.toolchain'][
+      args = ['--upload']
+      if api.buildbucket.builder_name in BUILDERS['official.toolchain'][
           'builders'].keys():
-        args = ['--upload']
+        args += ['--bucket', GCS_BUCKET_PROD]
       if api.buildbucket.builder_name in ARM_MAC_BUILDERS:
         args += ['--build-mac-arm']
       if properties.llvm_revision:
@@ -169,7 +171,8 @@ def GenTests(api):
       api.properties(llvm_revision='abcd'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.StepCommandRE, 'package clang', [
-          'python3', '.*/tools/clang/scripts/package.py', '--revision', 'abcd'
+          'python3', '.*/tools/clang/scripts/package.py', '--upload',
+          '--bucket', GCS_BUCKET_PROD, '--revision', 'abcd'
       ]),
       api.post_process(post_process.DropExpectation),
   )
