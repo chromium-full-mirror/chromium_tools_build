@@ -35,6 +35,12 @@ The following constraints are provided:
   `sequence[int]` for a sequence of ints, `sequence[(str, Path)]` for a
   sequence of strs and Paths or `sequence[enum('x', 'y', 'z')]` for a
   sequence where each member is one of 'x', 'y' or 'z'.
+* `set_` - Attribute values must be iterable and will be converted to
+  frozensets. By default, no constraint is placed on the members of the
+  set. Constraints can be added using the index operator, e.g.
+  `set_[int]` for a set of ints, `set_[(str, Path)]` for a set of strs
+  and Paths or `set_[enum('x', 'y', 'z')]` for a set where each member
+  is one of 'x', 'y' or 'z'.
 * `command_args` - Equivalent to `sequence` with the members
   constrained to be of types that can be part of the command line for a
   step.
@@ -284,6 +290,45 @@ sequence = _UnparameterizedSequence.create()
 # _validate_cmd_list in
 # https://source.chromium.org/chromium/infra/infra/+/main:recipes-py/recipe_modules/step/api.py
 command_args = sequence[(int, str, Path, Placeholder)]
+
+
+@attr.s(frozen=True, slots=True)
+class _Set(AttributeConstraint):
+
+  _member_constraint = attr.ib()
+
+  @classmethod
+  def create(cls, member_constraint=Ellipsis):
+    member_constraint = _normalize_constraint(
+        member_constraint,
+        constraint_id='member_constraint',
+        name_qualifier='members of ',
+        allow_ellipsis=True)
+    return cls(member_constraint)
+
+  def validate(self, obj, attribute, value):
+    validator = validators.deep_iterable(
+        iterable_validator=_instance_of(frozenset),
+        member_validator=self._member_constraint.validate)
+    validator(obj, attribute, value)
+
+  def convert(self, value):
+    try:
+      itr = iter(value)
+    except TypeError:
+      # Let the validator provide a more helpful exception message
+      return value
+    return frozenset(self._member_constraint.convert(x) for x in itr)
+
+
+class _UnparameterizedSet(_Set):
+
+  @staticmethod
+  def __getitem__(member_constraint):
+    return _Set.create(member_constraint)
+
+
+set_ = _UnparameterizedSet.create()
 
 
 @attr.s(frozen=True, slots=True)

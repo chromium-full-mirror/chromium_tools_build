@@ -12,7 +12,7 @@ from recipe_engine.util import Placeholder
 from RECIPE_MODULES.build.attr_utils import (FieldMapping, attrib, attrs,
                                              cached_property, callable_,
                                              command_args, enum, mapping,
-                                             sequence)
+                                             sequence, set_)
 
 DEPS = [
     'recipe_engine/assertions',
@@ -120,6 +120,30 @@ def RunSteps(api):
   x = SequenceTest(value=[1, 2, 3], typed=['4', '5', '6'])
   api.assertions.assertEqual(x.value, (1, 2, 3))
   api.assertions.assertEqual(x.typed, ('4', '5', '6'))
+
+  # set_ ***********************************************************************
+  @attr.s(frozen=True)
+  class SetTest:
+    value = attrib(set_)
+    typed = attrib(set_[str], default=None)
+
+  # test validation of attribute value
+  with api.assertions.assertRaises(TypeError) as caught:
+    SetTest(value=1)
+  message = "'value' must be {} (got 1 that is a {}).".format(frozenset, int)
+  api.assertions.assertEqual(str(caught.exception), message)
+
+  # test validation of element types
+  with api.assertions.assertRaises(TypeError) as caught:
+    SetTest(value=[1, 2, 3], typed=[4, 5, 6])
+  message = "members of 'typed' must be {} (got 4 that is a {}).".format(
+      str, int)
+  api.assertions.assertEqual(str(caught.exception), message)
+
+  # test successful validation
+  x = SetTest(value=[1, 2, 3, 1], typed=['4', '5', '6', '4'])
+  api.assertions.assertEqual(x.value, frozenset((1, 2, 3)))
+  api.assertions.assertEqual(x.typed, frozenset(('4', '5', '6')))
 
   # command_args ***************************************************************
   @attr.s(frozen=True)
