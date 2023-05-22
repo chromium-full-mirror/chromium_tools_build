@@ -135,7 +135,7 @@ class SsciAPI(recipe_api.RecipeApi):
                              depbot_result.json.outputs.get('libraries'))
       self.m.file.write_json("write depbot artifacts",
                              self.m.path.join(data_dir, "artifacts.json"),
-                             depbot_result.json.outputs.get('libraries'))
+                             depbot_result.json.outputs.get('artifacts'))
       self.m.file.write_json("write third party data",
                              self.m.path.join(data_dir, "third_party.json"),
                              partybot_result.json.outputs.get('third_party'))
