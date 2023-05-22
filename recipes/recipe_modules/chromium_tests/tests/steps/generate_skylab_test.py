@@ -76,6 +76,7 @@ def GenTests(api):
                   is_ci_build=True,
                   target_name=TAST_TARGET,
                   should_read_isolate=True,
+                  experiment_percentage=None,
                   ci_only_tests=True):
     builder_db = ctbc.BuilderDatabase.create({
         builder_group: {
@@ -105,30 +106,36 @@ def GenTests(api):
           try_db=None,
       )
 
+    test_spec = {
+        'cros_board': 'eve',
+        'cros_img': 'eve-release/R89-13631.0.0',
+        'test_id_prefix': 'ninja://basic_EVE_TOT/',
+        'ci_only': ci_only_tests,
+        'name': 'basic_EVE_TOT',
+        'tast_expr': tast_expr,
+        'benchmark': benchmark,
+        'args': [test_args],
+        'swarming': {},
+        'test': target_name,
+        'resultdb': {
+            'enable': True,
+        },
+        'description': 'This is a description.',
+        'timeout_sec': 7200,
+    }
+    if experiment_percentage is not None:
+      test_spec['experiment_percentage'] = experiment_percentage
+
     steps = sum([
         build_gen,
         api.chromium_tests.read_targets_spec(
-            builder_group, {
+            builder_group,
+            {
                 builder: {
-                    'skylab_tests': [{
-                        'cros_board': 'eve',
-                        'cros_img': 'eve-release/R89-13631.0.0',
-                        'test_id_prefix': 'ninja://basic_EVE_TOT/',
-                        'ci_only': ci_only_tests,
-                        'name': 'basic_EVE_TOT',
-                        'tast_expr': tast_expr,
-                        'benchmark': benchmark,
-                        'args': [test_args],
-                        'swarming': {},
-                        'test': target_name,
-                        'resultdb': {
-                            'enable': True,
-                        },
-                        'description': 'This is a description.',
-                        'timeout_sec': 7200
-                    }],
-                }
-            }),
+                    'skylab_tests': [test_spec],
+                },
+            },
+        ),
     ], api.empty_test_data())
     # Mock the file/folder for recipe training.
     mock_paths = [
@@ -469,4 +476,44 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'test_pre_run (without patch)'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'experimental test experiment on',
+      boilerplate(
+          'chrome-test-builds',
+          tast_expr='dummy_tast',
+          experiment_percentage='100',
+          should_read_isolate=False),
+      api.post_process(
+          post_process.MustRun,
+          'basic_EVE_TOT (experimental)',
+      ),
+      # Because of the way that isinstance is used to determine test groups,
+      # experimental skylab tests do not get put into the skylab group and when
+      # the run method is executed, it doesn't have a necessary attribute set
+      # (the skylab group does not use pre_run, it does its own bespoke code)
+      # and it creates a failing step with the indicated text
+      #
+      # TODO(gbeaty) Fix this
+      api.post_process(
+          post_process.StepTextContains,
+          'basic_EVE_TOT (experimental)',
+          ['Test was not scheduled because of absent lacros_gcs_path'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'experimental test experiment off',
+      boilerplate(
+          'chrome-test-builds',
+          tast_expr='dummy_tast',
+          experiment_percentage='0',
+          should_read_isolate=False),
+      api.post_process(
+          post_process.DoesNotRunRE,
+          '.*basic_EVE_TOT.*',
+      ),
+      api.post_process(post_process.DropExpectation),
   )

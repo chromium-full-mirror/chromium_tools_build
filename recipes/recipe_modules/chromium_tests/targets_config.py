@@ -28,7 +28,7 @@ class TargetsConfig:
   # to fail, so we don't apply any constraints to the value here to limit the
   # blast radius of bad changes
   _targets_specs = attrib(mapping[str, ...])
-  _tests = attrib(mapping[chromium.BuilderId, sequence[steps.Test]])
+  _tests = attrib(mapping[chromium.BuilderId, sequence[steps.AbstractTest]])
 
   @classmethod
   def create(cls, **kwargs):
