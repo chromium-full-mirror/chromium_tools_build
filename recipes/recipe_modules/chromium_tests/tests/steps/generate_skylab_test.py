@@ -483,23 +483,10 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds',
           tast_expr='dummy_tast',
-          experiment_percentage='100',
-          should_read_isolate=False),
+          experiment_percentage='100'),
       api.post_process(
           post_process.MustRun,
           'basic_EVE_TOT (experimental)',
-      ),
-      # Because of the way that isinstance is used to determine test groups,
-      # experimental skylab tests do not get put into the skylab group and when
-      # the run method is executed, it doesn't have a necessary attribute set
-      # (the skylab group does not use pre_run, it does its own bespoke code)
-      # and it creates a failing step with the indicated text
-      #
-      # TODO(gbeaty) Fix this
-      api.post_process(
-          post_process.StepTextContains,
-          'basic_EVE_TOT (experimental)',
-          ['Test was not scheduled because of absent lacros_gcs_path'],
       ),
       api.post_process(post_process.DropExpectation),
   )

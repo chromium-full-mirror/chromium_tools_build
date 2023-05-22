@@ -607,6 +607,61 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  test_id_base_unittests_test_d = 'ninja://base:base_unittests/TestSuite.test_d'
+  base_unittests_pass_invocations = {}
+  base_unittests_pass_invocations['invocations/pass'] = (
+      api.resultdb.Invocation(test_results=[
+          _generate_test_result(test_id_base_unittests_test_d, correct_variant),
+      ]))
+
+  yield api.test(
+      'basic_local_gtest',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-try-group',
+          builder='fake-android-try-builder',
+          builder_db=builder_db,
+          try_db=ctbc.TryDatabase.create({
+              'fake-try-group': {
+                  'fake-android-try-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          builder_group='fake-group',
+                          buildername='fake-android-builder',
+                      ),
+              },
+          })),
+      api.properties(assert_tests=True),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-android-builder': {
+                  'isolated_scripts': [{
+                      "isolate_name": "base_unittests",
+                      "name": "base_unittests",
+                      "test_id_prefix": "ninja://base:base_unittests/",
+                  },],
+              },
+          }),
+      api.flakiness(check_for_flakiness=True),
+      api.resultdb.query(
+          base_unittests_pass_invocations,
+          'base_unittests results',
+      ),
+      # This overrides the file check to ensure that we have test files
+      # in the given patch.
+      api.step_data(
+          'git diff to analyze patch (2)',
+          api.raw_io.stream_output('chrome/test.cc\ncomponents/file2.cc')),
+      api.luci_analysis.query_test_history(
+          empty_history_res,
+          'ninja://base:base_unittests/TestSuite.test_d',
+          parent_step_name='searching_for_new_tests',
+      ),
+      api.resultdb.query(
+          inv_bundle=script_invocation,
+          step_name=('test new tests for flakiness.'
+                     'base_unittests results')),
+      api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
       'basic_ios_sharded',
       api.chromium_tests_builder_config.try_build(
@@ -1039,7 +1094,8 @@ def GenTests(api):
               failure=False)),
       api.resultdb.query(
           current_patchset_bookmark_suite_invocations,
-          'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results',
+          ('collect tasks (with patch).'
+           'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results'),
       ),
       # This overrides the file check to ensure that we have test files
       # in the given patch.
@@ -1072,6 +1128,7 @@ def GenTests(api):
           inv_bundle=flaky_results,
           step_name=(
               'test new tests for flakiness.'
+              'collect tasks (check flakiness shard #0).'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results')),
       api.post_process(post_process.DropExpectation),
   )

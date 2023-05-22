@@ -41,8 +41,8 @@ class TestDefinition():
   Attributes:
     * duration_milliseconds: (int) Test duration in milliseconds.
     * test_id: (str) ResultDB's test_id (go/resultdb-concepts)
-    * test_object: (steps.Test or steps.ExperimentalTest) The test object where
-                   this test comes from.
+    * test_object: (steps.AbstractTest) The test object where this test
+      comes from.
     * variant_hash: (str) ResultDB's variant_hash (go/resultdb-concepts)
   """
 
@@ -57,8 +57,8 @@ class TestDefinition():
       * test_id: (str) ResultDB test id
       * test_name: (str) Test name to input to test suites.
       * duration_milliseconds: (int) Test duration in milliseconds.
-      * test_object: (steps.Test or steps.ExperimentalTest) The test object
-        where this test comes from.
+      * test_object: (steps.AbstractTest) The test object where this
+        test comes from.
       * variant_hash: (str) ResultDB's variant hash
     """
     self.test_id = test_id
@@ -419,9 +419,8 @@ class FlakinessApi(recipe_api.RecipeApi):
             if not test_definition in historical_tests:
               preliminary_new_tests.add(test_definition)
               test_stats = (
-                  experimental_new_test_stats if isinstance(
-                      test_object, steps.ExperimentalTest) else
-                  non_experimental_new_test_stats)
+                  experimental_new_test_stats if test_object.is_experimental
+                  else non_experimental_new_test_stats)
               self._add_test_to_stats(individual_test, step_name, variant_hash,
                                       test_stats)
 
@@ -586,7 +585,7 @@ class FlakinessApi(recipe_api.RecipeApi):
         test_filter = [
             new_test.test_name for new_test in new_tests_in_test_object
         ]
-        if isinstance(test, steps.AndroidJunitTest):
+        if isinstance(test.spec, steps.AndroidJunitTestSpec):
           # android junit need the spec's additional_args updated with the
           # repeat and filter clauses.
 
@@ -613,7 +612,7 @@ class FlakinessApi(recipe_api.RecipeApi):
           ])
           test.spec = attr.evolve(test.spec, additional_args=additional_args)
           test_objects_by_suffix[self.test_suffix].append(test)
-        elif isinstance(test, steps.ScriptTest):
+        elif isinstance(test.spec, steps.ScriptTestSpec):
           script_args = list([
               '--gtest_repeat=%s' % str(self._repeat_count),
               '--gtest_filter=%s' % str(':'.join(test_filter)),
@@ -810,8 +809,7 @@ class FlakinessApi(recipe_api.RecipeApi):
       for t in test_objects:
         flaky_test_stats = (
             flaky_experimental_test_stats
-            if isinstance(t, steps.ExperimentalTest) else
-            flaky_non_experimental_test_stats)
+            if t.is_experimental else flaky_non_experimental_test_stats)
         rdb_results = t.get_rdb_results(suffix)
         step_name = '%s (%s)' % (t.name, suffix)
         if not rdb_results.all_tests:

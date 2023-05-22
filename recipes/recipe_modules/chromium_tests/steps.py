@@ -36,7 +36,7 @@ import inspect
 import re
 import string
 import struct
-from typing import AbstractSet, Iterable, Optional, Tuple
+from typing import AbstractSet, Dict, Iterable, Optional, Tuple
 import urllib
 
 from recipe_engine import recipe_api, step_data
@@ -317,6 +317,27 @@ class AbstractTest(abc.ABC):
 
   @property
   @abc.abstractmethod
+  def spec(self) -> AbstractTestSpec:
+    """The spec for the test."""
+    raise NotImplementedError()  # pragma: no cover
+
+  @spec.setter
+  @abc.abstractmethod
+  def spec(self, value: AbstractTestSpec) -> None:
+    """The spec for the test."""
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def is_experimental(self) -> bool:
+    """Whether the test is experimental or not.
+
+    Failures in experimental tests should not fail the builds.
+    """
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
   def canonical_name(self) -> str:
     """Canonical name of the test, no suffix attached."""
     raise NotImplementedError()  # pragma: no cover
@@ -472,7 +493,7 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     """Run the test."""
     raise NotImplementedError()  # pragma: no cover
 
@@ -764,7 +785,7 @@ class Test(AbstractTest):
   def __init__(self, spec, chromium_tests_api):
     super().__init__()
 
-    self.spec = spec
+    self._spec = spec
     self._chromium_tests_api = chromium_tests_api
 
     self._test_options = TestOptions.create()
@@ -797,6 +818,18 @@ class Test(AbstractTest):
     # Marks the test as being inverted RTS. When enabled this suite will only
     # run the tests skipped in RTS.
     self._is_inverted_rts = False
+
+  @property
+  def spec(self) -> AbstractTestSpec:
+    return self._spec
+
+  @spec.setter
+  def spec(self, value: AbstractTestSpec) -> None:
+    self._spec = value
+
+  @property
+  def is_experimental(self) -> bool:
+    return False
 
   @property
   def option_flags(self) -> TestOptionFlags:
@@ -1026,6 +1059,128 @@ class Test(AbstractTest):
       step_result.presentation.links[failure] = results_url
 
 
+class AbstractSwarmingTest(AbstractTest):
+  """Interface for tests that run on swarming."""
+
+  @property
+  @abc.abstractmethod
+  def raw_cmd(self) -> Iterable[str]:
+    raise NotImplementedError()  # pragma: no cover
+
+  @raw_cmd.setter
+  @abc.abstractmethod
+  def raw_cmd(self, value: Iterable[str]) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def rts_raw_cmd(self) -> Iterable[str]:
+    raise NotImplementedError()  # pragma: no cover
+
+  @rts_raw_cmd.setter
+  @abc.abstractmethod
+  def rts_raw_cmd(self, value: Iterable[str]) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def inverted_raw_cmd(self) -> Iterable[str]:
+    raise NotImplementedError()  # pragma: no cover
+
+  @inverted_raw_cmd.setter
+  @abc.abstractmethod
+  def inverted_raw_cmd(self, value: Iterable[str]) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def relative_cwd(self) -> str:
+    raise NotImplementedError()  # pragma: no cover
+
+  @relative_cwd.setter
+  @abc.abstractmethod
+  def relative_cwd(self, value: str) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def isolate_profile_data(self) -> bool:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def shards(self) -> int:
+    raise NotImplementedError()  # pragma: no cover
+
+  @abc.abstractmethod
+  def get_task(self, suffix: str) -> chromium_swarming.SwarmingTask:
+    raise NotImplementedError()  # pragma: no cover
+
+
+class AbstractSkylabTest(AbstractTest):
+  """Interface for tests that run on skylab."""
+
+  @property
+  @abc.abstractmethod
+  def is_tast_test(self) -> bool:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def is_GPU_test(self) -> bool:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def ctp_build_ids(self) -> Iterable[str]:
+    raise NotImplementedError()  # pragma: no cover
+
+  @ctp_build_ids.setter
+  @abc.abstractmethod
+  def ctp_build_ids(self, value: Iterable[str]) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def test_runner_builds(self) -> Iterable[Dict]:
+    raise NotImplementedError()  # pragma: no cover
+
+  @test_runner_builds.setter
+  @abc.abstractmethod
+  def test_runner_builds(self, value: Iterable[Dict]) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def exe_rel_path(self) -> str:
+    raise NotImplementedError()  # pragma: no cover
+
+  @exe_rel_path.setter
+  @abc.abstractmethod
+  def exe_rel_path(self, value: str) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def lacros_gcs_path(self) -> str:
+    raise NotImplementedError()  # pragma: no cover
+
+  @lacros_gcs_path.setter
+  @abc.abstractmethod
+  def lacros_gcs_path(self, value: str) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
+  def tast_expr_file(self) -> str:
+    raise NotImplementedError()  # pragma: no cover
+
+  @tast_expr_file.setter
+  @abc.abstractmethod
+  def tast_expr_file(self, value: str) -> None:
+    raise NotImplementedError()  # pragma: no cover
+
+
 @attrs()
 class TestWrapperSpec(AbstractTestSpec):
   """Abstract base class for specs for test wrappers.
@@ -1127,6 +1282,8 @@ class _TestDelegateAbstractMeta(abc.ABCMeta):
 
 
 class TestWrapper(
+    AbstractSwarmingTest,
+    AbstractSkylabTest,
     AbstractTest,
     # This handles delegating abstract methods in the base classes to _test
     metaclass=_TestDelegateAbstractMeta,
@@ -1136,10 +1293,15 @@ class TestWrapper(
   All abstract methods in base classes are automatically overriden to
   defer to the wrapped test. Subclasses are free to override the
   behavior for these methods.
+
+  TestWrapper implements the interface for swarming tests and skylab
+  tests because arbitrary tests can be wrapped, but the corresponding
+  methods should only be called if the wrapped test is of the
+  corresponding type.
   """
 
   def __init__(self, spec, test, chromium_tests_api):
-    self.spec = spec
+    self._wrapper_spec = spec
     self._test = test
     self._chromium_tests_api = chromium_tests_api
 
@@ -1148,40 +1310,6 @@ class TestWrapper(
     """Returns the chromium_tests RecipeApi object associated with the test."""
     return self._chromium_tests_api
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
-  @property
-  def raw_cmd(self) -> Iterable[str]:
-    return self._test.raw_cmd
-
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
-  @raw_cmd.setter
-  def raw_cmd(self, value: Iterable[str]) -> None:
-    self._test.raw_cmd = value
-
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
-  @property
-  def relative_cwd(self) -> str:
-    return self._test.relative_cwd
-
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
-  @relative_cwd.setter
-  def relative_cwd(self, value: str) -> None:
-    self._test.relative_cwd = value
-
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
-  @property
-  def isolate_profile_data(self) -> bool:
-    return self._test.isolate_profile_data
-
-  @property
-  def is_skylabtest(self) -> bool:
-    # This preserves the existing behavior from when TestWrapper inherited from
-    # Test. Test's implementation returns False and TestWrapper didn't override
-    # it to defer to the wrapped test.
-    #
-    # TODO(gbeaty) Fix this (it requires more work than just forwarding onto the
-    # wrapped test since the logic for grouping tests uses isinstance)
-    return False  # pragma: no cover
 
 
 class _NotInExperiment(DisabledReason):
@@ -1287,6 +1415,10 @@ class ExperimentalTest(TestWrapper):
     """
     return super().has_valid_results(self._experimental_suffix(suffix))
 
+  @property
+  def is_experimental(self) -> bool:
+    return True
+
   def step_name(self, suffix: str) -> str:
     return self._test.step_name(self._experimental_suffix(suffix))
 
@@ -1299,11 +1431,14 @@ class ExperimentalTest(TestWrapper):
 
   #override
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     try:
       return super().run(self._experimental_suffix(suffix))
     except self.api.m.step.StepFailure as e:
       return e.result
+
+  def get_task(self, suffix: str) -> chromium_swarming.SwarmingTask:
+    return self._test.get_task(self._experimental_suffix(suffix))
 
   #override
   def has_valid_results(self, suffix: str) -> bool:
@@ -1486,7 +1621,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
     ]
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     run_args = []
 
     tests_to_retry = self._tests_to_retry(suffix)
@@ -1552,7 +1687,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
 
     _present_info_messages(result.presentation, self)
 
-    return self.api.m.step.raise_on_failure(result, status)
+    self.api.m.step.raise_on_failure(result, status)
 
 
 @attrs()
@@ -1600,7 +1735,7 @@ class LocalGTestTest(LocalTest):
     return self.spec.override_compile_targets or [self.spec.target_name]
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -1650,7 +1785,7 @@ class LocalGTestTest(LocalTest):
 
     _present_info_messages(step_result.presentation, self)
 
-    return self.api.m.step.raise_on_failure(step_result, status)
+    self.api.m.step.raise_on_failure(step_result, status)
 
 
 def _clean_step_name(step_name, suffix):
@@ -1876,7 +2011,7 @@ class SwarmingTestSpec(TestSpec):
     return 'on Android device %s' % product_name
 
 
-class SwarmingTest(Test):
+class SwarmingTest(Test, AbstractSwarmingTest):
   # Some suffixes should have marginally higher priority. See crbug.com/937151.
   SUFFIXES_TO_INCREASE_PRIORITY = set(
       ['without patch', 'retry shards with patch'])
@@ -1892,10 +2027,10 @@ class SwarmingTest(Test):
     super().__init__(spec, chromium_tests_api)
 
     self._tasks = {}
-    self.raw_cmd = []
-    self.rts_raw_cmd = []
-    self.inverted_raw_cmd = []
-    self.relative_cwd = None
+    self._raw_cmd = []
+    self._rts_raw_cmd = []
+    self._inverted_raw_cmd = []
+    self._relative_cwd = None
 
   def _dispatches_to_windows(self):
     if self.spec.dimensions:
@@ -1915,7 +2050,38 @@ class SwarmingTest(Test):
   def isolate_profile_data(self) -> bool:
     return self.spec.isolate_profile_data
 
-  # TODO(gbeaty) Add an interface for swarming tests, include this method
+  @property
+  def raw_cmd(self) -> Iterable[str]:
+    return self._raw_cmd
+
+  @raw_cmd.setter
+  def raw_cmd(self, value: Iterable[str]) -> None:
+    self._raw_cmd = value
+
+  @property
+  def rts_raw_cmd(self) -> Iterable[str]:
+    return self._rts_raw_cmd
+
+  @rts_raw_cmd.setter
+  def rts_raw_cmd(self, value: Iterable[str]) -> None:
+    self._rts_raw_cmd = value
+
+  @property
+  def inverted_raw_cmd(self) -> Iterable[str]:
+    return self._inverted_raw_cmd
+
+  @inverted_raw_cmd.setter
+  def inverted_raw_cmd(self, value: Iterable[str]) -> None:
+    self._inverted_raw_cmd = value
+
+  @property
+  def relative_cwd(self) -> str:
+    return self._relative_cwd
+
+  @relative_cwd.setter
+  def relative_cwd(self, value: str) -> None:
+    self._relative_cwd = value
+
   @property
   def shards(self) -> int:
     return self.spec.shards
@@ -1944,6 +2110,18 @@ class SwarmingTest(Test):
       A SwarmingTask object.
     """
     raise NotImplementedError()  # pragma: no cover
+
+  def _handle_results(
+      self,
+      suffix: str,
+      step_result: step_data.StepData,
+  ) -> None:
+    """Handle step results from collecting the swarming tasks.
+
+    Swarming tests that require additional handling after collecting the
+    tasks should override this.
+    """
+    del suffix, step_result
 
   def _shards_to_retry_with(self, original_num_shards, num_tests_to_retry):
     """Calculates the number of shards to run when retrying this test.
@@ -2211,7 +2389,7 @@ class SwarmingTest(Test):
         self._tasks[suffix], resultdb=resultdb)
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     """Waits for launched test to finish and collects the results."""
     step_result, _ = (
         self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
@@ -2228,7 +2406,7 @@ class SwarmingTest(Test):
 
     self._present_rdb_results(step_result, self._rdb_results.get(suffix))
 
-    return step_result
+    self._handle_results(suffix, step_result)
 
   def _step_metadata(self, suffix):
     data = {
@@ -2363,7 +2541,7 @@ class LocalIsolatedScriptTest(LocalTest):
   # TODO(nednguyen, kbr): figure out what to do with Android.
   # (crbug.com/533480)
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -2436,7 +2614,7 @@ class LocalIsolatedScriptTest(LocalTest):
       raise self.api.m.step.StepFailure(
           self.api.m.test_utils.INVALID_RESULTS_MAGIC)
 
-    return self.api.m.step.raise_on_failure(step_result, status)
+    self.api.m.step.raise_on_failure(step_result, status)
 
 
 @attrs()
@@ -2497,9 +2675,11 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
                                      self.spec.args)
     return task
 
-  @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
-    step_result = super().run(suffix)
+  def _handle_results(
+      self,
+      suffix: str,
+      step_result: step_data.StepData,
+  ) -> None:
     results = step_result.json.output
 
     if results and self.spec.results_handler_name == 'layout tests':
@@ -2510,7 +2690,6 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
           upload_step_name,
           step_suffix=suffix,
           swarm_task_ids=swarm_task_ids)
-    return step_result
 
 
 @attrs()
@@ -2569,7 +2748,7 @@ class AndroidJunitTest(LocalTest):
         resultdb=self._prep_local_rdb())
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     assert self.api.m.chromium.c.TARGET_PLATFORM == 'android'
 
     json_results_file = self.api.m.test_utils.gtest_results(add_json_log=False)
@@ -2588,8 +2767,6 @@ class AndroidJunitTest(LocalTest):
       self.api.m.test_utils.present_gtest_failures(
           step_result, presentation=presentation_step.presentation)
 
-    return step_result
-
   def compile_targets(self) -> Iterable[str]:
     return self.spec.compile_targets
 
@@ -2605,7 +2782,6 @@ class MockTestSpec(TestSpec):
       report as failures for the suffix.
     * per_suffix_valid - A mapping of suffix to whether the test has
       valid results for the suffix.
-    * runs_on_swarming - Whether the test runs on swarming.
     * invocation_names - Used as return value in |MockTest|'s
       |get_invocation_names| method.
   """
@@ -2615,6 +2791,7 @@ class MockTestSpec(TestSpec):
   per_suffix_failures = attrib(mapping[str, sequence[str]], default={})
   per_suffix_valid = attrib(mapping[str, bool], default={})
   runs_on_swarming = attrib(bool, default=False)
+  shards = attrib(int, default=1)
   invocation_names = attrib(sequence[str], default=[])
   supports_rts = attrib(bool, default=False)
   option_flags = attrib(TestOptionFlags, default=_DEFAULT_OPTION_FLAGS)
@@ -2625,7 +2802,16 @@ class MockTestSpec(TestSpec):
     return MockTest
 
 
-class MockTest(Test):
+class MockTask:
+
+  def __init__(self, shards: int):
+    self._shards = shards
+
+  def get_task_ids(self) -> Iterable[str]:
+    return [f'fake-task-id-{id(self)}-{i}' for i in range(self._shards)]
+
+
+class MockTest(AbstractSwarmingTest, Test):
   """A Test solely intended to be used in recipe tests."""
 
   class ExitCodes:
@@ -2637,14 +2823,65 @@ class MockTest(Test):
     # We mutate the set of failures depending on the exit code of the test
     # steps, so get a mutable copy
     self._failures = list(spec.failures)
+    # Tasks for if the test is mocking a swarming test
+    self._tasks_by_suffix = {}
+    self._raw_cmd = []
+    self._rts_raw_cmd = []
+    self._inverted_raw_cmd = []
+    self._relative_cwd = None
 
   @property
   def option_flags(self) -> TestOptionFlags:
     return self.spec.option_flags
 
   @property
-  def runs_on_swarming(self) -> bool:  # pragma: no cover
+  def runs_on_swarming(self):
     return self.spec.runs_on_swarming
+
+  @property
+  def isolate_profile_data(self) -> bool:
+    return False
+
+  @property
+  def raw_cmd(self) -> Iterable[str]:
+    return self._raw_cmd
+
+  @raw_cmd.setter
+  def raw_cmd(self, value: Iterable[str]) -> None:
+    self._raw_cmd = value
+
+  @property
+  def rts_raw_cmd(self) -> Iterable[str]:
+    return self._rts_raw_cmd
+
+  @rts_raw_cmd.setter
+  def rts_raw_cmd(self, value: Iterable[str]) -> None:
+    self._rts_raw_cmd = value
+
+  @property
+  def inverted_raw_cmd(self) -> Iterable[str]:
+    return self._inverted_raw_cmd
+
+  @inverted_raw_cmd.setter
+  def inverted_raw_cmd(self, value: Iterable[str]) -> None:
+    self._inverted_raw_cmd = value
+
+  @property
+  def relative_cwd(self) -> str:
+    return self._relative_cwd
+
+  @relative_cwd.setter
+  def relative_cwd(self, value: str) -> None:
+    self._relative_cwd = value
+
+  @property
+  def shards(self):
+    assert self.runs_on_swarming
+    return self.spec.shards
+
+  def get_task(self, suffix):
+    assert self.runs_on_swarming
+    return self._tasks_by_suffix[suffix]
 
   @contextlib.contextmanager
   def _mock_exit_codes(self):
@@ -2661,15 +2898,16 @@ class MockTest(Test):
   def pre_run(self, suffix: str) -> None:
     with self._mock_exit_codes():
       self.api.m.step('pre_run {}'.format(self.step_name(suffix)), None)
+    if self.runs_on_swarming:
+      self._tasks_by_suffix[suffix] = MockTask(self.shards)
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
     with self._mock_exit_codes():
       step_result = self.api.m.step(self.step_name(suffix), None)
 
     _present_info_messages(step_result.presentation, self)
 
-    return step_result
 
   def has_valid_results(self, suffix: str) -> bool:
     if suffix in self.spec.per_suffix_valid:  # pragma: no cover
@@ -2778,7 +3016,7 @@ class SkylabTestSpec(TestSpec):
     return SkylabTest
 
 
-class SkylabTest(Test):
+class SkylabTest(AbstractSkylabTest, Test):
 
   def __init__(self, spec, chromium_tests_api):
     super().__init__(spec, chromium_tests_api)
@@ -2786,35 +3024,73 @@ class SkylabTest(Test):
     # tests, which kicks off test_runner builds for our test suite.
     # Each test suite has a CTP build ID, as long as the buildbucket call is
     # successful.
-    self.ctp_build_ids = []
+    self._ctp_build_ids = []
     # test_runner build represents the test execution in Skylab. It is a dict of
     # ctp builds (1 for each sahrd) to lists of builders (1 for each attempt)
     # If CTP failed to schedule test runners, these lists could be empty. Use
     # the dict keys to troubleshoot.
-    self.test_runner_builds = {}
+    self._test_runner_builds = {}
 
     # These fields represent the variables generated at the runtime.
-    self.lacros_gcs_path = None
-    self.exe_rel_path = None
+    self._lacros_gcs_path = ''
+    self._exe_rel_path = ''
     # The relative path of the filter file for tast tests. The
     # filter stores tast expression in a dict. Users need to provide the
     # tast_expr_key to extract them.
-    self.tast_expr_file = None
+    self._tast_expr_file = ''
     self.telemetry_shard_index = None
 
   @property
   def is_skylabtest(self) -> bool:
     return True
 
-  # TODO(gbeaty) Add an interface for skylab tests, include this method
   @property
   def is_tast_test(self) -> bool:
     return bool(self.spec.tast_expr)
 
-  # TODO(gbeaty) Add an interface for skylab tests, include this method
   @property
   def is_GPU_test(self) -> bool:
     return self.spec.autotest_name == 'chromium_Graphics'
+
+  @property
+  def ctp_build_ids(self) -> Iterable[str]:
+    return self._ctp_build_ids
+
+  @ctp_build_ids.setter
+  def ctp_build_ids(self, value: Iterable[str]) -> None:
+    self._ctp_build_ids = value
+
+  @property
+  def test_runner_builds(self) -> Iterable[Dict]:
+    return self._test_runner_builds
+
+  @test_runner_builds.setter
+  def test_runner_builds(self, value: Iterable[Dict]) -> None:
+    self._test_runner_builds = value
+
+  @property
+  def exe_rel_path(self) -> str:
+    return self._exe_rel_path
+
+  @exe_rel_path.setter
+  def exe_rel_path(self, value: str) -> None:
+    self._exe_rel_path = value
+
+  @property
+  def lacros_gcs_path(self) -> str:
+    return self._lacros_gcs_path
+
+  @lacros_gcs_path.setter
+  def lacros_gcs_path(self, value: str) -> None:
+    self._lacros_gcs_path = value
+
+  @property
+  def tast_expr_file(self) -> str:
+    return self._tast_expr_file
+
+  @tast_expr_file.setter
+  def tast_expr_file(self, value: str) -> None:
+    self._tast_expr_file = value
 
   def _raise_failed_step(self, suffix, step, status, failure_msg):
     step.presentation.status = status
@@ -2833,12 +3109,14 @@ class SkylabTest(Test):
     return invocation_names
 
   def pre_run(self, suffix: str) -> None:
-    # SkylabTestGroup never actually calls pre_run, but pre_run will be called
-    # for a skylab test that is experimental due to incorrect grouping code
-    del suffix
+    # SkylabTestGroup never actually calls pre_run, so just call the
+    # unimplemented super version
+    # The super method is abstract, so we have to override it
+    # pylint: disable=useless-super-delegation
+    super().pre_run(suffix)  # pragma: no cover
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> step_data.StepData:
+  def run(self, suffix: str) -> None:
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
       _present_info_messages(step, self)
@@ -2897,8 +3175,6 @@ class SkylabTest(Test):
               shard_step.presentation.step_text = (
                   'Test had failed runs. '
                   'Check "Test Results" tab for the deterministic results.')
-
-    return step
 
   def compile_targets(self) -> Iterable[str]:
     t = [self.spec.target_name]

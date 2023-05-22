@@ -188,7 +188,7 @@ def GenTests(api):
           builder='fake-builder',
       ),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
@@ -242,7 +242,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
@@ -280,7 +280,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', skipped_tests=['testA']))),
@@ -302,7 +302,7 @@ def GenTests(api):
           builder='fake-builder',
       ),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
@@ -343,7 +343,12 @@ def GenTests(api):
           builder='fake-builder',
       ),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'failed_test', failing_tests=['testA']))),
+      api.override_step_data(
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA']))),
@@ -398,7 +403,7 @@ def GenTests(api):
           builder='fake-builder',
       ),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
@@ -436,7 +441,7 @@ def GenTests(api):
           }),
       api.time.seed(60 * 60 * 12),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
@@ -475,7 +480,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test', failing_tests=['testA', 'testB']))),
@@ -505,7 +510,7 @@ def GenTests(api):
               },
           }),
       api.override_step_data(
-          'failed_test results',
+          'collect tasks (with patch).failed_test results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'failed_test',

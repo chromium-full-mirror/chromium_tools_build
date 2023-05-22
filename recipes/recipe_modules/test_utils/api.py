@@ -209,9 +209,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     swarming_test_suites = []
     skylab_test_suites = []
     for t in test_suites:
-      if isinstance(t, steps.SwarmingTest):
+      if t.runs_on_swarming:
         swarming_test_suites.append(t)
-      elif isinstance(t, steps.SkylabTest):
+      elif t.is_skylabtest:
         skylab_test_suites.append(t)
       else:
         local_test_suites.append(t)
@@ -335,7 +335,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     for suite in test_suites:
       results = suite.get_rdb_results(suffix)
       # Any failures in experimental suites should be exonerated.
-      if isinstance(suite, steps.ExperimentalTest):
+      if suite.is_experimental:
         explanation_html = (
             'The test is marked as experimental, meaning any failures will '
             'not fail the build.')

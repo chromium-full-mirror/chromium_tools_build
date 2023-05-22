@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 DEPS = [
-  'chromium_tests',
-  'recipe_engine/properties',
-  'recipe_engine/step',
+    'chromium_tests',
+    'recipe_engine/assertions',
+    'recipe_engine/properties',
+    'recipe_engine/step',
 ]
 
 from recipe_engine import post_process
@@ -15,7 +16,9 @@ from RECIPE_MODULES.build.chromium_tests import steps
 
 def RunSteps(api):
   test_spec = steps.MockTestSpec.create(
-      name=api.properties.get('test_name', 'MockTest'))
+      name=api.properties.get('test_name', 'MockTest'),
+      runs_on_swarming=True,
+      shards=4)
   test = test_spec.get_test(api.chromium_tests)
 
   test.pre_run('')
@@ -26,6 +29,23 @@ def RunSteps(api):
     api.step.empty('infra failure in %s' % test.name)
   except api.step.StepFailure:
     api.step.empty('step failure in %s' % test.name)
+
+  task = test.get_task('')
+  api.assertions.assertEqual(len(task.get_task_ids()), 4)
+
+  api.assertions.assertEqual(test.isolate_profile_data, False)
+
+  test.raw_cmd = ['raw-cmd']
+  api.assertions.assertEqual(test.raw_cmd, ['raw-cmd'])
+
+  test.rts_raw_cmd = ['rts-raw-cmd']
+  api.assertions.assertEqual(test.rts_raw_cmd, ['rts-raw-cmd'])
+
+  test.inverted_raw_cmd = ['inverted-raw-cmd']
+  api.assertions.assertEqual(test.inverted_raw_cmd, ['inverted-raw-cmd'])
+
+  test.relative_cwd = 'relative-cwd'
+  api.assertions.assertEqual(test.relative_cwd, 'relative-cwd')
 
 
 def GenTests(api):
