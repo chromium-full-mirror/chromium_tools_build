@@ -12,7 +12,8 @@ from google.protobuf import json_format
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 
-from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
+from RECIPE_MODULES.build.attr_utils import (attrib, attrs, mapping, sequence,
+                                             set_)
 
 
 class GTestResults:
@@ -191,6 +192,109 @@ class RDBResults:
 
 
 @attrs()
+class RDBPerIndividualTestResults:
+  """Contains result info of an individual test as returned by RDB.
+
+  "individual test" is uniquely identified by test id. For each individual test
+  within a test_suite, there could be multiple test results from being retried,
+  or repeated within shards of the suite. These result info are stored in
+  |statuses|, |expectednesses|, etc.
+  """
+
+  # NOTE: If you add an attribute here, make sure to reflect the change in
+  # update get_size_in_mem() below.
+  # Read from any result's test_name tag. If not exist, use the part of test_id
+  # after test_id_prefix.
+  # e.g. Service/FeatureInfoTest.Basic/0
+  test_name = attrib(str)
+  # Full test ID.
+  # e.g. ninja://gpu:gpu_unittests/FeatureInfoTest.Basic/Service.0
+  test_id = attrib(str)
+  # Full invocation ID that includes the swarming task ID
+  # e.g. task-chromium-swarm.appspot.com-5e052f4430ead411
+  invocation_id = attrib(str)
+  # A duration of any passed run.
+  duration_milliseconds = attrib(int, default=None)
+  # |statuses| and |expectednesses| are outcomes of single results.
+  # Values at each index are for the same test run.
+  statuses = attrib(sequence[...])
+  expectednesses = attrib(sequence[bool])
+  # Reasons of all results corresponding to |statuses|. Empty str if the
+  # raw RDB result doesn't have this stored.
+  failure_reasons = attrib(sequence[str])
+
+  @classmethod
+  def create(cls, test_id, test_results, test_id_prefix, invocation_id):
+    """
+    Args:
+      test_id: The test ID of results.
+      test_results: All results of the test id.
+      test_id_prefix: The test ID prefix of the |RDBPerSuiteResults| where this
+        result is grouped into.
+      invocation_id: Invocation ID of the test.
+    """
+    duration_milliseconds = None
+    test_name = None
+    test_id = ''
+    statuses = [tr.status for tr in test_results]
+    expectednesses = [tr.expected for tr in test_results]
+    failure_reasons = [
+        tr.failure_reason.primary_error_message or '' for tr in test_results
+    ]
+    for tr in test_results:
+      test_id = tr.test_id
+      # Durations of expected runs or unexpected passed (exonerated) runs are
+      # considered valid. Use duration of the last passed or expected result
+      # with duration.
+      if (tr.expected or tr.status == test_result_pb2.PASS) and tr.duration:
+        duration_milliseconds = int(tr.duration.seconds * 1000 +
+                                    int(tr.duration.nanos / 1000000.0))
+      # Use test name tag of the last result with the tag.
+      for tag in tr.tags:
+        if tag.key == 'test_name':
+          test_name = tag.value
+
+    assert test_id.startswith(test_id_prefix)
+    # If not found in tags, use the part after test id prefix in test ID.
+    if not test_name:
+      test_name = test_id[len(test_id_prefix):]
+
+    return cls(
+        test_name=test_name,
+        test_id=test_id,
+        invocation_id=invocation_id,
+        duration_milliseconds=duration_milliseconds,
+        statuses=statuses,
+        expectednesses=expectednesses,
+        failure_reasons=failure_reasons)
+
+  def total_test_count(self):
+    return len(self.statuses)
+
+  def unexpected_unpassed_count(self):
+    return sum([(status != test_result_pb2.PASS and not expected)
+                for status, expected in zip(self.statuses, self.expectednesses)
+               ])
+
+  def get_size_in_mem(self):
+    total = sys.getsizeof(self)
+    total += sys.getsizeof(self.test_id)
+    total += sys.getsizeof(self.test_name)
+    total += sys.getsizeof(self.duration_milliseconds)
+    # self.statuses and self.expectednesses are lists of very few unique
+    # elements. So don't bother counting the size of each element since each
+    # unique element is only stored once.
+    total += sys.getsizeof(self.statuses)
+    total += sys.getsizeof(self.expectednesses)
+    # Assume the elements in self.failure_reasons are all unique. So count
+    # both the size of the list, and the size of each element.
+    total += sys.getsizeof(self.failure_reasons)
+    for reason in self.failure_reasons:
+      total += sys.getsizeof(reason)
+    return total
+
+
+@attrs()
 class RDBPerSuiteResults:
   """Contains results of a single test suite as returned by RDB."""
 
@@ -210,16 +314,17 @@ class RDBPerSuiteResults:
   suite_name = attrib(str)
   variant_hash = attrib(str)
   total_tests_ran = attrib(int)
-  unexpected_passing_tests = attrib(set)
-  unexpected_failing_tests = attrib(set)
+  unexpected_passing_tests = attrib(set_[RDBPerIndividualTestResults])
+  unexpected_failing_tests = attrib(set_[RDBPerIndividualTestResults])
   # unexpected_skipped_tests should be a subset of unexpected_failing_tests.
-  unexpected_skipped_tests = attrib(set)
+  unexpected_skipped_tests = attrib(set_[RDBPerIndividualTestResults])
   invalid = attrib(bool, default=False)
   # A mapping from test name str to its |RDBPerIndividualTestResults| object
   # for tests without any expected results.
-  individual_unexpected_test_by_test_name = attrib(mapping[str, ...])
+  individual_unexpected_test_by_test_name = attrib(
+      mapping[str, RDBPerIndividualTestResults])
   # A list of all |RDBPerIndividualTestResults| objects within this class.
-  all_tests = attrib(sequence[...])
+  all_tests = attrib(sequence[RDBPerIndividualTestResults])
   # |test_id_prefix| from the test specs in testing/buildbot. Empty str if it's
   # not set, or if any test IDs from invocations don't have the exact prefix
   # as input.
@@ -401,109 +506,6 @@ class RDBPerSuiteResults:
 
 
 @attrs()
-class RDBPerIndividualTestResults:
-  """Contains result info of an individual test as returned by RDB.
-
-  "individual test" is uniquely identified by test id. For each individual test
-  within a test_suite, there could be multiple test results from being retried,
-  or repeated within shards of the suite. These result info are stored in
-  |statuses|, |expectednesses|, etc.
-  """
-
-  # NOTE: If you add an attribute here, make sure to reflect the change in
-  # update get_size_in_mem() below.
-  # Read from any result's test_name tag. If not exist, use the part of test_id
-  # after test_id_prefix.
-  # e.g. Service/FeatureInfoTest.Basic/0
-  test_name = attrib(str)
-  # Full test ID.
-  # e.g. ninja://gpu:gpu_unittests/FeatureInfoTest.Basic/Service.0
-  test_id = attrib(str)
-  # Full invocation ID that includes the swarming task ID
-  # e.g. task-chromium-swarm.appspot.com-5e052f4430ead411
-  invocation_id = attrib(str)
-  # A duration of any passed run.
-  duration_milliseconds = attrib(int, default=None)
-  # |statuses| and |expectednesses| are outcomes of single results.
-  # Values at each index are for the same test run.
-  statuses = attrib(sequence[...])
-  expectednesses = attrib(sequence[bool])
-  # Reasons of all results corresponding to |statuses|. Empty str if the
-  # raw RDB result doesn't have this stored.
-  failure_reasons = attrib(sequence[str])
-
-  @classmethod
-  def create(cls, test_id, test_results, test_id_prefix, invocation_id):
-    """
-    Args:
-      test_id: The test ID of results.
-      test_results: All results of the test id.
-      test_id_prefix: The test ID prefix of the |RDBPerSuiteResults| where this
-        result is grouped into.
-      invocation_id: Invocation ID of the test.
-    """
-    duration_milliseconds = None
-    test_name = None
-    test_id = ''
-    statuses = [tr.status for tr in test_results]
-    expectednesses = [tr.expected for tr in test_results]
-    failure_reasons = [
-        tr.failure_reason.primary_error_message or '' for tr in test_results
-    ]
-    for tr in test_results:
-      test_id = tr.test_id
-      # Durations of expected runs or unexpected passed (exonerated) runs are
-      # considered valid. Use duration of the last passed or expected result
-      # with duration.
-      if (tr.expected or tr.status == test_result_pb2.PASS) and tr.duration:
-        duration_milliseconds = int(tr.duration.seconds * 1000 +
-                                    int(tr.duration.nanos / 1000000.0))
-      # Use test name tag of the last result with the tag.
-      for tag in tr.tags:
-        if tag.key == 'test_name':
-          test_name = tag.value
-
-    assert test_id.startswith(test_id_prefix)
-    # If not found in tags, use the part after test id prefix in test ID.
-    if not test_name:
-      test_name = test_id[len(test_id_prefix):]
-
-    return cls(
-        test_name=test_name,
-        test_id=test_id,
-        invocation_id=invocation_id,
-        duration_milliseconds=duration_milliseconds,
-        statuses=statuses,
-        expectednesses=expectednesses,
-        failure_reasons=failure_reasons)
-
-  def total_test_count(self):
-    return len(self.statuses)
-
-  def unexpected_unpassed_count(self):
-    return sum([(status != test_result_pb2.PASS and not expected)
-                for status, expected in zip(self.statuses, self.expectednesses)
-               ])
-
-  def get_size_in_mem(self):
-    total = sys.getsizeof(self)
-    total += sys.getsizeof(self.test_id)
-    total += sys.getsizeof(self.test_name)
-    total += sys.getsizeof(self.duration_milliseconds)
-    # self.statuses and self.expectednesses are lists of very few unique
-    # elements. So don't bother counting the size of each element since each
-    # unique element is only stored once.
-    total += sys.getsizeof(self.statuses)
-    total += sys.getsizeof(self.expectednesses)
-    # Assume the elements in self.failure_reasons are all unique. So count
-    # both the size of the list, and the size of each element.
-    total += sys.getsizeof(self.failure_reasons)
-    for reason in self.failure_reasons:
-      total += sys.getsizeof(reason)
-    return total
-
-
-@attrs()
 class FailureRateAnalysisPerSuite:
   """Wraps a list of TestVariantFailureRateAnalysis instances per test suite"""
   suite_name = attrib(str)
@@ -511,7 +513,7 @@ class FailureRateAnalysisPerSuite:
   failure_analysis_list = attrib(list)
   # List of failing test_ids, each correlating to an
   # IndividualTestFailureRateAnalysis object in failure_analysis_list
-  test_ids = attrib(set)
+  test_ids = attrib(set_[str])
 
   @classmethod
   def create(cls, suite_name, failure_analysis_list):

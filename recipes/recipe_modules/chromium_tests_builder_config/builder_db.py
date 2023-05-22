@@ -7,7 +7,7 @@ import collections
 from . import builder_spec as builder_spec_module
 
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
-                                             mapping)
+                                             mapping, set_)
 from RECIPE_MODULES.build.chromium import BuilderId
 
 
@@ -76,7 +76,7 @@ class BuilderGraph(collections.Mapping):
   of a set of keys.
   """
 
-  _graph = attrib(mapping[BuilderId, frozenset])
+  _graph = attrib(mapping[BuilderId, set_[BuilderId]])
 
   @classmethod
   def create(cls, db):
