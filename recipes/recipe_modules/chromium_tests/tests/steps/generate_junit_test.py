@@ -62,8 +62,6 @@ def GenTests(api):
     # Any step with the test name in it
     step_filter = step_filter.include_re(
         r'.*\b{}\b'.format(test_name), at_least=0)
-    # The step for reporting ci_only tests
-    step_filter = step_filter.include_re('ci_only tests$', at_least=0)
     # The final result of the recipe
     step_filter = step_filter.include_re(r'\$result$', at_least=0)
     t += api.post_process(step_filter)
@@ -193,9 +191,13 @@ def GenTests(api):
           'ci_only': True,
           'test': 'junit_test',
       },),
-      api.post_process(post_process.StepTextContains, 'ci_only tests',
-                       ['* junit_test']),
-      api.post_process(post_process.DoesNotRun, 'junit_test (with patch)'),
+      api.post_process(post_process.StepCommandEmpty,
+                       'junit_test (with patch)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'junit_test (with patch)',
+          ["This test is not being run because it is marked 'ci_only'"],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 

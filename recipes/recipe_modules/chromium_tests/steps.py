@@ -32,6 +32,7 @@ import abc
 import attr
 import contextlib
 import hashlib
+import itertools
 import inspect
 import re
 import string
@@ -239,8 +240,8 @@ def _add_suffix(step_name, suffix):
   return '{} ({})'.format(step_name, suffix)
 
 
-def _present_info_messages(presentation, test):
-  messages = []
+def _present_info_messages(presentation, test, messages):
+  messages = list(messages)
   if test.is_rts:
     messages.append(
         'Ran tests selected by RTS. See '
@@ -249,39 +250,10 @@ def _present_info_messages(presentation, test):
     messages.append(
         'Ran tests previously skipped by RTS. See '
         'https://bit.ly/regression-test-selection for more information\n')
-  messages.extend(test.spec.info_messages)
+  if test.spec.description:
+    messages.append(test.spec.description)
   messages.append(presentation.step_text)
   presentation.step_text = '\n'.join(messages)
-
-
-class DisabledReason(abc.ABC):
-  """Abstract base class for identifying why a test is disabled."""
-
-  def __repr__(self):
-    return type(self).__name__
-
-  @abc.abstractmethod
-  def report_tests(self, chromium_tests_api, tests):
-    """Report tests that are disabled for this reason."""
-    raise NotImplementedError()  # pragma: no cover
-
-
-class _CiOnly(DisabledReason):
-  """Identifies a ci_only test that is disabled on try."""
-
-  def report_tests(self, chromium_tests_api, tests):
-    result = chromium_tests_api.m.step('ci_only tests', [])
-    # Milo treats the first line of step_text differently and can cut it off
-    # if it's too long.
-    message = ('The following tests are not being run on this try builder '
-               'because they are marked "ci_only".\n')
-    message += ('Adding `{}: true` to the gerrit footers will cause them to '
-                'run.\n\n * '.format(INCLUDE_CI_FOOTER))
-    message += '\n * '.join(sorted(tests))
-    result.presentation.step_text = message
-
-
-CI_ONLY = _CiOnly()
 
 
 class AbstractTestSpec(abc.ABC):
@@ -295,10 +267,6 @@ class AbstractTestSpec(abc.ABC):
       An instance of either a `Test` subclass or an instance of a
       `TestWrapper` subclass.
     """
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
-  def disable(self, disabled_reason):
     raise NotImplementedError()  # pragma: no cover
 
 
@@ -325,6 +293,17 @@ class AbstractTest(abc.ABC):
   @abc.abstractmethod
   def spec(self, value: AbstractTestSpec) -> None:
     """The spec for the test."""
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  def is_enabled(self) -> bool:
+    """Whether the test is enabled or not.
+
+    Tests that are not enabled should still support having pre_run and
+    run called and can produce empty steps to provide information in the
+    build, but users should not call methods dealing with results on
+    tests that are not enabled.
+    """
     raise NotImplementedError()  # pragma: no cover
 
   @property
@@ -493,7 +472,7 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     """Run the test."""
     raise NotImplementedError()  # pragma: no cover
 
@@ -678,9 +657,6 @@ class TestSpec(AbstractTestSpec):
     * name - The displayed name of the test.
     * target_name - The ninja build target for the test, a key in
       //testing/buildbot/gn_isolate_map.pyl, e.g. "browser_tests".
-    * disabled_reason - A object indicating a reason to disable the test
-      (e.g. a ci_only test that won't be run on a try builder). If this
-      is not None, then get_test should not be called on the spec.
     * full_test_target - A fully qualified Ninja target, e.g.
       "//chrome/test:browser_tests".
     * waterfall_builder_group - The matching waterfall builder group.
@@ -698,8 +674,7 @@ class TestSpec(AbstractTestSpec):
 
   _name = attrib(str)
   target_name = attrib(str)
-  disabled_reason = attrib(DisabledReason, default=None)
-  info_messages = attrib(sequence[str], default=())
+  description = attrib(str, default=None)
   full_test_target = attrib(str, default=None)
   waterfall_builder_group = attrib(str, default=None)
   waterfall_buildername = attrib(str, default=None)
@@ -744,18 +719,8 @@ class TestSpec(AbstractTestSpec):
     raise NotImplementedError()  # pragma: no cover
 
   def get_test(self, chromium_tests_api):
-    """Get the test described by the spec.
-
-    It is an error to call this method if disabled_reason is not None.
-    """
-    assert not self.disabled_reason
+    """Get the test described by the spec."""
     return self.test_class(self, chromium_tests_api)
-
-  def disable(self, disabled_reason):
-    return attr.evolve(self, disabled_reason=disabled_reason)
-
-  def add_info_message(self, message):
-    return attr.evolve(self, info_messages=self.info_messages + (message,))
 
 
 class Test(AbstractTest):
@@ -826,6 +791,10 @@ class Test(AbstractTest):
   @spec.setter
   def spec(self, value: AbstractTestSpec) -> None:
     self._spec = value
+
+  @property
+  def is_enabled(self) -> bool:
+    return True
 
   @property
   def is_experimental(self) -> bool:
@@ -1208,25 +1177,10 @@ class TestWrapperSpec(AbstractTestSpec):
                                    self._test_spec.get_test(chromium_tests_api),
                                    chromium_tests_api)
 
-  @property
-  def disabled_reason(self):
-    return self._test_spec.disabled_reason
-
   @abc.abstractproperty
   def test_wrapper_class(self):
     """The test wrapper class associated with the spec."""
     raise NotImplementedError()  # pragma: no cover
-
-  @property
-  def name(self):
-    """The name of the test."""
-    return self._test_spec.name
-
-  def disable(self, disabled_reason):
-    return attr.evolve(self, test_spec=self._test_spec.disable(disabled_reason))
-
-  def add_info_message(self, m):
-    return attr.evolve(self, test_spec=self._test_spec.add_info_message(m))
 
 
 class _TestDelegateAbstractMeta(abc.ABCMeta):
@@ -1310,53 +1264,124 @@ class TestWrapper(
     """Returns the chromium_tests RecipeApi object associated with the test."""
     return self._chromium_tests_api
 
+  @property
+  def _disabled_message(self) -> str:
+    """A message that explains why this test is disabled.
+
+    An empty message indicates that the test is not disabled.
+    TestWrappers that disable the test should override this to return a
+    non-empty value.
+    """
+    return ''
+
+  @property
+  def _info_message(self) -> str:
+    """Optional info to display in the step for the test.
+
+    This will be called to provide additional information for enabled
+    tests. This will not be called if disabled_message is non-empty.
+    """
+    return ''
+
+  @property
+  def is_enabled(self):
+    return not self._disabled_message and self._test.is_enabled
+
+  def pre_run(self, suffix: str) -> None:
+    if not self._disabled_message:
+      return self._test.pre_run(suffix)
+
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+    # Don't call methods on self that take the suffix, if the subclass performs
+    # suffix modification then the suffix passed in should already be modified
+    if self._disabled_message:
+      info_messages = itertools.chain([self._disabled_message], info_messages)
+      self.api.m.step.empty(
+          self._test.step_name(suffix), step_text='\n'.join(info_messages))
+      return
+
+    if self._info_message:
+      info_messages = itertools.chain([self._info_message], info_messages)
+    return self._test.run(suffix, info_messages)
 
 
-class _NotInExperiment(DisabledReason):
-  """Identifies an experimental test that is not being triggered."""
+class CiOnlyTestSpec(TestWrapperSpec):
+  """A spec for a test that is marked ci_only."""
 
-  def report_tests(self, chromium_tests_api, tests):
-    result = chromium_tests_api.m.step('experimental tests not in experiment',
-                                       [])
-    message = [('The following experimental tests were not selected'
-                ' for their experiments in this build:')]
-    message.extend(sorted(tests))
-    result.presentation.step_text = '\n * '.join(message)
+  @property
+  def test_wrapper_class(self):
+    """The test wrapper class associated with the spec."""
+    return CiOnlyTest
 
 
-_NOT_IN_EXPERIMENT = _NotInExperiment()
+class CiOnlyTest(TestWrapper):
+  """A test wrapper that runs the wrapped test that is marked ci_only."""
+
+  def __init__(self, spec, test, chromium_tests_api):
+    super().__init__(spec, test, chromium_tests_api)
+    self._disabled = self._compute_disabled()
+
+  def _compute_disabled(self) -> bool:
+    if not self.api.m.tryserver.is_tryserver:
+      return False
+
+    footer_vals = self.api.m.tryserver.get_footer(INCLUDE_CI_FOOTER)
+    if not footer_vals:
+      return True
+
+    return footer_vals[-1].lower() != 'true'
+
+  @property
+  def _disabled_message(self):
+    return ("This test is not being run because it is marked 'ci_only'"
+            if self._disabled else '')
+
+  @property
+  def _info_message(self):
+    if self.api.m.tryserver.is_tryserver:
+      return ('This test is being run due to the'
+              f' {INCLUDE_CI_FOOTER} gerrit footer')
+    return 'This test will not be run on try builders'
 
 
 @attrs()
 class ExperimentalTestSpec(TestWrapperSpec):
   """A spec for a test to be executed at some percentage."""
 
+  experiment_percentage = attrib(int)
+
   @classmethod
-  def create(cls, test_spec, experiment_percentage, api):  # pylint: disable=line-too-long,arguments-differ
+  def create(cls, test_spec, experiment_percentage):  # pylint: disable=line-too-long,arguments-differ
     """Create an ExperimentalTestSpec.
 
     Arguments:
       * test_spec - The spec of the wrapped test.
       * experiment_percentage - The percentage chance that the test will be
         executed.
-      * api - An api object providing access to the buildbucket and tryserver
-        recipe modules.
     """
-    experiment_percentage = max(0, min(100, int(experiment_percentage)))
-    is_in_experiment = cls._calculate_is_in_experiment(test_spec,
-                                                       experiment_percentage,
-                                                       api)
-    if not is_in_experiment:
-      test_spec = test_spec.disable(_NOT_IN_EXPERIMENT)
-    return super().create(test_spec)
+    experiment_percentage = max(0, min(100, experiment_percentage))
+    return super().create(
+        test_spec, experiment_percentage=experiment_percentage)
 
   @property
   def test_wrapper_class(self):
     """The test wrapper class associated with the spec."""
     return ExperimentalTest
 
-  @staticmethod
-  def _calculate_is_in_experiment(test_spec, experiment_percentage, api):
+
+class ExperimentalTest(TestWrapper):
+  """A test wrapper that runs the wrapped test on an experimental test.
+
+  Experimental tests:
+    - can run at <= 100%, depending on the experiment_percentage.
+    - will not cause the build to fail.
+  """
+
+  def __init__(self, spec, test, chromium_tests_api):
+    super().__init__(spec, test, chromium_tests_api)
+    self._is_in_experiment = self._calculate_is_in_experiment()
+
+  def _calculate_is_in_experiment(self):
     # Arbitrarily determine whether to run the test based on its experiment
     # key. Tests with the same experiment key should always either be in the
     # experiment or not; i.e., given the same key, this should always either
@@ -1376,27 +1401,18 @@ class ExperimentalTestSpec(TestWrapperSpec):
     #
     # The overall algorithm is copied from the CQ's implementation of
     # experimental builders, albeit with different experiment keys.
-
     criteria = [
-        api.buildbucket.builder_name,
-        (api.tryserver.gerrit_change and api.tryserver.gerrit_change.change) or
-        api.buildbucket.build.number or '0',
-        test_spec.name,
+        self.api.m.buildbucket.builder_name,
+        (self.api.m.tryserver.gerrit_change and
+         self.api.m.tryserver.gerrit_change.change) or
+        self.api.m.buildbucket.build.number or '0',
+        self.name,
     ]
 
     digest = hashlib.sha1(''.join(
         str(c) for c in criteria).encode('utf-8')).digest()
     short = struct.unpack_from('<H', digest)[0]
-    return experiment_percentage * 0xffff >= short * 100
-
-
-class ExperimentalTest(TestWrapper):
-  """A test wrapper that runs the wrapped test on an experimental test.
-
-  Experimental tests:
-    - can run at <= 100%, depending on the experiment_percentage.
-    - will not cause the build to fail.
-  """
+    return self._wrapper_spec.experiment_percentage * 0xffff >= short * 100
 
   def _experimental_suffix(self, suffix):
     if not suffix:
@@ -1416,6 +1432,17 @@ class ExperimentalTest(TestWrapper):
     return super().has_valid_results(self._experimental_suffix(suffix))
 
   @property
+  def _disabled_message(self):
+    if self._is_in_experiment:
+      return ''
+    return 'This test was not selected for its experiment in this build'
+
+  @property
+  def _info_message(self):
+    return ('This is an experimental test that was selected for this build,'
+            ' failures will not cause build failures')
+
+  @property
   def is_experimental(self) -> bool:
     return True
 
@@ -1431,9 +1458,9 @@ class ExperimentalTest(TestWrapper):
 
   #override
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     try:
-      return super().run(self._experimental_suffix(suffix))
+      return super().run(self._experimental_suffix(suffix), info_messages)
     except self.api.m.step.StepFailure as e:
       return e.result
 
@@ -1621,7 +1648,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
     ]
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     run_args = []
 
     tests_to_retry = self._tests_to_retry(suffix)
@@ -1685,7 +1712,7 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
 
     self._update_inv_name_from_stderr(result.stderr, suffix)
 
-    _present_info_messages(result.presentation, self)
+    _present_info_messages(result.presentation, self, info_messages)
 
     self.api.m.step.raise_on_failure(result, status)
 
@@ -1735,7 +1762,7 @@ class LocalGTestTest(LocalTest):
     return self.spec.override_compile_targets or [self.spec.target_name]
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -1783,7 +1810,7 @@ class LocalGTestTest(LocalTest):
 
     self._update_inv_name_from_stderr(step_result.stderr, suffix)
 
-    _present_info_messages(step_result.presentation, self)
+    _present_info_messages(step_result.presentation, self, info_messages)
 
     self.api.m.step.raise_on_failure(step_result, status)
 
@@ -2389,7 +2416,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         self._tasks[suffix], resultdb=resultdb)
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     """Waits for launched test to finish and collects the results."""
     step_result, _ = (
         self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
@@ -2402,7 +2429,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self._update_failure_on_exit(suffix,
                                  bool(self._tasks[suffix].failed_shards))
 
-    _present_info_messages(step_result.presentation, self)
+    _present_info_messages(step_result.presentation, self, info_messages)
 
     self._present_rdb_results(step_result, self._rdb_results.get(suffix))
 
@@ -2541,7 +2568,7 @@ class LocalIsolatedScriptTest(LocalTest):
   # TODO(nednguyen, kbr): figure out what to do with Android.
   # (crbug.com/533480)
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -2606,7 +2633,7 @@ class LocalIsolatedScriptTest(LocalTest):
     self._update_inv_name_from_stderr(step_result.stderr, suffix)
     self._update_failure_on_exit(suffix, step_result.retcode != 0)
 
-    _present_info_messages(step_result.presentation, self)
+    _present_info_messages(step_result.presentation, self, info_messages)
 
     if step_result.retcode == 0 and not self.has_valid_results(suffix):
       # This failure won't be caught automatically. Need to manually
@@ -2748,7 +2775,7 @@ class AndroidJunitTest(LocalTest):
         resultdb=self._prep_local_rdb())
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     assert self.api.m.chromium.c.TARGET_PLATFORM == 'android'
 
     json_results_file = self.api.m.test_utils.gtest_results(add_json_log=False)
@@ -2761,7 +2788,7 @@ class AndroidJunitTest(LocalTest):
       self._update_inv_name_from_stderr(step_result.stderr, suffix)
       self._update_failure_on_exit(suffix, step_result.retcode != 0)
 
-      _present_info_messages(step_result.presentation, self)
+      _present_info_messages(step_result.presentation, self, info_messages)
 
       presentation_step = self.api.m.step.empty('Report %s results' % self.name)
       self.api.m.test_utils.present_gtest_failures(
@@ -2902,11 +2929,11 @@ class MockTest(AbstractSwarmingTest, Test):
       self._tasks_by_suffix[suffix] = MockTask(self.shards)
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     with self._mock_exit_codes():
       step_result = self.api.m.step(self.step_name(suffix), None)
 
-    _present_info_messages(step_result.presentation, self)
+    _present_info_messages(step_result.presentation, self, info_messages)
 
 
   def has_valid_results(self, suffix: str) -> bool:
@@ -3116,10 +3143,10 @@ class SkylabTest(AbstractSkylabTest, Test):
     super().pre_run(suffix)  # pragma: no cover
 
   @recipe_api.composite_step
-  def run(self, suffix: str) -> None:
+  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
-      _present_info_messages(step, self)
+      _present_info_messages(step, self, info_messages)
       if not self.lacros_gcs_path:
         self._raise_failed_step(
             suffix, step, self.api.m.step.FAILURE,

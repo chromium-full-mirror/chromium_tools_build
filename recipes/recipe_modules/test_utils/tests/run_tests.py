@@ -91,8 +91,7 @@ def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
         steps.MockTestSpec.create(name='test3'),
         steps.ExperimentalTestSpec.create(
             MockSwarmingTestSpec.create(name='disabled_experimental_test'),
-            experiment_percentage=0,
-            api=api),
+            experiment_percentage=0),
     ]
   elif test_skylab:
     test_specs = []
@@ -109,12 +108,10 @@ def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
     test_specs = [
         steps.ExperimentalTestSpec.create(
             MockSwarmingTestSpec.create(name='disabled_experimental_test'),
-            experiment_percentage=0,
-            api=api),
+            experiment_percentage=0),
         steps.ExperimentalTestSpec.create(
             MockSwarmingTestSpec.create(name='enabled_experimental_test'),
-            experiment_percentage=100,
-            api=api)
+            experiment_percentage=100)
     ]
   else:
     test_specs = [
@@ -125,7 +122,6 @@ def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
   tests = [
       s.get_test(api.chromium_tests)
       for s in test_specs
-      if not s.disabled_reason
   ]
   for t in [test for test in tests if test.is_skylabtest]:
     t.lacros_gcs_path = 'gs://dummy/lacros.zip'

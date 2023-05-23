@@ -61,11 +61,6 @@ def GenTests(api):
         r'.*\b{}\b'.format(test_name), at_least=0)
     # Any errors resulting from generating the test
     step_filter = step_filter.include_re(r'.*\berror$', at_least=0)
-    # The step for reporting ci_only tests
-    step_filter = step_filter.include_re('ci_only tests$', at_least=0)
-    # The step for reporting experimental tests that are not being run
-    step_filter = step_filter.include_re(
-        'experimental tests not in experiment', at_least=0)
     # The final result of the recipe
     step_filter = step_filter.include_re(r'\$result$', at_least=0)
     t += api.post_process(step_filter)
@@ -451,9 +446,13 @@ def GenTests(api):
           'ci_only': True,
           'test': 'gtest_test',
       }),
-      api.post_process(post_process.StepTextContains, 'ci_only tests',
-                       ['* gtest_test']),
-      api.post_process(post_process.DoesNotRun, 'gtest_test (with patch)'),
+      api.post_process(post_process.StepCommandEmpty,
+                       'gtest_test (with patch)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'gtest_test (with patch)',
+          ["This test is not being run because it is marked 'ci_only'"],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -467,9 +466,13 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True
               },
           }),
-      api.post_process(post_process.StepTextContains, 'ci_only tests',
-                       ['* gtest_test']),
-      api.post_process(post_process.DoesNotRun, 'gtest_test'),
+      api.post_process(post_process.StepCommandEmpty,
+                       'gtest_test (with patch)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'gtest_test (with patch)',
+          ["This test is not being run because it is marked 'ci_only'"],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -541,9 +544,13 @@ def GenTests(api):
           'test': 'gtest_test',
           'experiment_percentage': '0',
       }),
-      api.post_process(post_process.MustRun,
-                       'experimental tests not in experiment'),
-      api.post_process(post_process.DoesNotRunRE, '.*gtest_test.*'),
+      api.post_process(post_process.StepCommandEmpty,
+                       'gtest_test (experimental)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'gtest_test (experimental)',
+          ['This test was not selected for its experiment in this build'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -70,7 +70,7 @@ class Generator:
 
     for raw_test_spec, test_spec in generate_inner():
       if description := raw_test_spec.get('description'):
-        test_spec = test_spec.add_info_message(description)
+        test_spec = attr.evolve(test_spec, description=description)
       test_spec = self._handle_experimental(raw_test_spec, test_spec)
       test_spec = self._handle_ci_only(raw_test_spec, test_spec)
       yield test_spec
@@ -83,8 +83,8 @@ class Generator:
     experiment_percentage = raw_test_spec.get('experiment_percentage')
     if experiment_percentage is None:
       return test_spec
-    return steps.ExperimentalTestSpec.create(test_spec, experiment_percentage,
-                                             self._chromium_tests_api.m)
+    return steps.ExperimentalTestSpec.create(test_spec,
+                                             int(experiment_percentage))
 
   def _handle_ci_only(
       self,
@@ -110,21 +110,7 @@ class Generator:
     """
     if not raw_test_spec.get('ci_only'):
       return test_spec
-    if not self._chromium_tests_api.m.tryserver.is_tryserver:
-      return test_spec.add_info_message(
-          'This test will not be run on try builders')
-
-    footer_vals = self._chromium_tests_api.m.tryserver.get_footer(
-        steps.INCLUDE_CI_FOOTER)
-    disabled = True
-    if footer_vals:
-      disabled = footer_vals[-1].lower() != 'true'
-
-    if disabled:
-      return test_spec.disable(steps.CI_ONLY)
-    return test_spec.add_info_message(
-        'This test is being run due to the {} gerrit footer'.format(
-            steps.INCLUDE_CI_FOOTER))
+    return steps.CiOnlyTestSpec.create(test_spec)
 
   def _get_args_for_test(self, raw_test_spec: _RawTestSpec):
     """Gets the argument list for a dynamically generated test, as

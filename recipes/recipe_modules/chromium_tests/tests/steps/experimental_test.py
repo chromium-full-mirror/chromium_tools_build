@@ -57,15 +57,9 @@ def RunSteps(api):
   recording_test_spec = RecordingTestSpec.create(mock_test_spec)
   experimental_test_spec = steps.ExperimentalTestSpec.create(
       recording_test_spec,
-      experiment_percentage=api.properties['experiment_percentage'],
-      api=api)
+      experiment_percentage=api.properties['experiment_percentage'])
 
-  experiment_on = api.properties['experiment_percentage'] == '100'
-  api.assertions.assertNotEqual(experiment_on,
-                                bool(experimental_test_spec.disabled_reason))
-  if not experiment_on:
-    return
-
+  experiment_on = api.properties['experiment_percentage'] == 100
   experimental_test = experimental_test_spec.get_test(api.chromium_tests)
 
   api.assertions.assertEqual(
@@ -82,6 +76,9 @@ def RunSteps(api):
   experimental_test.pre_run(suffix)
   experimental_test.run(suffix)
 
+  if not experiment_on:
+    return
+
   # Just for code coverage.
   experimental_test.get_invocation_names(suffix)
   experimental_test.update_rdb_results(suffix, {})
@@ -89,12 +86,6 @@ def RunSteps(api):
   assert experimental_test.has_valid_results('')
   assert not experimental_test.failures('')
   assert not experimental_test.deterministic_failures('')
-
-  experimental_test_spec = experimental_test_spec.add_info_message(
-      'This is an experimental test')
-  api.assertions.assertEqual(
-      experimental_test_spec._test_spec._test_spec.info_messages,
-      ('This is an experimental test',))
 
 
 def GenTests(api):
@@ -105,10 +96,14 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='100'),
+      api.properties(experiment_percentage=100),
       api.post_process(post_process.MustRun,
                        'pre_run inner_test (experimental)'),
-      api.post_process(post_process.MustRun, 'inner_test (experimental)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'inner_test (experimental)',
+          ['This is an experimental test that was selected for this build'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -118,10 +113,14 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='0'),
-      api.post_process(post_process.DoesNotRun,
-                       'pre_run inner_test (experimental)'),
-      api.post_process(post_process.DoesNotRun, 'inner_test (experimental)'),
+      api.properties(experiment_percentage=0),
+      api.post_process(post_process.StepCommandEmpty,
+                       'inner_test (experimental)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'inner_test (experimental)',
+          ['This test was not selected for its experiment in this build'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -131,7 +130,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='100', has_valid_results=False),
+      api.properties(experiment_percentage=100, has_valid_results=False),
       api.post_process(post_process.MustRun,
                        'has_valid_results inner_test (experimental)'),
       api.post_process(post_process.DoesNotRun,
@@ -145,7 +144,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='0', has_valid_results=False),
+      api.properties(experiment_percentage=0, has_valid_results=False),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -155,7 +154,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='100', failures=['foo']),
+      api.properties(experiment_percentage=100, failures=['foo']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -165,7 +164,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='0', failures=['foo']),
+      api.properties(experiment_percentage=0, failures=['foo']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -175,7 +174,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='100'),
+      api.properties(experiment_percentage=100),
       api.override_step_data('pre_run inner_test (experimental)', retcode=1),
       api.post_process(post_process.MustRun,
                        'pre_run inner_test (experimental)'),
@@ -188,7 +187,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='100'),
+      api.properties(experiment_percentage=100),
       api.override_step_data('inner_test (experimental)', retcode=1),
       api.post_process(post_process.MustRun, 'inner_test (experimental)'),
       api.post_process(post_process.DropExpectation),
@@ -200,7 +199,7 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
       ),
-      api.properties(experiment_percentage='100', suffix='with patch'),
+      api.properties(experiment_percentage=100, suffix='with patch'),
       api.post_process(post_process.MustRun,
                        'pre_run inner_test (with patch, experimental)'),
       api.post_process(post_process.MustRun,

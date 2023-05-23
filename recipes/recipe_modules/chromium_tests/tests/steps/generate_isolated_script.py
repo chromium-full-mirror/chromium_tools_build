@@ -66,11 +66,6 @@ def GenTests(api):
         r'.*\b{}\b'.format(isolate_name), at_least=0)
     # Any errors resulting from generating the test
     step_filter = step_filter.include_re(r'.*\bspec format error$', at_least=0)
-    # The step for reporting ci_only tests
-    step_filter = step_filter.include_re('ci_only tests$', at_least=0)
-    # The step for reporting experimental tests that are not being run
-    step_filter = step_filter.include_re(
-        'experimental tests not in experiment', at_least=0)
     # The final result of the recipe
     step_filter = step_filter.include_re(r'\$result$', at_least=0)
     t += api.post_process(step_filter)
@@ -447,9 +442,13 @@ def GenTests(api):
               'name': 'base_unittests',
               'isolate_name': 'base_unittests_run',
           }),
-      api.post_process(post_process.MustRun,
-                       'experimental tests not in experiment'),
-      api.post_process(post_process.DoesNotRunRE, '.*base_unittests.*'),
+      api.post_process(post_process.StepCommandEmpty,
+                       'base_unittests (experimental)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'base_unittests (experimental)',
+          ['This test was not selected for its experiment in this build'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -487,9 +486,13 @@ def GenTests(api):
           'name': 'script_test',
           'ci_only': True,
       }),
-      api.post_process(post_process.StepTextContains, 'ci_only tests',
-                       ['* script_test']),
-      api.post_process(post_process.DoesNotRun, 'script_test (with patch)'),
+      api.post_process(post_process.StepCommandEmpty,
+                       'script_test (with patch)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'script_test (with patch)',
+          ["This test is not being run because it is marked 'ci_only'"],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -503,9 +506,13 @@ def GenTests(api):
                   'can_use_on_swarming_builders': True
               },
           }),
-      api.post_process(post_process.StepTextContains, 'ci_only tests',
-                       ['* script_test']),
-      api.post_process(post_process.DoesNotRun, 'script_test (with patch)'),
+      api.post_process(post_process.StepCommandEmpty,
+                       'script_test (with patch)'),
+      api.post_process(
+          post_process.StepTextContains,
+          'script_test (with patch)',
+          ["This test is not being run because it is marked 'ci_only'"],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 

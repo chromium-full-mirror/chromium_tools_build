@@ -397,15 +397,15 @@ def GenTests(api):
   yield api.test(
       'ci_only_test_on_trybot',
       boilerplate(
-          'chrome-test-builds',
-          tast_expr='dummy_tast',
-          is_ci_build=False,
-          should_read_isolate=False),
-      api.post_process(post_process.StepTextContains, 'ci_only tests',
-                       ['* basic_EVE_TOT']),
+          'chrome-test-builds', tast_expr='dummy_tast', is_ci_build=False),
       api.post_process(
-          post_process.DoesNotRun,
+          post_process.StepCommandEmpty,
           'basic_EVE_TOT (with patch)',
+      ),
+      api.post_process(
+          post_process.StepTextContains,
+          'basic_EVE_TOT (with patch)',
+          ["This test is not being run because it is marked 'ci_only'"],
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -496,11 +496,15 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds',
           tast_expr='dummy_tast',
-          experiment_percentage='0',
-          should_read_isolate=False),
+          experiment_percentage='0'),
       api.post_process(
-          post_process.DoesNotRunRE,
-          '.*basic_EVE_TOT.*',
+          post_process.StepCommandEmpty,
+          'basic_EVE_TOT (experimental)',
+      ),
+      api.post_process(
+          post_process.StepTextContains,
+          'basic_EVE_TOT (experimental)',
+          ['This test was not selected for its experiment in this build'],
       ),
       api.post_process(post_process.DropExpectation),
   )

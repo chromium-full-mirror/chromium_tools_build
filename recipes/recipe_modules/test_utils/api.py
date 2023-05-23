@@ -1127,8 +1127,13 @@ class TestGroup:
         collect all results or only results from variants with unexpected
         results.
     """
-    invocation_names = test.get_invocation_names(suffix)
-    if not invocation_names:
+    if not test.is_enabled:
+      res = RDBPerSuiteResults.create({},
+                                      failure_on_exit=False,
+                                      total_tests_ran=0,
+                                      suite_name=test.canonical_name,
+                                      test_id_prefix=test.test_id_prefix)
+    elif not (invocation_names := test.get_invocation_names(suffix)):
       res = RDBPerSuiteResults.create({},
                                       failure_on_exit=True,
                                       total_tests_ran=0,
@@ -1196,6 +1201,8 @@ class SwarmingGroup(TestGroup):
       f.result()
 
     for t in self._test_suites:
+      if not t.is_enabled:
+        continue
       task = t.get_task(suffix)
 
       task_ids = tuple(task.get_task_ids())
@@ -1206,6 +1213,11 @@ class SwarmingGroup(TestGroup):
 
   def run(self, api, suffix):
     """Executes the |run| method of each test."""
+    for test in self._test_suites:
+      if not test.is_enabled:
+        self.fetch_rdb_results(test, suffix, api.flakiness)
+        test.run(suffix)
+
     attempts = 0
     while self._task_ids_to_test:
       nest_name = 'collect tasks'
@@ -1259,7 +1271,7 @@ class SkylabGroup(TestGroup):
 
   def pre_run(self, api, suffix):
     """Schedule each Skylab test request to a CTP build."""
-    tests = [t for t in self._test_suites if t.is_skylabtest]
+    tests = [t for t in self._test_suites if t.is_skylabtest and t.is_enabled]
     if tests:
       # Respect timeout of each test run by this CTP build.
       build_timeout = max([t.spec.timeout_sec for t in tests])

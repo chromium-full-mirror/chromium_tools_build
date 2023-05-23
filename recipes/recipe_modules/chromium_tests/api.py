@@ -355,21 +355,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       targets_spec: generators.TargetsSpec,
   ) -> Iterable[steps.AbstractTest]:
     test_specs = list(generator.generate(builder_group, builder, targets_spec))
-
-    tests = []
-    test_specs_by_disabled_reason = collections.defaultdict(list)
-    for test_spec in test_specs:
-      reason = test_spec.disabled_reason
-      if reason:
-        test_specs_by_disabled_reason[reason].append(test_spec)
-      else:
-        tests.append(test_spec.get_test(self))
-
-    for reason, test_specs in sorted(
-        test_specs_by_disabled_reason.items(), key=repr):
-      reason.report_tests(self, [t.name for t in test_specs])
-
-    return tuple(tests)
+    return tuple(spec.get_test(self) for spec in test_specs)
 
   def read_targets_spec(self, targets_spec_file, targets_spec_dir=None):
     if not targets_spec_dir:
