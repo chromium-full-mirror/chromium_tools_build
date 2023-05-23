@@ -2270,7 +2270,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     rts_setting = None
     use_rts = (
-        (experiment_active or run_mode == self.m.cq.QUICK_DRY_RUN and
+        ((experiment_active or run_mode == self.m.cq.QUICK_DRY_RUN) and
          builder_config.regression_test_selection == try_spec.QUICK_RUN_ONLY) or
         builder_config.regression_test_selection == try_spec.ALWAYS)
 
