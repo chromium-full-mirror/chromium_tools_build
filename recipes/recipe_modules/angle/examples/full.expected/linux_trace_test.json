@@ -368,6 +368,110 @@
     ]
   },
   {
+    "cmd": [
+      "vpython3",
+      "src/tests/capture_replay_tests.py",
+      "--goma-dir=[CACHE]/goma/client",
+      "--log",
+      "debug",
+      "--gtest_filter=*/ES2_Vulkan_SwiftShader",
+      "--out-dir=[CACHE]/builder/angle/out/CaptureReplayTest",
+      "--xvfb"
+    ],
+    "cwd": "[CACHE]/builder/angle",
+    "luci_context": {
+      "realm": {
+        "name": "angle:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "GLES 2.0 trace tests"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "src/tests/capture_replay_tests.py",
+      "--goma-dir=[CACHE]/goma/client",
+      "--log",
+      "debug",
+      "--gtest_filter=*/ES3_Vulkan_SwiftShader",
+      "--out-dir=[CACHE]/builder/angle/out/CaptureReplayTest",
+      "--xvfb"
+    ],
+    "cwd": "[CACHE]/builder/angle",
+    "luci_context": {
+      "realm": {
+        "name": "angle:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "GLES 3.0 trace tests"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "src/tests/capture_replay_tests.py",
+      "--goma-dir=[CACHE]/goma/client",
+      "--log",
+      "debug",
+      "--gtest_filter=*/ES3_1_Vulkan_SwiftShader",
+      "--out-dir=[CACHE]/builder/angle/out/CaptureReplayTest",
+      "--xvfb"
+    ],
+    "cwd": "[CACHE]/builder/angle",
+    "luci_context": {
+      "realm": {
+        "name": "angle:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "GLES 3.1 trace tests"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "src/tests/capture_replay_tests.py",
+      "--goma-dir=[CACHE]/goma/client",
+      "--log",
+      "debug",
+      "--gtest_filter=*/ES1_Vulkan_SwiftShader",
+      "--out-dir=[CACHE]/builder/angle/out/CaptureReplayTest",
+      "--xvfb"
+    ],
+    "cwd": "[CACHE]/builder/angle",
+    "luci_context": {
+      "realm": {
+        "name": "angle:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "GLES 1.0 trace tests"
+  },
+  {
     "cmd": [],
     "name": "postprocess_for_goma"
   },

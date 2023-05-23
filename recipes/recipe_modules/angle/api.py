@@ -87,9 +87,7 @@ class ANGLEApi(recipe_api.RecipeApi):
     ]
     if self.m.platform.is_linux:
       cmd += ['--xvfb']
-    # TODO(jmadill): Figure out why Linux is failing. http://anglebug.com/6085
-    if not self.m.platform.is_linux:  # Makes linux-trace runs effectively no-op
-      self.m.step(step_name, cmd)
+    self.m.step(step_name, cmd)
 
   def _trace_tests(self):
     self.m.goma.ensure_goma()
