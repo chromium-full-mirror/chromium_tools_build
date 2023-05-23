@@ -114,9 +114,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                                              ['%(PATH)s'])
     if self.c.env.FORCE_MAC_TOOLCHAIN:
       ret['FORCE_MAC_TOOLCHAIN'] = self.c.env.FORCE_MAC_TOOLCHAIN
-    if self.c.env.GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB:
-      ret['GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB'] = (
-          self.c.env.GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB)
     return ret
 
   @property

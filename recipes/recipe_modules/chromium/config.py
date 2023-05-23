@@ -65,7 +65,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           PATH=List(Path),
           GOMA_RPC_EXTRA_PARAMS=Single(str, required=False),
           GOMA_ARBITRARY_TOOLCHAIN_SUPPORT=Single(str, required=False),
-          GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB=Single(int, required=False),
           FORCE_MAC_TOOLCHAIN=Single(int, required=False),
           FORCE_MAC_SDK_MIN=Single(str, required=False),
       ),
@@ -264,11 +263,6 @@ def goma_failfast(c):
 def goma_enable_cache_silo(c):
   # If enabled, the builder name will be used as the RBE cache silo key.
   c.compile_py.goma_enable_cache_silo = True
-
-
-@config_ctx()
-def goma_large_cache_file(c):
-  c.env.GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB = 256
 
 
 @config_ctx()

@@ -378,10 +378,6 @@ class GomaApi(recipe_api.RecipeApi):
       if 'GOMA_CACHE_DIR' not in env:
         self._goma_ctl_env['GOMA_CACHE_DIR'] = self.default_cache_path
 
-      if 'GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB' in env:
-        self._goma_ctl_env['GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB'] = (
-            env['GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB'])
-
       # TODO(tikuta): Remove this after debug for subprocess killing is
       # finished. b/80404226
       if self._client_type == 'latest':

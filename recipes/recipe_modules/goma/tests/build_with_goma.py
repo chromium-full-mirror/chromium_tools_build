@@ -82,12 +82,3 @@ def GenTests(api):
       }),
       api.post_process(DropExpectation),
   )
-
-  yield api.test(
-      'large_cache_file',
-      api.properties(env={'GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB': 256}),
-      api.buildbucket.ci_build(),
-      *EnsureGomaSteps(),
-      *EnsureGomaEnv({'GOMA_DEPS_CACHE_MAX_PROTO_SIZE_IN_MB': '256'}),
-      api.post_process(DropExpectation),
-  )
