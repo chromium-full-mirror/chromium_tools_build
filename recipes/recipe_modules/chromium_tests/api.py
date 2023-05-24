@@ -163,15 +163,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     super().__init__(**kwargs)
 
     self.filter_files_dir = None
-    # Will get updated in initialize, which gets run by the recipe engine after
-    # the self.m module injection
-    self.base_variant = {}
+    self.base_variant_getter = lambda _: {
+        'builder': self.m.buildbucket.builder_name
+    }
 
     self._enable_snoopy = input_properties.enable_snoopy
-
-  def initialize(self):
-    # add var 'builder' by default
-    self.base_variant['builder'] = self.m.buildbucket.builder_name
 
   def log(self, message):
     presentation = self.m.step.active_result.presentation

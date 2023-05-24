@@ -65,15 +65,46 @@ class Generator:
           ('skylab_tests', self._generate_skylab_test_spec),
       ):
         for raw_test_spec in targets_spec.get(key, []):
-          for test_spec in handler(builder_group, builder, raw_test_spec):
+          for test_spec in handler(raw_test_spec):
             yield raw_test_spec, test_spec
 
     for raw_test_spec, test_spec in generate_inner():
+      test_spec = attr.evolve(
+          test_spec,
+          waterfall_builder_group=builder_group,
+          waterfall_buildername=builder)
       if description := raw_test_spec.get('description'):
         test_spec = attr.evolve(test_spec, description=description)
+      test_spec = self._handle_resultdb(raw_test_spec, test_spec)
       test_spec = self._handle_experimental(raw_test_spec, test_spec)
       test_spec = self._handle_ci_only(raw_test_spec, test_spec)
       yield test_spec
+
+  def _handle_resultdb(
+      self,
+      raw_test_spec: _RawTestSpec,
+      test_spec: steps.AbstractTestSpec,
+  ) -> steps.ResultDB:
+    kwargs = dict(raw_test_spec.get('resultdb', {}))
+    if 'result_format' not in kwargs:
+      result_format = None
+      # HACK: If an isolated script test doesn't explicitly enable resultdb in its
+      # test spec, assume it doesn't have native integration with result-sink and
+      # consequently needs the result_adapter added using the 'json' format.
+      # TODO(crbug.com/1135718): Explicitly mark all such tests as using the json
+      # result format in the testing specs.
+      if isinstance(test_spec, steps.SwarmingIsolatedScriptTestSpec):
+        if not kwargs:
+          result_format = 'json'
+      elif isinstance(test_spec,
+                      (steps.SwarmingGTestTestSpec, steps.LocalGTestTestSpec)):
+        result_format = 'gtest'
+      if result_format:
+        kwargs.setdefault('result_format', result_format)
+    kwargs.setdefault('test_id_prefix', raw_test_spec.get('test_id_prefix'))
+    base_variant = self._chromium_tests_api.base_variant_getter(test_spec)
+    kwargs.setdefault('base_variant', {}).update(base_variant)
+    return attr.evolve(test_spec, resultdb=steps.ResultDB.create(**kwargs))
 
   def _handle_experimental(
       self,
@@ -250,13 +281,6 @@ class Generator:
       normalized[int(expiration)] = dimensions
     return normalized
 
-  def _handle_resultdb(self, raw_test_spec: _RawTestSpec) -> steps.ResultDB:
-    kwargs = dict(raw_test_spec.get('resultdb', {}))
-    kwargs.setdefault('test_id_prefix', raw_test_spec.get('test_id_prefix'))
-    kwargs.setdefault('base_variant',
-                      {}).update(self._chromium_tests_api.base_variant)
-    return steps.ResultDB.create(**kwargs)
-
   def _generator_common(
       self,
       raw_test_spec: _RawTestSpec,
@@ -291,7 +315,6 @@ class Generator:
     kwargs['check_flakiness_for_new_tests'] = raw_test_spec.get(
         'check_flakiness_for_new_tests', True)
     kwargs['name'] = name
-    kwargs['resultdb'] = self._handle_resultdb(raw_test_spec)
 
     swarming_spec = raw_test_spec.get('swarming', {})
     if not swarming_spec.get('can_use_on_swarming_builders'):
@@ -386,13 +409,10 @@ class Generator:
 
   def _generate_gtest_test_spec(
       self,
-      builder_group: str,
-      builder: str,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
     if raw_test_spec.get('use_isolated_scripts_api'):
-      return self._generate_isolated_script_test_spec(builder_group, builder,
-                                                      raw_test_spec)
+      return self._generate_isolated_script_test_spec(raw_test_spec)
 
     def gtest_delegate_common(raw_test_spec):
       common_gtest_kwargs = {}
@@ -409,17 +429,11 @@ class Generator:
       common_gtest_kwargs['override_compile_targets'] = raw_test_spec.get(
           'override_compile_targets', None)
 
-      common_gtest_kwargs['waterfall_builder_group'] = builder_group
-      common_gtest_kwargs['waterfall_buildername'] = builder
-
       return common_gtest_kwargs
 
     def gtest_swarming_delegate(raw_test_spec, **kwargs):
       kwargs.update(gtest_delegate_common(raw_test_spec))
       kwargs['isolate_profile_data'] = raw_test_spec.get('isolate_profile_data')
-
-      kwargs['resultdb'] = attr.evolve(
-          kwargs['resultdb'], result_format='gtest')
       return steps.SwarmingGTestTestSpec.create(**kwargs)
 
     def gtest_local_delegate(raw_test_spec, **kwargs):
@@ -427,8 +441,6 @@ class Generator:
         return
       kwargs.update(gtest_delegate_common(raw_test_spec))
       kwargs['use_xvfb'] = raw_test_spec.get('use_xvfb', True)
-      kwargs['resultdb'] = attr.evolve(
-          kwargs['resultdb'], result_format='gtest')
       return steps.LocalGTestTestSpec.create(**kwargs)
 
     return self._generator_common(raw_test_spec, gtest_swarming_delegate,
@@ -436,21 +448,14 @@ class Generator:
 
   def _generate_junit_test_spec(
       self,
-      builder_group: str,
-      builder: str,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
     if self._isolated_tests_only:
       return []
 
-    resultdb = self._handle_resultdb(raw_test_spec)
-
     kwargs = {}
     kwargs['target_name'] = raw_test_spec['test']
     kwargs['additional_args'] = raw_test_spec.get('args')
-    kwargs['waterfall_builder_group'] = builder_group
-    kwargs['waterfall_buildername'] = builder
-    kwargs['resultdb'] = resultdb
     return [
         steps.AndroidJunitTestSpec.create(
             raw_test_spec.get('name', raw_test_spec['test']), **kwargs)
@@ -458,14 +463,11 @@ class Generator:
 
   def _generate_script_test_spec(
       self,
-      builder_group: str,
-      builder: str,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
     if self._isolated_tests_only:
       return []
 
-    resultdb = self._handle_resultdb(raw_test_spec)
 
     kwargs = {}
     kwargs['script'] = raw_test_spec['script']
@@ -473,15 +475,10 @@ class Generator:
     kwargs['script_args'] = raw_test_spec.get('args', [])
     kwargs['override_compile_targets'] = raw_test_spec.get(
         'override_compile_targets', [])
-    kwargs['waterfall_builder_group'] = builder_group
-    kwargs['waterfall_buildername'] = builder
-    kwargs['resultdb'] = resultdb
     return [steps.ScriptTestSpec.create(str(raw_test_spec['name']), **kwargs)]
 
   def _generate_isolated_script_test_spec(
       self,
-      builder_group: str,
-      builder: str,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
 
@@ -522,20 +519,6 @@ class Generator:
 
     def isolated_script_swarming_delegate(raw_test_spec, **kwargs):
       kwargs.update(isolated_script_delegate_common(raw_test_spec, **kwargs))
-
-      kwargs['waterfall_buildername'] = builder
-      kwargs['waterfall_builder_group'] = builder_group
-
-      resultdb = kwargs['resultdb']
-      # HACK: If an isolated script test doesn't explicitly enable resultdb in
-      # its test spec, assume it doesn't have native integration with result-sink
-      # and consequently needs the result_adapter added using the 'json' format.
-      # TODO(crbug.com/1135718): Explicitly mark all such tests as using the
-      # json result format in the testing specs.
-      rdb_kwargs = dict(raw_test_spec.get('resultdb', {}))
-      if not rdb_kwargs:
-        resultdb = attr.evolve(resultdb, result_format='json')
-      kwargs['resultdb'] = resultdb
       return steps.SwarmingIsolatedScriptTestSpec.create(**kwargs)
 
     def isolated_script_local_delegate(raw_test_spec, **kwargs):
@@ -548,8 +531,6 @@ class Generator:
 
   def _generate_skylab_test_spec(
       self,
-      builder_group: str,
-      builder: str,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
     if self._isolated_tests_only:
@@ -561,11 +542,8 @@ class Generator:
     common_skylab_kwargs = {
         k: v for k, v in raw_test_spec.items() if k in kwargs_to_forward
     }
-    common_skylab_kwargs['resultdb'] = self._handle_resultdb(raw_test_spec)
     common_skylab_kwargs['test_args'] = self._get_args_for_test(raw_test_spec)
     common_skylab_kwargs['target_name'] = raw_test_spec.get('test')
-    common_skylab_kwargs['waterfall_builder_group'] = builder_group
-    common_skylab_kwargs['waterfall_buildername'] = builder
     if not common_skylab_kwargs.get('autotest_name'):
       if common_skylab_kwargs.get('tast_expr'):
         common_skylab_kwargs['autotest_name'] = 'tast.lacros'

@@ -40,10 +40,10 @@ def RunSteps(api):
 
   # Set the ResultDB variants so that tests for the target builder can be queried
   target_builder = api.chromium_polymorphic.target_builder_id
-  api.chromium_tests.base_variant = {
+  api.chromium_tests.base_variant_getter = lambda spec: {
       'reviver_project': target_builder.project,
       'reviver_bucket': target_builder.bucket,
-      'reviver_builder': target_builder.builder,
+      'reviver_builder': spec.waterfall_buildername,
   }
 
   api.chromium_tests.configure_build(builder_config)
