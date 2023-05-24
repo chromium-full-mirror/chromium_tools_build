@@ -32,4 +32,7 @@ message InputProperties {
 
   // version of the SSCI CIPD module to use
   string ssci_version = 8;
+
+  // Whether to generate a minimal version of the SPDX file
+  bool minimal_spdx = 9;
 }

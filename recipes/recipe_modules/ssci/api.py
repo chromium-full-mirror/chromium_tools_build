@@ -20,6 +20,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.partybot_version = props.partybot_version or "latest"
     self.bq_thirdparty_table = props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
     self.ssci_version = props.ssci_version or "latest"
+    self.minimal_spdx = props.minimal_spdx or True
 
   def _cipd_version(self, package_name, package_version):
     """
@@ -144,33 +145,18 @@ class SsciAPI(recipe_api.RecipeApi):
       with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):
         self.m.step(
             'run ssci tool to generate SPDX sbom', [
-                "vpython3",
-                "--vpython-spec=.vpython3",
-                "-m",
-                "ssci",
-                "spdx",
+                "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
                 "-libraries",
-                self.m.path.join(data_dir, "libs.json"),
-                "-artifacts",
-                self.m.path.join(data_dir, "artifacts.json"),
-                "-thirdparty",
+                self.m.path.join(data_dir, "libs.json"), "-artifacts",
+                self.m.path.join(data_dir, "artifacts.json"), "-thirdparty",
                 self.m.path.join(data_dir, "third_party.json"),
-                "-depbot-version",
-                depbot_cipd_version,
-                "-partybot-version",
-                partybot_cipd_version,
-                "-ssci-version",
-                ssci_cipd_version,
-                "-output-file",
-                spdx_out,
-                "-chromium-src",
-                src_dir,
-                "-product",
-                self.m.buildbucket.build.builder.project,
-                "-platform",
-                self.m.platform.name,
-                "-arch",
-                f"{self.m.platform.arch}{self.m.platform.bits}",
+                "-depbot-version", depbot_cipd_version, "-partybot-version",
+                partybot_cipd_version, "-ssci-version", ssci_cipd_version,
+                "-output-file", spdx_out, "-chromium-src", src_dir, "-product",
+                self.m.buildbucket.build.builder.project, "-platform",
+                self.m.platform.name, "-arch",
+                f"{self.m.platform.arch}{self.m.platform.bits}", "-minimal",
+                self.minimal_spdx
             ],
             step_test_data=(lambda: self.m.json.test_api.output(
                 data=[{
