@@ -15,7 +15,7 @@ class LuciBisectionApi(recipe_api.RecipeApi):
     # bbid = "8804856879691073905"
     # analysis_id = "5655880053817344"
 
-    method = "gofindit.GoFinditBotService.UpdateAnalysisProgress"
+    method = "luci.bisection.v1.BotUpdates.UpdateAnalysisProgress"
     request_input = {
         "analysisId": analysis_id,
         "bbid": bbid,

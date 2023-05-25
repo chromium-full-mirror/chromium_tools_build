@@ -30,7 +30,7 @@ def GenTests(api):
       'success',
       api.post_process(StepCommandRE, "send_result_to_luci_bisection", [
           "prpc", "call", "luci-bisection.appspot.com",
-          "gofindit.GoFinditBotService.UpdateAnalysisProgress"
+          "luci.bisection.v1.BotUpdates.UpdateAnalysisProgress"
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection", "input",
@@ -42,7 +42,7 @@ def GenTests(api):
       'failure',
       api.post_process(StepCommandRE, "send_result_to_luci_bisection1", [
           "prpc", "call", "luci-bisection.appspot.com",
-          "gofindit.GoFinditBotService.UpdateAnalysisProgress"
+          "luci.bisection.v1.BotUpdates.UpdateAnalysisProgress"
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection1", "input",
@@ -54,7 +54,7 @@ def GenTests(api):
       'infra_failed',
       api.post_process(StepCommandRE, "send_result_to_luci_bisection2", [
           "prpc", "call", "luci-bisection.appspot.com",
-          "gofindit.GoFinditBotService.UpdateAnalysisProgress"
+          "luci.bisection.v1.BotUpdates.UpdateAnalysisProgress"
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection2", "input",
@@ -66,7 +66,7 @@ def GenTests(api):
       'other',
       api.post_process(StepCommandRE, "send_result_to_luci_bisection3", [
           "prpc", "call", "luci-bisection.appspot.com",
-          "gofindit.GoFinditBotService.UpdateAnalysisProgress"
+          "luci.bisection.v1.BotUpdates.UpdateAnalysisProgress"
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection3", "input",
