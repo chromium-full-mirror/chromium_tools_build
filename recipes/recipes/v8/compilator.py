@@ -65,13 +65,16 @@ def orchestrator_name(api):
       name with the "_compile" infix removed.
   """
   builder_name = api.buildbucket.builder_name
-  if not api.tryserver.is_tryserver:
-    return builder_name
-  assert builder_name.endswith(('_compile_rel', '_compile_dbg')), (
-    f'Compilator name doesn\'t follow the naming convention. Must end '
-    f'in _compile_rel or _compile_dbg, but was {builder_name}.')
-  prefix, _, suffix = builder_name.rsplit('_', 2)
-  return f'{prefix}_{suffix}'
+
+  if api.tryserver.is_tryserver:
+    allowed_suffixes = ('_compile_rel', '_compile_dbg', '_compile_perf_try')
+    assert builder_name.endswith(allowed_suffixes), (
+        f'Compilator name doesn\'t follow the naming convention. Must end '
+        f'in {", ".join(allowed_suffixes)}, but was {builder_name}.')
+    prefix, suffix = builder_name.rsplit('_compile_', 1)
+    return f'{prefix}_{suffix}'
+
+  return builder_name
 
 
 def read_test_spec(api):
