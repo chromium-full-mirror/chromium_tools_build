@@ -56,8 +56,6 @@ ORCHESTRATOR_RUNTIME_DEPS_FILE = 'orchestrator_all.runtime_deps'
 def compilator_steps(api, properties):
   api.tryserver.require_is_tryserver()
 
-  report_parent_orchestrator_build(api, properties)
-
   with api.chromium.chromium_layout():
     orchestrator = properties.orchestrator.builder_name
     builder_group = properties.orchestrator.builder_group
@@ -259,16 +257,6 @@ def get_deleted_files(api, affected_files):
     if not api.path.exists(path):
       deleted_files.append(f)
   return deleted_files
-
-
-def report_parent_orchestrator_build(api, properties):
-  result = api.step(
-      'report parent orchestrator build: {}'.format(
-          properties.orchestrator.builder_name), [])
-  result.presentation.links['orchestrator build'] = (
-      create_orchestrator_milo_link(
-          api.buildbucket.build.infra.swarming.parent_run_id,
-          api.buildbucket.build.infra.swarming.hostname))
 
 
 def create_orchestrator_milo_link(swarming_task_id, host):
