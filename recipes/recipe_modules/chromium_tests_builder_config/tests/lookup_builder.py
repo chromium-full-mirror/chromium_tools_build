@@ -249,6 +249,8 @@ def GenTests(api):
                           builder='fake-tester',
                       ),
                   ],
+                  targets_spec_directory=('src/infra/config/generated/builders/'
+                                          'ci/fake-builder/targets'),
                   rts_config=properties_pb.BuilderConfig.RtsConfig(
                       condition=properties_pb.BuilderConfig.RtsConfig.Condition
                       .ALWAYS),
@@ -292,6 +294,9 @@ def GenTests(api):
                   BuilderId.create_for_group('fake-group', 'fake-builder'),
                   BuilderId.create_for_group('fake-group', 'fake-tester'),
               ]),
+              targets_spec_directory=(
+                  'src/infra/config/generated/builders/ci/fake-builder/targets'
+              ),
               include_all_triggered_testers=False,
               is_compile_only=False,
               analyze_names=(),

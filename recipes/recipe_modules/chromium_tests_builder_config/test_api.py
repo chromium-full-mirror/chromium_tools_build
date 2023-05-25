@@ -62,6 +62,7 @@ class _PropertiesAssembler:
     self._builder_entries = []
     self._builder_ids = []
     self._builder_ids_in_scope_for_testing = []
+    self._targets_spec_directory = None
 
   def assemble(self, **kwargs):
     return properties_pb.InputProperties(
@@ -71,6 +72,7 @@ class _PropertiesAssembler:
             builder_ids=self._builder_ids,
             builder_ids_in_scope_for_testing=(
                 self._builder_ids_in_scope_for_testing),
+            targets_spec_directory=self._targets_spec_directory,
             **kwargs))
 
   def add_builder(self, details):
@@ -95,6 +97,9 @@ class _PropertiesAssembler:
 
   def add_builder_id_in_scope_for_testing(self, builder_id):
     self._builder_ids_in_scope_for_testing.append(builder_id)
+
+  def set_targets_spec_directory(self, targets_spec_directory):
+    self._targets_spec_directory = targets_spec_directory
 
   def _get_builder_spec(self, details):
     builder_spec = details.builder_spec
@@ -253,6 +258,10 @@ class _CiBuilderPropertiesAssembler:
             group=builder_group, builder=builder))
     return self
 
+  def with_targets_spec_directory(self, targets_spec_directory):
+    self._props_assembler.set_targets_spec_directory(targets_spec_directory)
+    return self
+
   def assemble(self):
     return self._props_assembler.assemble(
         mirroring_builder_group_and_names=self._mirroring_builders)
@@ -288,6 +297,10 @@ class _CiTesterPropertiesAssembler:
 
     self._props_assembler.add_builder_id(tester_id)
 
+    return self
+
+  def with_targets_spec_directory(self, targets_spec_directory):
+    self._props_assembler.set_targets_spec_directory(targets_spec_directory)
     return self
 
   def assemble(self):
@@ -374,6 +387,10 @@ class _TryBuilderPropertiesAssembler:
     tester_id = self._props_assembler.add_builder(details)
     self._props_assembler.add_builder_id_in_scope_for_testing(tester_id)
 
+    return self
+
+  def with_targets_spec_directory(self, targets_spec_directory):
+    self._props_assembler.set_targets_spec_directory(targets_spec_directory)
     return self
 
   def assemble(self):

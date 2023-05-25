@@ -251,6 +251,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # execute the step once
     memo = []
 
+    if not targets_spec_dir:
+      if builder_config.targets_spec_directory:
+        targets_spec_dir = self.m.chromium_checkout.checkout_dir.join(
+            builder_config.targets_spec_directory)
+
     def scripts_compile_targets_fn():
       if not memo:
         memo.append(self.get_compile_targets_for_scripts())

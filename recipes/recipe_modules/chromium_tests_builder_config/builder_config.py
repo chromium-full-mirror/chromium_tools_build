@@ -156,6 +156,13 @@ class BuilderConfig:
   # wraps
   mirroring_try_builders = attrib(sequence[BuilderId], default=())
 
+  # The path to the directory where the targets spec files are read from,
+  # relative to the root of the checkout (e.g.
+  # src/infra/config/generated/builders/try/linux-rel/targets)
+  #
+  # This is used by builders that specify their tests in starlark
+  targets_spec_directory = attrib(str, default=None)
+
   # TODO(gbeaty) The following fields are copied from TrySpec (with some
   # changed defaults), but if all builders are switched to using the
   # module properties (once available) then TrySpec could be removed.

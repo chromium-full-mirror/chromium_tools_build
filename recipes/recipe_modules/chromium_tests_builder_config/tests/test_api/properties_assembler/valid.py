@@ -59,7 +59,8 @@ def GenTests(api):
           ).with_mirroring_builder(
               builder_group='fake-try-group',
               builder='fake-try-builder',
-          ).assemble()),
+          ).with_targets_spec_directory(
+              'fake-targets-spec-directory').assemble()),
       api.properties(
           expected_builder_ids=[builder_id],
           expected_builder_ids_in_scope_for_testing=[builder_id],
@@ -74,6 +75,7 @@ def GenTests(api):
               'mirroring_try_builders':
                   (chromium.BuilderId.create_for_group('fake-try-group',
                                                        'fake-try-builder'),),
+              'targets_spec_directory': 'fake-targets-spec-directory',
           },
       ),
       api.post_process(post_process.DropExpectation),
@@ -219,7 +221,8 @@ def GenTests(api):
           ).with_parent(
               builder_group='fake-group',
               builder='fake-builder',
-          ).assemble()),
+          ).with_targets_spec_directory(
+              'fake-targets-spec-directory').assemble()),
       api.properties(
           expected_builder_ids=[tester_id],
           expected_builder_ids_in_scope_for_testing=[tester_id],
@@ -237,6 +240,9 @@ def GenTests(api):
                       gclient_config='chromium',
                       chromium_config='chromium',
                   ),
+          },
+          expected_attrs={
+              'targets_spec_directory': 'fake-targets-spec-directory',
           },
       ),
       api.post_process(post_process.DropExpectation),
@@ -298,7 +304,8 @@ def GenTests(api):
           ).with_mirrored_tester(
               builder_group='fake-group',
               builder='fake-tester2',
-          ).assemble()),
+          ).with_targets_spec_directory(
+              'fake-targets-spec-directory').assemble()),
       api.properties(
           expected_builder_ids=[builder_id],
           expected_builder_ids_in_scope_for_testing=[
@@ -334,6 +341,7 @@ def GenTests(api):
               'retry_without_patch': False,
               'regression_test_selection': ctbc.ALWAYS,
               'regression_test_selection_recall': 0.5,
+              'targets_spec_directory': 'fake-targets-spec-directory',
           },
       ),
       api.post_process(post_process.DropExpectation),

@@ -210,7 +210,7 @@ message BuilderDatabase {
 
 // The combined details of 1 or more builders
 //
-// Next ID: 10
+// Next ID: 11
 message BuilderConfig {
   // Required, the database of builders that can be accessed via the builder
   // config
@@ -239,6 +239,13 @@ message BuilderConfig {
       string builder = 2;
   }
   repeated BuilderGroupAndName mirroring_builder_group_and_names = 4;
+
+  // The directory to look up the targets spec for the builder
+  //
+  // If set, this will be used in preference to the targets_spec_dir field
+  // on the chromium config. The path should be relative to the root of the
+  // repo and use forward slashes.
+  string targets_spec_directory = 10;
 
   // Whether the builder should skip running tests and just compile
   bool is_compile_only = 5;

@@ -109,15 +109,18 @@ def GenTests(api):
         {'fake-builder': FAKE_TARGETS_SPEC},
     )
 
-  def ctbc_properties():
-    return ctbc_api.properties(
-        ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-            builder_group='fake-group',
-            builder='fake-builder',
-        ).with_mirrored_tester(
-            builder_group='fake-group',
-            builder='fake-tester',
-        ).assemble())
+  def ctbc_properties(targets_spec_directory=None):
+    assembler = ctbc_api.properties_assembler_for_try_builder(
+    ).with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+    ).with_mirrored_tester(
+        builder_group='fake-group',
+        builder='fake-tester',
+    )
+    if targets_spec_directory:
+      assembler.with_targets_spec_directory(targets_spec_directory)
+    return ctbc_api.properties(assembler.assemble())
 
   yield api.test(
       'basic',
@@ -139,6 +142,30 @@ def GenTests(api):
           post_process.StepTextContains,
           'read test spec (fake-group.json)',
           ['testing/buildbot'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'builder-config-with-targets-spec-directory',
+      ctbc_properties('builder-config/targets'),
+      api.properties(
+          isolated_tests_only=False,
+          expected_tests=[
+              'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
+              'browser_tests_no_swarm', 'android_webview_junit_tests',
+              'check_static_initializers', 'basic_EVE_TOT'
+          ],
+      ),
+      fake_targets_spec(),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      api.post_process(
+          post_process.StepTextContains,
+          'read test spec (fake-group.json)',
+          ['builder-config/targets'],
       ),
       api.post_process(post_process.DropExpectation),
   )

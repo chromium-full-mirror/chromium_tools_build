@@ -6,7 +6,7 @@
       "@@@STEP_TEXT@<br/>builder configs differ, see 'diff' log for details@@@",
       "@@@STEP_LOG_LINE@diff@--- recipe builder config@@@",
       "@@@STEP_LOG_LINE@diff@+++ src-side builder config@@@",
-      "@@@STEP_LOG_LINE@diff@@@ -1,51 +1,45 @@@@@",
+      "@@@STEP_LOG_LINE@diff@@@ -1,52 +1,46 @@@@@",
       "@@@STEP_LOG_LINE@diff@ {@@@",
       "@@@STEP_LOG_LINE@diff@   \"analyze_names\": [], @@@",
       "@@@STEP_LOG_LINE@diff@   \"builder_db\": {@@@",
@@ -60,7 +60,8 @@
       "@@@STEP_LOG_LINE@diff@   \"regression_test_selection\": \"never\", @@@",
       "@@@STEP_LOG_LINE@diff@   \"regression_test_selection_recall\": 0.95, @@@",
       "@@@STEP_LOG_LINE@diff@   \"retry_failed_shards\": true, @@@",
-      "@@@STEP_LOG_LINE@diff@   \"retry_without_patch\": true@@@",
+      "@@@STEP_LOG_LINE@diff@   \"retry_without_patch\": true, @@@",
+      "@@@STEP_LOG_LINE@diff@   \"targets_spec_directory\": null@@@",
       "@@@STEP_LOG_LINE@diff@ }@@@",
       "@@@STEP_LOG_END@diff@@@",
       "@@@STEP_FAILURE@@@"
