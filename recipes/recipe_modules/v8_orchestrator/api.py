@@ -93,7 +93,7 @@ class LedCompilatorHandler(CompilatorHandler):
     """Trigger a compilator build via led."""
     project = self.api.buildbucket.build.builder.project
     bucket = bucket or self.api.buildbucket.build.builder.bucket
-    led_builder_id = f'luci.{project}.{bucket}:{compilator_name}'
+    led_builder_id = f'{project}/{bucket}/{compilator_name}'
     with self.api.step.nest(self._add_suffix('trigger compilator')):
       led_job = self.api.led('get-builder', led_builder_id)
       led_job = self.api.led.inject_input_recipes(led_job)
