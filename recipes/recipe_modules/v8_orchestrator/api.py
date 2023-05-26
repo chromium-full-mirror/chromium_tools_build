@@ -9,16 +9,22 @@ from google.protobuf import json_format
 
 class V8OrchestratorApi(recipe_api.RecipeApi):
 
-  def create_compilator_handler(self, enable_led=True):
+  def create_compilator_handler(self, enable_led=True, step_suffix=None):
     # TODO: enable led when we trigger real compilators
     if enable_led and self.m.led.launched_by_led:
-      return LedCompilatorHandler(self.m)
-    return ProdCompilatorHandler(self.m)
+      return LedCompilatorHandler(self.m, step_suffix=step_suffix)
+    return ProdCompilatorHandler(self.m, step_suffix=step_suffix)
 
 
 class CompilatorHandler:
-  def __init__(self, api):
+  def __init__(self, api, step_suffix=None):
     self.api = api
+    self.step_suffix = step_suffix
+
+  def _add_suffix(self, name):
+    if not self.step_suffix:
+      return name
+    return f'{name} ({self.step_suffix})'
 
 
 class ProdCompilatorHandler(CompilatorHandler):
@@ -32,7 +38,7 @@ class ProdCompilatorHandler(CompilatorHandler):
         properties=dict(revision=revision) if revision else {},
         bucket=bucket)
     return self.api.buildbucket.schedule(
-        [request], step_name='trigger compilator')[0]
+        [request], step_name=self._add_suffix('trigger compilator'))[0]
 
   def launch_compilator_watcher(self, build_handle):
     """Follow the ongoing compilator build and stream the steps into this
@@ -52,7 +58,8 @@ class ProdCompilatorHandler(CompilatorHandler):
     build_url = self.api.buildbucket.build_url(build_id=build_handle.id)
     build_link = f'compilator build: {build_handle.id}'
     try:
-      ret = self.api.step.sub_build('compilator steps', cmd, sub_build)
+      ret = self.api.step.sub_build(
+          self._add_suffix('compilator steps'), cmd, sub_build)
       ret.presentation.links[build_link] = build_url
       return ret.step.sub_build
     except self.api.step.StepFailure as e:
@@ -70,7 +77,7 @@ class LedCompilatorHandler(CompilatorHandler):
     project = self.api.buildbucket.build.builder.project
     bucket = bucket or self.api.buildbucket.build.builder.bucket
     led_builder_id = f'luci.{project}.{bucket}:{compilator_name}'
-    with self.api.step.nest('trigger compilator'):
+    with self.api.step.nest(self._add_suffix('trigger compilator')):
       led_job = self.api.led('get-builder', led_builder_id)
       led_job = self.api.led.inject_input_recipes(led_job)
       if revision:
@@ -89,7 +96,7 @@ class LedCompilatorHandler(CompilatorHandler):
     """
     output_dir = self.api.path.mkdtemp()
     self.api.swarming.collect(
-        'collect led compilator build',
+        self._add_suffix('collect led compilator build'),
         [build_handle.task_id],
         output_dir=output_dir)
     build_json = self.api.file.read_json(

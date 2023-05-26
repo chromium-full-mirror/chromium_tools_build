@@ -24,11 +24,13 @@ DEPS = [
 
 PROPERTIES = {
     'revision': Property(kind=str, default=None),
+    'step_suffix': Property(kind=str, default=None)
 }
 
 
-def RunSteps(api, revision):
-  handler = api.v8_orchestrator.create_compilator_handler()
+def RunSteps(api, revision, step_suffix):
+  handler = api.v8_orchestrator.create_compilator_handler(
+      step_suffix=step_suffix)
   build = handler.trigger_compilator('some-builder', revision=revision)
   sub_build = handler.launch_compilator_watcher(build)
   return result_pb2.RawResult(
@@ -36,7 +38,10 @@ def RunSteps(api, revision):
 
 
 def GenTests(api):
-  def subbuild_data(summary='All good!', status=common_pb.SUCCESS):
+  def subbuild_data(
+      summary='All good!',
+      status=common_pb.SUCCESS,
+      step_name='compilator steps'):
     sub_build = build_pb2.Build(
         id=54321,
         status=status,
@@ -44,7 +49,7 @@ def GenTests(api):
         output=dict(
             properties=json_format.Parse(
                 api.json.dumps({'prop': 'value'}), struct_pb2.Struct())))
-    return api.step_data('compilator steps', api.step.sub_build(sub_build))
+    return api.step_data(step_name, api.step.sub_build(sub_build))
 
   yield api.test(
       'basic try',
@@ -63,7 +68,7 @@ def GenTests(api):
   yield api.test(
       'basic ci',
       api.buildbucket.ci_build(builder='V8 Foobar'),
-      api.properties(revision="abcd"),
+      api.properties(revision='abcd'),
       subbuild_data(),
       api.post_check(StepStdinContains, 'trigger compilator', '"bucket": "ci"'),
       api.post_check(StepStdinContains, 'trigger compilator',
@@ -74,7 +79,7 @@ def GenTests(api):
   yield api.test(
       'compiler failure',
       api.buildbucket.ci_build(builder='V8 Foobar'),
-      api.properties(revision="abcd"),
+      api.properties(revision='abcd'),
       subbuild_data('Compile failed', common_pb.FAILURE),
       api.expect_status('FAILURE'),
       api.post_process(ResultReason, 'Compile failed'),
@@ -84,9 +89,19 @@ def GenTests(api):
   yield api.test(
       'no subbuild',
       api.buildbucket.ci_build(builder='V8 Foobar'),
-      api.properties(revision="abcd"),
+      api.properties(revision='abcd'),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(ResultReason, 'sub_build missing from step'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'step suffix',
+      api.buildbucket.try_build(builder='v8_foobar'),
+      api.properties(step_suffix='primary'),
+      subbuild_data(step_name='compilator steps (primary)'),
+      api.post_process(MustRun, 'trigger compilator (primary)'),
+      api.post_process(MustRun, 'compilator steps (primary)'),
       api.post_process(DropExpectation),
   )
 
@@ -123,7 +138,7 @@ def GenTests(api):
   yield api.test(
       'led ci',
       api.buildbucket.ci_build(builder='V8 Foobar'),
-      api.properties(revision="abcd"),
+      api.properties(revision='abcd'),
       api.properties(**led_properties),
       api.step_data('read build.proto.json',
                     api.file.read_json(json_content=build_proto_json)),
