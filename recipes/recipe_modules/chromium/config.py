@@ -202,8 +202,8 @@ config_ctx = config_item_context(BaseConfig)
 def BASE(c):
   c.build_config_fs = c.BUILD_CONFIG
   if c.HOST_PLATFORM == 'win':
-    if c.TARGET_BITS == 64:
-      # Windows requires 64-bit builds to be in <dir>_x64.
+    if c.TARGET_BITS == 64 and c.TARGET_ARCH != 'arm':
+      # Windows requires x64 builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
   c.targets_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
