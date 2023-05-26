@@ -24,14 +24,19 @@ DEPS = [
 
 PROPERTIES = {
     'revision': Property(kind=str, default=None),
-    'step_suffix': Property(kind=str, default=None)
+    'step_suffix': Property(kind=str, default=None),
+    'gerrit_changes': Property(kind=list, default=None),
 }
 
 
-def RunSteps(api, revision, step_suffix):
+def RunSteps(api, revision, step_suffix, gerrit_changes):
+  if gerrit_changes is None:
+    gerrit_changes = api.v8_orchestrator.INHERIT
+
   handler = api.v8_orchestrator.create_compilator_handler(
       step_suffix=step_suffix)
-  build = handler.trigger_compilator('some-builder', revision=revision)
+  build = handler.trigger_compilator(
+      'some-builder', revision=revision, gerrit_changes=gerrit_changes)
   sub_build = handler.launch_compilator_watcher(build)
   return result_pb2.RawResult(
         status=sub_build.status, summary_markdown=sub_build.summary_markdown)
@@ -51,19 +56,31 @@ def GenTests(api):
                 api.json.dumps({'prop': 'value'}), struct_pb2.Struct())))
     return api.step_data(step_name, api.step.sub_build(sub_build))
 
+  def StepStdinContains(check, step_odict, step, substr):
+    check('stdin for step %s contained %s' % (step, substr), substr
+          in step_odict[step].stdin)
+
+  def StepStdinDoesNotContain(check, step_odict, step, substr):
+    check('stdin for step %s contained %s' % (step, substr), substr
+          not in step_odict[step].stdin)
+
   yield api.test(
       'basic try',
       api.buildbucket.try_build(builder='v8_foobar'),
       subbuild_data(),
+      api.post_check(
+          StepStdinContains,
+          'trigger compilator',
+          (
+              '"gerritChanges": [{"change": "123456", "host": "chromium-review.'
+              'googlesource.com", "patchset": "7", "project": "project"}]'
+          )
+      ),
       api.post_process(MustRun, 'trigger compilator'),
       api.post_process(MustRun, 'compilator steps'),
       api.post_process(SummaryMarkdown, 'All good!'),
       api.post_process(DropExpectation),
   )
-
-  def StepStdinContains(check, step_odict, step, substr):
-    check('stdin for step %s contained %s' % (step, substr), substr
-          in step_odict[step].stdin)
 
   yield api.test(
       'basic ci',
@@ -73,6 +90,8 @@ def GenTests(api):
       api.post_check(StepStdinContains, 'trigger compilator', '"bucket": "ci"'),
       api.post_check(StepStdinContains, 'trigger compilator',
                      '"revision": "abcd"'),
+      api.post_check(StepStdinDoesNotContain, 'trigger compilator',
+                     'gerritChanges'),
       api.post_process(DropExpectation),
   )
 
@@ -102,6 +121,39 @@ def GenTests(api):
       subbuild_data(step_name='compilator steps (primary)'),
       api.post_process(MustRun, 'trigger compilator (primary)'),
       api.post_process(MustRun, 'compilator steps (primary)'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'no gerrit changes try',
+      api.buildbucket.try_build(builder='v8_foobar'),
+      api.properties(gerrit_changes=[]),
+      subbuild_data(),
+      api.post_check(StepStdinDoesNotContain, 'trigger compilator',
+                     'gerritChanges'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'custom gerrit changes ci',
+      api.buildbucket.ci_build(builder='V8 Foobar'),
+      subbuild_data(),
+      api.properties(gerrit_changes=[
+          common_pb.GerritChange(
+              host='chromium-review.googlesource.com',
+              project='project',
+              change=123456,
+              patchset=7,
+          ),
+      ]),
+      api.post_check(
+          StepStdinContains,
+          'trigger compilator',
+          (
+              '"gerritChanges": [{"change": "123456", "host": "chromium-review.'
+              'googlesource.com", "patchset": "7", "project": "project"}]'
+          )
+      ),
       api.post_process(DropExpectation),
   )
 

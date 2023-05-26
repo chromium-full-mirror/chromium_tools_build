@@ -9,6 +9,8 @@ from google.protobuf import json_format
 
 class V8OrchestratorApi(recipe_api.RecipeApi):
 
+  INHERIT = object()
+
   def create_compilator_handler(self, enable_led=True, step_suffix=None):
     # TODO: enable led when we trigger real compilators
     if enable_led and self.m.led.launched_by_led:
@@ -28,14 +30,23 @@ class CompilatorHandler:
 
 
 class ProdCompilatorHandler(CompilatorHandler):
-  def trigger_compilator(self, compilator_name, revision=None, bucket=None):
+  def trigger_compilator(self,
+      compilator_name,
+      revision=None,
+      bucket=None,
+      gerrit_changes=V8OrchestratorApi.INHERIT,
+  ):
     """Trigger a compilator build via buildbucket."""
     bucket = bucket or self.api.buildbucket.INHERIT
+    if gerrit_changes == self.api.v8_orchestrator.INHERIT:
+      gerrit_changes = self.api.buildbucket.INHERIT
+
     request = self.api.buildbucket.schedule_request(
         builder=compilator_name,
         swarming_parent_run_id=self.api.swarming.task_id,
         tags=self.api.buildbucket.tags(**{'hide-in-gerrit': 'pointless'}),
         properties=dict(revision=revision) if revision else {},
+        gerrit_changes=gerrit_changes,
         bucket=bucket)
     return self.api.buildbucket.schedule(
         [request], step_name=self._add_suffix('trigger compilator'))[0]
@@ -72,7 +83,13 @@ class ProdCompilatorHandler(CompilatorHandler):
 
 
 class LedCompilatorHandler(CompilatorHandler):
-  def trigger_compilator(self, compilator_name, revision=None, bucket=None):
+  def trigger_compilator(
+      self,
+      compilator_name,
+      revision=None,
+      bucket=None,
+      gerrit_changes=V8OrchestratorApi.INHERIT,
+  ):
     """Trigger a compilator build via led."""
     project = self.api.buildbucket.build.builder.project
     bucket = bucket or self.api.buildbucket.build.builder.bucket
@@ -82,12 +99,17 @@ class LedCompilatorHandler(CompilatorHandler):
       led_job = self.api.led.inject_input_recipes(led_job)
       if revision:
         led_job = led_job.then('edit', '-p', f'revision="{revision}"')
-      else:
-        gerrit_change = self.api.tryserver.gerrit_change
-        gerrit_cl_url = (
-            f'https://{gerrit_change.host}/c/{gerrit_change.project}/+/'
-            f'{gerrit_change.change}/{gerrit_change.patchset}')
-        led_job = led_job.then('edit-cr-cl', gerrit_cl_url)
+
+      if gerrit_changes == self.api.v8_orchestrator.INHERIT:
+        active_cl = self.api.tryserver.gerrit_change
+        if active_cl:
+          gerrit_cl_url = (
+              f'https://{active_cl.host}/c/{active_cl.project}/+/'
+              f'{active_cl.change}/{active_cl.patchset}')
+          led_job = led_job.then('edit-cr-cl', gerrit_cl_url)
+      elif gerrit_changes:  # pragma: nocover
+        raise NotImplementedError()
+
       return led_job.then('launch').launch_result
 
   def launch_compilator_watcher(self, build_handle):
