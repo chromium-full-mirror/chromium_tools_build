@@ -194,35 +194,6 @@
       "vpython3",
       "-u",
       "[CACHE]/builder/src/tools_webrtc/download_tools.py",
-      "[CACHE]/builder/src/tools_webrtc/audio_quality"
-    ],
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:perf"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "download audio quality tools"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "[CACHE]/builder/src/tools_webrtc/download_tools.py",
       "[CACHE]/builder/src/tools_webrtc/video_quality_toolchain/linux"
     ],
     "env_suffixes": {

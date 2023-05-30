@@ -115,27 +115,11 @@ class WebRTCApi(recipe_api.RecipeApi):
       compile_targets += [t for t in _BINARY_SIZE_TARGETS if t in filename]
     return test_targets, sorted(set(compile_targets))
 
-  def should_download_audio_quality_tools(self, builder_id, builder_config):
-    # Perf test low_bandwidth_audio_perf_test doesn't run on iOS and Mac M1
-    # Arm64, presumably because the tools are not compiled for arm64.
-    if any(b in builder_id.builder.lower() for b in ('ios', 'm1 arm64')):
-      return False
-    return (builders.BUILDERS_DB[builder_id].perf_id or
-            _is_triggering_perf_tests(builder_id, builder_config))
-
   def should_download_video_quality_tools(self, builder_id, builder_config):
     if 'android' not in builder_id.builder.lower():
       return False
     return (builders.BUILDERS_DB[builder_id].perf_id or
             _is_triggering_perf_tests(builder_id, builder_config))
-
-  def download_audio_quality_tools(self):
-    args = [self.m.path['checkout'].join('tools_webrtc', 'audio_quality')]
-    script = self.m.path['checkout'].join('tools_webrtc', 'download_tools.py')
-    cmd = ['vpython3', '-u', script] + args
-
-    with self.m.depot_tools.on_path():
-      self.m.step('download audio quality tools', cmd)
 
   def download_video_quality_tools(self):
     with self.m.depot_tools.on_path():

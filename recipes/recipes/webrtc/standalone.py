@@ -38,8 +38,6 @@ def RunSteps(api):
   api.chromium_swarming.configure_swarming(
       'webrtc', precommit=api.tryserver.is_tryserver)
 
-  if api.webrtc.should_download_audio_quality_tools(builder_id, builder_config):
-    api.webrtc.download_audio_quality_tools()
   if api.webrtc.should_download_video_quality_tools(builder_id, builder_config):
     api.webrtc.download_video_quality_tools()
 
