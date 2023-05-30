@@ -66,7 +66,7 @@ def orchestrator_name(api):
   """
   builder_name = api.buildbucket.builder_name
 
-  if api.tryserver.is_tryserver:
+  if api.tryserver.is_tryserver or builder_name.endswith('_try'):
     allowed_suffixes = ('_compile_rel', '_compile_dbg', '_compile_perf_try')
     assert builder_name.endswith(allowed_suffixes), (
         f'Compilator name doesn\'t follow the naming convention. Must end '
