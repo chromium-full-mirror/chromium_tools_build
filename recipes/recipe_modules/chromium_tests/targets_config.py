@@ -11,6 +11,12 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 
 @attrs()
+class Targets:
+  _tests = attrib(sequence[steps.AbstractTest])
+  _additional_compile_targets = attrib(sequence[str])
+
+
+@attrs()
 class TargetsConfig:
   """Configuration about the targets to build and test for a builder.
 
@@ -22,13 +28,7 @@ class TargetsConfig:
   """
 
   builder_config = attrib(ctbc.BuilderConfig)
-  # The values should be a mapping from builder name to the raw targets spec for
-  # the builder (mapping[str, mapping[str, ...]]), but if we enforce that here,
-  # then a bad spec for one builder would cause all builders that read that file
-  # to fail, so we don't apply any constraints to the value here to limit the
-  # blast radius of bad changes
-  _targets_specs = attrib(mapping[str, ...])
-  _tests = attrib(mapping[chromium.BuilderId, sequence[steps.AbstractTest]])
+  _targets_by_builder_id = attrib(mapping[chromium.BuilderId, Targets])
 
   @classmethod
   def create(cls, **kwargs):
@@ -40,7 +40,7 @@ class TargetsConfig:
   def _get_tests_for(self, keys):
     tests = []
     for k in keys:
-      tests.extend(self._tests[k])
+      tests.extend(self._targets_by_builder_id[k]._tests)
     return tests
 
   @cached_property
@@ -59,6 +59,14 @@ class TargetsConfig:
         self.builder_config.builder_db.builder_graph[builder_id])
 
   @cached_property
+  def compile_only_targets(self):
+    """The compile-only targets to be built."""
+    compile_targets = set()
+    for targets in self._targets_by_builder_id.values():
+      compile_targets.update(targets._additional_compile_targets)
+    return sorted(compile_targets)
+
+  @cached_property
   def compile_targets(self):
     """The compile targets to be built
 
@@ -66,14 +74,7 @@ class TargetsConfig:
     for all tests and any additional compile targets requested by the builders
     being wrapped by the builder config.
     """
-    compile_targets = set()
-
-    for builder_id in self.builder_config.builder_ids:
-      targets_spec = self._targets_specs[builder_id.group].get(
-          builder_id.builder, {})
-      compile_targets.update(targets_spec.get('additional_compile_targets', []))
-
+    compile_targets = set(self.compile_only_targets)
     for t in self.all_tests:
       compile_targets.update(t.compile_targets())
-
     return sorted(compile_targets)

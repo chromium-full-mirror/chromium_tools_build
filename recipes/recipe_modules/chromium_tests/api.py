@@ -22,7 +22,7 @@ from RECIPE_MODULES.build.attr_utils import attrib, mapping, sequence, attrs
 from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 
 from . import generators, steps
-from .targets_config import TargetsConfig
+from . import targets_config as targets_config_module
 
 # These account ids are obtained by looking at gerrit API responses.
 # Specifically, just find a build from a desired CL author, look at the
@@ -265,23 +265,29 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     for group, spec_file in sorted(builder_config.targets_spec_files.items()):
       targets_specs_by_builder_by_group[group] = self.read_targets_spec(
           spec_file, targets_spec_dir=targets_spec_dir)
-    tests = {}
 
     generator = generators.Generator(self, got_revisions, checkout_path,
                                      isolated_tests_only,
                                      scripts_compile_targets_fn)
 
+    targets_by_builder_id = {}
     for builder_id in builder_config.builder_ids_in_scope_for_testing:
       targets_spec = targets_specs_by_builder_by_group[builder_id.group].get(
           builder_id.builder, {})
-      builder_tests = self._generate_tests_from_targets_spec(
-          generator, builder_id.group, builder_id.builder, targets_spec)
-      tests[builder_id] = builder_tests
+      tests = self._generate_tests_from_targets_spec(generator,
+                                                     builder_id.group,
+                                                     builder_id.builder,
+                                                     targets_spec)
+      additional_compile_targets = targets_spec.get(
+          'additional_compile_targets', [])
+      targets_by_builder_id[builder_id] = targets_config_module.Targets(
+          tests=tests,
+          additional_compile_targets=additional_compile_targets,
+      )
 
-    return TargetsConfig.create(
+    return targets_config_module.TargetsConfig.create(
         builder_config=builder_config,
-        targets_specs=targets_specs_by_builder_by_group,
-        tests=tests)
+        targets_by_builder_id=targets_by_builder_id)
 
   def prepare_checkout(self,
                        builder_config,
@@ -547,7 +553,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     """
 
-    assert isinstance(targets_config, TargetsConfig), \
+    assert isinstance(targets_config, targets_config_module.TargetsConfig), \
         "targets_config argument %r was not a TargetsConfig" % targets_config
     execution_mode = override_execution_mode or builder_config.execution_mode
 
