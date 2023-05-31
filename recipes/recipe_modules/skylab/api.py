@@ -176,16 +176,13 @@ class SkylabApi(recipe_api.RecipeApi):
             if t.spec.bucket and 'chromium' in t.spec.bucket:
               test_args.append('run_private_tests=False')
 
-          assert t.spec.shards == 1 or t.is_tast_test, (
-              'Only sharding for tast tests are currently supported in Skylab')
           for shard in range(t.spec.shards):
             # Create a request for each shard
             shard_cmd = list(cmd)
             shard_test_args = list(test_args)
 
-            if t.is_tast_test:
-              shard_test_args.append('shard_index={}'.format(shard))
-              shard_test_args.append('total_shards={}'.format(t.spec.shards))
+            shard_test_args.append('shard_index={}'.format(shard))
+            shard_test_args.append('total_shards={}'.format(t.spec.shards))
 
             shard_cmd.extend(['-test-args', ' '.join(shard_test_args)])
             shard_cmd.append(t.spec.autotest_name)
