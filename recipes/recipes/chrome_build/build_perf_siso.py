@@ -126,19 +126,7 @@ def RunSteps(api):
   if raw_result and raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  raw_result = _run_builds(api, 'all', with_reproxy=True)
-  if raw_result and raw_result.status != common_pb.SUCCESS:
-    return raw_result
-
-  # Build target: chrome or chrome_public_apk
-  target_chrome = 'chrome'
-  if builder_config.chromium_config == 'android':
-    target_chrome = 'chrome_public_apk'
-  raw_result = _run_builds(api, target_chrome, with_reproxy=False)
-  if raw_result and raw_result.status != common_pb.SUCCESS:
-    return raw_result
-
-  return _run_builds(api, target_chrome, with_reproxy=True)
+  return _run_builds(api, 'all', with_reproxy=True)
 
 
 def _sanitize_nonalpha(text):
@@ -172,17 +160,9 @@ def GenTests(api):
                        'Build all without remote cache'),
       api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
       api.post_process(post_process.StepSuccess,
-                       'Build chrome without remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome with remote cache'),
-      api.post_process(post_process.StepSuccess,
                        'Build all without remote cache with reproxy'),
       api.post_process(post_process.StepSuccess,
                        'Build all with remote cache with reproxy'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome without remote cache with reproxy'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome with remote cache with reproxy'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -205,19 +185,9 @@ def GenTests(api):
                        'Build all without remote cache'),
       api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
       api.post_process(post_process.StepSuccess,
-                       'Build chrome_public_apk without remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome_public_apk with remote cache'),
-      api.post_process(post_process.StepSuccess,
                        'Build all without remote cache with reproxy'),
       api.post_process(post_process.StepSuccess,
                        'Build all with remote cache with reproxy'),
-      api.post_process(
-          post_process.StepSuccess,
-          'Build chrome_public_apk without remote cache with reproxy'),
-      api.post_process(
-          post_process.StepSuccess,
-          'Build chrome_public_apk with remote cache with reproxy'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -240,35 +210,31 @@ def GenTests(api):
                        'Build all without remote cache with reproxy'),
       api.post_process(post_process.StepSuccess,
                        'Build all with remote cache with reproxy'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome without remote cache with reproxy'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome with remote cache with reproxy'),
       api.post_process(post_process.DropExpectation),
   )
 
-  for target in ['all', 'chrome']:
-    for with_remote_cache in [True, False]:
-      for with_reproxy in [True, False]:
-        step = 'Build %s %s remote cache' % (target, 'with' if with_remote_cache
-                                             else 'without')
-        if with_reproxy:
-          step += ' with reproxy'
+  target = 'all'
+  for with_remote_cache in [True, False]:
+    for with_reproxy in [True, False]:
+      step = 'Build %s %s remote cache' % (target, 'with'
+                                           if with_remote_cache else 'without')
+      if with_reproxy:
+        step += ' with reproxy'
 
-        yield api.test(
-            '%s_compile_fail' % (_sanitize_nonalpha(step)),
-            api.chromium.ci_build(**builder),
-            ctbc_api.properties(
-                ctbc_api.properties_assembler_for_ci_builder(
-                    builder_spec=ctbc.BuilderSpec.create(
-                        gclient_config='chromium',
-                        chromium_config='chromium',
-                        build_gs_bucket=None,
-                    ),
-                    **builder).assemble()),
-            api.siso.properties(),
-            api.reclient.properties(),
-            api.step_data(step, retcode=1),
-            api.expect_status('FAILURE'),
-            api.post_process(post_process.DropExpectation),
-        )
+      yield api.test(
+          '%s_compile_fail' % (_sanitize_nonalpha(step)),
+          api.chromium.ci_build(**builder),
+          ctbc_api.properties(
+              ctbc_api.properties_assembler_for_ci_builder(
+                  builder_spec=ctbc.BuilderSpec.create(
+                      gclient_config='chromium',
+                      chromium_config='chromium',
+                      build_gs_bucket=None,
+                  ),
+                  **builder).assemble()),
+          api.siso.properties(),
+          api.reclient.properties(),
+          api.step_data(step, retcode=1),
+          api.expect_status('FAILURE'),
+          api.post_process(post_process.DropExpectation),
+      )
