@@ -21,7 +21,7 @@ DEPS = [
 ]
 
 # TODO(crbug/1369919):
-# This recipe is deprecated - use chromium_fuzz_engine instead.
+# This recipe is deprecated - use chromium/fuzz.py instead.
 # This recipe can be removed when builders in all relevant branches
 # have migrated.
 
