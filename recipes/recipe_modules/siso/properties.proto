@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package recipe_modules.build.siso;
 
-// NEXT ID TO USE: 8
+// NEXT ID TO USE: 9
 message InputProperties {
   // Backend config
 
@@ -33,4 +33,9 @@ message InputProperties {
   // monitoring/observability
   bool enable_cloud_profiler = 6;
   bool enable_cloud_trace = 7;
+
+  // Siso config passed to Starlark config via `--config`.
+  // In chromium, available config can be found at
+  // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/build/config/siso/config.star
+  string config = 8;
 }

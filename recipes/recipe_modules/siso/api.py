@@ -73,6 +73,11 @@ class SisoApi(recipe_api.RecipeApi):
       cmd.append('--enable_cloud_profiler')
     if self._props.enable_cloud_trace:
       cmd.append('--enable_cloud_trace')
+    if self._props.config:
+      cmd.extend([
+          '--config',
+          self._props.config,
+      ])
     if self._props.action_salt:
       cmd.extend([
           '--action_salt',

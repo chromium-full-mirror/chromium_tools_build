@@ -74,6 +74,14 @@ def GenTests(api):
                        ['--enable_cloud_trace']),
       api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+      'config',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(config='remote_all'),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--config', 'remote_all']),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'compile_failure',
