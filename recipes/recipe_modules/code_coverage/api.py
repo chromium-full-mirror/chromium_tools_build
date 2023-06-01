@@ -313,6 +313,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['.*blink_wpt_tests', 'content_shell'],
           ['.*_ozone', target[:-len('_ozone')]],
           ['.*_eg2tests_module', 'ios_chrome_eg2tests'],
+
+          # TODO(crbug.com/1416662): This line is added make developing for JNI
+          # Clang coverage easier. More targets and libraries need to be
+          # added to fully support JNI native code.
+          [
+              'webview_instrumentation_test_apk',
+              'libstandalonelibwebviewchromium.so'
+          ],
           ['.*', target],
       ]
       for pattern, binary in patterns:
