@@ -21,7 +21,7 @@ wheel: <
   version: "version:1.15.0"
 >
 wheel: <
-  name: "infra/python/wheels/requests-py2_py3"
+  name: "infra/python/wheels/requests-py3"
   version: "version:2.13.0"
 >
 
