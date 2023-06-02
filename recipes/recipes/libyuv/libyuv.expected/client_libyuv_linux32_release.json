@@ -374,7 +374,7 @@
       "-C",
       "[CACHE]/builder/src/out/Release",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -404,7 +404,7 @@
       "-C",
       "[CACHE]/builder/src/out/Release",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"

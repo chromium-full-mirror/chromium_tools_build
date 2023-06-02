@@ -625,7 +625,7 @@
       "-C",
       "[CACHE]/builder/src/out/Android32_dbg",
       "-j",
-      "80",
+      "120",
       "default"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -657,7 +657,7 @@
       "-C",
       "[CACHE]/builder/src/out/Android32_dbg",
       "-j",
-      "80",
+      "120",
       "default",
       "-d",
       "explain",

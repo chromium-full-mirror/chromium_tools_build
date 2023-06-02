@@ -176,7 +176,7 @@ class ReclientApi(recipe_api.RecipeApi):
       # Set lower value for Windows to prevent Access is denied error.
       # ref: http://b/281621756
       min_jobs = 120 if self.m.platform.is_win else 200
-      self._jobs = min(10 * self.m.platform.cpu_count, min_jobs)
+      self._jobs = min(15 * self.m.platform.cpu_count, min_jobs)
     if self._ensure_verified:
       self._jobs = self.m.platform.cpu_count
     return self._jobs

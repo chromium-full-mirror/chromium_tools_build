@@ -713,7 +713,7 @@
       "-C",
       "[CACHE]/builder/src/out/Perf_Android64_O_Pixel2",
       "-j",
-      "80",
+      "120",
       "webrtc_dashboard_upload"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -744,7 +744,7 @@
       "-C",
       "[CACHE]/builder/src/out/Perf_Android64_O_Pixel2",
       "-j",
-      "80",
+      "120",
       "webrtc_dashboard_upload",
       "-d",
       "explain",

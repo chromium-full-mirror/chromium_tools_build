@@ -793,7 +793,7 @@
       "-C",
       "[CACHE]/builder/src/out/android_compile_arm64_rel",
       "-j",
-      "80",
+      "120",
       "AppRTCMobile",
       "default",
       "libjingle_peerconnection_so"
@@ -827,7 +827,7 @@
       "-C",
       "[CACHE]/builder/src/out/android_compile_arm64_rel",
       "-j",
-      "80",
+      "120",
       "AppRTCMobile",
       "default",
       "libjingle_peerconnection_so",

@@ -841,7 +841,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\win_compile_x64_clang_rel",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -871,7 +871,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\win_compile_x64_clang_rel",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"

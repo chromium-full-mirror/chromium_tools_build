@@ -654,7 +654,7 @@
       "-C",
       "[CACHE]/builder/src/out/Linux_UBSan_vptr",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -684,7 +684,7 @@
       "-C",
       "[CACHE]/builder/src/out/Linux_UBSan_vptr",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"

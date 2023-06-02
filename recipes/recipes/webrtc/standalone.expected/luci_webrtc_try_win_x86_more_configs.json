@@ -917,7 +917,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\bwe_test_logging",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -947,7 +947,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\bwe_test_logging",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"
@@ -2269,7 +2269,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -2299,7 +2299,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"
@@ -3545,7 +3545,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -3575,7 +3575,7 @@
       "-C",
       "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"

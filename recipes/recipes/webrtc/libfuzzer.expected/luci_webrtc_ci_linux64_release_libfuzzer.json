@@ -606,7 +606,7 @@
       "-C",
       "[CACHE]/builder/src/out/Linux64_Release_Libfuzzer",
       "-j",
-      "80",
+      "120",
       "target1",
       "target2",
       "target3"
@@ -639,7 +639,7 @@
       "-C",
       "[CACHE]/builder/src/out/Linux64_Release_Libfuzzer",
       "-j",
-      "80",
+      "120",
       "target1",
       "target2",
       "target3",

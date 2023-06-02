@@ -815,7 +815,7 @@
       "-C",
       "[CACHE]/builder/src/out/Debug",
       "-j",
-      "80",
+      "120",
       "v8_target3"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -846,7 +846,7 @@
       "-C",
       "[CACHE]/builder/src/out/Debug",
       "-j",
-      "80",
+      "120",
       "v8_target3",
       "-d",
       "explain",

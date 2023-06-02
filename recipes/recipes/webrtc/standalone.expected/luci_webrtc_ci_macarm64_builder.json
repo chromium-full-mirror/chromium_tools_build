@@ -714,7 +714,7 @@
       "-C",
       "[CACHE]/builder/src/out/MacArm64_Builder",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -745,7 +745,7 @@
       "-C",
       "[CACHE]/builder/src/out/MacArm64_Builder",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"

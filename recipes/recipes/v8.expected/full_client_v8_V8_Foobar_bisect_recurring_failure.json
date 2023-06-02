@@ -330,7 +330,7 @@
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -363,7 +363,7 @@
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"
@@ -823,7 +823,7 @@
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
-      "80"
+      "120"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -856,7 +856,7 @@
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
-      "80",
+      "120",
       "-d",
       "explain",
       "-n"
