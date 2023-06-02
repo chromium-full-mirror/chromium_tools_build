@@ -19,7 +19,7 @@ def RunSteps(api):
       json_library_out=api.json.output(name='libraries'),
       third_party_out=api.json.output(name='third_party'),
       spdx_out=api.json.output(name='spdx'),
-  )
+      target="//example:example")
 
 
 def GenTests(api):

@@ -16,7 +16,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.bq_lib_table = props.bq_library_table or "ssci-dev.depbot.libraries"
     self.depbot_version = props.depbot_version or "latest"
     self.fast_mode = props.fast_mode
-    self.target = props.target or "//third_party/perfetto/src/tracing/ipc/producer:producer"
+    self.target = props.target
     self.partybot_version = props.partybot_version or "latest"
     self.bq_thirdparty_table = props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
     self.ssci_version = props.ssci_version or "latest"
@@ -35,8 +35,14 @@ class SsciAPI(recipe_api.RecipeApi):
       if tag.tag.startswith('git_revision'):
         return tag.tag.split(':')[1]
 
-  def run(self, src_dir, build_dir, json_artifact_out, json_library_out,
-          third_party_out, spdx_out):
+  def run(self,
+          src_dir,
+          build_dir,
+          json_artifact_out,
+          json_library_out,
+          third_party_out,
+          spdx_out,
+          target="//third_party/perfetto/src/tracing/ipc/producer:producer"):
     with self.m.step.nest('ssci collection'):
       depbot_path = self.m.cipd.ensure_tool(
           'infra_internal/tools/security/depbot/${platform}',
@@ -48,10 +54,13 @@ class SsciAPI(recipe_api.RecipeApi):
       ssci_cipd_path = self.m.cipd.ensure_tool('infra_internal/tools/ssci',
                                                self.ssci_version)
 
+      # prefer target supplied in properties.
+      t = self.target or target
+
       depbot_result = self.m.step(
           'run depbot', [
-              depbot_path, '--target', self.target, '--chromium-src-dir',
-              src_dir, '--log-level', 'debug', '--gn-path',
+              depbot_path, '--target', t, '--chromium-src-dir', src_dir,
+              '--log-level', 'debug', '--gn-path',
               self.m.depot_tools.gn_py_path, '--build-dir', build_dir,
               '--json-artifact-output', json_artifact_out,
               '--json-library-output', json_library_out,
