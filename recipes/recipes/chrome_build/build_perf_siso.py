@@ -96,7 +96,7 @@ def _run_builds(api, target, with_reproxy=None):
   # C++ actions will not get cache hits due to their deps changing
   # after parsing the depsfile. TODO(b/283341125)
   if not with_reproxy:
-    step_name = 'Build %s with remote cache (warmup)'
+    step_name = 'Build %s with remote cache (warmup)' % target
     raw_result = _compile(api, step_name, target, with_remote_cache=True)
 
   # Second build with remote cache produced by the previous build.
