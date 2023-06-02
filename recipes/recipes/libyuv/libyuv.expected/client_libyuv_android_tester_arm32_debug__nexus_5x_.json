@@ -316,7 +316,7 @@
   {
     "cmd": [
       "vpython3",
-      "[CACHE]/builder/src/build/android/provision_devices.py",
+      "[CACHE]/builder/src/third_party/catapult/devil/devil/android/tools/provision_devices.py",
       "--adb-path",
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb",
       "--denylist-file",
