@@ -136,8 +136,12 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.reclient.properties(),
-      api.properties(swarming_gtest=True),
-      api.post_process(post_process.MustRun, 'ssci collection.run depbot'),
+      api.properties(
+          swarming_gtest=True, **{'$build/ssci': {
+              "target": "//base:base",
+          }}),
+      api.post_process(post_process.MustRun,
+                       'ssci collection for //base:base.run depbot'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -1,11 +1,11 @@
 [
   {
     "cmd": [],
-    "name": "ssci collection"
+    "name": "ssci collection for //base:base"
   },
   {
     "cmd": [],
-    "name": "ssci collection.install infra_internal/tools/security/depbot",
+    "name": "ssci collection for //base:base.install infra_internal/tools/security/depbot",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -35,7 +35,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra_internal/tools/security/depbot.ensure package directory",
+    "name": "ssci collection for //base:base.install infra_internal/tools/security/depbot.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -66,7 +66,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra_internal/tools/security/depbot.ensure_installed",
+    "name": "ssci collection for //base:base.install infra_internal/tools/security/depbot.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -84,7 +84,7 @@
   },
   {
     "cmd": [],
-    "name": "ssci collection.install infra/tools/bqupload",
+    "name": "ssci collection for //base:base.install infra/tools/bqupload",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -114,7 +114,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra/tools/bqupload.ensure package directory",
+    "name": "ssci collection for //base:base.install infra/tools/bqupload.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -145,7 +145,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra/tools/bqupload.ensure_installed",
+    "name": "ssci collection for //base:base.install infra/tools/bqupload.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -163,7 +163,7 @@
   },
   {
     "cmd": [],
-    "name": "ssci collection.install infra_internal/tools/partybot",
+    "name": "ssci collection for //base:base.install infra_internal/tools/partybot",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -193,7 +193,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra_internal/tools/partybot.ensure package directory",
+    "name": "ssci collection for //base:base.install infra_internal/tools/partybot.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -224,7 +224,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra_internal/tools/partybot.ensure_installed",
+    "name": "ssci collection for //base:base.install infra_internal/tools/partybot.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -242,7 +242,7 @@
   },
   {
     "cmd": [],
-    "name": "ssci collection.install infra_internal/tools/ssci",
+    "name": "ssci collection for //base:base.install infra_internal/tools/ssci",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -272,7 +272,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra_internal/tools/ssci.ensure package directory",
+    "name": "ssci collection for //base:base.install infra_internal/tools/ssci.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -303,7 +303,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.install infra_internal/tools/ssci.ensure_installed",
+    "name": "ssci collection for //base:base.install infra_internal/tools/ssci.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -350,7 +350,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.run depbot",
+    "name": "ssci collection for //base:base.run depbot",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[artifacts]@[@@@",
@@ -390,7 +390,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.upload artifacts to BigQuery",
+    "name": "ssci collection for //base:base.upload artifacts to BigQuery",
     "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}\n{\"field2\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -413,7 +413,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.upload libraries to BigQuery",
+    "name": "ssci collection for //base:base.upload libraries to BigQuery",
     "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}\n{\"field2\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -452,7 +452,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.run partybot to collect 3P deps",
+    "name": "ssci collection for //base:base.run partybot to collect 3P deps",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[third_party]@[@@@",
@@ -483,7 +483,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.upload third party dependencies to BigQuery",
+    "name": "ssci collection for //base:base.upload third party dependencies to BigQuery",
     "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -511,7 +511,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.cipd describe infra_internal/tools/security/depbot/${platform}",
+    "name": "ssci collection for //base:base.cipd describe infra_internal/tools/security/depbot/${platform}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -574,7 +574,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.cipd describe infra_internal/tools/ssci",
+    "name": "ssci collection for //base:base.cipd describe infra_internal/tools/ssci",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -639,7 +639,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.write depbot libraries",
+    "name": "ssci collection for //base:base.write depbot libraries",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@libs.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]@@@",
@@ -670,7 +670,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.write depbot artifacts",
+    "name": "ssci collection for //base:base.write depbot artifacts",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@artifacts.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]@@@",
@@ -701,7 +701,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.write third party data",
+    "name": "ssci collection for //base:base.write third party data",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@third_party.json@[{\"field1\": \"1234\"}, {\"field2\": \"1234\"}]@@@",
@@ -753,7 +753,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection.run ssci tool to generate SPDX sbom",
+    "name": "ssci collection for //base:base.run ssci tool to generate SPDX sbom",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[spdx]@[@@@",

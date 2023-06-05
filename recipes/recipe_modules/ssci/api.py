@@ -43,7 +43,12 @@ class SsciAPI(recipe_api.RecipeApi):
           third_party_out,
           spdx_out,
           target="//third_party/perfetto/src/tracing/ipc/producer:producer"):
-    with self.m.step.nest('ssci collection'):
+
+
+    # prefer target supplied in properties.
+    t = self.target or target
+
+    with self.m.step.nest('ssci collection for %s' % t):
       depbot_path = self.m.cipd.ensure_tool(
           'infra_internal/tools/security/depbot/${platform}',
           self.depbot_version)
@@ -53,9 +58,6 @@ class SsciAPI(recipe_api.RecipeApi):
           'infra_internal/tools/partybot', self.partybot_version)
       ssci_cipd_path = self.m.cipd.ensure_tool('infra_internal/tools/ssci',
                                                self.ssci_version)
-
-      # prefer target supplied in properties.
-      t = self.target or target
 
       depbot_result = self.m.step(
           'run depbot', [
