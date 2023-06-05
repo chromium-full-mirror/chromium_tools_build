@@ -328,12 +328,6 @@ def RunSteps(api):
                              '//testing/libfuzzer:no_clusterfuzz')
     targets = sorted(all_fuzzers - no_clusterfuzz)
 
-    # For iOS, the target list from |api.gn.refs| is a list of paths like
-    # obj/.../XXX_fuzzer. The last part of the path is the target name to be
-    # compiled.
-    if api.chromium.c.TARGET_PLATFORM == 'ios':
-      targets = [target.split('/')[-1] for target in targets]
-
     api.step.active_result.presentation.logs['all_fuzzers'] = sorted(
         all_fuzzers)
     api.step.active_result.presentation.logs['no_clusterfuzz'] = (
@@ -358,6 +352,12 @@ def RunSteps(api):
     # api.filter.analyze above in the trybot case. We now convert the GN labels to
     # ninja targets and pass them into compile.
     targets = list(api.gn.ls(outdir, targets, output_format='output'))
+
+    # For iOS, the target list from |api.gn.refs| is a list of paths like
+    # obj/.../XXX_fuzzer. The last part of the path is the target name to be
+    # compiled.
+    if api.chromium.c.TARGET_PLATFORM == 'ios':
+      targets = [target.split('/')[-1] for target in targets]
 
     raw_result = api.chromium.compile(
         targets=targets,
