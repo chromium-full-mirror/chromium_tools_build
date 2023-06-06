@@ -25,15 +25,13 @@ class SsciAPI(recipe_api.RecipeApi):
   def _cipd_version(self, package_name, package_version):
     """
     Checks if we're using a proper CIPD version tag, or 'latest'.
-    If we're using latest, use CIPD describe to resolve it to a git hash
+    If we're using latest, CIPD describe is used to resolve it to an InstanceID
     """
     if package_version != "latest":
       return package_version
 
     desc = self.m.cipd.describe(package_name, package_version)
-    for tag in desc.tags:
-      if tag.tag.startswith('git_revision'):
-        return tag.tag.split(':')[1]
+    return desc.pin.instance_id
 
   def run(self,
           src_dir,
