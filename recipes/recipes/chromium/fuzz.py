@@ -4,6 +4,7 @@
 
 import re
 from recipe_engine import post_process
+from recipe_engine.post_process import StepCommandRE, DropExpectation
 from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium
@@ -36,9 +37,26 @@ class FuzzEngineSpec(chromium.BuilderSpec):
   ios_targets_only = attrib(bool, default=False)
   upload_bucket = attrib(str, default=None)
   upload_directory = attrib(str, default=None)
+  collect_fuzz_coverage = attrib(bool, default=False)
 
 
 BUILDERS = freeze({
+    'chromium.coverage': {
+        'builders': {
+            'linux-fuzz-coverage':
+                FuzzEngineSpec.create(
+                    chromium_config='chromium_clang',
+                    chromium_apply_config=['clobber'],
+                    chromium_config_kwargs={
+                        'BUILD_CONFIG': 'Release',
+                        'TARGET_PLATFORM': 'linux',
+                        'TARGET_BITS': 64,
+                        'HOST_PLATFORM': 'linux',
+                    },
+                    collect_fuzz_coverage=True,
+                ),
+        }
+    },
     'chromium.fuzz': {
         'builders': {
             'Libfuzzer Upload Chrome OS ASan':
@@ -302,7 +320,6 @@ def gn_refs(api, step_name, target):
 
 def RunSteps(api):
   builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
-
   checkout_results = api.chromium_checkout.ensure_checkout(bot_config)
 
   use_reclient = bool(api.reclient.instance)
@@ -365,8 +382,9 @@ def RunSteps(api):
         use_reclient=use_reclient)
     if raw_result.status != common_pb.SUCCESS or api.tryserver.is_tryserver:
       return raw_result
-    assert (bot_config.upload_directory is not None)
-    assert (bot_config.upload_bucket is not None)
+    if bot_config.collect_fuzz_coverage is False:
+      assert (bot_config.upload_directory is not None)
+      assert (bot_config.upload_bucket is not None)
 
     # Make sure 32 bit archives are distinguished from 64 bit ones.
     kwargs = {}
@@ -374,14 +392,19 @@ def RunSteps(api):
       kwargs['use_legacy'] = False
       kwargs['bitness'] = 32
 
-    api.archive.clusterfuzz_archive(
-        build_dir=api.chromium.output_dir,
-        update_properties=checkout_results.json.output['properties'],
-        gs_bucket=bot_config.upload_bucket,
-        archive_prefix=bot_config.archive_prefix,
-        archive_subdir_suffix=bot_config.upload_directory,
-        gs_acl='public-read',
-        **kwargs)
+    if bot_config.collect_fuzz_coverage:
+      api.step(
+          "Coverage message",
+          ['echo', 'Fuzzing coverage is not yet implemented for this recipe.'])
+    else:
+      api.archive.clusterfuzz_archive(
+          build_dir=api.chromium.output_dir,
+          update_properties=checkout_results.json.output['properties'],
+          gs_bucket=bot_config.upload_bucket,
+          archive_prefix=bot_config.archive_prefix,
+          archive_subdir_suffix=bot_config.upload_directory,
+          gs_acl='public-read',
+          **kwargs)
 
 
 def GenTests(api):
@@ -392,8 +415,13 @@ def GenTests(api):
         stdout=api.raw_io.output_text('target1 target2 target3')
     ) + api.step_data(
         'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
-    if not "tryserver" in test.name:
+    if not (("tryserver" in test.name) or ("fuzz_coverage" in test.name)):
       test += api.post_process(post_process.MustRun, 'gsutil upload')
+    if "fuzz_coverage" in test.name:
+      test += api.post_process(
+          StepCommandRE, 'Coverage message',
+          ['echo', 'Fuzzing coverage is not yet implemented for this recipe.'])
+
     test += api.post_process(post_process.DropExpectation)
     if 'Upload_iOS' in test.name:
       yield (test + api.properties(xcode_build_version='12345'))
