@@ -737,8 +737,7 @@
       "linux",
       "-arch",
       "intel64",
-      "-minimal",
-      "True"
+      "-full-spdx"
     ],
     "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/ssci/latest",
     "luci_context": {

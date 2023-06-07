@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from recipe_engine.post_process import DropExpectation
+
 DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/json',
@@ -40,3 +42,17 @@ def GenTests(api):
                   "ssci_version": "latest",
               }
           }))
+
+  yield api.test(
+      'minimal-sdpx',
+      api.buildbucket.ci_build(
+          project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.properties(
+          **{
+              '$build/ssci': {
+                  "bq_artifact_table": "project.dataset.table",
+                  "bq_library_table": "project.dataset.table",
+                  "bq_thirdparty_table": "project.dataset.table",
+                  "minimal_spdx": True,
+              }
+          }), api.post_process(DropExpectation))

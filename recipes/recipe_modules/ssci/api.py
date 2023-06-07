@@ -20,7 +20,8 @@ class SsciAPI(recipe_api.RecipeApi):
     self.partybot_version = props.partybot_version or "latest"
     self.bq_thirdparty_table = props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
     self.ssci_version = props.ssci_version or "latest"
-    self.minimal_spdx = props.minimal_spdx or True
+    # Proto3 defaults boolean fields to False
+    self.minimal_spdx = props.minimal_spdx or False
 
   def _cipd_version(self, package_name, package_version):
     """
@@ -150,6 +151,11 @@ class SsciAPI(recipe_api.RecipeApi):
                              self.m.path.join(data_dir, "third_party.json"),
                              partybot_result.json.outputs.get('third_party'))
 
+      # Determine whether SPDX file should be generated with minimal fields or not
+      minimal_config = "-full-spdx"
+      if self.minimal_spdx:
+        minimal_config = "-minimal-spdx"
+
       # The vPython metadata files are found in the parent directory.
       with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):
         self.m.step(
@@ -164,8 +170,7 @@ class SsciAPI(recipe_api.RecipeApi):
                 "-output-file", spdx_out, "-chromium-src", src_dir, "-product",
                 self.m.buildbucket.build.builder.project, "-platform",
                 self.m.platform.name, "-arch",
-                f"{self.m.platform.arch}{self.m.platform.bits}", "-minimal",
-                self.minimal_spdx
+                f"{self.m.platform.arch}{self.m.platform.bits}", minimal_config
             ],
             step_test_data=(lambda: self.m.json.test_api.output(
                 data=[{
