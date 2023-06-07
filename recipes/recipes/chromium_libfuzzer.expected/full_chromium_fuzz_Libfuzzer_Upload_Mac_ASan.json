@@ -841,7 +841,7 @@
       "-C",
       "[CACHE]/builder/src/out/Release",
       "-j",
-      "120",
+      "160",
       "target2",
       "v8_target3"
     ],
@@ -874,7 +874,7 @@
       "-C",
       "[CACHE]/builder/src/out/Release",
       "-j",
-      "120",
+      "160",
       "target2",
       "v8_target3",
       "-d",

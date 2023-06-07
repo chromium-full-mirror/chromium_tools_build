@@ -14,7 +14,7 @@
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
-      "120",
+      "160",
       "d8"
     ],
     "cwd": "[CACHE]/builder/v8",

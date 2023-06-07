@@ -908,7 +908,7 @@
       "-C",
       "[CACHE]/builder/src/out/android_arm64_rel",
       "-j",
-      "120",
+      "160",
       "default",
       "dummy_test"
     ],
@@ -941,7 +941,7 @@
       "-C",
       "[CACHE]/builder/src/out/android_arm64_rel",
       "-j",
-      "120",
+      "160",
       "default",
       "dummy_test",
       "-d",

@@ -14,7 +14,7 @@
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
-      "120",
+      "160",
       "v8_foobar"
     ],
     "cwd": "[CACHE]/builder/v8",

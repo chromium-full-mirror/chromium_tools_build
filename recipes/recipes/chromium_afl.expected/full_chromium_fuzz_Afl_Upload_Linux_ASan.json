@@ -742,7 +742,7 @@
       "-C",
       "[START_DIR]/src/out/Release",
       "-j",
-      "120",
+      "160",
       "target2",
       "target3"
     ],
@@ -774,7 +774,7 @@
       "-C",
       "[START_DIR]/src/out/Release",
       "-j",
-      "120",
+      "160",
       "target2",
       "target3",
       "-d",

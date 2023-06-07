@@ -793,7 +793,7 @@
       "-C",
       "[CACHE]/builder/src/out/android_compile_arm_dbg",
       "-j",
-      "120",
+      "160",
       "default"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -825,7 +825,7 @@
       "-C",
       "[CACHE]/builder/src/out/android_compile_arm_dbg",
       "-j",
-      "120",
+      "160",
       "default",
       "-d",
       "explain",

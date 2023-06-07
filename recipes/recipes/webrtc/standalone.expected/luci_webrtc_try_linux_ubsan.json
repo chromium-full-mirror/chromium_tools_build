@@ -936,7 +936,7 @@
       "-C",
       "[CACHE]/builder/src/out/linux_ubsan",
       "-j",
-      "120"
+      "160"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -966,7 +966,7 @@
       "-C",
       "[CACHE]/builder/src/out/linux_ubsan",
       "-j",
-      "120",
+      "160",
       "-d",
       "explain",
       "-n"

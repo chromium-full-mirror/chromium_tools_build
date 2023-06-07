@@ -870,7 +870,7 @@
       "-C",
       "[CACHE]/builder/src/out/mac_compile_rel",
       "-j",
-      "120"
+      "160"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -901,7 +901,7 @@
       "-C",
       "[CACHE]/builder/src/out/mac_compile_rel",
       "-j",
-      "120",
+      "160",
       "-d",
       "explain",
       "-n"

@@ -702,7 +702,7 @@
       "-C",
       "[CACHE]/builder/src/out/MacARM64_M1_Release",
       "-j",
-      "120"
+      "160"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -733,7 +733,7 @@
       "-C",
       "[CACHE]/builder/src/out/MacARM64_M1_Release",
       "-j",
-      "120",
+      "160",
       "-d",
       "explain",
       "-n"

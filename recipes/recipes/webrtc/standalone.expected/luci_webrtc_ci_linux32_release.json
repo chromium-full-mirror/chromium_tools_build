@@ -620,7 +620,7 @@
       "-C",
       "[CACHE]/builder/src/out/Linux32_Release",
       "-j",
-      "120"
+      "160"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -650,7 +650,7 @@
       "-C",
       "[CACHE]/builder/src/out/Linux32_Release",
       "-j",
-      "120",
+      "160",
       "-d",
       "explain",
       "-n"
