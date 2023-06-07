@@ -48,7 +48,7 @@ def RunSteps(api, properties):
           requests_json=task_ids)
 
       step_result = api.chromium_swarming.run_collect_task_script(
-          group_name, collect_task_args, gen_step_test_data=None)
+          group_name, collect_task_args)
 
       step_result.presentation.step_text = 'merging...'
       step_result.presentation.logs['Merge script log'] = [

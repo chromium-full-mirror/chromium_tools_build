@@ -616,8 +616,7 @@ class Runner:
 
     def collect_task(task):
       step_result, _ = self.api.chromium_swarming.collect_task(
-          task,
-          gen_step_test_data=self._default_task_pass_test_data)
+          task, step_test_data=self._default_task_pass_test_data)
       return self.num_failures(step_result)
 
     # TODO(sergiyb): Make bisect more robust to infra failures, e.g. we trigger
