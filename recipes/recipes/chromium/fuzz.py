@@ -12,6 +12,7 @@ from RECIPE_MODULES.build.attr_utils import attrs, attrib
 
 DEPS = [
     'archive',
+    'code_coverage',
     'chromium',
     'chromium_checkout',
     'depot_tools/depot_tools',
@@ -393,9 +394,13 @@ def RunSteps(api):
       kwargs['bitness'] = 32
 
     if bot_config.collect_fuzz_coverage:
-      api.step(
-          "Coverage message",
-          ['echo', 'Fuzzing coverage is not yet implemented for this recipe.'])
+      with api.step.nest('process fuzz coverage') as step_result:
+        try:
+          api.code_coverage.get_chromium_fuzz_coverage()
+        except api.step.StepFailure:
+          step_result.logs[
+              'fuzz coverage logs'] = "Could not process fuzz coverage"
+
     else:
       api.archive.clusterfuzz_archive(
           build_dir=api.chromium.output_dir,
@@ -418,10 +423,9 @@ def GenTests(api):
     if not (("tryserver" in test.name) or ("fuzz_coverage" in test.name)):
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if "fuzz_coverage" in test.name:
-      test += api.post_process(
-          StepCommandRE, 'Coverage message',
-          ['echo', 'Fuzzing coverage is not yet implemented for this recipe.'])
-
+      test += api.post_process(post_process.MustRun, 'process fuzz coverage')
+      test += api.step_data(
+          'process fuzz coverage.generate coverage metadata', retcode=1)
     test += api.post_process(post_process.DropExpectation)
     if 'Upload_iOS' in test.name:
       yield (test + api.properties(xcode_build_version='12345'))
