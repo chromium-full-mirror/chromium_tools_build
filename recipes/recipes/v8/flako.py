@@ -983,7 +983,7 @@ def GenTests(api):
     return api.step_data(
         f'{step_prefix}{step_name}.{step_name} - shard {shard} on Ubuntu-16.04',
         api.chromium_swarming.summary(
-            dispatched_task_step_test_data=None, data=test_data))
+            dispatched_task_step_test_data=None, raw_summary=test_data))
 
   def _verify_result(message, from_offset, to_offset):
     """Verify that the correct reporting step for from_offset..to_offset is

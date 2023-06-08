@@ -1362,7 +1362,9 @@ class SwarmingApi(recipe_api.RecipeApi):
             self.m.json.test_api.output({}) +
             self.m.raw_io.test_api.output('Successfully merged all data'))
         return self.test_api.canned_summary_output(
-            dispatched_task_placeholder, task.shards, task.shard_indices)
+            dispatched_task_placeholder,
+            shards=task.shards,
+            shard_indices=task.shard_indices)
 
     step_result = self.run_collect_task_script(
         name=name or self.get_step_name('', task),
@@ -1486,7 +1488,9 @@ class SwarmingApi(recipe_api.RecipeApi):
       dispatched_task_placeholder = (isolated_script_results_test_data +
           self.test_api.merge_script_log_file('Merged succesfully'))
       return self.test_api.canned_summary_output(
-          dispatched_task_placeholder, task.shards, task.shard_indices)
+          dispatched_task_placeholder,
+          shards=task.shards,
+          shard_indices=task.shard_indices)
 
     step_result, has_valid_results = self._default_collect_step(
         task, step_test_data=step_test_data, **kwargs)

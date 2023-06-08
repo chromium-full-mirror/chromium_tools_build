@@ -7,8 +7,13 @@ from recipe_engine import recipe_test_api
 class SwarmingTestApi(recipe_test_api.RecipeTestApi):
 
   def canned_summary_output_raw(
-      self, shards=1, shard_indices=None, failure=False,
-      internal_failure=False):
+      self,
+      *,
+      shards=1,
+      shard_indices=None,
+      failure=False,
+      internal_failure=False,
+  ):
     shard_indices = range(shards) if shard_indices is None else shard_indices
     cas_hash = (
         '24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca')
@@ -65,7 +70,7 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
 
     return res
 
-  def summary(self, dispatched_task_step_test_data, data, retcode=None):
+  def summary(self, dispatched_task_step_test_data, raw_summary, retcode=None):
     """Returns step test data for a swarming collect step.
 
     Args:
@@ -80,7 +85,8 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
     # Generate step test data for the swarming step.
     step_test_data = recipe_test_api.StepTestData()
     key = ('chromium_swarming', 'summary', None)
-    placeholder = recipe_test_api.PlaceholderTestData(self.m.json.dumps(data))
+    placeholder = recipe_test_api.PlaceholderTestData(
+        self.m.json.dumps(raw_summary))
     step_test_data.placeholder_data[key] = placeholder
 
     # Add the test data for the dispatched step.
@@ -104,8 +110,15 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
   # The swarming task itself should almost always have a retcode of 0, unless
   # the test is trying to test swarming failures. output from swarming itself,
   def canned_summary_output(
-      self, dispatched_task_step_test_data, shards=1, shard_indices=None,
-      failure=False, internal_failure=False, retcode=0):
+      self,
+      dispatched_task_step_test_data,
+      *,
+      shards=1,
+      shard_indices=None,
+      failure=False,
+      internal_failure=False,
+      retcode=0,
+  ):
     """Returns step test data for a swarming collect step.
 
     Swarming is used to dispatch tasks remotely. Those tasks typically have
@@ -128,6 +141,10 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
     assert dispatched_task_step_test_data or retcode or internal_failure, (
         'There must be a placeholder for the dispatched task unless there is a '
         'swarming error')
-    return self.summary(
-        dispatched_task_step_test_data, self.canned_summary_output_raw(
-            shards, shard_indices, failure, internal_failure), retcode)
+    raw_summary = self.canned_summary_output_raw(
+        shards=shards,
+        shard_indices=shard_indices,
+        failure=failure,
+        internal_failure=internal_failure,
+    )
+    return self.summary(dispatched_task_step_test_data, raw_summary, retcode)

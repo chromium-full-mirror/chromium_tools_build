@@ -546,7 +546,7 @@ def GenTests(api):
           'base_unittests on Intel GPU on Linux (with patch)',
           api.chromium_swarming.summary(
               dispatched_task_step_test_data=None,
-              data={
+              raw_summary={
                   'shards': [{
                       'created_ts': '2014-09-25T01:41:00.123',
                       'started_ts': '2014-09-25T01:42:11.123',
