@@ -12,7 +12,6 @@ import sys
 
 
 def main(argv):
-  logging.basicConfig(level=logging.DEBUG)
   if len(argv) == 0:
     hook_scripts_dir = os.path.dirname(os.path.abspath(__file__))
     build_dir = os.path.dirname(hook_scripts_dir)
