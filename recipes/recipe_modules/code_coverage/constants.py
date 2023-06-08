@@ -33,7 +33,7 @@ TOOLS_TO_EXTENSIONS_MAP = {
         '.m', '.hxx'
     ],
     'jacoco': ['.java'],
-    'v8': ['.js']
+    'v8': ['.js', '.ts']
 }
 
 # Regex to identify files to be excluded from coverage
