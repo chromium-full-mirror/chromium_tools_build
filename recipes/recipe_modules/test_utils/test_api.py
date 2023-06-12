@@ -152,7 +152,8 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
                   expected_failing_tests=None,
                   skipped_tests=None,
                   flaky_failing_tests=None,
-                  flaky_passing_tests=None):
+                  flaky_passing_tests=None,
+                  successful_tests=None):
     """Returns a JSON blob used to override data for 'query test results'.
 
     Args:
@@ -166,6 +167,7 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
           (PASS, FAIL)
       flaky_passing_tests: List of test cases that pass with statuses
           (FAIL, PASS)
+      successful_tests: List of test cases that pass with status PASS
     """
 
     def _generate_invocation(test, status, expected):
@@ -204,6 +206,8 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       invocations.append(_generate_invocation(t, rdb_test_result.FAIL, False))
     for t in flaky_passing_tests or []:
       invocations.append(_generate_invocation(t, rdb_test_result.FAIL, False))
+      invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
+    for t in successful_tests or []:
       invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
 
     invocations_by_inv_id = {}

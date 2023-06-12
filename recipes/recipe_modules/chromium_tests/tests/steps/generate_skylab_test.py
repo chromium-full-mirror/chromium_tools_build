@@ -19,6 +19,7 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/properties',
     'recipe_engine/json',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -77,8 +78,9 @@ def GenTests(api):
                   target_name=TAST_TARGET,
                   should_read_isolate=True,
                   experiment_percentage=None,
-                  ci_only_tests=True):
-    builder_db = ctbc.BuilderDatabase.create({
+                  ci_only_tests=True,
+                  tester=''):
+    builders = {
         builder_group: {
             builder:
                 ctbc.BuilderSpec.create(
@@ -88,7 +90,17 @@ def GenTests(api):
                     skylab_gs_extra='lacros',
                 ),
         }
-    })
+    }
+    if tester:
+      builders[builder_group][tester] = ctbc.BuilderSpec.create(
+          execution_mode=ctbc.TEST,
+          chromium_config='chromium',
+          gclient_config='chromium',
+          skylab_gs_bucket=skylab_gcs,
+          skylab_gs_extra='lacros',
+          parent_buildername=builder,
+      )
+    builder_db = ctbc.BuilderDatabase.create(builders)
     if is_ci_build:
       build_gen = api.chromium_tests_builder_config.ci_build(
           build_id=build_id,
@@ -131,7 +143,7 @@ def GenTests(api):
         api.chromium_tests.read_targets_spec(
             builder_group,
             {
-                builder: {
+                tester or builder: {
                     'skylab_tests': [test_spec],
                 },
             },
@@ -506,5 +518,121 @@ def GenTests(api):
           'basic_EVE_TOT (experimental)',
           ['This test was not selected for its experiment in this build'],
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'trigger tester',
+      boilerplate(
+          'chrome-test-builds',
+          test_args='--test-launcher-filter-file=../../testing/buildbot/filter',
+          target_name=GTEST_TARGET,
+          tester='chrome-tests'),
+      api.post_process(
+          post_process.MustRun,
+          'prepare skylab tests.'
+          'upload skylab runtime deps for {target}.'
+          'Generic Archiving Steps.'
+          'Copy file out/Release/bin/run_{target}'.format(target=GTEST_TARGET),
+      ),
+      api.post_process(
+          post_process.MustRun,
+          ('prepare skylab tests.upload skylab runtime deps for %s.'
+           'Generic Archiving Steps.'
+           'Copy folder testing/buildbot/filters') % GTEST_TARGET,
+      ),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       [GTEST_TARGET]),
+      api.post_process(
+          post_process.DoesNotRun,
+          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tester',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.chromiumos',
+          builder='chrome-tests',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.chromiumos': {
+                  'chrome-tests':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          skylab_gs_bucket='chrome-test-builds',
+                          skylab_gs_extra='lacros',
+                          parent_buildername='chrome-builder',
+                      ),
+                  'chrome-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          skylab_gs_bucket='chrome-test-builds',
+                          skylab_gs_extra='lacros',
+                      ),
+              },
+          }),
+      ),
+      api.properties(
+          skylab_trigger_properties={
+              'vaapi_unittest': {
+                  'exe_rel_path':
+                      'out/Release/bin/run_vaapi_unittest',
+                  'lacros_gcs_path':
+                      'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/vaapi_unittest',
+                  'tast_expr_file':
+                      None
+              }
+          }),
+      api.chromium_tests.read_targets_spec(
+          'chromium.chromiumos', {
+              'chrome-tests': {
+                  'skylab_tests': [{
+                      'cros_board': 'eve',
+                      'cros_img': 'eve-release/R89-13631.0.0',
+                      'test_id_prefix': 'ninja://basic_EVE_TOT/',
+                      'ci_only': True,
+                      'name': 'basic_EVE_TOT',
+                      'tast_expr': "",
+                      'benchmark': "",
+                      'args': [],
+                      'swarming': {},
+                      'test': GTEST_TARGET,
+                      'resultdb': {
+                          'enable': True,
+                      },
+                      'description': 'This is a description.',
+                      'timeout_sec': 7200,
+                  }],
+              },
+          }),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build',
+          1,
+          runner_builds=[(902, common_pb2.SUCCESS)]),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', successful_tests=['Test.One']))),
+      api.post_process(
+          post_process.DoesNotRun,
+          'prepare skylab tests.'
+          'upload skylab runtime deps for {target}.'
+          'Generic Archiving Steps.'
+          'Copy file out/Release/bin/run_{target}'.format(target=GTEST_TARGET),
+      ),
+      api.post_process(
+          post_process.DoesNotRun,
+          ('prepare skylab tests.upload skylab runtime deps for %s.'
+           'Generic Archiving Steps.'
+           'Copy folder testing/buildbot/filters') % GTEST_TARGET,
+      ),
+      api.post_process(post_process.DoesNotRun, 'compile'),
+      api.post_process(
+          post_process.MustRun,
+          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule'),
       api.post_process(post_process.DropExpectation),
   )

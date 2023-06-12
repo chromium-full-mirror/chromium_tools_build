@@ -1631,18 +1631,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if compile_result and compile_result.status != common_pb.SUCCESS:
       return compile_result
 
-    inbound_info = self.inbound_transfer(builder_config, builder_id,
-                                         update_step, targets_config)
+    self.inbound_transfer(builder_config, builder_id, update_step,
+                          targets_config)
     additional_trigger_properties = self.outbound_transfer(
-        builder_id,
-        builder_config,
-        update_step,
-        targets_config,
-        # Only one of these should ever be set; either:
-        #   * we compile our own tests, in which case compile gives us
-        #   execution information
-        #   * we download the execution information in inbound_transfer
-        swarming_execution_info or inbound_info)
+        builder_id, builder_config, update_step, targets_config,
+        swarming_execution_info)
 
     self.trigger_child_builds(
         builder_id,
@@ -1670,7 +1663,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                         execution_info=None):
     """Handles the builder half of the builder->tester transfer flow.
 
-    We support two different transfer mechanisms:
+    We support three different transfer mechanisms:
      - Isolate transfer: builders upload tests + any required runtime
        dependencies to isolate, then pass the isolate hashes and command line
        information to testers via properties. Testers use those hashes and
@@ -1679,6 +1672,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
      - Package transfer: builders package and upload some of the output
        directory (see package_build for details). Testers download the zip
        and proceed to run tests.
+     - Skylab transfer: properties required for trigger the tests already
+       uploaded to gcs are passed through as additional trigger properties
 
     These can be used concurrently -- e.g., a builder that triggers two
     different testers, one that supports isolate transfer and one that
@@ -1722,10 +1717,22 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           reasons=self._explain_package_transfer(builder_config,
                                                  non_isolated_tests))
 
-    if not isolate_transfer or not execution_info:
-      return {}
+    trigger_properties = {}
+    if isolate_transfer and execution_info:
+      trigger_properties = execution_info.ensure_command_lines_archived(
+          self).as_trigger_prop()
 
-    return execution_info.ensure_command_lines_archived(self).as_trigger_prop()
+    skylab_tests = [
+        t for t in targets_config.tests_triggered_by(builder_id)
+        if t.is_skylabtest
+    ]
+
+    if skylab_tests:
+      trigger_properties[
+          'skylab_trigger_properties'] = self._get_skylab_trigger_properties(
+              skylab_tests)
+
+    return trigger_properties
 
   def inbound_transfer(self, builder_config, builder_id, bot_update_step,
                        targets_config):
@@ -1740,9 +1747,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_config: a BuilderConfig object for the currently executing tester.
       bot_update_step: the result of a previously executed bot_update step.
       targets_config: a TargetsConfig object.
-    Returns:
-      None, or a SwarmingExecutionInfo object describing how the tests
-        configured for this build should be executed.
     """
     if builder_config.execution_mode != ctbc.TEST:
       return SwarmingExecutionInfo()
@@ -1750,6 +1754,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     tests = targets_config.tests_on(builder_id)
 
     tests_using_isolates = [t for t in tests if t.uses_isolate]
+    tests_using_skylab = [t for t in tests if t.is_skylabtest]
 
     # Protect against hard to debug mismatches between directory names
     # used to run tests from and extract build to. We've had several cases
@@ -1763,7 +1768,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         'remove build directory',
         self.m.chromium.c.build_dir.join(self.m.chromium.c.build_config_fs))
 
-    if tests_using_isolates != tests:
+    if set(tests_using_isolates + tests_using_skylab) != set(tests):
       # There are some tests which don't run via swarming. These need the source
       # checkout in order to execute.
       self.download_and_unzip_build(
@@ -1774,11 +1779,31 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.m.step.empty(
           'explain extract build',
           log_name='why is this running?',
-          log_text=self._explain_package_transfer(
-              builder_config, [t for t in tests if not t.uses_isolate]))
+          log_text=self._explain_package_transfer(builder_config, [
+              t for t in tests
+              if t not in set(tests_using_isolates + tests_using_skylab)
+          ]))
 
-    return self.download_command_lines_for_tests(tests_using_isolates,
-                                                 builder_config)
+    self.download_command_lines_for_tests(tests_using_isolates, builder_config)
+    self._set_skylab_test_execution_info(tests_using_skylab)
+
+  def _set_skylab_test_execution_info(self, skylab_tests):
+    trigger_properties = self.m.properties.get('skylab_trigger_properties')
+    for t in skylab_tests:
+      target_properties = trigger_properties[t.target_name]
+      t.exe_rel_path = target_properties.get("exe_rel_path", '')
+      t.lacros_gcs_path = target_properties.get("lacros_gcs_path", '')
+      t.tast_expr_file = target_properties.get("tast_expr_file", '')
+
+  def _get_skylab_trigger_properties(self, skylab_tests):
+    properties = {}
+    for t in skylab_tests:
+      properties[t.target_name] = {
+          "exe_rel_path": t.exe_rel_path,
+          "lacros_gcs_path": t.lacros_gcs_path,
+          "tast_expr_file": t.tast_expr_file,
+      }
+    return properties
 
   def download_command_lines_for_tests(
       self,
