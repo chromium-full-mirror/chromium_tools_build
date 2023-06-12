@@ -1015,7 +1015,7 @@ def GenTests(api):
       api.override_step_data(
           'blink_web_tests',
           api.test_utils.canned_isolated_script_output(
-              passing=False, isolated_script_passing=False)),
+              isolated_script_passing=False)),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

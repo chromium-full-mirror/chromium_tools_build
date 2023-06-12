@@ -289,20 +289,11 @@ def GenTests(api):
           ('ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(with patch) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  is_win=False,
-                  swarming=True,
-              ),
-              failure=False)),
+              api.test_utils.canned_isolated_script_output(), failure=False)),
       api.override_step_data(('ios_chrome_web_eg2tests_module_iPad Air 2 14.4 '
                               '(with patch) on Mac-11'),
                              api.chromium_swarming.canned_summary_output(
-                                 api.test_utils.canned_isolated_script_output(
-                                     passing=True,
-                                     is_win=False,
-                                     swarming=True,
-                                 ),
+                                 api.test_utils.canned_isolated_script_output(),
                                  failure=False)),
       api.resultdb.query(
           current_patchset_bookmark_suite_invocations,
@@ -342,21 +333,12 @@ def GenTests(api):
            'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(check flakiness shard #0) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  is_win=False,
-                  swarming=True,
-              ),
-              failure=False)),
+              api.test_utils.canned_isolated_script_output(), failure=False)),
       api.override_step_data(('test new tests for flakiness.'
                               'ios_chrome_web_eg2tests_module_iPad Air 2 14.4 '
                               '(check flakiness shard #0) on Mac-11'),
                              api.chromium_swarming.canned_summary_output(
-                                 api.test_utils.canned_isolated_script_output(
-                                     passing=True,
-                                     is_win=False,
-                                     swarming=True,
-                                 ),
+                                 api.test_utils.canned_isolated_script_output(),
                                  failure=False)),
       api.resultdb.query(
           inv_bundle=current_patchset_bookmark_suite_invocations,
@@ -702,11 +684,7 @@ def GenTests(api):
       api.override_step_data(('ios_chrome_web_eg2tests_module_iPad Air 2 14.4 '
                               '(with patch) on Mac-11'),
                              api.chromium_swarming.canned_summary_output(
-                                 api.test_utils.canned_isolated_script_output(
-                                     passing=True,
-                                     is_win=False,
-                                     swarming=True,
-                                 ),
+                                 api.test_utils.canned_isolated_script_output(),
                                  failure=False)),
       api.resultdb.query(
           current_patchset_web_suite_invocations_long_test,
@@ -730,21 +708,13 @@ def GenTests(api):
                               'ios_chrome_web_eg2tests_module_iPad Air 2 14.4 '
                               '(check flakiness shard #0) on Mac-11'),
                              api.chromium_swarming.canned_summary_output(
-                                 api.test_utils.canned_isolated_script_output(
-                                     passing=True,
-                                     is_win=False,
-                                     swarming=True,
-                                 ),
+                                 api.test_utils.canned_isolated_script_output(),
                                  failure=False)),
       api.override_step_data(('test new tests for flakiness.'
                               'ios_chrome_web_eg2tests_module_iPad Air 2 14.4 '
                               '(check flakiness shard #1) on Mac-11'),
                              api.chromium_swarming.canned_summary_output(
-                                 api.test_utils.canned_isolated_script_output(
-                                     passing=True,
-                                     is_win=False,
-                                     swarming=True,
-                                 ),
+                                 api.test_utils.canned_isolated_script_output(),
                                  failure=False)),
       api.resultdb.query(
           inv_bundle=current_patchset_web_suite_invocations,
@@ -824,11 +794,7 @@ def GenTests(api):
       api.override_step_data(('base_unittests '
                               '(with patch) on Mac-11'),
                              api.chromium_swarming.canned_summary_output(
-                                 api.test_utils.canned_isolated_script_output(
-                                     passing=True,
-                                     is_win=False,
-                                     swarming=True,
-                                 ),
+                                 api.test_utils.canned_isolated_script_output(),
                                  failure=False)),
       api.resultdb.query(
           base_unittests_pass_invocations,
@@ -849,10 +815,7 @@ def GenTests(api):
                               'base_unittests '
                               '(check flakiness shard #0) on Mac-11'),
                              api.chromium_swarming.canned_summary_output(
-                                 api.test_utils.canned_isolated_script_output(
-                                     passing=False,
-                                     swarming=True,
-                                 ),
+                                 api.test_utils.canned_isolated_script_output(),
                                  failure=True)),
       api.resultdb.query(
           inv_bundle=base_unittests_flaky_invocations,
@@ -905,12 +868,7 @@ def GenTests(api):
           ('ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(with patch) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  is_win=False,
-                  swarming=True,
-              ),
-              failure=False)),
+              api.test_utils.canned_isolated_script_output(), failure=False)),
       api.resultdb.query(
           current_patchset_bookmark_suite_invocations,
           ('collect tasks (with patch).'
@@ -938,11 +896,7 @@ def GenTests(api):
            'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(check flakiness shard #0) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  swarming=True,
-              ),
-              failure=True)),
+              api.test_utils.canned_isolated_script_output(), failure=True)),
       api.resultdb.query(
           inv_bundle=flaky_results,
           step_name=(
@@ -995,12 +949,7 @@ def GenTests(api):
           ('ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(with patch) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  is_win=False,
-                  swarming=True,
-              ),
-              failure=False)),
+              api.test_utils.canned_isolated_script_output(), failure=False)),
       api.resultdb.query(
           current_patchset_bookmark_suite_invocations,
           ('collect tasks (with patch).'
@@ -1028,11 +977,7 @@ def GenTests(api):
            'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(check flakiness shard #0) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  swarming=True,
-              ),
-              failure=True)),
+              api.test_utils.canned_isolated_script_output(), failure=True)),
       # Result from "check flakiness" step is empty.
       api.post_check(
           post_process.ResultReason,
@@ -1086,12 +1031,7 @@ def GenTests(api):
           ('ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(with patch, experimental) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  is_win=False,
-                  swarming=True,
-              ),
-              failure=False)),
+              api.test_utils.canned_isolated_script_output(), failure=False)),
       api.resultdb.query(
           current_patchset_bookmark_suite_invocations,
           ('collect tasks (with patch).'
@@ -1119,11 +1059,7 @@ def GenTests(api):
            'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(check flakiness shard #0, experimental) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  swarming=True,
-              ),
-              failure=True)),
+              api.test_utils.canned_isolated_script_output(), failure=True)),
       api.resultdb.query(
           inv_bundle=flaky_results,
           step_name=(
@@ -1189,12 +1125,7 @@ def GenTests(api):
           ('ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(with patch) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=True,
-                  is_win=False,
-                  swarming=True,
-              ),
-              failure=False)),
+              api.test_utils.canned_isolated_script_output(), failure=False)),
       api.resultdb.query(
           bookmark_suite_flaky_invocations,
           ('collect tasks (with patch).'
@@ -1275,12 +1206,7 @@ def GenTests(api):
           ('ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
            '(with patch) on Mac-11'),
           api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_isolated_script_output(
-                  passing=False,
-                  is_win=False,
-                  swarming=True,
-              ),
-              failure=False)),
+              api.test_utils.canned_isolated_script_output(), failure=True)),
       api.resultdb.query(
           bookmark_suite_failed_invocations,
           ('collect tasks (with patch).'

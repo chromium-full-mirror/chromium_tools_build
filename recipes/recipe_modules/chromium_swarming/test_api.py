@@ -84,14 +84,16 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
     """
     # Generate step test data for the swarming step.
     step_test_data = recipe_test_api.StepTestData()
-    key = ('chromium_swarming', 'summary', None)
-    placeholder = recipe_test_api.PlaceholderTestData(
-        self.m.json.dumps(raw_summary))
-    step_test_data.placeholder_data[key] = placeholder
 
     # Add the test data for the dispatched step.
     if dispatched_task_step_test_data:
       step_test_data += dispatched_task_step_test_data
+
+    key = ('chromium_swarming', 'summary', None)
+    placeholder = recipe_test_api.PlaceholderTestData(
+        self.m.json.dumps(raw_summary))
+    assert key not in step_test_data.placeholder_data
+    step_test_data.placeholder_data[key] = placeholder
 
     # Explicitly set the retcode
     step_test_data.retcode = retcode

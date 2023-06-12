@@ -1478,8 +1478,8 @@ class SwarmingApi(recipe_api.RecipeApi):
     """
 
     def step_test_data():
-      isolated_script_results_test_data = self.test_api.canned_summary_output(
-          self.m.json.test_api.output({'version': 3}), failure=False)
+      isolated_script_results_test_data = self.m.json.test_api.output(
+          {'version': 3})
 
       # The call to collect_isolated_script_task emits two JSON files:
       #  1) a task summary JSON emitted by swarming
