@@ -1008,71 +1008,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     return chromium_swarming.MergeScript(
         script=self.m.profiles.merge_results_script, args=args)
 
-  def _download_profdata(self):
-    """ Downloads the fuzzing coverage profdata file. """
-    profdata_path = self.m.path.mkdtemp().join('raw-profdata.json')
-    self.m.gsutil.download(
-        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
-        constants.DEFAULT_FUZZ_SRC_PROFDATA_FILE_NAME,
-        profdata_path,
-        name="download profdata")
-    return profdata_path
-
-  def _download_llvm_cov(self):
-    """ Downloads the llvm_cov binary.
-
-    Ordinarily, when this module is invoked as part of the Chromium recipe,
-    self.cov_executable is already set and can be used freely. However, due
-    to the constraints on how we run our fuzzing jobs, we don't use the
-    Chromium recipe, and thus those various self fields are never initialized.
-
-    Therefore in the case of fuzzing coverage, we download llvm-cov so we can
-    use it.
-    """
-    llvm_cov = self.m.path.mkdtemp().join(
-        constants.DEFAULT_FUZZ_SRC_LLVM_COV_NAME)
-    self.m.gsutil.download(
-        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
-        constants.DEFAULT_FUZZ_SRC_LLVM_COV_NAME,
-        llvm_cov,
-        name="download llvm cov")
-
-    # Set permissions on the binary we've just downloaded.
-    llvm_cov = str(self.m.path.abspath(llvm_cov))
-    self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
-
-    return llvm_cov
-
-  def _download_fuzz_build_dir(self):
-    zipfile = self.m.path.mkdtemp().join('build_directory.zip')
-
-    self.m.gsutil.download(
-        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
-        constants.DEFAULT_FUZZ_SRC_BUILD_ARCHIVE_NAME,
-        zipfile,
-        name="download build directory")
-
-    build_dir = self.m.path.mkdtemp()
-    with self.m.step.nest("Extracting build_dir") as step_result:
-      step_result.logs['extraction logs'] = "Extracting build %s to %s" % (
-          zipfile, build_dir)
-      self.m.archive.extract("unzip", zipfile, build_dir, archive_type="zip")
-      return build_dir
-
-  def _download_fuzz_src_dir(self):
-    zipfile = self.m.path.mkdtemp().join('src_directory.zip')
-    self.m.gsutil.download(
-        constants.DEFAULT_FUZZ_SRC_BUCKET_NAME,
-        constants.DEFAULT_FUZZ_SRC_SRC_ARCHIVE_NAME,
-        zipfile,
-        name="download src directory")
-    src_dir = self.m.path.mkdtemp()
-    with self.m.step.nest("Extracting src_dir") as step_result:
-      step_result.logs['extraction logs'] = "Extracting srcfiles %s to %s" % (
-          zipfile, src_dir)
-      self.m.archive.extract("unzip", zipfile, src_dir, archive_type="zip")
-      return src_dir
-
   def _upload_fuzz_coverage_data(self):
     self.m.gsutil.upload(
         self.metadata_dir,
@@ -1083,23 +1018,22 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         multithreaded=True,
         name='upload fuzz coverage metadata')
 
-  def get_chromium_fuzz_coverage(self):
+  def get_chromium_fuzz_coverage(self, src_dir, build_dir, llvm_raw_data):
     """ Generates fuzz coverage information. """
-    llvm_raw_data = self._download_profdata()
-    my_llvm_cov = self._download_llvm_cov()
-    my_build_dir = self._download_fuzz_build_dir()
-    my_src_dir = self._download_fuzz_src_dir()
+    llvm_cov = src_dir.join('third_party').join('llvm-build').join(
+        'Release+Asserts').join('bin').join('llvm-cov')
+    self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
     cmd = [
         'vpython3',
         self.resource('generate_coverage_metadata.py'),
         '--output-dir',
         self.metadata_dir,
         '--build-dir',
-        my_build_dir,
+        build_dir,
         '--llvm-cov',
-        my_llvm_cov,
+        llvm_cov,
         '--src-path',
-        my_src_dir,
+        src_dir,
         '--profdata-path',
         llvm_raw_data,
         '--fuzz',

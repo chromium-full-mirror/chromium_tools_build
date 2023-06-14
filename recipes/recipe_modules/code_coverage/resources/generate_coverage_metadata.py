@@ -691,7 +691,7 @@ def _generate_metadata(src_path,
     logging.info(
         "A profdata file was provided. Skipping _get_raw_coverage_data.")
     logging.info('The variable llvm_cov_path is %s' % llvm_cov_path)
-    raw_data = _get_data_from_path(profdata_path)
+    raw_data = profdata_path
     third_party_inclusion_subdirs = None
     component_mapping = None
     diff_mapping = None

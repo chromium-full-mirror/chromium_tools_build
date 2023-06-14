@@ -10,24 +10,17 @@ DEPS = ['code_coverage']
 
 
 def RunSteps(api):
-  api.code_coverage.get_chromium_fuzz_coverage()
+  api.code_coverage.get_chromium_fuzz_coverage('', '', '')
 
 
 def GenTests(api):
   yield api.test(
-      'basic', api.post_process(post_process.MustRun, 'Extracting build_dir'),
-      api.post_process(post_process.MustRun, 'Extracting src_dir'),
-      api.post_process(post_process.MustRun, 'Extracting src_dir.unzip'),
-      api.post_process(post_process.MustRun, 'chmod llvm file'),
+      'basic', api.post_process(post_process.MustRun, 'chmod llvm file'),
       api.post_process(post_process.MustRun,
                        'ensure metadata dir for overall tests'),
       api.post_process(post_process.MustRun,
                        'ensure metadata dir for overall tests (2)'),
       api.post_process(post_process.MustRun, 'generate coverage metadata'),
-      api.post_process(post_process.MustRun, 'gsutil download profdata'),
-      api.post_process(post_process.MustRun, 'gsutil download llvm cov'),
-      api.post_process(post_process.MustRun, 'gsutil download build directory'),
-      api.post_process(post_process.MustRun, 'gsutil download src directory'),
       api.post_process(post_process.MustRun,
                        'gsutil upload fuzz coverage metadata'),
       api.post_process(DropExpectation))

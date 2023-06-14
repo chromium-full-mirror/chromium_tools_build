@@ -353,7 +353,7 @@ def RunSteps(api):
     api.step.active_result.presentation.logs['targets'] = targets
 
     outdir = api.chromium.output_dir
-    if api.tryserver.is_tryserver:
+    if api.tryserver.is_tryserver and not bot_config.collect_fuzz_coverage:
       # Filter out all targets that the patch doesn't affect.
       affected_files = api.chromium_checkout.get_files_affected_by_patch()
       test_targets, compile_targets = api.filter.analyze(
@@ -381,7 +381,8 @@ def RunSteps(api):
         targets=targets,
         use_goma_module=not use_reclient,
         use_reclient=use_reclient)
-    if raw_result.status != common_pb.SUCCESS or api.tryserver.is_tryserver:
+    if (raw_result.status != common_pb.SUCCESS) or (
+        api.tryserver.is_tryserver and not (bot_config.collect_fuzz_coverage)):
       return raw_result
     if bot_config.collect_fuzz_coverage is False:
       assert (bot_config.upload_directory is not None)
@@ -396,7 +397,29 @@ def RunSteps(api):
     if bot_config.collect_fuzz_coverage:
       with api.step.nest('process fuzz coverage') as step_result:
         try:
-          api.code_coverage.get_chromium_fuzz_coverage()
+          corpora_dir = 'current-corpora-from-clusterfuzz'
+          profdata_dir = 'profdata-output-dir'
+          build_dir = "out/Release"
+          api.step('make corpora directory', ['mkdir', corpora_dir])
+          api.step('make profdata directory', ['mkdir', profdata_dir])
+          api.step('download corpora', [
+              'python3', 'tools/code_coverage/download_fuzz_corpora.py',
+              '--download-dir', corpora_dir, '--build-dir', build_dir
+          ])
+          api.step('run all fuzzers', [
+              'python3', 'tools/code_coverage/run_all_fuzzers.py',
+              '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
+              corpora_dir, '--profdata-outdir', profdata_dir
+          ])
+          api.step('merge all fuzzers', [
+              'python3', 'tools/code_coverage/merge_all_profdata.py',
+              '--profdata-dir', profdata_dir, '--output-dir', build_dir
+          ])
+          api.code_coverage.get_chromium_fuzz_coverage(
+              api.chromium_checkout.src_dir,
+              api.chromium_checkout.src_dir.join('out', 'Release'),
+              api.chromium_checkout.src_dir.join('out', 'report', 'linux',
+                                                 'coverage.profdata'))
         except api.step.StepFailure:
           step_result.logs[
               'fuzz coverage logs'] = "Could not process fuzz coverage"
@@ -481,7 +504,6 @@ def GenTests(api):
       api.step_data(
           'list gn targets', stdout=api.raw_io.output_text('target2')),
   )
-
   gn_args_reclient = '\n'.join((
       'goma_dir = "/b/build/slave/cache/goma_client"',
       'target_cpu = "x86"',
