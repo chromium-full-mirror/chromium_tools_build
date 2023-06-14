@@ -9,42 +9,79 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
   def canned_summary_output_raw(
       self,
       *,
-      shards=1,
       shard_indices=None,
+      shards=1,
+      task_ids=None,
+      invocations=None,
       failure=False,
       internal_failure=False,
   ):
-    shard_indices = range(shards) if shard_indices is None else shard_indices
+    """Get the summary json object.
+
+    Args:
+      shard_indices: The index values of the different shards to create.
+        The summary will contain a shard entry for each element. If not
+        provided, then range(shards) will be used.
+      shards: The number of shards to include in the summary. Only used
+        if shard_indices is not provided.
+      task_ids: A sequence of task IDs, one for each shard. If not
+        provided, then each shard will have its shard index as the task
+        ID.
+      invocations: A sequence of invocation names, one for each shard.
+        If not provided, then each shard will have an invocation of the
+        form invocations/<task-ID>. If the invocation name for a shard
+        is None then the summary entry for the shard will not have an
+        invocation.
+    """
+    if shard_indices is None:
+      shard_indices = range(shards)
+    if task_ids is None:
+      task_ids = [str(i) for i in shard_indices]
+    assert len(task_ids) == len(shard_indices)
+    if invocations is None:
+      invocations = [f'invocations/{i}' for i in shard_indices]
+    assert len(invocations) == len(shard_indices)
+
     cas_hash = (
         '24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca')
+
+    def shard_entry(task_id, invocation):
+      entry = {
+          'bot_id': 'vm30',
+          'completed_ts': '2014-09-25T01:43:11.123',
+          'created_ts': '2014-09-25T01:41:00.123',
+          'duration': 31.5,
+          'exit_code': 1 if failure else 0,
+          'failure': failure,
+          'task_id': task_id,
+          'internal_failure': internal_failure,
+          'modified_ts': '2014-09-25 01:42:00',
+          # TODO(gbeaty) Support setting name and output since these constant
+          # values are confusing
+          'name': 'heartbeat-canary-2014-09-25_01:41:55-os=Windows',
+          'output': 'Heart beat succeeded on win32.\nFoo',
+          'cas_output_root': {
+              'cas_instance':
+                  'projects/example-project/instances/default_instance',
+              'digest': {
+                  'hash': cas_hash,
+                  'size_bytes': 73,
+              },
+          },
+          'started_ts': '2014-09-25T01:42:11.123',
+          'state': 'COMPLETED',
+      }
+      if invocation is not None:
+        entry['resultdb_info'] = {
+            'invocation': invocation,
+        }
+      return entry
+
     return {
-        'shards': [{
-            'bot_id': 'vm30',
-            'completed_ts': '2014-09-25T01:43:11.123',
-            'created_ts': '2014-09-25T01:41:00.123',
-            'duration': 31.5,
-            'exit_code': 1 if failure else 0,
-            'failure': failure,
-            'task_id': '148aa78d7aa%02d00' % i,
-            'internal_failure': internal_failure,
-            'modified_ts': '2014-09-25 01:42:00',
-            'name': 'heartbeat-canary-2014-09-25_01:41:55-os=Windows',
-            'output': 'Heart beat succeeded on win32.\n'
-                      'Foo',
-            'cas_output_root': {
-                'cas_instance':
-                    'projects/example-project/instances/default_instance',
-                'digest': {
-                    'hash': cas_hash,
-                    'size_bytes': 73,
-                },
-            },
-            'resultdb_info': {
-                'invocation': 'invocations/some-inv-name',
-            },
-            'started_ts': '2014-09-25T01:42:11.123',
-            'state': 'COMPLETED',
-        } for i in shard_indices],
+        'shards': [
+            shard_entry(task_id, invocation)
+            for task_id, invocation in zip(task_ids, invocations)
+        ],
     }
 
   def merge_script_log_file(self, data):
@@ -117,6 +154,8 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
       *,
       shards=1,
       shard_indices=None,
+      task_ids=None,
+      invocations=None,
       failure=False,
       internal_failure=False,
       retcode=0,
@@ -146,6 +185,8 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
     raw_summary = self.canned_summary_output_raw(
         shards=shards,
         shard_indices=shard_indices,
+        task_ids=task_ids,
+        invocations=invocations,
         failure=failure,
         internal_failure=internal_failure,
     )

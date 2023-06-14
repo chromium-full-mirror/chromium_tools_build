@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import attr
+
+from recipe_engine.recipe_api import Property
+from recipe_engine import post_process
+
+from RECIPE_MODULES.build.chromium_tests import steps
+
 DEPS = [
     'builder_group',
     'chromium',
@@ -21,21 +28,8 @@ DEPS = [
     'test_utils',
 ]
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
-
-from RECIPE_MODULES.build.chromium_tests import steps
-
-from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
-from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
-                                                       builds_service_pb2)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (invocation as
-                                                       rdb_invocation)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
-                                                       rdb_test_result)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import common as rdb_common
-
 PROPERTIES = {
+    'disable_resultdb': Property(default=False),
     'test_swarming': Property(default=False),
     'test_skylab': Property(default=False),
     'test_experimental': Property(default=False),
@@ -45,8 +39,8 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
-             retry_failed_shards, retry_invalid_shards):
+def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
+             test_experimental, retry_failed_shards, retry_invalid_shards):
   api.chromium.set_config('chromium')
   api.chromium.set_build_properties({
       'got_webrtc_revision': 'webrtc_sha',
@@ -64,6 +58,10 @@ def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
       'got_revision': 'd3adv3ggie',
       'got_revision_cp': 'refs/heads/main@{#54321}',
   })
+
+  spec_kwargs = {}
+  if disable_resultdb:
+    spec_kwargs['resultdb'] = steps.ResultDB.create(enable=False)
 
   class MockSwarmingTestSpec(steps.SwarmingIsolatedScriptTestSpec):
 
@@ -86,11 +84,12 @@ def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
 
   if test_swarming:
     test_specs = [
-        MockSwarmingTestSpec.create(name=test_name),
-        MockSwarmingTestSpec.create(name=test_name + '_2'),
-        steps.MockTestSpec.create(name='test3'),
+        MockSwarmingTestSpec.create(name=test_name, **spec_kwargs),
+        MockSwarmingTestSpec.create(name=test_name + '_2', **spec_kwargs),
+        steps.MockTestSpec.create(name='test3', **spec_kwargs),
         steps.ExperimentalTestSpec.create(
-            MockSwarmingTestSpec.create(name='disabled_experimental_test'),
+            MockSwarmingTestSpec.create(
+                name='disabled_experimental_test', **spec_kwargs),
             experiment_percentage=0),
     ]
   elif test_skylab:
@@ -103,20 +102,23 @@ def RunSteps(api, test_swarming, test_skylab, test_name, test_experimental,
       }
       common_skylab_kwargs['target_name'] = spec.get('test')
       test_specs.append(
-          steps.SkylabTestSpec.create(spec.get('name'), **common_skylab_kwargs))
+          steps.SkylabTestSpec.create(
+              spec.get('name'), **common_skylab_kwargs, **spec_kwargs))
   elif test_experimental:
     test_specs = [
         steps.ExperimentalTestSpec.create(
-            MockSwarmingTestSpec.create(name='disabled_experimental_test'),
+            MockSwarmingTestSpec.create(
+                name='disabled_experimental_test', **spec_kwargs),
             experiment_percentage=0),
         steps.ExperimentalTestSpec.create(
-            MockSwarmingTestSpec.create(name='enabled_experimental_test'),
+            MockSwarmingTestSpec.create(
+                name='enabled_experimental_test', **spec_kwargs),
             experiment_percentage=100)
     ]
   else:
     test_specs = [
-        steps.MockTestSpec.create(name=test_name),
-        steps.MockTestSpec.create(name='test2')
+        steps.MockTestSpec.create(name=test_name, **spec_kwargs),
+        steps.MockTestSpec.create(name='test2', **spec_kwargs)
     ]
 
   tests = [
@@ -376,6 +378,7 @@ def GenTests(api):
       'tasks_without_invocation',
       api.chromium.ci_build(builder='test_builder'),
       api.properties(
+          disable_resultdb=True,
           test_name='base_unittests',
           test_swarming=True,
           swarm_hashes={
@@ -385,13 +388,6 @@ def GenTests(api):
           retry_failed_shards=True,
           retry_invalid_shards=True,
       ),
-      api.override_step_data(
-          'test_pre_run.[trigger] base_unittests',
-          api.swarming.trigger(
-              ['base_unittests'],
-              # Turning off resultdb should remove invocation IDs from the
-              # trigger output.
-              resultdb=False)),
       api.post_process(post_process.DropExpectation),
   )
 

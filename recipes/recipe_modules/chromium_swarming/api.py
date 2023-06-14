@@ -866,6 +866,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       script: The script to invoke
       pre_trigger_args: All arguments up to and including 'trigger'
       post_triggers_args: All arguments following 'trigger'
+      resultdb_enabled: Whether resultdb is enabled for the task.
     """
     assert task.trigger_script
 
@@ -938,8 +939,11 @@ class SwarmingApi(recipe_api.RecipeApi):
       args.extend(['--user', task_request.user])
     if task_request.realm:
       args.extend(['--realm', task_request.realm])  # pragma: no cover
+
+    resultdb_enabled = False
     if task_request.resultdb and task_request.resultdb.enable:
-      args.extend(['-enable-resultdb'])  # pragma: no cover
+      args.extend(['-enable-resultdb'])
+      resultdb_enabled = True
 
     for path, package_list in sorted(
         task_slice.cipd_ensure_file.packages.items()):
@@ -972,7 +976,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     trigger_script_args = list(task.trigger_script.args)
     pre_trigger_args[:0] = trigger_script_args
 
-    return script, pre_trigger_args, args
+    return script, pre_trigger_args, args, resultdb_enabled
 
   def _trigger_all_task_shards(self, task, shard_indices, resultdb, **kwargs):
     """Triggers all shards as a single step.
@@ -983,7 +987,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     Returns:
       StepResult from the step.
     """
-    script, pre_trigger_args, post_trigger_args = (
+    script, pre_trigger_args, post_trigger_args, resultdb_enabled = (
         self._generate_trigger_task_shard_args(task, resultdb))
     assert len(shard_indices) == task.shards, (
         'The only trigger script that requires all shards to be simultaneously '
@@ -1007,7 +1011,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         name=self.get_step_name('trigger' + step_name_suffix, task),
         cmd=cmd,
         step_test_data=functools.partial(self._gen_trigger_step_test_data, task,
-                                         shard_indices),
+                                         shard_indices, resultdb_enabled),
         infra_step=True,
         **kwargs)
     step_result.presentation.step_text += text_for_task(task)
@@ -1038,7 +1042,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     # TODO(crbug.com/894045): Remove this method once we have fully migrated
     # to use swarming recipe module to trigger tasks.
-    script, pre_trigger_args, post_trigger_args = (
+    script, pre_trigger_args, post_trigger_args, resultdb_enabled = (
         self._generate_trigger_task_shard_args(task, resultdb))
 
     cmd = ['vpython3', script] + pre_trigger_args
@@ -1052,7 +1056,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         name=self.get_step_name('trigger (custom trigger script)', task),
         cmd=cmd,
         step_test_data=functools.partial(self._gen_trigger_step_test_data, task,
-                                         [shard_index]),
+                                         [shard_index], resultdb_enabled),
         infra_step=True,
         **kwargs)
     step_result.presentation.step_text += text_for_task(task)
@@ -1281,6 +1285,20 @@ class SwarmingApi(recipe_api.RecipeApi):
     task_args.extend(collect_cmd)
     return task_args
 
+  def _collect_step_test_data(self, task, dispatched_task_step_data):
+    task_ids = []
+    invocations = []
+    for index in task.shard_indices:
+      for shard_dict in task._trigger_output['tasks'].values():
+        if shard_dict['shard_index'] == index:
+          task_ids.append(shard_dict['task_id'])
+          invocations.append(shard_dict.get('invocation'))
+    return self.test_api.canned_summary_output(
+        dispatched_task_step_data,
+        shard_indices=task.shard_indices,
+        task_ids=task_ids,
+        invocations=invocations)
+
   def _default_collect_step(self,
                             task,
                             output_placeholder=None,
@@ -1361,10 +1379,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         dispatched_task_placeholder = (
             self.m.json.test_api.output({}) +
             self.m.raw_io.test_api.output('Successfully merged all data'))
-        return self.test_api.canned_summary_output(
-            dispatched_task_placeholder,
-            shards=task.shards,
-            shard_indices=task.shard_indices)
+        return self._collect_step_test_data(task, dispatched_task_placeholder)
 
     step_result = self.run_collect_task_script(
         name=name or self.get_step_name('', task),
@@ -1487,10 +1502,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       # This builds an instance of StepTestData that covers both.
       dispatched_task_placeholder = (isolated_script_results_test_data +
           self.test_api.merge_script_log_file('Merged succesfully'))
-      return self.test_api.canned_summary_output(
-          dispatched_task_placeholder,
-          shards=task.shards,
-          shard_indices=task.shard_indices)
+      return self._collect_step_test_data(task, dispatched_task_placeholder)
 
     step_result, has_valid_results = self._default_collect_step(
         task, step_test_data=step_test_data, **kwargs)
@@ -1716,7 +1728,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     args.extend(('-requests-json', self.m.json.input(requests_json)))
     return args
 
-  def _gen_trigger_step_test_data(self, task, shard_indices):
+  def _gen_trigger_step_test_data(self, task, shard_indices, resultdb_enabled):
     """Generates an expected value of --dump-json in 'trigger' step.
 
     Used when running recipes to generate test expectations.
@@ -1731,18 +1743,19 @@ class SwarmingApi(recipe_api.RecipeApi):
     self._task_test_data_id_offset += len(subtasks)
     tid = lambda i: '1%02d00' % (
         i + 100*(self._task_test_data_id_offset - len(subtasks)))
+
+    def entry(suffix, i):
+      d = {
+          'task_id': tid(i),
+          'shard_index': i,
+          'view_url': f'{self.m.swarming.current_server}/user/task/{tid(i)}',
+      }
+      if resultdb_enabled:
+        d['invocation'] = f'invocations/{i}'
+      return f'{task.task_name}{suffix}', d
+
     return self.m.json.test_api.output({
-        'tasks': {
-            '%s%s' % (task.task_name, suffix): {
-                'task_id':
-                    tid(i),
-                'shard_index':
-                    i,
-                'view_url':
-                    '%s/user/task/%s' %
-                    (self.m.swarming.current_server, tid(i)),
-            } for (suffix, i) in subtasks
-        },
+        'tasks': dict(entry(suffix, i) for suffix, i in subtasks),
     })
 
   def configure_swarming(self,

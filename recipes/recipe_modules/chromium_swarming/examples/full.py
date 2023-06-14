@@ -427,12 +427,11 @@ def GenTests(api):
   )
 
   data = {
-    'shards': [
-      {
-        'duration': 120.0,
-        'state': 'COMPLETED',
-      }
-    ]
+      'shards': [{
+          'duration': 120.0,
+          'task_id': '0',
+          'state': 'COMPLETED',
+      }]
   }
 
   yield api.test(
@@ -472,25 +471,24 @@ def GenTests(api):
   )
 
   data = {
-    'shards': [
-      {
-        'abandoned_ts': '2014-09-25T01:41:00.123',
-        'bot_id': 'vm30',
-        'completed_ts': None,
-        'created_ts': '2014-09-25T01:41:00.123',
-        'duration': 60,
-        'failure': False,
-        'id': '148aa78d7aa0100',
-        'internal_failure': False,
-        'modified_ts': '2014-09-25 01:42:00',
-        'name': 'heartbeat-canary-2014-09-25_01:41:55-os=Windows',
-        'outputs': [],
-        'started_ts': '2014-09-25T01:42:11.123',
-        'state': 'EXPIRED',
-        'try_number': None,
-        'user': 'unknown',
-      }
-    ],
+      'shards': [{
+          'abandoned_ts': '2014-09-25T01:41:00.123',
+          'bot_id': 'vm30',
+          'completed_ts': None,
+          'created_ts': '2014-09-25T01:41:00.123',
+          'duration': 60,
+          'failure': False,
+          'id': '148aa78d7aa0100',
+          'internal_failure': False,
+          'modified_ts': '2014-09-25 01:42:00',
+          'name': 'heartbeat-canary-2014-09-25_01:41:55-os=Windows',
+          'outputs': [],
+          'started_ts': '2014-09-25T01:42:11.123',
+          'state': 'EXPIRED',
+          'task_id': '0',
+          'try_number': None,
+          'user': 'unknown',
+      }],
   }
 
   data['shards'][0]['state'] = 'EXPIRED'
@@ -718,13 +716,14 @@ def GenTests(api):
   )
 
   summary_data = {
-    'shards': [
-      None,
-      {
-        'state': 'COMPLETED',
-        'internal_failure': False,
-      },
-    ]
+      'shards': [
+          None,
+          {
+              'task_id': '0',
+              'state': 'COMPLETED',
+              'internal_failure': False,
+          },
+      ]
   }
   yield api.test(
       'gtest_with_null_shard',
@@ -785,22 +784,25 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation))
 
   summary_data_deduped = {
-    'shards': [
-      {
-        'state': 'COMPLETED',
-        'internal_failure': False,
-      },
-      {
-        'state': 'COMPLETED',
-        'internal_failure': False,
-        'deduped_from': None,
-      },
-      {
-        'state': 'COMPLETED',
-        'internal_failure': False,
-        'deduped_from': 'deadbeef',
-      },
-    ]
+      'shards': [
+          {
+              'state': 'COMPLETED',
+              'internal_failure': False,
+              'task_id': '1',
+          },
+          {
+              'state': 'COMPLETED',
+              'internal_failure': False,
+              'deduped_from': None,
+              'task_id': '2',
+          },
+          {
+              'state': 'COMPLETED',
+              'internal_failure': False,
+              'deduped_from': 'deadbeef',
+              'task_id': '3',
+          },
+      ]
   }
 
   yield api.test(

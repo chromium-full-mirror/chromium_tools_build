@@ -97,6 +97,7 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"hello_world/Windows-10/hash_for_w/test_buildername/571\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"invocation\": \"invocations/0\", @@@",
       "@@@STEP_LOG_LINE@json.output@      \"shard_index\": 0, @@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"10000\", @@@",
       "@@@STEP_LOG_LINE@json.output@      \"view_url\": \"https://example.swarmingserver.appspot.com/user/task/10000\"@@@",

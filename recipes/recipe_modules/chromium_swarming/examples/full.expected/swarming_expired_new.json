@@ -824,6 +824,7 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"outputs\": [], @@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"started_ts\": \"2014-09-25T01:42:11.123\", @@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"EXPIRED\", @@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"0\", @@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"try_number\": null, @@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"user\": \"unknown\"@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    }@@@",
