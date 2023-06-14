@@ -56,13 +56,13 @@ _TARGET_DEVICE_MAP = {
 }
 
 
-def checkout(api):
+def checkout(api, manifest_branch):
   # (https://crbug.com/1153114): do not attempt to update repo when
   # 'repo sync' runs.
   env = {'DEPOT_TOOLS_UPDATE': '0'}
   with api.context(env=env):
     api.repo.init('https://android.googlesource.com/platform/manifest', '-b',
-                  'master-art')
+                  manifest_branch)
     api.repo.sync('-f', '-c', '-j%d' % (REPO_SYNC_JOBS), "--no-tags")
 
     build_input = api.buildbucket.build.input
@@ -95,8 +95,9 @@ def setup_host_x86(api,
                    generational_cc=True,
                    heap_poisoning=False,
                    gcstress=False,
-                   cdex_level='none'):
-  checkout(api)
+                   cdex_level='none',
+                   manifest_branch="master-art"):
+  checkout(api, manifest_branch)
   clobber(api)
 
   build_top_dir = api.context.cwd
@@ -237,7 +238,9 @@ def setup_target(api,
                  gcstress=False,
                  generational_cc=True,
                  heap_poisoning=False,
-                 on_virtual_machine=False):
+                 on_virtual_machine=False,
+                 manifest_branch="master-art"):
+
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.join('art', 'tools')
   # The path to the chroot directory on the device where ART and its
@@ -310,7 +313,7 @@ def setup_target(api,
 
   env.update({ 'ART_TEST_CHROOT' : chroot_dir })
 
-  checkout(api)
+  checkout(api,manifest_branch)
   clobber(api)
   if on_virtual_machine:
     ensure_qemu(api)
@@ -600,6 +603,7 @@ _CONFIG_MAP = {
             'device': 'qemu-riscv64',
             'debug': False,
             'on_virtual_machine': True,
+            'manifest_branch': 'master',
         },
     },
 }

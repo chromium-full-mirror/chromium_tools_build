@@ -6,7 +6,7 @@
       "-u",
       "https://android.googlesource.com/platform/manifest",
       "-b",
-      "master-art"
+      "master"
     ],
     "cwd": "[CACHE]/art",
     "env": {
