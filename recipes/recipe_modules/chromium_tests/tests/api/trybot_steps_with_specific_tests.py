@@ -557,9 +557,22 @@ def GenTests(api):
 
     base_unittests_retry = 'base_unittests (retry shards with patch)'
 
-    def check_gtest_shrad_env(check, req):
+    def check_gtest_shard_env(check, req):
       check(req[0].env_vars['GTEST_SHARD_INDEX'] == '1')
       check(req[0].env_vars['GTEST_TOTAL_SHARDS'] == '2')
+
+    # The shard link names contain more than just shard#X since they have timing
+    # and state information appended, so look for the prefix
+    def does_not_have_shard_0_link(check, steps_dict):
+      check(not any(
+          l.startswith('shard #0')
+          for l in steps_dict[base_unittests_retry].links))
+
+    def has_shard_1_link(check, steps_dict):
+      check(
+          any(
+              l.startswith('shard #1')
+              for l in steps_dict[base_unittests_retry].links))
 
     yield api.test(
         test_name,
@@ -568,11 +581,11 @@ def GenTests(api):
             builder_group='fake-try-group',
             builder='fake-try-builder',
         ),
-        ctbc_api.properties(ctbc_api.properties_assembler_for_try_builder(
-            ).with_mirrored_builder(
-                builder_group='fake-group',
-                builder='fake-builder',
-            ).assemble()),
+        ctbc_api.properties(ctbc_api.properties_assembler_for_try_builder()
+                            .with_mirrored_builder(
+                                builder_group='fake-group',
+                                builder='fake-builder',
+                            ).assemble()),
         api.properties(
             retry_failed_shards=True,
             shards=2,
@@ -592,8 +605,7 @@ def GenTests(api):
         api.post_process(post_process.LogContains, retry_shards_step_name,
                          'json.output', ['"task_id": "custom_task_id"']),
         api.post_check(api.swarming.check_triggered_request,
-          retry_shards_step_name, check_gtest_shrad_env),
-
+                       retry_shards_step_name, check_gtest_shard_env),
 
         # Override 'retry shards with patch' trigger output.
         api.override_step_data(retry_shards_step_name,
@@ -607,18 +619,9 @@ def GenTests(api):
                 retry_swarming_summary)),
 
         # We should not emit a link for shard #0, since it wasn't retried.
-        api.post_check(
-            # Line is too long, but yapf won't break it, so backslash
-            # continuation
-            # https://github.com/google/yapf/issues/763
-            lambda check, steps: \
-            'shard #0' not in steps[base_unittests_retry].links
-        ),
-
+        api.post_check(does_not_have_shard_0_link),
         # We should emit a link for shard#1
-        api.post_check(
-            lambda check, steps: 'shard #1' in steps[base_unittests_retry].links
-        ),
+        api.post_check(has_shard_1_link),
         api.post_process(post_process.DropExpectation),
         api.expect_status('FAILURE'),
     )
