@@ -91,6 +91,18 @@ _SPEC = {
         ),
     'linux-dbg-compile':
         _create_compile_spec('linux-dbg-compile'),
+    'linux-exp-asan-test':
+        try_spec.TrySpec.create(
+            mirrors=[
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-exp-asan-test',
+                    tester='linux-exp-swiftshader-asan',
+                ),
+            ],
+            analyze_names=['angle'],
+            retry_failed_shards=False,
+        ),
     'linux-exp-test':
         try_spec.TrySpec.create(
             mirrors=[
@@ -98,6 +110,23 @@ _SPEC = {
                     builder_group='angle',
                     buildername='linux-exp-test',
                     tester='linux-exp-intel',
+                ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-exp-test',
+                    tester='linux-exp-swiftshader',
+                ),
+            ],
+            analyze_names=['angle'],
+            retry_failed_shards=False,
+        ),
+    'linux-exp-tsan-test':
+        try_spec.TrySpec.create(
+            mirrors=[
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='linux-exp-tsan-test',
+                    tester='linux-exp-swiftshader-tsan',
                 ),
             ],
             analyze_names=['angle'],
