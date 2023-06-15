@@ -92,7 +92,7 @@
       "-dump-digest",
       "/path/to/tmp/",
       "-paths-json",
-      "[[\".\", \"siso_build.pprof\"], [\".\", \"siso_trace.json\"], [\".\", \"siso_metrics.json\"]]"
+      "[[\".\", \"siso_build.pprof\"], [\".\", \"siso_trace.json\"], [\".\", \"siso_metrics.json\"], [\".\", \"siso_output\"]]"
     ],
     "infra_step": true,
     "name": "upload reports",

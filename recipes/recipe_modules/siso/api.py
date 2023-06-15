@@ -107,7 +107,8 @@ class SisoApi(recipe_api.RecipeApi):
           'upload reports', self.m.path.abspath(ninja_dir),
           self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_build.pprof')),
           self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_trace.json')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_metrics.json')))
+          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_metrics.json')),
+          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_output')))
       # TODO(ukai): clang crash report?
 
     return result_pb2.RawResult(status=common_pb.SUCCESS)
