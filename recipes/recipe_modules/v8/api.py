@@ -829,7 +829,8 @@ class V8Api(recipe_api.RecipeApi):
     with self.ensure_osx_sdk_if_needed():
       if self.bot_config.get('track_build_dependencies',
                              False) and not self._is_muted_branch():
-        with self.m.context(env_prefixes={'PATH': [self.depot_tools_path]}):
+        path = [self.depot_tools_path, self.ninja_path]
+        with self.m.context(env_prefixes={'PATH': path}):
           deps = self.vpython(
               name='track build dependencies (fyi)',
               script=self.resource('build-dep-stats.py'),
@@ -861,6 +862,13 @@ class V8Api(recipe_api.RecipeApi):
     assert 'checkout' in self.m.path, (
         "Pinned depot_tools is not available before checkout has been created")
     return self.m.path['checkout'].join('third_party', 'depot_tools')
+
+  @property
+  def ninja_path(self):
+    """Returns path to ninja pinned in the V8 checkout."""
+    assert 'checkout' in self.m.path, (
+        "Pinned ninja is not available before checkout has been created")
+    return self.m.path['checkout'].join('third_party', 'ninja')
 
   def _get_default_archive(self):
     return 'gs://chromium-v8/archives/%s/%s' % (

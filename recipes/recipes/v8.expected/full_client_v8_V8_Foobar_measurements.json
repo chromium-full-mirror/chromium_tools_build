@@ -13,7 +13,8 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/v8/third_party/depot_tools",
+        "[CACHE]/builder/v8/third_party/ninja"
       ]
     },
     "luci_context": {
