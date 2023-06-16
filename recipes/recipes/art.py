@@ -234,6 +234,7 @@ def setup_host_x86(api,
 def setup_target(api,
                  device,
                  debug,
+                 build_only=False,
                  concurrent_collector=True,
                  gcstress=False,
                  generational_cc=True,
@@ -301,7 +302,8 @@ def setup_target(api,
       'ART_TEST_SSH_USER': 'ubuntu',
       'ART_TEST_SSH_HOST': 'localhost',
       'ART_TEST_SSH_PORT': '10001',
-      'ART_TEST_ON_VM': 'true'
+      'ART_TEST_ON_VM': 'true',
+      'TARGET_BUILD_UNBUNDLED': 'false',
     })
 
   bitness = _TARGET_DEVICE_MAP[device]['bitness']
@@ -337,6 +339,9 @@ def setup_target(api,
     api.step(
         'build target',
         [art_tools.join('buildbot-build.sh'), '--target', '--installclean'])
+
+  if build_only:
+    return
 
   if on_virtual_machine:
     with api.context(env=env):
@@ -604,6 +609,13 @@ _CONFIG_MAP = {
             'debug': False,
             'on_virtual_machine': True,
             'manifest_branch': 'master',
+        },
+        'qemu-riscv64-ndebug-build_only': {
+            'device': 'qemu-riscv64',
+            'debug': False,
+            'on_virtual_machine': True,
+            'manifest_branch': 'master',
+            'build_only': True,
         },
     },
 }

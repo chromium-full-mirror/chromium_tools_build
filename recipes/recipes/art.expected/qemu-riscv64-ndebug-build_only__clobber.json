@@ -1,0 +1,237 @@
+[
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "init",
+      "-u",
+      "https://android.googlesource.com/platform/manifest",
+      "-b",
+      "master"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "repo init"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "sync",
+      "-f",
+      "-c",
+      "-j16",
+      "--no-tags"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "repo sync"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "manifest",
+      "-r",
+      "-o",
+      "-"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "repo manifest"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CACHE]/art/out"
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "clobber"
+  },
+  {
+    "cmd": [],
+    "name": "install fuchsia/third_party/qemu"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/fuchsia/third_party/qemu/latest"
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install fuchsia/third_party/qemu.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/fuchsia/third_party/qemu/latest",
+      "-ensure-file",
+      "fuchsia/third_party/qemu/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install fuchsia/third_party/qemu.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\", @@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"fuchsia/third_party/qemu/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/art/art/tools/buildbot-build.sh",
+      "--target",
+      "--installclean"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "false",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_ON_VM": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "true",
+      "ART_USE_READ_BARRIER": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "aosp_riscv64",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "build target"
+  },
+  {
+    "name": "$result"
+  }
+]
