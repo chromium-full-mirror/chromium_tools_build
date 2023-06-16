@@ -817,7 +817,7 @@ def GenTests(api):
               ],
               checkout_src_internal=True)),
       api.post_process(LogContains, 'bot_update', 'json.output',
-                       ['src-internal']),
+                       ['src/internal']),
       api.post_process(DropExpectation),
   )
 

@@ -363,11 +363,11 @@ def chrome_internal(c):
   }
 
   m = c.got_revision_reverse_mapping
-  m['got_src_internal_revision'] = 'src-internal'
+  m['got_src_internal_revision'] = 'src/internal'
 
   p = c.repo_path_map
   p['https://chrome-internal.googlesource.com/chrome/src-internal'] = (
-      'src-internal', 'HEAD')
+      'src/internal', 'HEAD')
 
 
 @CONFIG_CTX()
