@@ -63,7 +63,7 @@ def checkout(api, manifest_branch):
   with api.context(env=env):
     api.repo.init('https://android.googlesource.com/platform/manifest', '-b',
                   manifest_branch)
-    api.repo.sync('-f', '-c', '-j%d' % (REPO_SYNC_JOBS), "--no-tags")
+    api.repo.sync('-c', '-j%d' % (REPO_SYNC_JOBS), "--no-tags")
 
     build_input = api.buildbucket.build.input
     if build_input.gerrit_changes:

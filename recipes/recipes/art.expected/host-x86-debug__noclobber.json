@@ -31,7 +31,6 @@
     "cmd": [
       "RECIPE_REPO[depot_tools]/repo",
       "sync",
-      "-f",
       "-c",
       "-j16",
       "--no-tags"
