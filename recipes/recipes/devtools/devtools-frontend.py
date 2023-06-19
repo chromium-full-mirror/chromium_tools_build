@@ -131,10 +131,13 @@ class InteractionsTests(DevToolsTests):
     super().__init__(api, cas_digest, builder_config, step_name)
 
   def _collect_tasks(self):
-    with self.api.step.nest(f'{self.step_name} shards results') as step:
-      for task in self.tasks:
-        self.api.chromium_swarming.collect_task(task).get_result()
-    self.api.step.raise_on_failure(step)
+    if self.api.tryserver.is_tryserver:
+      with self.api.step.nest(f'{self.step_name} shards results') as step:
+        for task in self.tasks:
+          self.api.chromium_swarming.collect_task(task).get_result()
+      self.api.step.raise_on_failure(step)
+    else:
+      super()._collect_tasks()
 
   def trigger(self):
     with self.api.step.nest(self.step_name):
@@ -452,9 +455,20 @@ def GenTests(api):
   )
 
   yield api.test(
-      'parallel builder',
+      'cq parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'ci parallel builder',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
