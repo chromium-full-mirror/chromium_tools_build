@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 from contextlib import contextmanager
+import os
+from pathlib import Path
 from recipe_engine import recipe_api
 
 REPO_URL = 'https://chromium.googlesource.com/devtools/devtools-frontend.git'
@@ -52,6 +54,13 @@ class DevToolsAPI(recipe_api.RecipeApi):
       node_args.extend(args or [])
       self.m.step(step_name, ["vpython3", "-u", sc_path] + node_args, **kwargs)
 
+  def run_python_script(self, step_name, script, args=None, **kwargs):
+    with self.m.context(cwd=self.m.path['checkout']):
+      sc_path = self.m.path.join('scripts', 'test', script)
+      args = args or []
+      return self.m.step(step_name, ["vpython3", "-u", sc_path] + args,
+                         **kwargs)
+
   def is_parallel_run(self):
     return 'parallel' in self.m.buildbucket.builder_name.lower()
 
@@ -71,6 +80,82 @@ class DevToolsAPI(recipe_api.RecipeApi):
         "--test-server-type='hosted-mode'", "--target=" + builder_config
     ] + args)
 
+  def get_dimensions_for_platform(self):
+    os_names = dict(linux='Ubuntu-18', mac='Mac', win='Windows-10')
+    return {'os': os_names[self.m.platform.name], 'pool': 'chromium.tests'}
+
+  def archive_to_cas(self):
+    return self.m.cas.archive('archive', self.m.path['checkout'])
+
+  def divided_e2e_commands(self,
+                           builder_config,
+                           shards=4,
+                           file_pattern='',
+                           iterations=1):
+    modified_commands = []
+    raw_commands = self.m.devtools.run_python_script(
+        'divide test run',
+        'e2e_divider.py', [
+            f'--jobs={shards}',
+            f'--test-file-pattern={file_pattern}',
+            f'--iterations={iterations}',
+        ],
+        stdout=self.m.raw_io.output_text(
+            add_output_log=True)).stdout.strip().split('\n')
+
+    for command in raw_commands:
+      split_command = command.split(' ')
+      iterations = []
+      if command.startswith('ITERATIONS='):
+        iterations = [split_command.pop(0)]
+      config = split_command[2]
+      file_pattern = split_command[3]
+      modified_commands.append(iterations + [
+          self.m.path.join('third_party', 'node', 'node.py'), "--output",
+          self.m.path.join('scripts', 'test', 'run_test_suite.js'),
+          f"--test-suite-path={Path('gen/test/e2e')}",
+          f"--test-suite-source-dir={Path('test/e2e')}",
+          "--test-server-type='hosted-mode'", "--target=" +
+          builder_config, config, file_pattern
+      ])
+
+    return modified_commands
+
+  def trigger_test_swarming_tasks(self,
+                                  step_name,
+                                  cas_digest,
+                                  commands,
+                                  task_output_dir=None,
+                                  args=None):
+    args = list(args or [])
+    tasks = []
+
+    self.m.chromium_swarming.default_priority = (
+        25 if self.m.tryserver.is_tryserver else 35)
+
+    with self.m.step.nest(f'{step_name} shards'):
+      for i in range(len(commands)):
+        env = {}
+        if commands[i][0].startswith('ITERATIONS='):
+          env['ITERATIONS'] = commands[i].pop(0).split('=')[1]
+        task = self.m.chromium_swarming.task(
+            name=f'{step_name} (Shard #{i})',
+            raw_cmd=["vpython3", "-u"] + commands[i] + args,
+            task_output_dir=task_output_dir,
+            cas_input_root=cas_digest,
+            env=env)
+
+        task_slice = task.request[0]
+        task_dimensions = task_slice.dimensions
+        task_dimensions.update(self.m.devtools.get_dimensions_for_platform())
+        task_slice = task_slice.with_dimensions(**task_dimensions)
+        task.request = task.request.with_slice(0, task_slice)
+
+        self.m.chromium_swarming.trigger_task(task)
+
+        tasks.append(task)
+
+    return tasks
 
   @contextmanager
   def collect_screenshots_on_trybot(self, bucket):
@@ -87,7 +172,8 @@ class DevToolsAPI(recipe_api.RecipeApi):
       "THROW_AFTER_GOLDENS_UPDATE": True,
     }
     with self.m.context(env=update_env):
-      self.m.git('commit', '-am', '---', name='commit current patch')
+      self.m.git(
+          'commit', '-am', '---', name='commit current patch', ok_ret='any')
       yield
       with self.m.step.nest('upload screenshots'):
         self.m.git('add', 'test/interactions/goldens', name='stage goldens')

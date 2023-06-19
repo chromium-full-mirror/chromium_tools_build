@@ -4,11 +4,14 @@
 
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import StepFailure
 
 DEPS = [
+    'chromium_swarming',
     'devtools',
     'recipe_engine/buildbucket',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/resultdb',
     'recipe_engine/step',
 ]
@@ -28,14 +31,32 @@ def RunSteps(api, builder_config, clobber):
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
 
-    if api.devtools.is_parallel_run():
-      api.devtools.run_e2e(builder_config, run_mode='parallel')
-      api.devtools.run_e2e(builder_config, run_mode='sequential')
-    else:
+    if not api.devtools.is_parallel_run():
       api.devtools.run_e2e(builder_config)
-
-    with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
-      api.step('Nothing', [])
+      with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
+        api.step('Nothing', [])
+    else:
+      with api.step.nest('E2E Tests'):
+        commands = api.devtools.divided_e2e_commands(builder_config)
+        cas_digest = api.devtools.archive_to_cas()
+        tasks_results = []
+        tasks = api.devtools.trigger_test_swarming_tasks(
+            step_name='E2E Tests',
+            cas_digest=cas_digest,
+            commands=commands,
+        )
+        with api.step.nest('E2E Tests result collection'):
+          with api.step.nest('E2E Tests shards results'):
+            failed_shards = []
+            for i in range(len(tasks)):
+              step, is_valid = api.chromium_swarming.collect_task(tasks[i])
+              tasks_results.append(step)
+              if step.presentation.status != api.step.SUCCESS or not is_valid:
+                failed_shards.append(i)
+            if failed_shards:
+              raise StepFailure(
+                  'Failure in shard(s) ' +
+                  f'#{", ".join([str(x) for x in failed_shards])}.')
 
 
 def GenTests(api):
@@ -69,24 +90,32 @@ def GenTests(api):
   yield api.test(
       'parallel release',
       try_build(builder='parallel builder'),
-      api.post_process(post_process.MustRun, 'E2E tests (Parallel)'),
-      api.post_process(post_process.MustRun, 'E2E tests (Sequential)'),
-      api.post_process(post_process.StepCommandContains, 'E2E tests (Parallel)',
-                       [
-                           '--jobs=4',
-                       ]),
-      api.post_process(post_process.StepCommandDoesNotContain,
-                       'E2E tests (Parallel)', [
-                           '--mocha-fgrep=[sequential]',
-                       ]),
-      api.post_process(post_process.StepCommandContains,
-                       'E2E tests (Sequential)', [
-                           '--mocha-fgrep=[sequential]',
-                       ]),
-      api.post_process(post_process.StepCommandDoesNotContain,
-                       'E2E tests (Sequential)', [
-                           '--jobs=4',
-                       ]),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'ITERATIONS=1 node runner config pattern', stream='stdout')),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  data = {
+      'shards': [{
+          'state': 'COMPLETED (FAILURE)',
+      }]
+  }
+  yield api.test(
+      'failed parallel release',
+      try_build(builder='parallel builder'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data(
+          'E2E Tests.E2E Tests result collection.E2E Tests shards results.' +
+          'E2E Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

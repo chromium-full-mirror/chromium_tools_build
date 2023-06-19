@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from abc import ABC, abstractmethod
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
-
-import json
+from recipe_engine.recipe_api import StepFailure
 
 DEPS = [
     'builder_group',
     'chromium',
+    'chromium_swarming',
     'devtools',
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
@@ -18,6 +19,7 @@ DEPS = [
     'depot_tools/tryserver',
     'perf_dashboard',
     'recipe_engine/buildbucket',
+    'recipe_engine/cas',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
@@ -25,6 +27,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
+    'recipe_engine/swarming',
 ]
 
 PROPERTIES = {
@@ -51,6 +54,156 @@ PROPERTIES = {
 }
 
 
+class DevToolsTests(ABC):
+
+  def __init__(self, api, cas_digest, builder_config, step_name):
+    self.api = api
+    self.cas_digest = cas_digest
+    self.builder_config = builder_config
+    self.step_name = step_name
+    self.output_dir = self.api.path.mkdtemp()
+    self.tasks = []
+    self.tasks_results = []
+
+  def _collect_tasks(self):
+    with self.api.step.nest(f'{self.step_name} shards results'):
+      failed_shards = []
+      for i in range(len(self.tasks)):
+        step, is_valid = self.api.chromium_swarming.collect_task(self.tasks[i])
+        self.tasks_results.append(step)
+        if step.presentation.status != self.api.step.SUCCESS or not is_valid:
+          failed_shards.append(i)
+      if failed_shards:
+        raise StepFailure('Failure in shard(s) ' +
+                          f'#{", ".join([str(x) for x in failed_shards])}.')
+
+  @abstractmethod
+  def trigger(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def collect(self):
+    pass  # pragma: no cover
+
+
+class UnitTests(DevToolsTests):
+
+  def trigger(self):
+    with self.api.step.nest(self.step_name):
+      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
+          step_name=self.step_name,
+          cas_digest=self.cas_digest,
+          task_output_dir=self.output_dir,
+          commands=[[
+              self.api.path.join('scripts', 'test', 'run_unittests.py'),
+              '--target=' + self.builder_config,
+              '--coverage',
+              '--swarming-output-file',
+              '${ISOLATED_OUTDIR}',
+          ]],
+      )
+
+  def collect(self):
+    with self.api.step.nest(f'{self.step_name} result collection'):
+      self._collect_tasks()
+      self.copy_coverage_data()
+
+  def copy_coverage_data(self):
+    shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
+    coverage_data_dir = self.output_dir / shard_output_dir / 'karma-coverage'
+    self.api.file.rmtree(
+        'remove coverage files if they exist',
+        self.api.path.join(self.api.path['checkout'], 'karma-coverage'))
+    self.api.file.copytree(
+        'copy unit tests coverage data', coverage_data_dir,
+        self.api.path.join(self.api.path['checkout'], 'karma-coverage'))
+
+
+class InteractionsTests(DevToolsTests):
+
+  def __init__(self,
+               api,
+               cas_digest,
+               builder_config,
+               step_name,
+               bucket='devtools-frontend-screenshots'):
+    self.bucket = bucket
+    super().__init__(api, cas_digest, builder_config, step_name)
+
+  def _collect_tasks(self):
+    with self.api.step.nest(f'{self.step_name} shards results') as step:
+      for task in self.tasks:
+        self.api.chromium_swarming.collect_task(task).get_result()
+    self.api.step.raise_on_failure(step)
+
+  def trigger(self):
+    with self.api.step.nest(self.step_name):
+      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
+          step_name=self.step_name,
+          cas_digest=self.cas_digest,
+          task_output_dir=self.output_dir,
+          commands=[[
+              self.api.path.join('third_party', 'node', 'node.py'),
+              "--output",
+              self.api.path.join('scripts', 'test', 'run_test_suite.js'),
+              "--test-suite-path=gen/test/interactions",
+              "--test-suite-source-dir=test/interactions",
+              "--test-server-type='component-docs'",
+              "--target=" + self.builder_config,
+              "--coverage",
+              '--swarming-output-file',
+              '${ISOLATED_OUTDIR}',
+          ]],
+      )
+
+  def collect(self):
+    with self.api.step.nest(f'{self.step_name} result collection'):
+      with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
+        self._collect_tasks()
+      self.copy_coverage_data()
+      self.copy_golden_snapshots()
+      publish_coverage_points(self.api)
+
+  def copy_coverage_data(self):
+    shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
+    coverage_data_dir = (
+        self.output_dir / shard_output_dir / 'interactions-coverage')
+    self.api.file.rmtree(
+        'remove coverage files if they exist',
+        self.api.path.join(self.api.path['checkout'], 'interactions-coverage'))
+    self.api.file.copytree(
+        'copy interaction tests coverage data', coverage_data_dir,
+        self.api.path.join(self.api.path['checkout'], 'interactions-coverage'))
+
+  def copy_golden_snapshots(self):
+    shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
+    golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
+    self.api.file.rmtree(
+        'remove previous goldens',
+        self.api.path.join(self.api.path['checkout'], 'test', 'interactions',
+                           'goldens'))
+    self.api.file.copytree(
+        'copy golden snapshots', golden_snapshots_dir,
+        self.api.path.join(self.api.path['checkout'], 'test', 'interactions',
+                           'goldens'))
+
+
+class E2ETests(DevToolsTests):
+
+  def trigger(self):
+    with self.api.step.nest(self.step_name):
+      commands = self.api.devtools.divided_e2e_commands(self.builder_config)
+      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
+          step_name=self.step_name,
+          cas_digest=self.cas_digest,
+          commands=commands,
+      )
+
+  def collect(self):
+    with self.api.step.nest(f'{self.step_name} result collection'):
+      self._collect_tasks()
+
+
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
              clobber):
   api.devtools.configure(builder_config, is_official_build,
@@ -63,21 +216,34 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
+    cas_digest = api.devtools.archive_to_cas()
 
-    run_unit_tests(api, builder_config)
-    run_interactions(api, builder_config)
-    publish_coverage_points(api)
+    if not api.devtools.is_parallel_run():
+      run_unit_tests(api, builder_config)
+      run_interactions(api, builder_config)
+      publish_coverage_points(api)
 
-    if api.devtools.is_debug(builder_config):
-      return
+      if api.devtools.is_debug(builder_config):
+        return
 
-    run_lint_check(api)
+      run_lint_check(api)
 
-    if api.devtools.is_parallel_run():
-      api.devtools.run_e2e(builder_config, run_mode='parallel')
-      api.devtools.run_e2e(builder_config, run_mode='sequential')
-    else:
       api.devtools.run_e2e(builder_config)
+    else:
+      tests = [
+          UnitTests(api, cas_digest, builder_config, 'Unit Tests'),
+          InteractionsTests(api, cas_digest, builder_config,
+                            'Interactions Tests'),
+          E2ETests(api, cas_digest, builder_config, 'E2E Tests'),
+      ]
+
+      for t in tests:
+        t.trigger()
+
+      run_lint_check(api)
+
+      for t in tests:
+        t.collect()
 
     if can_run_experimental_steps(api):
       # Place here any unstable steps that you want to be performed on
@@ -289,6 +455,30 @@ def GenTests(api):
       'parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
-      api.post_process(post_process.MustRun, 'E2E tests (Parallel)'),
-      api.post_process(post_process.MustRun, 'E2E tests (Sequential)'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.DropExpectation))
+
+  data = {
+      'shards': [{
+          'state': 'COMPLETED (FAILURE)',
+      }]
+  }
+  yield api.test(
+      'failed parallel builder',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='parallel_linux'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data(
+          'E2E Tests result collection.E2E Tests shards results.' +
+          'E2E Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation))

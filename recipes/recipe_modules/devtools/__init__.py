@@ -4,17 +4,21 @@
 
 DEPS = [
     'chromium',
+    'chromium_swarming',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'depot_tools/git',
     'depot_tools/gsutil',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
+    'recipe_engine/cas',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/raw_io',
     'recipe_engine/resultdb',
     'recipe_engine/step',
+    'recipe_engine/swarming',
     'recipe_engine/url',
-
 ]
