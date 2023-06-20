@@ -34,6 +34,13 @@ class SsciAPI(recipe_api.RecipeApi):
     desc = self.m.cipd.describe(package_name, package_version)
     return desc.pin.instance_id
 
+  def _get_product_version(self):
+    """Extracts the product version from configuration."""
+    # For now, just use the shortened chrome commit hash. This will need to be replaced
+    # with extracting the actual version of the product/target we're running against
+    # which differs by each recipe.
+    return self.m.buildbucket.gitiles_commit.id[:6]
+
   def run(self,
           src_dir,
           build_dir,
@@ -156,6 +163,11 @@ class SsciAPI(recipe_api.RecipeApi):
       if self.minimal_spdx:
         minimal_config = "-minimal-spdx"
 
+      # Combines the recipe name with the DepBot target as the product name.
+      recipe_name = self.m.properties["recipe"].split("/")[-1]
+      product = f'{recipe_name}.{t.replace("//", "")}'
+      p_version = self._get_product_version()
+
       # The vPython metadata files are found in the parent directory.
       with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):
         self.m.step(
@@ -168,7 +180,7 @@ class SsciAPI(recipe_api.RecipeApi):
                 "-depbot-version", depbot_cipd_version, "-partybot-version",
                 partybot_cipd_version, "-ssci-version", ssci_cipd_version,
                 "-output-file", spdx_out, "-chromium-src", src_dir, "-product",
-                self.m.buildbucket.build.builder.project, "-platform",
+                product, "-product-version", p_version, "-platform",
                 self.m.platform.name, "-arch",
                 f"{self.m.platform.arch}{self.m.platform.bits}", minimal_config
             ],
