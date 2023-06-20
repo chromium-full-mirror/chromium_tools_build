@@ -195,7 +195,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -239,7 +239,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -283,7 +283,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -327,7 +327,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -370,7 +370,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -415,7 +415,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -459,7 +459,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -502,7 +502,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -550,7 +550,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -594,7 +594,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -640,7 +640,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -688,7 +688,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -736,7 +736,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -780,7 +780,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -826,7 +826,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -875,7 +875,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -923,7 +923,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -967,7 +967,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1013,7 +1013,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1062,7 +1062,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1110,7 +1110,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1154,7 +1154,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1200,7 +1200,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1248,7 +1248,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1296,7 +1296,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1340,7 +1340,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1386,7 +1386,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1434,7 +1434,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1482,7 +1482,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1526,7 +1526,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1572,7 +1572,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1620,7 +1620,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1668,7 +1668,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1712,7 +1712,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1758,7 +1758,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1806,7 +1806,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1854,7 +1854,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1898,7 +1898,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1944,7 +1944,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1990,7 +1990,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2038,7 +2038,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2082,7 +2082,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2128,7 +2128,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2174,7 +2174,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2222,7 +2222,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2266,7 +2266,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2312,7 +2312,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2359,7 +2359,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2407,7 +2407,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2451,7 +2451,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2497,7 +2497,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2541,7 +2541,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2585,7 +2585,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2630,7 +2630,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/aosp_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
