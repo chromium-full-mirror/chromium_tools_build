@@ -11,6 +11,7 @@ from PB.go.chromium.org.luci.buildbucket.proto \
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 \
     import test_result as test_result_pb2
+from PB.go.chromium.org.luci.resultdb.proto.v1 import test_metadata as test_metadata_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_verdict
 
@@ -57,6 +58,10 @@ def RunSteps(api):
             variant_hash='{}hash'.format(i),
             expected=False,
             status=test_result_pb2.PASS,
+            test_metadata=test_metadata_pb2.TestMetadata(
+                location=test_metadata_pb2.TestLocation(
+                    repo='https://chromium.googlesource.com/chromium/src',
+                    file_name='//sample/test/some_test_%s.cc' % str(i))),
         ),
     ]
     inv_bundle[inv] = api.resultdb.Invocation(test_results=test_results)

@@ -875,7 +875,7 @@
       "0",
       "-u",
       "-tr-fields",
-      "testId,variant,variantHash,status,tags,expected,duration,failureReason",
+      "testId,variant,variantHash,status,tags,expected,duration,failureReason,testMetadata.location",
       "some-inv-name"
     ],
     "cwd": "[CACHE]/builder",

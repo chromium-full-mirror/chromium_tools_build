@@ -222,6 +222,12 @@ class RDBPerIndividualTestResults:
   # Reasons of all results corresponding to |statuses|. Empty str if the
   # raw RDB result doesn't have this stored.
   failure_reasons = attrib(sequence[str])
+  # The path to the file associated with this test result. Defined in proto
+  # under TestMetadata.Location.FileName. See proto at
+  # https://source.chromium.org/chromium/infra/infra/+/main:
+  # go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
+  # e.g. //chrome/browser/top_level_storage_access_api/some_test.cc
+  test_metadata_file_name = attrib(str)
 
   @classmethod
   def create(cls, test_id, test_results, test_id_prefix, invocation_id):
@@ -241,6 +247,8 @@ class RDBPerIndividualTestResults:
     failure_reasons = [
         tr.failure_reason.primary_error_message or '' for tr in test_results
     ]
+    test_metadata_file_name = ''
+
     for tr in test_results:
       test_id = tr.test_id
       # Durations of expected runs or unexpected passed (exonerated) runs are
@@ -254,6 +262,12 @@ class RDBPerIndividualTestResults:
         if tag.key == 'test_name':
           test_name = tag.value
 
+      test_metadata = getattr(tr, 'test_metadata', None)
+      if test_metadata:
+        location_meta = getattr(test_metadata, 'location', None)
+        if location_meta:
+          test_metadata_file_name = location_meta.file_name
+
     assert test_id.startswith(test_id_prefix)
     # If not found in tags, use the part after test id prefix in test ID.
     if not test_name:
@@ -266,7 +280,9 @@ class RDBPerIndividualTestResults:
         duration_milliseconds=duration_milliseconds,
         statuses=statuses,
         expectednesses=expectednesses,
-        failure_reasons=failure_reasons)
+        failure_reasons=failure_reasons,
+        test_metadata_file_name=test_metadata_file_name,
+    )
 
   def total_test_count(self):
     return len(self.statuses)
@@ -281,6 +297,7 @@ class RDBPerIndividualTestResults:
     total += sys.getsizeof(self.test_id)
     total += sys.getsizeof(self.test_name)
     total += sys.getsizeof(self.duration_milliseconds)
+    total += sys.getsizeof(self.test_metadata_file_name)
     # self.statuses and self.expectednesses are lists of very few unique
     # elements. So don't bother counting the size of each element since each
     # unique element is only stored once.
@@ -307,6 +324,7 @@ class RDBPerSuiteResults:
       'expected',
       'duration',
       'failureReason',
+      'testMetadata.location',
   ]
 
   # NOTE: If you add an attribute here, make sure to reflect the change in

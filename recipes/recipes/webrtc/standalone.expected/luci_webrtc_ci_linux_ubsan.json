@@ -2258,7 +2258,7 @@
       "0",
       "-u",
       "-tr-fields",
-      "testId,variant,variantHash,status,tags,expected,duration,failureReason",
+      "testId,variant,variantHash,status,tags,expected,duration,failureReason,testMetadata.location",
       "0"
     ],
     "infra_step": true,

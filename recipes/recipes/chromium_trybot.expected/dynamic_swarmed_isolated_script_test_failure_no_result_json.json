@@ -2361,7 +2361,7 @@
       "0",
       "-u",
       "-tr-fields",
-      "testId,variant,variantHash,status,tags,expected,duration,failureReason",
+      "testId,variant,variantHash,status,tags,expected,duration,failureReason,testMetadata.location",
       "0"
     ],
     "cwd": "[CACHE]/builder",
@@ -2837,7 +2837,7 @@
       "0",
       "-u",
       "-tr-fields",
-      "testId,variant,variantHash,status,tags,expected,duration,failureReason",
+      "testId,variant,variantHash,status,tags,expected,duration,failureReason,testMetadata.location",
       "1"
     ],
     "cwd": "[CACHE]/builder",

@@ -44,6 +44,10 @@ class TestDefinition():
     * test_object: (steps.AbstractTest) The test object where this test
       comes from.
     * variant_hash: (str) ResultDB's variant_hash (go/resultdb-concepts)
+    * file_path: (str) path to the test, defined through ResultDB's
+                 test_metadata.location.file_loc. See proto at
+                 https://source.chromium.org/chromium/infra/infra/+/main:
+                 go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
   """
 
   def __init__(self,
@@ -51,7 +55,8 @@ class TestDefinition():
                test_name=None,
                duration_milliseconds=None,
                test_object=None,
-               variant_hash=None):
+               variant_hash=None,
+               file_path=None):
     """
     Args:
       * test_id: (str) ResultDB test id
@@ -60,12 +65,17 @@ class TestDefinition():
       * test_object: (steps.AbstractTest) The test object where this
         test comes from.
       * variant_hash: (str) ResultDB's variant hash
+      * file_path: (str) path to the test, defined through ResultDB's
+        test_metadata.location.file_loc. See proto at
+        https://source.chromium.org/chromium/infra/infra/+/main:
+        go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
     """
     self.test_id = test_id
     self.test_name = test_name
     self.duration_milliseconds = duration_milliseconds
     self.variant_hash = variant_hash
     self.test_object = test_object
+    self.file_path = file_path
 
   def __eq__(self, t2):
     return (self.test_id, self.variant_hash) == t2
@@ -413,7 +423,8 @@ class FlakinessApi(recipe_api.RecipeApi):
                 test_name=individual_test.test_name,
                 duration_milliseconds=duration_milliseconds,
                 test_object=test_object,
-                variant_hash=variant_hash)
+                variant_hash=variant_hash,
+                file_path=individual_test.test_metadata_file_name)
             current_tests_log.append('%s_%s' % (test_id, variant_hash))
 
             if not test_definition in historical_tests:
