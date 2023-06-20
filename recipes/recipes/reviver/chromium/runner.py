@@ -14,6 +14,8 @@ reviver_builder variants set to the project, bucket and name of the
 target builder.
 """
 
+import itertools
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -63,8 +65,13 @@ def RunSteps(api):
         t.test_options = test_options
         tests.append(t)
 
+    # Only compile targets for the tests that will be run
+    compile_targets = sorted(
+        set(itertools.chain.from_iterable(t.compile_targets() for t in tests)))
+
     compile_result, _ = api.chromium_tests.compile_specific_targets(
-        builder_id, builder_config, update_step, targets_config, [], tests)
+        builder_id, builder_config, update_step, targets_config,
+        compile_targets, tests)
     if compile_result and compile_result.status != common_pb.SUCCESS:
       return compile_result
 
@@ -116,6 +123,8 @@ def GenTests(api):
                   }],
               },
           }),
+      api.post_check(post_process.StepCommandContains, 'compile',
+                     ['fake-gtest']),
       api.post_check(post_process.StepCommandContains, 'fake-gtest',
                      ['--gtest_also_run_disabled_tests']),
       api.post_check(post_process.StepCommandContains, 'fake-gtest',
@@ -164,6 +173,8 @@ def GenTests(api):
                   }],
               },
           }),
+      api.post_check(post_process.StepCommandContains, 'compile',
+                     ['fake-gtest']),
       api.post_check(post_process.StepCommandContains, 'fake-gtest',
                      ['--gtest_also_run_disabled_tests']),
       api.post_check(post_process.StepCommandContains, 'fake-gtest',
