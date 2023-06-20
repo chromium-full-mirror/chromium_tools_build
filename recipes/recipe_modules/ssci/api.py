@@ -6,7 +6,6 @@ import json
 
 from recipe_engine import recipe_api
 
-
 class SsciAPI(recipe_api.RecipeApi):
 
   def __init__(self, props, **kwargs):
@@ -33,6 +32,24 @@ class SsciAPI(recipe_api.RecipeApi):
 
     desc = self.m.cipd.describe(package_name, package_version)
     return desc.pin.instance_id
+
+  def _format_json_for_bq(self, json_rows, extra_columns=None):
+    """Format JSON objects for writing to BQ
+
+    Args:
+      json_rows (list): list of JSON objects.
+      extra_coumns (dict): key value pairs to add to each row.
+
+    Returns:
+      new line delimited JSON string.
+    """
+    rows = []
+    for row in json_rows:
+      if extra_columns:
+        for k, v in extra_columns.items():
+          row[k] = v
+      rows.append(json.dumps(row))
+      return '\n'.join(rows)
 
   def _get_product_version(self):
     """Extracts the product version from configuration."""
@@ -87,26 +104,26 @@ class SsciAPI(recipe_api.RecipeApi):
                   }],
                   name='libraries')))
 
-      artifactRows = []
-      for row in depbot_result.json.outputs.get('artifacts'):
-        row["builder"] = self.m.buildbucket.builder_full_name
-        artifactRows.append(json.dumps(row))
-
-      libraryRows = []
-      for row in depbot_result.json.outputs.get('libraries'):
-        row["builder"] = self.m.buildbucket.builder_full_name
-        libraryRows.append(json.dumps(row))
-
       self.m.step(
           'upload artifacts to BigQuery',
           [bqupload_cipd_path, self.bq_art_table],
-          stdin=self.m.raw_io.input(data='\n'.join(artifactRows)),
+          stdin=self.m.raw_io.input(
+              data=self._format_json_for_bq(
+                  json_rows=depbot_result.json.outputs.get('artifacts'),
+                  extra_columns={
+                      "builder": self.m.buildbucket.builder_full_name
+                  })),
       )
 
       self.m.step(
           'upload libraries to BigQuery',
           [bqupload_cipd_path, self.bq_lib_table],
-          stdin=self.m.raw_io.input(data='\n'.join(libraryRows)),
+          stdin=self.m.raw_io.input(
+              data=self._format_json_for_bq(
+                  json_rows=depbot_result.json.outputs.get('libraries'),
+                  extra_columns={
+                      "builder": self.m.buildbucket.builder_full_name
+                  })),
       )
 
       # partybot uses gclient and relies on having depot_tools available in $PATH
@@ -127,14 +144,12 @@ class SsciAPI(recipe_api.RecipeApi):
                   }],
                   name="third_party")))
 
-      thirdparty_rows = []
-      for row in partybot_result.json.outputs.get("third_party"):
-        thirdparty_rows.append(json.dumps(row))
-
       self.m.step(
           'upload third party dependencies to BigQuery',
           [bqupload_cipd_path, self.bq_thirdparty_table],
-          stdin=self.m.raw_io.input(data='\n'.join(thirdparty_rows)),
+          stdin=self.m.raw_io.input(
+              data=self._format_json_for_bq(
+                  partybot_result.json.outputs.get("third_party"))),
       )
 
       # Ensure the CIPD tool versions we're about to use in the SPDX
