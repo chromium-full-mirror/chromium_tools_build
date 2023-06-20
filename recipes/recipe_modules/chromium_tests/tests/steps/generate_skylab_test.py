@@ -79,7 +79,9 @@ def GenTests(api):
                   should_read_isolate=True,
                   experiment_percentage=None,
                   ci_only_tests=True,
-                  tester=''):
+                  tester='',
+                  shards=1,
+                  retries=3):
     builders = {
         builder_group: {
             builder:
@@ -134,6 +136,8 @@ def GenTests(api):
         },
         'description': 'This is a description.',
         'timeout_sec': 7200,
+        'shards': shards,
+        'retries': retries,
     }
     if experiment_percentage is not None:
       test_spec['experiment_percentage'] = experiment_percentage
@@ -180,13 +184,15 @@ def GenTests(api):
   yield api.test(
       'basic for tast',
       boilerplate(
-          'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
+          'chrome-test-builds',
+          tast_expr='("group:mainline" && "dep:lacros")',
+          retries=3),
       api.skylab.mock_wait_on_suites(
           'find test runner build',
           1,
-          runner_builds=[(901, common_pb2.FAILURE),
-                         (902, common_pb2.INFRA_FAILURE),
-                         (903, common_pb2.SUCCESS)]),
+          runner_builds=[[(901, common_pb2.FAILURE),
+                          (902, common_pb2.INFRA_FAILURE),
+                          (903, common_pb2.SUCCESS)]]),
       api.post_process(post_process.StepCommandContains, 'compile', ['chrome']),
       api.post_process(
           post_process.StepCommandContains,
@@ -245,15 +251,62 @@ def GenTests(api):
   )
 
   yield api.test(
+      'some shards had failed before run tests',
+      boilerplate(
+          'chrome-test-builds',
+          tast_expr='("group:mainline" && "dep:lacros")',
+          shards=2,
+          retries=1),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build',
+          2,
+          runner_builds=[[(901, common_pb2.FAILURE)],
+                         [(902, common_pb2.SUCCESS)]]),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.Two']))),
+      api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #0'),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #1'),
+      api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'some shards had exited by infra failure',
+      boilerplate(
+          'chrome-test-builds',
+          tast_expr='("group:mainline" && "dep:lacros")',
+          shards=3,
+          retries=1),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build',
+          3,
+          runner_builds=[[(901, common_pb2.SUCCESS)],
+                         [(902, common_pb2.INFRA_FAILURE)],
+                         [(903, common_pb2.SUCCESS)]]),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.One', 'Test.Two']))),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
+      api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #1'),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #2'),
+      api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'basic for gtest',
       boilerplate(
           'chrome-test-builds',
           test_args='--test-launcher-filter-file=../../testing/buildbot/filter',
           target_name=GTEST_TARGET),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(902, common_pb2.SUCCESS)]),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -444,10 +497,7 @@ def GenTests(api):
       'basic for telemetry test',
       boilerplate(
           'chrome-test-builds', benchmark='speedometer2', target_name='chrome'),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(902, common_pb2.SUCCESS)]),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -474,10 +524,7 @@ def GenTests(api):
           'prepare skylab tests (2).'
           'collect runtime deps for %s.read isolate file' % GTEST_TARGET,
           api.file.read_text(GOOD_ISOLATE_TEXT)),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(902, common_pb2.SUCCESS)]),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -611,7 +658,7 @@ def GenTests(api):
       api.skylab.mock_wait_on_suites(
           'find test runner build',
           1,
-          runner_builds=[(902, common_pb2.SUCCESS)]),
+          runner_builds=[[(902, common_pb2.SUCCESS)]]),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(

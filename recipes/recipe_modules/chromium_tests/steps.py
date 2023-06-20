@@ -3174,13 +3174,21 @@ class SkylabTest(AbstractSkylabTest, Test):
 
       shard_runners = list(self.test_runner_builds.values())
       shard_runners.sort(key=lambda b: b[0].create_time.seconds)
+      success_count = 0
 
       for shard_index, shard_attempt_runners in enumerate(shard_runners):
         with self.api.m.step.nest(
             'shard: #%d' % shard_index, status='last') as shard_step:
           if len(shard_attempt_runners) == 1:
+            runner = shard_attempt_runners[0]
             shard_step.links['shard #%d Test Run' %
-                             shard_index] = bb_url % shard_attempt_runners[0].id
+                             shard_index] = bb_url % runner.id
+            if runner.status == common_pb2.INFRA_FAILURE:
+              shard_step.presentation.status = (self.api.m.step.EXCEPTION)
+            elif runner.status == common_pb2.FAILURE:
+              shard_step.presentation.status = (self.api.m.step.FAILURE)
+            else:
+              success_count += 1
           else:
             shard_attempt_runners.sort(key=lambda b: b.create_time.seconds)
             for i, shard_attempt_runner_build in enumerate(
@@ -3202,6 +3210,10 @@ class SkylabTest(AbstractSkylabTest, Test):
               shard_step.presentation.step_text = (
                   'Test had failed runs. '
                   'Check "Test Results" tab for the deterministic results.')
+              success_count += 1
+      if success_count < len(shard_runners):
+        self._raise_failed_step(suffix, step, self.api.m.step.FAILURE,
+                                'Some shards were unsuccessful.')
 
   def compile_targets(self) -> Iterable[str]:
     t = [self.spec.target_name]

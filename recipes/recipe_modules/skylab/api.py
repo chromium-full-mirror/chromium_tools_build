@@ -197,7 +197,7 @@ class SkylabApi(recipe_api.RecipeApi):
                 step_test_data=lambda: self.m.json.test_api.output_stream(
                     {"Launches": [{
                         "Build": {
-                            "id": str(800),
+                            "id": str(889900 + shard),
                         },
                     }]}))
 

@@ -148,6 +148,7 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
 
   def rdb_results(self,
                   suite_name,
+                  passing_tests=None,
                   failing_tests=None,
                   expected_failing_tests=None,
                   skipped_tests=None,
@@ -158,6 +159,8 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
 
     Args:
       suite_name: Name of the suite.
+      passing_tests: List of test cases to create results for. Each test case
+          will have a single rdb_test_result.PASS result.
       failing_tests: List of test cases to create results for. Each test case
           will have a single rdb_test_result.FAIL result.
       expected_failing_tests: Like failing_tests above, but resultdb will report
@@ -195,6 +198,8 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
           test_results=[test_result])
 
     invocations = []
+    for t in passing_tests or []:
+      invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
     for t in failing_tests or []:
       invocations.append(_generate_invocation(t, rdb_test_result.FAIL, False))
     for t in expected_failing_tests or []:
