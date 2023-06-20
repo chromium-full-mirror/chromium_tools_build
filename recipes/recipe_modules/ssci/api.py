@@ -49,7 +49,8 @@ class SsciAPI(recipe_api.RecipeApi):
         for k, v in extra_columns.items():
           row[k] = v
       rows.append(json.dumps(row))
-      return '\n'.join(rows)
+
+    return '\n'.join(rows)
 
   def _get_product_version(self):
     """Extracts the product version from configuration."""

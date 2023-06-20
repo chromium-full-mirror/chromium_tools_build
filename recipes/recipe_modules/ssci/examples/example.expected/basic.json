@@ -391,7 +391,7 @@
       }
     },
     "name": "ssci collection for //base:base.upload artifacts to BigQuery",
-    "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
+    "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}\n{\"field2\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -414,7 +414,7 @@
       }
     },
     "name": "ssci collection for //base:base.upload libraries to BigQuery",
-    "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
+    "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}\n{\"field2\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -484,7 +484,7 @@
       }
     },
     "name": "ssci collection for //base:base.upload third party dependencies to BigQuery",
-    "stdin": "{\"field1\": \"1234\"}",
+    "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -623,7 +623,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"field2\": \"1234\"}]",
+      "[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]",
       "[CLEANUP]/tmp_tmp_1/libs.json"
     ],
     "infra_step": true,
@@ -642,7 +642,7 @@
     "name": "ssci collection for //base:base.write depbot libraries",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@libs.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"field2\": \"1234\"}]@@@",
+      "@@@STEP_LOG_LINE@libs.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]@@@",
       "@@@STEP_LOG_END@libs.json@@@"
     ]
   },
@@ -654,7 +654,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"field2\": \"1234\"}]",
+      "[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]",
       "[CLEANUP]/tmp_tmp_1/artifacts.json"
     ],
     "infra_step": true,
@@ -673,7 +673,7 @@
     "name": "ssci collection for //base:base.write depbot artifacts",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@artifacts.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"field2\": \"1234\"}]@@@",
+      "@@@STEP_LOG_LINE@artifacts.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]@@@",
       "@@@STEP_LOG_END@artifacts.json@@@"
     ]
   },
