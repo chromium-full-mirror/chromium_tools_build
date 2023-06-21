@@ -130,6 +130,7 @@ def GenTests(api):
           'ITERATIONS': '100',
           'SUITE': 'flaky suite'
       }),
+      api.post_process(post_process.DoesNotRun, 'archive'),
       api.post_process(post_process.DoesNotRun, 'Unit Tests'),
       api.post_process(post_process.Filter('E2E tests')),
   )
@@ -155,6 +156,7 @@ def GenTests(api):
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
               'node runner config pattern', stream='stdout')),
+      api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation))
 
@@ -174,6 +176,7 @@ def GenTests(api):
       api.step_data(
           'E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-18',
           api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation))

@@ -219,7 +219,6 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
-    cas_digest = api.devtools.archive_to_cas()
 
     if not api.devtools.is_parallel_run():
       run_unit_tests(api, builder_config)
@@ -233,6 +232,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
       api.devtools.run_e2e(builder_config)
     else:
+      cas_digest = api.devtools.archive_to_cas()
       tests = [
           UnitTests(api, cas_digest, builder_config, 'Unit Tests'),
           InteractionsTests(api, cas_digest, builder_config,
@@ -399,6 +399,7 @@ def GenTests(api):
   yield api.test(
       'basic try',
       api.builder_group.for_current('tryserver.devtools-frontend'),
+      api.post_process(post_process.DoesNotRun, 'archive'),
       try_build(builder='linux'),
   )
 
@@ -462,6 +463,7 @@ def GenTests(api):
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
               'node runner config pattern', stream='stdout')),
+      api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation))
 
@@ -473,6 +475,7 @@ def GenTests(api):
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
               'node runner config pattern', stream='stdout')),
+      api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation))
 
@@ -493,6 +496,7 @@ def GenTests(api):
           'E2E Tests result collection.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-18',
           api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation))
