@@ -180,7 +180,7 @@ class FlakinessApi(recipe_api.RecipeApi):
         str(build_number) if build_number else 'latest',
     ) + '{}.json.tar.gz'.format(builder.builder)
 
-  def is_test_file_present(self, affected_files=None):
+  def is_test_file_present(self, affected_files):
     """Checks the list of affected files and ensures there's a test file.
 
     This is used to determine whether the flakiness workflow should run.
@@ -192,9 +192,6 @@ class FlakinessApi(recipe_api.RecipeApi):
     Returns:
       (bool) whether a test file is present.
     """
-    affected_files = (
-        affected_files or
-        self.m.chromium_checkout.get_files_affected_by_patch())
     pattern = re.compile(_FILE_PATH_ADDING_TESTS_PATTERN)
     return any(pattern.match(file_path) for file_path in affected_files)
 
@@ -492,6 +489,63 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return new_tests
 
+  def check_test_files(self, new_tests, affected_files):
+    """Determines whether the correct test files are being modified by the patch
+
+    This is used to determine whether the flakiness workflow should run.
+    TestResults from ResultDB can specify a file_path (or a path to its
+    associated test file), relative to the project (chromium/src). This check
+    ensures that new tests that define a file path have that file being
+    modified as part of this change.
+
+    If a test does not define a path, it will by default be added to the list.
+
+    Args:
+      * new_tests: (list) of test objects that are deemed new, meaning that they
+                   have not been run in the past.
+      * affected_files: (list) of files associated with the given change. see
+                        self.m.chromium_checkout.get_files_affected_by_patch.
+
+    Returns:
+      (list) list of new tests that have a file being modified from the patchset
+      or don't have a file_path defined.
+    """
+    excluded_tests = []
+    filtered_tests = []
+    for t in new_tests:
+      # all file paths defined through ResultDB's TestMetadata are relative,
+      # meaning they start with //.
+      # `git diff to analyze patch`
+      # or chromium_checkout.get_files_affected_by_patch() doesn't, so
+      # it needs to be removed.
+      if not t.file_path:
+        # add to list of tests to test for by default. The next RPC call should
+        # re-verify that this is indeed new.
+        filtered_tests.append(t)
+        continue
+
+      fmt_path = t.file_path.strip('/')
+      if fmt_path in affected_files:
+        filtered_tests.append(t)
+      else:
+        excluded_tests.append(t)
+
+    if excluded_tests:
+      # logging purposes
+      with self.m.step.nest('Skipped tests') as s:
+        logs = [
+            ('some tests have been skipped because the file path defined for the '
+             'test is not being modified in this patchset.'),
+            'files affected by this patchset',
+        ]
+        logs += affected_files
+        for et in excluded_tests:
+          logs.append(('test id %s variant_hash %s and path %s' %
+                       (et.test_id, et.variant_hash, et.file_path)))
+        s.logs['skipped tests'] = logs
+
+    return filtered_tests
+
   def _shard_runs(self, total_duration_milliseconds):
     """Calculates and shards endorser test runs considering test duration.
 
@@ -557,12 +611,17 @@ class FlakinessApi(recipe_api.RecipeApi):
           cmd=None)
       return []
 
+    affected_files = (
+        affected_files or
+        self.m.chromium_checkout.get_files_affected_by_patch())
+
     if not self.is_test_file_present(affected_files=affected_files):
       self.m.step('no test files were detected with this change.', cmd=None)
       return []
 
     new_tests = self.identify_new_tests(test_objects)
     new_tests = self.maybe_trim_new_tests(new_tests, _FINAL_TRIM)
+    new_tests = self.check_test_files(new_tests, affected_files)
 
     test_objects_by_suffix = collections.defaultdict(list)
 
