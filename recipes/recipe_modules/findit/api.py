@@ -10,7 +10,14 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 class FinditApi(recipe_api.RecipeApi):
 
-  def get_builder_config(self, target_builder_id, builders=None):
+  def get_builder_config(self, target_builder_id):
+    """Returns the builder config for a target builder.
+
+    If the target builder is not a tester, return its own builder config.
+    If the target builder is a tester, return the config for its parent builder,
+    with the target builder being set as the only builder in scope for
+    testing.
+    """
     _, builder_config = self.m.chromium_tests_builder_config.lookup_builder(
         target_builder_id)
     # The builder config doesn't match the target builder. This shouldn't
@@ -25,9 +32,14 @@ class FinditApi(recipe_api.RecipeApi):
           step_text='Expected config for [{}], got config for {}'.format(
               target_builder_id, list(builder_config.builder_ids)))
     target_builder_spec = builder_config.builder_db[target_builder_id]
+
+    # If the builder is not a tester, return the builder config as-is.
     if target_builder_spec.parent_buildername is None:
       return builder_config
 
+    # If the builder is a tester, the builder configuration should be the one
+    # for its parent, with the builder itself be the only builder in scope for
+    # testing.
     builder_id = chromium.BuilderId.create_for_group(
         target_builder_spec.parent_builder_group or target_builder_id.group,
         target_builder_spec.parent_buildername)
