@@ -31,6 +31,7 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'code_coverage',
     'test_utils',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
@@ -84,6 +85,8 @@ def RunSteps(api):
         enable_infra_failure=True)
     with api.chromium_tests.wrap_chromium_tests(builder_config, tests=tests):
       test_result = test_runner()
+      if api.code_coverage.using_coverage:
+        api.code_coverage.process_coverage_data(tests)
       if (test_result and
           test_result.status not in (common_pb.SUCCESS, common_pb.FAILURE)):
         return test_result
@@ -295,5 +298,41 @@ def GenTests(api):
           }),
       api.override_step_data('fake-gtest', retcode=1),
       api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'process-coverage',
+      api.code_coverage(use_clang_coverage=True),
+      api.chromium.generic_build(
+          project='reviver-project',
+          bucket='reviver-bucket',
+          builder='fake-runner',
+          builder_group=None,
+      ),
+      api.chromium_polymorphic.triggered_properties(
+          project='fake-project',
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder='fake-builder',
+              builder_group='fake-group',
+          ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'fake-gtest',
+                  }],
+                  'scripts': [{
+                      'name': 'fake-script-test',
+                      'script': 'fake-script',
+                  }],
+              },
+          }),
+      api.post_process(post_process.MustRunRE, '.*coverage data.*'),
       api.post_process(post_process.DropExpectation),
   )
