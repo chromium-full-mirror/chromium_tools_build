@@ -832,7 +832,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       - this will only upload when called from pure builders. On builder_testers
         and testers, this is a no-op.
       - this is a no-op for builders that upload to clusterfuzz; those are
-        handled in archive_build.
+        handled in archive_clusterfuzz.
       - this may upload twice on perf builders.
     """
     builder_spec = builder_config.builder_db[builder_id]
@@ -890,11 +890,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         package_step.presentation.logs['why is this running?'] = (
             standard_reasons)
 
-  def archive_build(self,
-                    builder_id,
-                    update_step,
-                    builder_config,
-                    enable_snoopy=False):
+  def archive_build(self, update_step, enable_snoopy=False):
     """Archive the build if the bot is configured to do so.
 
     There are three types of builds that get archived: regular builds,
@@ -906,19 +902,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     This is currently used to store builds long-term and to transfer them
     to clusterfuzz.
     """
-    builder_spec = builder_config.builder_db[builder_id]
-
-    if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
-      self.m.archive.clusterfuzz_archive(
-          build_dir=self.m.chromium.c.build_dir.join(
-              self.m.chromium.c.build_config_fs),
-          update_properties=update_step.presentation.properties,
-          gs_bucket=builder_spec.cf_gs_bucket,
-          gs_acl=builder_spec.cf_gs_acl,
-          archive_prefix=builder_spec.cf_archive_name,
-          archive_subdir_suffix=builder_spec.cf_archive_subdir_suffix,
-      )
-
     # TODO(crbug.com/1138672) Move custom_vars to higher level of recipes.
     custom_vars = {}
     custom_vars['chrome_version'] = self._get_chrome_version()
@@ -934,6 +917,20 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.m.symupload(self.m.chromium.output_dir)
     return upload_results
+
+  def archive_clusterfuzz(self, builder_id, update_step, builder_config):
+    builder_spec = builder_config.builder_db[builder_id]
+
+    if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
+      self.m.archive.clusterfuzz_archive(
+          build_dir=self.m.chromium.c.build_dir.join(
+              self.m.chromium.c.build_config_fs),
+          update_properties=update_step.presentation.properties,
+          gs_bucket=builder_spec.cf_gs_bucket,
+          gs_acl=builder_spec.cf_gs_acl,
+          archive_prefix=builder_spec.cf_archive_name,
+          archive_subdir_suffix=builder_spec.cf_archive_subdir_suffix,
+      )
 
   def _get_chrome_version(self):
     chrome_version = self.m.properties.get('chrome_version')
@@ -1646,8 +1643,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('upload')
-    upload_results = self.archive_build(builder_id, update_step, builder_config,
-                                        self._enable_snoopy)
+
+    self.archive_clusterfuzz(builder_id, update_step, builder_config)
+    upload_results = self.archive_build(update_step, self._enable_snoopy)
+
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('upload-complete')
@@ -2035,6 +2034,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         rts_setting=rts_setting)
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
+
+    self.archive_build(task.bot_update_step, self._enable_snoopy)
 
     self.m.step.empty('mark: before_tests')
     if task.test_suites:

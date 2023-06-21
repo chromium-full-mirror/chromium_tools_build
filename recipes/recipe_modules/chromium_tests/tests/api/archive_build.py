@@ -21,7 +21,9 @@ def RunSteps(api):
         api.chromium_tests_builder_config.lookup_builder())
     api.chromium_tests.configure_build(builder_config)
     update_step, _ = api.chromium_tests.prepare_checkout(builder_config)
-  api.chromium_tests.archive_build(builder_id, update_step, builder_config)
+  api.chromium_tests.archive_clusterfuzz(builder_id, update_step,
+                                         builder_config)
+  api.chromium_tests.archive_build(update_step)
 
 
 def GenTests(api):
