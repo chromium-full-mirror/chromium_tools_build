@@ -111,7 +111,7 @@ def _to_compressed_file_record(lcov_lines, sources=None, diff_mapping=None):
       # SF:<path to source file name>
       assert not path, "Unexpected new SF line %s" % line
       assert not exec_count, "Unexpected exec_count for SF line %s" % line
-      path = line.lstrip(SF_MARKER)
+      path = line.lstrip(SF_MARKER).strip()
     elif line.startswith(DA_MARKER):
       # DA:<line number>,<execution count>[,<checksum>]
       assert path, "Unexpected new DA line %s" % line
