@@ -52,12 +52,16 @@ class SsciAPI(recipe_api.RecipeApi):
 
     return '\n'.join(rows)
 
-  def _get_product_version(self):
-    """Extracts the product version from configuration."""
-    # For now, just use the shortened chrome commit hash. This will need to be replaced
-    # with extracting the actual version of the product/target we're running against
-    # which differs by each recipe.
-    return self.m.buildbucket.gitiles_commit.id[:6]
+  def _get_product_version(self, chrome_version):
+    """
+    Extracts the product version from configuration. Since we're still in testing, this
+    always returns something so we can ensure the build will continue.
+    """
+    if chrome_version is not None:
+      return chrome_version
+
+    commit_id = self.m.buildbucket.gitiles_commit.id[:6]
+    return commit_id or "UNKNOWN"
 
   def run(self,
           src_dir,
@@ -66,8 +70,8 @@ class SsciAPI(recipe_api.RecipeApi):
           json_library_out,
           third_party_out,
           spdx_out,
-          target="//third_party/perfetto/src/tracing/ipc/producer:producer"):
-
+          target="//third_party/perfetto/src/tracing/ipc/producer:producer",
+          chrome_version=None):
 
     # prefer target supplied in properties.
     t = self.target or target
@@ -182,7 +186,7 @@ class SsciAPI(recipe_api.RecipeApi):
       # Combines the recipe name with the DepBot target as the product name.
       recipe_name = self.m.properties["recipe"].split("/")[-1]
       product = f'{recipe_name}.{t.replace("//", "")}'
-      p_version = self._get_product_version()
+      p_version = self._get_product_version(chrome_version)
 
       # The vPython metadata files are found in the parent directory.
       with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):

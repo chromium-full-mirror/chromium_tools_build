@@ -732,7 +732,7 @@
       "-chromium-src",
       "None",
       "-product",
-      "example.base:base",
+      "basic.base:base",
       "-product-version",
       "2d7251",
       "-platform",
