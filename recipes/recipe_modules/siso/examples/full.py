@@ -4,8 +4,6 @@
 
 from recipe_engine import post_process
 
-from PB.recipe_modules.recipe_engine.led.properties import InputProperties
-
 DEPS = [
     'recipe_engine/properties',
     'siso',
@@ -75,11 +73,11 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'config',
+      'configs',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
-      api.siso.properties(config='remote_all'),
+      api.siso.properties(configs=['foo', 'bar']),
       api.post_process(post_process.StepCommandContains, 'compile',
-                       ['--config', 'remote_all']),
+                       ['--config', 'foo,bar']),
       api.post_process(post_process.DropExpectation),
   )
 

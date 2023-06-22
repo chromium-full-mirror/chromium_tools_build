@@ -15,7 +15,7 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                  experiments=None,
                  enable_cloud_profiler=None,
                  enable_cloud_trace=None,
-                 config=None):
+                 configs=None):
     return self.m.properties(
         **{
             '$build/siso': {
@@ -26,6 +26,6 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
                 'experiments': experiments,
                 'enable_cloud_profiler': enable_cloud_profiler,
                 'enable_cloud_trace': enable_cloud_trace,
-                'config': config,
+                'configs': configs,
             },
         })
