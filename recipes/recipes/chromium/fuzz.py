@@ -55,6 +55,7 @@ BUILDERS = freeze({
                         'HOST_PLATFORM': 'linux',
                     },
                     collect_fuzz_coverage=True,
+                    gclient_apply_config=['use_clang_coverage'],
                 ),
         }
     },
