@@ -3142,6 +3142,38 @@ class SkylabTest(AbstractSkylabTest, Test):
     # pylint: disable=useless-super-delegation
     super().pre_run(suffix)  # pragma: no cover
 
+  def _process_attempts(self,
+                        attempt_runners,
+                        step,
+                        bb_url,
+                        shard_index=0) -> None:
+
+    def _map_runner_status(step, runner):
+      if runner.status == common_pb2.INFRA_FAILURE:
+        step.presentation.status = (self.api.m.step.EXCEPTION)
+      elif runner.status == common_pb2.FAILURE:
+        step.presentation.status = (self.api.m.step.FAILURE)
+
+    if len(attempt_runners) == 1:
+      step.links['shard #%d Test Run' %
+                 shard_index] = bb_url % attempt_runners[0].id
+      _map_runner_status(step, attempt_runners[0])
+    else:
+      attempt_runners.sort(key=lambda b: b.create_time.seconds)
+      for i, attempt_runner in enumerate(attempt_runners):
+        with self.api.m.step.nest('attempt: #' + str(i + 1)) as attempt_step:
+          attempt_step.links['Test Run'] = bb_url % attempt_runner.id
+          _map_runner_status(attempt_step, attempt_runner)
+
+      # If the status of any attempt is success, the shard step should be
+      # success too. The "Test Results" tab could expose the detailed flaky
+      # information.
+      if any(b.status == common_pb2.SUCCESS for b in attempt_runners):
+        step.presentation.status = self.api.m.step.SUCCESS
+        step.presentation.step_text = (
+            'Test had failed runs. '
+            'Check "Test Results" tab for the deterministic results.')
+
   @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
 
@@ -3172,46 +3204,25 @@ class SkylabTest(AbstractSkylabTest, Test):
         step.presentation.status = self.api.m.step.FAILURE
       self._present_rdb_results(step, rdb_results)
 
+      # RDB may not collect all failures from test runners. E.g.
+      # infra failure on one shard and did not upload results
+      # to RDB. So iterate all shards and raise a failure
+      # if any shard is not green.
       shard_runners = list(self.test_runner_builds.values())
       shard_runners.sort(key=lambda b: b[0].create_time.seconds)
-      success_count = 0
-
+      shard_steps = []
       for shard_index, shard_attempt_runners in enumerate(shard_runners):
         with self.api.m.step.nest(
             'shard: #%d' % shard_index, status='last') as shard_step:
-          if len(shard_attempt_runners) == 1:
-            runner = shard_attempt_runners[0]
-            shard_step.links['shard #%d Test Run' %
-                             shard_index] = bb_url % runner.id
-            if runner.status == common_pb2.INFRA_FAILURE:
-              shard_step.presentation.status = (self.api.m.step.EXCEPTION)
-            elif runner.status == common_pb2.FAILURE:
-              shard_step.presentation.status = (self.api.m.step.FAILURE)
-            else:
-              success_count += 1
-          else:
-            shard_attempt_runners.sort(key=lambda b: b.create_time.seconds)
-            for i, shard_attempt_runner_build in enumerate(
-                shard_attempt_runners):
-              with self.api.m.step.nest('attempt: #' +
-                                        str(i + 1)) as attempt_step:
-                attempt_step.links[
-                    'Test Run'] = bb_url % shard_attempt_runner_build.id
-                if shard_attempt_runner_build.status == common_pb2.INFRA_FAILURE:
-                  attempt_step.presentation.status = (self.api.m.step.EXCEPTION)
-                elif shard_attempt_runner_build.status == common_pb2.FAILURE:
-                  attempt_step.presentation.status = (self.api.m.step.FAILURE)
-            # If the status of any test run is success, the parent step should be
-            # success too. The "Test Results" tab could expose the detailed flaky
-            # information.
-            if any(
-                b.status == common_pb2.SUCCESS for b in shard_attempt_runners):
-              shard_step.presentation.status = self.api.m.step.SUCCESS
-              shard_step.presentation.step_text = (
-                  'Test had failed runs. '
-                  'Check "Test Results" tab for the deterministic results.')
-              success_count += 1
-      if success_count < len(shard_runners):
+          self._process_attempts(
+              shard_attempt_runners,
+              shard_step,
+              bb_url,
+              shard_index=shard_index)
+          shard_steps.append(shard_step)
+
+      if any(s.presentation.status != self.api.m.step.SUCCESS
+             for s in shard_steps):
         self._raise_failed_step(suffix, step, self.api.m.step.FAILURE,
                                 'Some shards were unsuccessful.')
 
