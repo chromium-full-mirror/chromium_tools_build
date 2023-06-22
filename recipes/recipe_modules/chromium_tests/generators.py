@@ -314,6 +314,8 @@ class Generator:
     kwargs['test_id_prefix'] = raw_test_spec.get('test_id_prefix')
     kwargs['check_flakiness_for_new_tests'] = raw_test_spec.get(
         'check_flakiness_for_new_tests', True)
+    kwargs['allowed_failure_percentage'] = raw_test_spec.get(
+        'allowed_failure_percentage', 0)
     kwargs['name'] = name
 
     swarming_spec = raw_test_spec.get('swarming', {})

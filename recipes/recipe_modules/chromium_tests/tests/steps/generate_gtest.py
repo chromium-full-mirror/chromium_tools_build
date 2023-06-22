@@ -162,6 +162,57 @@ def GenTests(api):
   )
 
   yield api.test(
+      'swarming_with_allowed_failure_percentage',
+      ci_build(
+          test_spec={
+              'test': 'base_unittests',
+              'test_target': '//base:base_unittests',
+              'allowed_failure_percentage': 30,
+              'swarming': {
+                  'can_use_on_swarming_builders': True,
+                  'dimension_sets': [{
+                      'os': 'Linux',
+                      'foo': None,
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          '',
+          failures=['Test1'],
+          successes=['Test2', 'Test3', 'Test4'],
+      ),
+      api.post_process(post_process.StepTextContains,
+                       'Skip the failure of base_unittests', [
+                           'Allowed failure percentage: 30%',
+                           'Deterministic failures: 1', 'Total: 4'
+                       ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'swarming_with_allowed_failure_percentage_no_banner_if_all_passed',
+      ci_build(
+          test_spec={
+              'test': 'base_unittests',
+              'test_target': '//base:base_unittests',
+              'allowed_failure_percentage': 30,
+              'swarming': {
+                  'can_use_on_swarming_builders': True,
+                  'dimension_sets': [{
+                      'os': 'Linux',
+                      'foo': None,
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', '', successes=['Test1']),
+      api.post_process(post_process.DoesNotRun,
+                       'Skip the failure of base_unittests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'swarming_with_legacy_optional_dimensions',
       ci_build(
           test_spec={

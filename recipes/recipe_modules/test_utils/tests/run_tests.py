@@ -84,8 +84,16 @@ def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
 
   if test_swarming:
     test_specs = [
-        MockSwarmingTestSpec.create(name=test_name, **spec_kwargs),
-        MockSwarmingTestSpec.create(name=test_name + '_2', **spec_kwargs),
+        MockSwarmingTestSpec.create(
+            name=test_name,
+            **dict(
+                api.properties.get('src_spec', {}).get(test_name, {}),
+                **spec_kwargs)),
+        MockSwarmingTestSpec.create(
+            name=test_name + '_2',
+            **dict(
+                api.properties.get('src_spec', {}).get(test_name + '_2', {}),
+                **spec_kwargs)),
         steps.MockTestSpec.create(name='test3', **spec_kwargs),
         steps.ExperimentalTestSpec.create(
             MockSwarmingTestSpec.create(
@@ -490,5 +498,44 @@ def GenTests(api):
           'base_unittests', '', failures=['test%d' % i for i in range(11)]),
       api.post_process(post_process.StepTextContains, 'base_unittests',
                        ['... 1 more (11 total) ...']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tests_with_allowed_failure_rates',
+      api.chromium.generic_build(builder='test_builder'),
+      api.properties(
+          test_name='base_unittests',
+          test_swarming=True,
+          swarm_hashes={
+              'base_unittests': '[dummy hash for base_unittests/size]',
+              'base_unittests_2': '[dummy hash for base_unittests_2/size]',
+          },
+          src_spec={
+              'base_unittests': {
+                  'allowed_failure_percentage': 60
+              },
+              'base_unittests_2': {
+                  'allowed_failure_percentage': 30
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          '',
+          failures=['test1'],
+          successes=['test2', 'test3']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests_2',
+          '',
+          failures=['test1'],
+          successes=['test2', 'test3']),
+      api.expect_status('FAILURE'),
+      # Test step still fails because of 'test1'.
+      api.post_process(post_process.StepFailure, 'base_unittests'),
+      api.post_process(post_process.StepFailure, 'base_unittests_2'),
+      # base_unittests_1 should not appear here, because it did not exceed
+      # the allowed failure rate.
+      api.post_process(post_process.SummaryMarkdown,
+                       'failed: base_unittests_2'),
       api.post_process(post_process.DropExpectation),
   )

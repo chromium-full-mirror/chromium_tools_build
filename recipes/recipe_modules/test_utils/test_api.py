@@ -150,6 +150,7 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
                   suite_name,
                   passing_tests=None,
                   failing_tests=None,
+                  passed_tests=None,
                   expected_failing_tests=None,
                   skipped_tests=None,
                   flaky_failing_tests=None,
@@ -206,6 +207,8 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       invocations.append(_generate_invocation(t, rdb_test_result.FAIL, True))
     for t in skipped_tests or []:
       invocations.append(_generate_invocation(t, rdb_test_result.SKIP, False))
+    for t in passed_tests or []:
+      invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
     for t in flaky_failing_tests or []:
       invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
       invocations.append(_generate_invocation(t, rdb_test_result.FAIL, False))

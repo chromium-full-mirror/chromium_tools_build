@@ -183,6 +183,22 @@ class TestUtilsApi(recipe_api.RecipeApi):
       ])
     return r
 
+  def _suite_exceed_allowed_failure_rate(self, suite, suffix: str) -> bool:
+    """A helper to check if test failures exceed suite's expectation.
+
+    Args:
+        suite: steps.Test object
+        suffix: string suffix designating test variant to pay attention to
+    Returns:
+        A boolean value indicating whether the number of test failures exceeds
+          the allowed failure rate.
+    """
+    if not suite.spec.allowed_failure_percentage:
+      return True
+    return (len(suite.failures(suffix)) /
+            len(suite.get_rdb_results(suffix).all_tests)
+           ) * 100 > suite.spec.allowed_failure_percentage
+
   def _retrieve_bad_results(self, suites, suffix):
     """Extract invalid and failed suites from a list of suites.
 
@@ -200,6 +216,15 @@ class TestUtilsApi(recipe_api.RecipeApi):
       if not t.has_valid_results(suffix):
         invalid_results.append(t)
       elif t.deterministic_failures(suffix) and t not in failed_test_suites:
+        if not self._suite_exceed_allowed_failure_rate(t, suffix):
+          s = self.m.step.empty(f'Skip the failure of {t.name}')
+          step_text = ('Allowed failure percentage: '
+                       f'{t.spec.allowed_failure_percentage}%\n')
+          step_text += 'Deterministic failures: '
+          step_text += f'{len(t.deterministic_failures(suffix))}\n'
+          step_text += f'Total: {len(t.get_rdb_results(suffix).all_tests)}\n'
+          s.presentation.step_text = step_text
+          continue
         failed_test_suites.append(t)
     return invalid_results, failed_test_suites
 
@@ -680,13 +705,16 @@ class TestUtilsApi(recipe_api.RecipeApi):
         set(old_invalid_suites).intersection(retried_invalid_suites))
     return still_invalid_swarming_suites + non_swarming_invalid_suites
 
-  def _should_abort_tryjob(self, rdb_results):
+  def _should_abort_tryjob(self, rdb_results, allowed_failing_suites):
     """Determines if the current recipe should skip its next retry phases.
 
     Args:
       rdb_results: util.RDBResults instance for test results as reported by RDB
+      allowed_failing_suites: A list of suite names, whose failures did not
+        exceed the expectations. Remove them from unexpected_failing_suites
+        and do not retry them.
     Return:
-      True if we shold skip retries; False otherwise.
+      True if we should skip retries; False otherwise.
     """
     try:
       skip_retry_footer = self.m.tryserver.get_footer(
@@ -703,17 +731,20 @@ class TestUtilsApi(recipe_api.RecipeApi):
                 self.m.tryserver.constants.SKIP_RETRY_FOOTER))
         return True
 
-    unexpected_count = len(rdb_results.unexpected_failing_suites)
-    should_abort = unexpected_count >= self._min_failed_suites_to_skip_retry
+    unexpected = [
+        x.suite_name
+        for x in rdb_results.unexpected_failing_suites
+        if x.suite_name not in allowed_failing_suites
+    ]
+    should_abort = len(unexpected) >= self._min_failed_suites_to_skip_retry
     if should_abort:
       result = self.m.step('abort retry', [])
       result.presentation.status = self.m.step.FAILURE
       result.presentation.step_text = (
           '\nskip retrying because there are >= {} test suites with test '
           'failures and it most likely indicates a problem with the CL. These '
-          'suites being:\n{}'.format(
-              self._min_failed_suites_to_skip_retry, '\n'.join(
-                  s.suite_name for s in rdb_results.unexpected_failing_suites)))
+          'suites being:\n{}'.format(self._min_failed_suites_to_skip_retry,
+                                     '\n'.join(x for x in unexpected)))
     else:
       result = self.m.step('proceed with retry', [])
       result.presentation.step_text = (
@@ -769,7 +800,13 @@ class TestUtilsApi(recipe_api.RecipeApi):
     rdb_results, invalid_test_suites, failed_test_suites = (
         self.run_tests_once(test_suites, suffix, sort_by_shard=sort_by_shard))
 
-    if self.m.tryserver.is_tryserver and self._should_abort_tryjob(rdb_results):
+    _allowed_failing_suites = [
+        x.name
+        for x in test_suites
+        if not self._suite_exceed_allowed_failure_rate(x, suffix)
+    ]
+    if self.m.tryserver.is_tryserver and self._should_abort_tryjob(
+        rdb_results, allowed_failing_suites=_allowed_failing_suites):
       return invalid_test_suites, invalid_test_suites + failed_test_suites
 
     exonerated_suites_to_retry = []
@@ -1112,6 +1149,10 @@ class TestGroup:
                         force_fetch_all_results=False):
     """Queries RDB for the given test's results.
 
+    If suite has allowed_failure_percentage configured, need to fetch all
+    results, in spite of the input force_fetch_all_results, to calculate the
+    failure rate.
+
     If Flake Endorser is enabled and the target result count is not too large
     (the limit is set in flakiness module), the method collects all results.
     Otherwise, the method collects only test results from variants that have
@@ -1122,10 +1163,10 @@ class TestGroup:
       test: steps.Test object for the given test.
       suffix: Test name suffix.
       flakiness_api: Recipe API object for the flakiness recipe module.
-      force_fetch_all_results: If True, return all test results. If False, use
-        Flake Endorser enable status and result size to determine whether to
-        collect all results or only results from variants with unexpected
-        results.
+      force_fetch_all_results: If True, return all tests results. All results
+        will be returned regardless if the test has `allowed_failure_percentage`
+        specified or if Flake Endorser is enabled and the result sizes are below
+        a limit.
     """
     if not test.is_enabled:
       res = RDBPerSuiteResults.create({},
@@ -1143,7 +1184,7 @@ class TestGroup:
       test_stats = self.resultdb_api.query_test_result_statistics(
           invocations=invocation_names, step_name='%s stats' % test.name)
       variants_with_unexpected_results = True
-      if (force_fetch_all_results or
+      if (force_fetch_all_results or test.spec.allowed_failure_percentage or
           (flakiness_api.check_for_flakiness and test_stats.total_test_results
            <= flakiness_api.PER_TEST_OBJECT_RESULT_LIMIT)):
         variants_with_unexpected_results = False

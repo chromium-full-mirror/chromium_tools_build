@@ -670,6 +670,9 @@ class TestSpec(AbstractTestSpec):
     * test_id_prefix: A prefix to be added to the test Id for the test
       e.g.
       "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/".
+    * allowed_failure_percentage: Percentage in int to represent the
+      allowed failure rate of a suite. If a suite has fewer
+      test failures than this threshold, it will not fail the build.
   """
 
   _name = attrib(str)
@@ -683,6 +686,7 @@ class TestSpec(AbstractTestSpec):
   test_id_prefix = attrib(str, default=None)
   check_flakiness_for_new_tests = attrib(bool, default=True)
   results_handler_name = attrib(str, default=None)
+  allowed_failure_percentage = attrib(int, default=0)
 
   @property
   def name(self):

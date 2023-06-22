@@ -47,7 +47,8 @@ def RunSteps(api):
     rdb_suite_results.append(
         util.RDBPerSuiteResults.create(invocation_dict, suite, suite, 1))
   rdb_results = util.RDBResults.create(rdb_suite_results)
-  should_abort = api.test_utils._should_abort_tryjob(rdb_results)
+  should_abort = api.test_utils._should_abort_tryjob(rdb_results,
+                                                     ['fake_suite0'])
 
   expected_should_abort = api.properties.get('expected_should_abort', False)
   api.assertions.assertEqual(should_abort, expected_should_abort)
@@ -76,7 +77,7 @@ def GenTests(api):
       'resultdb-retry-abort',
       api.chromium.try_build(),
       api.properties(
-          num_failed_suites=10,
+          num_failed_suites=11,
           expected_should_abort=True,
           **{
               '$build/test_utils': {
@@ -84,6 +85,13 @@ def GenTests(api):
               },
           }),
       api.post_check(post_process.MustRun, 'abort retry'),
+      # fake_suite0 should not be here as it is allowed.
+      api.post_check(
+          post_process.StepTextEquals, 'abort retry',
+          ('<br/>skip retrying because there are >= 10 test suites '
+           'with test failures and it most likely indicates a '
+           'problem with the CL. These suites being:<br/>'
+           f'{"<br/>".join("fake_suite"+str(i) for i in range(1, 11))}')),
       api.post_process(post_process.DropExpectation),
   )
 
