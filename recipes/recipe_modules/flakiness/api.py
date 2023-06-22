@@ -539,10 +539,17 @@ class FlakinessApi(recipe_api.RecipeApi):
             'files affected by this patchset',
         ]
         logs += affected_files
+        logs.append('excluded tests:')
         for et in excluded_tests:
           logs.append(('test id %s variant_hash %s and path %s' %
                        (et.test_id, et.variant_hash, et.file_path)))
         s.logs['skipped tests'] = logs
+
+        new_test_logs = []
+        for nt in filtered_tests:
+          new_test_logs.append(('test id %s variant_hash %s and path %s' %
+                                (nt.test_id, nt.variant_hash, nt.file_path)))
+        s.logs['new tests'] = new_test_logs
 
     return filtered_tests
 
