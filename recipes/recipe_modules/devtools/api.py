@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from contextlib import contextmanager
-import os
 from pathlib import Path
 from recipe_engine import recipe_api
 
@@ -126,16 +125,18 @@ class DevToolsAPI(recipe_api.RecipeApi):
                                   cas_digest,
                                   commands,
                                   task_output_dir=None,
+                                  env=None,
                                   args=None):
     args = list(args or [])
     tasks = []
+    if not env:
+      env = {}
 
     self.m.chromium_swarming.default_priority = (
         25 if self.m.tryserver.is_tryserver else 35)
 
     with self.m.step.nest(f'{step_name} shards'):
       for i in range(len(commands)):
-        env = {}
         if commands[i][0].startswith('ITERATIONS='):
           env['ITERATIONS'] = commands[i].pop(0).split('=')[1]
         task = self.m.chromium_swarming.task(

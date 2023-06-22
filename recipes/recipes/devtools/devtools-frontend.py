@@ -131,13 +131,27 @@ class InteractionsTests(DevToolsTests):
     super().__init__(api, cas_digest, builder_config, step_name)
 
   def _collect_tasks(self):
+    step_failure = {'failed': False, 'text': ''}
     if self.api.tryserver.is_tryserver:
-      with self.api.step.nest(f'{self.step_name} shards results') as step:
-        for task in self.tasks:
-          self.api.chromium_swarming.collect_task(task).get_result()
-      self.api.step.raise_on_failure(step)
+      with self.api.step.nest(f'{self.step_name} shards results') \
+        as presentation:
+        for i in range(len(self.tasks)):
+          self.api.chromium_swarming.collect_task(self.tasks[i]).get_result()
+      if presentation.status != self.api.step.SUCCESS:
+        step_failure['failed'] = True
+        step_failure['text'] = f'Failure in shard(s) #{i}'
     else:
-      super()._collect_tasks()
+      failed_shards = []
+      for i in range(len(self.tasks)):
+        step, is_valid = self.api.chromium_swarming.collect_task(self.tasks[i])
+        self.tasks_results.append(step)
+        if step.presentation.status != self.api.step.SUCCESS or not is_valid:
+          failed_shards.append(i)
+      if failed_shards:
+        step_failure['failed'] = True
+        step_failure['text'] = 'Failure in shard(s) ' + \
+                          f'#{", ".join([str(x) for x in failed_shards])}.'
+    return step_failure
 
   def trigger(self):
     with self.api.step.nest(self.step_name):
@@ -145,6 +159,10 @@ class InteractionsTests(DevToolsTests):
           step_name=self.step_name,
           cas_digest=self.cas_digest,
           task_output_dir=self.output_dir,
+          env={
+              "FORCE_UPDATE_ALL_GOLDENS": 'True',
+              "THROW_AFTER_GOLDENS_UPDATE": 'True',
+          },
           commands=[[
               self.api.path.join('third_party', 'node', 'node.py'),
               "--output",
@@ -162,10 +180,12 @@ class InteractionsTests(DevToolsTests):
   def collect(self):
     with self.api.step.nest(f'{self.step_name} result collection'):
       with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
-        self._collect_tasks()
-      self.copy_coverage_data()
-      self.copy_golden_snapshots()
-      publish_coverage_points(self.api)
+        result = self._collect_tasks()
+        self.copy_coverage_data()
+        self.copy_golden_snapshots()
+        publish_coverage_points(self.api)
+      if result['failed']:
+        raise StepFailure(result['text'])
 
   def copy_coverage_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
@@ -498,5 +518,44 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation))
+
+  data = {
+      'shards': [{
+          'state': 'COMPLETED (FAILURE)',
+      }]
+  }
+  yield api.test(
+      'cq failed parallel builder on interactions',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='parallel_linux'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data(
+          'Interactions Tests result collection.Interactions Tests shards ' +
+          'results.Interactions Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data)),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation))
+
+  data = {
+      'shards': [{
+          'state': 'COMPLETED (FAILURE)',
+      }]
+  }
+  yield api.test(
+      'ci failed parallel builder on interactions',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data(
+          'Interactions Tests result collection.Interactions Tests ' +
+          '(Shard #0) on Ubuntu-18', api.chromium_swarming.summary(None, data)),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation))
