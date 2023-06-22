@@ -333,11 +333,17 @@
       "--build-dir",
       "out/Release",
       "--json-artifact-output",
-      "/path/to/tmp/json",
+      "[CLEANUP]/tmp_tmp_1/artifacts.json",
       "--json-library-output",
-      "/path/to/tmp/json",
+      "[CLEANUP]/tmp_tmp_2/libraries.json",
       "--fast=False"
     ],
+    "cost": {
+      "cpu": 2000,
+      "disk": 0,
+      "memory": 4000,
+      "net": 0
+    },
     "luci_context": {
       "realm": {
         "name": "myproject:mybucket"
@@ -352,31 +358,15 @@
     },
     "name": "ssci collection for //base:base.run depbot",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@[@@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@  {@@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@    \"field1\": \"1234\"@@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@  }, @@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@  {@@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@    \"field2\": \"1234\"@@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@  }@@@",
-      "@@@STEP_LOG_LINE@json.output[artifacts]@]@@@",
-      "@@@STEP_LOG_END@json.output[artifacts]@@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@[@@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@  {@@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@    \"field1\": \"1234\"@@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@  }, @@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@  {@@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@    \"field2\": \"1234\"@@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@  }@@@",
-      "@@@STEP_LOG_LINE@json.output[libraries]@]@@@",
-      "@@@STEP_LOG_END@json.output[libraries]@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "project.dataset.table"
+      "--json-list=true",
+      "project.dataset.table",
+      "[CLEANUP]/tmp_tmp_1/artifacts.json"
     ],
     "luci_context": {
       "realm": {
@@ -391,7 +381,6 @@
       }
     },
     "name": "ssci collection for //base:base.upload artifacts to BigQuery",
-    "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}\n{\"field2\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -399,7 +388,9 @@
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "project.dataset.table"
+      "--json-list=true",
+      "project.dataset.table",
+      "[CLEANUP]/tmp_tmp_2/libraries.json"
     ],
     "luci_context": {
       "realm": {
@@ -414,7 +405,6 @@
       }
     },
     "name": "ssci collection for //base:base.upload libraries to BigQuery",
-    "stdin": "{\"field1\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}\n{\"field2\": \"1234\", \"builder\": \"myproject/mybucket/mybuilder\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -427,7 +417,7 @@
       "partybot",
       "",
       "--file",
-      "/path/to/tmp/json",
+      "[CLEANUP]/tmp_tmp_3/third_party.json",
       "--os",
       "mybuilder"
     ],
@@ -454,22 +444,15 @@
     },
     "name": "ssci collection for //base:base.run partybot to collect 3P deps",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@[@@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@  {@@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@    \"field1\": \"1234\"@@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@  }, @@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@  {@@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@    \"field2\": \"1234\"@@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@  }@@@",
-      "@@@STEP_LOG_LINE@json.output[third_party]@]@@@",
-      "@@@STEP_LOG_END@json.output[third_party]@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "project.dataset.table"
+      "--json-list=true",
+      "project.dataset.table",
+      "[CLEANUP]/tmp_tmp_3/third_party.json"
     ],
     "luci_context": {
       "realm": {
@@ -484,7 +467,6 @@
       }
     },
     "name": "ssci collection for //base:base.upload third party dependencies to BigQuery",
-    "stdin": "{\"field1\": \"1234\"}\n{\"field2\": \"1234\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -618,109 +600,16 @@
   {
     "cmd": [
       "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]",
-      "[CLEANUP]/tmp_tmp_1/libs.json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "myproject:mybucket"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ssci collection for //base:base.write depbot libraries",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@libs.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]@@@",
-      "@@@STEP_LOG_END@libs.json@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]",
-      "[CLEANUP]/tmp_tmp_1/artifacts.json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "myproject:mybucket"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ssci collection for //base:base.write depbot artifacts",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@artifacts.json@[{\"builder\": \"myproject/mybucket/mybuilder\", \"field1\": \"1234\"}, {\"builder\": \"myproject/mybucket/mybuilder\", \"field2\": \"1234\"}]@@@",
-      "@@@STEP_LOG_END@artifacts.json@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[{\"field1\": \"1234\"}, {\"field2\": \"1234\"}]",
-      "[CLEANUP]/tmp_tmp_1/third_party.json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "myproject:mybucket"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ssci collection for //base:base.write third party data",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@third_party.json@[{\"field1\": \"1234\"}, {\"field2\": \"1234\"}]@@@",
-      "@@@STEP_LOG_END@third_party.json@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
       "--vpython-spec=.vpython3",
       "-m",
       "ssci",
       "spdx",
       "-libraries",
-      "[CLEANUP]/tmp_tmp_1/libs.json",
+      "[CLEANUP]/tmp_tmp_2/libraries.json",
       "-artifacts",
       "[CLEANUP]/tmp_tmp_1/artifacts.json",
       "-thirdparty",
-      "[CLEANUP]/tmp_tmp_1/third_party.json",
+      "[CLEANUP]/tmp_tmp_3/third_party.json",
       "-depbot-version",
       "resolved-instance_id-of-latest----------",
       "-partybot-version",

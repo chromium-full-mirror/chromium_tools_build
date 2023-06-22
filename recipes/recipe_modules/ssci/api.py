@@ -33,25 +33,6 @@ class SsciAPI(recipe_api.RecipeApi):
     desc = self.m.cipd.describe(package_name, package_version)
     return desc.pin.instance_id
 
-  def _format_json_for_bq(self, json_rows, extra_columns=None):
-    """Format JSON objects for writing to BQ
-
-    Args:
-      json_rows (list): list of JSON objects.
-      extra_coumns (dict): key value pairs to add to each row.
-
-    Returns:
-      new line delimited JSON string.
-    """
-    rows = []
-    for row in json_rows:
-      if extra_columns:
-        for k, v in extra_columns.items():
-          row[k] = v
-      rows.append(json.dumps(row))
-
-    return '\n'.join(rows)
-
   def _get_product_version(self, chrome_version):
     """
     Extracts the product version from configuration. Since we're still in testing, this
@@ -63,15 +44,17 @@ class SsciAPI(recipe_api.RecipeApi):
     commit_id = self.m.buildbucket.gitiles_commit.id[:6]
     return commit_id or "UNKNOWN"
 
-  def run(self,
-          src_dir,
-          build_dir,
-          json_artifact_out,
-          json_library_out,
-          third_party_out,
-          spdx_out,
-          target="//third_party/perfetto/src/tracing/ipc/producer:producer",
-          chrome_version=None):
+  def run(
+      self,
+      src_dir,
+      build_dir,
+      spdx_out,
+      target="//third_party/perfetto/src/tracing/ipc/producer:producer",
+      chrome_version=None,
+      json_artifact_out=None,
+      json_library_out=None,
+      third_party_out=None,
+  ):
 
     # prefer target supplied in properties.
     t = self.target or target
@@ -87,7 +70,14 @@ class SsciAPI(recipe_api.RecipeApi):
       ssci_cipd_path = self.m.cipd.ensure_tool('infra_internal/tools/ssci',
                                                self.ssci_version)
 
-      depbot_result = self.m.step(
+      if not json_artifact_out:
+        json_artifact_out = self.m.path.mkdtemp().join("artifacts.json")
+      if not json_library_out:
+        json_library_out = self.m.path.mkdtemp().join("libraries.json")
+      if not third_party_out:
+        third_party_out = self.m.path.mkdtemp().join("third_party.json")
+
+      self.m.step(
           'run depbot', [
               depbot_path, '--target', t, '--chromium-src-dir', src_dir,
               '--log-level', 'debug', '--gn-path',
@@ -96,66 +86,33 @@ class SsciAPI(recipe_api.RecipeApi):
               '--json-library-output', json_library_out,
               '--fast=' + str(self.fast_mode)
           ],
-          step_test_data=(lambda: self.m.json.test_api.output(
-              data=[{
-                  "field1": "1234"
-              }, {
-                  "field2": "1234"
-              }], name='artifacts') + self.m.json.test_api.output(
-                  data=[{
-                      "field1": "1234"
-                  }, {
-                      "field2": "1234"
-                  }],
-                  name='libraries')))
+          cost=self.m.step.ResourceCost(
+              cpu=2 * self.m.step.CPU_CORE, memory=4000))
 
-      self.m.step(
-          'upload artifacts to BigQuery',
-          [bqupload_cipd_path, self.bq_art_table],
-          stdin=self.m.raw_io.input(
-              data=self._format_json_for_bq(
-                  json_rows=depbot_result.json.outputs.get('artifacts'),
-                  extra_columns={
-                      "builder": self.m.buildbucket.builder_full_name
-                  })),
-      )
+      self.m.step('upload artifacts to BigQuery', [
+          bqupload_cipd_path, "--json-list=true", self.bq_art_table,
+          json_artifact_out
+      ])
 
-      self.m.step(
-          'upload libraries to BigQuery',
-          [bqupload_cipd_path, self.bq_lib_table],
-          stdin=self.m.raw_io.input(
-              data=self._format_json_for_bq(
-                  json_rows=depbot_result.json.outputs.get('libraries'),
-                  extra_columns={
-                      "builder": self.m.buildbucket.builder_full_name
-                  })),
-      )
+      self.m.step('upload libraries to BigQuery', [
+          bqupload_cipd_path, "--json-list=true", self.bq_lib_table,
+          json_library_out
+      ])
 
       # partybot uses gclient and relies on having depot_tools available in $PATH
       with self.m.depot_tools.on_path():
         # The vPython metadata files are found in the parent directory.
         with self.m.context(cwd=self.m.path.dirname(partybot_cipd_path)):
-          partybot_result = self.m.step(
-              "run partybot to collect 3P deps", [
-                  "vpython3", "--vpython-spec=.vpython3", "-m", "partybot",
-                  self.m.path.dirname(src_dir), "--file", third_party_out,
-                  "--os", self.m.buildbucket.build.builder.builder
-              ],
-              step_test_data=(lambda: self.m.json.test_api.output(
-                  data=[{
-                      "field1": "1234"
-                  }, {
-                      "field2": "1234"
-                  }],
-                  name="third_party")))
+          self.m.step("run partybot to collect 3P deps", [
+              "vpython3", "--vpython-spec=.vpython3", "-m", "partybot",
+              self.m.path.dirname(src_dir), "--file", third_party_out, "--os",
+              self.m.buildbucket.build.builder.builder
+          ])
 
-      self.m.step(
-          'upload third party dependencies to BigQuery',
-          [bqupload_cipd_path, self.bq_thirdparty_table],
-          stdin=self.m.raw_io.input(
-              data=self._format_json_for_bq(
-                  partybot_result.json.outputs.get("third_party"))),
-      )
+      self.m.step('upload third party dependencies to BigQuery', [
+          bqupload_cipd_path, "--json-list=true", self.bq_thirdparty_table,
+          third_party_out
+      ])
 
       # Ensure the CIPD tool versions we're about to use in the SPDX
       # document actually mean something.
@@ -166,17 +123,6 @@ class SsciAPI(recipe_api.RecipeApi):
           "infra_internal/tools/partybot", self.partybot_version)
       ssci_cipd_version = self._cipd_version("infra_internal/tools/ssci",
                                              self.ssci_version)
-
-      data_dir = self.m.path.mkdtemp()
-      self.m.file.write_json("write depbot libraries",
-                             self.m.path.join(data_dir, "libs.json"),
-                             depbot_result.json.outputs.get('libraries'))
-      self.m.file.write_json("write depbot artifacts",
-                             self.m.path.join(data_dir, "artifacts.json"),
-                             depbot_result.json.outputs.get('artifacts'))
-      self.m.file.write_json("write third party data",
-                             self.m.path.join(data_dir, "third_party.json"),
-                             partybot_result.json.outputs.get('third_party'))
 
       # Determine whether SPDX file should be generated with minimal fields or not
       minimal_config = "-full-spdx"
@@ -193,14 +139,12 @@ class SsciAPI(recipe_api.RecipeApi):
         self.m.step(
             'run ssci tool to generate SPDX sbom', [
                 "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
-                "-libraries",
-                self.m.path.join(data_dir, "libs.json"), "-artifacts",
-                self.m.path.join(data_dir, "artifacts.json"), "-thirdparty",
-                self.m.path.join(data_dir, "third_party.json"),
-                "-depbot-version", depbot_cipd_version, "-partybot-version",
-                partybot_cipd_version, "-ssci-version", ssci_cipd_version,
-                "-output-file", spdx_out, "-chromium-src", src_dir, "-product",
-                product, "-product-version", p_version, "-platform",
+                "-libraries", json_library_out, "-artifacts", json_artifact_out,
+                "-thirdparty", third_party_out, "-depbot-version",
+                depbot_cipd_version, "-partybot-version", partybot_cipd_version,
+                "-ssci-version", ssci_cipd_version, "-output-file", spdx_out,
+                "-chromium-src", src_dir, "-product", product,
+                "-product-version", p_version, "-platform",
                 self.m.platform.name, "-arch",
                 f"{self.m.platform.arch}{self.m.platform.bits}", minimal_config
             ],
