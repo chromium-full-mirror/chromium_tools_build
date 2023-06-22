@@ -1180,7 +1180,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
               json_artifact_out=self.m.json.output(name="artifacts"),
               json_library_out=self.m.json.output(name="libraries"),
               third_party_out=self.m.json.output(name="third_party"),
-              spdx_out=self.m.json.output(name="spdx"))
+              spdx_out=self.m.json.output(name="spdx"),
+              chrome_version=self._get_chrome_version())
 
       return self.m.chromium.compile(
           compile_targets,
