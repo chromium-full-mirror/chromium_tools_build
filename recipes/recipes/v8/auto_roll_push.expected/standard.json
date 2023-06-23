@@ -95,25 +95,6 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
-      "--url",
-      "https://v8-roll.appspot.com/status",
-      "--status-json",
-      "/path/to/tmp/json",
-      "--outfile",
-      "/path/to/tmp/"
-    ],
-    "name": "check roll status",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@Pushing activated@@@",
-      "@@@STEP_LOG_LINE@output@1@@@",
-      "@@@STEP_LOG_END@output@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "-u",
       "[CACHE]/builder/v8/tools/release/auto_push.py",

@@ -21,18 +21,6 @@ def RunSteps(api):
   api.gclient.set_config('v8')
   api.v8.checkout()
 
-  output = api.url.get_text(
-      'https://v8-roll.appspot.com/status',
-      step_name='check roll status',
-      default_test_data='1',
-    ).output
-  api.step.active_result.presentation.logs['output'] = output.splitlines()
-  if output.strip() != '1':
-    api.step.active_result.presentation.step_text = "Pushing deactivated"
-    return
-
-  api.step.active_result.presentation.step_text = "Pushing activated"
-
   with api.context(cwd=api.path['checkout']):
     safe_buildername = ''.join(
       c if c.isalnum() else '_' for c in api.buildbucket.builder_name)
@@ -54,9 +42,5 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'standard',
-  )
-
-  yield api.test(
-      'rolling_deactivated',
-      api.url.text('check roll status', '0'),
+      api.expect_status('SUCCESS'),
   )
