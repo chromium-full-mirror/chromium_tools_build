@@ -688,10 +688,10 @@ def _generate_metadata(src_path,
                                       binaries, sources, output_dir, exclusions,
                                       arch)
   else:
-    logging.info(
-        "A profdata file was provided. Skipping _get_raw_coverage_data.")
     logging.info('The variable llvm_cov_path is %s' % llvm_cov_path)
-    raw_data = profdata_path
+    raw_data = _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir,
+                                      binaries, sources, output_dir, exclusions,
+                                      arch)
     third_party_inclusion_subdirs = None
     component_mapping = None
     diff_mapping = None
@@ -731,7 +731,7 @@ def _generate_metadata(src_path,
   summaries = _get_per_target_coverage_summary(profdata_path, llvm_cov_path,
                                                build_dir, binaries, arch)
 
-  if (diff_mapping is None) and not is_fuzz_coverage:
+  if (diff_mapping is None):
     repository_util.AddGitRevisionsToCoverageFilesMetadata(
         files_coverage, src_path, 'DEPS')
 
@@ -865,6 +865,11 @@ def _parse_args(args):
       '--fuzz',
       action='store_true',
       help='indicates whether we are generating fuzzing coverage')
+  parser.add_argument(
+      '--profdata-dir',
+      type=str,
+      help=('Data in which profdata files are stored. Used by fuzzing coverage'
+            'to determine which fuzzer binaries successfully ran.'))
   return parser.parse_args(args=args)
 
 
@@ -921,12 +926,20 @@ def main():
   summaries = ''
 
   if (params.fuzz):
+    binaries = []
+    for profdata in os.listdir(params.profdata_dir):
+      binary_name = profdata.split(".")[0]
+      binary_abspath = os.path.join(str(params.build_dir), binary_name)
+      assert os.path.isfile(binary_abspath), ('Binary %s does not exist' %
+                                              binary_abspath)
+      binaries.append(binary_abspath)
     data, summaries = _generate_metadata(
         params.src_path,
         params.output_dir,
         params.profdata_path,
         params.llvm_cov,
-        params.build_dir, [],
+        params.build_dir,
+        binaries,
         component_mapping,
         abs_sources,
         diff_mapping=diff_mapping,

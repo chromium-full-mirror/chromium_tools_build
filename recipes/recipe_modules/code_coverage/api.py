@@ -1008,17 +1008,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     return chromium_swarming.MergeScript(
         script=self.m.profiles.merge_results_script, args=args)
 
-  def _upload_fuzz_coverage_data(self):
-    self.m.gsutil.upload(
-        self.metadata_dir,
-        self._gs_bucket,
-        'fuzz_coverage',
-        link_name='Coverage Metadata',
-        args=['-r'],
-        multithreaded=True,
-        name='upload fuzz coverage metadata')
-
-  def get_chromium_fuzz_coverage(self, src_dir, build_dir, llvm_raw_data):
+  def get_chromium_fuzz_coverage(self, src_dir, build_dir, llvm_raw_data,
+                                 profdata_dir):
     """ Generates fuzz coverage information. """
     llvm_cov = src_dir.join('third_party').join('llvm-build').join(
         'Release+Asserts').join('bin').join('llvm-cov')
@@ -1037,10 +1028,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         '--profdata-path',
         llvm_raw_data,
         '--fuzz',
+        '--profdata-dir',
+        profdata_dir,
     ]
     self.m.step('generate coverage metadata', cmd)
 
-    self._upload_fuzz_coverage_data()
+    self._persist_coverage_artifacts(source_dir=self.metadata_dir)
+    self._set_builder_output_properties_for_uploads(has_coverage_data=True)
 
   def _compose_gs_path_for_coverage_data(self, data_type, mimic_builder_name):
     build = self.m.buildbucket.build

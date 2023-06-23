@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import re
+
 from recipe_engine import post_process
 from recipe_engine.post_process import StepCommandRE, DropExpectation
 from recipe_engine.engine_types import freeze
@@ -368,8 +369,8 @@ def RunSteps(api):
       api.chromium.mb_gen(builder_id, gn_args_location=api.gn.LOGS)
 
     # Up until now we work in terms of GN labels so that we can use
-    # api.filter.analyze above in the trybot case. We now convert the GN labels to
-    # ninja targets and pass them into compile.
+    # api.filter.analyze above in the trybot case. We now convert the GN labels
+    # to ninja targets and pass them into compile.
     targets = list(api.gn.ls(outdir, targets, output_format='output'))
 
     # For iOS, the target list from |api.gn.refs| is a list of paths like
@@ -399,10 +400,11 @@ def RunSteps(api):
       with api.step.nest('process fuzz coverage') as step_result:
         try:
           corpora_dir = 'current-corpora-from-clusterfuzz'
-          profdata_dir = 'profdata-output-dir'
+          profdata_dir = str(
+              api.chromium_checkout.src_dir.join('out', 'profdata-output-dir'))
           build_dir = "out/Release"
           api.step('make corpora directory', ['mkdir', corpora_dir])
-          api.step('make profdata directory', ['mkdir', profdata_dir])
+          api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
           api.step('download corpora', [
               'python3', 'tools/code_coverage/download_fuzz_corpora.py',
               '--download-dir', corpora_dir, '--build-dir', build_dir
@@ -414,13 +416,15 @@ def RunSteps(api):
           ])
           api.step('merge all fuzzers', [
               'python3', 'tools/code_coverage/merge_all_profdata.py',
-              '--profdata-dir', profdata_dir, '--output-dir', build_dir
+              '--profdata-dir', profdata_dir, '--binaries-dir', build_dir
           ])
+
           api.code_coverage.get_chromium_fuzz_coverage(
               api.chromium_checkout.src_dir,
               api.chromium_checkout.src_dir.join('out', 'Release'),
               api.chromium_checkout.src_dir.join('out', 'report', 'linux',
-                                                 'coverage.profdata'))
+                                                 'coverage.profdata'),
+              profdata_dir)
         except api.step.StepFailure:
           step_result.logs[
               'fuzz coverage logs'] = "Could not process fuzz coverage"

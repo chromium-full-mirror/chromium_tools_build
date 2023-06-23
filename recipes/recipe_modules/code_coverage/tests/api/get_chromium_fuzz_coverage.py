@@ -10,7 +10,7 @@ DEPS = ['code_coverage']
 
 
 def RunSteps(api):
-  api.code_coverage.get_chromium_fuzz_coverage('', '', '')
+  api.code_coverage.get_chromium_fuzz_coverage('', '', '', '')
 
 
 def GenTests(api):
@@ -22,5 +22,5 @@ def GenTests(api):
                        'ensure metadata dir for overall tests (2)'),
       api.post_process(post_process.MustRun, 'generate coverage metadata'),
       api.post_process(post_process.MustRun,
-                       'gsutil upload fuzz coverage metadata'),
+                       'gsutil Upload coverage artifacts'),
       api.post_process(DropExpectation))
