@@ -118,6 +118,11 @@ class AndroidApi(recipe_api.RecipeApi):
     s.revision = self.c.revision
     spec.revisions = self.c.revisions
 
+    # TODO(sivachandra): Manufacture gclient spec such that it contains "src"
+    # solution + repo_name solution. Then checkout will be automatically
+    # correctly set by gclient.checkout
+    self.m.path['checkout'] = self.m.path['start_dir'].join('src')
+
     self.m.gclient.break_locks()
     refs = self.m.properties.get('event.patchSet.ref')
     if refs:
@@ -127,11 +132,6 @@ class AndroidApi(recipe_api.RecipeApi):
           spec, refs=refs, with_branch_heads=with_branch_heads)
     else:
       result = self.m.gclient.checkout(spec)
-
-    # TODO(sivachandra): Manufacture gclient spec such that it contains "src"
-    # solution + repo_name solution. Then checkout will be automatically
-    # correctly set by gclient.checkout
-    self.m.path['checkout'] = self.m.path['start_dir'].join('src')
 
     self.clean_local_files()
 
