@@ -580,7 +580,6 @@
       "@@@STEP_LOG_LINE@json.output@        \"isolate_name\": \"telemetry_gpu_unittests\", @@@",
       "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests\", @@@",
       "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"can_use_on_swarming_builders\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@          \"dimension_sets\": [@@@",
       "@@@STEP_LOG_LINE@json.output@            {@@@",
       "@@@STEP_LOG_LINE@json.output@              \"gpu\": \"10de:104a\", @@@",

@@ -581,7 +581,6 @@
       "@@@STEP_LOG_LINE@json.output@          \"script\": \"fake_merge_script.py\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }, @@@",
       "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"can_use_on_swarming_builders\": true, @@@",
       "@@@STEP_LOG_LINE@json.output@          \"dimension_sets\": [@@@",
       "@@@STEP_LOG_LINE@json.output@            {@@@",
       "@@@STEP_LOG_LINE@json.output@              \"os\": \"Linux\"@@@",

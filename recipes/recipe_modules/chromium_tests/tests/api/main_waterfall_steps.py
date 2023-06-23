@@ -332,7 +332,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'base_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Mac',
                           }],
@@ -415,7 +414,6 @@ def GenTests(api):
                       'isolate_profile_data': True,
                       'test': 'base_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           }],
@@ -465,7 +463,6 @@ def GenTests(api):
                       'isolate_profile_data': True,
                       'test': 'performance_test_suite',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           }],
@@ -513,9 +510,7 @@ def GenTests(api):
                   'gtest_tests': [{
                       'isolate_profile_data': True,
                       'test': 'chrome_public_test_apk',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -558,9 +553,7 @@ def GenTests(api):
               'Isolated Transfer Tester': {
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'test': 'base_unittests',
                   },],
               },
@@ -591,7 +584,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           }],
@@ -624,9 +616,7 @@ def GenTests(api):
               'Isolated Transfer: mixed builder, isolated tester (tester)': {
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'test': 'base_unittests',
                   },],
               },
@@ -657,9 +647,7 @@ def GenTests(api):
               'Isolated Transfer: mixed BT, isolated tester (tester)': {
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'test': 'base_unittests',
                   },],
               },
@@ -685,9 +673,6 @@ def GenTests(api):
               'Packaged Transfer Tester': {
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
-                      'swarming': {
-                          'can_use_on_swarming_builders': False,
-                      },
                       'test': 'base_unittests',
                   },],
               },
@@ -713,9 +698,6 @@ def GenTests(api):
               'Packaged Transfer Tester': {
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
-                      'swarming': {
-                          'can_use_on_swarming_builders': False,
-                      },
                       'test': 'base_unittests',
                   },],
               },
@@ -737,9 +719,7 @@ def GenTests(api):
               'Multiple Triggers: Mixed': {
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'test': 'base_unittests',
                   },],
                   'junit_tests': [{
@@ -749,9 +729,7 @@ def GenTests(api):
               'Multiple Triggers: Isolated': {
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'test': 'base_unittests',
                   },],
               },
@@ -908,9 +886,7 @@ def GenTests(api):
               fake_triggered_builder: {
                   'isolated_scripts': [{
                       'name': fake_test,
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               }
           }),
@@ -969,7 +945,6 @@ def GenTests(api):
                   'isolated_scripts': [{
                       'name': fake_test,
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           }],

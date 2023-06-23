@@ -132,7 +132,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'browser_tests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Ubuntu',
                           }],
@@ -165,7 +164,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'browser_tests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Windows-10',
                           }],
@@ -211,7 +209,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'browser_tests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           }],

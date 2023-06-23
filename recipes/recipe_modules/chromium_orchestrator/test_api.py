@@ -42,7 +42,6 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                 "isolate_profile_data": True,
                 "name": "check_static_initializers",
                 "script": "check_static_initializers.py",
-                "swarming": {}
             }],
         },
     }
@@ -51,7 +50,6 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     gtest_tests = [{
         'name': test,
         'swarming': {
-            'can_use_on_swarming_builders': True,
             'dimension_sets': [{
                 'os': 'Linux',
             }],

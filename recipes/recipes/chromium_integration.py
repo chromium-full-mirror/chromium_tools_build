@@ -57,7 +57,6 @@ def GenTests(api):
                             'isolate_name': 'blink_web_tests',
                             'name': 'blink_web_tests',
                             'swarming': {
-                                'can_use_on_swarming_builders': True,
                                 'dimension_sets': [{
                                     'os': 'Linux',
                                 },],

@@ -125,8 +125,6 @@ def GenTests(api):
               'test': 'base_unittests',
               'test_target': '//base:base_unittests',
               'swarming': {
-                  'can_use_on_swarming_builders':
-                      True,
                   'dimension_sets': [{
                       'os': 'Linux',
                       'foo': None,
@@ -219,7 +217,6 @@ def GenTests(api):
               'test': 'base_unittests',
               'test_target': '//base:base_unittests',
               'swarming': {
-                  'can_use_on_swarming_builders': True,
                   'dimension_sets': [{
                       'os': 'Linux',
                       'foo': None,
@@ -274,7 +271,6 @@ def GenTests(api):
           test_spec={
               'test': 'base_unittests',
               'swarming': {
-                  'can_use_on_swarming_builders': True,
                   'service_account': 'test-account@serviceaccount.com',
               },
           }),
@@ -291,8 +287,6 @@ def GenTests(api):
           test_spec={
               'test': 'base_unittests',
               'swarming': {
-                  'can_use_on_swarming_builders':
-                      True,
                   'dimension_sets': [{
                       'os': 'Linux',
                   }],
@@ -312,8 +306,6 @@ def GenTests(api):
           test_spec={
               'test': 'base_unittests',
               'swarming': {
-                  'can_use_on_swarming_builders':
-                      True,
                   'dimension_sets': [{
                       'os': 'Linux',
                   },],
@@ -340,9 +332,7 @@ def GenTests(api):
               'merge': {
                   'script': '//merge_script.py',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       api.post_process(post_process.StepCommandContains, 'base_unittests', [
           '--merge-script',
@@ -361,9 +351,7 @@ def GenTests(api):
               'merge': {
                   'script': 'merge_script.py',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       test_spec_format_error('contains a custom merge_script "merge_script.py"'
                              " that doesn't match the expected format"),
@@ -379,9 +367,7 @@ def GenTests(api):
               'trigger_script': {
                   'script': '//trigger_script.py',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       api.post_process(
           post_process.StepCommandContains,
@@ -403,7 +389,6 @@ def GenTests(api):
                   'requires_simultaneous_shard_dispatch': True,
               },
               'swarming': {
-                  'can_use_on_swarming_builders': True,
                   'shards': 5,
               },
           }),
@@ -424,9 +409,7 @@ def GenTests(api):
               'trigger_script': {
                   'script': 'trigger_script.py',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       test_spec_format_error(
           'contains a custom trigger_script "trigger_script.py"'
@@ -437,14 +420,11 @@ def GenTests(api):
 
   yield api.test(
       'experimental',
-      ci_build(
-          test_spec={
-              'experiment_percentage': '100',
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
-              'test': 'base_unittests',
-          }),
+      ci_build(test_spec={
+          'experiment_percentage': '100',
+          'swarming': {},
+          'test': 'base_unittests',
+      }),
       api.override_step_data(
           'base_unittests (experimental)',
           api.chromium_swarming.canned_summary_output(None, retcode=1)),
@@ -457,14 +437,12 @@ def GenTests(api):
 
   yield api.test(
       'not_idempotent',
-      ci_build(
-          test_spec={
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-                  'idempotent': False,
-              },
-              'test': 'base_unittests',
-          }),
+      ci_build(test_spec={
+          'swarming': {
+              'idempotent': False,
+          },
+          'test': 'base_unittests',
+      }),
       api.post_process(NotIdempotent, 'test_pre_run.[trigger] base_unittests'),
       api.post_process(post_process.DropExpectation),
   )
@@ -509,14 +487,11 @@ def GenTests(api):
 
   yield api.test(
       'swarmed_ci_only_test_on_tryserver',
-      try_build(
-          test_spec={
-              'ci_only': True,
-              'test': 'gtest_test',
-              'swarming': {
-                  'can_use_on_swarming_builders': True
-              },
-          }),
+      try_build(test_spec={
+          'ci_only': True,
+          'test': 'gtest_test',
+          'swarming': {},
+      }),
       api.post_process(post_process.StepCommandEmpty,
                        'gtest_test (with patch)'),
       api.post_process(
@@ -529,14 +504,11 @@ def GenTests(api):
 
   yield api.test(
       'swarmed_ci_only_test_on_tryserver_with_bypass',
-      try_build(
-          test_spec={
-              'ci_only': True,
-              'test': 'gtest_test',
-              'swarming': {
-                  'can_use_on_swarming_builders': True
-              },
-          }),
+      try_build(test_spec={
+          'ci_only': True,
+          'test': 'gtest_test',
+          'swarming': {},
+      }),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
       api.post_process(post_process.MustRun, 'gtest_test (with patch)'),
@@ -575,14 +547,11 @@ def GenTests(api):
 
   yield api.test(
       'swarmed_ci_only_test_on_ci_builder',
-      ci_build(
-          test_spec={
-              'ci_only': True,
-              'test': 'gtest_test',
-              'swarming': {
-                  'can_use_on_swarming_builders': True
-              },
-          }),
+      ci_build(test_spec={
+          'ci_only': True,
+          'test': 'gtest_test',
+          'swarming': {},
+      }),
       api.post_process(post_process.MustRun, 'gtest_test'),
       api.post_process(post_process.StepTextContains, 'gtest_test',
                        ['This test will not be run on try builders']),

@@ -129,9 +129,7 @@ def GenTests(api):
               'name': 'base_unittests',
               'isolate_name': 'base_unittests_run',
               'results_handler': 'fake',
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       api.post_process(post_process.DropExpectation),
   )
@@ -146,9 +144,7 @@ def GenTests(api):
               'merge': {
                   'script': '//path/to/script.py',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] base_unittests'),
@@ -168,7 +164,6 @@ def GenTests(api):
               'name': 'base_unittests',
               'isolate_name': 'base_unittests_run',
               'swarming': {
-                  'can_use_on_swarming_builders': True,
                   'service_account': 'test-account@serviceaccount.com',
               },
           }),
@@ -188,9 +183,7 @@ def GenTests(api):
               'trigger_script': {
                   'script': '//path/to/script.py',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       api.post_process(
           post_process.StepCommandContains,
@@ -211,9 +204,7 @@ def GenTests(api):
               'trigger_script': {
                   'script': 'bad',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       test_spec_format_error('contains a custom trigger_script "bad"'
                              " that doesn't match the expected format"),
@@ -228,7 +219,6 @@ def GenTests(api):
               'name': 'base_unittests',
               'isolate_name': 'base_unittests_run',
               'swarming': {
-                  'can_use_on_swarming_builders': True,
                   'dimension_sets': [{
                       'os': 'Linux',
                       'foo': None,
@@ -259,7 +249,6 @@ def GenTests(api):
               'name': 'base_unittests',
               'isolate_name': 'base_unittests_run',
               'swarming': {
-                  'can_use_on_swarming_builders': True,
                   'optional_dimensions': {
                       '60': [{
                           'bar': 'baz',
@@ -331,9 +320,7 @@ def GenTests(api):
               'merge': {
                   'script': 'path/to/script.py',
               },
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       test_spec_format_error(
           'contains a custom merge_script "path/to/script.py"'
@@ -367,7 +354,6 @@ def GenTests(api):
               'isolate_name': 'webkit_tests',
               'results_handler': 'layout tests',
               'swarming': {
-                  'can_use_on_swarming_builders': True,
                   'dimension_sets': [{
                       'os': 'Mac',
                       'gpu': '8086:blah',
@@ -386,9 +372,7 @@ def GenTests(api):
               'name': 'custom_webkit_tests',
               'isolate_name': 'webkit_tests',
               'results_handler': 'layout tests',
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }),
       api.post_process(post_process.MustRun, 'custom_webkit_tests'),
       api.post_process(post_process.DropExpectation),
@@ -404,8 +388,6 @@ def GenTests(api):
                   'script': '//path/to/script.py',
               },
               'swarming': {
-                  'can_use_on_swarming_builders':
-                      True,
                   'cipd_packages': [{
                       'cipd_package': 'cipd/package/name',
                       'location': '../../cipd/package/location',
@@ -466,14 +448,11 @@ def GenTests(api):
 
   yield api.test(
       'swarmed_ci_test_on_ci_builder',
-      ci_build(
-          test_spec={
-              'name': 'script_test',
-              'ci_only': True,
-              'swarming': {
-                  'can_use_on_swarming_builders': True
-              },
-          }),
+      ci_build(test_spec={
+          'name': 'script_test',
+          'ci_only': True,
+          'swarming': {},
+      }),
       api.post_process(post_process.MustRun, 'script_test'),
       api.post_process(post_process.StepTextContains, 'script_test',
                        ['This test will not be run on try builders']),
@@ -498,14 +477,11 @@ def GenTests(api):
 
   yield api.test(
       'swarmed_ci_test_on_try_builder',
-      try_build(
-          test_spec={
-              'name': 'script_test',
-              'ci_only': True,
-              'swarming': {
-                  'can_use_on_swarming_builders': True
-              },
-          }),
+      try_build(test_spec={
+          'name': 'script_test',
+          'ci_only': True,
+          'swarming': {},
+      }),
       api.post_process(post_process.StepCommandEmpty,
                        'script_test (with patch)'),
       api.post_process(
@@ -534,14 +510,11 @@ def GenTests(api):
 
   yield api.test(
       'swarmed_ci_test_on_try_builder_with_bypass',
-      try_build(
-          test_spec={
-              'name': 'script_test',
-              'ci_only': True,
-              'swarming': {
-                  'can_use_on_swarming_builders': True
-              },
-          }),
+      try_build(test_spec={
+          'name': 'script_test',
+          'ci_only': True,
+          'swarming': {},
+      }),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
       api.post_process(post_process.MustRun, 'script_test (with patch)'),

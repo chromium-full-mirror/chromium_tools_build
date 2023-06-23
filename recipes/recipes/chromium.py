@@ -104,7 +104,6 @@ def GenTests(api):
                           'enable': True
                       },
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -145,8 +144,6 @@ def GenTests(api):
                       {
                           'test': 'base_unittests',
                           'swarming': {
-                              'can_use_on_swarming_builders':
-                                  True,
                               'dimension_sets': [
                                   {
                                       'gpu':
@@ -159,8 +156,6 @@ def GenTests(api):
                       {
                           'test': 'browser_tests',
                           'swarming': {
-                              'can_use_on_swarming_builders':
-                                  True,
                               'dimension_sets': [
                                   {
                                       'gpu':
@@ -207,8 +202,6 @@ def GenTests(api):
                       {
                           'test': 'gl_tests',
                           'swarming': {
-                              'can_use_on_swarming_builders':
-                                  True,
                               'dimension_sets': [
                                   {
                                       'gpu': '8086:0a2e',  # Intel Iris
@@ -252,7 +245,6 @@ def GenTests(api):
                       'override_compile_targets':
                           ['tab_capture_end2end_tests_run'],
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -507,7 +499,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -538,7 +529,6 @@ def GenTests(api):
                       'name':
                           'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -576,7 +566,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -614,7 +603,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -651,7 +639,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -691,7 +678,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -728,7 +714,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -773,8 +758,6 @@ def GenTests(api):
                           'isolate_name': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests',
                           'swarming': {
-                              'can_use_on_swarming_builders':
-                                  True,
                               'dimension_sets': [
                                   {
                                       'gpu':
@@ -817,8 +800,6 @@ def GenTests(api):
                           'isolate_name': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests',
                           'swarming': {
-                              'can_use_on_swarming_builders':
-                                  True,
                               'dimension_sets': [
                                   {
                                       'gpu': '8086:0a2e',  # Intel Iris
@@ -867,8 +848,6 @@ def GenTests(api):
                           'isolate_name': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests',
                           'swarming': {
-                              'can_use_on_swarming_builders':
-                                  True,
                               'dimension_sets': [
                                   {
                                       # NVIDIA GeForce GT 610
@@ -919,7 +898,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Windows',
                           },],
@@ -955,7 +933,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -994,7 +971,6 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -1236,7 +1212,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'browser_tests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -1275,7 +1250,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'browser_tests',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -1318,7 +1292,6 @@ def GenTests(api):
                           'script': '//fake_merge_script.py',
                       },
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -1358,7 +1331,6 @@ def GenTests(api):
                           'script': 'bad_fake_merge_script.py',
                       },
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -1402,7 +1374,6 @@ def GenTests(api):
                           ],
                       },
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],
@@ -1440,7 +1411,6 @@ def GenTests(api):
                       'name': 'fake_test',
                       'results_handler': 'fake',
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Linux',
                           },],

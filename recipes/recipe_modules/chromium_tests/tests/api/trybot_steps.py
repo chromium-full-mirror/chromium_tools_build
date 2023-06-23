@@ -326,9 +326,7 @@ def GenTests(api):
               'retry-shards': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -351,9 +349,7 @@ def GenTests(api):
               'retry-shards': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -377,9 +373,7 @@ def GenTests(api):
               'retry-shards': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -414,9 +408,7 @@ def GenTests(api):
               'retry-shards': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -448,9 +440,7 @@ def GenTests(api):
               'retry-shards': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -482,9 +472,7 @@ def GenTests(api):
               'retry-shards': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -523,9 +511,7 @@ def GenTests(api):
               'retry-shards': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -570,9 +556,7 @@ def GenTests(api):
                   'gtest_tests': [{
                       'isolate_profile_data': True,
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -618,9 +602,7 @@ def GenTests(api):
                   'gtest_tests': [{
                       'isolate_profile_data': True,
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -671,9 +653,7 @@ def GenTests(api):
                   'gtest_tests': [{
                       'isolate_profile_data': True,
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -739,9 +719,7 @@ def GenTests(api):
                       'name': 'performance_test_suite',
                       'isolate_profile_data': True,
                       'test': 'performance_test_suite',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -899,9 +877,7 @@ def GenTests(api):
               'chromium-rel': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -958,9 +934,7 @@ def GenTests(api):
               'chromium-rel': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -1015,9 +989,7 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test':
                           'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'args': [
                           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter',
                       ],
@@ -1104,9 +1076,7 @@ def GenTests(api):
               'chromium-rel': {
                   'gtest_tests': [{
                       'test': 'base_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }],
               },
           }),
@@ -1308,7 +1278,6 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "can_use_on_swarming_builders": True,
                           "dimension_sets": [{
                               "os": "Mac-11"
                           }],
@@ -1381,7 +1350,6 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "can_use_on_swarming_builders": True,
                           "dimension_sets": [{
                               "os": "Mac-11"
                           }],
@@ -1451,7 +1419,6 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "can_use_on_swarming_builders": True,
                           "dimension_sets": [{
                               "os": "Mac-11"
                           }],

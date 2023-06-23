@@ -334,9 +334,7 @@ def GenTests(api):
               'additional_compile_targets': ['foo'],
               'gtest_tests': [{
                   'test': 'foo-test',
-                  'swarming': {
-                      'can_use_on_swarming_builders': True,
-                  },
+                  'swarming': {},
                   'merge': {
                       'script': '//merge-script',
                   },
@@ -346,9 +344,7 @@ def GenTests(api):
               'additional_compile_targets': ['foo'],
               'gtest_tests': [{
                   'test': 'foo-test',
-                  'swarming': {
-                      'can_use_on_swarming_builders': True,
-                  },
+                  'swarming': {},
                   'merge': {
                       'script': '//merge-script',
                   },

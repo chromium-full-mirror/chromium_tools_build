@@ -51,9 +51,7 @@ def GenTests(api):
       fake_tester: {
           'isolated_scripts': [{
               'name': fake_test,
-              'swarming': {
-                  'can_use_on_swarming_builders': True,
-              },
+              'swarming': {},
           }],
       }
   })
@@ -275,9 +273,6 @@ def GenTests(api):
               fake_tester: {
                   'gtest_tests': [{
                       'name': fake_test,
-                      'swarming': {
-                          'can_use_on_swarming_builders': False,
-                      }
                   }],
               }
           }),
@@ -354,9 +349,7 @@ def GenTests(api):
               fake_tester: {
                   'isolated_scripts': [{
                       'name': fake_test,
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'experiment_percentage': 100
                   }],
               }
@@ -398,8 +391,6 @@ def GenTests(api):
                           'test_location_base': '//test/location',
                       },
                       'swarming': {
-                          'can_use_on_swarming_builders':
-                              True,
                           'dimension_sets': [{
                               'id': 'botid',
                               'device_type': 'phone',
@@ -473,7 +464,6 @@ def GenTests(api):
                   'gtest_tests': [{
                       'name': fake_test,
                       'swarming': {
-                          'can_use_on_swarming_builders': True,
                           'dimension_sets': [{
                               'os': 'Ubuntu-16.04',
                           }],

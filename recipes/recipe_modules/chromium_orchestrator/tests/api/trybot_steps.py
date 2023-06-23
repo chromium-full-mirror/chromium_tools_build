@@ -630,29 +630,21 @@ def GenTests(api):
                       "isolate_profile_data": True,
                       "name": "check_static_initializers",
                       "script": "check_static_initializers.py",
-                      "swarming": {}
                   }],
               },
               'fake-tester': {
                   'gtest_tests': [{
                       'name': 'browser_tests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      },
+                      'swarming': {},
                       'isolate_profile_data': True,
                   },],
                   'isolated_scripts': [{
                       'isolate_name': 'angle_unittests',
                       'name': 'angle_unittests',
-                      'swarming': {
-                          'can_use_on_swarming_builders': True,
-                      }
+                      'swarming': {},
                   }, {
                       'isolate_name': 'angle_unittests_no_swarm',
                       'name': 'angle_unittests_no_swarm',
-                      'swarming': {
-                          'can_use_on_swarming_builders': False,
-                      },
                   }],
               },
           },

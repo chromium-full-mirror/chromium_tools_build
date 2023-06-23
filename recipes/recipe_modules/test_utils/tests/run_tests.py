@@ -226,7 +226,6 @@ def GenTests(api):
               'cros_img': 'eve-release/R89-13631.0.0',
               'name': 'basic_EVE_TOT',
               'tast_expr': 'lacros.Basic',
-              'swarming': {},
               'test': 'basic',
               'timeout_sec': 3600,
               'autotest_name': 'tast.lacros',

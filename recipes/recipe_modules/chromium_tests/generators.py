@@ -318,8 +318,8 @@ class Generator:
         'allowed_failure_percentage', 0)
     kwargs['name'] = name
 
-    swarming_spec = raw_test_spec.get('swarming', {})
-    if not swarming_spec.get('can_use_on_swarming_builders'):
+    swarming_spec = raw_test_spec.get('swarming', None)
+    if swarming_spec is None:
       test_spec = local_delegate(raw_test_spec, **kwargs)
       if test_spec:
         yield test_spec

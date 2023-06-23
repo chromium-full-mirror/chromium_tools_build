@@ -129,7 +129,6 @@ def GenTests(api):
         'tast_expr': tast_expr,
         'benchmark': benchmark,
         'args': [test_args],
-        'swarming': {},
         'test': target_name,
         'resultdb': {
             'enable': True,
@@ -645,7 +644,6 @@ def GenTests(api):
                       'tast_expr': "",
                       'benchmark': "",
                       'args': [],
-                      'swarming': {},
                       'test': GTEST_TARGET,
                       'resultdb': {
                           'enable': True,
