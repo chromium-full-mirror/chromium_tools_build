@@ -12,6 +12,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 DEPS = [
     'builder_group',
     'chromium',
+    'chromium_build_perf',
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
@@ -28,67 +29,26 @@ DEPS = [
 ]
 
 
-def _rm_build_dir(api):
-  api.file.rmtree('rmtree %s' % str(api.chromium.output_dir),
-                  str(api.chromium.output_dir))
-
-
 def _get_builder_id(api):
   buildername = api.buildbucket.builder_name
   return chromium.BuilderId.create_for_group(api.builder_group.for_current,
                                              buildername)
 
 
-def _compile(api, step_name, target, with_remote_cache):
-  # TODO(b/253142009): support Windows with Siso native builds.
-  if api.platform.is_win:
-    return
-  api.chromium.mb_gen(
-      _get_builder_id(api), recursive_lookup=True, phase='builtin')
-
-  ninja_command = ['ninja', '-C', api.chromium.output_dir, target]
-  siso_args = []
-  if not with_remote_cache:
-    api.file.rmtree('rmtree %s' % api.siso.deps_log,
-                  api.siso.deps_log)
-    siso_args += ['-re_cache_enable_read=false']
-  try:
-    with api.context(cwd=api.path['checkout']):
-      return api.siso.run_ninja(
-          ninja_command=ninja_command, name=step_name, siso_args=siso_args)
-  finally:
-    _rm_build_dir(api)
-
-
-def _compile_with_reproxy(api, step_name, target, with_remote_cache):
-  api.chromium.mb_gen(
-      _get_builder_id(api), recursive_lookup=True, phase='reproxy')
-
-  ninja_command = ['ninja', '-C', api.chromium.output_dir, target]
-
-  env = {}
-  if not with_remote_cache:
-    api.file.rmtree('rmtree %s' % api.reclient.deps_cache_path,
-                    api.reclient.deps_cache_path)
-    env['RBE_remote_accept_cache'] = "false"
-
-  step_name += ' with reproxy'
-  try:
-    with api.context(cwd=api.path['checkout'], env=env):
-      with api.reclient.process(step_name, None):
-        return api.siso.run_ninja(ninja_command=ninja_command, name=step_name)
-  finally:
-    _rm_build_dir(api)
-
-
 def _run_builds(api, target, with_reproxy=None):
   # First build without remote cache.
-  step_name = 'Build %s without remote cache' % target
+  api.chromium_build_perf.remove_deps_cache()
   if with_reproxy:
-    raw_result = _compile_with_reproxy(
-        api, step_name, target, with_remote_cache=False)
+    api.chromium_build_perf.recreate_build_dir(phase='reproxy')
+    raw_result = api.chromium_build_perf.build(
+        target,
+        with_remote_cache=False,
+        use_siso_reproxy=True,
+        step_name_suffix=' with reproxy')
   else:
-    raw_result = _compile(api, step_name, target, with_remote_cache=False)
+    api.chromium_build_perf.recreate_build_dir(phase='builtin')
+    raw_result = api.chromium_build_perf.build(
+        target, with_remote_cache=False, use_siso_native=True)
   if raw_result and raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -96,16 +56,25 @@ def _run_builds(api, target, with_reproxy=None):
   # C++ actions will not get cache hits due to their deps changing
   # after parsing the depsfile. TODO(b/283341125)
   if not with_reproxy:
-    step_name = 'Build %s with remote cache (warmup)' % target
-    raw_result = _compile(api, step_name, target, with_remote_cache=True)
+    api.chromium_build_perf.recreate_build_dir(phase='builtin')
+    raw_result = api.chromium_build_perf.build(
+        target,
+        with_remote_cache=True,
+        use_siso_native=True,
+        step_name_suffix=' (warmup)')
 
   # Second build with remote cache produced by the previous build.
-  step_name = 'Build %s with remote cache' % target
   if with_reproxy:
-    raw_result = _compile_with_reproxy(
-        api, step_name, target, with_remote_cache=True)
+    api.chromium_build_perf.recreate_build_dir(phase='reproxy')
+    raw_result = api.chromium_build_perf.build(
+        target,
+        with_remote_cache=True,
+        use_siso_reproxy=True,
+        step_name_suffix=' with reproxy')
   else:
-    raw_result = _compile(api, step_name, target, with_remote_cache=True)
+    api.chromium_build_perf.recreate_build_dir(phase='builtin')
+    raw_result = api.chromium_build_perf.build(
+        target, with_remote_cache=True, use_siso_native=True)
 
   return raw_result
 
@@ -127,12 +96,12 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
-  _rm_build_dir(api)
-
   # Build target: all
-  raw_result = _run_builds(api, 'all', with_reproxy=False)
-  if raw_result and raw_result.status != common_pb.SUCCESS:
-    return raw_result
+  # TODO(b/253142009): support Windows and Mac with Siso native builds.
+  if api.platform.is_linux:
+    raw_result = _run_builds(api, 'all', with_reproxy=False)
+    if raw_result and raw_result.status != common_pb.SUCCESS:
+      return raw_result
 
   return _run_builds(api, 'all', with_reproxy=True)
 
@@ -221,16 +190,15 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  target = 'all'
   for with_remote_cache in [True, False]:
     for with_reproxy in [True, False]:
-      step = 'Build %s %s remote cache' % (target, 'with'
-                                           if with_remote_cache else 'without')
+      step = 'Build all %s remote cache' % ('with'
+                                            if with_remote_cache else 'without')
       if with_reproxy:
         step += ' with reproxy'
 
       yield api.test(
-          '%s_compile_fail' % (_sanitize_nonalpha(step)),
+          '%s_fail' % (_sanitize_nonalpha(step)),
           api.chromium.ci_build(**builder),
           ctbc_api.properties(
               ctbc_api.properties_assembler_for_ci_builder(

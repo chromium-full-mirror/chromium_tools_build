@@ -15,6 +15,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'recipe_engine/buildbucket',
     'reclient',
+    'siso',
 ]
 
 
@@ -30,6 +31,10 @@ def RunSteps(api):
   api.chromium_build_perf.build(
       'all', with_remote_cache=False, step_name_suffix=' suffix')
   api.chromium_build_perf.build('all', with_remote_cache=False, revision='abcd')
+  api.chromium_build_perf.build(
+      'all', with_remote_cache=False, use_siso_reproxy=True)
+  api.chromium_build_perf.build(
+      'all', with_remote_cache=False, use_siso_native=True)
   api.chromium_build_perf.recreate_build_dir()
   api.chromium_build_perf.remove_deps_cache()
 
@@ -52,5 +57,6 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      api.siso.properties(),
       api.post_process(post_process.DropExpectation),
   )
