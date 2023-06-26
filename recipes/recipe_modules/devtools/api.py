@@ -80,7 +80,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
     ] + args)
 
   def get_dimensions_for_platform(self):
-    os_names = dict(linux='Ubuntu-18', mac='Mac', win='Windows-10')
+    os_names = dict(linux='Ubuntu-18', mac='Mac-13', win='Windows-10')
     return {'os': os_names[self.m.platform.name], 'pool': 'chromium.tests'}
 
   def archive_to_cas(self):
