@@ -224,7 +224,7 @@ def BASE(c):
     c.mac_toolchain.installer_cipd_package = (
         'infra/tools/mac_toolchain/${platform}')
     c.mac_toolchain.installer_version = (
-        'git_revision:0ecab437ae2532a879b1203efc48f54bc6cadb77')
+        'git_revision:278fb59d5eb5d2d2da6175c0f97103bffad579b1')
     c.mac_toolchain.installer_cmd = 'mac_toolchain'
 
   # TODO(sergeyberezin): remove this when all builds switch to the new Xcode
