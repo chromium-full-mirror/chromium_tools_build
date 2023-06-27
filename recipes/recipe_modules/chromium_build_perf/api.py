@@ -44,7 +44,10 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       env['RBE_remote_accept_cache'] = "false"
     if step_name_suffix:
       step_name += step_name_suffix
-    with self.m.context(env=env, cwd=self.m.path['cache'].join('builder')):
+    deadline = self.m.context.deadline
+    deadline.soft_deadline = self.m.time.time() + 60 * 60 * 1.5  # 1.5h
+    with self.m.context(
+        env=env, cwd=self.m.path['cache'].join('builder'), deadline=deadline):
       if revision:
         self._checkout(revision)
       # TODO(jwata): Add use_siso flag to chromium.compile API.
