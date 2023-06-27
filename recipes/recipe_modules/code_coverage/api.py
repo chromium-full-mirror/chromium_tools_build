@@ -311,7 +311,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['content_shell_crash_test', 'content_shell'],
           ['.*blink_web_tests', 'content_shell'],
           ['.*blink_wpt_tests', 'content_shell'],
-          ['.*wpt_tests_suite', 'content_shell_wpt'],
+          ['wpt_tests_suite.*', 'content_shell'],
           ['.*_ozone', target[:-len('_ozone')]],
           ['.*_eg2tests_module', 'ios_chrome_eg2tests'],
 
