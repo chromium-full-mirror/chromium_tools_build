@@ -970,6 +970,18 @@ class ChromiumApi(recipe_api.RecipeApi):
           'select xcode', ['sudo', 'xcode-select', '-switch', xcode_app_path],
           infra_step=True)
 
+      # TODO(crbug.com/1457029): remove the below hack once we roll to xc15 beta3.
+      # The hack is required for Xcode simulators to work in xc15 beta2.
+      if xcode_build_version.lower() == '15a5161b':
+        set_runtime_cmd = [
+            'xcrun', 'simctl', 'runtime', 'match', 'set', 'iphoneos17.0',
+            '21A5268h', '--sdkBuild', '21A5268f'
+        ]
+        self.m.step(
+            'force override xc15 beta 2 runtime build',
+            set_runtime_cmd,
+            infra_step=True)
+
       # Kill all ibtoold processes. When multiple Xcode version is used on the
       # same bot, multiple ibtoold processes from different Xcode might cause
       # compile failues. See crbug.com/1297159. The cmd returns 0 if processes
