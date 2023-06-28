@@ -245,8 +245,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "v8_archive"
@@ -275,8 +273,6 @@
   {
     "cmd": [
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "v8_archive",
@@ -314,7 +310,7 @@
       "--ninja-log-outdir",
       "[CACHE]/builder/v8/out/build",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/v8/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/v8/out/build\", \"v8_archive\"]",
+      "[\"[CACHE]/builder/v8/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/v8/out/build\", \"v8_archive\"]",
       "--build-exit-status",
       "0",
       "--ninja-log-compiler",

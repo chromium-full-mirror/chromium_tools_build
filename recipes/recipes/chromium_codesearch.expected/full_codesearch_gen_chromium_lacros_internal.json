@@ -743,8 +743,6 @@
       "--no_prune_venv",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/lacros-Debug",
       "-k",
@@ -777,8 +775,6 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/lacros-Debug",
       "-k",
@@ -981,7 +977,7 @@
       "--ninja-log-outdir",
       "[CACHE]/builder/src/out/lacros-Debug",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/src/out/lacros-Debug\", \"-k\", \"0\", \"-j\", 80]",
+      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/src/out/lacros-Debug\", \"-k\", \"0\", \"-j\", 80]",
       "--build-exit-status",
       "0",
       "--build-step-name",

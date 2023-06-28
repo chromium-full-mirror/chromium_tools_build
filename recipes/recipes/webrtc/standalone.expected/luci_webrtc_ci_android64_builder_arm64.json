@@ -726,8 +726,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/Android64_Builder_arm64",
       "-j",
@@ -758,8 +756,6 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/Android64_Builder_arm64",
       "-j",

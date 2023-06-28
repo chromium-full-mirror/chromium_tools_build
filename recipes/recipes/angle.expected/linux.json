@@ -634,8 +634,6 @@
       "--no_prune_venv",
       "--",
       "[CACHE]/builder/angle/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/angle/out/Release",
       "-j",
@@ -663,8 +661,6 @@
   {
     "cmd": [
       "[CACHE]/builder/angle/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/angle/out/Release",
       "-j",
@@ -850,7 +846,7 @@
       "--ninja-log-outdir",
       "[CACHE]/builder/angle/out/Release",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/angle/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/angle/out/Release\", \"-j\", 80]",
+      "[\"[CACHE]/builder/angle/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/angle/out/Release\", \"-j\", 80]",
       "--build-exit-status",
       "0",
       "--build-step-name",

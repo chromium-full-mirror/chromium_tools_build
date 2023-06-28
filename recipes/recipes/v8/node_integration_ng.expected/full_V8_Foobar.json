@@ -433,8 +433,6 @@
       "--no_prune_venv",
       "--",
       "[CACHE]/builder/node-ci/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/node-ci/out/Release",
       "-j",
@@ -470,8 +468,6 @@
   {
     "cmd": [
       "[CACHE]/builder/node-ci/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/node-ci/out/Release",
       "-j",
@@ -691,7 +687,7 @@
       "--ninja-log-outdir",
       "[CACHE]/builder/node-ci/out/Release",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/node-ci/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/node-ci/out/Release\", \"-j\", 80]",
+      "[\"[CACHE]/builder/node-ci/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/node-ci/out/Release\", \"-j\", 80]",
       "--build-exit-status",
       "0",
       "--build-step-name",

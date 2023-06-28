@@ -986,8 +986,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/mac_dbg",
       "-j",
@@ -1017,8 +1015,6 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/mac_dbg",
       "-j",

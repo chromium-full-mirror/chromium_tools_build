@@ -558,8 +558,6 @@
       "--no_prune_venv",
       "--",
       "[START_DIR]/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[START_DIR]/src/out/Debug",
       "-j",
@@ -596,8 +594,6 @@
   {
     "cmd": [
       "[START_DIR]/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[START_DIR]/src/out/Debug",
       "-j",
@@ -792,7 +788,7 @@
       "--ninja-log-outdir",
       "[START_DIR]/src/out/Debug",
       "--ninja-log-command-file",
-      "[\"[START_DIR]/src/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[START_DIR]/src/out/Debug\", \"-j\", 80, \"cronet_package\", \"cronet_perf_test_apk\", \"cronet_sample_test_apk\", \"cronet_smoketests_missing_native_library_instrumentation_apk\", \"cronet_smoketests_platform_only_instrumentation_apk\", \"cronet_test_instrumentation_apk\", \"cronet_unittests_android\", \"net_unittests\"]",
+      "[\"[START_DIR]/src/third_party/ninja/ninja\", \"-C\", \"[START_DIR]/src/out/Debug\", \"-j\", 80, \"cronet_package\", \"cronet_perf_test_apk\", \"cronet_sample_test_apk\", \"cronet_smoketests_missing_native_library_instrumentation_apk\", \"cronet_smoketests_platform_only_instrumentation_apk\", \"cronet_test_instrumentation_apk\", \"cronet_unittests_android\", \"net_unittests\"]",
       "--build-exit-status",
       "0",
       "--build-step-name",

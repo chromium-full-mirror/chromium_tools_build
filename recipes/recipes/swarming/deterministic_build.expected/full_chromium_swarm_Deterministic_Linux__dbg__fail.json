@@ -543,8 +543,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/Debug"
     ],
@@ -569,8 +567,6 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/Debug",
       "-d",
@@ -604,7 +600,7 @@
       "--ninja-log-outdir",
       "[CACHE]/builder/src/out/Debug",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/src/out/Debug\"]",
+      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/src/out/Debug\"]",
       "--build-exit-status",
       "0",
       "--ninja-log-compiler",
@@ -866,8 +862,6 @@
       "--no_prune_venv",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/Debug.2",
       "-j",
@@ -895,8 +889,6 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/src/out/Debug.2",
       "-j",
@@ -1082,7 +1074,7 @@
       "--ninja-log-outdir",
       "[CACHE]/builder/src/out/Debug.2",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]/builder/src/out/Debug.2\", \"-j\", 80]",
+      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/src/out/Debug.2\", \"-j\", 80]",
       "--build-exit-status",
       "0",
       "--build-step-name",

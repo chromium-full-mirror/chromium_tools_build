@@ -641,8 +641,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\bwe_test_logging",
       "-j",
@@ -671,8 +669,6 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\bwe_test_logging",
       "-j",
@@ -1868,8 +1864,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf",
       "-j",
@@ -1898,8 +1892,6 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf",
       "-j",
@@ -3012,8 +3004,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
       "-j",
@@ -3042,8 +3032,6 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
       "-j",

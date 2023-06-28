@@ -603,8 +603,6 @@
       "/path/to/tmp/",
       "--",
       "[START_DIR]/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[START_DIR]/src/out/Debug",
       "-j",
@@ -642,8 +640,6 @@
   {
     "cmd": [
       "[START_DIR]/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[START_DIR]/src/out/Debug",
       "-j",

@@ -882,8 +882,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "/tmp/Release",
       "All"
@@ -909,8 +907,6 @@
   {
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "/tmp/Release",
       "All",
@@ -945,7 +941,7 @@
       "--ninja-log-outdir",
       "/tmp/Release",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"/tmp/Release\", \"All\"]",
+      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"/tmp/Release\", \"All\"]",
       "--build-exit-status",
       "0",
       "--ninja-log-compiler",

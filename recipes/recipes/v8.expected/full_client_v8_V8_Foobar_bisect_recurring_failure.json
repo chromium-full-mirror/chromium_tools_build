@@ -332,8 +332,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
@@ -365,8 +363,6 @@
   {
     "cmd": [
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
@@ -832,8 +828,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",
@@ -865,8 +859,6 @@
   {
     "cmd": [
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "-j",

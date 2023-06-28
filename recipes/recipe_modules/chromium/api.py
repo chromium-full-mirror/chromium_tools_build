@@ -658,7 +658,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                          target or self.c.build_config_fs)
     target_output_dir = self.m.path.abspath(target_output_dir)
 
-    command = [str(self.ninja_path), '-w', 'dupbuild=err', '-C', target_output_dir]
+    command = [str(self.ninja_path), '-C', target_output_dir]
 
     if self.c.compile_py.show_ninja_stats:
       command.extend(['-d', 'stats'])

@@ -365,8 +365,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]\\builder\\angle\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\angle\\out\\Release"
     ],
@@ -391,8 +389,6 @@
   {
     "cmd": [
       "[CACHE]\\builder\\angle\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\angle\\out\\Release",
       "-d",
@@ -426,7 +422,7 @@
       "--ninja-log-outdir",
       "[CACHE]\\builder\\angle\\out\\Release",
       "--ninja-log-command-file",
-      "[\"[CACHE]\\\\builder\\\\angle\\\\third_party\\\\ninja\\\\ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]\\\\builder\\\\angle\\\\out\\\\Release\"]",
+      "[\"[CACHE]\\\\builder\\\\angle\\\\third_party\\\\ninja\\\\ninja\", \"-C\", \"[CACHE]\\\\builder\\\\angle\\\\out\\\\Release\"]",
       "--build-exit-status",
       "0",
       "--ninja-log-compiler",

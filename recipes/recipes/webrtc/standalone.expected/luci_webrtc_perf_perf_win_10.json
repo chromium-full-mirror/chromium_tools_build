@@ -641,8 +641,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\Perf_Win_10",
       "-j",
@@ -672,8 +670,6 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\Perf_Win_10",
       "-j",

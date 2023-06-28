@@ -39,8 +39,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "v8_archive"
@@ -210,8 +208,6 @@
       "/path/to/tmp/",
       "--",
       "[CACHE]/builder/v8/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]/builder/v8/out/build",
       "v8_archive"

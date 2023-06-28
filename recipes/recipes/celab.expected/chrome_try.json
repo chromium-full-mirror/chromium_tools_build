@@ -874,8 +874,6 @@
       "--no_prune_venv",
       "--",
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\Release_x64",
       "-j",
@@ -906,8 +904,6 @@
   {
     "cmd": [
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[CACHE]\\builder\\src\\out\\Release_x64",
       "-j",
@@ -1099,7 +1095,7 @@
       "--ninja-log-outdir",
       "[CACHE]\\builder\\src\\out\\Release_x64",
       "--ninja-log-command-file",
-      "[\"[CACHE]\\\\builder\\\\src\\\\third_party\\\\ninja\\\\ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[CACHE]\\\\builder\\\\src\\\\out\\\\Release_x64\", \"-j\", 80, \"chrome/updater\", \"chrome/installer/mini_installer\", \"chromedriver\"]",
+      "[\"[CACHE]\\\\builder\\\\src\\\\third_party\\\\ninja\\\\ninja\", \"-C\", \"[CACHE]\\\\builder\\\\src\\\\out\\\\Release_x64\", \"-j\", 80, \"chrome/updater\", \"chrome/installer/mini_installer\", \"chromedriver\"]",
       "--build-exit-status",
       "0",
       "--build-step-name",

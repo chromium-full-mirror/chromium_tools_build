@@ -592,8 +592,6 @@
       "--no_prune_venv",
       "--",
       "[START_DIR]/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[START_DIR]/src/out/Release",
       "-j",
@@ -622,8 +620,6 @@
   {
     "cmd": [
       "[START_DIR]/src/third_party/ninja/ninja",
-      "-w",
-      "dupbuild=err",
       "-C",
       "[START_DIR]/src/out/Release",
       "-j",
@@ -810,7 +806,7 @@
       "--ninja-log-outdir",
       "[START_DIR]/src/out/Release",
       "--ninja-log-command-file",
-      "[\"[START_DIR]/src/third_party/ninja/ninja\", \"-w\", \"dupbuild=err\", \"-C\", \"[START_DIR]/src/out/Release\", \"-j\", 80]",
+      "[\"[START_DIR]/src/third_party/ninja/ninja\", \"-C\", \"[START_DIR]/src/out/Release\", \"-j\", 80]",
       "--build-exit-status",
       "0",
       "--build-step-name",
