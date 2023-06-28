@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython3
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -391,8 +392,7 @@ class NinjaWrapperTestCase(unittest.TestCase):
   def testParseArgs(self):
     expected_file_name = 'file.json'
     expected_ninja_cmd = [
-        'ninja', '-w', 'dupbuild=err', '-C', 'build/path', 'target1', 'target2',
-        '-o', 'output'
+        'ninja', '-C', 'build/path', 'target1', 'target2', '-o', 'output'
     ]
     args = ['-o', expected_file_name]
     args.append('--')
@@ -404,8 +404,7 @@ class NinjaWrapperTestCase(unittest.TestCase):
   def testParseArgsFullName(self):
     expected_file_name = 'file.json'
     expected_ninja_cmd = [
-        'ninja', '-w', 'dupbuild=err', '-C', 'build/path', 'target1', 'target2',
-        '-o', 'output'
+        'ninja', '-C', 'build/path', 'target1', 'target2', '-o', 'output'
     ]
     args = ['--ninja_info_output', expected_file_name]
     args.append('--')
@@ -415,8 +414,7 @@ class NinjaWrapperTestCase(unittest.TestCase):
     self.assertEqual(expected_file_name, options.ninja_info_output)
 
   def testParseArgsWithoutFile(self):
-    expected_ninja_cmd = ['ninja', '-w', 'dupbuild=err', '-C',
-                          'build/path', 'target1', 'target2']
+    expected_ninja_cmd = ['ninja', '-C', 'build/path', 'target1', 'target2']
     args = []
     args.append('--')
     args.extend(expected_ninja_cmd)
