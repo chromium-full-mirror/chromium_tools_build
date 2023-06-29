@@ -17,6 +17,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
+    'recipe_engine/json',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
@@ -137,11 +138,23 @@ def GenTests(api):
           ).assemble()),
       api.reclient.properties(),
       api.properties(
-          swarming_gtest=True, **{'$build/ssci': {
-              "target": "//base:base",
+          swarming_gtest=True,
+          **{'$build/ssci': {
+              "targets": ["//example:example"],
           }}),
-      api.post_process(post_process.MustRun,
-                       'ssci collection for //base:base.run depbot'),
+      api.override_step_data(
+          'SSCI collection.run depbot',
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "//example:example",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+              })),
+      api.post_process(post_process.MustRun, 'SSCI collection.run depbot'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -155,7 +168,7 @@ def GenTests(api):
           ).assemble()),
       api.reclient.properties(),
       api.properties(swarming_gtest=True),
-      api.post_process(post_process.DoesNotRun, 'ssci collection.run depbot'),
+      api.post_process(post_process.DoesNotRun, 'SSCI collection.run depbot'),
       api.post_process(post_process.DropExpectation),
   )
 

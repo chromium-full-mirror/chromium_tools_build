@@ -14,8 +14,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.bq_art_table = props.bq_artifact_table or "ssci-dev.depbot.artifacts"
     self.bq_lib_table = props.bq_library_table or "ssci-dev.depbot.libraries"
     self.depbot_version = props.depbot_version or "latest"
-    self.fast_mode = props.fast_mode
-    self.target = props.target
+    self.targets = props.targets
     self.partybot_version = props.partybot_version or "latest"
     self.bq_thirdparty_table = props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
     self.ssci_version = props.ssci_version or "latest"
@@ -48,18 +47,14 @@ class SsciAPI(recipe_api.RecipeApi):
       self,
       src_dir,
       build_dir,
-      spdx_out,
-      target="//third_party/perfetto/src/tracing/ipc/producer:producer",
+      targets=None,
       chrome_version=None,
-      json_artifact_out=None,
-      json_library_out=None,
-      third_party_out=None,
   ):
 
-    # prefer target supplied in properties.
-    t = self.target or target
+    # prefer targets supplied in properties.
+    targets = self.targets or targets
 
-    with self.m.step.nest('ssci collection for %s' % t):
+    with self.m.step.nest('SSCI collection'):
       depbot_path = self.m.cipd.ensure_tool(
           'infra_internal/tools/security/depbot/${platform}',
           self.depbot_version)
@@ -70,34 +65,27 @@ class SsciAPI(recipe_api.RecipeApi):
       ssci_cipd_path = self.m.cipd.ensure_tool('infra_internal/tools/ssci',
                                                self.ssci_version)
 
-      if not json_artifact_out:
-        json_artifact_out = self.m.path.mkdtemp().join("artifacts.json")
-      if not json_library_out:
-        json_library_out = self.m.path.mkdtemp().join("libraries.json")
-      if not third_party_out:
-        third_party_out = self.m.path.mkdtemp().join("third_party.json")
+      # prepare outputs.
+      depbot_json_output_dir = self.m.path.mkdtemp()
+      depbot_json_summary_file = self.m.json.output(name="summary")
+      third_party_out = self.m.path.mkdtemp().join("third_party.json")
 
-      self.m.step(
+      # TODO(dlf): Use only the first target until depbot supports multiple
+      # targets.
+      depbot_result = self.m.step(
           'run depbot', [
-              depbot_path, '--target', t, '--chromium-src-dir', src_dir,
-              '--log-level', 'debug', '--gn-path',
+              depbot_path, '--target', targets[0], '--chromium-src-dir',
+              src_dir, '--log-level', 'debug', '--gn-path',
               self.m.depot_tools.gn_py_path, '--build-dir', build_dir,
-              '--json-artifact-output', json_artifact_out,
-              '--json-library-output', json_library_out,
-              '--fast=' + str(self.fast_mode)
+              '--json-output', depbot_json_output_dir, '--json-summary-file',
+              depbot_json_summary_file
           ],
           cost=self.m.step.ResourceCost(
               cpu=2 * self.m.step.CPU_CORE, memory=4000))
 
-      self.m.step('upload artifacts to BigQuery', [
-          bqupload_cipd_path, "--json-list=true", self.bq_art_table,
-          json_artifact_out
-      ])
+      builderColumn = 'builder="%s"' % self.m.buildbucket.builder_full_name
 
-      self.m.step('upload libraries to BigQuery', [
-          bqupload_cipd_path, "--json-list=true", self.bq_lib_table,
-          json_library_out
-      ])
+      depbot_execution_summary = depbot_result.json.outputs.get("summary")
 
       # partybot uses gclient and relies on having depot_tools available in $PATH
       with self.m.depot_tools.on_path():
@@ -129,26 +117,46 @@ class SsciAPI(recipe_api.RecipeApi):
       if self.minimal_spdx:
         minimal_config = "-minimal-spdx"
 
-      # Combines the recipe name with the DepBot target as the product name.
-      recipe_name = self.m.properties["recipe"].split("/")[-1]
-      product = f'{recipe_name}.{t.replace("//", "")}'
-      p_version = self._get_product_version(chrome_version)
+      # Handle target specific steps.
+      for target in depbot_execution_summary.get("targets"):
+        library_file = target.get("libraries_file_path")
+        artifact_file = target.get("artifacts_file_path")
 
-      # The vPython metadata files are found in the parent directory.
-      with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):
-        self.m.step(
-            'run ssci tool to generate SPDX sbom', [
-                "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
-                "-libraries", json_library_out, "-artifacts", json_artifact_out,
-                "-thirdparty", third_party_out, "-depbot-version",
-                depbot_cipd_version, "-partybot-version", partybot_cipd_version,
-                "-ssci-version", ssci_cipd_version, "-output-file", spdx_out,
-                "-chromium-src", src_dir, "-product", product,
-                "-product-version", p_version, "-platform",
-                self.m.platform.name, "-arch",
-                f"{self.m.platform.arch}{self.m.platform.bits}", minimal_config
-            ],
-            step_test_data=(lambda: self.m.json.test_api.output(
-                data=[{
-                    "spdx": "yes"
-                }], name="spdx")))
+        with self.m.step.nest('target specific steps for %s' %
+                              target.get("entry_point")):
+          self.m.step('upload artifacts to BigQuery', [
+              bqupload_cipd_path, "-json-list=true", "-column", builderColumn,
+              self.bq_art_table, artifact_file
+          ])
+
+          self.m.step('upload libraries to BigQuery', [
+              bqupload_cipd_path, "--json-list=true", "-column", builderColumn,
+              self.bq_lib_table, library_file
+          ])
+
+          # Combines the recipe name with the DepBot target as the product name.
+          recipe_name = self.m.properties["recipe"].split("/")[-1]
+          product = f'{recipe_name}.{target.get("entry_point").replace("//", "")}'
+          p_version = self._get_product_version(chrome_version)
+
+          spdx_out = self.m.json.output(name=product)
+
+          # The vPython metadata files are found in the parent directory.
+          with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):
+            self.m.step(
+                'run ssci tool to generate SPDX sbom', [
+                    "vpython3", "--vpython-spec=.vpython3", "-m", "ssci",
+                    "spdx", "-libraries", library_file, "-artifacts",
+                    artifact_file, "-thirdparty", third_party_out,
+                    "-depbot-version", depbot_cipd_version, "-partybot-version",
+                    partybot_cipd_version, "-ssci-version", ssci_cipd_version,
+                    "-output-file", spdx_out, "-chromium-src", src_dir,
+                    "-product", product, "-product-version", p_version,
+                    "-platform", self.m.platform.name, "-arch",
+                    f"{self.m.platform.arch}{self.m.platform.bits}",
+                    minimal_config
+                ],
+                step_test_data=(lambda: self.m.json.test_api.output(
+                    data=[{
+                        "spdx": "yes"
+                    }], name="spdx")))

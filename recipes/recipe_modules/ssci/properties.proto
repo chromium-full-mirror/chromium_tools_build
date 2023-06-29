@@ -18,11 +18,8 @@ message InputProperties {
   // depbot_version is the version of the depbot binary to use.
   string depbot_version = 3;
 
-  // target is the entrypoint to the SSCI collection.
-  string target = 4;
-
-  // fast mode only collects the full dependency tree not the artifacts.
-  bool fast_mode = 5;
+  // targets is the entrypoint to the SSCI collection.
+  repeated string targets = 4;
 
   // version of the partybot CIPD module to use
   string partybot_version = 6;

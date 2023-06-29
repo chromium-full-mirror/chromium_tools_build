@@ -1177,7 +1177,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           self.m.ssci.run(
               src_dir=self.m.path['checkout'],
               build_dir=self.m.chromium.output_dir,
-              spdx_out=self.m.json.output(name="spdx"),
               chrome_version=self._get_chrome_version())
 
       return self.m.chromium.compile(

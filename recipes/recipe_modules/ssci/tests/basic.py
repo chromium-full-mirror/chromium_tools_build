@@ -17,8 +17,7 @@ def RunSteps(api):
   api.ssci.run(
       src_dir=api.path.abspath(api.path['checkout']),
       build_dir='out/Release',
-      spdx_out=api.json.output(name='spdx'),
-      target="//example:example")
+      targets=["//example:example"])
 
 
 def GenTests(api):
@@ -26,14 +25,25 @@ def GenTests(api):
       'basic',
       api.buildbucket.ci_build(
           project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.override_step_data(
+          'SSCI collection.run depbot',
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "//example:example",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+              })),
       api.properties(
           **{
               '$build/ssci': {
                   "bq_artifact_table": "project.dataset.table",
                   "bq_library_table": "project.dataset.table",
                   "depbot_version": "latest",
-                  "fast_mode": False,
-                  "target": "//base:base",
+                  "targets": ["//example:example"],
                   "partybot_version": "AABBCC",
                   "bq_thirdparty_table": "project.dataset.table",
                   "ssci_version": "latest",
@@ -44,6 +54,18 @@ def GenTests(api):
       'minimal-sdpx',
       api.buildbucket.ci_build(
           project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.override_step_data(
+          'SSCI collection.run depbot',
+          api.json.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "//example:example",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+              })),
       api.properties(
           **{
               '$build/ssci': {

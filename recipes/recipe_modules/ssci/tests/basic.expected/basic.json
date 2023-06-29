@@ -1,11 +1,11 @@
 [
   {
     "cmd": [],
-    "name": "ssci collection for //base:base"
+    "name": "SSCI collection"
   },
   {
     "cmd": [],
-    "name": "ssci collection for //base:base.install infra_internal/tools/security/depbot",
+    "name": "SSCI collection.install infra_internal/tools/security/depbot",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -35,7 +35,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra_internal/tools/security/depbot.ensure package directory",
+    "name": "SSCI collection.install infra_internal/tools/security/depbot.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -66,7 +66,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra_internal/tools/security/depbot.ensure_installed",
+    "name": "SSCI collection.install infra_internal/tools/security/depbot.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -84,7 +84,7 @@
   },
   {
     "cmd": [],
-    "name": "ssci collection for //base:base.install infra/tools/bqupload",
+    "name": "SSCI collection.install infra/tools/bqupload",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -114,7 +114,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra/tools/bqupload.ensure package directory",
+    "name": "SSCI collection.install infra/tools/bqupload.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -145,7 +145,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra/tools/bqupload.ensure_installed",
+    "name": "SSCI collection.install infra/tools/bqupload.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -163,7 +163,7 @@
   },
   {
     "cmd": [],
-    "name": "ssci collection for //base:base.install infra_internal/tools/partybot",
+    "name": "SSCI collection.install infra_internal/tools/partybot",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -193,7 +193,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra_internal/tools/partybot.ensure package directory",
+    "name": "SSCI collection.install infra_internal/tools/partybot.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -224,7 +224,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra_internal/tools/partybot.ensure_installed",
+    "name": "SSCI collection.install infra_internal/tools/partybot.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -242,7 +242,7 @@
   },
   {
     "cmd": [],
-    "name": "ssci collection for //base:base.install infra_internal/tools/ssci",
+    "name": "SSCI collection.install infra_internal/tools/ssci",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -272,7 +272,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra_internal/tools/ssci.ensure package directory",
+    "name": "SSCI collection.install infra_internal/tools/ssci.ensure package directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -303,7 +303,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.install infra_internal/tools/ssci.ensure_installed",
+    "name": "SSCI collection.install infra_internal/tools/ssci.ensure_installed",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -323,7 +323,7 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/latest/depbot",
       "--target",
-      "//base:base",
+      "//example:example",
       "--chromium-src-dir",
       "None",
       "--log-level",
@@ -332,11 +332,10 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--build-dir",
       "out/Release",
-      "--json-artifact-output",
-      "[CLEANUP]/tmp_tmp_1/artifacts.json",
-      "--json-library-output",
-      "[CLEANUP]/tmp_tmp_2/libraries.json",
-      "--fast=False"
+      "--json-output",
+      "[CLEANUP]/tmp_tmp_1",
+      "--json-summary-file",
+      "/path/to/tmp/json"
     ],
     "cost": {
       "cpu": 2000,
@@ -356,57 +355,20 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.run depbot",
+    "name": "SSCI collection.run depbot",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "--json-list=true",
-      "project.dataset.table",
-      "[CLEANUP]/tmp_tmp_1/artifacts.json"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "myproject:mybucket"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ssci collection for //base:base.upload artifacts to BigQuery",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "--json-list=true",
-      "project.dataset.table",
-      "[CLEANUP]/tmp_tmp_2/libraries.json"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "myproject:mybucket"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ssci collection for //base:base.upload libraries to BigQuery",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@{@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@  \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@    {@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"artifacts_file_path\": \"out/Release/artifacts.json\", @@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"entry_point\": \"//example:example\", @@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"libraries_file_path\": \"out/Release/libs.json\", @@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"target\": \"//example:example\"@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@    }@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@}@@@",
+      "@@@STEP_LOG_END@json.output[summary]@@@"
     ]
   },
   {
@@ -417,7 +379,7 @@
       "partybot",
       "",
       "--file",
-      "[CLEANUP]/tmp_tmp_3/third_party.json",
+      "[CLEANUP]/tmp_tmp_2/third_party.json",
       "--os",
       "mybuilder"
     ],
@@ -442,7 +404,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.run partybot to collect 3P deps",
+    "name": "SSCI collection.run partybot to collect 3P deps",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -452,7 +414,7 @@
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
       "--json-list=true",
       "project.dataset.table",
-      "[CLEANUP]/tmp_tmp_3/third_party.json"
+      "[CLEANUP]/tmp_tmp_2/third_party.json"
     ],
     "luci_context": {
       "realm": {
@@ -466,7 +428,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.upload third party dependencies to BigQuery",
+    "name": "SSCI collection.upload third party dependencies to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -493,7 +455,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.cipd describe infra_internal/tools/security/depbot/${platform}",
+    "name": "SSCI collection.cipd describe infra_internal/tools/security/depbot/${platform}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -556,7 +518,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.cipd describe infra_internal/tools/ssci",
+    "name": "SSCI collection.cipd describe infra_internal/tools/ssci",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -598,6 +560,65 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "SSCI collection.target specific steps for //example:example",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
+      "-json-list=true",
+      "-column",
+      "builder=\"myproject/mybucket/mybuilder\"",
+      "project.dataset.table",
+      "out/Release/artifacts.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.target specific steps for //example:example.upload artifacts to BigQuery",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
+      "--json-list=true",
+      "-column",
+      "builder=\"myproject/mybucket/mybuilder\"",
+      "project.dataset.table",
+      "out/Release/libs.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.target specific steps for //example:example.upload libraries to BigQuery",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "--vpython-spec=.vpython3",
@@ -605,11 +626,11 @@
       "ssci",
       "spdx",
       "-libraries",
-      "[CLEANUP]/tmp_tmp_2/libraries.json",
+      "out/Release/libs.json",
       "-artifacts",
-      "[CLEANUP]/tmp_tmp_1/artifacts.json",
+      "out/Release/artifacts.json",
       "-thirdparty",
-      "[CLEANUP]/tmp_tmp_3/third_party.json",
+      "[CLEANUP]/tmp_tmp_2/third_party.json",
       "-depbot-version",
       "resolved-instance_id-of-latest----------",
       "-partybot-version",
@@ -621,7 +642,7 @@
       "-chromium-src",
       "None",
       "-product",
-      "basic.base:base",
+      "basic.example:example",
       "-product-version",
       "2d7251",
       "-platform",
@@ -643,15 +664,12 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ssci collection for //base:base.run ssci tool to generate SPDX sbom",
+    "name": "SSCI collection.target specific steps for //example:example.run ssci tool to generate SPDX sbom",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output[spdx]@[@@@",
-      "@@@STEP_LOG_LINE@json.output[spdx]@  {@@@",
-      "@@@STEP_LOG_LINE@json.output[spdx]@    \"spdx\": \"yes\"@@@",
-      "@@@STEP_LOG_LINE@json.output[spdx]@  }@@@",
-      "@@@STEP_LOG_LINE@json.output[spdx]@]@@@",
-      "@@@STEP_LOG_END@json.output[spdx]@@@"
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@json.output[basic.example:example] (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output[basic.example:example] (exception)@No JSON object could be decoded@@@",
+      "@@@STEP_LOG_END@json.output[basic.example:example] (exception)@@@"
     ]
   },
   {
