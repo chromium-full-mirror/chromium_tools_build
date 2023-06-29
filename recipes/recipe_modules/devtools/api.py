@@ -83,7 +83,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
     os_names = dict(
         linux='Ubuntu-18',
         mac='Mac-13',
-        win='Windows-10-19045.2006',
+        win='Windows-10-19045',
     )
     return {'os': os_names[self.m.platform.name], 'pool': 'chromium.tests'}
 
