@@ -11,21 +11,27 @@ from recipe_engine import recipe_api
 
 class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
-  def build(self,
-            target,
-            with_remote_cache,
-            use_siso_reproxy=None,
-            use_siso_native=None,
-            step_name_suffix=None,
-            revision=None):
+  def build_with_ninja(self, *args, **kwargs):
+    """Run a build with Ninja. See _build()."""
+    return self._build(*args, **kwargs)
+
+  def build_with_siso(self, *args, **kwargs):
+    """Run a build with Siso. See _build()."""
+    return self._build(*args, use_siso=True, **kwargs)
+
+  def _build(self,
+             target,
+             with_remote_cache,
+             use_siso=False,
+             step_name_suffix=None,
+             revision=None):
     """Run a build.
 
         Args:
           target: Build target.
           with_remote_cache: Use remote action caches if it's True,
                              Do not use, otherwise.
-          use_siso_reproxy: Build with Siso in Reproxy mode.
-          use_siso_native: Buidl with Siso in Native RBE client mode.
+          use_siso: Build with Siso.
           step_name_suffix: suffix of the step name.
           revision: revision of the checkout to build.
 
@@ -51,32 +57,22 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       if revision:
         self._checkout(revision)
       # TODO(jwata): Add use_siso flag to chromium.compile API.
-      if use_siso_reproxy:
-        return self._build_with_siso_reproxy(step_name, target,
-                                             with_remote_cache)
-      if use_siso_native:
-        return self._build_with_siso_native(step_name, target,
-                                            with_remote_cache)
+      if use_siso:
+        return self._build_with_siso(step_name, target, with_remote_cache)
       return self.m.chromium.compile([target],
                                      name=step_name,
                                      use_goma_module=False,
                                      use_reclient=True)
 
-  def _build_with_siso_reproxy(self, step_name, target, with_remote_cache):
-    ninja_command = ['ninja', '-C', self.m.chromium.output_dir, target]
-    with self.m.context(cwd=self.m.path['checkout']):
-      with self.m.reclient.process(step_name, None):
-        return self.m.siso.run_ninja(
-            ninja_command=ninja_command, name=step_name)
-
-  def _build_with_siso_native(self, step_name, target, with_remote_cache):
+  def _build_with_siso(self, step_name, target, with_remote_cache):
     ninja_command = ['ninja', '-C', self.m.chromium.output_dir, target]
     siso_args = []
     if not with_remote_cache:
       siso_args += ['-re_cache_enable_read=false']
     with self.m.context(cwd=self.m.path['checkout']):
-      return self.m.siso.run_ninja(
-          ninja_command=ninja_command, name=step_name, siso_args=siso_args)
+      with self.m.reclient.process(step_name, None):
+        return self.m.siso.run_ninja(
+            ninja_command=ninja_command, name=step_name, siso_args=siso_args)
 
   def recreate_build_dir(self, phase=None):
     """Remove and create a build dir."""

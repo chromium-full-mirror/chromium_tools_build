@@ -61,7 +61,7 @@ def _incremental_build_with_one_day_changes(api, target):
             'abcd\nefgh\n')).stdout.split()[0]
 
     # Run a warm up build for remote caches at the current revision.
-    raw_result = api.chromium_build_perf.build(
+    raw_result = api.chromium_build_perf.build_with_ninja(
         target,
         with_remote_cache=True,
         step_name_suffix=' at current revision (warmup)',
@@ -74,7 +74,7 @@ def _incremental_build_with_one_day_changes(api, target):
     api.chromium_build_perf.remove_deps_cache()
 
     # Run a warm up build for local build dir at the base revision.
-    raw_result = api.chromium_build_perf.build(
+    raw_result = api.chromium_build_perf.build_with_ninja(
         target,
         with_remote_cache=True,
         step_name_suffix=' at base revision (warmup)',
@@ -83,7 +83,7 @@ def _incremental_build_with_one_day_changes(api, target):
       return raw_result
 
     # Incremental build with remote caches at the current revision.
-    return api.chromium_build_perf.build(
+    return api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=True, revision=cur_rev)
 
 
@@ -160,7 +160,7 @@ def _incremental_builds_with_patch(api, target):
         with_remote_cache = False
         step_name_suffix = ''
 
-      raw_result = api.chromium_build_perf.build(
+      raw_result = api.chromium_build_perf.build_with_ninja(
           target,
           with_remote_cache=with_remote_cache,
           step_name_suffix=step_name_suffix,
@@ -175,12 +175,14 @@ def _clean_builds(api, target):
   with api.step.nest('Clean builds'):
     api.chromium_build_perf.recreate_build_dir()
     api.chromium_build_perf.remove_deps_cache()
-    raw_result = api.chromium_build_perf.build(target, with_remote_cache=False)
+    raw_result = api.chromium_build_perf.build_with_ninja(
+        target, with_remote_cache=False)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
     api.chromium_build_perf.recreate_build_dir()
-    return api.chromium_build_perf.build(target, with_remote_cache=True)
+    return api.chromium_build_perf.build_with_ninja(
+        target, with_remote_cache=True)
 
 
 def RunSteps(api):

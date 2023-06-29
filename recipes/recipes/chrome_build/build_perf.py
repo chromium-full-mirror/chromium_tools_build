@@ -33,13 +33,15 @@ def _compile_with_and_without_remote_cache(api, target):
   # First build without remote cache.
   api.chromium_build_perf.recreate_build_dir()
   api.chromium_build_perf.remove_deps_cache()
-  raw_result = api.chromium_build_perf.build(target, with_remote_cache=False)
+  raw_result = api.chromium_build_perf.build_with_ninja(
+      target, with_remote_cache=False)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   # Second build with remote cache produced by the previous build.
   api.chromium_build_perf.recreate_build_dir()
-  return api.chromium_build_perf.build(target, with_remote_cache=True)
+  return api.chromium_build_perf.build_with_ninja(
+      target, with_remote_cache=True)
 
 
 def RunSteps(api):

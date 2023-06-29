@@ -35,48 +35,27 @@ def _get_builder_id(api):
                                              buildername)
 
 
-def _run_builds(api, target, with_reproxy=None):
+def _run_builds(api, target, phase, step_name_suffix=None):
   # First build without remote cache.
   api.chromium_build_perf.remove_deps_cache()
-  if with_reproxy:
-    api.chromium_build_perf.recreate_build_dir(phase='reproxy')
-    raw_result = api.chromium_build_perf.build(
-        target,
-        with_remote_cache=False,
-        use_siso_reproxy=True,
-        step_name_suffix=' with reproxy')
-  else:
-    api.chromium_build_perf.recreate_build_dir(phase='builtin')
-    raw_result = api.chromium_build_perf.build(
-        target, with_remote_cache=False, use_siso_native=True)
+  api.chromium_build_perf.recreate_build_dir(phase=phase)
+  raw_result = api.chromium_build_perf.build_with_siso(
+      target, with_remote_cache=False, step_name_suffix=step_name_suffix)
   if raw_result and raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   # Warm-up the remote cache when not using reproxy, because otherwise
   # C++ actions will not get cache hits due to their deps changing
   # after parsing the depsfile. TODO(b/283341125)
-  if not with_reproxy:
-    api.chromium_build_perf.recreate_build_dir(phase='builtin')
-    raw_result = api.chromium_build_perf.build(
-        target,
-        with_remote_cache=True,
-        use_siso_native=True,
-        step_name_suffix=' (warmup)')
+  if phase == 'builtin':
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
+    raw_result = api.chromium_build_perf.build_with_siso(
+        target, with_remote_cache=True, step_name_suffix=' (warmup)')
 
   # Second build with remote cache produced by the previous build.
-  if with_reproxy:
-    api.chromium_build_perf.recreate_build_dir(phase='reproxy')
-    raw_result = api.chromium_build_perf.build(
-        target,
-        with_remote_cache=True,
-        use_siso_reproxy=True,
-        step_name_suffix=' with reproxy')
-  else:
-    api.chromium_build_perf.recreate_build_dir(phase='builtin')
-    raw_result = api.chromium_build_perf.build(
-        target, with_remote_cache=True, use_siso_native=True)
-
-  return raw_result
+  api.chromium_build_perf.recreate_build_dir(phase=phase)
+  return api.chromium_build_perf.build_with_siso(
+      target, with_remote_cache=True, step_name_suffix=step_name_suffix)
 
 
 def RunSteps(api):
@@ -99,11 +78,12 @@ def RunSteps(api):
   # Build target: all
   # TODO(b/253142009): support Windows and Mac with Siso native builds.
   if api.platform.is_linux:
-    raw_result = _run_builds(api, 'all', with_reproxy=False)
+    raw_result = _run_builds(api, 'all', phase='builtin')
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-  return _run_builds(api, 'all', with_reproxy=True)
+  return _run_builds(
+      api, 'all', phase='reproxy', step_name_suffix=' with reproxy')
 
 
 def _sanitize_nonalpha(text):

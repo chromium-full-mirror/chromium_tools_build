@@ -26,15 +26,14 @@ def RunSteps(api):
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
 
-  api.chromium_build_perf.build('all', with_remote_cache=True)
-  api.chromium_build_perf.build('all', with_remote_cache=False)
-  api.chromium_build_perf.build(
+  api.chromium_build_perf.build_with_ninja('all', with_remote_cache=True)
+  api.chromium_build_perf.build_with_ninja('all', with_remote_cache=False)
+  api.chromium_build_perf.build_with_siso('all', with_remote_cache=True)
+  api.chromium_build_perf.build_with_siso('all', with_remote_cache=False)
+  api.chromium_build_perf.build_with_ninja(
       'all', with_remote_cache=False, step_name_suffix=' suffix')
-  api.chromium_build_perf.build('all', with_remote_cache=False, revision='abcd')
-  api.chromium_build_perf.build(
-      'all', with_remote_cache=False, use_siso_reproxy=True)
-  api.chromium_build_perf.build(
-      'all', with_remote_cache=False, use_siso_native=True)
+  api.chromium_build_perf.build_with_ninja(
+      'all', with_remote_cache=False, revision='abcd')
   api.chromium_build_perf.recreate_build_dir()
   api.chromium_build_perf.remove_deps_cache()
 
