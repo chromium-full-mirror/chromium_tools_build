@@ -29,6 +29,7 @@ DEPS = [
 
 from dataclasses import dataclass
 
+from recipe_engine.config import Set
 from recipe_engine.recipe_api import Property
 
 PROPERTIES = {
@@ -37,6 +38,7 @@ PROPERTIES = {
     'memory_tool': Property(default=None, kind=str),
     'msvc': Property(default=False, kind=bool),
     'rel': Property(default=False, kind=bool),
+    'renderers': Property(default=None, kind=Set(str)),
     'run_skia_gold': Property(default=True, kind=bool),
     'skia': Property(default=False, kind=bool),
     'skip_test': Property(default=False, kind=bool),
@@ -51,9 +53,14 @@ _CORPUS_TEST_TYPE = 'corpus'
 _JAVASCRIPT_TEST_TYPE = 'javascript'
 _PIXEL_TEST_TYPE = 'pixel'
 
-# Renderer types.
+# Renderer types. `None` indicates the compiled-in default renderer (no explicit
+# `--use-renderer` flag).
 _AGG_RENDERER = 'agg'
+_GDI_RENDERER = 'gdi'
 _SKIA_RENDERER = 'skia'
+
+_DEFAULT_RENDERERS = frozenset([None, _AGG_RENDERER, _SKIA_RENDERER])
+_ALL_RENDERERS = _DEFAULT_RENDERERS.union([_GDI_RENDERER])
 
 
 @dataclass
@@ -74,6 +81,9 @@ class _DefaultOption:
 
   # Whether this option disables XFA or not.
   disable_xfa: bool = False
+
+  # The renderers this option is compatible with.
+  renderers: frozenset = _ALL_RENDERERS
 
 
 @dataclass
@@ -103,6 +113,7 @@ class _OneshotOption(_DefaultOption):
   name: str = 'oneshot rendering enabled'
   test_suite_suffix: str = 'oneshot'
   additional_arg: str = '--render-oneshot'
+  renderers: frozenset = _DEFAULT_RENDERERS
 
 
 @dataclass
@@ -112,6 +123,7 @@ class _ReverseByteOrderOption(_DefaultOption):
   name: str = 'reverse byte order'
   test_suite_suffix: str = 'reverse_byte_order'
   additional_arg: str = '--reverse-byte-order'
+  renderers: frozenset = _DEFAULT_RENDERERS
 
 
 def _is_goma_enabled(msvc):
@@ -254,14 +266,6 @@ def _build_steps(api, clang, msvc, out_dir):
     api.step('compile with ninja', ninja_cmd)
 
 
-def _run_all_embedder_tests(test_runner, skia):
-  if skia:
-    test_runner.run_embedder_tests(_AGG_RENDERER)
-    test_runner.run_embedder_tests(_SKIA_RENDERER)
-  else:
-    test_runner.run_embedder_tests()
-
-
 def _run_all_javascript_tests(test_runner, xfa):
   test_runner.run_javascript_tests(_DefaultOption)
   test_runner.run_javascript_tests(_JavascriptDisabledOption)
@@ -305,14 +309,25 @@ def _run_all_corpus_tests(test_runner, skia, v8, xfa):
 
 
 def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
-               run_skia_gold):
+               run_skia_gold, renderers):
   """Runs the tests and uploads the results to Gold."""
   resultdb = _ResultDb(
       api, base_variant={
           'builder': api.buildbucket.builder_name,
       })
+
+  if renderers:
+    embedder_test_renderers = renderers
+    python_test_renderers = renderers
+  else:
+    if skia:
+      embedder_test_renderers = [_AGG_RENDERER, _SKIA_RENDERER]
+    else:
+      embedder_test_renderers = [None]
+    python_test_renderers = [None]
   test_runner = _TestRunner(api, memory_tool, resultdb, out_dir, build_config,
-                            revision, run_skia_gold)
+                            revision, run_skia_gold, embedder_test_renderers,
+                            python_test_renderers)
 
   # defer_results() will defer individual failures until the end of this block.
   with api.step.defer_results():
@@ -320,7 +335,7 @@ def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
     test_runner.run_unit_tests()
 
     # pdfium_embeddertests:
-    _run_all_embedder_tests(test_runner, skia)
+    test_runner.run_embedder_tests()
 
     # run_javascript_tests.py:
     if v8:
@@ -382,15 +397,27 @@ class _ResultDb:
     ], **kwargs)
 
 
+def _validate_renderers(context_name, renderers):
+  if not _ALL_RENDERERS.issuperset(renderers):
+    invalid = filter(lambda renderer: renderer not in _ALL_RENDERERS, renderers)
+    raise ValueError(f'Invalid {context_name} renderer: {", ".join(invalid)}')
+  return renderers
+
+
 class _TestRunner:
 
   def __init__(self, api, memory_tool, resultdb, out_dir, build_config,
-               revision, run_skia_gold):
+               revision, run_skia_gold, embedder_test_renderers,
+               python_test_renderers):
     self.api = api
     self.resultdb = resultdb
     self.out_dir = self.api.path['checkout'].join('out', out_dir)
     self.build_config = build_config
     self.env = self._create_sanitizer_envionment(memory_tool)
+    self.embedder_test_renderers = _validate_renderers('pdfium_embeddertests',
+                                                       embedder_test_renderers)
+    self.python_test_renderers = _validate_renderers('pdfium_test',
+                                                     python_test_renderers)
 
     self.test_runner_py_args = [
         '--build-dir',
@@ -454,19 +481,24 @@ class _TestRunner:
     with self.api.context(cwd=self.api.path['checkout'], env=self.env):
       self._run_gtest('unittests', target=('', 'pdfium_unittests'))
 
-  def run_embedder_tests(self, renderer=None):
-    test_name = 'embeddertests'
-    args = []
-    if renderer:
-      test_name = f'{test_name} ({renderer})'
-      args.append(f'--use-renderer={renderer}')
+  def run_embedder_tests(self):
+    for renderer in self.embedder_test_renderers:
+      if renderer not in _DEFAULT_RENDERERS:
+        continue
 
-    with self.api.context(cwd=self.api.path['checkout'], env=self.env):
-      self._run_gtest(
-          test_name,
-          target=('', 'pdfium_embeddertests'),
-          args=args,
-          test_suite_suffix=renderer)
+      test_name = 'embeddertests'
+      args = []
+
+      if renderer:
+        test_name = f'{test_name} ({renderer})'
+        args.append(f'--use-renderer={renderer}')
+
+      with self.api.context(cwd=self.api.path['checkout'], env=self.env):
+        self._run_gtest(
+            test_name,
+            target=('', 'pdfium_embeddertests'),
+            args=args,
+            test_suite_suffix=renderer)
 
   def run_javascript_tests(self, option):
     self._run_python_tests(_JAVASCRIPT_TEST_TYPE, option)
@@ -478,16 +510,27 @@ class _TestRunner:
     self._run_python_tests(_CORPUS_TEST_TYPE, option)
 
   def _run_python_tests(self, test_type, option):
-    test_name = f'{test_type} tests'
-    if option.name:
-      test_name = f'{test_name} ({option.name})'
+    for renderer in self.python_test_renderers:
+      if renderer not in option.renderers:
+        continue
 
-    with self.api.context(cwd=self.api.path['checkout'], env=self.env):
-      self._run_test_runner_py(
-          test_name,
-          test_type=test_type,
-          args=_get_modifiable_script_args(self.api, self.build_config, option),
-          test_suite_suffix=option.test_suite_suffix)
+      test_name = f'{test_type} tests'
+      test_suite_suffix = option.test_suite_suffix
+
+      if option.name:
+        test_name = f'{test_name} ({option.name})'
+
+      if renderer:
+        test_name = f'{test_name} ({renderer})'
+        test_suite_suffix = f'{test_suite_suffix}_{renderer}'
+
+      with self.api.context(cwd=self.api.path['checkout'], env=self.env):
+        self._run_test_runner_py(
+            test_name,
+            test_type=test_type,
+            args=_get_modifiable_script_args(self.api, self.build_config,
+                                             option, renderer),
+            test_suite_suffix=test_suite_suffix)
 
   def _run_gtest(self, step_name, *, target, args=None, test_suite_suffix=None):
     target_path, target_name = target
@@ -538,7 +581,7 @@ def _get_test_suite(base_name, suffix=None):
   return f'{base_name}_{suffix}' if suffix else base_name
 
 
-def _get_modifiable_script_args(api, build_config, option):
+def _get_modifiable_script_args(api, build_config, option, renderer):
   """Get the list of additional arguments for Python-based tests that can be
   further modified based on test options.
   Returns a list that can be concatenated with the other script arguments.
@@ -564,10 +607,17 @@ def _get_modifiable_script_args(api, build_config, option):
     keys['xfa_runtime'] = 'disabled' if (build_config['xfa'] == 'false' or
                                          option.disable_javascript or
                                          option.disable_xfa) else 'enabled'
+
+    if renderer:
+      keys['renderer'] = renderer
+
     additional_args.extend(['--gold_key', _dict_to_str(keys)])
 
   if option.additional_arg:
     additional_args.append(option.additional_arg)
+
+  if renderer:
+    additional_args.append(f'--use-renderer={renderer}')
 
   return additional_args
 
@@ -622,7 +672,7 @@ def _gen_ci_build(api, builder):
 
 
 def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
-             run_skia_gold, component, skip_test, target_os):
+             run_skia_gold, component, skip_test, target_os, renderers):
   revision = _checkout_step(api, target_os)
 
   out_dir = _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel,
@@ -645,7 +695,7 @@ def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
       return
 
     _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
-               run_skia_gold)
+               run_skia_gold, renderers)
 
 
 def GenTests(api):
@@ -699,6 +749,32 @@ def GenTests(api):
       api.builder_group.for_current('client.pdfium'),
       api.properties(component=True, xfa=True, bot_id='test_bot'),
       _gen_ci_build(api, 'win_component'),
+  )
+
+  yield api.test(
+      'win_gdi',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      api.properties(xfa=True, bot_id='test_bot', renderers=['gdi']),
+      _gen_ci_build(api, 'windows_gdi'),
+  )
+  yield api.test(
+      'win_gdi_skia',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      api.properties(skia=True, xfa=True, bot_id='test_bot', renderers=['gdi']),
+      _gen_ci_build(api, 'windows_gdi_skia'),
+  )
+  yield api.test(
+      'win_agg_gdi_skia',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      api.properties(
+          skia=True,
+          xfa=True,
+          bot_id='test_bot',
+          renderers=['agg', 'gdi', 'skia']),
+      _gen_ci_build(api, 'windows_agg_gdi_skia'),
   )
 
   yield api.test(
@@ -1094,4 +1170,14 @@ def GenTests(api):
       api.builder_group.for_current('client.pdfium'),
       api.properties(bot_id='test_bot', run_skia_gold=False),
       _gen_ci_build(api, 'linux'),
+  )
+
+  yield api.test(
+      'fail-invalid-renderer',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      api.properties(
+          xfa=True, bot_id='test_bot', renderers=['agg', 'fake', 'gdi']),
+      _gen_ci_build(api, 'windows'),
+      api.expect_exception('ValueError'),
   )
