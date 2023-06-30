@@ -119,7 +119,7 @@ def GenTests(api):
       api.builder_group.for_current('devtools-frontend'),
       ci_build(builder='linux'),
       api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -133,6 +133,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'archive'),
       api.post_process(post_process.DoesNotRun, 'Unit Tests'),
       api.post_process(post_process.Filter('E2E tests')),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -142,6 +143,7 @@ def GenTests(api):
       api.properties(runner_args="--ITERATIONS=100 --SUITE=flaky/suite"),
       api.post_process(post_process.DoesNotRun, 'Unit Tests'),
       api.post_process(post_process.Filter('E2E tests')),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -158,7 +160,9 @@ def GenTests(api):
               'node runner config pattern', stream='stdout')),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
+    )
 
   data = {
       'shards': [{
@@ -178,5 +182,6 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+    )

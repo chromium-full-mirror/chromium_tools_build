@@ -78,6 +78,7 @@ def GenTests(api):
   yield api.test(
       'release',
       try_build(),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -85,6 +86,7 @@ def GenTests(api):
       ci_build(),
       api.post_process(post_process.DoesNotRun, 'upload screenshots'),
       api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -96,6 +98,7 @@ def GenTests(api):
               'ITERATIONS=1 node runner config pattern', stream='stdout')),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
   )
 
   data = {
@@ -115,8 +118,8 @@ def GenTests(api):
           'E2E Tests (Shard #0) on Ubuntu-18',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -125,6 +128,7 @@ def GenTests(api):
       try_build(),
       api.post_process(post_process.MustRun, 'clean outdir'),
       api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -133,4 +137,5 @@ def GenTests(api):
       try_build(),
       api.post_process(post_process.MustRun, 'clean outdir'),
       api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
   )

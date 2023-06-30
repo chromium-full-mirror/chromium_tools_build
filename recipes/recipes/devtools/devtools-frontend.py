@@ -421,6 +421,7 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       api.post_process(post_process.DoesNotRun, 'archive'),
       try_build(builder='linux'),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -428,6 +429,7 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='linux'),
       api.properties(run_experimental_steps=True),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -435,7 +437,7 @@ def GenTests(api):
       api.builder_group.for_current('devtools-frontend'),
       ci_build(builder='linux'),
       api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -454,7 +456,8 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(is_official_build=True),
-      api.post_process(post_process.Filter('gn'))
+      api.post_process(post_process.Filter('gn')),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -462,7 +465,8 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(devtools_skip_typecheck=True),
-      api.post_process(post_process.Filter('gn'))
+      api.post_process(post_process.Filter('gn')),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -473,6 +477,7 @@ def GenTests(api):
       api.path.exists(api.path['checkout'].join(
           'scripts', 'test', 'run_lint_check_js.mjs'
       )),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -485,7 +490,9 @@ def GenTests(api):
               'node runner config pattern', stream='stdout')),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
+    )
 
   yield api.test(
       'ci parallel builder',
@@ -497,7 +504,9 @@ def GenTests(api):
               'node runner config pattern', stream='stdout')),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
+    )
 
   data = {
       'shards': [{
@@ -518,8 +527,9 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+    )
 
   data = {
       'shards': [{
@@ -538,8 +548,9 @@ def GenTests(api):
           'Interactions Tests result collection.Interactions Tests shards ' +
           'results.Interactions Tests (Shard #0) on Ubuntu-18',
           api.chromium_swarming.summary(None, data)),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+    )
 
   data = {
       'shards': [{
@@ -557,5 +568,6 @@ def GenTests(api):
       api.step_data(
           'Interactions Tests result collection.Interactions Tests ' +
           '(Shard #0) on Ubuntu-18', api.chromium_swarming.summary(None, data)),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+    )
