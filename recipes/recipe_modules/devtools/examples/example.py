@@ -37,7 +37,10 @@ def RunSteps(api, builder_config, clobber):
         api.step('Nothing', [])
     else:
       with api.step.nest('E2E Tests'):
-        commands = api.devtools.divided_e2e_commands(builder_config)
+        commands = api.devtools.divided_e2e_commands(
+            builder_config=builder_config,
+            shuffle=api.devtools.is_shuffled_run(),
+        )
         cas_digest = api.devtools.archive_to_cas()
         tasks_results = []
         tasks = api.devtools.trigger_test_swarming_tasks(

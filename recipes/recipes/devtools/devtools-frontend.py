@@ -215,7 +215,10 @@ class E2ETests(DevToolsTests):
 
   def trigger(self):
     with self.api.step.nest(self.step_name):
-      commands = self.api.devtools.divided_e2e_commands(self.builder_config)
+      commands = self.api.devtools.divided_e2e_commands(
+          builder_config=self.builder_config,
+          shuffle=self.api.devtools.is_shuffled_run(),
+      )
       self.tasks = self.api.devtools.trigger_test_swarming_tasks(
           step_name=self.step_name,
           cas_digest=self.cas_digest,

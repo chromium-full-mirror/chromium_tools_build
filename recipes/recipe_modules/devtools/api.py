@@ -63,6 +63,9 @@ class DevToolsAPI(recipe_api.RecipeApi):
   def is_parallel_run(self):
     return 'parallel' in self.m.buildbucket.builder_name.lower()
 
+  def is_shuffled_run(self):
+    return 'shuffled' in self.m.buildbucket.builder_name.lower()
+
   def run_e2e(self, builder_config, args=None, run_mode='regular'):
     args = list(args or [])
     mode_modifiers = dict(
@@ -94,15 +97,18 @@ class DevToolsAPI(recipe_api.RecipeApi):
                            builder_config,
                            shards=4,
                            file_pattern='',
-                           iterations=1):
+                           iterations=1,
+                           shuffle=False):
     modified_commands = []
+    shuffled = ['--shuffle'] if shuffle else []
     raw_commands = self.m.devtools.run_python_script(
         'divide test run',
-        'e2e_divider.py', [
+        'e2e_divider.py',
+        [
             f'--jobs={shards}',
             f'--test-file-pattern={file_pattern}',
             f'--iterations={iterations}',
-        ],
+        ] + shuffled,
         stdout=self.m.raw_io.output_text(
             add_output_log=True)).stdout.strip().split('\n')
 
