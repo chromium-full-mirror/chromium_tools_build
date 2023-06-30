@@ -70,16 +70,19 @@ class SsciAPI(recipe_api.RecipeApi):
       depbot_json_summary_file = self.m.json.output(name="summary")
       third_party_out = self.m.path.mkdtemp().join("third_party.json")
 
-      # TODO(dlf): Use only the first target until depbot supports multiple
-      # targets.
+      targetFlags = []
+
+      for target in targets:
+        targetFlags.extend(["--target", target])
+
       depbot_result = self.m.step(
-          'run depbot', [
-              depbot_path, '--target', targets[0], '--chromium-src-dir',
-              src_dir, '--log-level', 'debug', '--gn-path',
-              self.m.depot_tools.gn_py_path, '--build-dir', build_dir,
-              '--json-output', depbot_json_output_dir, '--json-summary-file',
-              depbot_json_summary_file
-          ],
+          'run depbot',
+          [
+              depbot_path, '--chromium-src-dir', src_dir, '--log-level',
+              'debug', '--gn-path', self.m.depot_tools.gn_py_path,
+              '--build-dir', build_dir, '--json-output', depbot_json_output_dir,
+              '--json-summary-file', depbot_json_summary_file
+          ] + targetFlags,
           cost=self.m.step.ResourceCost(
               cpu=2 * self.m.step.CPU_CORE, memory=4000))
 

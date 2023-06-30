@@ -322,8 +322,6 @@
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/latest/depbot",
-      "--target",
-      "//example:example",
       "--chromium-src-dir",
       "None",
       "--log-level",
@@ -335,7 +333,9 @@
       "--json-output",
       "[CLEANUP]/tmp_tmp_1",
       "--json-summary-file",
-      "/path/to/tmp/json"
+      "/path/to/tmp/json",
+      "--target",
+      "//example:example"
     ],
     "cost": {
       "cpu": 2000,
