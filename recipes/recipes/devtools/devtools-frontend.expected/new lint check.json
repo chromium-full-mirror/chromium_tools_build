@@ -320,8 +320,7 @@
       "-u",
       "[CACHE]/builder/devtools-frontend/scripts/test/run_unittests.py",
       "--target=Debug",
-      "--coverage",
-      "--expanded-reporting"
+      "--coverage"
     ],
     "env_prefixes": {
       "PATH": [

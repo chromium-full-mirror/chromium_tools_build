@@ -98,7 +98,6 @@ class UnitTests(DevToolsTests):
               self.api.path.join('scripts', 'test', 'run_unittests.py'),
               '--target=' + self.builder_config,
               '--coverage',
-              '--expanded-reporting',
               '--swarming-output-file',
               '${ISOLATED_OUTDIR}',
           ]],
@@ -284,11 +283,9 @@ def run_script(api, step_name, script, args=None):
 
 def run_unit_tests(api, builder_config):
   run_script(api, 'Unit Tests', 'run_unittests.py', [
-      '--target=' + builder_config,
+      '--target=' +  builder_config,
       '--coverage',
-      '--expanded-reporting',
-  ])
-
+    ])
 
 def lint_script_exists(api, name):
   script_file = api.path['checkout'].join('scripts', 'test', name)
