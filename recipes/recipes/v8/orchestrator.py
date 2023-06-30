@@ -162,10 +162,11 @@ def GenTests(api):
     },
   }
 
-  def test(name, *args):
+  def test(name, *args, **kwargs):
     return api.test(
         name, api.buildbucket.try_build(builder='v8_foobar_rel'),
-        api.properties(compilator_name='v8_foobar_compile_rel'), *args)
+        api.properties(compilator_name='v8_foobar_compile_rel'),
+        *args, **kwargs)
 
   yield test(
       'basic',
@@ -173,7 +174,7 @@ def GenTests(api):
       api.step_data('Check', api.v8_tests.one_failure()),
       api.post_process(MustRun, 'Check'),
       api.post_process(MustRun, 'Test262'),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield test(
@@ -182,8 +183,8 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'Check'),
       api.post_process(DoesNotRun, 'Test262'),
       api.post_process(ResultReason, 'Compile failed'),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield test(
@@ -192,15 +193,15 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'Check'),
       api.post_process(DoesNotRun, 'Test262'),
       api.post_process(ResultReason, 'Timeout'),
-      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
+      status='INFRA_FAILURE',
   )
 
   yield test(
       'no_subbuild',
       api.post_process(ResultReason, 'sub_build missing from step'),
-      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
+      status='INFRA_FAILURE',
   )
 
   yield test(
@@ -208,8 +209,8 @@ def GenTests(api):
       subbuild_data(output_properties),
       api.runtime.global_shutdown_on_step('Check'),
       api.post_process(ResultReason, BUILD_CANCELED_SUMMARY),
-      api.expect_status('CANCELED'),
       api.post_process(DropExpectation),
+      status='CANCELED',
   )
 
   yield test(
@@ -217,16 +218,16 @@ def GenTests(api):
       api.runtime.global_shutdown_on_step('compilator steps'),
       subbuild_data({}, '', common_pb.CANCELED),
       api.post_process(ResultReason, BUILD_CANCELED_SUMMARY),
-      api.expect_status('CANCELED'),
       api.post_process(DropExpectation),
+      status='CANCELED',
   )
 
   yield test(
       'subbuild_canceled_before_parent',
       subbuild_data({}, '', common_pb.CANCELED),
       api.post_process(ResultReason, BUILD_WRONGLY_CANCELED_SUMMARY),
-      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
+      status='INFRA_FAILURE',
   )
 
   yield test(
@@ -237,8 +238,8 @@ def GenTests(api):
       api.post_process(DoesNotRun, 'Check'),
       api.post_process(DoesNotRun, 'Test262'),
       api.post_process(ResultReason, 'No tests specified'),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   led_properties = {
@@ -270,4 +271,5 @@ def GenTests(api):
       api.post_process(MustRun, 'Check'),
       api.post_process(MustRun, 'Test262'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )

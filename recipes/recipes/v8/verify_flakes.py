@@ -170,16 +170,17 @@ def GenTests(api):
   yield api.test(
       'success',
       test_data(['SUCCESS']),
+      status='SUCCESS',
   )
 
   yield api.test(
       'failure',
       test_data(['FAILURE']),
       api.post_process(StepFailure, 'FunctionCallSample'),
-      api.expect_status('FAILURE'),
       api.post_process(ResultReasonRE,
                        'Some flakes failed to reproduce: FunctionCallSample'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -187,6 +188,7 @@ def GenTests(api):
       test_data(['INFRA_FAILURE']),
       api.post_process(StepException, 'FunctionCallSample'),
       api.post_process(Filter().include_re(r'.*FunctionCallSample.*')),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -194,6 +196,7 @@ def GenTests(api):
       api.step_data('read flake config', api.gitiles.make_encoded_file('[]')),
       api.post_process(MustRun, 'No flakes to reproduce'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -207,4 +210,5 @@ def GenTests(api):
               }] * 20))),
       api.post_process(MustRun, 'Too many flake configs'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )

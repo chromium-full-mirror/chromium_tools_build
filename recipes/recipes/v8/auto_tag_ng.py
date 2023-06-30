@@ -225,13 +225,13 @@ def GenTests(api):
   def tracked_branches_count(branches):
     return api.properties(tracked_branches_count=branches)
 
-  def test(name, *test_data):
+  def test(name, *test_data, **kwargs):
     return api.test(
         name,
         # If the test case specifies tracked_branches_count, it will override
         # this
         tracked_branches_count(1),
-        *test_data)
+        *test_data, **kwargs)
 
   def version_file(patch_level, description, prefix=''):
     return api.v8.version_file(patch_level, description, prefix=prefix, major=11)
@@ -250,6 +250,7 @@ def GenTests(api):
           3,
           'latest',
           prefix="Checking branch 11.1.Increment version from 11.4.3.2."),
+      status='SUCCESS',
   )
 
   yield test(
@@ -267,6 +268,7 @@ def GenTests(api):
           3,
           'latest',
           prefix="Checking branch 11.1.Increment version from 11.4.3.2."),
+      status='SUCCESS',
   )
 
   yield test(
@@ -284,7 +286,7 @@ def GenTests(api):
           StepFailure, 'Checking branch 11.2.'
           'Increment version from 11.4.3.3.'
           'Stale version change CL found!'),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield test(
@@ -297,6 +299,7 @@ def GenTests(api):
       api.post_process(
           MustRun, 'Checking branch 11.3.Verify version tag.git push'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield test(
@@ -319,6 +322,7 @@ def GenTests(api):
       api.post_process(
           MustRun, 'Checking branch 11.3.Verify LKGR.'
           'There is no new lkgr.'),
+      status='SUCCESS',
   )
 
   yield test(
@@ -338,6 +342,7 @@ def GenTests(api):
           'git ls-remote refs_tags_11.4.3.3', '404'),
       api.post_process(MustRun, 'Checking branch 11.3.Verify LKGR.git push'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield test(
@@ -353,6 +358,7 @@ def GenTests(api):
           '.*Verify LKGR.*',
       ),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield test(
@@ -373,4 +379,5 @@ def GenTests(api):
       api.post_process(
           MustRun, 'Checking branch 11.3.Verify LKGR.'
           'Dry-run lkgr update 404'),
+      status='SUCCESS',
   )

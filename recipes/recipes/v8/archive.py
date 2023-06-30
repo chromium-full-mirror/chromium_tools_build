@@ -273,7 +273,7 @@ def RunSteps(api, build_config, target_arch, target_bits, target_platform,
 
 
 def GenTests(api):
-  def test_defaults(name, platform, build_config, **kwargs):
+  def test_defaults(name, platform, build_config, status='SUCCESS', **kwargs):
     return api.test(
         api.v8.test_name('client.v8.official', 'V8 Foobar', name),
         api.chromium.ci_build(
@@ -294,6 +294,7 @@ def GenTests(api):
         api.post_process(MustRun, 'sync.clobber', 'sync.gclient runhooks',
                          'build.gn', 'build.compile', 'make archive.zipping',
                          'make archive.gsutil upload'),
+        status=status,
     )
 
   def filter_steps(is_release):
@@ -380,6 +381,7 @@ def GenTests(api):
                        'build.compile', 'make archive.zipping',
                        'make archive.gsutil upload'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   # Test bailout on missing tag.
@@ -403,6 +405,7 @@ def GenTests(api):
                        'build.compile', 'make archive.zipping',
                        'make archive.gsutil upload'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   # Test refbuilds.
@@ -422,6 +425,7 @@ def GenTests(api):
       api.override_step_data('sync.git describe',
                              api.raw_io.stream_output_text('3.4.3')),
       api.post_process(Filter().include_re('.*ref.*')),
+      status='SUCCESS',
   )
 
   # Test canary upload.
@@ -445,6 +449,7 @@ def GenTests(api):
               'make archive.gsutil upload',
               'make archive.gsutil upload json',
           )),
+      status='SUCCESS',
   )
 
   # Test coverage for compile failures
@@ -467,8 +472,8 @@ def GenTests(api):
           'sync.bot_update', '--revision', 'v8@refs/branch-heads/' +
           '3.4:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
       api.step_data('build.compile', retcode=1),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -490,8 +495,8 @@ def GenTests(api):
           'sync.bot_update', '--revision', 'v8@refs/branch-heads/' +
           '3.4:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
       api.step_data('build.compile', retcode=1),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -513,8 +518,8 @@ def GenTests(api):
           'sync.bot_update', '--revision', 'v8@refs/branch-heads/' +
           '3.4:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
       api.step_data('build (libs).compile', retcode=1),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -533,8 +538,8 @@ def GenTests(api):
       api.override_step_data('sync.git describe',
                              api.raw_io.stream_output_text('3.4.3')),
       api.step_data('build (ref).compile', retcode=1),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   # Test reclient
@@ -565,4 +570,5 @@ def GenTests(api):
           Filter('sync.bot_update', 'build.gn', 'build.preprocess for reclient',
                  'build.compile', 'build (libs).gn',
                  'build (libs).preprocess for reclient')),
+      status='SUCCESS',
   )

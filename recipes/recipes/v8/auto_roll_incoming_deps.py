@@ -857,14 +857,14 @@ remote:"""
   yield api.test(*template('default') + [
       api.post_process(
           SummaryMarkdown,
-          'updated 4 trusted dep(s), 6 reviewed dep(s), 1 chromium pin(s)'),
-  ])
+          'updated 4 trusted dep(s), 6 reviewed dep(s), 1 chromium pin(s)')],
+  )
 
   # Stale rolls: If active roll CLs exists in gerrit, we abandon those first
   yield api.test(*(template('no-stale-roll') + [
       api.post_process(DoesNotRun, 'Setup.gerrit abandon'),
       api.post_process(DropExpectation),
-  ]))
+  ]), status='SUCCESS')
   yield api.test(*(template('stale-roll') + [
       api.override_step_data(
           'Setup.gerrit changes',
@@ -883,7 +883,7 @@ remote:"""
       api.post_process(MustRun, 'Setup.gerrit abandon (2)'),
       api.post_process(MustRun, 'Setup.Previous roll failed (2)'),
       api.post_process(DropExpectation),
-  ]))
+  ]), status='SUCCESS')
 
   # No version difference: There is no new dependency version, and we do not try
   # to update any dep (via `gclient setdep`).
@@ -931,6 +931,7 @@ remote:"""
       api.post_process(DoesNotRun,
                        'Roll chromium pin.gclient set chromium_linux deps'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   # No update succeeded: If there is no dependency update, we don't create CLs
@@ -940,7 +941,7 @@ remote:"""
   ) + [
       api.post_process(DoesNotRunRE, r'^Update \w* deps\.git cl$'),
       api.post_process(DropExpectation),
-  ])
+  ], status='SUCCESS')
 
   # Malformed DEPS file: Raise an exception
   yield api.test(*base_template(
@@ -958,6 +959,5 @@ remote:"""
       additional_v8_deps='\nv8/mock-changed-location: foo/changed-location@1',
       additional_cr_deps='\nsrc/mock-changed-location: bar/changed-location@2',
   ) + [
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
-  ])
+  ], status='FAILURE')

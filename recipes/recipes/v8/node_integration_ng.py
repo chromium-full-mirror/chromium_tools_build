@@ -195,7 +195,8 @@ def _sanitize_nonalpha(*chunks):
 
 
 def GenTests(api):
-  def test(buildername, platform, is_trybot=False, suffix='', **properties):
+  def test(buildername, platform, is_trybot=False, suffix='', status='SUCCESS',
+           **properties):
     buildbucket_kwargs = {
         'project': 'v8',
         'git_repo': 'https://chromium.googlesource.com/v8/node-ci',
@@ -217,13 +218,15 @@ def GenTests(api):
         buildbucket_fn(**buildbucket_kwargs),
         api.platform(platform, 64),
         api.v8.hide_infra_steps(),
+        status=status,
     )
 
   # Test CI builder on node-ci group.
   yield test(
       'Node-CI Foobar',
       platform='linux',
-  ) + api.post_process(Filter('initialization.bot_update'))
+  ) + api.post_process(Filter('initialization.bot_update')
+  )
 
   # Test try builder on node-ci group.
   yield test(
@@ -247,6 +250,7 @@ def GenTests(api):
       suffix='_trigger_fail',
       triggers=['v8_foobar_perf'],
       v8_tot=True,
+      status='INFRA_FAILURE',
   ) + api.buildbucket.simulated_schedule_output(
       builds_service_pb2.BatchResponse(
           responses=[
@@ -257,8 +261,7 @@ def GenTests(api):
                   ))
           ],),
       step_name='trigger',
-  ) + api.post_process(Filter('trigger', '$result')) +
-         api.expect_status('INFRA_FAILURE'))
+  ) + api.post_process(Filter('trigger', '$result')))
 
   # Test CI builder on V8 group with consistent test failures.
   yield (test(
@@ -267,9 +270,9 @@ def GenTests(api):
       suffix='_test_failure',
       triggers=['v8_foobar_perf'],
       v8_tot=True,
+      status='FAILURE',
   ) + api.step_data('test default', retcode=1) +
          api.step_data('test default (retry)', retcode=1) +
-         api.expect_status('FAILURE') +
          api.post_process(Filter('test default', 'test default (retry)')))
 
   # Test CI builder on V8 group with flakes.
@@ -279,7 +282,8 @@ def GenTests(api):
       suffix='_flake',
       triggers=['v8_foobar_perf'],
       v8_tot=True,
-  ) + api.step_data('test default', retcode=1) + api.expect_status('FAILURE') +
+      status='FAILURE',
+  ) + api.step_data('test default', retcode=1) +
          api.post_process(ResultReasonRE, 'Flakes in build') + api.post_process(
              Filter('test default', 'test default (retry)',
                     'test default (flakes)')))
@@ -301,7 +305,8 @@ def GenTests(api):
       'compile_failure',
       platform='linux',
       is_trybot=True,
-  ) + api.step_data('build.compile', retcode=1) + api.expect_status('FAILURE') +
+      status='FAILURE',
+  ) + api.step_data('build.compile', retcode=1) +
          api.post_process(DropExpectation))
 
   yield (
@@ -319,4 +324,5 @@ def GenTests(api):
       v8_tot=True,
       **{'$build/v8': {'use_remoteexec': True}}
   ) + api.reclient.properties() + api.post_process(
-      Filter('initialization.bot_update', 'build.gn')))
+      Filter('initialization.bot_update', 'build.gn')
+  ))

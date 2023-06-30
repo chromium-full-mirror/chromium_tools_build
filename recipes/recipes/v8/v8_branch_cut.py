@@ -155,7 +155,7 @@ def GenTests(api):
             step_name, api.raw_io.stream_output_text(text, stream='stdout'))
 
 
-    yield (api.test("no new branch") +
+    yield (api.test("no new branch", status='SUCCESS') +
         stdout('last branches', 'branch-heads/9.9\n'
                 'branch-heads/10.1\n'
                 'branch-heads/10.2') +
@@ -163,7 +163,7 @@ def GenTests(api):
             '"beta": "10.2", "stable": "10.1", "extended": "10.0"}')
     )
 
-    yield (api.test("new branch") +
+    yield (api.test("new branch", status='SUCCESS') +
         stdout('last branches', 'branch-heads/10.0\n'
                 'branch-heads/9.9\n'
                 'branch-heads/9.8\n'
@@ -187,7 +187,7 @@ def GenTests(api):
                 '(https://review.source.com/3)')
     )
 
-    yield (api.test("new branch - new extended") +
+    yield (api.test("new branch - new extended", status='SUCCESS') +
         stdout('last branches', 'branch-heads/9.9\n'
                 'branch-heads/9.8\n'
                 'branch-heads/9.7\n'

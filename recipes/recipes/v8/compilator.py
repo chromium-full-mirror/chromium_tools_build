@@ -152,9 +152,9 @@ def RunSteps(api, custom_deps, default_targets, gclient_vars, target_arch,
 
 
 def GenTests(api):
-  def test(name, builder_name='v8_foobar_compile_rel'):
+  def test(name, builder_name='v8_foobar_compile_rel', status='SUCCESS'):
     return (
-        api.test(name) +
+        api.test(name, status=status) +
         api.builder_group.for_current('tryserver.v8') +
         api.platform('linux', 64) +
         api.buildbucket.try_build(
@@ -181,7 +181,7 @@ def GenTests(api):
   )
 
   yield (
-      api.test('basic_ci') +
+      api.test('basic_ci', status='SUCCESS') +
       api.builder_group.for_current('client.v8') +
       api.buildbucket.ci_build(
           project='v8',
@@ -201,10 +201,11 @@ def GenTests(api):
       api.post_process(DropExpectation)
   )
 
-  yield (test('compile_failure') + api.step_data('build.compile', retcode=1) +
-         api.expect_status('FAILURE') + api.post_process(DropExpectation))
+  yield (test('compile_failure', status='FAILURE') +
+         api.step_data('build.compile', retcode=1) +
+         api.post_process(DropExpectation))
 
-  yield (test('cancellation') +
+  yield (test('cancellation', status='CANCELED') +
          api.runtime.global_shutdown_on_step('build.compile') +
          api.post_process(ResultReason, CANCELLATION_MESSAGE) +
-         api.expect_status('CANCELED') + api.post_process(DropExpectation))
+         api.post_process(DropExpectation))

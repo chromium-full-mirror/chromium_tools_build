@@ -176,10 +176,12 @@ def GenTests(api):
   yield api.test(
       'standard',
       api.override_step_data('gerrit changes', api.json.output([])),
+      status='SUCCESS',
   )
   yield api.test(
       'rolling_deactivated',
       api.url.text('check roll status', '0'),
+      status='SUCCESS',
   )
   yield api.test(
       'active_roll',
@@ -191,6 +193,7 @@ def GenTests(api):
                              api.json.output([{
                                  '_number': '123'
                              }])),
+      status='SUCCESS',
   )
   yield api.test(
       'stale_roll',
@@ -199,6 +202,7 @@ def GenTests(api):
                                  '_number': '123'
                              }])),
       api.override_step_data('gerrit changes (2)', api.json.output([])),
+      status='SUCCESS',
   )
   yield api.test(
       'inconsistent_state',
@@ -210,11 +214,13 @@ def GenTests(api):
           'gclient get local deps',
           api.raw_io.stream_output_text('beefdead', stream='stdout'),
       ),
+      status='SUCCESS',
   )
   yield api.test(
       'standard_experimental',
       api.override_step_data('gerrit changes', api.json.output([])),
       api.runtime(is_experimental=True),
+      status='SUCCESS',
   )
   yield api.test(
       'stale_roll_experimental',
@@ -224,4 +230,5 @@ def GenTests(api):
                              }])),
       api.override_step_data('gerrit changes (2)', api.json.output([])),
       api.runtime(is_experimental=True),
+      status='SUCCESS',
   )

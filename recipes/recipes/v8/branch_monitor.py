@@ -197,9 +197,9 @@ def GenTests(api):
       api.url.json(
           'GET https://chromiumdash.appspot.com/fetch_milestones?'
           'num=0&only_active=true', {}),
-      api.expect_status('FAILURE'),
       api.post_process(ResultReason, "No branches found"),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -216,8 +216,8 @@ def GenTests(api):
       api.step_data('branch 10.3 (5555).Get roll gap', fake_commit()),
       api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
       api.time.seed(apr_10_2023_09),
-      api.expect_status('SUCCESS'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -234,8 +234,8 @@ def GenTests(api):
       api.step_data('branch 10.3 (5555).Get roll gap', no_commits()),
       api.step_data('branch 11.4 (6666).Get roll gap', no_commits()),
       api.time.seed(apr_10_2023_09),
-      api.expect_status('SUCCESS'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -256,8 +256,8 @@ def GenTests(api):
           StepFailure,
           "branch 11.4 (6666).Revision deadbeef was not rolled for 7 days, 20:48:22"
       ),
-      api.expect_status('FAILURE'),
       api.post_process(ResultReason,
                        '1 overdue revs in 10.3; 1 overdue revs in 11.4'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )

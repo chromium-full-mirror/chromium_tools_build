@@ -69,6 +69,7 @@ def GenTests(api):
       api.post_process(
           post_process.Filter('Build gcmole', 'Package gcmole',
                               'upload_to_google_storage', 'git cl')),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -79,4 +80,5 @@ def GenTests(api):
       ),
       api.post_process(post_process.DoesNotRun, 'git commit', 'git cl'),
       api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
   )

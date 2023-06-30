@@ -54,4 +54,5 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.post_process(Filter('js-fuzzer.npm install', 'js-fuzzer.npm test')),
+      status='SUCCESS',
   )

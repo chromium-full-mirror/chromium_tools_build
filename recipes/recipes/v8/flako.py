@@ -1146,7 +1146,7 @@ def GenTests(api):
       is_flaky(-3, 0, 2),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Progression testing with a too large gap between known bad revision
@@ -1164,7 +1164,7 @@ def GenTests(api):
           f'Could not connect the known bad revision to refs/heads/main. '
           f'Looked in over {MAX_HEAD_OFFSET} commits.'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Combine progression and regression testing.
@@ -1215,7 +1215,7 @@ def GenTests(api):
           api.empty_test_data()),
       api.post_process(SummaryMarkdown, 'Couldn\'t find cas_digests.'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Simulate not returning a JSON output after many iterations.
@@ -1231,7 +1231,7 @@ def GenTests(api):
           SummaryMarkdown,
           'Unable to retrieve from CAS, probably went out of retention'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Simulate not returning a JSON output after a few iterations.
@@ -1246,7 +1246,7 @@ def GenTests(api):
       api.post_process(SummaryMarkdownRE,
                        'Infra Failure.*missing shard results.*'),
       api.post_process(DropExpectation),
-      api.expect_status('INFRA_FAILURE'),
+      status='INFRA_FAILURE',
   )
 
   # Simulate repro-only mode reproducing a flake.
@@ -1267,7 +1267,7 @@ def GenTests(api):
       successful_lookups(0),
       api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Simulate repro-only mode with no revision property given.
@@ -1295,7 +1295,7 @@ def GenTests(api):
       api.post_process(MustRun, 'gsutil lookup cas_digests for #1 (fallback)'),
       api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Simulate repro-only mode reproducing a flake by regexp.
@@ -1321,7 +1321,7 @@ def GenTests(api):
       is_flaky(0, 0, 1, calibration_attempt=1),
       api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Simulate running tasks on Android and verify correct dimensions.
@@ -1345,7 +1345,7 @@ def GenTests(api):
       successful_lookups(0),
       api.post_process(check_dimensions),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Simulate not finding enough flakes during calibration.
@@ -1364,7 +1364,7 @@ def GenTests(api):
       is_flaky(0, 0, 3, calibration_attempt=5, test_name=shortened_test_name),
       api.post_process(SummaryMarkdown, 'Could not reach enough confidence.'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   # Simulate triggering of the recipe by the flake verification bot.
@@ -1387,6 +1387,7 @@ def GenTests(api):
               '[trigger] check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04',
               'calibration attempt 1.check mjsunit/foobar at #0.'
               'check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04')),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -1399,6 +1400,7 @@ def GenTests(api):
       ),
       api.expect_exception('ValueError'),
       api.post_process(DropExpectation),
+      status='INFRA_FAILURE',
   )
 
   yield api.test(
@@ -1414,4 +1416,5 @@ def GenTests(api):
       api.post_process(MustRun, 'Checking #1 (commit position: 100)'),
       api.post_process(DoesNotRun, 'Checking #1 (commit position: 42)'),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )

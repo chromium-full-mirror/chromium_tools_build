@@ -8,4 +8,4 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test("empty")
+  yield api.test("empty", status='SUCCESS')

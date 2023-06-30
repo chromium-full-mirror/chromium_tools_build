@@ -197,6 +197,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
            parent_bot_config=None,
            git_ref='refs/heads/main',
            experiments=None,
+           status='SUCCESS',
            **kwargs):
     """Convenience method to generate test data for V8 recipe runs.
 
@@ -240,6 +241,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
         self.m.reclient.properties(),
         self.m.builder_group.for_current(builder_group),
         self.m.platform('linux', 64),
+        status=status,
     )
     if parent_buildername:
       test += self.m.properties(

@@ -666,7 +666,7 @@ def GenTests(api):
     ]
 
 
-  def main_scenario(name, *args):
+  def main_scenario(name, *args, **kwargs):
     return api.test(
         name,
         api.properties(max_parallel_versions=2, version_number_cutoff=(1, 1)),
@@ -683,7 +683,7 @@ def GenTests(api):
                 '43ff refs/tags/1.1.2',
                 '',
             ])),
-        *args,
+        *args, **kwargs
     )
 
   yield main_scenario(
@@ -729,8 +729,8 @@ def GenTests(api):
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   failing_track = 'x86'
@@ -754,8 +754,8 @@ def GenTests(api):
           'upload to gs.gsutil upload metadata 1.1.1.4',
           'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.1.4-pgo)',
       ),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield main_scenario(
@@ -781,8 +781,8 @@ def GenTests(api):
           'report exceptions.gsutil upload blocked-versions.txt', [
               '1.1.1.4 {"failures": ["https://cr-buildbucket.appspot.com/build/0"]}'
           ]),
-      api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -820,7 +820,7 @@ def GenTests(api):
       ),
       api.post_process(DropExpectation),
       # The test fails due to missing mock data for following steps.
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -847,7 +847,7 @@ def GenTests(api):
       ),
       api.post_process(DropExpectation),
       # The test fails due to missing mock data for following steps.
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield main_scenario(

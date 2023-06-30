@@ -401,12 +401,14 @@ def GenTests(api):
   yield api.test(
       "no-cls",
       roller(default_roller),
+      status='SUCCESS',
   )
 
   yield api.test(
       "roller-with-stale-cls",
       roller(default_roller),
       find_fake_cls(default_roller),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -418,7 +420,7 @@ def GenTests(api):
           build(1, SUCCESS),
           build(2, FAILURE),
       ),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -444,6 +446,7 @@ def GenTests(api):
           build(1, SUCCESS),
           build(2, FAILURE),
       ),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -459,6 +462,7 @@ def GenTests(api):
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
           "Builders still in progress..."),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -477,7 +481,7 @@ def GenTests(api):
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
           "gerrit Tag CL for no screenshots patch available"),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -496,7 +500,7 @@ def GenTests(api):
           "read patch for linux",
           api.file.read_text('patch contents'),
       ),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -512,6 +516,7 @@ def GenTests(api):
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
           "Apply screenshot patches.No screenshot builds found"),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -530,7 +535,7 @@ def GenTests(api):
           StepFailure, "Roller: 'experiment'.Checking CL 123."
           "Apply screenshot patches.Roller 'experiment' failed"),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )
 
   yield api.test(
@@ -549,6 +554,7 @@ def GenTests(api):
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
           "Apply screenshot patches.Builders still in progress..."),
       api.post_process(DropExpectation),
+      status='SUCCESS',
   )
 
   yield api.test(
@@ -564,5 +570,5 @@ def GenTests(api):
           "Apply screenshot patches."
           "Roller 'experiment' failed"),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      status='FAILURE',
   )

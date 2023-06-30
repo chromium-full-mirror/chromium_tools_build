@@ -36,4 +36,5 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.post_process(Filter('Presubmit')),
+      status='SUCCESS',
   )

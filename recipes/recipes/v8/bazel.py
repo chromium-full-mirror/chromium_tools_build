@@ -55,4 +55,5 @@ def GenTests(api):
       'basic',
       api.post_process(Filter(
           'Bazel build', 'Bazel shutdown', 'Clobber bazel cache')),
+      status='SUCCESS',
   )
