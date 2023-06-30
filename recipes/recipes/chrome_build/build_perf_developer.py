@@ -30,6 +30,7 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'reclient',
+    'siso',
 ]
 
 
@@ -175,14 +176,29 @@ def _clean_builds(api, target):
   with api.step.nest('Clean builds'):
     api.chromium_build_perf.recreate_build_dir()
     api.chromium_build_perf.remove_deps_cache()
-    raw_result = api.chromium_build_perf.build_with_ninja(
+    result = api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=False)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    if result.status != common_pb.SUCCESS:
+      return result
 
     api.chromium_build_perf.recreate_build_dir()
-    return api.chromium_build_perf.build_with_ninja(
+    result = api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=True)
+    if result.status != common_pb.SUCCESS:
+      return result
+
+    # Siso+Reclient builds.
+    step_name_suffix = ' with Siso in Reproxy mode'
+    result = api.chromium_build_perf.build_with_siso(
+        target, with_remote_cache=False, step_name_suffix=step_name_suffix)
+    if result.status != common_pb.SUCCESS:
+      return result
+    result = api.chromium_build_perf.build_with_siso(
+        target, with_remote_cache=True, step_name_suffix=step_name_suffix)
+    if result.status != common_pb.SUCCESS:
+      return result
+
+    return result
 
 
 def RunSteps(api):
@@ -231,6 +247,13 @@ def GenTests(api):
     return [
         'Clean builds.Build %s without remote cache' % target,
         'Clean builds.Build %s with remote cache' % target,
+        'Clean builds.Build %s without remote cache with Siso in Reproxy mode' %
+        target,
+        'Clean builds.Build %s with remote cache with Siso in Reproxy mode' %
+        target,
+        # TODO(b/270902505): enable Siso native builds with phase.
+        # 'Clean builds.Build %s with remote cache with Siso in Native mode' %
+        # target,
         'Incremental build with 1-day of changes.Build %s with remote cache at current revision (warmup)'
         % target,
         'Incremental build with 1-day of changes.Build %s with remote cache at base revision (warmup)'
@@ -273,6 +296,7 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      api.siso.properties(),
       _buildbucket_search_results(),
       *_success_builds('chrome'),
       api.post_process(post_process.StatusSuccess),
@@ -291,6 +315,7 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      api.siso.properties(),
       *_success_builds('chrome'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
@@ -308,6 +333,7 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      api.siso.properties(),
       api.step_data('Incremental builds with patch.git log',
                     api.raw_io.stream_output_text('')),
       api.post_process(post_process.StatusSuccess),
@@ -327,6 +353,7 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      api.siso.properties(),
       _buildbucket_search_results(),
       *_success_builds('chrome_public_apk'),
       api.post_process(post_process.StatusSuccess),
@@ -346,6 +373,7 @@ def GenTests(api):
                 ),
                 **builder).assemble()),
         api.reclient.properties(),
+        api.siso.properties(),
         api.step_data(step, retcode=1),
         api.expect_status('FAILURE'),
         api.post_process(post_process.DropExpectation),
