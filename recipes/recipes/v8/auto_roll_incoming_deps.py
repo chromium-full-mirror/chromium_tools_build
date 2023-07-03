@@ -100,6 +100,7 @@ TRUSTED_ORIGIN_DEPS = {
     "https://chromium.googlesource.com/chromium/src/build",
     "https://chromium.googlesource.com/chromium/src/buildtools",
     "https://chromium.googlesource.com/devtools/devtools-frontend",
+    "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
     "https://chromium.googlesource.com/chromium/src/third_party/android_platform",
     "https://chromium.googlesource.com/chromium/src/third_party/instrumented_libraries",
     "https://chromium.googlesource.com/chromium/src/third_party/jinja2",
