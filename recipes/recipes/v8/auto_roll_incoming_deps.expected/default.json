@@ -456,7 +456,7 @@
       "--deps",
       "all",
       "--spec",
-      "solutions=[{'managed': False, 'name': 'v8', 'url': 'https://chromium.googlesource.com/v8/v8', 'custom_vars': {}, 'deps_file': 'DEPS'}]"
+      "solutions=[{'managed': False, 'name': 'v8', 'url': 'https://chromium.googlesource.com/v8/v8', 'custom_vars': {'checkout_fuchsia_no_hooks': True}, 'deps_file': 'DEPS'}]"
     ],
     "cwd": "[CACHE]/builder",
     "env": {

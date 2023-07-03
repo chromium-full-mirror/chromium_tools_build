@@ -135,6 +135,9 @@ GCLIENT_CUSTOM_VARS = {
   'https://chromium.googlesource.com/chromium/src': {
     'checkout_fuchsia_no_hooks': True,
   },
+  'https://chromium.googlesource.com/v8/v8': {
+    'checkout_fuchsia_no_hooks': True,
+  },
 }
 
 
