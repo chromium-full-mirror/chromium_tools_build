@@ -17,6 +17,8 @@ def RunSteps(api):
       src_dir=api.path.abspath(api.path['checkout']),
       build_dir='out/Release',
       targets=["//example:example"],
+      sbom_bucket='my-bucket',
+      sbom_folder='os/version/',
       chrome_version="111.111.111.11")
 
 def GenTests(api):

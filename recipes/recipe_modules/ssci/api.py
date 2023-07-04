@@ -47,6 +47,8 @@ class SsciAPI(recipe_api.RecipeApi):
       self,
       src_dir,
       build_dir,
+      sbom_bucket=None,
+      sbom_folder=None,
       targets=None,
       chrome_version=None,
   ):
@@ -124,42 +126,61 @@ class SsciAPI(recipe_api.RecipeApi):
       for target in depbot_execution_summary.get("targets"):
         library_file = target.get("libraries_file_path")
         artifact_file = target.get("artifacts_file_path")
+        entry_point = target.get("entry_point")
 
-        with self.m.step.nest('target specific steps for %s' %
-                              target.get("entry_point")):
-          self.m.step('upload artifacts to BigQuery', [
-              bqupload_cipd_path, "-json-list=true", "-column", builderColumn,
-              self.bq_art_table, artifact_file
-          ])
+        futures = []
+        futures.append(
+            self.m.futures.spawn(
+                self.m.step, 'upload %s artifacts to BigQuery' % entry_point, [
+                    bqupload_cipd_path, "-json-list=true", "-column",
+                    builderColumn, self.bq_art_table, artifact_file
+                ]))
 
-          self.m.step('upload libraries to BigQuery', [
-              bqupload_cipd_path, "--json-list=true", "-column", builderColumn,
-              self.bq_lib_table, library_file
-          ])
+        futures.append(
+            self.m.futures.spawn(
+                self.m.step, 'upload %s libraries to BigQuery' % entry_point, [
+                    bqupload_cipd_path, "--json-list=true", "-column",
+                    builderColumn, self.bq_lib_table, library_file
+                ]))
 
-          # Combines the recipe name with the DepBot target as the product name.
-          recipe_name = self.m.properties["recipe"].split("/")[-1]
-          product = f'{recipe_name}.{target.get("entry_point").replace("//", "")}'
-          p_version = self._get_product_version(chrome_version)
+        # Combines the recipe name with the DepBot target as the product name.
+        recipe_name = self.m.properties["recipe"].split("/")[-1]
+        product = f'{recipe_name}.{entry_point.replace("//", "")}'
+        p_version = self._get_product_version(chrome_version)
 
-          spdx_out = self.m.json.output(name=product)
+        spdx_file = self.m.path.mkdtemp().join("spdx-out.json")
+        spdx_out = self.m.json.output(name=product, leak_to=spdx_file)
 
-          # The vPython metadata files are found in the parent directory.
-          with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):
-            self.m.step(
-                'run ssci tool to generate SPDX sbom', [
-                    "vpython3", "--vpython-spec=.vpython3", "-m", "ssci",
-                    "spdx", "-libraries", library_file, "-artifacts",
-                    artifact_file, "-thirdparty", third_party_out,
-                    "-depbot-version", depbot_cipd_version, "-partybot-version",
-                    partybot_cipd_version, "-ssci-version", ssci_cipd_version,
-                    "-output-file", spdx_out, "-chromium-src", src_dir,
-                    "-product", product, "-product-version", p_version,
-                    "-platform", self.m.platform.name, "-arch",
-                    f"{self.m.platform.arch}{self.m.platform.bits}",
-                    minimal_config
-                ],
-                step_test_data=(lambda: self.m.json.test_api.output(
-                    data=[{
-                        "spdx": "yes"
-                    }], name="spdx")))
+        # The vPython metadata files are found in the parent directory.
+        with self.m.context(cwd=self.m.path.dirname(ssci_cipd_path)):
+
+          futures.append(
+              self.m.futures.spawn(
+                  self.m.step,
+                  'run ssci tool to generate %s SPDX sbom' % entry_point, [
+                      "vpython3", "--vpython-spec=.vpython3", "-m", "ssci",
+                      "spdx", "-libraries", library_file, "-artifacts",
+                      artifact_file, "-thirdparty", third_party_out,
+                      "-depbot-version",
+                      '"%s"' % depbot_cipd_version, "-partybot-version",
+                      '"%s"' % partybot_cipd_version, "-ssci-version",
+                      '"%s"' % ssci_cipd_version, "-output-file", spdx_out,
+                      "-chromium-src", src_dir, "-product", product,
+                      "-product-version", p_version, "-platform",
+                      self.m.platform.name, "-arch",
+                      f"{self.m.platform.arch}{self.m.platform.bits}",
+                      minimal_config
+                  ],
+                  step_test_data=(lambda: self.m.json.test_api.output(
+                      data=[{
+                          "spdx": "yes"
+                      }], name="spdx"))))
+
+        self.m.futures.wait(futures)
+
+        if sbom_bucket and sbom_folder:
+          self.m.gsutil.upload(
+              spdx_file,
+              sbom_bucket,
+              sbom_folder + product + ".json",
+              name="upload %s SBOM " % product)

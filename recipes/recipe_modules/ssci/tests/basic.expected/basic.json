@@ -560,13 +560,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "SSCI collection.target specific steps for //example:example",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
       "-json-list=true",
@@ -587,9 +580,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for //example:example.upload artifacts to BigQuery",
+    "name": "SSCI collection.upload //example:example artifacts to BigQuery",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -613,9 +606,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for //example:example.upload libraries to BigQuery",
+    "name": "SSCI collection.upload //example:example libraries to BigQuery",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -632,13 +625,13 @@
       "-thirdparty",
       "[CLEANUP]/tmp_tmp_2/third_party.json",
       "-depbot-version",
-      "resolved-instance_id-of-latest----------",
+      "\"resolved-instance_id-of-latest----------\"",
       "-partybot-version",
-      "AABBCC",
+      "\"AABBCC\"",
       "-ssci-version",
-      "resolved-instance_id-of-latest----------",
+      "\"resolved-instance_id-of-latest----------\"",
       "-output-file",
-      "/path/to/tmp/json",
+      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
       "-chromium-src",
       "None",
       "-product",
@@ -664,12 +657,43 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for //example:example.run ssci tool to generate SPDX sbom",
+    "name": "SSCI collection.run ssci tool to generate //example:example SPDX sbom",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_END@json.output[basic.example:example] (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output[basic.example:example] (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output[basic.example:example] (exception)@@@"
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output[basic.example:example] (read error)@JSON file was missing or unreadable:@@@",
+      "@@@STEP_LOG_LINE@json.output[basic.example:example] (read error)@  [CLEANUP]/tmp_tmp_3/spdx-out.json@@@",
+      "@@@STEP_LOG_END@json.output[basic.example:example] (read error)@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
+      "gs://my-bucket/os/version/basic.example:example.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.gsutil upload basic.example:example SBOM ",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/basic.example:example.json@@@"
     ]
   },
   {
