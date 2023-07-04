@@ -65,15 +65,7 @@ def RunSteps(api):
     api.chromium.runhooks()
 
   # Build target: all
-  raw_result = _compile_with_and_without_remote_cache(api, 'all')
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
-
-  # Build target: chrome or chrome_public_apk
-  chrome_target = 'chrome'
-  if builder_config.chromium_config == 'android':
-    chrome_target = 'chrome_public_apk'
-  return _compile_with_and_without_remote_cache(api, chrome_target)
+  return _compile_with_and_without_remote_cache(api, 'all')
 
 
 def _sanitize_nonalpha(text):
@@ -105,10 +97,6 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'Build all without remote cache'),
       api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome without remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome with remote cache'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -129,10 +117,6 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'Build all without remote cache'),
       api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome_public_apk without remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome_public_apk with remote cache'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -153,16 +137,11 @@ def GenTests(api):
       api.post_process(post_process.StepSuccess,
                        'Build all without remote cache'),
       api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome without remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build chrome with remote cache'),
       api.post_process(post_process.DropExpectation),
   )
 
   for step in [
       'Build all without remote cache', 'Build all with remote cache',
-      'Build chrome without remote cache', 'Build chrome with remote cache'
   ]:
     yield api.test(
         '%s_compile_fail' % (_sanitize_nonalpha(step)),
