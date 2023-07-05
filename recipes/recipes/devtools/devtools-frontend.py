@@ -63,27 +63,41 @@ class DevToolsTests(ABC):
     self.step_name = step_name
     self.output_dir = self.api.path.mkdtemp()
     self.tasks = []
-    self.tasks_results = []
 
-  def _collect_tasks(self):
+  def collect(self):
+    """
+    Returns a list of the failures as strings (empty list if there are no
+    failures).
+    """
+    failures = []
     with self.api.step.nest(f'{self.step_name} shards results'):
       failed_shards = []
       for i in range(len(self.tasks)):
         step, is_valid = self.api.chromium_swarming.collect_task(self.tasks[i])
-        self.tasks_results.append(step)
         if step.presentation.status != self.api.step.SUCCESS or not is_valid:
-          failed_shards.append(i)
+          failed_shards.append(str(i))
       if failed_shards:
-        raise StepFailure('Failure in shard(s) ' +
-                          f'#{", ".join([str(x) for x in failed_shards])}.')
+        if len(self.tasks) == 1:
+          failures.append(f'Failure in {self.step_name}')
+        else:
+          failures.append(f'{self.step_name} failed in shard(s) ' +
+                          f'#{", ".join(failed_shards)}')
+
+    return failures
 
   @abstractmethod
   def trigger(self):
-    pass  # pragma: no cover
+    """
+    Triggers the command(s) we want to run on Swarming tasks.
+    """
 
   @abstractmethod
-  def collect(self):
-    pass  # pragma: no cover
+  def process_results(self):
+    """
+    Collects the tasks with '_collect_tasks' and does any extra things we want
+    to do after the collection. Returns a list of the failures as strings
+    (empty list if there are no failures).
+    """
 
 
 class UnitTests(DevToolsTests):
@@ -103,10 +117,11 @@ class UnitTests(DevToolsTests):
           ]],
       )
 
-  def collect(self):
+  def process_results(self):
     with self.api.step.nest(f'{self.step_name} result collection'):
-      self._collect_tasks()
+      failures = self.collect()
       self.copy_coverage_data()
+      return failures
 
   def copy_coverage_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
@@ -130,28 +145,17 @@ class InteractionsTests(DevToolsTests):
     self.bucket = bucket
     super().__init__(api, cas_digest, builder_config, step_name)
 
-  def _collect_tasks(self):
-    step_failure = {'failed': False, 'text': ''}
+  def collect(self):
     if self.api.tryserver.is_tryserver:
       with self.api.step.nest(f'{self.step_name} shards results') \
         as presentation:
-        for i in range(len(self.tasks)):
-          self.api.chromium_swarming.collect_task(self.tasks[i]).get_result()
+        self.api.chromium_swarming.collect_task(self.tasks[0]).get_result()
       if presentation.status != self.api.step.SUCCESS:
-        step_failure['failed'] = True
-        step_failure['text'] = f'Failure in shard(s) #{i}'
+        return [f'Failure in {self.step_name}']
     else:
-      failed_shards = []
-      for i in range(len(self.tasks)):
-        step, is_valid = self.api.chromium_swarming.collect_task(self.tasks[i])
-        self.tasks_results.append(step)
-        if step.presentation.status != self.api.step.SUCCESS or not is_valid:
-          failed_shards.append(i)
-      if failed_shards:
-        step_failure['failed'] = True
-        step_failure['text'] = 'Failure in shard(s) ' + \
-                          f'#{", ".join([str(x) for x in failed_shards])}.'
-    return step_failure
+      return super().collect()
+
+    return []
 
   def trigger(self):
     with self.api.step.nest(self.step_name):
@@ -177,15 +181,14 @@ class InteractionsTests(DevToolsTests):
           ]],
       )
 
-  def collect(self):
+  def process_results(self):
     with self.api.step.nest(f'{self.step_name} result collection'):
       with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
-        result = self._collect_tasks()
+        failures = self.collect()
         self.copy_coverage_data()
         self.copy_golden_snapshots()
         publish_coverage_points(self.api)
-      if result['failed']:
-        raise StepFailure(result['text'])
+      return failures
 
   def copy_coverage_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
@@ -225,9 +228,9 @@ class E2ETests(DevToolsTests):
           commands=commands,
       )
 
-  def collect(self):
+  def process_results(self):
     with self.api.step.nest(f'{self.step_name} result collection'):
-      self._collect_tasks()
+      return self.collect()
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
@@ -268,8 +271,10 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
       run_lint_check(api)
 
-      for t in tests:
-        t.collect()
+      all_failures = sum((t.process_results() for t in tests), [])
+
+      if all_failures:
+        raise StepFailure(', '.join(all_failures))
 
     if can_run_experimental_steps(api):
       # Place here any unstable steps that you want to be performed on
@@ -506,33 +511,55 @@ def GenTests(api):
           api.raw_io.stream_output_text(
               'node runner config pattern', stream='stdout')),
       api.post_process(post_process.MustRun, 'archive'),
+      api.post_process(post_process.MustRun, 'Unit Tests'),
+      api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests result collection'),
+      api.post_process(post_process.MustRun,
+                       'Interactions Tests result collection'),
+      api.post_process(post_process.MustRun, 'E2E Tests result collection'),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
-    )
+  )
 
-  data = {
+  data1 = {
       'shards': [{
           'state': 'COMPLETED (FAILURE)',
       }]
   }
+  data2 = {
+      'shards': [{
+          'state': 'COMPLETED (SUCCESS)',
+      }]
+  }
   yield api.test(
-      'failed parallel builder',
+      'failed parallel builder on E2E',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
-              'node runner config pattern', stream='stdout')),
+              'node1 runner1 config1 pattern1\nnode2 runner2 config2 pattern2',
+              stream='stdout')),
       api.step_data(
           'E2E Tests result collection.E2E Tests shards results.' +
           'E2E Tests (Shard #0) on Ubuntu-18',
-          api.chromium_swarming.summary(None, data)),
+          api.chromium_swarming.summary(None, data1)),
+      api.step_data(
+          'E2E Tests result collection.E2E Tests shards results.' +
+          'E2E Tests (Shard #1) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data2)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.SummaryMarkdown,
+                       'E2E Tests failed in shard(s) #0, 1'),
+      api.post_process(post_process.MustRun, 'Unit Tests result collection'),
+      api.post_process(post_process.MustRun,
+                       'Interactions Tests result collection'),
+      api.post_process(post_process.MustRun, 'E2E Tests result collection'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
-    )
+  )
 
   data = {
       'shards': [{
@@ -551,9 +578,15 @@ def GenTests(api):
           'Interactions Tests result collection.Interactions Tests shards ' +
           'results.Interactions Tests (Shard #0) on Ubuntu-18',
           api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Failure in Interactions Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests result collection'),
+      api.post_process(post_process.MustRun,
+                       'Interactions Tests result collection'),
+      api.post_process(post_process.MustRun, 'E2E Tests result collection'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
-    )
+  )
 
   data = {
       'shards': [{
@@ -569,8 +602,88 @@ def GenTests(api):
           api.raw_io.stream_output_text(
               'node runner config pattern', stream='stdout')),
       api.step_data(
-          'Interactions Tests result collection.Interactions Tests ' +
-          '(Shard #0) on Ubuntu-18', api.chromium_swarming.summary(None, data)),
+          'Interactions Tests result collection.Interactions Tests shards ' +
+          'results.Interactions Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Failure in Interactions Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests result collection'),
+      api.post_process(post_process.MustRun,
+                       'Interactions Tests result collection'),
+      api.post_process(post_process.MustRun, 'E2E Tests result collection'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
-    )
+  )
+
+  data = {
+      'shards': [{
+          'state': 'COMPLETED (FAILURE)',
+      }]
+  }
+  yield api.test(
+      'ci failed parallel builder on unit tests',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data(
+          'Unit Tests result collection.Unit Tests ' +
+          'shards results.Unit Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.SummaryMarkdown, 'Failure in Unit Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests result collection'),
+      api.post_process(post_process.MustRun,
+                       'Interactions Tests result collection'),
+      api.post_process(post_process.MustRun, 'E2E Tests result collection'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+
+  data1 = {
+      'shards': [{
+          'state': 'COMPLETED (FAILURE)',
+      }]
+  }
+  data2 = {
+      'shards': [{
+          'state': 'COMPLETED (SUCCESS)',
+      }]
+  }
+  yield api.test(
+      'ci failed parallel builder on unit, interactions, and E2E tests',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.step_data(
+          'E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node1 runner1 config1 pattern1\nnode2 runner2 config2 pattern2',
+              stream='stdout')),
+      api.step_data(
+          'Unit Tests result collection.Unit Tests ' +
+          'shards results.Unit Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data1)),
+      api.step_data(
+          'Interactions Tests result collection.Interactions Tests shards ' +
+          'results.Interactions Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data1)),
+      api.step_data(
+          'E2E Tests result collection.E2E Tests shards results.' +
+          'E2E Tests (Shard #0) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data1)),
+      api.step_data(
+          'E2E Tests result collection.E2E Tests shards results.' +
+          'E2E Tests (Shard #1) on Ubuntu-18',
+          api.chromium_swarming.summary(None, data2)),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Failure in Unit Tests, Failure in Interactions Tests, ' +
+          'E2E Tests failed in shard(s) #0, 1'),
+      api.post_process(post_process.MustRun, 'Unit Tests result collection'),
+      api.post_process(post_process.MustRun,
+                       'Interactions Tests result collection'),
+      api.post_process(post_process.MustRun, 'E2E Tests result collection'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
