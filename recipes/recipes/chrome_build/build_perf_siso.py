@@ -24,6 +24,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/step',
     'reclient',
     'siso',
 ]
@@ -74,6 +75,8 @@ def RunSteps(api):
     api.code_coverage.instrument([])
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
+
+  api.step('check siso version', [api.siso.siso_path, 'version'])
 
   # Build target: all
   # TODO(b/253142009): support Windows and Mac with Siso native builds.
