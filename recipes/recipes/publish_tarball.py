@@ -356,6 +356,12 @@ def publish_tarball(api):
 
   fetch_pgo_profiles(api)
 
+  build_rust_script = 'build_rust.py'
+  build_rust_args = ['--sync-for-gnrt']
+  api.step('download rustc sources', [
+      'python3', api.path['checkout'].join('tools', 'rust', build_rust_script)
+  ] + build_rust_args)
+
   # https://chromium.googlesource.com/chromium/src/+/065d83e42bb327e81b045fd04c37eef2934be298
   if [int(x) for x in version.split('.')] >= [113, 0, 5656, 0]:
     api.step('Fetch V8 PGO profiles', [
