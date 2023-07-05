@@ -56,12 +56,16 @@ def RunSteps(api):
         last_merged_change_list[0]['updated'],
         '%Y-%m-%d %H:%M:%S.%f000').date()
     current_date = datetime.date.fromtimestamp(api.time.time())
-    if (current_date - last_merged_date).days < 7:
+    # Only look up to Sunday in order to maintain the same cadence when a CL
+    # isn't merged the first time (0 aligns with Monday)
+    start_of_week = current_date - datetime.timedelta(
+        days=(current_date.weekday() + 1) % 7)
+    if (last_merged_date >= start_of_week):
       return result_pb2.RawResult(
           status=common_pb.SUCCESS,
           summary_markdown=(
-              'Skipping autosharder CL creation because it has been less '
-              'than 7 days since the last merged CL.'),
+              'Skipping autosharder CL creation because it has been merged '
+              'this week.'),
       )
 
   # Check to see if there's already an active autosharder CL
@@ -172,7 +176,8 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  current_timestamp = 1682914288
+  # Simulate running on a Monday
+  current_timestamp = int(datetime.datetime(2023, 7, 3).timestamp())
 
   yield api.test(
       'basic',
@@ -185,9 +190,8 @@ def GenTests(api):
               '_number':
                   '12345',
               'updated':
-                  datetime.date.fromtimestamp(current_timestamp -
-                                              86400 * 8).strftime(
-                                                  '%Y-%m-%d %H:%M:%S.%f000'),
+                  datetime.datetime(2023, 7,
+                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.post_process(post_process.MustRun, 'git cl status'),
@@ -209,9 +213,8 @@ def GenTests(api):
               '_number':
                   '12345',
               'updated':
-                  datetime.date.fromtimestamp(current_timestamp -
-                                              86400 * 8).strftime(
-                                                  '%Y-%m-%d %H:%M:%S.%f000'),
+                  datetime.datetime(2023, 7,
+                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -229,7 +232,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'less_than_7_days_since_last_merged',
+      'already merged this week',
       api.time.seed(current_timestamp),
       api.override_step_data(
           'gerrit get last merged change',
@@ -239,11 +242,14 @@ def GenTests(api):
               '_number':
                   '12345',
               'updated':
-                  datetime.date.fromtimestamp(current_timestamp -
-                                              86400 * 2).strftime(
-                                                  '%Y-%m-%d %H:%M:%S.%f000'),
+                  datetime.datetime(2023, 7,
+                                    2).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Skipping autosharder CL creation because it has been merged '
+          'this week.'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -258,9 +264,8 @@ def GenTests(api):
               '_number':
                   '12345',
               'updated':
-                  datetime.date.fromtimestamp(current_timestamp -
-                                              86400 * 8).strftime(
-                                                  '%Y-%m-%d %H:%M:%S.%f000'),
+                  datetime.datetime(2023, 7,
+                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -292,9 +297,8 @@ def GenTests(api):
               '_number':
                   '12345',
               'updated':
-                  datetime.date.fromtimestamp(current_timestamp -
-                                              86400 * 8).strftime(
-                                                  '%Y-%m-%d %H:%M:%S.%f000'),
+                  datetime.datetime(2023, 7,
+                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -329,9 +333,8 @@ def GenTests(api):
               '_number':
                   '12345',
               'updated':
-                  datetime.date.fromtimestamp(current_timestamp -
-                                              86400 * 8).strftime(
-                                                  '%Y-%m-%d %H:%M:%S.%f000'),
+                  datetime.datetime(2023, 7,
+                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
@@ -363,9 +366,8 @@ def GenTests(api):
               '_number':
                   '12345',
               'updated':
-                  datetime.date.fromtimestamp(current_timestamp -
-                                              86400 * 8).strftime(
-                                                  '%Y-%m-%d %H:%M:%S.%f000'),
+                  datetime.datetime(2023, 7,
+                                    1).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.override_step_data(
