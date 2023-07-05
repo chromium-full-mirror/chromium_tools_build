@@ -56,6 +56,8 @@ class SsciAPI(recipe_api.RecipeApi):
     # prefer targets supplied in properties.
     targets = self.targets or targets
 
+    execution_id = self.m.uuid.random()
+
     with self.m.step.nest('SSCI collection'):
       depbot_path = self.m.cipd.ensure_tool(
           'infra_internal/tools/security/depbot/${platform}',
@@ -88,7 +90,8 @@ class SsciAPI(recipe_api.RecipeApi):
           cost=self.m.step.ResourceCost(
               cpu=2 * self.m.step.CPU_CORE, memory=4000))
 
-      builderColumn = 'builder="%s"' % self.m.buildbucket.builder_full_name
+      builder_column = 'builder="%s"' % self.m.buildbucket.builder_full_name
+      execution_id_column = 'execution_id="%s"' % execution_id
 
       depbot_execution_summary = depbot_result.json.outputs.get("summary")
 
@@ -128,19 +131,26 @@ class SsciAPI(recipe_api.RecipeApi):
         artifact_file = target.get("artifacts_file_path")
         entry_point = target.get("entry_point")
 
+        entry_point_column = 'entry_point="%s"' % entry_point
+        target_column = 'target="%s"' % target.get("target")
+
         futures = []
         futures.append(
             self.m.futures.spawn(
                 self.m.step, 'upload %s artifacts to BigQuery' % entry_point, [
                     bqupload_cipd_path, "-json-list=true", "-column",
-                    builderColumn, self.bq_art_table, artifact_file
+                    builder_column, "-column", execution_id_column, "-column",
+                    entry_point_column, "-column", target_column,
+                    self.bq_art_table, artifact_file
                 ]))
 
         futures.append(
             self.m.futures.spawn(
                 self.m.step, 'upload %s libraries to BigQuery' % entry_point, [
                     bqupload_cipd_path, "--json-list=true", "-column",
-                    builderColumn, self.bq_lib_table, library_file
+                    builder_column, "-column", execution_id_column, "-column",
+                    entry_point_column, "-column", target_column,
+                    self.bq_lib_table, library_file
                 ]))
 
         # Combines the recipe name with the DepBot target as the product name.
@@ -179,8 +189,9 @@ class SsciAPI(recipe_api.RecipeApi):
         self.m.futures.wait(futures)
 
         if sbom_bucket and sbom_folder:
+          filename = entry_point.replace("//", "") + ".json"
           self.m.gsutil.upload(
               spdx_file,
               sbom_bucket,
-              sbom_folder + product + ".json",
-              name="upload %s SBOM " % product)
+              sbom_folder + filename,
+              name="upload %s SBOM " % filename)

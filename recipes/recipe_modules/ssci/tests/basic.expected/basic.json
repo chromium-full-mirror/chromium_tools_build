@@ -565,6 +565,12 @@
       "-json-list=true",
       "-column",
       "builder=\"myproject/mybucket/mybuilder\"",
+      "-column",
+      "execution_id=\"00000000-0000-0000-0000-000000001337\"",
+      "-column",
+      "entry_point=\"//example:example\"",
+      "-column",
+      "target=\"//example:example\"",
       "project.dataset.table",
       "out/Release/artifacts.json"
     ],
@@ -591,6 +597,12 @@
       "--json-list=true",
       "-column",
       "builder=\"myproject/mybucket/mybuilder\"",
+      "-column",
+      "execution_id=\"00000000-0000-0000-0000-000000001337\"",
+      "-column",
+      "entry_point=\"//example:example\"",
+      "-column",
+      "target=\"//example:example\"",
       "project.dataset.table",
       "out/Release/libs.json"
     ],
@@ -675,7 +687,7 @@
       "----",
       "cp",
       "[CLEANUP]/tmp_tmp_3/spdx-out.json",
-      "gs://my-bucket/os/version/basic.example:example.json"
+      "gs://my-bucket/os/version/example:example.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -690,10 +702,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.gsutil upload basic.example:example SBOM ",
+    "name": "SSCI collection.gsutil upload example:example.json SBOM ",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/basic.example:example.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/example:example.json@@@"
     ]
   },
   {
