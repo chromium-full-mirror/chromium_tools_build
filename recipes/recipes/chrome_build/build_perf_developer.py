@@ -189,10 +189,14 @@ def _clean_builds(api, target):
 
     # Siso+Reclient builds.
     step_name_suffix = ' with Siso in Reproxy mode'
+    api.chromium_build_perf.recreate_build_dir()
+    api.chromium_build_perf.remove_deps_cache()
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=False, step_name_suffix=step_name_suffix)
     if result.status != common_pb.SUCCESS:
       return result
+
+    api.chromium_build_perf.recreate_build_dir()
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=True, step_name_suffix=step_name_suffix)
     if result.status != common_pb.SUCCESS:
