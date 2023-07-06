@@ -10,6 +10,8 @@ import unittest
 
 import mock
 
+import time
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0,
                 os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources')))
@@ -83,6 +85,39 @@ class RebaseLineNumberFromBotToGerritTest(unittest.TestCase):
     mocked_fetch_files_content.assert_called_with(
         self.host, self.project, self.change, self.patchset, [])
     self.assertDictEqual({}, file_to_line_num_mapping)
+
+  @mock.patch.object(gerrit_util, 'fetch_files_content')
+  def test_rebase_line_number_with_timeout(self, mocked_fetch_files_content):
+    with self.assertRaisesRegex(
+        TimeoutError, "Step 'Rebase line number from bot to gerrit' timed-out"):
+      rebase_line_number_from_bot_to_gerrit.initiate_timer(5)
+      time.sleep(3)
+      file_on_gerrit_content = 'line 1\nline 2, changed by me\nline 3\n'
+      mocked_fetch_files_content.return_value = [file_on_gerrit_content]
+
+      file_on_bot = tempfile.NamedTemporaryFile()
+      file_on_bot.write(b'line 0, added by someone else\n'
+                        b'line 1, changed by someone else\n'
+                        b'line 2, changed by me\n')
+      file_on_bot.flush()
+
+      file_on_bot_path = file_on_bot.name
+      file_to_line_num_mapping = (
+          rebase_line_number_from_bot_to_gerrit.rebase_line_number(
+              self.host, self.project, self.change, self.patchset,
+              os.path.dirname(file_on_bot_path),
+              [os.path.basename(file_on_bot_path)]))
+
+      self.assertEqual(
+          {
+              os.path.basename(file_on_bot_path): {
+                  3: (2, 'line 2, changed by me')
+              }
+          }, file_to_line_num_mapping)
+      mocked_fetch_files_content.assert_called_with(
+          self.host, self.project, self.change, self.patchset,
+          [os.path.basename(file_on_bot_path)])
+      time.sleep(3)
 
 
 if __name__ == '__main__':

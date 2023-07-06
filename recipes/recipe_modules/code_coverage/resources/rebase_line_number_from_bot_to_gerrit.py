@@ -32,6 +32,10 @@ import tempfile
 import diff_util
 import gerrit_util
 
+import signal
+
+_DEFAULT_TIMEOUT = 15 * 60
+
 
 def rebase_line_number(host, project, change, patchset, src_path, sources):
   """Rebases line number for a list of files from bot to gerrit.
@@ -142,6 +146,14 @@ def _parse_args():
       'line number as well as the line itself.')
 
   arg_parser.add_argument(
+      '--timeout',
+      required=False,
+      type=int,
+      default=_DEFAULT_TIMEOUT,
+      help="Number of seconds after which this command will timeout and raise an Exception. Default timeout is 15 minutes."
+  )
+
+  arg_parser.add_argument(
       'sources',
       nargs='+',
       help='Paths of source files to line number mapping for, the paths are '
@@ -151,6 +163,16 @@ def _parse_args():
   return arg_parser.parse_args()
 
 
+def timeout_exception(num, stack):
+  raise TimeoutError("Step 'Rebase line number from bot to gerrit' timed-out")
+
+
+def initiate_timer(timeout):
+  signal.signal(signal.SIGALRM, timeout_exception)
+  timeout_seconds = int(timeout) or _DEFAULT_TIMEOUT
+  signal.alarm(timeout_seconds)
+
+
 def main():
   args = _parse_args()
 
@@ -158,6 +180,8 @@ def main():
       level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')
   if not os.path.isdir(args.src_path):
     raise RuntimeError('Checkout: "%s" doesn\'t exist.' % args.src_path)
+
+  initiate_timer(args.timeout)
 
   file_to_line_num_mapping = rebase_line_number(args.host, args.project,
                                                 args.change, args.patchset,

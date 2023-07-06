@@ -169,6 +169,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
       local_to_gerrit_diff_mapping_file = output_dir.join(
           constants.BOT_TO_GERRIT_LINE_NUM_MAPPING_FILE_NAME)
+      timeout_in_minutes = 15
       self.m.step(
           'generate line number mapping from bot to Gerrit',
           [
@@ -187,6 +188,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               '--output-file',
               local_to_gerrit_diff_mapping_file,
           ] + self._eligible_files,
+          timeout=timeout_in_minutes * 60,
           stdout=self.m.json.output())
       self._bot_to_gerrit_mapping_file = local_to_gerrit_diff_mapping_file
     return self._bot_to_gerrit_mapping_file
