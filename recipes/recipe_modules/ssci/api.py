@@ -30,7 +30,10 @@ class SsciAPI(recipe_api.RecipeApi):
       return package_version
 
     desc = self.m.cipd.describe(package_name, package_version)
-    return desc.pin.instance_id
+    # Adds a v in front of the CIPD package versions to prevent issues where CIPD
+    # package instance IDs can start with a `-` which can be interpreted as a CLI
+    # flag.
+    return f"v{desc.pin.instance_id}"
 
   def _get_product_version(self, chrome_version):
     """
@@ -40,8 +43,9 @@ class SsciAPI(recipe_api.RecipeApi):
     if chrome_version is not None:
       return chrome_version
 
-    commit_id = self.m.buildbucket.gitiles_commit.id[:6]
-    return commit_id or "UNKNOWN"
+    # The gitiles_commit.id may return None if this build wasn't triggered by CI.
+    # This case is handled by the SSCI tool which will fetch the git hash instead.
+    return self.m.buildbucket.gitiles_commit.id[:6]
 
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
                              bqupload_cipd_path, ssci_cipd_path,
@@ -85,9 +89,8 @@ class SsciAPI(recipe_api.RecipeApi):
                 "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
                 "-libraries", library_file, "-artifacts", artifact_file,
                 "-thirdparty", third_party_out, "-depbot-version",
-                "'%s'" % depbot_cipd_version, "-partybot-version",
-                "'%s'" % partybot_cipd_version, "-ssci-version",
-                "'%s'" % ssci_cipd_version, "-output-file", spdx_out,
+                depbot_cipd_version, "-partybot-version", partybot_cipd_version,
+                "-ssci-version", ssci_cipd_version, "-output-file", spdx_out,
                 "-chromium-src", src_dir, "-product", product,
                 "-product-version", p_version, "-platform",
                 self.m.platform.name, "-arch",
