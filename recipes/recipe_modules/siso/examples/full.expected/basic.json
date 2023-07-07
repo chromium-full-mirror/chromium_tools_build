@@ -13,6 +13,7 @@
       "-C",
       "out/Release"
     ],
+    "cwd": "None",
     "name": "compile"
   },
   {

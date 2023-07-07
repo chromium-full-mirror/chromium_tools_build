@@ -11,6 +11,7 @@
       "--reapi_instance",
       "default_instance"
     ],
+    "cwd": "None",
     "name": "compile"
   },
   {

@@ -13,6 +13,7 @@
       "-C",
       "out/Release"
     ],
+    "cwd": "None",
     "env": {
       "SISO_EXPERIMENTS": "no-file-access-trace"
     },

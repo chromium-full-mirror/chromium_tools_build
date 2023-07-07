@@ -98,7 +98,7 @@ class SisoApi(recipe_api.RecipeApi):
     if len(self._props.experiments) > 0:
       env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     try:
-      with self.m.context(env=env):
+      with self.m.context(env=env, cwd=self.m.path['checkout']):
         return self.m.step(name, cmd, **kwargs)
     finally:
       self.m.cas.archive(
