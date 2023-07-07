@@ -414,17 +414,21 @@ def RunSteps(api):
               '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
               corpora_dir, '--profdata-outdir', profdata_dir
           ])
+          profdata_path = api.chromium_checkout.src_dir.join(
+              'total_fuzz_coverage.profdata')
+          llvm_profdata_path = api.chromium_checkout.src_dir.join(
+              'third_party', 'llvm-build', 'Release+Asserts', 'bin',
+              'llvm-profdata')
           api.step('merge all fuzzers', [
               'python3', 'tools/code_coverage/merge_all_profdata.py',
-              '--profdata-dir', profdata_dir, '--binaries-dir', build_dir
+              '--profdata-dir', profdata_dir, '--outfile', profdata_path,
+              '--llvm-profdata', llvm_profdata_path
           ])
 
           api.code_coverage.get_chromium_fuzz_coverage(
               api.chromium_checkout.src_dir,
               api.chromium_checkout.src_dir.join('out', 'Release'),
-              api.chromium_checkout.src_dir.join('out', 'report', 'linux',
-                                                 'coverage.profdata'),
-              profdata_dir)
+              profdata_path, profdata_dir)
         except api.step.StepFailure:
           step_result.logs[
               'fuzz coverage logs'] = "Could not process fuzz coverage"
