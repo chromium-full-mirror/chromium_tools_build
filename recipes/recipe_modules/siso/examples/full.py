@@ -16,11 +16,9 @@ def RunSteps(api):
     api.siso.run_ninja(
         ninja_command=api.properties.get('build_command'),
         ninja_env=env,
-        name=api.properties.get('name', 'compile'),
+        name=api.properties.get('name'),
         siso_args=api.properties.get('siso_args'),
     )
-  with api.siso.disable():
-    assert not api.siso.enabled
 
 
 def GenTests(api):
@@ -89,8 +87,16 @@ def GenTests(api):
       api.siso.properties(action_salt='xxx'),
       api.step_data('compile', retcode=1),
       api.post_process(post_process.StepFailure, 'compile'),
-      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'compile_failure_unexpected_retcode',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(action_salt='xxx'),
+      api.step_data('compile', retcode=255),
+      api.post_process(post_process.StepFailure, 'compile'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
       'ninja_no_C',

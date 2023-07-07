@@ -294,12 +294,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     return '\n'.join(summary_lines)
 
-  def _run_ninja(self,
-                 ninja_command,
-                 name=None,
-                 ninja_env=None,
-                 siso_args=None,
-                 **kwargs):
+  def _run_ninja(self, ninja_command, name=None, ninja_env=None, **kwargs):
     """
     Run ninja with given command and env.
 
@@ -309,7 +304,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                      (e.g. ['ninja', '-C', 'out/Release'])
       name: Name of compile step.
       ninja_env: Environment for ninja.
-      siso_args: Siso specific arguments.
 
     Returns:
       A named tuple with the fields
@@ -324,8 +318,20 @@ class ChromiumApi(recipe_api.RecipeApi):
     CompileResult = collections.namedtuple('CompileResult',
                                            'failure_summary retcode')
 
-    failure_output = self.m.raw_io.output_text(
-        add_output_log='on_failure', name='failure_summary')
+    cmd = [
+        'vpython3',
+        self.resource('ninja_wrapper.py'),
+        '--ninja_info_output',
+        self.m.json.output(add_json_log='on_failure', name='ninja_info'),
+        '--failure_output',
+        self.m.raw_io.output_text(
+            add_output_log='on_failure', name='failure_summary'),
+    ]
+    if kwargs.get('no_prune_venv'):
+      kwargs.pop('no_prune_venv')
+      cmd.append('--no_prune_venv')
+    cmd.append('--')
+    cmd.extend(ninja_command)
 
     example_json = {
         'failures': [{
@@ -344,32 +350,9 @@ class ChromiumApi(recipe_api.RecipeApi):
         example_json, name='ninja_info') + self.m.raw_io.test_api.output_text(
             example_failure_output, name='failure_summary'))
     try:
-      if self.m.siso.enabled:
-        # TODO(b/288534744): support ninja_info with Siso.
-        cmd = ['ninja', '-failure_summary', failure_output] + ninja_command[1:]
-        ninja_step_result = self.m.siso.run_ninja(
-            cmd,
-            siso_args=siso_args,
-            name=name,
-            step_test_data=step_test_data,
-            **kwargs)
-      else:
-        cmd = [
-            'vpython3',
-            self.resource('ninja_wrapper.py'),
-            '--ninja_info_output',
-            self.m.json.output(add_json_log='on_failure', name='ninja_info'),
-            '--failure_output',
-            failure_output,
-        ]
-        if kwargs.get('no_prune_venv'):
-          kwargs.pop('no_prune_venv')
-          cmd.append('--no_prune_venv')
-        cmd.append('--')
-        cmd.extend(ninja_command)
-        with self.m.context(env=ninja_env):
-          ninja_step_result = self.m.step(
-              name or 'compile', cmd, step_test_data=step_test_data, **kwargs)
+      with self.m.context(env=ninja_env):
+        ninja_step_result = self.m.step(
+            name or 'compile', cmd, step_test_data=step_test_data, **kwargs)
     except self.m.step.StepFailure as ex:
       ninja_step_result = ex.result
       if ninja_step_result.retcode != 1:
@@ -397,12 +380,6 @@ class ChromiumApi(recipe_api.RecipeApi):
               'process clang crashes',
               ['python3', clang_crashreports_script, '--source', source],
               **kwargs)
-
-    # TODO(b/288534744): support no-op build with Siso.
-    if self.m.siso.enabled:
-      return CompileResult(
-          failure_summary='No-op build is not supported by siso.',
-          retcode=ninja_step_result.retcode)
 
     ninja_command_explain = ninja_command + ['-d', 'explain', '-n']
 

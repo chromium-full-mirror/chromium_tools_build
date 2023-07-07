@@ -98,7 +98,7 @@
       "-dump-digest",
       "/path/to/tmp/",
       "-paths-json",
-      "[[\"out/Release\", \"siso_build.pprof\"], [\"out/Release\", \"siso_explain\"], [\"out/Release\", \"siso_metrics.json\"], [\"out/Release\", \"siso_output\"], [\"out/Release\", \"siso_trace.json\"]]"
+      "[[\"out/Release\", \"siso_build.pprof\"], [\"out/Release\", \"siso_trace.json\"], [\"out/Release\", \"siso_metrics.json\"], [\"out/Release\", \"siso_metrics.json\"], [\"out/Release\", \"siso_explain\"]]"
     ],
     "infra_step": true,
     "name": "upload reports",

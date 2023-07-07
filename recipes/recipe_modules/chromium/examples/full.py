@@ -15,7 +15,6 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'reclient',
-    'siso',
 ]
 
 def RunSteps(api):
@@ -135,31 +134,6 @@ def GenTests(api):
       api.post_check(lambda check, steps: check({
           'RBE_server_address', 'RBE_log_dir'
       }.issubset(steps['compile'].env))),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'basic_out_dir_with_siso',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          use_reclient=True,
-          out_dir='/tmp',
-      ),
-      api.reclient.properties(),
-      api.siso.properties(),
-      api.post_check(
-          lambda check, steps: check({'RBE_server_address', 'RBE_log_dir'}.
-                                     issubset(steps['compile'].env))),
       api.post_process(post_process.DropExpectation),
   )
 
