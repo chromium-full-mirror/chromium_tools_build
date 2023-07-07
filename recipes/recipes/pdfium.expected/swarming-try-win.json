@@ -3,13 +3,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",
-      "[CACHE]/builder"
+      "[CACHE]\\builder"
     ],
     "infra_step": true,
     "luci_context": {
@@ -29,7 +29,7 @@
   {
     "cmd": [
       "vpython3",
-      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "RECIPE_REPO[depot_tools]\\gerrit_client.py",
       "changes",
       "--verbose",
       "--host",
@@ -45,9 +45,9 @@
       "-o",
       "DOWNLOAD_COMMANDS"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+      "PATH": "<PATH>;RECIPE_REPO[depot_tools]"
     },
     "infra_step": true,
     "luci_context": {
@@ -86,17 +86,17 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
+      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
       "--patch_root",
       "pdfium",
       "--revision_mapping_file",
       "{\"got_revision\": \"pdfium\"}",
       "--git-cache-dir",
-      "[CACHE]/git",
+      "[CACHE]\\git",
       "--cleanup-dir",
-      "[CLEANUP]/bot_update",
+      "[CLEANUP]\\bot_update",
       "--output_json",
       "/path/to/tmp/json",
       "--patch_ref",
@@ -106,18 +106,18 @@
       "--refs",
       "refs/heads/main"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/try/linux_xfa_asan_lsan/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/try/windows/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800",
       "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
-      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
-      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE2_EVENT": "[CLEANUP]\\trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]\\trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]\\trace-packet"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -183,12 +183,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
+      "RECIPE_REPO[depot_tools]\\gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]/builder",
+    "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/try/linux_xfa_asan_lsan/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/try/windows/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -215,10 +215,10 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
-      "[CACHE]/goma/client",
+      "[CACHE]\\goma\\client",
       "-ensure-file",
       "infra_internal/goma/client/${platform} release",
       "-max-threads",
@@ -257,10 +257,10 @@
   },
   {
     "cmd": [
-      "cipd",
+      "cipd.bat",
       "ensure",
       "-root",
-      "[CACHE]/goma/bqupload",
+      "[CACHE]\\goma\\bqupload",
       "-ensure-file",
       "infra/tools/bqupload/${platform} bqupload_pin",
       "-max-threads",
@@ -301,14 +301,14 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]/gn.py",
+      "RECIPE_REPO[depot_tools]\\gn.py",
       "--check",
-      "--root=[CACHE]/builder/pdfium",
+      "--root=[CACHE]\\builder\\pdfium",
       "gen",
-      "//out/debug_xfa_v8_asan",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=false pdf_is_standalone=true use_goma=true goma_dir=\"[CACHE]/goma/client\" is_asan=true is_lsan=true"
+      "//out/debug_v8",
+      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_goma=true goma_dir=\"[CACHE]\\goma\\client\" symbol_level=1 is_clang=true"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -331,13 +331,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",
-      "[CACHE]/goma/data/linux_xfa_asan_lsan"
+      "[CACHE]\\goma\\data\\windows"
     ],
     "infra_step": true,
     "luci_context": {
@@ -360,14 +360,15 @@
   {
     "cmd": [
       "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
+      "[CACHE]\\goma\\client\\goma_ctl.py",
       "restart"
     ],
     "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux_xfa_asan_lsan",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
+      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]\\crash_report_id",
+      "GOMA_ARBITRARY_TOOLCHAIN_SUPPORT": "true",
+      "GOMA_CACHE_DIR": "[CACHE]\\goma\\data\\windows",
+      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]\\goma_counterz",
+      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]\\goma_stats",
       "GOMA_ENABLE_COUNTERZ": "true",
       "GOMA_HERMETIC": "error"
     },
@@ -393,12 +394,12 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
+      "RECIPE_MODULE[build::goma]\\resources\\cloudtail.py",
       "start",
       "--cloudtail-path",
-      "cloudtail",
+      "cloudtail.exe",
       "--pid-file",
-      "[TMP_BASE]/cloudtail.pid"
+      "[TMP_BASE]\\cloudtail.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -420,9 +421,9 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/pdfium/third_party/ninja/ninja",
+      "[CACHE]\\builder\\pdfium\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8",
       "-j",
       "80",
       "pdfium_all"
@@ -448,15 +449,16 @@
   {
     "cmd": [
       "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
+      "[CACHE]\\goma\\client\\goma_ctl.py",
       "jsonstatus",
-      "[TMP_BASE]/goma_jsonstatus.json"
+      "[TMP_BASE]\\goma_jsonstatus.json"
     ],
     "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux_xfa_asan_lsan",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
+      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]\\crash_report_id",
+      "GOMA_ARBITRARY_TOOLCHAIN_SUPPORT": "true",
+      "GOMA_CACHE_DIR": "[CACHE]\\goma\\data\\windows",
+      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]\\goma_counterz",
+      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]\\goma_stats",
       "GOMA_ENABLE_COUNTERZ": "true",
       "GOMA_HERMETIC": "error"
     },
@@ -491,14 +493,15 @@
   {
     "cmd": [
       "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
+      "[CACHE]\\goma\\client\\goma_ctl.py",
       "stat"
     ],
     "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux_xfa_asan_lsan",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
+      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]\\crash_report_id",
+      "GOMA_ARBITRARY_TOOLCHAIN_SUPPORT": "true",
+      "GOMA_CACHE_DIR": "[CACHE]\\goma\\data\\windows",
+      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]\\goma_counterz",
+      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]\\goma_stats",
       "GOMA_ENABLE_COUNTERZ": "true",
       "GOMA_HERMETIC": "error"
     },
@@ -522,14 +525,15 @@
   {
     "cmd": [
       "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
+      "[CACHE]\\goma\\client\\goma_ctl.py",
       "stop"
     ],
     "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux_xfa_asan_lsan",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
+      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]\\crash_report_id",
+      "GOMA_ARBITRARY_TOOLCHAIN_SUPPORT": "true",
+      "GOMA_CACHE_DIR": "[CACHE]\\goma\\data\\windows",
+      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]\\goma_counterz",
+      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]\\goma_stats",
       "GOMA_ENABLE_COUNTERZ": "true",
       "GOMA_HERMETIC": "error"
     },
@@ -553,8 +557,8 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
+      "RECIPE_MODULE[build::goma]\\resources\\goma_canceller.py",
+      "[CACHE]\\goma\\client\\goma_ctl.py"
     ],
     "cost": {
       "cpu": 0,
@@ -579,20 +583,20 @@
   {
     "cmd": [
       "vpython3",
-      "RECIPE_REPO[build]/recipes/upload_goma_logs.py",
+      "RECIPE_REPO[build]\\recipes\\upload_goma_logs.py",
       "--upload-compiler-proxy-info",
       "--log-url-json-file",
       "/path/to/tmp/json",
       "--gsutil-py-path",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "RECIPE_REPO[depot_tools]\\gsutil.py",
       "--bqupload-path",
-      "[CACHE]/goma/bqupload/bqupload",
+      "[CACHE]\\goma\\bqupload\\bqupload",
       "--json-status",
-      "[TMP_BASE]/goma_jsonstatus.json",
+      "[TMP_BASE]\\goma_jsonstatus.json",
       "--ninja-log-outdir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/pdfium/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/pdfium/out/debug_xfa_v8_asan\", \"-j\", 80, \"pdfium_all\"]",
+      "[\"[CACHE]\\\\builder\\\\pdfium\\\\third_party\\\\ninja\\\\ninja\", \"-C\", \"[CACHE]\\\\builder\\\\pdfium\\\\out\\\\debug_v8\", \"-j\", 80, \"pdfium_all\"]",
       "--build-exit-status",
       "0",
       "--build-step-name",
@@ -600,17 +604,17 @@
       "--ninja-log-compiler",
       "unknown",
       "--goma-stats-file",
-      "[TMP_BASE]/goma_stats",
+      "[TMP_BASE]\\goma_stats",
       "--goma-counterz-file",
-      "[TMP_BASE]/goma_counterz",
+      "[TMP_BASE]\\goma_counterz",
       "--goma-crash-report-id-file",
-      "[TMP_BASE]/crash_report_id",
+      "[TMP_BASE]\\crash_report_id",
       "--build-id",
       "8945511751514863184",
       "--builder-id-json",
-      "{\"bucket\": \"try\", \"builder\": \"linux_xfa_asan_lsan\", \"project\": \"pdfium\"}",
+      "{\"bucket\": \"try\", \"builder\": \"windows\", \"project\": \"pdfium\"}",
       "--buildbot-buildername",
-      "linux_xfa_asan_lsan"
+      "windows"
     ],
     "luci_context": {
       "realm": {
@@ -640,10 +644,10 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
+      "RECIPE_MODULE[build::goma]\\resources\\cloudtail.py",
       "stop",
       "--killed-pid-file",
-      "[TMP_BASE]/cloudtail.pid"
+      "[TMP_BASE]\\cloudtail.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -670,26 +674,23 @@
       "-test-id-prefix",
       "ninja://:pdfium_unittests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:pdfium_unittests",
       "-tag",
       "step_name:unittests",
       "--",
-      "[CACHE]/builder/pdfium/tools/resultdb/result_adapter",
+      "[CACHE]\\builder\\pdfium\\tools\\resultdb\\result_adapter.exe",
       "gtest_json",
       "-artifact-directory",
       "[CLEANUP]",
       "-result-file",
-      "[CLEANUP]/tmp_tmp_1",
+      "[CLEANUP]\\tmp_tmp_1",
       "--",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/pdfium_unittests",
-      "--gtest_output=json:[CLEANUP]/tmp_tmp_1"
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\pdfium_unittests.exe",
+      "--gtest_output=json:[CLEANUP]\\tmp_tmp_1"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -711,26 +712,23 @@
       "-test-id-prefix",
       "ninja://:pdfium_embeddertests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:pdfium_embeddertests",
       "-tag",
       "step_name:embeddertests",
       "--",
-      "[CACHE]/builder/pdfium/tools/resultdb/result_adapter",
+      "[CACHE]\\builder\\pdfium\\tools\\resultdb\\result_adapter.exe",
       "gtest_json",
       "-artifact-directory",
       "[CLEANUP]",
       "-result-file",
-      "[CLEANUP]/tmp_tmp_2",
+      "[CLEANUP]\\tmp_tmp_2",
       "--",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/pdfium_embeddertests",
-      "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\pdfium_embeddertests.exe",
+      "--gtest_output=json:[CLEANUP]\\tmp_tmp_2"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -752,7 +750,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:javascript",
       "-tag",
@@ -760,11 +758,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_javascript_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_javascript_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -775,12 +773,9 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false v8 true xfa true xfa_runtime enabled"
+      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false symbol_level 1 v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -802,7 +797,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:javascript_javascript_disabled",
       "-tag",
@@ -810,11 +805,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_javascript_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_javascript_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -825,13 +820,10 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled v8 true xfa true xfa_runtime disabled",
+      "clang true debug true is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled symbol_level 1 v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -851,60 +843,9 @@
       "rdb",
       "stream",
       "-test-id-prefix",
-      "ninja://testing/tools:run_javascript_tests/",
-      "-var",
-      "builder:linux_xfa_asan_lsan",
-      "-var",
-      "test_suite:javascript_xfa_disabled",
-      "-tag",
-      "step_name:javascript tests (xfa disabled)",
-      "--",
-      "vpython3",
-      "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_javascript_tests.py",
-      "--build-dir",
-      "out/debug_xfa_v8_asan",
-      "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
-      "--run-skia-gold",
-      "--git-revision",
-      "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
-      "--buildbucket-id",
-      "8945511751514863184",
-      "--gerrit-issue",
-      "123456",
-      "--gerrit-patchset",
-      "7",
-      "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled v8 true xfa true xfa_runtime disabled",
-      "--disable-xfa"
-    ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "javascript tests (xfa disabled)"
-  },
-  {
-    "cmd": [
-      "rdb",
-      "stream",
-      "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:pixel",
       "-tag",
@@ -912,11 +853,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_pixel_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -927,12 +868,9 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false v8 true xfa true xfa_runtime enabled"
+      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false symbol_level 1 v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -954,7 +892,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:pixel_oneshot",
       "-tag",
@@ -962,11 +900,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_pixel_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -977,13 +915,10 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot v8 true xfa true xfa_runtime enabled",
+      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite oneshot symbol_level 1 v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -1005,7 +940,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:pixel_reverse_byte_order",
       "-tag",
@@ -1013,11 +948,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_pixel_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -1028,13 +963,10 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order v8 true xfa true xfa_runtime enabled",
+      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite reverse_byte_order symbol_level 1 v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -1056,7 +988,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:pixel_javascript_disabled",
       "-tag",
@@ -1064,11 +996,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_pixel_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -1079,13 +1011,10 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled v8 true xfa true xfa_runtime disabled",
+      "clang true debug true is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled symbol_level 1 v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -1105,60 +1034,9 @@
       "rdb",
       "stream",
       "-test-id-prefix",
-      "ninja://testing/tools:run_pixel_tests/",
-      "-var",
-      "builder:linux_xfa_asan_lsan",
-      "-var",
-      "test_suite:pixel_xfa_disabled",
-      "-tag",
-      "step_name:pixel tests (xfa disabled)",
-      "--",
-      "vpython3",
-      "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_pixel_tests.py",
-      "--build-dir",
-      "out/debug_xfa_v8_asan",
-      "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
-      "--run-skia-gold",
-      "--git-revision",
-      "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
-      "--buildbucket-id",
-      "8945511751514863184",
-      "--gerrit-issue",
-      "123456",
-      "--gerrit-patchset",
-      "7",
-      "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled v8 true xfa true xfa_runtime disabled",
-      "--disable-xfa"
-    ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "pixel tests (xfa disabled)"
-  },
-  {
-    "cmd": [
-      "rdb",
-      "stream",
-      "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:corpus",
       "-tag",
@@ -1166,11 +1044,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_corpus_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -1181,12 +1059,9 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false v8 true xfa true xfa_runtime enabled"
+      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false symbol_level 1 v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -1208,7 +1083,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:corpus_oneshot",
       "-tag",
@@ -1216,11 +1091,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_corpus_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -1231,13 +1106,10 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot v8 true xfa true xfa_runtime enabled",
+      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite oneshot symbol_level 1 v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -1259,7 +1131,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:corpus_reverse_byte_order",
       "-tag",
@@ -1267,11 +1139,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_corpus_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -1282,13 +1154,10 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order v8 true xfa true xfa_runtime enabled",
+      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite reverse_byte_order symbol_level 1 v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -1310,7 +1179,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:linux_xfa_asan_lsan",
+      "builder:windows",
       "-var",
       "test_suite:corpus_javascript_disabled",
       "-tag",
@@ -1318,11 +1187,11 @@
       "--",
       "vpython3",
       "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_corpus_tests.py",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
       "--build-dir",
-      "out/debug_xfa_v8_asan",
+      "out\\debug_v8",
       "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
@@ -1333,13 +1202,10 @@
       "--gerrit-patchset",
       "7",
       "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled v8 true xfa true xfa_runtime disabled",
+      "clang true debug true is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled symbol_level 1 v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:try"
@@ -1353,57 +1219,6 @@
       }
     },
     "name": "corpus tests (javascript disabled)"
-  },
-  {
-    "cmd": [
-      "rdb",
-      "stream",
-      "-test-id-prefix",
-      "ninja://testing/tools:run_corpus_tests/",
-      "-var",
-      "builder:linux_xfa_asan_lsan",
-      "-var",
-      "test_suite:corpus_xfa_disabled",
-      "-tag",
-      "step_name:corpus tests (xfa disabled)",
-      "--",
-      "vpython3",
-      "-u",
-      "[CACHE]/builder/pdfium/testing/tools/run_corpus_tests.py",
-      "--build-dir",
-      "out/debug_xfa_v8_asan",
-      "--gold_output_dir",
-      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
-      "--run-skia-gold",
-      "--git-revision",
-      "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
-      "--buildbucket-id",
-      "8945511751514863184",
-      "--gerrit-issue",
-      "123456",
-      "--gerrit-patchset",
-      "7",
-      "--gold_key",
-      "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite xfa_disabled v8 true xfa true xfa_runtime disabled",
-      "--disable-xfa"
-    ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "env": {
-      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "corpus tests (xfa disabled)"
   },
   {
     "name": "$result"

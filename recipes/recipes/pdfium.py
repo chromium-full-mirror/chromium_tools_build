@@ -42,6 +42,7 @@ PROPERTIES = {
     'run_skia_gold': Property(default=True, kind=bool),
     'skia': Property(default=False, kind=bool),
     'skip_test': Property(default=False, kind=bool),
+    'swarming': Property(default=False, kind=bool),
     'target_cpu': Property(default=None, kind=str),
     'target_os': Property(default=None, kind=str),
     'v8': Property(default=True, kind=bool),
@@ -309,7 +310,7 @@ def _run_all_corpus_tests(test_runner, skia, v8, xfa):
 
 
 def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
-               run_skia_gold, renderers):
+               run_skia_gold, renderers, swarming):
   """Runs the tests and uploads the results to Gold."""
   resultdb = _ResultDb(
       api, base_variant={
@@ -327,7 +328,7 @@ def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
     python_test_renderers = [None]
   test_runner = _TestRunner(api, memory_tool, resultdb, out_dir, build_config,
                             revision, run_skia_gold, embedder_test_renderers,
-                            python_test_renderers)
+                            python_test_renderers, swarming)
 
   # defer_results() will defer individual failures until the end of this block.
   with api.step.defer_results():
@@ -408,27 +409,28 @@ class _TestRunner:
 
   def __init__(self, api, memory_tool, resultdb, out_dir, build_config,
                revision, run_skia_gold, embedder_test_renderers,
-               python_test_renderers):
+               python_test_renderers, swarming):
     self.api = api
     self.resultdb = resultdb
-    self.out_dir = self.api.path['checkout'].join('out', out_dir)
+    self.out_dir = self.api.path.join('out', out_dir)
     self.build_config = build_config
     self.env = self._create_sanitizer_envionment(memory_tool)
     self.embedder_test_renderers = _validate_renderers('pdfium_embeddertests',
                                                        embedder_test_renderers)
     self.python_test_renderers = _validate_renderers('pdfium_test',
                                                      python_test_renderers)
+    self.swarming = swarming
 
     self.test_runner_py_args = [
         '--build-dir',
-        self.api.path.join('out', out_dir),
+        self._join_relative_out_dir(),
     ]
 
     # Add Skia Gold flags if the "run_skia_gold" property is true.
     if run_skia_gold:
       self.test_runner_py_args.extend([
           '--gold_output_dir',
-          self.out_dir.join('gold_output'),
+          self._join_out_dir('gold_output'),
           '--run-skia-gold',
           '--git-revision',
           revision,
@@ -444,6 +446,15 @@ class _TestRunner:
             '--gerrit-patchset',
             str(self.api.tryserver.gerrit_change.patchset),
         ])
+
+  def _join_root_dir(self, *paths):
+    return self.api.path['checkout'].join(*paths)
+
+  def _join_out_dir(self, *paths):
+    return self._join_root_dir(self._join_relative_out_dir(*paths))
+
+  def _join_relative_out_dir(self, *paths):
+    return self.api.path.join(self.out_dir, *paths)
 
   def _create_sanitizer_envionment(self, memory_tool):
     """Sets environment variables required by sanitizer tools."""
@@ -478,8 +489,7 @@ class _TestRunner:
     return env
 
   def run_unit_tests(self):
-    with self.api.context(cwd=self.api.path['checkout'], env=self.env):
-      self._run_gtest('unittests', target=('', 'pdfium_unittests'))
+    self._run_gtest('unittests', target=('', 'pdfium_unittests'))
 
   def run_embedder_tests(self):
     for renderer in self.embedder_test_renderers:
@@ -493,12 +503,11 @@ class _TestRunner:
         test_name = f'{test_name} ({renderer})'
         args.append(f'--use-renderer={renderer}')
 
-      with self.api.context(cwd=self.api.path['checkout'], env=self.env):
-        self._run_gtest(
-            test_name,
-            target=('', 'pdfium_embeddertests'),
-            args=args,
-            test_suite_suffix=renderer)
+      self._run_gtest(
+          test_name,
+          target=('', 'pdfium_embeddertests'),
+          args=args,
+          test_suite_suffix=renderer)
 
   def run_javascript_tests(self, option):
     self._run_python_tests(_JAVASCRIPT_TEST_TYPE, option)
@@ -524,18 +533,17 @@ class _TestRunner:
         test_name = f'{test_name} ({renderer})'
         test_suite_suffix = f'{test_suite_suffix}_{renderer}'
 
-      with self.api.context(cwd=self.api.path['checkout'], env=self.env):
-        self._run_test_runner_py(
-            test_name,
-            test_type=test_type,
-            args=_get_modifiable_script_args(self.api, self.build_config,
-                                             option, renderer),
-            test_suite_suffix=test_suite_suffix)
+      self._run_test_runner_py(
+          test_name,
+          test_type=test_type,
+          args=_get_modifiable_script_args(self.api, self.build_config, option,
+                                           renderer),
+          test_suite_suffix=test_suite_suffix)
 
   def _run_gtest(self, step_name, *, target, args=None, test_suite_suffix=None):
     target_path, target_name = target
 
-    test_path = str(self.out_dir.join(target_name))
+    test_path = str(self._join_out_dir(target_name))
     if self.api.platform.is_win:
       test_path += '.exe'
 
@@ -547,18 +555,18 @@ class _TestRunner:
         ('step_name', step_name),
     ]
 
-    self.api.step(
-        step_name,
-        self.resultdb.wrap_gtest(
-            [test_path] + (args or []),
-            test_id_prefix=f'ninja://{target_path}:{target_name}/',
-            base_variant=variant,
-            base_tags=tags))
+    command = self.resultdb.wrap_gtest(
+        [test_path] + (args or []),
+        test_id_prefix=f'ninja://{target_path}:{target_name}/',
+        base_variant=variant,
+        base_tags=tags)
+    with self.api.context(cwd=self._join_root_dir(), env=self.env):
+      self.api.step(step_name, command)
 
   def _run_test_runner_py(self, step_name, *, test_type, args,
                           test_suite_suffix):
-    test_path = self.api.path['checkout'].join('testing', 'tools',
-                                               f'run_{test_type}_tests.py')
+    test_path = self._join_root_dir('testing', 'tools',
+                                    f'run_{test_type}_tests.py')
 
     variant = {
         'test_suite': _get_test_suite(test_type, test_suite_suffix),
@@ -568,13 +576,13 @@ class _TestRunner:
         ('step_name', step_name),
     ]
 
-    self.api.step(
-        step_name,
-        self.resultdb.wrap(
-            PYTHON_CMD + [test_path] + self.test_runner_py_args + args,
-            test_id_prefix=f'ninja://testing/tools:run_{test_type}_tests/',
-            base_variant=variant,
-            base_tags=tags))
+    command = self.resultdb.wrap(
+        PYTHON_CMD + [test_path] + self.test_runner_py_args + args,
+        test_id_prefix=f'ninja://testing/tools:run_{test_type}_tests/',
+        base_variant=variant,
+        base_tags=tags)
+    with self.api.context(cwd=self._join_root_dir(), env=self.env):
+      self.api.step(step_name, command)
 
 
 def _get_test_suite(base_name, suffix=None):
@@ -662,6 +670,15 @@ def _gold_build_config(args):
   return build_config
 
 
+def _gen_try_build(api, builder):
+  return api.buildbucket.try_build(
+      project='pdfium',
+      builder=builder,
+      build_number=1234,
+      git_repo='https://pdfium.googlesource.com/pdfium',
+  )
+
+
 def _gen_ci_build(api, builder):
   return api.buildbucket.ci_build(
       project='pdfium',
@@ -672,7 +689,8 @@ def _gen_ci_build(api, builder):
 
 
 def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
-             run_skia_gold, component, skip_test, target_os, renderers):
+             run_skia_gold, component, skip_test, target_os, renderers,
+             swarming):
   revision = _checkout_step(api, target_os)
 
   out_dir = _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel,
@@ -695,7 +713,7 @@ def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
       return
 
     _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
-               run_skia_gold, renderers)
+               run_skia_gold, renderers, swarming)
 
 
 def GenTests(api):
@@ -959,11 +977,10 @@ def GenTests(api):
 
   yield api.test(
       'try-linux-gerrit_xfa_asan_lsan',
-      api.buildbucket.try_build(
-          project='pdfium', builder='linux_xfa_asan_lsan', build_number=1234),
       api.platform('linux', 64),
       api.builder_group.for_current('tryserver.client.pdfium'),
       api.properties(xfa=True, memory_tool='asan'),
+      _gen_try_build(api, 'linux_xfa_asan_lsan'),
   )
 
   yield api.test(
@@ -1012,6 +1029,21 @@ def GenTests(api):
       api.builder_group.for_current('client.pdfium'),
       api.properties(xfa=True, bot_id='test_bot', clobber=''),
       _gen_ci_build(api, 'windows_xfa'),
+  )
+
+  yield api.test(
+      'swarming-win',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      api.properties(bot_id='test_bot', swarming=True),
+      _gen_ci_build(api, 'windows'),
+  )
+  yield api.test(
+      'swarming-try-win',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      api.properties(bot_id='test_bot', swarming=True),
+      _gen_try_build(api, 'windows'),
   )
 
   yield api.test(
