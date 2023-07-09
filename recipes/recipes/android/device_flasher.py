@@ -4,9 +4,7 @@
 """Flash Android devices that meet certain criteria."""
 
 import collections
-import functools
-import re
-import textwrap
+from typing import Dict, Tuple
 
 from google.protobuf import json_format
 
@@ -36,34 +34,39 @@ UID_LOWER_LIMIT = 10000
 UID_UPPER_LIMIT = 19999
 
 
-@functools.lru_cache()
-def _LookupImage(api, device_type, device_os):
+def _LookupImage(api, cache: Dict[Tuple[str, str], bool], device_type, device_os):
   """Check if an image exists in the bucket for a (device_type, device_os) combo
 
   The image url is of the pattern <base_uri>/<device_type>/<device_os>.zip
-  The decorator functools.lru_cache is used to cache the results and reduce the
-  calls to the gsutil API.
 
   Args:
+    * cache (dict): Mapping of image_url -> result to reduce extraneous calls to
+      gsutil.
     * device_type (str): The device type to lookup.
     * device_os (str): The device os to lookup.
 
   Returns:
     True if such an image exists otherwise False.
   """
-  image_url = '%s/%s/%s.zip' % (BASE_IMAGE_URI, device_type, device_os)
-  try:
-    api.gsutil.list(
-        image_url,
-        name='lookup image for %s, %s' % (device_type, device_os),
-        stderr=api.raw_io.output_text())
-    return True
-  except api.step.StepFailure as e:
-    if GSUTIL_NO_MATCH_TXT in e.result.stderr:
-      e.result.presentation.status = api.step.WARNING
-      e.result.presentation.step_text = '%s matches no objects' % image_url
-      return False
-    raise  # pragma: no cover
+  key = (device_type, device_os)
+  result = cache.get(key, None)
+  if result is None:
+    image_url = '%s/%s/%s.zip' % (BASE_IMAGE_URI, device_type, device_os)
+    try:
+      api.gsutil.list(
+          image_url,
+          name='lookup image for %s, %s' % (device_type, device_os),
+          stderr=api.raw_io.output_text())
+      result = True
+    except api.step.StepFailure as e:
+      if GSUTIL_NO_MATCH_TXT in e.result.stderr:
+        e.result.presentation.status = api.step.WARNING
+        e.result.presentation.step_text = '%s matches no objects' % image_url
+        result = False
+      else:
+        raise  # pragma: no cover
+    cache[key] = result
+  return result
 
 
 def _GetSwarmingBots(api, flash_criteria):
@@ -130,7 +133,7 @@ def _CreateFlashTaskRequest(api, bot_id, pool, device_type, device_os):
   return task_request
 
 
-def _ProcessBot(api, bot, flash_criteria):
+def _ProcessBot(api, lookup_image_cache, bot, flash_criteria):
   task_request = None
 
   if not flash_criteria.max_uid_threshold:  # pragma: no cover
@@ -142,7 +145,7 @@ def _ProcessBot(api, bot, flash_criteria):
     device_type = bot.dimensions['device_type'][-1]
     device_os = bot.dimensions['device_os'][-1]
   if not (pool and device_type and device_os and
-          _LookupImage(api, device_type, device_os)):
+          _LookupImage(api, lookup_image_cache, device_type, device_os)):
     return task_request
 
   # Default bot's max_uid to UID_LOWER_LIMIT, in case bot does not have this
@@ -198,6 +201,7 @@ def _RunTasks(api, tasks_by_host, dry_run):
 
 def RunSteps(api, properties):
   has_failure = False
+  lookup_image_cache = {}
   for index, flash_criteria in enumerate(properties.flash_criteria):
     with api.step.nest('Process flash criteria %d' % index) as parent_prep:
       parent_prep.step_summary_text = '\n\n```\n%s\n```' % (
@@ -207,7 +211,7 @@ def RunSteps(api, properties):
       tasks_by_host = collections.defaultdict(list)
       swarming_bots = _GetSwarmingBots(api, flash_criteria)
       for bot in swarming_bots:
-        task_request = _ProcessBot(api, bot, flash_criteria)
+        task_request = _ProcessBot(api, lookup_image_cache, bot, flash_criteria)
         if task_request:
           # bot_id for Android follows the format "<host_machine>--device{1,7}"
           # We group the task by the host_machine.
