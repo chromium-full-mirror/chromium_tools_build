@@ -4,6 +4,7 @@
 """API for interacting with the siso, experimental build tool."""
 
 import collections
+import contextlib
 
 from recipe_engine import recipe_api
 
@@ -17,11 +18,20 @@ class SisoApi(recipe_api.RecipeApi):
   def __init__(self, props, **kwargs):
     super().__init__(**kwargs)
     self._props = props
+    self._disabled = False
 
   @property
   def enabled(self):
-    """True if siso is configured."""
-    return self._props.project
+    """True if siso is enabled."""
+    return self._props.project and not self._disabled
+
+  @contextlib.contextmanager
+  def disable(self):
+    """Disable Siso module during the context."""
+    orig = self._disabled
+    self._disabled = True
+    yield
+    self._disabled = orig
 
   def run_ninja(self,
                 ninja_command,
@@ -39,14 +49,12 @@ class SisoApi(recipe_api.RecipeApi):
           siso_args: siso arguments.
 
         Returns:
-          A named tuple with the fields
-           - failure_summary: string of the error that occurred during the step.
-           - retcode: return code of the step
+          step_data.StepData of the build step.
 
         Raises:
           - InfraFailure when an unexpected failure occured.
     """
-    assert self.enabled, 'siso is not configured'
+    assert self.enabled, 'siso is not enabled'
 
     self._assert_ninja_command(ninja_command)
     ninja_dir = self._ninja_dir(ninja_command)
@@ -91,28 +99,15 @@ class SisoApi(recipe_api.RecipeApi):
       env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     try:
       with self.m.context(env=env, cwd=self.m.path['checkout']):
-        ninja_step_result = self.m.step(name or 'compile', cmd, **kwargs)
-    except self.m.step.StepFailure as ex:
-      ninja_step_result = ex.result
-      if ninja_step_result.retcode != 1:
-        raise self.m.step.InfraFailure(
-            ninja_step_result.name, result=ninja_step_result)
-      failure_summary = ('(retcode=%d) No failure summary provided.' %
-                         ninja_step_result.retcode)
-      # TODO(ukai): set better failure summary output as chromium does.
-      return result_pb2.RawResult(
-          status=common_pb.FAILURE, summary_markdown=failure_summary)
+        return self.m.step(name, cmd, **kwargs)
     finally:
       self.m.cas.archive(
           'upload reports', self.m.path.abspath(ninja_dir),
           self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_build.pprof')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_trace.json')),
+          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_explain')),
           self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_metrics.json')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_metrics.json')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_explain')))
-      # TODO(ukai): clang crash report?
-
-    return result_pb2.RawResult(status=common_pb.SUCCESS)
+          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_output')),
+          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_trace.json')))
 
   def _assert_ninja_command(self, ninja_command):
     """Check ninja_command runs ninja
