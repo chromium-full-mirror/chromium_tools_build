@@ -43,6 +43,7 @@ class FlakyReproducer(recipe_api.RecipeApi):
   """
 
   RUNNER_PACKAGE_PATH = 'flaky_reproducer_runner'
+  TEST_BINARY_ISOLATE_FILENAME = 'runner.isolate'
   TEST_BINARY_JSON_FILENAME = 'test_binary.json'
   RESULT_SUMMARY_FILENAME = 'result_summary.json'
   REPRODUCING_STEP_FILENAME = 'reproducing_step.json'
@@ -127,7 +128,10 @@ class FlakyReproducer(recipe_api.RecipeApi):
                            runner_dir.join(self.TEST_BINARY_JSON_FILENAME),
                            test_binary.to_jsonish())
 
-    return self.m.cas.archive('new test binary', tmp_dir)
+    self.m.isolate.write_isolate_file(
+        runner_dir.join(self.TEST_BINARY_ISOLATE_FILENAME), ['../'])
+    return self.m.isolate.isolate(
+        'new test binary', runner_dir.join(self.TEST_BINARY_ISOLATE_FILENAME))
 
   def launch_strategy_in_swarming(self, strategy, repacked_cas_input_root):
     """Launches a swarming task that runs the strategy logic."""

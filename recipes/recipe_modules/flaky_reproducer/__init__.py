@@ -16,4 +16,5 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
     'recipe_engine/url',
+    'isolate',
 ]
