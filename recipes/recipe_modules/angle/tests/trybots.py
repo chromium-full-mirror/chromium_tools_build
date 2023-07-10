@@ -12,7 +12,7 @@ Copied from recipe_modules/chromium_tests/tests/trybots.py.
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import angle
+from RECIPE_MODULES.build.angle import trybots as angle_trybots
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
@@ -31,7 +31,7 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  for builder_id in sorted(angle.trybots.TRYBOTS):
+  for builder_id in sorted(angle_trybots.TRYBOTS):
     builder_group = builder_id.group
     buildername = builder_id.builder
     yield api.test(

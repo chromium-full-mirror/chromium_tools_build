@@ -12,7 +12,7 @@ Copied from recipe_modules/chromium_tests/tests/builer.py.
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import angle
+from RECIPE_MODULES.build.angle import builders as angle_builders
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
@@ -61,7 +61,7 @@ def validate_tester_config(api, builder_group, buildername, builder_config):
 def RunSteps(api):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(
-          builder_db=angle.builders.BUILDERS))
+          builder_db=angle_builders.BUILDERS))
 
   # For testers, check that various configs are equal to the builder's
   if builder_config.execution_mode == ctbc.TEST:
@@ -73,7 +73,7 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  for builder_id, _ in sorted(angle.builders.BUILDERS.items()):
+  for builder_id, _ in sorted(angle_builders.BUILDERS.items()):
     builder_group = builder_id.group
     buildername = builder_id.builder
     yield api.test(
@@ -82,6 +82,6 @@ def GenTests(api):
         api.chromium_tests_builder_config.generic_build(
             builder_group=builder_group,
             builder=buildername,
-            builder_db=angle.builders.BUILDERS),
+            builder_db=angle_builders.BUILDERS),
         api.post_process(post_process.DropExpectation),
     )
