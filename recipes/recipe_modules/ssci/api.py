@@ -155,7 +155,17 @@ class SsciAPI(recipe_api.RecipeApi):
               depbot_json_summary_file
           ] + targetFlags,
           cost=self.m.step.ResourceCost(
-              cpu=2 * self.m.step.CPU_CORE, memory=4000))
+              cpu=2 * self.m.step.CPU_CORE, memory=4000),
+          step_test_data=(lambda: self.m.json.test_api.output(
+              name="summary",
+              data={
+                  "targets": [{
+                      "entry_point": "//example:example",
+                      "target": "//example:example",
+                      "artifacts_file_path": "out/Release/artifacts.json",
+                      "libraries_file_path": "out/Release/libs.json"
+                  }],
+              })))
 
       depbot_execution_summary = depbot_result.json.outputs.get("summary")
 
