@@ -15,6 +15,7 @@ DEPS = [
     'depot_tools/osx_sdk',
     'depot_tools/tryserver',
     'goma',
+    'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -29,6 +30,7 @@ DEPS = [
 
 from dataclasses import dataclass
 
+from recipe_engine import post_process
 from recipe_engine.config import Set
 from recipe_engine.recipe_api import Property
 
@@ -127,6 +129,10 @@ class _ReverseByteOrderOption(_DefaultOption):
   renderers: frozenset = _DEFAULT_RENDERERS
 
 
+def _is_reclient_enabled(api, msvc):
+  return not msvc and api.reclient.instance
+
+
 def _is_goma_enabled(msvc):
   return not msvc
 
@@ -179,7 +185,8 @@ def _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel, component):
 # the used build configuration to be used by Gold.
 def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
                    rel, component, target_os, out_dir):
-  enable_goma = _is_goma_enabled(msvc)
+  enable_reclient = _is_reclient_enabled(api, msvc)
+  enable_goma = not enable_reclient and _is_goma_enabled(msvc)
   if enable_goma:
     api.goma.ensure_goma()
   gn_bool = {True: 'true', False: 'false'}
@@ -196,7 +203,11 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
       'pdf_use_skia=%s' % gn_bool[skia],
       'pdf_is_standalone=true',
   ]
-  if enable_goma:
+  if enable_reclient:
+    args.extend([
+        'use_remoteexec=true',
+    ])
+  elif enable_goma:
     args.extend([
         'use_goma=true',
         'goma_dir="%s"' % api.goma.goma_dir,
@@ -249,15 +260,21 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
 
 
 def _build_steps(api, clang, msvc, out_dir):
-  enable_goma = _is_goma_enabled(msvc)
+  enable_reclient = _is_reclient_enabled(api, msvc)
+  enable_goma = not enable_reclient and _is_goma_enabled(msvc)
   debug_path = api.path['checkout'].join('out', out_dir)
   ninja_path = api.path['checkout'].join('third_party', 'ninja', 'ninja')
   ninja_cmd = [ninja_path, '-C', debug_path]
-  if enable_goma:
+  if enable_reclient:
+    ninja_cmd.extend(['-j', api.reclient.jobs])
+  elif enable_goma:
     ninja_cmd.extend(['-j', api.goma.recommended_goma_jobs])
   ninja_cmd.append('pdfium_all')
 
-  if enable_goma:
+  if enable_reclient:
+    with api.reclient.process('compile', '', False):
+      api.step('compile with ninja', ninja_cmd)
+  elif enable_goma:
     api.goma.build_with_goma(
         name='compile with ninja',
         ninja_command=ninja_cmd,
@@ -730,6 +747,30 @@ def GenTests(api):
       api.builder_group.for_current('client.pdfium'),
       api.properties(bot_id='test_bot'),
       _gen_ci_build(api, 'linux'),
+      api.post_process(post_process.MustRun, 'ensure_goma',
+                       'preprocess_for_goma'),
+      api.post_process(post_process.DoesNotRun, 'preprocess for reclient'),
+  )
+  yield api.test(
+      'reclient_linux',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
+      _gen_ci_build(api, 'linux'),
+      api.post_process(post_process.DoesNotRun, 'ensure_goma',
+                       'preprocess_for_goma'),
+      api.post_process(post_process.MustRun, 'preprocess for reclient'),
+      api.post_process(post_process.StepCommandContains, 'compile with ninja',
+                       '500'),
+      api.post_process(post_process.DropExpectation),
   )
   yield api.test(
       'mac',
