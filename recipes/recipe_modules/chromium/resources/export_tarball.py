@@ -47,6 +47,10 @@ ESSENTIAL_FILES = (
     'v8/test/torque/test-torque.tq',
 )
 
+ESSENTIAL_GIT_DIRS = (
+    # The .git subdirs in the Rust checkout need to exist to build rustc.
+    'third_party/rust-src/',)
+
 TEST_DIRS = {
     'chrome/test/data',
     'content/test/data',
@@ -85,9 +89,14 @@ class MyTarFile(tarfile.TarFile):
   # pylint: disable=redefined-builtin
   def add(self, name, arcname=None, recursive=True, *, filter=None):
     _, file_name = os.path.split(name)
-    if file_name in ('.git', '.svn', 'out'):
+    if file_name in ('.svn', 'out'):
       self.__report_skipped(name)
       return
+
+    if file_name == '.git':
+      if not any(name in essential for essential in ESSENTIAL_GIT_DIRS):
+        self.__report_skipped(name)
+        return
 
     if self.__remove_nonessential_files:
       # WebKit change logs take quite a lot of space. This saves ~10 MB
