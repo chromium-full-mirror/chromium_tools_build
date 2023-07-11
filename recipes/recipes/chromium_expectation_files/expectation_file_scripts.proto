@@ -39,7 +39,8 @@ message ScriptInvocation {
   }
   oneof reviewer_selection {
     // Rotation to pull a reviewer from using chrome-ops-rotation-proxy, e.g.
-    // "chrome-gpu-pixel-wrangler"
+    // "oncallator:chrome-gpu-pixel-wrangler". Note that the type of rotation
+    // (oncallator, grotation, etc.) is included.
     string reviewer_rotation = 5;
 
     // List of reviewers to pull from.

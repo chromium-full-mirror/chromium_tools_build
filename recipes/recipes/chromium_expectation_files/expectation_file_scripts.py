@@ -35,8 +35,7 @@ DEPS = [
 
 VALIDATORS = proto_validation.Registry()
 
-ROTATION_URL = (
-    'https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:')
+ROTATION_URL = 'https://chrome-ops-rotation-proxy.appspot.com/current/'
 
 RUBBER_STAMPER = 'rubber-stamper@appspot.gserviceaccount.com'
 
@@ -560,15 +559,15 @@ def GenTests(api):
                   script='some/script.py',
                   script_type=ScriptInvocation.ScriptType.UNEXPECTED_PASS,
                   submit_type=ScriptInvocation.SubmitType.MANUAL,
-                  reviewer_rotation='reviewer_rotation',
+                  reviewer_rotation='oncallator:reviewer_rotation',
                   cl_title='cl_title',
               )
           ])),
-      api.url.json('step_name.get reviewer_rotation rotation JSON',
+      api.url.json('step_name.get oncallator:reviewer_rotation rotation JSON',
                    {'emails': ['r@google.com']}),
       api.post_process(
           StepCommandRE,
-          'step_name.get reviewer_rotation rotation JSON',
+          'step_name.get oncallator:reviewer_rotation rotation JSON',
           [
               '.*',
               '.*',
