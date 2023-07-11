@@ -80,6 +80,8 @@ def GenTests(api):
           '-coerce-negative-duration',
           '-exonerate-unexpected-pass',
           '-inherit-sources',
+          '-baseline-id',
+          'ci:Linux Tests',
           '--',
           'python3',
           'RECIPE_REPO[build]/recipes/runtest.py',
