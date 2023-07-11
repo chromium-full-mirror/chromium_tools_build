@@ -1040,7 +1040,7 @@ class Failure:
         build_link=build_link,
         crash_type=self.crash_type,
         crash_state=self.crash_state,
-        stderr='\n'.join(self.stderr.splitlines()[:20])[:10000],
+        stderr='\n'.join(self.stderr.splitlines()[:20])[:2000],
         crash_analysis_hash=crash_analysis_hash)
 
   @property
