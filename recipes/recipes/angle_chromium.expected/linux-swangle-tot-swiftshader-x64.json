@@ -577,14 +577,13 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"ci:linux-swangle-tot-swiftshader-x64\", \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,baselineId\"}",
+    "stdin": "{\"invocation\": {\"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"gitilesCommit\": {\"commitHash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
-      "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"ci:linux-swangle-tot-swiftshader-x64\", @@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\", @@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
       "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
@@ -598,7 +597,7 @@
       "@@@STEP_LOG_LINE@json.input@      }@@@",
       "@@@STEP_LOG_LINE@json.input@    }@@@",
       "@@@STEP_LOG_LINE@json.input@  }, @@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec,baselineId\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@"
     ]
@@ -1407,8 +1406,6 @@
       "-include",
       "-exonerate-unexpected-pass",
       "-inherit-sources",
-      "-baseline-id",
-      "ci:linux-swangle-tot-swiftshader-x64",
       "--",
       "[CACHE]/builder/src/tools/resultdb/result_adapter",
       "gtest",

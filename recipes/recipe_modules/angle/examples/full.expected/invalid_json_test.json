@@ -1292,8 +1292,6 @@
       "-include",
       "-exonerate-unexpected-pass",
       "-inherit-sources",
-      "-baseline-id",
-      "ci:linux-clang-builder",
       "--",
       "vpython3",
       "[START_DIR]/swarming.client/run_isolated.py",

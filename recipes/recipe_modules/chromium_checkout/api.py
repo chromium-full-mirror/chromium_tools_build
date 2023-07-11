@@ -7,7 +7,6 @@ import copy
 from recipe_engine import recipe_api
 
 from RECIPE_MODULES.build import chromium
-from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.depot_tools.gclient import api as gclient
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
@@ -159,9 +158,6 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       gitiles_commit: (buildbucket.GitilesCommit) gitiles commit position that
         has been checked out.
     """
-    if not self.m.resultdb.enabled:
-      return None
-
     with self.m.step.nest('set rdb sources'):
       if not all([
           gitiles_commit.host, gitiles_commit.project, gitiles_commit.id,
@@ -178,27 +174,23 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         step_result.presentation.logs['gerrit_changes'] = str(
             self.m.buildbucket.build.input.gerrit_changes)
         return
-
-      baseline_id = ResultDB.generate_baseline_id(
-          self.m.buildbucket.build.builder.bucket,
-          self.m.buildbucket.builder_name)
-      self.m.resultdb.update_invocation(
-          step_name='update invocation',
-          source_spec=invocation_pb.SourceSpec(
-              sources=invocation_pb.Sources(
-                  gitiles_commit=common_rdb_pb.GitilesCommit(
-                      host=gitiles_commit.host,
-                      project=gitiles_commit.project,
-                      commit_hash=gitiles_commit.id,
-                      ref=gitiles_commit.ref,
-                      position=gitiles_commit.position,
-                  ),
-                  changelists=[
-                      common_rdb_pb.GerritChange(
-                          host=change.host,
-                          project=change.project,
-                          change=change.change,
-                          patchset=change.patchset) for change in
-                      self.m.buildbucket.build.input.gerrit_changes
-                  ])),
-          baseline_id=baseline_id)
+      if self.m.resultdb.enabled:
+        self.m.resultdb.update_invocation(
+            step_name='update invocation',
+            source_spec=invocation_pb.SourceSpec(
+                sources=invocation_pb.Sources(
+                    gitiles_commit=common_rdb_pb.GitilesCommit(
+                        host=gitiles_commit.host,
+                        project=gitiles_commit.project,
+                        commit_hash=gitiles_commit.id,
+                        ref=gitiles_commit.ref,
+                        position=gitiles_commit.position,
+                    ),
+                    changelists=[
+                        common_rdb_pb.GerritChange(
+                            host=change.host,
+                            project=change.project,
+                            change=change.change,
+                            patchset=change.patchset) for change in
+                        self.m.buildbucket.build.input.gerrit_changes
+                    ])))
