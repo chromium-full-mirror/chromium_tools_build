@@ -356,11 +356,17 @@ def publish_tarball(api):
 
   fetch_pgo_profiles(api)
 
-  build_rust_script = 'build_rust.py'
-  build_rust_args = ['--sync-for-gnrt']
-  api.step('download rustc sources', [
-      'python3', api.path['checkout'].join('tools', 'rust', build_rust_script)
-  ] + build_rust_args)
+  # This was originally enabled for all versions in https://crrev.com/c/4658882
+  # but failed on M115. It is safe to assume that this only works as expected
+  # in the Publish Tarball bot from M117 on.
+  # (Rust support was officially enabled on Linux in M116, but enabling it here
+  # from M117 on should be fine per https://crrev.com/c/4681323)
+  if int(version.split('.')[0]) >= 117:
+    build_rust_script = 'build_rust.py'
+    build_rust_args = ['--sync-for-gnrt']
+    api.step('download rustc sources', [
+        'python3', api.path['checkout'].join('tools', 'rust', build_rust_script)
+    ] + build_rust_args)
 
   # https://chromium.googlesource.com/chromium/src/+/065d83e42bb327e81b045fd04c37eef2934be298
   if [int(x) for x in version.split('.')] >= [113, 0, 5656, 0]:
@@ -473,7 +479,7 @@ def RunSteps(api):
 def GenTests(api):
   yield (
       api.test('basic') + api.buildbucket.generic_build() +
-      api.properties(version='113.0.5656.2') + api.platform('linux', 64) +
+      api.properties(version='117.0.5884.0') + api.platform('linux', 64) +
       api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
