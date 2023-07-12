@@ -273,7 +273,20 @@
     ],
     "cwd": "[CACHE]/builder/src",
     "infra_step": true,
-    "name": "git cat-file"
+    "name": "git cat-file",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@@@@",
+      "@@@STEP_LOG_LINE@stdout@vars = {@@@",
+      "@@@STEP_LOG_LINE@stdout@  'chromium_git': 'https://chromium.googlesource.com',@@@",
+      "@@@STEP_LOG_LINE@stdout@  'v8_revision': 'beefdead',@@@",
+      "@@@STEP_LOG_LINE@stdout@}@@@",
+      "@@@STEP_LOG_LINE@stdout@@@@",
+      "@@@STEP_LOG_LINE@stdout@deps = {@@@",
+      "@@@STEP_LOG_LINE@stdout@  'src/v8':@@@",
+      "@@@STEP_LOG_LINE@stdout@    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),@@@",
+      "@@@STEP_LOG_LINE@stdout@}@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
   },
   {
     "cmd": [
@@ -317,7 +330,11 @@
       ]
     },
     "infra_step": true,
-    "name": "gclient get gitiles deps"
+    "name": "gclient get gitiles deps",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@revision@deadbeef@@@",
+      "@@@STEP_LOG_END@revision@@@"
+    ]
   },
   {
     "cmd": [
@@ -327,13 +344,12 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "\nvars = {\n  'chromium_git': 'https://chromium.googlesource.com',\n  'v8_revision': 'beefdead',\n}\n\ndeps = {\n  'src/v8':\n    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),\n}\n",
+      "vars = {\n  'chromium_git': 'https://chromium.googlesource.com',\n  'v8_revision': 'beefdead',\n}\n\ndeps = {\n  'src/v8':\n    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),\n}",
       "[CLEANUP]/local_tmp_1/DEPS"
     ],
     "infra_step": true,
     "name": "local",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@DEPS@@@@",
       "@@@STEP_LOG_LINE@DEPS@vars = {@@@",
       "@@@STEP_LOG_LINE@DEPS@  'chromium_git': 'https://chromium.googlesource.com',@@@",
       "@@@STEP_LOG_LINE@DEPS@  'v8_revision': 'beefdead',@@@",
@@ -361,7 +377,11 @@
       ]
     },
     "infra_step": true,
-    "name": "gclient get local deps"
+    "name": "gclient get local deps",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@revision@beefdead@@@",
+      "@@@STEP_LOG_END@revision@@@"
+    ]
   },
   {
     "cmd": [],

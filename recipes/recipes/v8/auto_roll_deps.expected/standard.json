@@ -273,7 +273,20 @@
     ],
     "cwd": "[CACHE]/builder/src",
     "infra_step": true,
-    "name": "git cat-file"
+    "name": "git cat-file",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@@@@",
+      "@@@STEP_LOG_LINE@stdout@vars = {@@@",
+      "@@@STEP_LOG_LINE@stdout@  'chromium_git': 'https://chromium.googlesource.com',@@@",
+      "@@@STEP_LOG_LINE@stdout@  'v8_revision': 'deadbeef',@@@",
+      "@@@STEP_LOG_LINE@stdout@}@@@",
+      "@@@STEP_LOG_LINE@stdout@@@@",
+      "@@@STEP_LOG_LINE@stdout@deps = {@@@",
+      "@@@STEP_LOG_LINE@stdout@  'src/v8':@@@",
+      "@@@STEP_LOG_LINE@stdout@    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),@@@",
+      "@@@STEP_LOG_LINE@stdout@}@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
   },
   {
     "cmd": [
@@ -317,7 +330,11 @@
       ]
     },
     "infra_step": true,
-    "name": "gclient get gitiles deps"
+    "name": "gclient get gitiles deps",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@revision@deadbeef@@@",
+      "@@@STEP_LOG_END@revision@@@"
+    ]
   },
   {
     "cmd": [
@@ -327,13 +344,12 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "\nvars = {\n  'chromium_git': 'https://chromium.googlesource.com',\n  'v8_revision': 'deadbeef',\n}\n\ndeps = {\n  'src/v8':\n    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),\n}\n",
+      "vars = {\n  'chromium_git': 'https://chromium.googlesource.com',\n  'v8_revision': 'deadbeef',\n}\n\ndeps = {\n  'src/v8':\n    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),\n}",
       "[CLEANUP]/local_tmp_1/DEPS"
     ],
     "infra_step": true,
     "name": "local",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@DEPS@@@@",
       "@@@STEP_LOG_LINE@DEPS@vars = {@@@",
       "@@@STEP_LOG_LINE@DEPS@  'chromium_git': 'https://chromium.googlesource.com',@@@",
       "@@@STEP_LOG_LINE@DEPS@  'v8_revision': 'deadbeef',@@@",
@@ -361,7 +377,97 @@
       ]
     },
     "infra_step": true,
-    "name": "gclient get local deps"
+    "name": "gclient get local deps",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@revision@deadbeef@@@",
+      "@@@STEP_LOG_END@revision@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Choose revision",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@found revision to roll: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "fetch",
+      "origin",
+      "+refs/tags/*:refs/tags/*"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/src/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Choose revision.git fetch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "tag",
+      "--points-at",
+      "deadbeef"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/src/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Choose revision.git tag",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@stdout@11.7.8-pgo@@@",
+      "@@@STEP_LOG_LINE@stdout@11.7.8@@@",
+      "@@@STEP_LOG_END@stdout@@@",
+      "@@@STEP_LOG_LINE@result@11.7.8@@@",
+      "@@@STEP_LOG_END@result@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "for-each-ref",
+      "--count=80",
+      "--sort=-committerdate",
+      "--format",
+      "%(refname) %(objectname)",
+      "refs/tags/*-pgo"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/src/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Choose revision.git for-each-ref",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@stdout@@@@",
+      "@@@STEP_LOG_LINE@stdout@refs/tags/11.6.219.9-pgo bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1@@@",
+      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.10-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2@@@",
+      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.9-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
   },
   {
     "cmd": [

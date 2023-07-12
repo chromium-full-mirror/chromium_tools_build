@@ -3,6 +3,10 @@
 # found in the LICENSE file.
 
 import base64
+import re
+
+from recipe_engine.post_process import (
+    DropExpectation, MustRun, StepTextEquals)
 
 DEPS = [
   'chromium',
@@ -37,20 +41,26 @@ deps = {
 }
 """
 
+REF_LINE_RE = re.compile(
+    r'refs\/tags\/(\d+(?:\.\d+){2,3})-pgo\ ([0-9a-f]{40})')
+
+V8_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+(?:\.\d+)?$')
+
 
 def get_v8_revision(api, name, deps):
   deps_file = api.path.mkdtemp(name).join('DEPS')
   api.file.write_text(name, deps_file, deps)
-  return api.gclient(
+  revision = api.gclient(
       'get %s deps' % name,
       ['getdep', '--var=v8_revision', '--deps-file=%s' % deps_file],
       stdout=api.raw_io.output_text(),
   ).stdout.strip()
+  api.step.active_result.presentation.logs['revision'] = [revision]
+  return revision
 
 
-def is_gitiles_inconsistent(api):
-  """Returns whether the DEPS from gitiles and the local file are inconsistent.
-  """
+def get_consistent_v8_revisions(api):
+  """Returns the V8 revisions from gitiles and the local file."""
   # Get deps file from gitiles.
   gitiles_deps = api.gitiles.download_file(
       'https://chromium.googlesource.com/chromium/src',
@@ -61,15 +71,71 @@ def is_gitiles_inconsistent(api):
   )
 
   # Get the deps file used by the auto roller.
-  local_deps = api.git(
+  local_deps = api.v8.git_output(
       'cat-file', 'blob', 'HEAD:DEPS',
-      stdout=api.raw_io.output_text(),
-      step_test_data= lambda: api.raw_io.test_api.stream_output_text(
+      step_test_data=lambda: api.raw_io.test_api.stream_output_text(
           TEST_DEPS_FILE % 'deadbeef'),
-  ).stdout
+  )
 
-  return (get_v8_revision(api, 'gitiles', gitiles_deps) !=
+  return (get_v8_revision(api, 'gitiles', gitiles_deps),
           get_v8_revision(api, 'local', local_deps))
+
+
+def get_v8_tag(api, revision):
+  """Returns the V8 version tag associated with a revision or None."""
+  tags = api.v8.git_output('tag', '--points-at', revision).split('\n')
+  return next((tag for tag in tags if V8_VERSION_RE.match(tag)), None)
+
+
+def get_next_v8_revision(api, last_v8_revision):
+  """Choose the next newest viable V8 revision to roll.
+
+  Args:
+    last_v8_revision: The previously rolled revision.
+  """
+
+  with api.step.nest('Choose revision') as parent:
+    with api.context(cwd=api.v8.checkout_root.join('v8')):
+      api.git('fetch', 'origin', '+refs/tags/*:refs/tags/*')
+
+      last_tag = get_v8_tag(api, last_v8_revision)
+      assert last_tag, 'The last rolled v8 revision is not tagged.'
+      api.step.active_result.presentation.logs['result'] = [last_tag]
+
+      lines = api.v8.git_output(
+          'for-each-ref', '--count=80', '--sort=-committerdate',
+          '--format', '%(refname) %(objectname)', 'refs/tags/*-pgo',
+      ).split('\n')
+
+      matches = filter(bool, (REF_LINE_RE.fullmatch(line) for line in lines))
+      version_revisions = [match.groups() for match in matches]
+
+      assert version_revisions, 'Did not find any recent release.'
+
+      # There must be some progress between the last roll and the new candidate
+      # revision (i.e. we don't go backwards). The revisions are ordered newest
+      # to oldest. It is possible that the newest timestamp has no progress
+      # compared to the last roll, e.g. if the newest release is a cherry-pick
+      # on a release branch. Then we look further.
+      for version, revision in version_revisions:
+        if loose_version(last_tag) < loose_version(version):
+          parent.presentation.step_text = f'found revision to roll: {revision}'
+          return revision
+      parent.presentation.step_text = (
+          f'found no newer revision than: {last_v8_revision}')
+      return None
+
+
+def loose_version(version):
+  """Returns an integer-tuple representation of a dotted version string
+  like "3.1.1".
+
+  This enables comparison, e.g.:
+  (3, 1, 1) > (3, 1)
+  (3, 10) > (3, 9)
+  (4, 3) > (3, 5, 8)
+  """
+  return tuple(map(int, version.split('.')))
 
 
 def RunSteps(api):
@@ -144,8 +210,10 @@ def RunSteps(api):
 
   api.v8.checkout()
 
+  last_v8_revision, last_v8_revision_local = get_consistent_v8_revisions(api)
+
   # Require local and gitiles DEPS to be consistent before proceeding.
-  if is_gitiles_inconsistent(api):
+  if last_v8_revision != last_v8_revision_local:
     api.step('Local checkout is lagging behind.', cmd=None)
     api.step.active_result.presentation.status = api.step.WARNING
     return
@@ -153,6 +221,9 @@ def RunSteps(api):
   with api.context(cwd=api.path['checkout'].join('v8'),
                    env={'DEPOT_TOOLS_UPDATE': '0'},
                    env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+    # TODO(https://crbug.com/1445862): Make use of the return value below.
+    get_next_v8_revision(api, last_v8_revision)
+
     safe_buildername = ''.join(
       c if c.isalnum() else '_' for c in api.buildbucket.builder_name)
     if api.runtime.is_experimental:
@@ -172,10 +243,59 @@ def RunSteps(api):
       )
 
 
+TEST_REF_DATA = """
+refs/tags/11.6.219.9-pgo bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1
+refs/tags/11.7.10-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2
+refs/tags/11.7.9-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1
+"""
+
+
 def GenTests(api):
+  def gerrit_changes(changes, second=False):
+    return api.override_step_data(
+        'gerrit changes' + (' (2)' if second else ''),
+        api.json.output(changes))
+
+  def last_v8_revision():
+    def deps(name):
+      return api.override_step_data(
+          f'gclient get {name} deps',
+          api.raw_io.stream_output_text('deadbeef', stream='stdout'))
+    return deps('gitiles') + deps('local')
+
+  def v8_tag(tag):
+    return api.override_step_data(
+        'Choose revision.git tag',
+        api.raw_io.stream_output_text(f'{tag}-pgo\n{tag}', stream='stdout'))
+
+  def v8_ref_data():
+    return api.override_step_data(
+        'Choose revision.git for-each-ref',
+        api.raw_io.stream_output_text(TEST_REF_DATA, stream='stdout'))
+
   yield api.test(
       'standard',
-      api.override_step_data('gerrit changes', api.json.output([])),
+      gerrit_changes([]),
+      last_v8_revision(),
+      v8_tag('11.7.8'),
+      v8_ref_data(),
+      api.post_process(
+          StepTextEquals,
+          'Choose revision',
+          'found revision to roll: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2'),
+      status='SUCCESS',
+  )
+  yield api.test(
+      'nothing_new',
+      gerrit_changes([]),
+      last_v8_revision(),
+      v8_tag('11.7.11'),
+      v8_ref_data(),
+      api.post_process(
+          StepTextEquals,
+          'Choose revision',
+          'found no newer revision than: deadbeef'),
+      api.post_process(DropExpectation),
       status='SUCCESS',
   )
   yield api.test(
@@ -185,28 +305,20 @@ def GenTests(api):
   )
   yield api.test(
       'active_roll',
-      api.override_step_data('gerrit changes',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
-      api.override_step_data('gerrit changes (2)',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
+      gerrit_changes([{'_number': '123'}]),
+      gerrit_changes([{'_number': '123'}], second=True),
       status='SUCCESS',
   )
   yield api.test(
       'stale_roll',
-      api.override_step_data('gerrit changes',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
-      api.override_step_data('gerrit changes (2)', api.json.output([])),
+      gerrit_changes([{'_number': '123'}]),
+      gerrit_changes([], second=True),
       status='SUCCESS',
   )
   yield api.test(
       'inconsistent_state',
-      api.override_step_data('gerrit changes', api.json.output([])),
+      gerrit_changes([]),
+      last_v8_revision(),
       api.override_step_data(
           'git cat-file',
           api.raw_io.stream_output_text(TEST_DEPS_FILE % 'beefdead')),
@@ -218,17 +330,21 @@ def GenTests(api):
   )
   yield api.test(
       'standard_experimental',
-      api.override_step_data('gerrit changes', api.json.output([])),
+      gerrit_changes([]),
+      last_v8_revision(),
       api.runtime(is_experimental=True),
+      v8_tag('11.7.8'),
+      v8_ref_data(),
+      api.post_process(MustRun, 'fake roll deps'),
+      api.post_process(DropExpectation),
       status='SUCCESS',
   )
   yield api.test(
       'stale_roll_experimental',
-      api.override_step_data('gerrit changes',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
-      api.override_step_data('gerrit changes (2)', api.json.output([])),
+      gerrit_changes([{'_number': '123'}]),
+      gerrit_changes([], second=True),
       api.runtime(is_experimental=True),
+      api.post_process(MustRun, 'fake resubmit to CQ'),
+      api.post_process(DropExpectation),
       status='SUCCESS',
   )
