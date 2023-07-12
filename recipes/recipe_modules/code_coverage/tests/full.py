@@ -819,9 +819,11 @@ def GenTests(api):
       api.step_data(
           'process clang code coverage data for overall test coverage.'
           'Get all unstripped artifacts paths',
-          api.json.output(
-              ['[CACHE]'
-               'lib.unstrippedlibbase_unittests__library.so'])),
+          api.json.output([
+              '[CACHE]'
+              'lib.unstrippedlibbase_unittests__library.so',
+              '[CACHE]/lib.unstripped/libOtherNativeLibrary.so'
+          ])),
       api.post_process(post_process.MustRunRE, 'ensure profile dir for .*',
                        _NUM_TESTS, _NUM_TESTS),
       api.post_process(
