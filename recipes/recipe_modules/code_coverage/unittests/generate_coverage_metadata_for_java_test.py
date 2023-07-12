@@ -161,6 +161,32 @@ class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
     </report>
   """
 
+  JACOCO_REPORT_WITH_CONTIGUOUS_LINE_NUMBERS = """
+    <report name="JaCoCo Coverage Report">
+      <package name="dir">
+        <sourcefile name="file.java">
+          <line nr="1" mi="0" ci="2" mb="0" cb="0"/>
+          <line nr="2" mi="0" ci="2" mb="0" cb="0"/>
+          <line nr="5" mi="0" ci="1" mb="0" cb="0"/>
+          <line nr="6" mi="0" ci="3" mb="0" cb="0"/>
+          <line nr="8" mi="0" ci="5" mb="0" cb="0"/>
+          <line nr="9" mi="0" ci="5" mb="0" cb="0"/>
+          <line nr="10" mi="0" ci="4" mb="0" cb="0"/>
+          <counter type="INSTRUCTION" missed="0" covered="1"/>
+          <counter type="LINE" missed="0" covered="1"/>
+          <counter type="COMPLEXITY" missed="0" covered="1"/>
+          <counter type="METHOD" missed="0" covered="1"/>
+          <counter type="CLASS" missed="0" covered="1"/>
+        </sourcefile>
+      </package>
+      <counter type="INSTRUCTION" missed="0" covered="1"/>
+      <counter type="LINE" missed="0" covered="1"/>
+      <counter type="COMPLEXITY" missed="0" covered="1"/>
+      <counter type="METHOD" missed="0" covered="1"/>
+      <counter type="CLASS" missed="0" covered="1"/>
+    </report>
+  """
+
   @mock.patch.object(os, 'walk')
   def test_get_files_with_suffix(self, mock_walk):
     mock_input_dir_walk = [
@@ -286,6 +312,282 @@ class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
                 'count': 1,
                 'last': 1,
                 'first': 1
+            }],
+            'path': '//dir/file.java',
+            'summaries': [{
+                'covered': 1,
+                'total': 1,
+                'name': 'instruction'
+            }, {
+                'covered': 0,
+                'total': 0,
+                'name': 'branch'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'line'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'complexity'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'method'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'class'
+            }],
+            'revision': 'hash1'
+        }],
+        'dirs': [
+            {
+                'dirs': [],
+                'path':
+                    '//dir/',
+                'summaries': [{
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'instruction'
+                }, {
+                    'covered': 0,
+                    'total': 0,
+                    'name': 'branch'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'line'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'complexity'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'method'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'class'
+                }],
+                'files': [{
+                    'path':
+                        '//dir/file.java',
+                    'name':
+                        'file.java',
+                    'summaries': [{
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'instruction'
+                    }, {
+                        'covered': 0,
+                        'total': 0,
+                        'name': 'branch'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'line'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'complexity'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'method'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'class'
+                    }]
+                }]
+            },
+            {
+                'dirs': [{
+                    'path':
+                        '//dir/',
+                    'name':
+                        'dir/',
+                    'summaries': [{
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'instruction'
+                    }, {
+                        'covered': 0,
+                        'total': 0,
+                        'name': 'branch'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'line'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'complexity'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'method'
+                    }, {
+                        'covered': 1,
+                        'total': 1,
+                        'name': 'class'
+                    }]
+                }],
+                'path': '//',
+                'summaries': [{
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'instruction'
+                }, {
+                    'covered': 0,
+                    'total': 0,
+                    'name': 'branch'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'line'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'complexity'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'method'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'class'
+                }],
+                'files': []
+            },
+        ],
+        'summaries': [{
+            'covered': 1,
+            'total': 1,
+            'name': 'instruction'
+        }, {
+            'covered': 0,
+            'total': 0,
+            'name': 'branch'
+        }, {
+            'covered': 1,
+            'total': 1,
+            'name': 'line'
+        }, {
+            'covered': 1,
+            'total': 1,
+            'name': 'complexity'
+        }, {
+            'covered': 1,
+            'total': 1,
+            'name': 'method'
+        }, {
+            'covered': 1,
+            'total': 1,
+            'name': 'class'
+        }],
+        'components': [{
+            'dirs': [{
+                'path':
+                    '//dir/',
+                'name':
+                    'dir/',
+                'summaries': [{
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'instruction'
+                }, {
+                    'covered': 0,
+                    'total': 0,
+                    'name': 'branch'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'line'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'complexity'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'method'
+                }, {
+                    'covered': 1,
+                    'total': 1,
+                    'name': 'class'
+                }]
+            }],
+            'path':
+                'Test>Component',
+            'summaries': [{
+                'covered': 1,
+                'total': 1,
+                'name': 'instruction'
+            }, {
+                'covered': 0,
+                'total': 0,
+                'name': 'branch'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'line'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'complexity'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'method'
+            }, {
+                'covered': 1,
+                'total': 1,
+                'name': 'class'
+            }]
+        }]
+    }
+
+    actual_output, _ = generator.generate_json_coverage_metadata(
+        '', root, self.COMPONENT_MAPPING, None, None)
+    self.assertDictEqual(expected_output, actual_output)
+
+  @mock.patch.object(os.path, 'isfile')
+  @mock.patch.object(repository_util, '_GetFileRevisions')
+  def test_generate_json_coverage_metadata_contiguous_line_data(
+      self, mock_get_file_revisions, mock_os_path_isfile):
+    mock_get_file_revisions.return_value = self.FILE_REVISIONS
+    mock_os_path_isfile = True
+    root = ElementTree.fromstring(
+        self.JACOCO_REPORT_WITH_CONTIGUOUS_LINE_NUMBERS)
+
+    expected_output = {
+        'files': [{
+            'branches': [],
+            'timestamp': 1234,
+            'lines': [{
+                'count': 2,
+                'last': 2,
+                'first': 1
+            }, {
+                'count': 1,
+                'last': 5,
+                'first': 5
+            }, {
+                'count': 3,
+                'last': 6,
+                'first': 6
+            }, {
+                'count': 5,
+                'last': 9,
+                'first': 8
+            }, {
+                'count': 4,
+                'last': 10,
+                'first': 10
             }],
             'path': '//dir/file.java',
             'summaries': [{

@@ -122,6 +122,63 @@ def _create_classfile_args(class_files, exclude_suffix=None):
   return result_class_files
 
 
+def _compress_line_data_for_java(lines):
+  """Compresses line data by combining contiguous lines that have the 
+  same covered instructions count.
+
+  Args:
+    lines: A list of lines. For example-
+    [
+      {
+        'first': 1,
+        'last': 1,
+        'count': 1,
+      },
+      {
+        'first': 2,
+        'last': 2,
+        'count': 1,
+      }
+    ]
+
+  Returns:
+    A list of compressed lines in the same format as the input args. 
+    For the above example input the result will be:
+    [
+      {
+        'first': 1,
+        'last': 2,
+        'count': 1,
+      }
+    ]
+  """
+
+  line_data = sorted(lines, key=lambda x: x['first'])
+  compressed_lines = []
+  # Aggregate contiguous blocks of lines with the exact same hit count.
+  last_index = 0
+  for i in range(1, len(line_data) + 1):
+    is_continous_line = (
+        i < len(line_data) and
+        line_data[i]['first'] == line_data[i - 1]['last'] + 1)
+    has_same_count = (
+        i < len(line_data) and
+        line_data[i]['count'] == line_data[i - 1]['count'])
+
+    # Merge two lines iff they have continous line number and exactly the same
+    # count.
+    if (is_continous_line and has_same_count):
+      continue
+
+    compressed_lines.append({
+        'first': line_data[last_index]['first'],
+        'last': line_data[i - 1]['last'],
+        'count': line_data[last_index]['count'],
+    })
+    last_index = i
+  return compressed_lines
+
+
 def _get_file_coverage_data(file_path, source_file, diff_mapping):
   """Gets single source file coverage data from sourcefile element.
 
@@ -170,6 +227,8 @@ def _get_file_coverage_data(file_path, source_file, diff_mapping):
       }
       file_coverage['branches'].append(branch_coverage)
 
+  # Transform the file_coverage['lines'] to compressed proto format.
+  file_coverage['lines'] = _compress_line_data_for_java(file_coverage['lines'])
   # Add coverage metrics per source file.
   file_coverage['summaries'] = get_coverage_metric_summaries(source_file)
   return file_coverage
