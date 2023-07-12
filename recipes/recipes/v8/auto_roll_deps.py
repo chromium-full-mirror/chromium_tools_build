@@ -6,7 +6,7 @@ import base64
 import re
 
 from recipe_engine.post_process import (
-    DropExpectation, MustRun, StepTextEquals)
+    DoesNotRun, DropExpectation, MustRun, StepTextEquals)
 
 DEPS = [
   'chromium',
@@ -221,8 +221,9 @@ def RunSteps(api):
   with api.context(cwd=api.path['checkout'].join('v8'),
                    env={'DEPOT_TOOLS_UPDATE': '0'},
                    env_prefixes={'PATH': [api.v8.depot_tools_path]}):
-    # TODO(https://crbug.com/1445862): Make use of the return value below.
-    get_next_v8_revision(api, last_v8_revision)
+    next_v8_revision = get_next_v8_revision(api, last_v8_revision)
+    if not next_v8_revision:
+      return
 
     safe_buildername = ''.join(
       c if c.isalnum() else '_' for c in api.buildbucket.builder_name)
@@ -239,6 +240,8 @@ def RunSteps(api):
                          'vahl@chromium.org,'
                          'v8-waterfall-sheriff@grotations.appspotmail.com',
            '--roll',
+           '--last-roll', last_v8_revision,
+           '--revision', next_v8_revision,
            '--work-dir', api.path['cache'].join(safe_buildername, 'workdir')],
       )
 
@@ -295,6 +298,7 @@ def GenTests(api):
           StepTextEquals,
           'Choose revision',
           'found no newer revision than: deadbeef'),
+      api.post_process(DoesNotRun, 'roll deps'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )

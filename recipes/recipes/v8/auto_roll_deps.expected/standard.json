@@ -481,6 +481,10 @@
       "--reviewer",
       "hablich@chromium.org,vahl@chromium.org,v8-waterfall-sheriff@grotations.appspotmail.com",
       "--roll",
+      "--last-roll",
+      "deadbeef",
+      "--revision",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2",
       "--work-dir",
       "[CACHE]/workdir"
     ],
