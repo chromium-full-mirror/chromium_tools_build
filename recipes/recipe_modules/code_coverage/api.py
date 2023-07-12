@@ -865,8 +865,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     Returns:
       A list of absolute paths to the binaries with valid coverage data.
     """
-    if not (self.m.buildbucket.build.builder.bucket == 'try' and
-            self._is_per_cl_coverage and self._eligible_files):
+    if not (self._is_per_cl_coverage and self._eligible_files):
       # Only gets binaries with valid coverage data for per-cl coverage.
       return binaries
 
@@ -900,8 +899,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     Produce a coverage report for the instrumented test targets and upload to
     the appropriate bucket.
     """
-    if not (self.m.buildbucket.build.builder.bucket == 'try' and
-            self._is_per_cl_coverage and self._eligible_files):
+    if not (self._is_per_cl_coverage and self._eligible_files):
       # Only upload html report for CQ coverage bots.
       return
 
