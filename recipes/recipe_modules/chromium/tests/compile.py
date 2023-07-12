@@ -10,6 +10,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/runtime',
+    'siso',
 ]
 
 from PB.recipe_engine import result as result_pb2
@@ -264,4 +265,30 @@ def GenTests(api):
       api.post_check(post_process.DoesNotRun, 'postprocess_for_goma'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('CANCELED'),
+  )
+
+  yield api.test(
+      'siso',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.siso.properties(),
+      api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
+                                                'process_crashreports.py')),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'siso_noop_failure',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.siso.properties(),
+      api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
+                                                'process_crashreports.py')),
+      api.post_process(post_process.StepSuccess, 'compile'),
+      api.step_data(
+          'compile confirm no-op',
+          stdout=api.raw_io.output_text('ninja explain: dirty')),
+      api.post_process(post_process.StepFailure, 'compile confirm no-op'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
   )

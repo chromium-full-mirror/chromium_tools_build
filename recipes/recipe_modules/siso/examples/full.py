@@ -18,6 +18,7 @@ def RunSteps(api):
         ninja_env=env,
         name=api.properties.get('name', 'compile'),
         siso_args=api.properties.get('siso_args'),
+        post_step_func=lambda s: s,
     )
   with api.siso.disable():
     assert not api.siso.enabled

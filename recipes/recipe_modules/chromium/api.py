@@ -398,12 +398,6 @@ class ChromiumApi(recipe_api.RecipeApi):
               ['python3', clang_crashreports_script, '--source', source],
               **kwargs)
 
-    # TODO(b/288534744): support no-op build with Siso.
-    if self.m.siso.enabled:
-      return CompileResult(
-          failure_summary='No-op build is not supported by siso.',
-          retcode=ninja_step_result.retcode)
-
     ninja_command_explain = ninja_command + ['-d', 'explain', '-n']
 
     ninja_no_work = 'ninja: no work to do.'
@@ -411,33 +405,49 @@ class ChromiumApi(recipe_api.RecipeApi):
     # Once we've compiled once, a second attempt to compile should do nothing.
     # Any actual work we do here indicates that the dependency graph in GN is
     # misconfigured somehow, which is bad and should break the build.
-    with self.m.context(env=ninja_env):
-      step_result = self.m.step(
-          (name or 'compile') + ' confirm no-op',
+    noop_step_name = (name or 'compile') + ' confirm no-op'
+    noop_step_test_data = lambda: self.m.raw_io.test_api.stream_output_text(
+        ninja_no_work)
+
+    def check_noop(step_result):
+      if ninja_no_work in step_result.stdout:
+        # No dependency issue found.
+        return
+      step_result.presentation.step_text = (
+          "This should have been a no-op, but it wasn't.")
+      step_result.presentation.status = self.m.step.FAILURE
+
+    if self.m.siso.enabled:
+      step_result = self.m.siso.run_ninja(
           ninja_command_explain,
+          siso_args=siso_args,
+          name=noop_step_name,
+          step_test_data=noop_step_test_data,
           stdout=self.m.raw_io.output_text(),
-          step_test_data=(
-              lambda: self.m.raw_io.test_api.stream_output_text(ninja_no_work)))
+          post_step_func=check_noop,
+          **kwargs)
+    else:
+      with self.m.context(env=ninja_env):
+        step_result = self.m.step(
+            noop_step_name,
+            ninja_command_explain,
+            stdout=self.m.raw_io.output_text(),
+            step_test_data=noop_step_test_data)
+      check_noop(step_result)
 
-    if ninja_no_work in step_result.stdout:
-      # No dependency issue found.
+    if step_result.presentation.status == self.m.step.FAILURE:
       return CompileResult(
-          failure_summary='No dependency issues found',
-          retcode=ninja_step_result.exc_result.retcode)
-
-    step_result.presentation.step_text = (
-        "This should have been a no-op, but it wasn't.")
-
-    step_result.presentation.status = self.m.step.FAILURE
+          failure_summary=textwrap.dedent("""
+              Failing build because ninja reported work to do.
+              This means that after completing a compile, another was run and
+              it resulted in still having work to do (that is, a no-op build
+              wasn't a no-op). Consult the first "ninja explain:" line for a
+              likely culprit.
+           """).strip(),
+          retcode=1)
     return CompileResult(
-        failure_summary=textwrap.dedent("""
-            Failing build because ninja reported work to do.
-            This means that after completing a compile, another was run and
-            it resulted in still having work to do (that is, a no-op build
-            wasn't a no-op). Consult the first "ninja explain:" line for a
-            likely culprit.
-         """).strip(),
-        retcode=1)
+        failure_summary='No dependency issues found',
+        retcode=ninja_step_result.exc_result.retcode)
 
   def _run_ninja_with_goma(self,
                            ninja_command,
@@ -471,7 +481,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     # TODO(martiniss): This is a terrible hack and needs to be removed. See
     # https://crbug.com/984451 for more information
-    if not self.c.compile_py.prune_venv:
+    if not self.c.compile_py.prune_venv and not self.m.siso.enabled:
       kwargs['no_prune_venv'] = True
 
     build_exit_status = None

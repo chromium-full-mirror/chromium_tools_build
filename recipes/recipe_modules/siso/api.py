@@ -38,6 +38,7 @@ class SisoApi(recipe_api.RecipeApi):
                 ninja_env=None,
                 name=None,
                 siso_args=None,
+                post_step_func=None,
                 **kwargs):
     """Run the ninja command with siso.
 
@@ -47,6 +48,7 @@ class SisoApi(recipe_api.RecipeApi):
           ninja_env: Environment for ninja.
           name: Name of compile step.
           siso_args: siso arguments.
+          post_step_func: a function that runs on the step result.
 
         Returns:
           step_data.StepData of the build step.
@@ -99,7 +101,10 @@ class SisoApi(recipe_api.RecipeApi):
       env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     try:
       with self.m.context(env=env, cwd=self.m.path['checkout']):
-        return self.m.step(name, cmd, **kwargs)
+        step_result = self.m.step(name, cmd, **kwargs)
+        if post_step_func:
+          post_step_func(step_result)
+        return step_result
     finally:
       self.m.cas.archive(
           'upload reports', self.m.path.abspath(ninja_dir),
