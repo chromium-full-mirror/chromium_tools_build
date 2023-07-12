@@ -372,8 +372,6 @@ class _ResultDb:
     self.api = api
     self.base_variant = base_variant
 
-    self.api.resultdb.assert_enabled()
-
     self.result_adapter_path = str(self.api.path['checkout'].join(
         'tools', 'resultdb', 'result_adapter'))
     if self.api.platform.is_win:
@@ -386,6 +384,9 @@ class _ResultDb:
            base_variant=None,
            base_tags=None):
     """Wraps an invocation with native ResultSink support."""
+    if not self.api.resultdb.enabled:
+      return command
+
     variant = dict(self.base_variant)
     variant.update(base_variant or {})
 
@@ -400,6 +401,9 @@ class _ResultDb:
 
   def wrap_gtest(self, gtest_command, **kwargs):
     """Wraps an invocation of a GoogleTest test runner."""
+    if not self.api.resultdb.enabled:
+      return gtest_command
+
     result_file_path = self.api.path.mkstemp()
     artifact_directory_path = self.api.path.dirname(result_file_path)
     return self.wrap([
@@ -655,7 +659,7 @@ def _dict_to_str(props):
   for k in sorted(props.keys()):
     v = props[k]
     assert k and ' ' not in k, f'Invalid key "{k}"'
-    assert v and ' ' not in v, f'Invalid value "{v}"'
+    assert v and ' ' not in v, f'Invalid value "{v}" for key "{k}"'
     ret += (k, v)
   return ' '.join(ret)
 
@@ -703,6 +707,12 @@ def _gen_ci_build(api, builder):
       build_number=1234,
       git_repo='https://pdfium.googlesource.com/pdfium',
   )
+
+
+def _gen_local_build(api, builder):
+  build_message = api.buildbucket.try_build_message(builder=builder)
+  build_message.infra.ClearField('resultdb')
+  return api.buildbucket.build(build_message)
 
 
 def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
@@ -1253,4 +1263,9 @@ def GenTests(api):
           xfa=True, bot_id='test_bot', renderers=['agg', 'fake', 'gdi']),
       _gen_ci_build(api, 'windows'),
       api.expect_exception('ValueError'),
+  )
+
+  yield api.test(
+      'local',
+      _gen_local_build(api, 'linux'),
   )
