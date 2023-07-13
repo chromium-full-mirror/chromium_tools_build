@@ -615,13 +615,13 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 742, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 798, in RunSteps",
       "    _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 346, in _run_tests",
       "    test_runner = _TestRunner(api, memory_tool, resultdb, out_dir, build_config,",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 439, in __init__",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 492, in __init__",
       "    self.embedder_test_renderers = _validate_renderers('pdfium_embeddertests',",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 425, in _validate_renderers",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 478, in _validate_renderers",
       "    raise ValueError(f'Invalid {context_name} renderer: {\", \".join(invalid)}')",
       "ValueError('Invalid pdfium_embeddertests renderer: fake')"
     ]

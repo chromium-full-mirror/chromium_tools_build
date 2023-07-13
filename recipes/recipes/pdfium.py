@@ -17,9 +17,9 @@ DEPS = [
     'goma',
     'reclient',
     'recipe_engine/buildbucket',
+    'recipe_engine/cas',
     'recipe_engine/context',
     'recipe_engine/file',
-    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -32,7 +32,7 @@ from dataclasses import dataclass
 
 from recipe_engine import post_process
 from recipe_engine.config import Set
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property, composite_step
 
 PROPERTIES = {
     'clang': Property(default=False, kind=bool),
@@ -419,6 +419,59 @@ class _ResultDb:
     ], **kwargs)
 
 
+class _Swarming:
+
+  def __init__(self, api, out_dir):
+    self.api = api
+    self.out_dir = out_dir
+
+    self.test_inputs_digest = None
+
+  def _ensure_test_inputs(self):
+    if self.test_inputs_digest:
+      return
+
+    checkout_path = self.api.path['checkout']
+
+    test_inputs = self.api.file.read_json(
+        'read test inputs list',
+        checkout_path.join(self.out_dir, 'test_runner_py.json'),
+        test_data=[
+            [
+                checkout_path,
+                '.vpython3',
+            ],
+            [
+                checkout_path,
+                self.api.path.join(self.out_dir, 'snapshot_blob.bin'),
+            ],
+            [
+                checkout_path,
+                self.api.path.join('testing', 'resources'),
+            ],
+        ],
+        include_log=False)
+    assert test_inputs
+
+    archive_paths = []
+    for entry_root, entry_path in test_inputs:
+      archive_paths.append(
+          self.api.path.abs_to_path(entry_root).join(entry_path))
+
+    self.test_inputs_digest = self.api.cas.archive('archive test inputs',
+                                                   checkout_path,
+                                                   *archive_paths)
+
+  @composite_step
+  def request_task(self, step_name, command, *, env):
+    self._ensure_test_inputs()
+
+    # TODO(crbug.com/pdfium/1933): Construct swarming task request.
+    log_list = [f'{key}={value}' for key, value in env.items()]
+    log_list += map(str, command)
+    self.api.step.empty(step_name, log_text=log_list)
+
+
 def _validate_renderers(context_name, renderers):
   if not _ALL_RENDERERS.issuperset(renderers):
     invalid = filter(lambda renderer: renderer not in _ALL_RENDERERS, renderers)
@@ -440,7 +493,7 @@ class _TestRunner:
                                                        embedder_test_renderers)
     self.python_test_renderers = _validate_renderers('pdfium_test',
                                                      python_test_renderers)
-    self.swarming = swarming
+    self.swarming = _Swarming(api, self.out_dir) if swarming else None
 
     self.test_runner_py_args = [
         '--build-dir',
@@ -602,8 +655,11 @@ class _TestRunner:
         test_id_prefix=f'ninja://testing/tools:run_{test_type}_tests/',
         base_variant=variant,
         base_tags=tags)
-    with self.api.context(cwd=self._join_root_dir(), env=self.env):
-      self.api.step(step_name, command)
+    if self.swarming:
+      self.swarming.request_task(step_name, command, env=self.env)
+    else:
+      with self.api.context(cwd=self._join_root_dir(), env=self.env):
+        self.api.step(step_name, command)
 
 
 def _get_test_suite(base_name, suffix=None):
