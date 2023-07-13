@@ -36,8 +36,11 @@ DEPS = [
     'xcode',
 ]
 
+PROPERTIES = properties.InputProperties
+
 # Forward symbols for other modules to import
 BuilderId = types.BuilderId
 BuilderSpec = types.BuilderSpec
+from .config import config_ctx as CONFIG_CTX
 
-PROPERTIES = properties.InputProperties
+__all__ = ['CONFIG_CTX', 'BuilderId', 'BuilderSpec']

@@ -31,3 +31,7 @@ DEPS = [
     'recipe_engine/url',
     'test_utils',
 ]
+
+from .config import config_ctx as CONFIG_CTX
+
+__all__ = ['CONFIG_CTX']
