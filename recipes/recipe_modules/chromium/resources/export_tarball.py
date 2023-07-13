@@ -88,13 +88,16 @@ class MyTarFile(tarfile.TarFile):
 
   # pylint: disable=redefined-builtin
   def add(self, name, arcname=None, recursive=True, *, filter=None):
+    rel_name = os.path.relpath(name, self.__src_dir)
     _, file_name = os.path.split(name)
+
     if file_name in ('.svn', 'out'):
       self.__report_skipped(name)
       return
 
     if file_name == '.git':
-      if not any(name in essential for essential in ESSENTIAL_GIT_DIRS):
+      if not any(
+          rel_name.startswith(essential) for essential in ESSENTIAL_GIT_DIRS):
         self.__report_skipped(name)
         return
 
@@ -111,7 +114,6 @@ class MyTarFile(tarfile.TarFile):
       # Preserve `*.pydeps` files too. `gn gen` reads them to generate build
       # targets, even if those targets themselves are not built
       # (crbug.com/1362021).
-      rel_name = os.path.relpath(name, self.__src_dir)
       keep_file = ('.gyp' in file_name or '.gn' in file_name or
                    '.isolate' in file_name or '.grd' in file_name or
                    file_name.endswith('.pydeps') or rel_name in ESSENTIAL_FILES)
