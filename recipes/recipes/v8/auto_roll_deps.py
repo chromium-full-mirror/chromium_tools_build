@@ -8,6 +8,8 @@ import re
 from recipe_engine.post_process import (
     DoesNotRun, DropExpectation, MustRun, StepTextEquals)
 
+from RECIPE_MODULES.build.v8.v8version import normalize_version
+
 DEPS = [
   'chromium',
   'depot_tools/bot_update',
@@ -118,24 +120,12 @@ def get_next_v8_revision(api, last_v8_revision):
       # compared to the last roll, e.g. if the newest release is a cherry-pick
       # on a release branch. Then we look further.
       for version, revision in version_revisions:
-        if loose_version(last_tag) < loose_version(version):
+        if normalize_version(last_tag) < normalize_version(version):
           parent.presentation.step_text = f'found revision to roll: {revision}'
           return revision
       parent.presentation.step_text = (
           f'found no newer revision than: {last_v8_revision}')
       return None
-
-
-def loose_version(version):
-  """Returns an integer-tuple representation of a dotted version string
-  like "3.1.1".
-
-  This enables comparison, e.g.:
-  (3, 1, 1) > (3, 1)
-  (3, 10) > (3, 9)
-  (4, 3) > (3, 5, 8)
-  """
-  return tuple(map(int, version.split('.')))
 
 
 def RunSteps(api):

@@ -23,6 +23,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 
 from RECIPE_MODULES.build.v8_tests import testing as v8testing
+from RECIPE_MODULES.build.v8.v8version import VersionTuple, normalize_version
 
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
@@ -124,9 +125,6 @@ PROPERTIES = {
     'max_parallel_versions': Property(kind=int, default=MAX_PARALLEL_VERSIONS),
     'version_number_cutoff': Property(kind=tuple, default=VERSION_CUTOFF),
 }
-
-
-VersionTuple = Tuple[int, int, int, int]
 
 
 def RunSteps(api, max_parallel_versions, version_number_cutoff):
@@ -316,24 +314,6 @@ def download_blocked_versions(api) -> List[str]:
   if not blocked:
     return []
   return blocked.split('\n')
-
-
-def normalize_version(version) -> Tuple[int, int, int, int]:
-  """Accept multiple input types to represent a version, and return a normalized
-  version tuple.
-
-  Supported input types:
-    * Tuple of integers of various lengths, e.g. (12, ) (12, 5), (12, 5, 1, 9)
-    * Dot-separated string of various length, e.g. '12', '12.5', '12.5.1.9'
-  """
-  if isinstance(version, str):
-    version = tuple(version.split('.'))
-
-  assert isinstance(version, tuple), f'Expected a tuple, found {type(version)}.'
-
-  version = tuple(int(c) for c in version)
-
-  return (version + (0, ) * 3)[:4]
 
 
 def create_profile_trackers(selected_versions) -> List[VersionProfileTrack]:
