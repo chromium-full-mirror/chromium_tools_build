@@ -246,6 +246,7 @@ SPEC = {
             chromium_apply_config=['mb'],
             gclient_config='chromium',
             gclient_apply_config=[
+                'checkout_pgo_profiles',
                 'clang_tot',
                 'fuchsia_arm64',
                 'fuchsia_arm64_host',
