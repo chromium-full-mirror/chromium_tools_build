@@ -571,7 +571,8 @@ def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
     zip_file = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED,
                                allowZip64=True)
     try:
-      os.walk(archive_dir, _Addfiles, zip_file)
+      for root, _, files in os.walk(archive_dir):
+        _Addfiles(zip_file, root, files)
     finally:
       zip_file.close()
   else:
