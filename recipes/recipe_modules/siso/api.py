@@ -106,16 +106,21 @@ class SisoApi(recipe_api.RecipeApi):
           post_step_func(step_result)
         return step_result
     finally:
-      self.m.cas.archive(
-          'upload reports',
-          self.m.path.abspath(ninja_dir),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_build.pprof')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_explain')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_metrics.json')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_output')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, 'siso_trace.json')),
-          self.m.path.abspath(self.m.path.join(ninja_dir, '.siso_fs_state')),
-      )
+      files_to_upload = []
+      for file in [
+          'siso_build.pprof',
+          'siso_explain',
+          'siso_metrics.json',
+          'siso_output',
+          'siso_trace.json',
+          '.siso_fs_state',
+      ]:
+        abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
+        if self.m.path.exists(abs_path):
+          files_to_upload.append(abs_path)
+
+      self.m.cas.archive('upload reports', self.m.path.abspath(ninja_dir),
+                         *files_to_upload)
 
   def _assert_ninja_command(self, ninja_command):
     """Check ninja_command runs ninja

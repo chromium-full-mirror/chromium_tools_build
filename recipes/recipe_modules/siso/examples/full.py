@@ -5,6 +5,7 @@
 from recipe_engine import post_process
 
 DEPS = [
+    'recipe_engine/path',
     'recipe_engine/properties',
     'siso',
 ]
@@ -13,6 +14,8 @@ DEPS = [
 def RunSteps(api):
   env = {}
   if api.siso.enabled:
+    api.path.mock_add_paths(
+        api.path.join('out', 'Release', 'siso_metrics.json'))
     api.siso.run_ninja(
         ninja_command=api.properties.get('build_command'),
         ninja_env=env,
