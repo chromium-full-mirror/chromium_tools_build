@@ -8,7 +8,7 @@ import re
 from recipe_engine.post_process import (
     DoesNotRun, DropExpectation, MustRun, StepTextEquals)
 
-from RECIPE_MODULES.build.v8.v8version import normalize_version
+from RECIPE_MODULES.build.v8.v8version import choose_revision_to_roll
 
 DEPS = [
   'chromium',
@@ -42,9 +42,6 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 }
 """
-
-REF_LINE_RE = re.compile(
-    r'refs\/tags\/(\d+(?:\.\d+){2,3})-pgo\ ([0-9a-f]{40})')
 
 V8_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+(?:\.\d+)?$')
 
@@ -95,37 +92,20 @@ def get_next_v8_revision(api, last_v8_revision):
   Args:
     last_v8_revision: The previously rolled revision.
   """
-
   with api.step.nest('Choose revision') as parent:
     with api.context(cwd=api.v8.checkout_root.join('v8')):
       api.git('fetch', 'origin', '+refs/tags/*:refs/tags/*')
 
-      last_tag = get_v8_tag(api, last_v8_revision)
-      assert last_tag, 'The last rolled v8 revision is not tagged.'
-      api.step.active_result.presentation.logs['result'] = [last_tag]
+      last_version = get_v8_tag(api, last_v8_revision)
+      assert last_version, 'The last rolled v8 revision is not tagged.'
 
-      lines = api.v8.git_output(
+      ref_lines = api.v8.git_output(
           'for-each-ref', '--count=80', '--sort=-committerdate',
           '--format', '%(refname) %(objectname)', 'refs/tags/*-pgo',
       ).split('\n')
-
-      matches = filter(bool, (REF_LINE_RE.fullmatch(line) for line in lines))
-      version_revisions = [match.groups() for match in matches]
-
-      assert version_revisions, 'Did not find any recent release.'
-
-      # There must be some progress between the last roll and the new candidate
-      # revision (i.e. we don't go backwards). The revisions are ordered newest
-      # to oldest. It is possible that the newest timestamp has no progress
-      # compared to the last roll, e.g. if the newest release is a cherry-pick
-      # on a release branch. Then we look further.
-      for version, revision in version_revisions:
-        if normalize_version(last_tag) < normalize_version(version):
-          parent.presentation.step_text = f'found revision to roll: {revision}'
-          return revision
-      parent.presentation.step_text = (
-          f'found no newer revision than: {last_v8_revision}')
-      return None
+      revision, reason = choose_revision_to_roll(ref_lines, last_version)
+      parent.presentation.step_text = reason
+      return revision
 
 
 def RunSteps(api):
@@ -287,7 +267,7 @@ def GenTests(api):
       api.post_process(
           StepTextEquals,
           'Choose revision',
-          'found no newer revision than: deadbeef'),
+          'found no newer revision than: 11.7.11'),
       api.post_process(DoesNotRun, 'roll deps'),
       api.post_process(DropExpectation),
       status='SUCCESS',

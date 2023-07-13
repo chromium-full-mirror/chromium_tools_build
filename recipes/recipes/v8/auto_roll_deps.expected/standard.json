@@ -434,9 +434,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@stdout@11.7.8-pgo@@@",
       "@@@STEP_LOG_LINE@stdout@11.7.8@@@",
-      "@@@STEP_LOG_END@stdout@@@",
-      "@@@STEP_LOG_LINE@result@11.7.8@@@",
-      "@@@STEP_LOG_END@result@@@"
+      "@@@STEP_LOG_END@stdout@@@"
     ]
   },
   {
