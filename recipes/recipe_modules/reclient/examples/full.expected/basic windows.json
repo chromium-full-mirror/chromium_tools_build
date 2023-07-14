@@ -125,6 +125,31 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "preprocess for reclient.get reclient version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@reclient_version@{@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"HASH\": \"aaaaaaaa\", @@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MAJOR\": 0, @@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MINOR\": 110, @@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"PATCH\": 0@@@",
+      "@@@STEP_LOG_LINE@reclient_version@}@@@",
+      "@@@STEP_LOG_END@reclient_version@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[TMP_BASE]\\checkout\\buildtools\\reclient\\bootstrap.exe",
+      "--version"
+    ],
+    "infra_step": true,
+    "name": "preprocess for reclient.get reclient version.call bootstrap --version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
     "cmd": [
       "ninja",
       "-C",

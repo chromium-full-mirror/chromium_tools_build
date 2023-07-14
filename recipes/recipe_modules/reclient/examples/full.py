@@ -13,9 +13,11 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
     'reclient',
 ]
@@ -384,5 +386,41 @@ def GenTests(api):
       api.post_process(
           post_process.Filter('postprocess for reclient.verification')),
       api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  def version_number_checker(check, steps):
+    step = steps['preprocess for reclient.get reclient version']
+    check(step.logs['reclient_version'] == api.json.dumps(
+        {
+            'MAJOR': 1,
+            'MINOR': 123,
+            'PATCH': 2,
+            'HASH': 'abcdefgh'
+        }, indent=2))
+
+  yield api.test(
+      'ensure_version_number_is_parsed',
+      api.reclient.properties(),
+      api.platform('win', 64),
+      api.override_step_data(
+          'preprocess for reclient.get reclient version.call bootstrap --version',
+          stdout=api.raw_io.output_text('Version: 1.123.2.abcdefgh')),
+      api.post_check(version_number_checker),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  def canonicalize_working_dir_checker(check, steps):
+    env = steps[_NINJA_STEP_NAME].env
+    check(env['RBE_canonicalize_working_dir'] == 'false')
+
+  yield api.test(
+      'ensure_canonicalize_working_dir_disabled_on_windows_pre_109',
+      api.reclient.properties(),
+      api.platform('win', 64),
+      api.override_step_data(
+          'preprocess for reclient.get reclient version.call bootstrap --version',
+          stdout=api.raw_io.output_text('Version: 0.108.0.abcdefgh')),
+      api.post_check(canonicalize_working_dir_checker),
       api.post_process(post_process.DropExpectation),
   )

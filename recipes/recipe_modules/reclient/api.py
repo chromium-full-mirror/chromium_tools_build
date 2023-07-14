@@ -137,6 +137,7 @@ class ReclientApi(recipe_api.RecipeApi):
     self._bootstrap_env = None
     self._scandeps_server = props.scandeps_server
     self._disable_bq_upload = props.disable_bq_upload
+    self._reclient_version = None
 
     if self._test_data.enabled:
       self._hostname = 'fakevm999-m9'
@@ -204,6 +205,11 @@ class ReclientApi(recipe_api.RecipeApi):
       self._rewrapper_env['RBE_server_address'] = self.server_address
       if self._reclient_log_dir:
         self._rewrapper_env['RBE_log_dir'] = self._reclient_log_dir
+
+    if (self.m.platform.is_win and self.reclient_version["MAJOR"] <= 0 and
+        self.reclient_version["MINOR"] < 109):
+      self._rewrapper_env['RBE_canonicalize_working_dir'] = 'false'
+
     return self._rewrapper_env
 
   @property
@@ -217,6 +223,39 @@ class ReclientApi(recipe_api.RecipeApi):
       self._bootstrap_env = self._verify_reclient_flags(
           self._props.bootstrap_env)
     return self._bootstrap_env
+
+  @property
+  def reclient_version(self):
+    if self._reclient_version is None:
+      self._reclient_version = self._get_reclient_version_from_bootstrap()
+    return self._reclient_version
+
+  def _get_reclient_version_from_bootstrap(self):
+    """
+    Calls bootstrap --version to get the current version of reclient.
+
+    The dictionary will map the name of the portion of the version to its
+    numeric value e.g.
+    { 'MAJOR'": 0, 'MINOR': 100, 'PATCH': 1, 'HASH': 'abcdefgh'}
+    """
+
+    with self.m.step.nest('get reclient version') as version_step:
+      result = self.m.step(
+          'call bootstrap --version', [self._bootstrap_bin_path, "--version"],
+          infra_step=True,
+          stdout=self.m.raw_io.output_text(),
+          step_test_data=(lambda: self.m.raw_io.test_api.stream_output_text(
+              'Version: 0.110.0.aaaaaaaa'))).stdout
+      parts = result[len("Version: "):].strip().split(".")
+      version_dict = {
+          'MAJOR': int(parts[0]),
+          'MINOR': int(parts[1]),
+          'PATCH': int(parts[2]),
+          'HASH': parts[3],
+      }
+      version_step.presentation.logs['reclient_version'] = self.m.json.dumps(
+          version_dict, indent=2)
+      return version_dict
 
   @property
   def rewrapper_path(self):
@@ -302,10 +341,13 @@ class ReclientApi(recipe_api.RecipeApi):
                             'reproxy-gomaip.INFO')
 
       self._start_reproxy(deps_cache_path)
+      # This will get the reclient version the first time it is run,
+      # so get it here to ensure it is nested in 'preprocess for reclient'
+      rewrapper_env = self.rewrapper_env
 
     p = BuildResultReceiver()
     try:
-      with self.m.context(env=self.rewrapper_env):
+      with self.m.context(env=rewrapper_env):
         yield p
     finally:
       with self.m.step.nest('postprocess for reclient'):
