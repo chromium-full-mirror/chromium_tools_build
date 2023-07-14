@@ -25,6 +25,8 @@ def normalize_version(version) -> VersionTuple:
 
   assert isinstance(version, tuple), f'Expected a tuple, found {type(version)}.'
 
+  assert 0 < len(version) <= 4
+
   version = tuple(int(c) for c in version)
 
   return (version + (0, ) * 3)[:4]
