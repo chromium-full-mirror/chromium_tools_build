@@ -71,7 +71,7 @@
     "name": "filter build_dir",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"chrome\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"chrome\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"resources\"@@@",
       "@@@STEP_LOG_LINE@json.output@]@@@",
       "@@@STEP_LOG_END@json.output@@@"

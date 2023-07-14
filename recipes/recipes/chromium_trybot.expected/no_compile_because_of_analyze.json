@@ -40,8 +40,8 @@
     "~followup_annotations": [
       "@@@STEP_TEXT@No compile necessary@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"compile_targets\": [], @@@",
-      "@@@STEP_LOG_LINE@json.output@  \"status\": \"No dependency\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"compile_targets\": [],@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"status\": \"No dependency\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"test_targets\": []@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -51,9 +51,9 @@
       "@@@STEP_LOG_LINE@analyze_details@{@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [@@@",
       "@@@STEP_LOG_LINE@analyze_details@    \"base_unittests\"@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  ], @@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [], @@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"affected test targets\": [], @@@",
+      "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"affected test targets\": [],@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"affected compile targets\": []@@@",
       "@@@STEP_LOG_LINE@analyze_details@}@@@",
       "@@@STEP_LOG_END@analyze_details@@@"

@@ -31,7 +31,7 @@
     "~followup_annotations": [
       "@@@STEP_TEXT@51.00/100.00 GiB (51%) used@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"capacity\": 107374182400, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"capacity\": 107374182400,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"used\": 54760833024@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"

@@ -23,7 +23,7 @@
     "name": "zip build",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"storage_url\": \"gs://zip_build.example.com/output.zip\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"storage_url\": \"gs://zip_build.example.com/output.zip\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"zip_url\": \"https://storage.cloud.google.com/zip_build.example.com/output.zip\"@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",

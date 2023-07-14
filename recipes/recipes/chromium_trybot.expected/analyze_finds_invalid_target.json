@@ -40,7 +40,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"invalid_targets\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"invalid target\", @@@",
+      "@@@STEP_LOG_LINE@json.output@    \"invalid target\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"another one\"@@@",
       "@@@STEP_LOG_LINE@json.output@  ]@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",

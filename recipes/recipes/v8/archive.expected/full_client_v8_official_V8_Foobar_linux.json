@@ -102,7 +102,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@[@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/build/d8\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/build/d8\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"[CACHE]/builder/v8/out/build/icudtl.dat\"@@@",
       "@@@STEP_LOG_LINE@json.output@]@@@",
       "@@@STEP_LOG_END@json.output@@@"

@@ -92,7 +92,7 @@
     "name": "filter build_dir",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"file1\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"file1\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"file2\"@@@",
       "@@@STEP_LOG_LINE@json.output@]@@@",
       "@@@STEP_LOG_END@json.output@@@"

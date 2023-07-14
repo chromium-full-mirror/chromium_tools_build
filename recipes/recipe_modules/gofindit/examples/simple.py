@@ -34,7 +34,7 @@ def GenTests(api):
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection", "input",
-          '{\n  "analysisId": 123, \n  "bbid": "0", \n  "botId": "fake-bot-id", \n  "gitilesCommit": {\n    "host": "", \n    "id": "", \n    "project": "", \n    "ref": ""\n  }, \n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_PASSED"\n  }\n}'
+          '{\n  "analysisId": 123,\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "gitilesCommit": {\n    "host": "",\n    "id": "",\n    "project": "",\n    "ref": ""\n  },\n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_PASSED"\n  }\n}'
       ),
       api.post_process(DropExpectation),
   )
@@ -46,7 +46,7 @@ def GenTests(api):
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection1", "input",
-          '{\n  "analysisId": 123, \n  "bbid": "0", \n  "botId": "fake-bot-id", \n  "gitilesCommit": {\n    "host": "", \n    "id": "", \n    "project": "", \n    "ref": ""\n  }, \n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_FAILED"\n  }\n}'
+          '{\n  "analysisId": 123,\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "gitilesCommit": {\n    "host": "",\n    "id": "",\n    "project": "",\n    "ref": ""\n  },\n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_FAILED"\n  }\n}'
       ),
       api.post_process(DropExpectation),
   )
@@ -58,7 +58,7 @@ def GenTests(api):
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection2", "input",
-          '{\n  "analysisId": 123, \n  "bbid": "0", \n  "botId": "fake-bot-id", \n  "gitilesCommit": {\n    "host": "", \n    "id": "", \n    "project": "", \n    "ref": ""\n  }, \n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_INFRA_FAILED"\n  }\n}'
+          '{\n  "analysisId": 123,\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "gitilesCommit": {\n    "host": "",\n    "id": "",\n    "project": "",\n    "ref": ""\n  },\n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_INFRA_FAILED"\n  }\n}'
       ),
       api.post_process(DropExpectation),
   )
@@ -70,7 +70,7 @@ def GenTests(api):
       ]),
       api.post_process(
           LogEquals, "send_result_to_luci_bisection3", "input",
-          '{\n  "analysisId": 123, \n  "bbid": "0", \n  "botId": "fake-bot-id", \n  "gitilesCommit": {\n    "host": "", \n    "id": "", \n    "project": "", \n    "ref": ""\n  }, \n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_UNSPECIFIED"\n  }\n}'
+          '{\n  "analysisId": 123,\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "gitilesCommit": {\n    "host": "",\n    "id": "",\n    "project": "",\n    "ref": ""\n  },\n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_UNSPECIFIED"\n  }\n}'
       ),
       api.post_process(DropExpectation),
   )
