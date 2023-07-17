@@ -140,6 +140,13 @@ _BLINK_WEB_TESTS_OPTION_FLAGS = TestOptionFlags.create(
     retry_limit_flag='--test-launcher-retry-limit',
     run_disabled_flag='--gtest_also_run_disabled_tests',
 )
+_ANGLE_UNITTESTS_OPTION_FLAGS = TestOptionFlags.create(
+    filter_flag='--gtest_filter',
+    filter_delimiter=':',
+    repeat_flag='--gtest_repeat',
+    retry_limit_flag='--flaky-retries',
+    run_disabled_flag='--gtest_also_run_disabled_tests',
+)
 
 
 @attrs()
@@ -2559,8 +2566,11 @@ class LocalIsolatedScriptTest(LocalTest):
 
   @property
   def option_flags(self) -> TestOptionFlags:
-    return (_BLINK_WEB_TESTS_OPTION_FLAGS if 'blink_web_tests' in self.name else
-            _ISOLATED_SCRIPT_OPTION_FLAGS)
+    if 'blink_web_tests' in self.name:
+      return _BLINK_WEB_TESTS_OPTION_FLAGS
+    if 'angle_unittests' in self.name:
+      return _ANGLE_UNITTESTS_OPTION_FLAGS
+    return _ISOLATED_SCRIPT_OPTION_FLAGS
 
   @property
   def isolate_target(self) -> bool:
@@ -2681,8 +2691,11 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
 
   @property
   def option_flags(self) -> TestOptionFlags:
-    return (_BLINK_WEB_TESTS_OPTION_FLAGS if 'blink_web_tests' in self.name else
-            _ISOLATED_SCRIPT_OPTION_FLAGS)
+    if 'blink_web_tests' in self.name:
+      return _BLINK_WEB_TESTS_OPTION_FLAGS
+    if 'angle_unittests' in self.name:
+      return _ANGLE_UNITTESTS_OPTION_FLAGS
+    return _ISOLATED_SCRIPT_OPTION_FLAGS
 
   def _create_task(
       self,

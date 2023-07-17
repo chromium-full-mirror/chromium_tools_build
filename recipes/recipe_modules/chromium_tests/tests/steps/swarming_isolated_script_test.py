@@ -283,6 +283,20 @@ def GenTests(api):
   )
 
   yield api.test(
+      'angle_unittests_options',
+      arbitrary_tester(),
+      api.properties(
+          swarm_hashes={
+              'angle_unittests':
+                  'ffffffffffffffffffffffffffffffffffffffff/size',
+          },
+          test_filter=['test1', 'test2'],
+          repeat_count=20,
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'override_compile_targets',
       arbitrary_tester(),
       api.properties(

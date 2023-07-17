@@ -159,6 +159,23 @@ def GenTests(api):
           test_name='blink_web_tests'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'angle_unittests_options',
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.properties(
+          swarm_hashes={
+              'angle_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
+          },
+          test_filter=['test1', 'test2'],
+          repeat_count=20,
+          test_name='angle_unittests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
       'isolate_profile_data',
       api.chromium.ci_build(
