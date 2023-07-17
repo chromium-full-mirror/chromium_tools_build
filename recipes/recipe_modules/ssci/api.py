@@ -21,6 +21,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.ssci_version = props.ssci_version or "latest"
     # Proto3 defaults boolean fields to False
     self.minimal_spdx = props.minimal_spdx or False
+    self.generated_sbom_artifacts = []
 
   def _cipd_version(self, package_name, package_version):
     """
@@ -77,7 +78,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
       # Combines the recipe name with the DepBot target as the product name.
       recipe_name = self.m.properties["recipe"].split("/")[-1]
-      product = f'{recipe_name}.{entry_point.replace("//", "")}'
+      product = f'{recipe_name}.{execution_id}.{entry_point.replace("//", "")}'
       p_version = self._get_product_version(chrome_version)
 
       spdx_file = self.m.path.mkdtemp().join("spdx-out.json")
@@ -104,11 +105,13 @@ class SsciAPI(recipe_api.RecipeApi):
 
       if sbom_bucket and sbom_folder:
         filename = entry_point.replace("//", "") + ".json"
+        full_path = Path(sbom_folder, execution_id, filename).as_posix()
         self.m.gsutil.upload(
             spdx_file,
             sbom_bucket,
-            Path(sbom_folder, filename).as_posix(),
+            full_path,
             name="upload %s SBOM " % filename)
+        self.generated_sbom_artifacts.append(f'gs://{sbom_bucket}/{full_path}')
 
   def run(
       self,
@@ -123,7 +126,7 @@ class SsciAPI(recipe_api.RecipeApi):
     # prefer targets supplied in properties.
     targets = self.targets or targets
 
-    execution_id = self.m.uuid.random()
+    execution_id = f'luci-{self.m.buildbucket.build.id}'
 
     with self.m.step.nest('SSCI collection'):
       depbot_path = self.m.cipd.ensure_tool(
@@ -213,3 +216,8 @@ class SsciAPI(recipe_api.RecipeApi):
                                  third_party_out))
       for fut in self.m.futures.iwait(futures):
         fut.result()
+
+      # set generated in output properties
+      info_step = self.m.step.empty("SBOM's generated")
+      info_step.presentation.properties.update(
+          {'ssci_generated_artifacts': sorted(self.generated_sbom_artifacts)})
