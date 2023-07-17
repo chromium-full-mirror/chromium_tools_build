@@ -441,11 +441,11 @@
     "cmd": [
       "git",
       "for-each-ref",
-      "--count=80",
+      "--count=160",
       "--sort=-committerdate",
       "--format",
-      "%(refname) %(objectname)",
-      "refs/tags/*-pgo"
+      "%(refname) %(objectname) %(committerdate)",
+      "refs/tags/*"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
@@ -461,9 +461,10 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@stdout@@@@",
-      "@@@STEP_LOG_LINE@stdout@refs/tags/11.6.219.9-pgo bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1@@@",
-      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.10-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2@@@",
-      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.9-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1@@@",
+      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.10-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2 Fri Jul 7 11:32:02 2023 +0000@@@",
+      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.10 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2 Fri Jul 7 11:32:02 2023 +0000@@@",
+      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.9-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1 Fri Jul 7 10:32:02 2023 +0000@@@",
+      "@@@STEP_LOG_LINE@stdout@refs/tags/11.7.9 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1 Fri Jul 7 10:32:02 2023 +0000@@@",
       "@@@STEP_LOG_END@stdout@@@"
     ]
   },

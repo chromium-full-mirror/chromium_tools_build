@@ -23,8 +23,16 @@ def git_hash(num):
   return (40 * 'a' + str(num))[-40:]
 
 
+def fake_date(hours=0):
+  assert 0 <= hours < 24
+  return f'Fri Jul 7 {hours:02d}:32:02 2023 +0000'
+
+
 def ref_data(ref_tuples):
-  return [f'refs/tags/{tag} {git_hash(num)}' for tag, num in ref_tuples]
+  return [
+    f'refs/tags/{tag} {git_hash(num)} {fake_date(hours)}'
+    for tag, num, hours in ref_tuples
+  ]
 
 
 class VersionUtilsTest:
@@ -55,11 +63,28 @@ class VersionUtilsTest:
     self.assertEqual(normalize_version('11.6'), (11, 6, 0, 0))
     self.assertEqual(normalize_version('11.6.4.9'), (11, 6, 4, 9))
 
+  def test_ref_data(self):
+    """Demonstrates the ref test data."""
+    refs = ref_data([
+      ('11.7.1', 102, 11),
+      ('11.7', 101, 3),
+    ])
+    expected = [
+        'refs/tags/11.7.1 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa102 '
+        'Fri Jul 7 11:32:02 2023 +0000',
+        'refs/tags/11.7 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa101 '
+        'Fri Jul 7 03:32:02 2023 +0000',
+    ]
+    self.assertEqual(refs, expected)
+
   def test_revision_to_roll_newer_release(self):
     refs = ref_data([
-      ('11.6.219.9-pgo', 3),
-      ('11.7.10-pgo', 2),
-      ('11.7.9-pgo', 1),
+      ('11.6.219.9-pgo', 3, 6),
+      ('11.6.219.9', 3, 6),
+      ('11.7.10-pgo', 2, 5),
+      ('11.7.10', 2, 5),
+      ('11.7.9-pgo', 1, 0),
+      ('11.7.9', 1, 0),
     ])
     self.assertEqual(
         choose_revision_to_roll(refs, '11.7.9'),
@@ -67,42 +92,121 @@ class VersionUtilsTest:
 
   def test_revision_to_roll_first(self):
     refs = ref_data([
-      ('11.7.9-pgo', 3),
-      ('11.7.8-pgo', 2),
-      ('11.7.7-pgo', 1),
+      ('11.7.9-pgo', 3, 13),
+      # Roll this as it has pgo data and is the newest.
+      ('11.7.9', 3, 13),
+      ('11.7.8-pgo', 2, 12),
+      ('11.7.8', 2, 12),
+      ('11.7.7-pgo', 1, 11),
+      ('11.7.7', 1, 11),
     ])
     self.assertEqual(
         choose_revision_to_roll(refs, '11.7.4'),
         (git_hash(3), f'found revision to roll: {git_hash(3)}'))
 
-  def test_revision_to_roll_patch(self):
+  def test_revision_to_roll_first_no_pgo(self):
     refs = ref_data([
-      ('11.7.9-pgo', 4),
-      ('11.7.8.1-pgo', 3),
-      ('11.7.8-pgo', 2),
-      ('11.7.7-pgo', 1),
+      ('11.7.9', 3, 13),
+      ('11.7.8-pgo', 2, 12),
+      # Roll this as the next newer has no pgo data yet.
+      ('11.7.8', 2, 12),
+      ('11.7.7-pgo', 1, 11),
+      ('11.7.7', 1, 11),
     ])
-    # TODO(https://crbug.com/1445862): Fix this and roll 11.7.8.1.
+    self.assertEqual(
+        choose_revision_to_roll(refs, '11.7.4'),
+        (git_hash(2), f'found revision to roll: {git_hash(2)}'))
+
+  def test_revision_to_roll_new_patch(self):
+    refs = ref_data([
+      ('11.7.9-pgo', 4, 15),
+      ('11.7.9', 4, 15),
+      ('11.7.8.1-pgo', 3, 13),
+      # Patch revision has priority as the next main revision is only 2 hours
+      # newer.
+      ('11.7.8.1', 3, 13),
+      ('11.7.8-pgo', 2, 12),
+      ('11.7.8', 2, 12),
+      ('11.7.7-pgo', 1, 11),
+      ('11.7.7', 1, 11),
+    ])
+    self.assertEqual(
+        choose_revision_to_roll(refs, '11.7.8'),
+        (git_hash(3), f'found revision to roll: {git_hash(3)}'))
+
+  def test_revision_to_roll_new_patch_in_the_works(self):
+    refs = ref_data([
+      ('11.7.9-pgo', 4, 15),
+      ('11.7.9', 4, 15),
+      # Patch revision has priority, but is not ready yet due to missing pgo.
+      # So we roll nothing.
+      ('11.7.8.1', 3, 13),
+      ('11.7.8-pgo', 2, 12),
+      ('11.7.8', 2, 12),
+      ('11.7.7-pgo', 1, 11),
+      ('11.7.7', 1, 11),
+    ])
+    self.assertEqual(
+        choose_revision_to_roll(refs, '11.7.8'),
+        (None, f'waiting for pgo data for: {git_hash(3)}'))
+
+  def test_revision_to_roll_old_patch(self):
+    refs = ref_data([
+      ('11.7.9-pgo', 4, 19),
+      ('11.7.9', 4, 19),
+      ('11.7.8.1-pgo', 3, 13),
+      # This patch revision is too old, there's a new enough main revision
+      # available with pgo data.
+      ('11.7.8.1', 3, 13),
+      ('11.7.8-pgo', 2, 12),
+      ('11.7.8', 2, 12),
+      ('11.7.7-pgo', 1, 11),
+      ('11.7.7', 1, 11),
+    ])
     self.assertEqual(
         choose_revision_to_roll(refs, '11.7.8'),
         (git_hash(4), f'found revision to roll: {git_hash(4)}'))
 
   def test_revision_to_roll_nothing_new(self):
     refs = ref_data([
-      ('11.9.17.9-pgo', 5),
-      ('11.9.17.8-pgo', 4),
-      ('11.10.10-pgo', 3),
-      ('11.10.9.1-pgo', 2),
-      ('11.10.9-pgo', 1),
+      ('11.9.17.9-pgo', 5, 3),
+      ('11.9.17.9', 5, 3),
+      ('11.9.17.8-pgo', 4, 2),
+      ('11.9.17.8', 4, 2),
+      ('11.10.10-pgo', 3, 2),
+      # Nothing newer than this, the rest above has newer timestamp,
+      # but older version (i.e. beta).
+      ('11.10.10', 3, 2),
+      ('11.10.9.1-pgo', 2, 1),
+      ('11.10.9.1', 2, 1),
+      ('11.10.9-pgo', 1, 0),
+      ('11.10.9', 1, 0),
     ])
     self.assertEqual(
         choose_revision_to_roll(refs, '11.10.10'),
         (None, 'found no newer revision than: 11.10.10'))
 
+  def test_revision_to_roll_no_pgo(self):
+    refs = ref_data([
+      ('11.9.17.9-pgo', 5, 3),
+      ('11.9.17.9', 5, 3),
+      ('11.9.17.8-pgo', 4, 2),
+      ('11.9.17.8', 4, 2),
+      # This is a newer revision, but it has no pgo data ready yet.
+      ('11.10.10', 3, 2),
+      ('11.10.9.1-pgo', 2, 1),
+      ('11.10.9.1', 2, 1),
+      ('11.10.9-pgo', 1, 0),
+      ('11.10.9', 1, 0),
+    ])
+    self.assertEqual(
+        choose_revision_to_roll(refs, '11.10.9.1'),
+        (None, 'found no newer revision than: 11.10.9.1'))
+
   def test_revision_to_roll_errors(self):
     refs = ref_data([
-      ('11.10.9.1', 2),
-      ('11.10.9', 1),
+      ('11.10', 2 ,1),
+      ('11.9', 1, 0),
     ])
     with self.api.assertions.assertRaises(AssertionError):
       choose_revision_to_roll(refs, '11.7.8')
