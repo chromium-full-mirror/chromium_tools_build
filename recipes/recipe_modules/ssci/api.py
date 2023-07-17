@@ -4,6 +4,7 @@
 
 import json
 
+from pathlib import Path
 from recipe_engine import recipe_api
 
 class SsciAPI(recipe_api.RecipeApi):
@@ -106,7 +107,7 @@ class SsciAPI(recipe_api.RecipeApi):
         self.m.gsutil.upload(
             spdx_file,
             sbom_bucket,
-            sbom_folder + filename,
+            Path(sbom_folder, filename).as_posix(),
             name="upload %s SBOM " % filename)
 
   def run(
