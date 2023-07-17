@@ -4,24 +4,17 @@
 
 import re
 
-from datetime import datetime
 from typing import Tuple
 
 REF_LINE_RE = re.compile(
-    r'refs\/tags\/(\d+(?:\.\d+){2,3})((?:-pgo)?)\ ([0-9a-f]{40})\ (.*)')
-
-V8_PATCHED_VERSION_RE = re.compile(r'\d+(?:\.\d+){3}')
+    r'refs\/tags\/(\d+(?:\.\d+){2,3})-pgo\ ([0-9a-f]{40})')
 
 VersionTuple = Tuple[int, int, int, int]
 
-# Offset by which we still try to roll a patched version when a newer unpatched
-# version exists.
-PATCH_VERSION_OFFSET_HOURS = 3
-
 
 def normalize_version(version) -> VersionTuple:
-  """Accept multiple input types to represent a version, and return a
-  normalized version tuple.
+  """Accept multiple input types to represent a version, and return a normalized
+  version tuple.
 
   Supported input types:
     * Tuple of integers of various lengths, e.g. (12, ) (12, 5), (12, 5, 1, 9)
@@ -39,64 +32,25 @@ def normalize_version(version) -> VersionTuple:
   return (version + (0, ) * 3)[:4]
 
 
-def is_patched(version):
-  return bool(V8_PATCHED_VERSION_RE.fullmatch(version))
-
-
-def prioritize_patched(version_revision):
-  """Sort key for sorting version tuples by timestamp prioritizing patched
-  versions.
-  """
-  version, _, timestamp = version_revision
-  penalty = 0 if is_patched(version) else PATCH_VERSION_OFFSET_HOURS * 60 * 60
-  return timestamp - penalty, version
-
-
-def sorted_improvements(version_revisions, last_version):
-  """Returns version tuples of strictly newer versions sorted by
-  commit time prioritizing patches.
-
-  All non-patch versions have a commit-time penalty of
-  PATCH_VERSION_OFFSET_HOURS.
-  """
-  last_version_normalized = normalize_version(last_version)
-  timestamp = lambda commit_time: datetime.strptime(
-      commit_time, '%a %b %d %H:%M:%S %Y %z').timestamp()
-  improvements = [
-    (version, revision, timestamp(commit_time))
-    for version, pgo, revision, commit_time in version_revisions
-    if not pgo and last_version_normalized < normalize_version(version)]
-  for version, revision, _ in sorted(
-      improvements, key=prioritize_patched, reverse=True):
-    yield version, revision
-
 def choose_revision_to_roll(ref_lines, last_version):
   """Choose the next V8 revision to roll based on recent tags.
 
-  This algorithm ensures the new version is strictly newer than the
-  last version and has pgo data available.
-
-  If a patched version is available, the latest patched version has
-  priority for PATCH_VERSION_OFFSET_HOURS hours.
-
   Args:
-    ref_lines: List ref strings in the format:
-        "%(refname) %(objectname) %(committerdate)".
+    ref_lines: List ref strings in the format "%(refname) %(objectname)"
+        ordered newest -> oldest.
     last_version: The version string of the previously rolled revision.
   """
-  # Matches grouped as (version, pgo_suffix, revision, commit_time).
   matches = filter(bool, (REF_LINE_RE.fullmatch(line) for line in ref_lines))
   version_revisions = [match.groups() for match in matches]
 
   assert version_revisions, 'Did not find any recent release.'
 
-  # Versions with pgo tag.
-  pgo_versions = set(v[0] for v in version_revisions if v[1])
-
-  for version, revision in sorted_improvements(
-      version_revisions, last_version):
-    if version in pgo_versions:
+  # There must be some progress between the last roll and the new candidate
+  # revision (i.e. we don't go backwards). The revisions are ordered newest
+  # to oldest. It is possible that the newest timestamp has no progress
+  # compared to the last roll, e.g. if the newest release is a cherry-pick
+  # on a release branch. Then we look further.
+  for version, revision in version_revisions:
+    if normalize_version(last_version) < normalize_version(version):
       return revision, f'found revision to roll: {revision}'
-    if is_patched(version):
-      return None, f'waiting for pgo data for: {revision}'
   return None, f'found no newer revision than: {last_version}'

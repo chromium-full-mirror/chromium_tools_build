@@ -100,9 +100,8 @@ def get_next_v8_revision(api, last_v8_revision):
       assert last_version, 'The last rolled v8 revision is not tagged.'
 
       ref_lines = api.v8.git_output(
-          'for-each-ref', '--count=160', '--sort=-committerdate',
-          '--format', '%(refname) %(objectname)  %(committerdate)',
-          'refs/tags/*',
+          'for-each-ref', '--count=80', '--sort=-committerdate',
+          '--format', '%(refname) %(objectname)', 'refs/tags/*-pgo',
       ).split('\n')
       revision, reason = choose_revision_to_roll(ref_lines, last_version)
       parent.presentation.step_text = reason
@@ -218,10 +217,9 @@ def RunSteps(api):
 
 
 TEST_REF_DATA = """
-refs/tags/11.7.10-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2 Fri Jul 7 11:32:02 2023 +0000
-refs/tags/11.7.10 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2 Fri Jul 7 11:32:02 2023 +0000
-refs/tags/11.7.9-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1 Fri Jul 7 10:32:02 2023 +0000
-refs/tags/11.7.9 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1 Fri Jul 7 10:32:02 2023 +0000
+refs/tags/11.6.219.9-pgo bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb1
+refs/tags/11.7.10-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2
+refs/tags/11.7.9-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1
 """
 
 
