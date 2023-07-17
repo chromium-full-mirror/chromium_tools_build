@@ -129,6 +129,14 @@ class _ReverseByteOrderOption(_DefaultOption):
   renderers: frozenset = _DEFAULT_RENDERERS
 
 
+@dataclass
+class _LocalTestRequest:
+  """A request to run a test locally."""
+
+  step_name: str
+  command: str
+
+
 def _is_reclient_enabled(api, msvc):
   return not msvc and api.reclient.instance
 
@@ -284,46 +292,46 @@ def _build_steps(api, clang, msvc, out_dir):
     api.step('compile with ninja', ninja_cmd)
 
 
-def _run_all_javascript_tests(test_runner, xfa):
-  test_runner.run_javascript_tests(_DefaultOption)
-  test_runner.run_javascript_tests(_JavascriptDisabledOption)
+def _request_all_javascript_tests(test_runner, xfa):
+  test_runner.request_javascript_tests(_DefaultOption)
+  test_runner.request_javascript_tests(_JavascriptDisabledOption)
 
   if xfa:
-    test_runner.run_javascript_tests(_XfaDisabledOption)
+    test_runner.request_javascript_tests(_XfaDisabledOption)
 
 
-def _run_all_pixel_tests(test_runner, skia, v8, xfa):
-  test_runner.run_pixel_tests(_DefaultOption)
-  test_runner.run_pixel_tests(_OneshotOption)
-
-  # TODO(crbug.com/pdfium/994): Enable for Mac.
-  # TODO(crbug.com/pdfium/1955): Enable for Skia.
-  if (test_runner.api.platform.is_linux or
-      test_runner.api.platform.is_win) and not skia:
-    test_runner.run_pixel_tests(_ReverseByteOrderOption)
-
-  if v8:
-    test_runner.run_pixel_tests(_JavascriptDisabledOption)
-
-    if xfa:
-      test_runner.run_pixel_tests(_XfaDisabledOption)
-
-
-def _run_all_corpus_tests(test_runner, skia, v8, xfa):
-  test_runner.run_corpus_tests(_DefaultOption)
-  test_runner.run_corpus_tests(_OneshotOption)
+def _request_all_pixel_tests(test_runner, skia, v8, xfa):
+  test_runner.request_pixel_tests(_DefaultOption)
+  test_runner.request_pixel_tests(_OneshotOption)
 
   # TODO(crbug.com/pdfium/994): Enable for Mac.
   # TODO(crbug.com/pdfium/1955): Enable for Skia.
   if (test_runner.api.platform.is_linux or
       test_runner.api.platform.is_win) and not skia:
-    test_runner.run_corpus_tests(_ReverseByteOrderOption)
+    test_runner.request_pixel_tests(_ReverseByteOrderOption)
 
   if v8:
-    test_runner.run_corpus_tests(_JavascriptDisabledOption)
+    test_runner.request_pixel_tests(_JavascriptDisabledOption)
 
     if xfa:
-      test_runner.run_corpus_tests(_XfaDisabledOption)
+      test_runner.request_pixel_tests(_XfaDisabledOption)
+
+
+def _request_all_corpus_tests(test_runner, skia, v8, xfa):
+  test_runner.request_corpus_tests(_DefaultOption)
+  test_runner.request_corpus_tests(_OneshotOption)
+
+  # TODO(crbug.com/pdfium/994): Enable for Mac.
+  # TODO(crbug.com/pdfium/1955): Enable for Skia.
+  if (test_runner.api.platform.is_linux or
+      test_runner.api.platform.is_win) and not skia:
+    test_runner.request_corpus_tests(_ReverseByteOrderOption)
+
+  if v8:
+    test_runner.request_corpus_tests(_JavascriptDisabledOption)
+
+    if xfa:
+      test_runner.request_corpus_tests(_XfaDisabledOption)
 
 
 def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
@@ -347,23 +355,23 @@ def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
                             revision, run_skia_gold, embedder_test_renderers,
                             python_test_renderers, swarming)
 
-  # defer_results() will defer individual failures until the end of this block.
-  with api.step.defer_results():
-    # pdfium_unittests:
-    test_runner.run_unit_tests()
+  # pdfium_unittests:
+  test_runner.request_unit_tests()
 
-    # pdfium_embeddertests:
-    test_runner.run_embedder_tests()
+  # pdfium_embeddertests:
+  test_runner.request_embedder_tests()
 
-    # run_javascript_tests.py:
-    if v8:
-      _run_all_javascript_tests(test_runner, xfa)
+  # run_javascript_tests.py:
+  if v8:
+    _request_all_javascript_tests(test_runner, xfa)
 
-    # run_pixel_tests.py:
-    _run_all_pixel_tests(test_runner, skia, v8, xfa)
+  # run_pixel_tests.py:
+  _request_all_pixel_tests(test_runner, skia, v8, xfa)
 
-    # run_corpus_tests.py:
-    _run_all_corpus_tests(test_runner, skia, v8, xfa)
+  # run_corpus_tests.py:
+  _request_all_corpus_tests(test_runner, skia, v8, xfa)
+
+  test_runner.run_tests()
 
 
 class _ResultDb:
@@ -495,6 +503,8 @@ class _TestRunner:
                                                      python_test_renderers)
     self.swarming = _Swarming(api, self.out_dir) if swarming else None
 
+    self.local_requests = []
+
     self.test_runner_py_args = [
         '--build-dir',
         self._join_relative_out_dir(),
@@ -562,10 +572,10 @@ class _TestRunner:
 
     return env
 
-  def run_unit_tests(self):
-    self._run_gtest('unittests', target=('', 'pdfium_unittests'))
+  def request_unit_tests(self):
+    self._request_gtest('unittests', target=('', 'pdfium_unittests'))
 
-  def run_embedder_tests(self):
+  def request_embedder_tests(self):
     for renderer in self.embedder_test_renderers:
       if renderer not in _DEFAULT_RENDERERS:
         continue
@@ -577,22 +587,22 @@ class _TestRunner:
         test_name = f'{test_name} ({renderer})'
         args.append(f'--use-renderer={renderer}')
 
-      self._run_gtest(
+      self._request_gtest(
           test_name,
           target=('', 'pdfium_embeddertests'),
           args=args,
           test_suite_suffix=renderer)
 
-  def run_javascript_tests(self, option):
-    self._run_python_tests(_JAVASCRIPT_TEST_TYPE, option)
+  def request_javascript_tests(self, option):
+    self._request_python_tests(_JAVASCRIPT_TEST_TYPE, option)
 
-  def run_pixel_tests(self, option):
-    self._run_python_tests(_PIXEL_TEST_TYPE, option)
+  def request_pixel_tests(self, option):
+    self._request_python_tests(_PIXEL_TEST_TYPE, option)
 
-  def run_corpus_tests(self, option):
-    self._run_python_tests(_CORPUS_TEST_TYPE, option)
+  def request_corpus_tests(self, option):
+    self._request_python_tests(_CORPUS_TEST_TYPE, option)
 
-  def _run_python_tests(self, test_type, option):
+  def _request_python_tests(self, test_type, option):
     for renderer in self.python_test_renderers:
       if renderer not in option.renderers:
         continue
@@ -607,14 +617,19 @@ class _TestRunner:
         test_name = f'{test_name} ({renderer})'
         test_suite_suffix = f'{test_suite_suffix}_{renderer}'
 
-      self._run_test_runner_py(
+      self._request_test_runner_py(
           test_name,
           test_type=test_type,
           args=_get_modifiable_script_args(self.api, self.build_config, option,
                                            renderer),
           test_suite_suffix=test_suite_suffix)
 
-  def _run_gtest(self, step_name, *, target, args=None, test_suite_suffix=None):
+  def _request_gtest(self,
+                     step_name,
+                     *,
+                     target,
+                     args=None,
+                     test_suite_suffix=None):
     target_path, target_name = target
 
     test_path = str(self._join_out_dir(target_name))
@@ -634,11 +649,11 @@ class _TestRunner:
         test_id_prefix=f'ninja://{target_path}:{target_name}/',
         base_variant=variant,
         base_tags=tags)
-    with self.api.context(cwd=self._join_root_dir(), env=self.env):
-      self.api.step(step_name, command)
+    self.local_requests.append(
+        _LocalTestRequest(step_name=step_name, command=command))
 
-  def _run_test_runner_py(self, step_name, *, test_type, args,
-                          test_suite_suffix):
+  def _request_test_runner_py(self, step_name, *, test_type, args,
+                              test_suite_suffix):
     test_path = self._join_root_dir('testing', 'tools',
                                     f'run_{test_type}_tests.py')
 
@@ -658,8 +673,23 @@ class _TestRunner:
     if self.swarming:
       self.swarming.request_task(step_name, command, env=self.env)
     else:
-      with self.api.context(cwd=self._join_root_dir(), env=self.env):
-        self.api.step(step_name, command)
+      self.local_requests.append(
+          _LocalTestRequest(step_name=step_name, command=command))
+
+  def run_tests(self):
+    """Runs previously requested tests."""
+    try:
+      # TODO(crbug.com/pdfium/1933): Trigger swarming requests.
+
+      # Defer individual failures until the end of this block.
+      with self.api.step.defer_results():
+        with self.api.context(cwd=self._join_root_dir(), env=self.env):
+          for request in self.local_requests:
+            self.api.step(request.step_name, request.command)
+
+        # TODO(crbug.com/pdfium/1933): Collect swarming results.
+    finally:
+      self.local_requests.clear()
 
 
 def _get_test_suite(base_name, suffix=None):
