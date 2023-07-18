@@ -44,7 +44,6 @@ def RunSteps(api):
   if api.webrtc.should_generate_code_coverage(builder_id, builder_config):
     api.webrtc.setup_code_coverage_module()
 
-  api.chromium.ensure_goma()
   api.chromium.ensure_toolchains()
   api.chromium.runhooks()
 

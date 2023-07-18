@@ -5,7 +5,7 @@
 from RECIPE_MODULES.build.chromium import CONFIG_CTX
 
 
-@CONFIG_CTX(includes=['ninja', 'default_compiler', 'goma'])
+@CONFIG_CTX(includes=['ninja', 'default_compiler'])
 def webrtc_default(c):
   c.targets_spec_dir = c.CHECKOUT_PATH.join('infra', 'specs')
   c.analyze_config_path = c.CHECKOUT_PATH.join('infra', 'specs',
@@ -16,7 +16,7 @@ def webrtc_default(c):
 # TODO(kjellander): Remove as soon there's a way to get the sanitizer bots to
 # set swarming tags properly without the chromium recipe module configs (which
 # depend on clang)
-@CONFIG_CTX(includes=['ninja', 'clang', 'goma'])
+@CONFIG_CTX(includes=['ninja', 'clang'])
 def webrtc_clang(c):
   c.targets_spec_dir = c.CHECKOUT_PATH.join('infra', 'specs')
   c.analyze_config_path = c.CHECKOUT_PATH.join('infra', 'specs',

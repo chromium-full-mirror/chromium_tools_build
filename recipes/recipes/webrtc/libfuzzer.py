@@ -53,7 +53,6 @@ def RunSteps(api):
       builder_db=BUILDERS_DB)
   api.chromium_tests.configure_build(builder_config)
   api.chromium_checkout.ensure_checkout()
-  api.chromium.ensure_goma()
   api.chromium.runhooks()
   api.webrtc.run_mb(builder_id)
   with api.context(cwd=api.path['checkout']):
