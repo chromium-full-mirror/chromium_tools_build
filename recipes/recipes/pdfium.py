@@ -25,6 +25,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/resultdb',
     'recipe_engine/step',
+    'recipe_engine/swarming',
     'recipe_engine/time',
 ]
 
@@ -44,7 +45,7 @@ PROPERTIES = {
     'run_skia_gold': Property(default=True, kind=bool),
     'skia': Property(default=False, kind=bool),
     'skip_test': Property(default=False, kind=bool),
-    'swarming': Property(default=False, kind=bool),
+    'swarming': Property(default=None, kind=dict),
     'target_cpu': Property(default=None, kind=str),
     'target_os': Property(default=None, kind=str),
     'v8': Property(default=True, kind=bool),
@@ -64,6 +65,11 @@ _SKIA_RENDERER = 'skia'
 
 _DEFAULT_RENDERERS = frozenset([None, _AGG_RENDERER, _SKIA_RENDERER])
 _ALL_RENDERERS = _DEFAULT_RENDERERS.union([_GDI_RENDERER])
+
+# Default swarming priority for test tasks. Test child tasks should have a
+# higher priority (lower value) than the orchestrator parent task, to avoid
+# priority inversion.
+_DEFAULT_SWARMING_TEST_PRIORITY = 25
 
 
 @dataclass
@@ -429,11 +435,16 @@ class _ResultDb:
 
 class _Swarming:
 
-  def __init__(self, api, out_dir):
+  def __init__(self, api, out_dir, properties):
     self.api = api
     self.out_dir = out_dir
 
+    assert 'dimensions' in properties
+    self.properties = properties
+
     self.test_inputs_digest = None
+    self.requests = []
+    self.tasks = []
 
   def _ensure_test_inputs(self):
     if self.test_inputs_digest:
@@ -474,10 +485,34 @@ class _Swarming:
   def request_task(self, step_name, command, *, env):
     self._ensure_test_inputs()
 
-    # TODO(crbug.com/pdfium/1933): Construct swarming task request.
-    log_list = [f'{key}={value}' for key, value in env.items()]
-    log_list += map(str, command)
-    self.api.step.empty(step_name, log_text=log_list)
+    # TODO(crbug.com/pdfium/1933): Which other task/slice properties do we need?
+    request = (
+        self.api.swarming.task_request().with_name(step_name).with_priority(
+            self.properties.get(
+                'priority', _DEFAULT_SWARMING_TEST_PRIORITY)).with_resultdb())
+
+    task_slice = request[0]
+    task_slice = (
+        task_slice.with_command(command).with_cas_input_root(
+            self.test_inputs_digest).with_dimensions(
+                **self.properties['dimensions']))
+    task_slice = task_slice.with_env_vars(**env)
+
+    self.requests.append(request.with_slice(0, task_slice))
+
+  @composite_step
+  def trigger_tasks(self):
+    try:
+      self.tasks = self.api.swarming.trigger('trigger tasks', self.requests)
+    finally:
+      self.requests.clear()
+
+  def collect_tasks(self):
+    try:
+      # TODO(crbug.com/pdfium/1933): Should we look at the results?
+      self.api.swarming.collect('collect tasks', self.tasks)
+    finally:
+      self.tasks.clear()
 
 
 def _validate_renderers(context_name, renderers):
@@ -501,13 +536,13 @@ class _TestRunner:
                                                        embedder_test_renderers)
     self.python_test_renderers = _validate_renderers('pdfium_test',
                                                      python_test_renderers)
-    self.swarming = _Swarming(api, self.out_dir) if swarming else None
+    self.swarming = _Swarming(api, self.out_dir, swarming) if swarming else None
 
     self.local_requests = []
 
     self.test_runner_py_args = [
         '--build-dir',
-        self._join_relative_out_dir(),
+        self.out_dir,
     ]
 
     # Add Skia Gold flags if the "run_skia_gold" property is true.
@@ -531,14 +566,19 @@ class _TestRunner:
             str(self.api.tryserver.gerrit_change.patchset),
         ])
 
+  @property
+  def _local_root_dir(self):
+    return self.api.path['checkout']
+
   def _join_root_dir(self, *paths):
-    return self.api.path['checkout'].join(*paths)
+    if self.swarming:
+      return self.api.path.join('', *paths)
+    return self._local_root_dir.join(*paths)
 
   def _join_out_dir(self, *paths):
-    return self._join_root_dir(self._join_relative_out_dir(*paths))
-
-  def _join_relative_out_dir(self, *paths):
-    return self.api.path.join(self.out_dir, *paths)
+    if self.swarming:
+      return self.api.path.join(self.out_dir, *paths)
+    return self._local_root_dir.join(self.out_dir, *paths)
 
   def _create_sanitizer_envionment(self, memory_tool):
     """Sets environment variables required by sanitizer tools."""
@@ -600,9 +640,9 @@ class _TestRunner:
     self._request_python_tests(_PIXEL_TEST_TYPE, option)
 
   def request_corpus_tests(self, option):
-    self._request_python_tests(_CORPUS_TEST_TYPE, option)
+    self._request_python_tests(_CORPUS_TEST_TYPE, option, remote=True)
 
-  def _request_python_tests(self, test_type, option):
+  def _request_python_tests(self, test_type, option, remote=False):
     for renderer in self.python_test_renderers:
       if renderer not in option.renderers:
         continue
@@ -622,7 +662,8 @@ class _TestRunner:
           test_type=test_type,
           args=_get_modifiable_script_args(self.api, self.build_config, option,
                                            renderer),
-          test_suite_suffix=test_suite_suffix)
+          test_suite_suffix=test_suite_suffix,
+          remote=remote)
 
   def _request_gtest(self,
                      step_name,
@@ -653,7 +694,7 @@ class _TestRunner:
         _LocalTestRequest(step_name=step_name, command=command))
 
   def _request_test_runner_py(self, step_name, *, test_type, args,
-                              test_suite_suffix):
+                              test_suite_suffix, remote):
     test_path = self._join_root_dir('testing', 'tools',
                                     f'run_{test_type}_tests.py')
 
@@ -670,7 +711,7 @@ class _TestRunner:
         test_id_prefix=f'ninja://testing/tools:run_{test_type}_tests/',
         base_variant=variant,
         base_tags=tags)
-    if self.swarming:
+    if remote and self.swarming:
       self.swarming.request_task(step_name, command, env=self.env)
     else:
       self.local_requests.append(
@@ -679,15 +720,17 @@ class _TestRunner:
   def run_tests(self):
     """Runs previously requested tests."""
     try:
-      # TODO(crbug.com/pdfium/1933): Trigger swarming requests.
+      if self.swarming:
+        self.swarming.trigger_tasks()
 
       # Defer individual failures until the end of this block.
       with self.api.step.defer_results():
-        with self.api.context(cwd=self._join_root_dir(), env=self.env):
+        with self.api.context(cwd=self._local_root_dir, env=self.env):
           for request in self.local_requests:
             self.api.step(request.step_name, request.command)
 
-        # TODO(crbug.com/pdfium/1933): Collect swarming results.
+        if self.swarming:
+          self.swarming.collect_tasks()
     finally:
       self.local_requests.clear()
 
@@ -1172,14 +1215,27 @@ def GenTests(api):
       'swarming-win',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot', swarming=True),
+      api.properties(
+          bot_id='test_bot',
+          swarming={
+              'dimensions': {
+                  'pool': 'luci.flex.ci',
+              },
+          }),
       _gen_ci_build(api, 'windows'),
   )
   yield api.test(
       'swarming-try-win',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot', swarming=True),
+      api.properties(
+          bot_id='test_bot',
+          swarming={
+              'dimensions': {
+                  'pool': 'luci.flex.try',
+              },
+              'priority': 42,
+          }),
       _gen_try_build(api, 'windows'),
   )
 
