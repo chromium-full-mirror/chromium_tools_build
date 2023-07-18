@@ -56,10 +56,10 @@ def RunSteps(api):
         last_merged_change_list[0]['updated'],
         '%Y-%m-%d %H:%M:%S.%f000').date()
     current_date = datetime.date.fromtimestamp(api.time.time())
-    # Only look up to Sunday in order to maintain the same cadence when a CL
-    # isn't merged the first time (0 aligns with Monday)
+    # Only look up to Monday in order to maintain the same cadence when a CL
+    # isn't merged the first time
     start_of_week = current_date - datetime.timedelta(
-        days=(current_date.weekday() + 1) % 7)
+        days=current_date.weekday() % 7)
     if (last_merged_date >= start_of_week):
       return result_pb2.RawResult(
           status=common_pb.SUCCESS,
@@ -243,7 +243,7 @@ def GenTests(api):
                   '12345',
               'updated':
                   datetime.datetime(2023, 7,
-                                    2).strftime('%Y-%m-%d %H:%M:%S.%f000'),
+                                    3).strftime('%Y-%m-%d %H:%M:%S.%f000'),
           }]),
       ),
       api.post_process(
