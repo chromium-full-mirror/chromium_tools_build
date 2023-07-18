@@ -270,7 +270,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           self.m.json.output(),
       ])
       unstripped_paths = step_result.json.output
-      unknown_android_library = False
 
     for t in tests:
       # There are a number of local isolated scripts such as
@@ -317,6 +316,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['content_shell_wpt', 'content_shell'],
           ['.*_ozone', target[:-len('_ozone')]],
           ['.*_eg2tests_module', 'ios_chrome_eg2tests'],
+
+          # TODO(crbug.com/1416662): This line is added make developing for JNI
+          # Clang coverage easier. More targets and libraries need to be
+          # added to fully support JNI native code.
+          [
+              'webview_instrumentation_test_apk',
+              'libstandalonelibwebviewchromium.so'
+          ],
           ['.*', target],
       ]
       for pattern, binary in patterns:
@@ -332,9 +339,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 so_library_name):
               binaries.add(self.m.path.abs_to_path(unstripped_path))
               break
-          else:
-            unknown_android_library = True
-
         elif self.platform == 'fuchsia':
           exec_name = binary + '__exec'
           for unstripped_path in unstripped_paths:
@@ -354,14 +358,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           binaries.add(self.build_dir.join(binary))
 
         break
-
-    # Some test targets don't have corresponding "lib{target_name}__library.so"
-    # in |unstripped_paths|. Add all other ".so" libraries for those targets.
-    # This is useful for native libraries used in Java instrumentation tests.
-    if self.platform == 'android' and unknown_android_library:
-      for path in unstripped_paths:
-        if path.endswith('.so') and not path.endswith('__library.so'):
-          binaries.add(self.m.path.abs_to_path(path))
 
     return sorted(binaries, key=str)
 
