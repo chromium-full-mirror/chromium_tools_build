@@ -4,6 +4,7 @@
 
 import attr
 import base64
+import os
 
 from collections import defaultdict
 
@@ -183,6 +184,9 @@ class SkylabApi(recipe_api.RecipeApi):
 
             shard_test_args.append('shard_index={}'.format(shard))
             shard_test_args.append('total_shards={}'.format(t.spec.shards))
+            lacros_gcs_path = os.path.join(t.lacros_gcs_path,
+                                           'lacros_compressed.squash')
+            shard_test_args.append('lacros_gcs_path={}'.format(lacros_gcs_path))
 
             shard_cmd.extend(['-test-args', ' '.join(shard_test_args)])
             shard_cmd.append(t.spec.autotest_name)

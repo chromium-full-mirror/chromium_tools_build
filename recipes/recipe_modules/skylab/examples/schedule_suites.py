@@ -22,7 +22,8 @@ LACROS_GTEST_ARGS = '--gtest_filter="VaapiTest.*"'
 GPU_GTEST_ARGS = ['--show-stdout', '--browser=cros-chrome', '--passthrough']
 GPU_EXTRA_BROWSWER_ARGS = ('--log-level=0 --js-flags=--expose-gc '
                            '--force_high_performance_gpu')
-LACROS_GCS_PATH = 'gs://fake_bucket/lacros.squashfs'
+LACROS_GCS_PATH = 'gs://fake_bucket/fake_test'
+LACROS_SQUASH = 'lacros_compressed.squash'
 SHARD_COUNT = 2
 TAST_MAX_RUN_SEC = 21600
 
@@ -157,10 +158,11 @@ def GenTests(api):
         'tast_expr_key=default '\
         'max_run_sec={} '\
         'shard_index={} '\
-        'total_shards={}'.format(
+        'total_shards={} '\
+        'lacros_gcs_path={}'.format(
             b64_encode(json.dumps(gen_skylab_rdb(name))),
             b64_encode(LACROS_TAST_EXPR), test_level_retries, max_run_sec,
-            shard, shard_count)
+            shard, shard_count, 'gs://fake_bucket/fake_test/lacros_compressed.squash')
 
   yield api.test(
       'basic',
@@ -236,8 +238,8 @@ def GenTests(api):
               'eve', '-secondary-images', 'eve-release/R88-13545.0.0', '-pool',
               'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
               '-timeout-mins', '60', '-qs-account', 'lacros', '-lacros-path',
-              'gs://fake_bucket/lacros.squashfs', '-secondary-lacros-paths',
-              'gs://fake_bucket/lacros.squashfs'
+              'gs://fake_bucket/fake_test', '-secondary-lacros-paths',
+              'gs://fake_bucket/fake_test'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -251,10 +253,9 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[7].name + '.schedule', [
               'run', 'test', '-json', '-board', 'eve', '-secondary-boards',
-              'pixel6', '-pool', 'DUT_POOL_QUOTA',
-              '-image', 'eve-release/R88-13545.0.0', '-timeout-mins', '60',
-              '-qs-account', 'lacros', '-lacros-path',
-              'gs://fake_bucket/lacros.squashfs'
+              'pixel6', '-pool', 'DUT_POOL_QUOTA', '-image',
+              'eve-release/R88-13545.0.0', '-timeout-mins', '60', '-qs-account',
+              'lacros', '-lacros-path', 'gs://fake_bucket/fake_test'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -272,8 +273,8 @@ def GenTests(api):
               'atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
               '-pool', 'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
               '-timeout-mins', '60', '-qs-account', 'lacros', '-lacros-path',
-              'gs://fake_bucket/lacros.squashfs', '-secondary-lacros-paths',
-              'gs://fake_bucket/lacros.squashfs,,gs://fake_bucket/lacros.squashfs'
+              'gs://fake_bucket/fake_test', '-secondary-lacros-paths',
+              'gs://fake_bucket/fake_test,,gs://fake_bucket/fake_test'
           ]),
       api.post_process(post_process.DropExpectation),
   )
