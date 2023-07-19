@@ -50,10 +50,11 @@ class SsciAPI(recipe_api.RecipeApi):
     return self.m.buildbucket.gitiles_commit.id[:6]
 
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
-                             bqupload_cipd_path, ssci_cipd_path,
-                             depbot_cipd_version, partybot_cipd_version,
-                             ssci_cipd_version, chrome_version, execution_id,
-                             minimal_config, third_party_out):
+                             filename_postfix, bqupload_cipd_path,
+                             ssci_cipd_path, depbot_cipd_version,
+                             partybot_cipd_version, ssci_cipd_version,
+                             chrome_version, execution_id, minimal_config,
+                             third_party_out):
     library_file = target.get("libraries_file_path")
     artifact_file = target.get("artifacts_file_path")
     entry_point = target.get("entry_point")
@@ -105,6 +106,8 @@ class SsciAPI(recipe_api.RecipeApi):
 
       if sbom_bucket and sbom_folder:
         filename = entry_point.replace("//", "") + ".json"
+        if filename_postfix:
+          filename = entry_point.replace("//", "") + filename_postfix + ".json"
         full_path = Path(sbom_folder, execution_id, filename).as_posix()
         self.m.gsutil.upload(
             spdx_file,
@@ -119,6 +122,7 @@ class SsciAPI(recipe_api.RecipeApi):
       build_dir,
       sbom_bucket=None,
       sbom_folder=None,
+      sbom_filename_postfix=None,
       targets=None,
       chrome_version=None,
   ):
@@ -209,7 +213,8 @@ class SsciAPI(recipe_api.RecipeApi):
       for target in depbot_execution_summary.get("targets"):
         futures.append(
             self.m.futures.spawn(self._target_specific_steps, target, src_dir,
-                                 sbom_bucket, sbom_folder, bqupload_cipd_path,
+                                 sbom_bucket, sbom_folder,
+                                 sbom_filename_postfix, bqupload_cipd_path,
                                  ssci_cipd_path, depbot_cipd_version,
                                  partybot_cipd_version, ssci_cipd_version,
                                  chrome_version, execution_id, minimal_config,

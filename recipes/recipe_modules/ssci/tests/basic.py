@@ -19,6 +19,7 @@ def RunSteps(api):
       build_dir='out/Release',
       sbom_bucket='my-bucket',
       sbom_folder='os/version',
+      sbom_filename_postfix='Stable',
       targets=["//example:example"])
 
 
