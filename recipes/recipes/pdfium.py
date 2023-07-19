@@ -14,7 +14,6 @@ DEPS = [
     'depot_tools/gsutil',
     'depot_tools/osx_sdk',
     'depot_tools/tryserver',
-    'goma',
     'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
@@ -147,10 +146,6 @@ def _is_reclient_enabled(api, msvc):
   return not msvc and api.reclient.instance
 
 
-def _is_goma_enabled(msvc):
-  return not msvc
-
-
 def _checkout_step(api, target_os):
   solution_path = api.path['cache'].join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
@@ -200,9 +195,6 @@ def _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel, component):
 def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
                    rel, component, target_os, out_dir):
   enable_reclient = _is_reclient_enabled(api, msvc)
-  enable_goma = not enable_reclient and _is_goma_enabled(msvc)
-  if enable_goma:
-    api.goma.ensure_goma()
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
   checkout = api.path['checkout']
@@ -220,11 +212,6 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
   if enable_reclient:
     args.extend([
         'use_remoteexec=true',
-    ])
-  elif enable_goma:
-    args.extend([
-        'use_goma=true',
-        'goma_dir="%s"' % api.goma.goma_dir,
     ])
   if api.platform.is_win and not memory_tool:
     args.append('symbol_level=1')
@@ -275,25 +262,16 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
 
 def _build_steps(api, clang, msvc, out_dir):
   enable_reclient = _is_reclient_enabled(api, msvc)
-  enable_goma = not enable_reclient and _is_goma_enabled(msvc)
   debug_path = api.path['checkout'].join('out', out_dir)
   ninja_path = api.path['checkout'].join('third_party', 'ninja', 'ninja')
   ninja_cmd = [ninja_path, '-C', debug_path]
   if enable_reclient:
     ninja_cmd.extend(['-j', api.reclient.jobs])
-  elif enable_goma:
-    ninja_cmd.extend(['-j', api.goma.recommended_goma_jobs])
   ninja_cmd.append('pdfium_all')
 
   if enable_reclient:
     with api.reclient.process('compile', '', False):
       api.step('compile with ninja', ninja_cmd)
-  elif enable_goma:
-    api.goma.build_with_goma(
-        name='compile with ninja',
-        ninja_command=ninja_cmd,
-        ninja_log_outdir=debug_path,
-        ninja_log_compiler='clang' if clang else 'unknown')
   else:
     api.step('compile with ninja', ninja_cmd)
 
@@ -797,11 +775,11 @@ def _gold_build_config(args):
   """Extracts key value pairs from the arguments handed to 'gn gen'
   and returns them as a dictionary. Since these are used as
   parameters in Gold we strip common prefixes and disregard
-  some arguments. i.e. 'use_goma' since we don't care about how
+  some arguments. i.e. 'use_sysroot' since we don't care about how
   a binary was built.  Only arguments that follow the
   'key=value' pattern are considered.
   """
-  exclude_list = ['use_goma', 'goma_dir', 'use_sysroot', 'is_component_build']
+  exclude_list = ['use_remoteexec', 'use_sysroot', 'is_component_build']
   strip_prefixes = ['is_', 'pdf_enable_', 'pdf_use_', 'pdf_']
   build_config = {}
   for arg in args:
@@ -877,21 +855,19 @@ def GenTests(api):
       'win',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows'),
   )
   yield api.test(
       'linux',
-      api.platform('linux', 64),
-      api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
-      _gen_ci_build(api, 'linux'),
-      api.post_process(post_process.MustRun, 'ensure_goma',
-                       'preprocess_for_goma'),
-      api.post_process(post_process.DoesNotRun, 'preprocess for reclient'),
-  )
-  yield api.test(
-      'reclient_linux',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
       api.properties(
@@ -904,18 +880,20 @@ def GenTests(api):
           },
       ),
       _gen_ci_build(api, 'linux'),
-      api.post_process(post_process.DoesNotRun, 'ensure_goma',
-                       'preprocess_for_goma'),
-      api.post_process(post_process.MustRun, 'preprocess for reclient'),
-      api.post_process(post_process.StepCommandContains, 'compile with ninja',
-                       '500'),
-      api.post_process(post_process.DropExpectation),
   )
   yield api.test(
       'mac',
       api.platform('mac', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'mac'),
   )
 
@@ -923,21 +901,48 @@ def GenTests(api):
       'win_no_v8',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(v8=False, bot_id='test_bot'),
+      api.properties(
+          v8=False,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_no_v8'),
   )
   yield api.test(
       'linux_no_v8',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(v8=False, bot_id='test_bot'),
+      api.properties(
+          v8=False,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_no_v8'),
   )
   yield api.test(
       'mac_no_v8',
       api.platform('mac', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(v8=False, bot_id='test_bot'),
+      api.properties(
+          v8=False,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'mac_no_v8'),
   )
 
@@ -945,7 +950,17 @@ def GenTests(api):
       'win_component',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(component=True, xfa=True, bot_id='test_bot'),
+      api.properties(
+          component=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'win_component'),
   )
 
@@ -953,14 +968,35 @@ def GenTests(api):
       'win_gdi',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot', renderers=['gdi']),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          renderers=['gdi'],
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_gdi'),
   )
   yield api.test(
       'win_gdi_skia',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(skia=True, xfa=True, bot_id='test_bot', renderers=['gdi']),
+      api.properties(
+          skia=True,
+          xfa=True,
+          bot_id='test_bot',
+          renderers=['gdi'],
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_gdi_skia'),
   )
   yield api.test(
@@ -971,7 +1007,14 @@ def GenTests(api):
           skia=True,
           xfa=True,
           bot_id='test_bot',
-          renderers=['agg', 'gdi', 'skia']),
+          renderers=['agg', 'gdi', 'skia'],
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_agg_gdi_skia'),
   )
 
@@ -979,7 +1022,17 @@ def GenTests(api):
       'win_skia',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(skia=True, xfa=True, bot_id='test_bot'),
+      api.properties(
+          skia=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_skia'),
   )
 
@@ -987,7 +1040,17 @@ def GenTests(api):
       'win_xfa_32',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, target_cpu='x86', bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          target_cpu='x86',
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_xfa_32'),
   )
 
@@ -995,7 +1058,16 @@ def GenTests(api):
       'win_xfa',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_xfa'),
   )
 
@@ -1003,7 +1075,17 @@ def GenTests(api):
       'win_xfa_rel',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, rel=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          rel=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_xfa_rel'),
   )
 
@@ -1011,7 +1093,18 @@ def GenTests(api):
       'win_xfa_msvc_32',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, msvc=True, target_cpu='x86', bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          msvc=True,
+          target_cpu='x86',
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_xfa_msvc_32'),
   )
 
@@ -1019,7 +1112,17 @@ def GenTests(api):
       'win_xfa_msvc',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, msvc=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          msvc=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_xfa_msvc'),
   )
 
@@ -1027,7 +1130,17 @@ def GenTests(api):
       'linux_component',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(component=True, xfa=True, bot_id='test_bot'),
+      api.properties(
+          component=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_component'),
   )
 
@@ -1035,7 +1148,17 @@ def GenTests(api):
       'linux_skia',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(skia=True, xfa=True, bot_id='test_bot'),
+      api.properties(
+          skia=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_skia'),
   )
 
@@ -1043,7 +1166,16 @@ def GenTests(api):
       'linux_xfa',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_xfa'),
   )
 
@@ -1051,7 +1183,17 @@ def GenTests(api):
       'linux_xfa_rel',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, rel=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          rel=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_xfa_rel'),
   )
 
@@ -1059,7 +1201,17 @@ def GenTests(api):
       'mac_component',
       api.platform('mac', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(component=True, xfa=True, bot_id='test_bot'),
+      api.properties(
+          component=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'mac_component'),
   )
 
@@ -1067,7 +1219,17 @@ def GenTests(api):
       'mac_skia',
       api.platform('mac', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(skia=True, xfa=True, bot_id='test_bot'),
+      api.properties(
+          skia=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'mac_skia'),
   )
 
@@ -1075,7 +1237,16 @@ def GenTests(api):
       'mac_xfa',
       api.platform('mac', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'mac_xfa'),
   )
 
@@ -1083,7 +1254,17 @@ def GenTests(api):
       'mac_xfa_rel',
       api.platform('mac', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, rel=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          rel=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'mac_xfa_rel'),
   )
 
@@ -1091,7 +1272,16 @@ def GenTests(api):
       'linux_asan_lsan',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(memory_tool='asan', bot_id='test_bot'),
+      api.properties(
+          memory_tool='asan',
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_asan_lsan'),
   )
 
@@ -1099,7 +1289,17 @@ def GenTests(api):
       'linux_msan',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(memory_tool='msan', rel=True, bot_id='test_bot'),
+      api.properties(
+          memory_tool='msan',
+          rel=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_msan'),
   )
 
@@ -1107,7 +1307,17 @@ def GenTests(api):
       'linux_ubsan',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(memory_tool='ubsan', rel=True, bot_id='test_bot'),
+      api.properties(
+          memory_tool='ubsan',
+          rel=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_ubsan'),
   )
 
@@ -1115,7 +1325,17 @@ def GenTests(api):
       'linux_xfa_asan_lsan',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(memory_tool='asan', xfa=True, bot_id='test_bot'),
+      api.properties(
+          memory_tool='asan',
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_xfa_asan_lsan'),
   )
 
@@ -1123,7 +1343,18 @@ def GenTests(api):
       'linux_xfa_msan',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(memory_tool='msan', rel=True, xfa=True, bot_id='test_bot'),
+      api.properties(
+          memory_tool='msan',
+          rel=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_xfa_msan'),
   )
 
@@ -1132,7 +1363,17 @@ def GenTests(api):
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
       api.properties(
-          memory_tool='ubsan', rel=True, xfa=True, bot_id='test_bot'),
+          memory_tool='ubsan',
+          rel=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_xfa_ubsan'),
   )
 
@@ -1141,7 +1382,17 @@ def GenTests(api):
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
       api.properties(
-          clang=True, memory_tool='asan', rel=True, bot_id='test_bot'),
+          clang=True,
+          memory_tool='asan',
+          rel=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_asan'),
   )
 
@@ -1150,8 +1401,18 @@ def GenTests(api):
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
       api.properties(
-          clang=True, memory_tool='asan', rel=True, xfa=True,
-          bot_id='test_bot'),
+          clang=True,
+          memory_tool='asan',
+          rel=True,
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_xfa_asan'),
   )
 
@@ -1159,7 +1420,16 @@ def GenTests(api):
       'try-linux-gerrit_xfa_asan_lsan',
       api.platform('linux', 64),
       api.builder_group.for_current('tryserver.client.pdfium'),
-      api.properties(xfa=True, memory_tool='asan'),
+      api.properties(
+          xfa=True,
+          memory_tool='asan',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_try_build(api, 'linux_xfa_asan_lsan'),
   )
 
@@ -1171,7 +1441,14 @@ def GenTests(api):
           bot_id='test_bot',
           target_os='android',
           target_cpu='arm64',
-          skip_test=True),
+          skip_test=True,
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'android'),
   )
 
@@ -1179,7 +1456,17 @@ def GenTests(api):
       'android_32',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot', target_os='android', skip_test=True),
+      api.properties(
+          bot_id='test_bot',
+          target_os='android',
+          skip_test=True,
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'android'),
   )
 
@@ -1191,7 +1478,14 @@ def GenTests(api):
           skia=True,
           xfa=True,
           bot_id='test_bot',
-          clobber=''),
+          clobber='',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux_skia'),
   )
 
@@ -1199,7 +1493,18 @@ def GenTests(api):
       'clobber-mac_xfa_rel',
       api.platform('mac', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, rel=True, bot_id='test_bot', clobber=''),
+      api.properties(
+          xfa=True,
+          rel=True,
+          bot_id='test_bot',
+          clobber='',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'mac_xfa_rel'),
   )
 
@@ -1207,7 +1512,17 @@ def GenTests(api):
       'clobber-win_xfa',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot', clobber=''),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          clobber='',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows_xfa'),
   )
 
@@ -1221,7 +1536,14 @@ def GenTests(api):
               'dimensions': {
                   'pool': 'luci.flex.ci',
               },
-          }),
+          },
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows'),
   )
   yield api.test(
@@ -1235,7 +1557,14 @@ def GenTests(api):
                   'pool': 'luci.flex.try',
               },
               'priority': 42,
-          }),
+          },
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_try_build(api, 'windows'),
   )
 
@@ -1243,7 +1572,15 @@ def GenTests(api):
       'fail-unittests',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('unittests', retcode=1),
       api.expect_status('FAILURE'),
@@ -1253,7 +1590,15 @@ def GenTests(api):
       'fail-embeddertests',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('embeddertests', retcode=1),
       api.expect_status('FAILURE'),
@@ -1263,7 +1608,15 @@ def GenTests(api):
       'fail-javascript-tests',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('javascript tests', retcode=1),
       api.expect_status('FAILURE'),
@@ -1273,7 +1626,15 @@ def GenTests(api):
       'fail-javascript-tests-javascript-disabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('javascript tests (javascript disabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1283,7 +1644,16 @@ def GenTests(api):
       'fail-javascript-tests-xfa-disabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('javascript tests (xfa disabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1293,7 +1663,15 @@ def GenTests(api):
       'fail-pixel-tests',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests', retcode=1),
       api.expect_status('FAILURE'),
@@ -1303,7 +1681,15 @@ def GenTests(api):
       'fail-pixel-tests-oneshot-rendering-enabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (oneshot rendering enabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1313,7 +1699,15 @@ def GenTests(api):
       'fail-pixel-tests-reverse-byte-order',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (reverse byte order)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1323,7 +1717,15 @@ def GenTests(api):
       'fail-pixel-tests-javascript-disabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (javascript disabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1333,7 +1735,16 @@ def GenTests(api):
       'fail-pixel-tests-xfa-disabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('pixel tests (xfa disabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1343,7 +1754,15 @@ def GenTests(api):
       'fail-corpus-tests',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests', retcode=1),
       api.expect_status('FAILURE'),
@@ -1353,7 +1772,15 @@ def GenTests(api):
       'fail-corpus-tests-oneshot-rendering-enabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (oneshot rendering enabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1363,7 +1790,15 @@ def GenTests(api):
       'fail-corpus-tests-reverse-byte-order',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (reverse byte order)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1373,7 +1808,15 @@ def GenTests(api):
       'fail-corpus-tests-javascript-disabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot'),
+      api.properties(
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (javascript disabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1383,7 +1826,16 @@ def GenTests(api):
       'fail-corpus-tests-xfa-disabled',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(xfa=True, bot_id='test_bot'),
+      api.properties(
+          xfa=True,
+          bot_id='test_bot',
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
       api.step_data('corpus tests (xfa disabled)', retcode=1),
       api.expect_status('FAILURE'),
@@ -1393,7 +1845,16 @@ def GenTests(api):
       'disable-skia-gold-linux',
       api.platform('linux', 64),
       api.builder_group.for_current('client.pdfium'),
-      api.properties(bot_id='test_bot', run_skia_gold=False),
+      api.properties(
+          bot_id='test_bot',
+          run_skia_gold=False,
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'linux'),
   )
 
@@ -1402,7 +1863,16 @@ def GenTests(api):
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
       api.properties(
-          xfa=True, bot_id='test_bot', renderers=['agg', 'fake', 'gdi']),
+          xfa=True,
+          bot_id='test_bot',
+          renderers=['agg', 'fake', 'gdi'],
+          **{
+              '$build/reclient': {
+                  'instance': 'fake-reclient-instance',
+                  'jobs': '500',
+              }
+          },
+      ),
       _gen_ci_build(api, 'windows'),
       api.expect_exception('ValueError'),
   )

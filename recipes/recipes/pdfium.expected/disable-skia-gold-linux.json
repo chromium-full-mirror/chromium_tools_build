@@ -150,94 +150,6 @@
     "name": "gclient runhooks"
   },
   {
-    "cmd": [],
-    "name": "ensure_goma"
-  },
-  {
-    "cmd": [
-      "cipd",
-      "ensure",
-      "-root",
-      "[CACHE]/goma/client",
-      "-ensure-file",
-      "infra_internal/goma/client/${platform} release",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure_goma.ensure_installed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-release---------\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/goma/client/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "cipd",
-      "ensure",
-      "-root",
-      "[CACHE]/goma/bqupload",
-      "-ensure-file",
-      "infra/tools/bqupload/${platform} bqupload_pin",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure_goma.ensure_installed (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-bqupload_pin----\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
     "cmd": [
       "vpython3",
       "-u",
@@ -246,7 +158,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_v8",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_goma=true goma_dir=\"[CACHE]/goma/client\""
+      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -265,7 +177,33 @@
   },
   {
     "cmd": [],
-    "name": "preprocess_for_goma"
+    "name": "preprocess for reclient"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "[CACHE]/builder/pdfium/buildtools/reclient_cfgs/fetch_reclient_cfgs.py"
+    ],
+    "env": {
+      "RBE_instance": "projects/fake-reclient-instance/instances/default_instance"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "preprocess for reclient.install reclient_cfgs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -277,7 +215,7 @@
       "ensure-directory",
       "--mode",
       "0777",
-      "[CACHE]/goma/data/linux"
+      "[CACHE]/builder/reclient/deps/linux"
     ],
     "infra_step": true,
     "luci_context": {
@@ -292,25 +230,21 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "preprocess_for_goma.goma cache directory",
+    "name": "preprocess for reclient.reclient cache directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [
-      "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "restart"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/reclient/deps/linux"
     ],
-    "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -324,7 +258,40 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "preprocess_for_goma.start_goma",
+    "name": "preprocess for reclient.list reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "preprocess for reclient.start cloudtail: reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
@@ -333,12 +300,16 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
       "start",
       "--cloudtail-path",
       "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.INFO",
       "--pid-file",
-      "[TMP_BASE]/cloudtail.pid"
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -353,7 +324,50 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "preprocess_for_goma.start cloudtail",
+    "name": "preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/pdfium/buildtools/reclient/bootstrap"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux",
+      "RBE_deps_cache_max_mb": "256",
+      "RBE_enable_deps_cache": "true",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_instance": "projects/fake-reclient-instance/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]/builder/pdfium/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "preprocess for reclient.start reproxy via bootstrap",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -364,9 +378,13 @@
       "-C",
       "[CACHE]/builder/pdfium/out/debug_v8",
       "-j",
-      "80",
+      "500",
       "pdfium_all"
     ],
+    "env": {
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
+    },
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -383,23 +401,34 @@
   },
   {
     "cmd": [],
-    "name": "postprocess_for_goma"
+    "name": "postprocess for reclient"
   },
   {
     "cmd": [
-      "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "jsonstatus",
-      "[TMP_BASE]/goma_jsonstatus.json"
+      "[CACHE]/builder/pdfium/buildtools/reclient/bootstrap",
+      "-shutdown"
     ],
     "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error"
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux",
+      "RBE_deps_cache_max_mb": "256",
+      "RBE_enable_deps_cache": "true",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_instance": "projects/fake-reclient-instance/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]/builder/pdfium/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -412,49 +441,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess_for_goma.goma_jsonstatus",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"notice\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"infra_status\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"num_user_error\": 0,@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"ping_status_code\": 200@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "stat"
-    ],
-    "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess_for_goma.goma_stat",
+    "name": "postprocess for reclient.shutdown reproxy via bootstrap",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -462,128 +449,10 @@
   {
     "cmd": [
       "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "stop"
-    ],
-    "env": {
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/linux",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess_for_goma.stop_goma",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
-    ],
-    "cost": {
-      "cpu": 0,
-      "disk": 0,
-      "memory": 0,
-      "net": 0
-    },
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "start goma canceller"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "RECIPE_REPO[build]/recipes/upload_goma_logs.py",
-      "--upload-compiler-proxy-info",
-      "--log-url-json-file",
-      "/path/to/tmp/json",
-      "--gsutil-py-path",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "--bqupload-path",
-      "[CACHE]/goma/bqupload/bqupload",
-      "--json-status",
-      "[TMP_BASE]/goma_jsonstatus.json",
-      "--ninja-log-outdir",
-      "[CACHE]/builder/pdfium/out/debug_v8",
-      "--ninja-log-command-file",
-      "[\"[CACHE]/builder/pdfium/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/pdfium/out/debug_v8\", \"-j\", 80, \"pdfium_all\"]",
-      "--build-exit-status",
-      "0",
-      "--build-step-name",
-      "compile with ninja",
-      "--ninja-log-compiler",
-      "unknown",
-      "--goma-stats-file",
-      "[TMP_BASE]/goma_stats",
-      "--goma-counterz-file",
-      "[TMP_BASE]/goma_counterz",
-      "--goma-crash-report-id-file",
-      "[TMP_BASE]/crash_report_id",
-      "--build-id",
-      "8945511751514863184",
-      "--builder-id-json",
-      "{\"bucket\": \"ci\", \"builder\": \"linux\", \"project\": \"pdfium\"}",
-      "--buildbot-buildername",
-      "linux"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess_for_goma.upload_log",
-    "timeout": 300,
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"compiler_proxy_log\": \"https://chromium-build-stats.appspot.com/compiler_proxy_log/2017/03/30/build11-m1/compiler_proxy.exe.BUILD11-M1.chrome-bot.log.INFO.20170329-222936.4420.gz\",@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"ninja_log\": \"https://chromium-build-stats.appspot.com/ninja_log/2017/03/30/build11-m1/ninja_log.build11-m1.chrome-bot.20170329-224321.9976.gz\"@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@compiler_proxy_log@https://chromium-build-stats.appspot.com/compiler_proxy_log/2017/03/30/build11-m1/compiler_proxy.exe.BUILD11-M1.chrome-bot.log.INFO.20170329-222936.4420.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2017/03/30/build11-m1/ninja_log.build11-m1.chrome-bot.20170329-224321.9976.gz@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
       "stop",
       "--killed-pid-file",
-      "[TMP_BASE]/cloudtail.pid"
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -598,7 +467,613 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess_for_goma.stop cloudtail",
+    "name": "postprocess for reclient.stop cloudtail",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/rbe_metrics.pb",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.load rbe_metrics.pb",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "postprocess for reclient.install infra/tools/bqupload",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.install infra/tools/bqupload.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest",
+      "-ensure-file",
+      "infra/tools/bqupload/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.install infra/tools/bqupload.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
+      "goma-logs.rbe_metrics.builds"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload RBE metrics to BigQuery",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:21.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:21.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"flags\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"abc\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"def\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"bar\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"other\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"int64_value\": \"7\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"some\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"bool_value\": true@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"event_times\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"from\": \"2022-07-19T22:26:45Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"to\": \"2022-07-21T02:13:25Z\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"test\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"double_value\": 1.1@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@}@@@",
+      "@@@STEP_LOG_END@rbe_metrics@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_1",
+      "--output-gzip-path",
+      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.gzip reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.gsutil upload reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CLEANUP]/reclient_log_tmp_1"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.list reclient log directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/rewrapper.INFO@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "postprocess for reclient.upload logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake tar contents",
+      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.create reclient log tar",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.upload logs.gsutil upload reclient logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_1",
+      "--build-exit-status",
+      "-1"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.perform reclient health check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/reclient_log_tmp_1"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "postprocess for reclient.cleanup reclient log dir",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
