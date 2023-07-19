@@ -130,11 +130,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'checkout_siso',
-      api.properties(apply_gclient_config='checkout_siso'),
-      api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
       'siso_latest',
       api.properties(apply_gclient_config='siso_latest'),
       api.post_process(post_process.DropExpectation),
