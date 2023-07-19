@@ -61,6 +61,7 @@ class ResultDB:
   location_tags_file = attrib(str, default=None)
   exonerate_unexpected_pass = attrib(bool, default=True)
   include = attrib(bool, default=False)
+  baseline_id = attrib(str, default='')
   # result_adapter binary is available in chromium checkout or
   # the swarming bot.
   #
@@ -88,6 +89,23 @@ class ResultDB:
     # Unconditionally construct an instance with the keywords to have the
     # arguments validated.
     return cls(**kwargs)
+
+  @staticmethod
+  def generate_baseline_id(bucket: str, builder_name: str) -> str:
+    """Generates baseline identifiers in the format {bucket}:{builder_name}
+
+    For example, try:linux-rel. Baseline identifiers are sets of test variants,
+    used as part of ResultDB's QueryNewTestVariants RPC call to determine
+    if there are new tests introduced in the patchset.
+
+    Args:
+      bucket: Buildbucket bucket.
+      builder_name: Buildbucket builder name.
+
+    Returns:
+      string
+    """
+    return f'{bucket}:{builder_name}'
 
   def wrap(self,
            api,
@@ -151,6 +169,11 @@ class ResultDB:
     if step_name:
       tags.add(('step_name', step_name))
 
+    if not configs.baseline_id and api.buildbucket:
+      baseline_id = self.generate_baseline_id(
+          api.buildbucket.build.builder.bucket, api.buildbucket.builder_name)
+      configs = attr.evolve(configs, baseline_id=baseline_id)
+
     # wrap it with rdb-stream
     return api.resultdb.wrap(
         cmd,
@@ -164,4 +187,5 @@ class ResultDB:
         exonerate_unexpected_pass=configs.exonerate_unexpected_pass,
         include=configs.include,
         inherit_sources=True,
+        baseline_id=configs.baseline_id,
     )
