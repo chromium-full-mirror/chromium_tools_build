@@ -248,6 +248,12 @@ class ArchiveApi(recipe_api.RecipeApi):
     staging_dir = self.m.path['cleanup'].join('chrome_staging')
     self.m.file.ensure_directory('create staging_dir', staging_dir)
 
+    lzma_sdk_args = []
+    if self.m.platform.is_win and self.m.path.exists(self.m.path['checkout']):
+      lzma_sdk_args = [
+          self.m.path['checkout'].join('third_party', 'lzma_sdk', 'bin',
+                                       'win64')
+      ]
     llvm_tools_to_copy = ['llvm-symbolizer', 'sancov']
     llvm_bin_dir = self.m.path['checkout'].join('third_party', 'llvm-build',
                                                 'Release+Asserts', 'bin')
@@ -341,7 +347,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         zip_file_base_name,
         self.m.json.input(zip_file_list),
         build_dir,
-    ]
+    ] + lzma_sdk_args
     self.m.step('zipping', cmd, infra_step=True, **kwargs)
 
     zip_file = staging_dir.join(zip_file_name)

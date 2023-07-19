@@ -439,8 +439,16 @@ def _CopyFileToDir(src_path, dest_dir, dest_fn=None, link_ok=False):
     shutil.copy2(src_path, os.path.join(dest_dir, src_file))
 
 
-def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
-            raise_error=True, remove_archive_directory=True, strip_files=None):
+def MakeZip(
+    output_dir,
+    archive_name,
+    file_list,
+    file_relative_dir,
+    raise_error=True,
+    remove_archive_directory=True,
+    strip_files=None,
+    lzma_sdk_bin=None
+):
   """Packs files into a new zip archive.
 
   Files are first copied into a directory within the output_dir named for
@@ -466,6 +474,8 @@ def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
       before copying files over to it.
     strip_files: List of executable files to strip symbols when zipping. The
       option currently does not work in Windows.
+    lzma_sdk_bin: Optional path to the bin directory of the lzma SDK which
+      contains the 7z executable.
 
   Returns:
     A tuple consisting of (archive_dir, zip_file_path), where archive_dir
@@ -543,9 +553,18 @@ def MakeZip(output_dir, archive_name, file_list, file_relative_dir,
   MoveFile(output_file, previous_file)
 
   # If we have 7z, use that as it's much faster. See http://crbug.com/418702.
+  # Some bots have 7zip; others don't, so we use the version in the Chromium
+  # source tree - see https://crbug.com/1459770
   windows_zip_cmd = None
-  if os.path.exists('C:\\Program Files\\7-Zip\\7z.exe'):
-    windows_zip_cmd = ['C:\\Program Files\\7-Zip\\7z.exe', 'a', '-y', '-mx1']
+  if IsWindows():
+    possible_7zip_locations = []
+    if lzma_sdk_bin is not None:
+      possible_7zip_locations = [os.path.join(lzma_sdk_bin, '7za.exe')]
+    possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
+    for possible_7zip_location in possible_7zip_locations:
+      if os.path.exists(possible_7zip_location):
+        windows_zip_cmd = [possible_7zip_location, 'a', '-y', '-mx1']
+        break
 
   # On Windows we use the python zip module; on Linux and Mac, we use the zip
   # command as it will handle links and file bits (executable).  Which is much
