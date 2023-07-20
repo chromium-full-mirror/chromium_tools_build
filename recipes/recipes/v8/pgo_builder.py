@@ -96,7 +96,12 @@ BLOCKLIST_PATH = f'gs://{BLOCKLIST_BUCKET}/{BLOCKLIST_FILE}'
 
 VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)'
 PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
-PROFILE_PATTERN = r'(block_hint,\w+(,\d+){3}\n)+(builtin_hash,\w+,\-?\d+\n)+'
+PROFILE_PATTERN = (
+    r'(block_hint,\w+(,\d+){3}\n)+'
+    r'(builtin_count,\w+,\d+\n)*'
+    r'(block_count,\w+(,\d+){2}\n)*'
+    r'(builtin_hash,\w+,\-?\d+\n)+'
+)
 
 COMPILATORS = {
     'x86': {
@@ -636,6 +641,8 @@ def GenTests(api):
   def mock_profiles(versions, archs, content=None):
     mock_content = content or (
         'block_hint,CallUndefinedReceiver1ExtraWideHandler,19,20,0\n'
+        'builtin_count,ShiftLeftWideHandler,0\n'
+        'block_count,MulSmiExtraWideHandler,34,0\n'
         'builtin_hash,RecordWriteSaveFP,234037449\n'
     )
     return [
