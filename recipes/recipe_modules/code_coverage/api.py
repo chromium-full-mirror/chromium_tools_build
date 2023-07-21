@@ -697,30 +697,35 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
         # Upload data to zoss to show it on code search
         if self._export_coverage_to_zoss:
-          self.m.gsutil.upload(
-              source=coverage_dir.join('coverage.xml'),
-              bucket=constants.ZOSS_BUCKET_NAME,
-              dest='%s/coverage.xml' % self._compose_gs_path_for_zoss_upload(
-                  builder=self._compose_current_mimic_builder_name(),
-                  build_id=self.build_id),
-              link_name=None,
-              multithreaded=True,
-              name='export coverage data to zoss')
-          self.m.file.write_json(
-              name='create zoss metadata json',
-              dest=coverage_dir.join('zoss_metadata.json'),
-              data=self._get_zoss_metadata(
-                  coverage_format='JACOCO_XML',
-                  coverage_type=self._current_processing_test_type))
-          self.m.gsutil.upload(
-              source=coverage_dir.join('zoss_metadata.json'),
-              bucket=constants.ZOSS_BUCKET_NAME,
-              dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
-                  builder=self._compose_current_mimic_builder_name(),
-                  build_id=self.build_id),
-              link_name=None,
-              multithreaded=True,
-              name='export metadata to zoss')
+          for repo in constants.COVERAGE_REPOS:
+            self.m.gsutil.upload(
+                source=coverage_dir.join('coverage.xml'),
+                bucket=constants.ZOSS_BUCKET_NAME,
+                dest='%s/coverage.xml' % self._compose_gs_path_for_zoss_upload(
+                    builder=self._compose_current_mimic_builder_name(),
+                    build_id=self.build_id,
+                    zoss_host=repo['host']),
+                link_name=None,
+                multithreaded=True,
+                name='export coverage data to zoss for host %s' % repo['host'])
+            self.m.file.write_json(
+                name='create zoss metadata json for host %s' % repo['host'],
+                dest=coverage_dir.join('zoss_metadata.json'),
+                data=self._get_zoss_metadata(
+                    zoss_host=repo['host'],
+                    zoss_project=repo['project'],
+                    coverage_format='JACOCO_XML',
+                    coverage_type=self._current_processing_test_type))
+            self.m.gsutil.upload(
+                source=coverage_dir.join('zoss_metadata.json'),
+                bucket=constants.ZOSS_BUCKET_NAME,
+                dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
+                    builder=self._compose_current_mimic_builder_name(),
+                    build_id=self.build_id,
+                    zoss_host=repo['host']),
+                link_name=None,
+                multithreaded=True,
+                name='export metadata to zoss for host %s' % repo['host'])
 
         metadata_path = coverage_dir.join('all.json.gz')
         if not self.m.path.exists(metadata_path):
@@ -768,30 +773,35 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         self._persist_coverage_artifacts(source_dir=coverage_dir, **kwargs)
         # Upload data to zoss to show it on code search
         if self._export_coverage_to_zoss:
-          self.m.gsutil.upload(
-              source=coverage_dir.join('lcov.info'),
-              bucket=constants.ZOSS_BUCKET_NAME,
-              dest='%s/lcov.info' % self._compose_gs_path_for_zoss_upload(
-                  builder=self._compose_current_mimic_builder_name(),
-                  build_id=self.build_id),
-              link_name='lcov_info',
-              multithreaded=True,
-              name='export coverage data to zoss')
-          self.m.file.write_json(
-              name='create zoss metadata json',
-              dest=coverage_dir.join('zoss_metadata.json'),
-              data=self._get_zoss_metadata(
-                  coverage_format='LCOV',
-                  coverage_type=self._current_processing_test_type))
-          self.m.gsutil.upload(
-              source=coverage_dir.join('zoss_metadata.json'),
-              bucket=constants.ZOSS_BUCKET_NAME,
-              dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
-                  builder=self._compose_current_mimic_builder_name(),
-                  build_id=self.build_id),
-              link_name='Zoss Metadata',
-              multithreaded=True,
-              name='export metadata to zoss')
+          for repo in constants.COVERAGE_REPOS:
+            self.m.gsutil.upload(
+                source=coverage_dir.join('lcov.info'),
+                bucket=constants.ZOSS_BUCKET_NAME,
+                dest='%s/lcov.info' % self._compose_gs_path_for_zoss_upload(
+                    builder=self._compose_current_mimic_builder_name(),
+                    build_id=self.build_id,
+                    zoss_host=repo['host']),
+                link_name='lcov_info',
+                multithreaded=True,
+                name='export coverage data to zoss for host %s' % repo['host'])
+            self.m.file.write_json(
+                name='create zoss metadata json for host %s' % repo['host'],
+                dest=coverage_dir.join('zoss_metadata.json'),
+                data=self._get_zoss_metadata(
+                    zoss_host=repo['host'],
+                    zoss_project=repo['project'],
+                    coverage_format='LCOV',
+                    coverage_type=self._current_processing_test_type))
+            self.m.gsutil.upload(
+                source=coverage_dir.join('zoss_metadata.json'),
+                bucket=constants.ZOSS_BUCKET_NAME,
+                dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
+                    builder=self._compose_current_mimic_builder_name(),
+                    build_id=self.build_id,
+                    zoss_host=repo['host']),
+                link_name='Zoss Metadata',
+                multithreaded=True,
+                name='export metadata to zoss for host %s' % repo['host'])
       except self.m.step.StepFailure:
         self.m.step.active_result.presentation.properties[
             'process_coverage_data_failure'] = True
@@ -1115,40 +1125,46 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     finally:
       # Upload data to zoss to show it on code search
       if self._export_coverage_to_zoss:
-        self.m.gsutil.upload(
-            source=self.metadata_dir.join('coverage.json'),
-            bucket=constants.ZOSS_BUCKET_NAME,
-            dest='%s/coverage.json' % self._compose_gs_path_for_zoss_upload(
-                builder=self._compose_current_mimic_builder_name(),
-                build_id=self.build_id),
-            link_name='coverage_json',
-            multithreaded=True,
-            name='export coverage data to zoss')
-        self.m.file.write_json(
-            name='create zoss metadata json',
-            dest=self.metadata_dir.join('zoss_metadata.json'),
-            data=self._get_zoss_metadata(
-                coverage_format='LLVM',
-                coverage_type=self._current_processing_test_type))
-        self.m.gsutil.upload(
-            source=self.metadata_dir.join('zoss_metadata.json'),
-            bucket=constants.ZOSS_BUCKET_NAME,
-            dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
-                builder=self._compose_current_mimic_builder_name(),
-                build_id=self.build_id),
-            link_name='Zoss Metadata',
-            multithreaded=True,
-            name='export metadata to zoss')
+        for repo in constants.COVERAGE_REPOS:
+          self.m.gsutil.upload(
+              source=self.metadata_dir.join('coverage.json'),
+              bucket=constants.ZOSS_BUCKET_NAME,
+              dest='%s/coverage.json' % self._compose_gs_path_for_zoss_upload(
+                  builder=self._compose_current_mimic_builder_name(),
+                  build_id=self.build_id,
+                  zoss_host=repo['host']),
+              link_name='coverage_json',
+              multithreaded=True,
+              name='export coverage data to zoss for host %s' % repo['host'])
+          self.m.file.write_json(
+              name='create zoss metadata json for host %s' % repo['host'],
+              dest=self.metadata_dir.join('zoss_metadata.json'),
+              data=self._get_zoss_metadata(
+                  zoss_host=repo['host'],
+                  zoss_project=repo['project'],
+                  coverage_format='LLVM',
+                  coverage_type=self._current_processing_test_type))
+          self.m.gsutil.upload(
+              source=self.metadata_dir.join('zoss_metadata.json'),
+              bucket=constants.ZOSS_BUCKET_NAME,
+              dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
+                  builder=self._compose_current_mimic_builder_name(),
+                  build_id=self.build_id,
+                  zoss_host=repo['host']),
+              link_name='Zoss Metadata',
+              multithreaded=True,
+              name='export metadata to zoss for host %s' % repo['host'])
 
       self._persist_coverage_artifacts(source_dir=self.metadata_dir, **kwargs)
 
-  def _compose_gs_path_for_zoss_upload(self, builder, build_id):
+  def _compose_gs_path_for_zoss_upload(self, builder, build_id, zoss_host):
     commit = self.m.buildbucket.build.input.gitiles_commit
     assert commit is not None, 'No gitiles commit'
-    return "ng3-chrome-coverage/absolute/%s/%s/%s/%s/%s" % (
-        commit.host, commit.project, commit.id, builder, build_id)
+    return "ng3-chrome-coverage/absolute/%s/%s/%s/%s/%s/%s" % (
+        commit.host, commit.project, commit.id, builder, build_id, zoss_host)
 
-  def _get_zoss_metadata(self, coverage_format, coverage_type):
+  def _get_zoss_metadata(self, zoss_host, zoss_project, coverage_format,
+                         coverage_type):
     """Returns a dict which has to be uploaded along with coverage data to zoss.
 
     Args:
@@ -1162,8 +1178,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         # Maps to https://source.corp.google.com/h/chrome-internal/codesearch/chrome/src
         # which is a view of https://chromium.googlesource.com/chromium/src/
         # but with git submodules instead of DEPS for codesearch to index
-        'host': 'chrome-internal',
-        'project': 'codesearch/chrome/src',
+        'host': zoss_host,
+        'project': zoss_project,
         'trace_type': coverage_format,
         'git_project': commit.project,
         'commit_id': commit.id,

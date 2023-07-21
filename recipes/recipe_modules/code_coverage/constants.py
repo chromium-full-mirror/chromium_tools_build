@@ -15,6 +15,24 @@ DEFAULT_FUZZ_SRC_SRC_ARCHIVE_NAME = 'latest_src_archive.zip'
 # enables showing coverage metrics in code search.
 ZOSS_BUCKET_NAME = "ng3-metrics"
 
+# Controls metadata fields for the data to be exported to zoss
+# Each element represents different codesearch instance where
+# we want code coverage data to be available.
+#
+# TODO(crbug/1466708): At present there are no coverage builders which generate
+# coverage for "chrome-internal". All builders generate coverage on "chromium"
+# i.e. publicly visible code. Therefore we export the chromium coverage
+# data itself to chrome-internal.
+# At some point, when we have chrome-internal coverage builders, their data
+# should flow to chrome-internal repo.
+COVERAGE_REPOS = [{
+    'host': 'chrome-internal',
+    'project': 'codesearch/chrome/src',
+}, {
+    'host': 'chromium',
+    'project': 'codesearch/chromium/src',
+}]
+
 # Name of the file to store the directory metadata.
 DIR_METADATA_FILE_NAME = 'dir_metadata.json'
 

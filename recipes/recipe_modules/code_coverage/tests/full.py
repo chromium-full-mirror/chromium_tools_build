@@ -200,16 +200,28 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          ('process clang code coverage data for overall test coverage.gsutil '
-           'export coverage data to zoss')),
+          ('process clang code coverage data for overall test coverage.'
+           'gsutil export coverage data to zoss for host chrome-internal')),
       api.post_process(
           post_process.MustRun,
           ('process clang code coverage data for overall test coverage.'
-           'create zoss metadata json')),
+           'create zoss metadata json for host chrome-internal')),
+      api.post_process(
+          post_process.MustRun,
+          ('process clang code coverage data for overall test coverage.'
+           'gsutil export metadata to zoss for host chrome-internal')),
+      api.post_process(
+          post_process.MustRun,
+          ('process clang code coverage data for overall test coverage.'
+           'gsutil export coverage data to zoss for host chromium')),
+      api.post_process(
+          post_process.MustRun,
+          ('process clang code coverage data for overall test coverage.'
+           'create zoss metadata json for host chromium')),
       api.post_process(
           post_process.MustRun,
           ('process clang code coverage data for overall test coverage.gsutil '
-           'export metadata to zoss')),
+           'export metadata to zoss for host chromium')),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -228,17 +240,25 @@ def GenTests(api):
           'process java coverage (overall).Generate Java coverage metadata'),
       api.post_process(
           post_process.MustRun,
-          'process java coverage (overall).create zoss metadata json'),
-      api.post_process(
-          post_process.MustRun,
           'process java coverage (overall).gsutil Upload coverage artifacts'),
       api.post_process(
-          post_process.MustRun,
-          'process java coverage (overall).gsutil export coverage data to zoss'
-      ),
+          post_process.MustRun, 'process java coverage (overall).'
+          'create zoss metadata json for host chrome-internal'),
       api.post_process(
-          post_process.MustRun,
-          'process java coverage (overall).gsutil export metadata to zoss'),
+          post_process.MustRun, 'process java coverage (overall).'
+          'gsutil export coverage data to zoss for host chrome-internal'),
+      api.post_process(
+          post_process.MustRun, 'process java coverage (overall).'
+          'gsutil export metadata to zoss for host chrome-internal'),
+      api.post_process(
+          post_process.MustRun, 'process java coverage (overall).'
+          'create zoss metadata json for host chromium'),
+      api.post_process(
+          post_process.MustRun, 'process java coverage (overall).'
+          'gsutil export coverage data to zoss for host chromium'),
+      api.post_process(
+          post_process.MustRun, 'process java coverage (overall).'
+          'gsutil export metadata to zoss for host chromium'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -254,16 +274,23 @@ def GenTests(api):
       api.code_coverage(
           use_javascript_coverage=True, export_coverage_to_zoss=True),
       api.post_process(
-          post_process.MustRun,
-          'process javascript coverage (overall).create zoss metadata json'),
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'create zoss metadata json for host chrome-internal'),
       api.post_process(
-          post_process.MustRun,
-          'process javascript coverage (overall).gsutil export coverage data to zoss'
-      ),
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'gsutil export coverage data to zoss for host chrome-internal'),
       api.post_process(
-          post_process.MustRun,
-          'process javascript coverage (overall).gsutil export metadata to zoss'
-      ),
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'gsutil export metadata to zoss for host chrome-internal'),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'create zoss metadata json for host chromium'),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'gsutil export coverage data to zoss for host chromium'),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'gsutil export metadata to zoss for host chromium'),
       api.post_process(post_process.DropExpectation),
   )
 
