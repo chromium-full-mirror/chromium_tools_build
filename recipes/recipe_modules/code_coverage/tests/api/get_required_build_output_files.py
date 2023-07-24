@@ -58,7 +58,10 @@ def GenTests(api):
       api.chromium.try_build(builder='linux-rel'),
       api.properties(
           expected_paths=[
-              api.chromium_checkout.src_dir.join('out/Release/browser_tests')
+              api.chromium_checkout.src_dir.join('out/Release/browser_tests'),
+              api.chromium_checkout.src_dir.join(
+                  'out/Release/binary_relative_paths_for_clang_code_coverage.json'
+              ),
           ],
           target_platform='linux'),
       api.path.exists(
@@ -79,6 +82,9 @@ def GenTests(api):
       api.properties(
           expected_paths=[
               api.chromium_checkout.src_dir.join(android_test_path),
+              api.chromium_checkout.src_dir.join(
+                  'out/Release/binary_relative_paths_for_clang_code_coverage.json'
+              ),
               api.chromium_checkout.src_dir.join(
                   'out/Release/{}'.format(jacoco_file)),
               api.chromium_checkout.src_dir.join('out/Release/{}'.format(

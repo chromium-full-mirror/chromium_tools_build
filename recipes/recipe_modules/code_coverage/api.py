@@ -227,6 +227,21 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if self.m.path.exists(binary_path)
     ]
 
+    # Write the list of used binary paths to a json file. In orchestrator/compilator
+    # structure, this file is passed from compilator to orchestrator, so the
+    # orchestrator build can directly use the binary paths as relevant binaries for
+    # clang coverage, insteading figuring that out from tests again.
+    binary_relative_paths = ([
+        self.m.path.relpath(path, self.build_dir) for path in files
+    ])
+    binary_relative_paths_json_file_path = (
+        self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME))
+    self.m.file.write_json(
+        name='create binary relative path list file',
+        dest=binary_relative_paths_json_file_path,
+        data=binary_relative_paths)
+    files.append(binary_relative_paths_json_file_path)
+
     if self.platform == 'android':
       step_result = self.m.step('Get jacoco and jar files for java coverage', [
           'python3',
@@ -253,6 +268,18 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     Returns:
       List of Paths to test binaries
     """
+    binary_relative_paths_json_file_path = (
+        self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME))
+    # In orchestrator/compilator structure, this file is passed from
+    # compilator to orchestrator. It includes the binary list relevant
+    # to |tests|, discovered by |get_binaries| API invoked on compilator.
+    if self.m.path.exists(binary_relative_paths_json_file_path):
+      rel_paths = self.m.file.read_json(
+          'Read binary relative path list file',
+          self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME),
+          test_data=["some_library"])
+      return {self.build_dir.join(path) for path in rel_paths}
+
     # TODO(crbug.com/899974): Implement a sturdier approach that also works in
     # separate builder-tester setup.
     binaries = set()
