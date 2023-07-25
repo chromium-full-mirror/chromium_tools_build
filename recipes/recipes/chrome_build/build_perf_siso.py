@@ -79,11 +79,9 @@ def RunSteps(api):
   api.step('check siso version', [api.siso.siso_path, 'version'])
 
   # Build target: all
-  # TODO(b/253142009): support Windows and Mac with Siso native builds.
-  if api.platform.is_linux:
-    raw_result = _run_builds(api, 'all', phase='builtin')
-    if raw_result and raw_result.status != common_pb.SUCCESS:
-      return raw_result
+  raw_result = _run_builds(api, 'all', phase='builtin')
+  if raw_result and raw_result.status != common_pb.SUCCESS:
+    return raw_result
 
   return _run_builds(
       api, 'all', phase='reproxy', step_name_suffix=' with reproxy')
