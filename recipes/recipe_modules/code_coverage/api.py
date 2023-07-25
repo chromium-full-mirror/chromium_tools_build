@@ -227,10 +227,11 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if self.m.path.exists(binary_path)
     ]
 
-    # Write the list of used binary paths to a json file. In orchestrator/compilator
-    # structure, this file is passed from compilator to orchestrator, so the
-    # orchestrator build can directly use the binary paths as relevant binaries for
-    # clang coverage, insteading figuring that out from tests again.
+    # Write the list of used binary paths to a json file. In
+    # orchestrator/compilator structure, this file is passed from compilator
+    # to orchestrator, so the orchestrator build can directly use the binary
+    # paths as relevant binaries for clang coverage, insteading figuring that
+    # out from tests again.
     binary_relative_paths = ([
         self.m.path.relpath(path, self.build_dir) for path in files
     ])
@@ -256,6 +257,24 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       files.extend([self.m.path.abs_to_path(f) for f in paths])
 
     return files
+
+  def _get_android_native_lib_for_target(self, target):
+    """Finds native lib paths for a isolate target."""
+    step_result = self.m.step(
+        'Get native libs for %s' % target,
+        [
+            'python3',
+            self.resource('get_native_libraries_for_android_target.py'),
+            '--chromium-output-dir',
+            self.build_dir,
+            '--output-json',
+            self.m.json.output(),
+            '--isolate-target',
+            target,
+        ],
+        step_test_data=lambda: self.m.json.test_api.output([]),
+    )
+    return step_result.json.output
 
   def get_binaries(self, tests):
     """Returns paths to the binary for the given test objects.
@@ -343,14 +362,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['content_shell_wpt', 'content_shell'],
           ['.*_ozone', target[:-len('_ozone')]],
           ['.*_eg2tests_module', 'ios_chrome_eg2tests'],
-
-          # TODO(crbug.com/1416662): This line is added make developing for JNI
-          # Clang coverage easier. More targets and libraries need to be
-          # added to fully support JNI native code.
-          [
-              'webview_instrumentation_test_apk',
-              'libstandalonelibwebviewchromium.so'
-          ],
           ['.*', target],
       ]
       for pattern, binary in patterns:
@@ -366,6 +377,12 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 so_library_name):
               binaries.add(self.m.path.abs_to_path(unstripped_path))
               break
+          else:
+            # Java instrumentation tests' native library names don't include
+            # target name. Find these through {target}.isolate files.
+            lib_paths = self._get_android_native_lib_for_target(target)
+            binaries.update(
+                [self.m.path.abs_to_path(path) for path in lib_paths])
         elif self.platform == 'fuchsia':
           exec_name = binary + '__exec'
           for unstripped_path in unstripped_paths:
