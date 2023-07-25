@@ -67,7 +67,7 @@ def RunSteps(api):
     if api.runtime.is_experimental:
       params.append('--skip-cq')
     else:
-      params.append('--cq-over=2000')
+      params.append('--cq-over=100')
 
     cmd = ['vpython3', '-u', script_path] + params
     with api.depot_tools.on_path():

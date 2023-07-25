@@ -177,7 +177,7 @@
       "[CACHE]/builder/src/tools_libyuv/autoroller/roll_deps.py",
       "--clean",
       "--verbose",
-      "--cq-over=2000"
+      "--cq-over=100"
     ],
     "cwd": "[CACHE]/builder/src",
     "env_suffixes": {
