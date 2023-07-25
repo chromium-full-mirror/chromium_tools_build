@@ -10,6 +10,7 @@ import PB.go.chromium.org.foundry_x.re_client.api.proxy.log as log_pb
 import PB.go.chromium.org.foundry_x.re_client.api.stats.stats as stats_pb
 
 DEPS = [
+    'recipe_engine/assertions',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -30,6 +31,15 @@ _BQ_UPLOAD_STEP_NAME = 'postprocess for reclient.upload RBE metrics to BigQuery'
 
 def RunSteps(api):
   api.path['checkout'] = api.path['tmp_base'].join('checkout')
+
+  # Verify that checkout_dir can be overridden...
+  api.reclient.reclient_dir = api.path['cleanup']
+  api.assertions.assertEqual(api.reclient.reclient_dir, api.path['cleanup'])
+  # ... and that it defaults to checkout when not set.
+  api.reclient.reclient_dir = None
+  api.assertions.assertEqual(api.reclient.reclient_dir,
+                             api.path['checkout'].join('buildtools'))
+
   ninja_command = ['ninja', '-C', 'out/Release']
   deps_cache_by_step = api.properties.get('deps_cache_by_step', False)
   with api.reclient.process(

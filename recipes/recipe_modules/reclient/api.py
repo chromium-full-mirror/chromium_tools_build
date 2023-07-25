@@ -128,13 +128,14 @@ class ReclientApi(recipe_api.RecipeApi):
     DEFAULT_SERVICE = 'remotebuildexecution.googleapis.com:443'
     self._service = props.service or DEFAULT_SERVICE
     # Initialization is delayed until the first call for reclient exe
-    self._reclient_cipd_dir = None
+    self._reclient_binaries_dir = None
     self._jobs = props.jobs or None
     self._rewrapper_env = None
     self._reclient_log_dir = None
     self._cache_silo = props.cache_silo or None
     self._mismatch = None
     self._bootstrap_env = None
+    self._reclient_dir = None
     self._scandeps_server = props.scandeps_server
     self._disable_bq_upload = props.disable_bq_upload
     self._reclient_version = None
@@ -185,6 +186,16 @@ class ReclientApi(recipe_api.RecipeApi):
   @property
   def cache_silo(self):
     return self._cache_silo
+
+  @property
+  def reclient_dir(self):
+    if self._reclient_dir:
+      return self._reclient_dir
+    return self.m.path['checkout'].join('buildtools')
+
+  @reclient_dir.setter
+  def reclient_dir(self, value):
+    self._reclient_dir = value
 
   @property
   def rewrapper_env(self):
@@ -284,12 +295,12 @@ class ReclientApi(recipe_api.RecipeApi):
 
   def _get_reclient_exe_path(self, exe_name):
     exe_name = self._get_platform_exe_name(exe_name)
-    if self._reclient_cipd_dir is None:
+    if self._reclient_binaries_dir is None:
       # This depends on where the reclient CIPD is checked out in DEPS,
       # https://source.chromium.org/chromium/chromium/src/+/main:DEPS;l=452-461;drc=6b88cf228d9d27f49e89f7c4d9ffb582771daa48
-      reclient_cipd = self.m.path['checkout'].join('buildtools', 'reclient')
-      self._reclient_cipd_dir = str(reclient_cipd)
-    return self.m.path.join(self._reclient_cipd_dir, exe_name)
+      reclient_binaries_dir = self.reclient_dir.join('reclient')
+      self._reclient_binaries_dir = str(reclient_binaries_dir)
+    return self.m.path.join(self._reclient_binaries_dir, exe_name)
 
   @property
   def server_address(self):
@@ -393,8 +404,7 @@ class ReclientApi(recipe_api.RecipeApi):
           name='install reclient_cfgs',
           cmd=[
               'vpython3',
-              self.m.path['checkout'].join('buildtools', 'reclient_cfgs',
-                                           'fetch_reclient_cfgs.py'),
+              self.reclient_dir.join('reclient_cfgs', 'fetch_reclient_cfgs.py'),
           ],
           infra_step=True)
 
