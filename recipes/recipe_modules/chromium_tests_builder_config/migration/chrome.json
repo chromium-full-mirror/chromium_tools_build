@@ -282,15 +282,6 @@
   "chromium.perf.fyi:fuchsia-builder-perf-arm64": {
     "builders": [
       "chromium.perf.fyi:fuchsia-builder-perf-arm64",
-      "chromium.perf.fyi:fuchsia-perf-ast",
-      "chromium.perf.fyi:fuchsia-perf-nsn",
-      "chromium.perf.fyi:fuchsia-perf-shk"
-    ]
-  },
-  "chromium.perf.fyi:fuchsia-perf-ast": {
-    "builders": [
-      "chromium.perf.fyi:fuchsia-builder-perf-arm64",
-      "chromium.perf.fyi:fuchsia-perf-ast",
       "chromium.perf.fyi:fuchsia-perf-nsn",
       "chromium.perf.fyi:fuchsia-perf-shk"
     ]
@@ -298,7 +289,6 @@
   "chromium.perf.fyi:fuchsia-perf-nsn": {
     "builders": [
       "chromium.perf.fyi:fuchsia-builder-perf-arm64",
-      "chromium.perf.fyi:fuchsia-perf-ast",
       "chromium.perf.fyi:fuchsia-perf-nsn",
       "chromium.perf.fyi:fuchsia-perf-shk"
     ]
@@ -306,7 +296,6 @@
   "chromium.perf.fyi:fuchsia-perf-shk": {
     "builders": [
       "chromium.perf.fyi:fuchsia-builder-perf-arm64",
-      "chromium.perf.fyi:fuchsia-perf-ast",
       "chromium.perf.fyi:fuchsia-perf-nsn",
       "chromium.perf.fyi:fuchsia-perf-shk"
     ]
