@@ -325,7 +325,19 @@ class Generator:
         yield test_spec
       return
 
-    swarming_dimension_sets = swarming_spec.get('dimension_sets')
+    if 'dimension_sets' in swarming_spec and 'dimensions' in swarming_spec:
+      self._chromium_tests_api.m.step.empty(
+          'test spec format error',
+          status=self._chromium_tests_api.m.step.FAILURE,
+          log_name='details',
+          log_text=textwrap.wrap(
+              textwrap.dedent(f"""\
+                      The test target "{name}" specifies both "dimension_sets"
+                      and "dimensions" in its swarming value.
+                      """)))
+    swarming_dimension_sets = (
+        swarming_spec.get('dimension_sets') or
+        [swarming_spec.get('dimensions', {})])
     swarming_optional_dimensions = self._normalize_optional_dimensions(
         swarming_spec.get('optional_dimensions'))
     kwargs['expiration'] = swarming_spec.get('expiration')
@@ -401,7 +413,7 @@ class Generator:
       kwargs['trigger_script'] = chromium_swarming.TriggerScript.create(
           **trigger_script)
 
-    for dimensions in swarming_dimension_sets or [{}]:
+    for dimensions in swarming_dimension_sets:
       kwargs['dimensions'] = dimensions
 
       # Also, add in optional dimensions.
