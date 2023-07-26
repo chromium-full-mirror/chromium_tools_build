@@ -1123,7 +1123,7 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 849, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 861, in RunSteps",
       "    _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 338, in _run_tests",
       "    test_runner = _TestRunner(api, memory_tool, resultdb, out_dir, build_config,",
