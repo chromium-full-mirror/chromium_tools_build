@@ -221,7 +221,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     Returns:
       List of Paths to build output files
     """
-    binary_paths = self.get_binaries(tests)
+    # Pass |may_use_binaries_list_file| as False to make it figure out the
+    # binaries from scratch. It's needed here because at this time the file
+    # may already exist in the build output cache.
+    binary_paths = self.get_binaries(tests, may_use_binaries_list_file=False)
     files = [
         binary_path for binary_path in binary_paths
         if self.m.path.exists(binary_path)
@@ -276,28 +279,32 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     )
     return step_result.json.output
 
-  def get_binaries(self, tests):
+  def get_binaries(self, tests, may_use_binaries_list_file):
     """Returns paths to the binary for the given test objects.
 
     By default, use the name of the target as the binary.
 
     Args:
       tests (list(Test)): List of Test objects
+      may_use_binaries_list_file (bool): Whether the method can use the
+        list of stored binary paths read from a file (if it exists). In
+        orchestrator/compilator structure, this file is passed from
+        compilator to orchestrator. It includes the binary list relevant
+        to |tests|, discovered by |get_binaries| API invoked on compilator.
 
     Returns:
       List of Paths to test binaries
     """
-    binary_relative_paths_json_file_path = (
-        self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME))
-    # In orchestrator/compilator structure, this file is passed from
-    # compilator to orchestrator. It includes the binary list relevant
-    # to |tests|, discovered by |get_binaries| API invoked on compilator.
-    if self.m.path.exists(binary_relative_paths_json_file_path):
-      rel_paths = self.m.file.read_json(
-          'Read binary relative path list file',
-          self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME),
-          test_data=["some_library"])
-      return {self.build_dir.join(path) for path in rel_paths}
+    if may_use_binaries_list_file:
+      binary_relative_paths_json_file_path = (
+          self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME))
+
+      if self.m.path.exists(binary_relative_paths_json_file_path):
+        rel_paths = self.m.file.read_json(
+            'read binary relative path list file',
+            self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME),
+            test_data=["some_library"])
+        return {self.build_dir.join(path) for path in rel_paths}
 
     # TODO(crbug.com/899974): Implement a sturdier approach that also works in
     # separate builder-tester setup.
@@ -668,7 +675,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           result.presentation.properties['merge errors'] = merge_errors.stdout
 
         if not binaries:
-          binaries = self.get_binaries(tests)
+          binaries = self.get_binaries(tests, may_use_binaries_list_file=True)
           binaries = self._get_binaries_with_valid_coverage_data_on_trybot(
               binaries, merged_profdata)
 

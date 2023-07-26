@@ -21,7 +21,10 @@ PROPERTIES = {'expected_binaries': Property(kind=list)}
 def RunSteps(api, expected_binaries):
   api.code_coverage.build_dir = api.chromium_checkout.src_dir.join(
       'out', 'Release')
-  binaries = sorted(list(api.code_coverage.get_binaries(['whatever'])))
+  binaries = sorted(
+      list(
+          api.code_coverage.get_binaries(['whatever'],
+                                         may_use_binaries_list_file=True)))
   api.assertions.assertCountEqual(binaries, expected_binaries)
 
 
