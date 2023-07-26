@@ -636,6 +636,8 @@ def update_dependencies(api, step, updates, autoroller_config, trusted):
 
     commit_lines.extend(update.commit_lines)
 
+  commit_lines.append(f'\nRoll created at {api.buildbucket.build_url()}')
+
   upload_cl(
       api,
       step,

@@ -1383,7 +1383,9 @@
       "-m",
       "Commit 0 (Mex)\nhttps://chromium.googlesource.com/chromium/src/tools/clang/+/beefdea",
       "-m",
-      "Rolling v8/tools/luci-go: git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9..git_revision:3d8f881462b1a93c7525499381fafc8a08691be7"
+      "Rolling v8/tools/luci-go: git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9..git_revision:3d8f881462b1a93c7525499381fafc8a08691be7",
+      "-m",
+      "\nRoll created at https://cr-buildbucket.appspot.com/build/8945511751514863184"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -1884,6 +1886,8 @@
       "Commit 1 (Tex)\nhttps://example.com/tools/clang-reviewed/+/deadbee",
       "-m",
       "Commit 0 (Mex)\nhttps://example.com/tools/clang-reviewed/+/beefdea",
+      "-m",
+      "\nRoll created at https://cr-buildbucket.appspot.com/build/8945511751514863184",
       "-m",
       "R=anybody@chromium.org,ciciobello@chromium.org"
     ],
