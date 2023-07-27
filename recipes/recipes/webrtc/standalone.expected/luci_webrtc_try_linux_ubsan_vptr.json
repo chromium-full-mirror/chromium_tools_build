@@ -796,6 +796,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux_ubsan_vptr",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux_ubsan_vptr",
       "RBE_deps_cache_max_mb": "256",
@@ -911,6 +912,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux_ubsan_vptr",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux_ubsan_vptr",
       "RBE_deps_cache_max_mb": "256",

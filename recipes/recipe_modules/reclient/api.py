@@ -446,6 +446,7 @@ class ReclientApi(recipe_api.RecipeApi):
         'RBE_deps_cache_max_mb': _DEPS_CACHE_MAX_MB,
         'RBE_use_unified_uploads': 'true',
         'GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP': enable_crash_dump,
+        'GOMA_DEPS_CACHE_TABLE_THRESHOLD': 40000,
     }
 
     if self.metrics_project:
