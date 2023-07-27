@@ -39,6 +39,8 @@ def _incremental_build_with_one_day_changes(api, target):
      (a.k.a morning build).
   """
   time_format = '%Y-%m-%d %H:%M:%S %z'
+  # Ninja+Recilent builds only for now.
+  phase = 'reproxy'
 
   with api.step.nest('Incremental build with 1-day of changes'):
     cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
@@ -62,6 +64,7 @@ def _incremental_build_with_one_day_changes(api, target):
             'abcd\nefgh\n')).stdout.split()[0]
 
     # Run a warm up build for remote caches at the current revision.
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
     raw_result = api.chromium_build_perf.build_with_ninja(
         target,
         with_remote_cache=True,
@@ -71,7 +74,7 @@ def _incremental_build_with_one_day_changes(api, target):
       return raw_result
 
     # Clean up build dir and deps cache.
-    api.chromium_build_perf.recreate_build_dir()
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
     api.chromium_build_perf.remove_deps_cache()
 
     # Run a warm up build for local build dir at the base revision.
@@ -146,7 +149,7 @@ def _incremental_builds_with_patch(api, target):
       return
 
     # Run a build at each revision.
-    api.chromium_build_perf.recreate_build_dir()
+    api.chromium_build_perf.recreate_build_dir(phase='reproxy')
     api.chromium_build_perf.remove_deps_cache()
     raw_result = None
     for i, rev in enumerate(revs):
@@ -174,29 +177,48 @@ def _incremental_builds_with_patch(api, target):
 def _clean_builds(api, target):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
-    api.chromium_build_perf.recreate_build_dir()
+    # Ninja+Reclient builds.
+    phase = 'reproxy'
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
     api.chromium_build_perf.remove_deps_cache()
     result = api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=False)
     if result.status != common_pb.SUCCESS:
       return result
 
-    api.chromium_build_perf.recreate_build_dir()
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
     result = api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=True)
     if result.status != common_pb.SUCCESS:
       return result
 
     # Siso+Reclient builds.
+    phase = 'reproxy'
     step_name_suffix = ' with Siso in Reproxy mode'
-    api.chromium_build_perf.recreate_build_dir()
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
     api.chromium_build_perf.remove_deps_cache()
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=False, step_name_suffix=step_name_suffix)
     if result.status != common_pb.SUCCESS:
       return result
 
-    api.chromium_build_perf.recreate_build_dir()
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
+    result = api.chromium_build_perf.build_with_siso(
+        target, with_remote_cache=True, step_name_suffix=step_name_suffix)
+    if result.status != common_pb.SUCCESS:
+      return result
+
+    # Siso native builds.
+    phase = 'builtin'
+    step_name_suffix = ' with Siso in native mode'
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
+    api.chromium_build_perf.remove_deps_cache()
+    result = api.chromium_build_perf.build_with_siso(
+        target, with_remote_cache=False, step_name_suffix=step_name_suffix)
+    if result.status != common_pb.SUCCESS:
+      return result
+
+    api.chromium_build_perf.recreate_build_dir(phase=phase)
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=True, step_name_suffix=step_name_suffix)
     if result.status != common_pb.SUCCESS:
@@ -256,6 +278,10 @@ def GenTests(api):
         'Clean builds.Build %s without remote cache with Siso in Reproxy mode' %
         target,
         'Clean builds.Build %s with remote cache with Siso in Reproxy mode' %
+        target,
+        'Clean builds.Build %s without remote cache with Siso in native mode' %
+        target,
+        'Clean builds.Build %s with remote cache with Siso in native mode' %
         target,
         # TODO(b/270902505): enable Siso native builds with phase.
         # 'Clean builds.Build %s with remote cache with Siso in Native mode' %
