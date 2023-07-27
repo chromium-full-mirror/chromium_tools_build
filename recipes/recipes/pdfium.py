@@ -17,6 +17,7 @@ DEPS = [
     'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
+    'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
@@ -69,6 +70,29 @@ _ALL_RENDERERS = _DEFAULT_RENDERERS.union([_GDI_RENDERER])
 # higher priority (lower value) than the orchestrator parent task, to avoid
 # priority inversion.
 _DEFAULT_SWARMING_TEST_PRIORITY = 25
+
+# Default swarming execution timeout for completing test tasks (in seconds).
+_DEFAULT_SWARMING_EXECUTION_TIMEOUT_SECS = 20 * 60
+
+# Default swarming expiration for scheduling test tasks (in seconds).
+_DEFAULT_SWARMING_EXPIRATION_SECS = 5 * 60
+
+# Relative path for CIPD packages installed by swarming tasks.
+_SWARMING_CIPD_PATH = 'packages'
+
+# Relative path for vpython cache used by swarming tasks.
+_SWARMING_VPYTHON_PATH = 'vpython_cache'
+
+# Environment prefixes for swarming tasks.
+_SWARMING_ENV_PREFIXES = {
+    'PATH': [_SWARMING_CIPD_PATH],
+    'VPYTHON_VIRTUALENV_ROOT': [_SWARMING_VPYTHON_PATH],
+}
+
+# Named caches for swarming tasks.
+_SWARMING_NAMED_CACHES = {
+    'vpython_cache': _SWARMING_VPYTHON_PATH,
+}
 
 
 @dataclass
@@ -420,6 +444,13 @@ class _Swarming:
     assert 'dimensions' in properties
     self.properties = properties
 
+    # TODO(crbug.com/1465963): Use pool with `task_template_deployment` instead.
+    self.ensure_file = self.api.cipd.EnsureFile()
+    self.ensure_file.add_package('infra/tools/rdb/${platform}', 'latest',
+                                 _SWARMING_CIPD_PATH)
+    self.ensure_file.add_package('infra/tools/luci/vpython3/${platform}',
+                                 'latest', _SWARMING_CIPD_PATH)
+
     self.test_inputs_digest = None
     self.requests = []
     self.tasks = []
@@ -463,18 +494,29 @@ class _Swarming:
   def request_task(self, step_name, command, *, env):
     self._ensure_test_inputs()
 
-    # TODO(crbug.com/pdfium/1933): Which other task/slice properties do we need?
     request = (
         self.api.swarming.task_request().with_name(step_name).with_priority(
-            self.properties.get(
-                'priority', _DEFAULT_SWARMING_TEST_PRIORITY)).with_resultdb())
+            self.properties.get('priority',
+                                _DEFAULT_SWARMING_TEST_PRIORITY)).with_resultdb(
+                                ).with_service_account(
+                                    self.properties.get('service_account', '')))
 
+    # TODO(crbug.com/1465963): Try to make this idempotent after switching to
+    # `task_template_deployment`.
     task_slice = request[0]
     task_slice = (
         task_slice.with_command(command).with_cas_input_root(
             self.test_inputs_digest).with_dimensions(
-                **self.properties['dimensions']))
-    task_slice = task_slice.with_env_vars(**env)
+                **self.properties['dimensions']).with_cipd_ensure_file(
+                    self.ensure_file).with_env_vars(**env)
+        .with_env_prefixes(**_SWARMING_ENV_PREFIXES).with_expiration_secs(
+            self.properties.get(
+                'expiration_secs',
+                _DEFAULT_SWARMING_EXPIRATION_SECS)).with_execution_timeout_secs(
+                    self.properties.get(
+                        'execution_timeout_secs',
+                        _DEFAULT_SWARMING_EXECUTION_TIMEOUT_SECS)
+                ).with_named_caches(_SWARMING_NAMED_CACHES))
 
     self.requests.append(request.with_slice(0, task_slice))
 
@@ -484,6 +526,14 @@ class _Swarming:
       self.tasks = self.api.swarming.trigger('trigger tasks', self.requests)
     finally:
       self.requests.clear()
+
+    # TODO(b/277799110): Replace with `str.removeprefix()`.
+    def removeprefix(s, prefix):
+      assert s.startswith(prefix)
+      return s[len(prefix):]
+
+    self.api.resultdb.include_invocations(
+        [removeprefix(task.invocation, 'invocations/') for task in self.tasks])
 
   def collect_tasks(self):
     try:
@@ -1177,11 +1227,17 @@ def GenTests(api):
       'swarming-win',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
-      _gen_properties(api, swarming={
-          'dimensions': {
-              'pool': 'luci.flex.ci',
-          },
-      }),
+      _gen_properties(
+          api,
+          swarming={
+              'dimensions': {
+                  'pool': 'luci.flex.ci',
+              },
+              'expiration_secs':
+                  3 * 3600,
+              'service_account':
+                  'pdfium-ci-builder@chops-service-accounts.iam.gserviceaccount.com',
+          }),
       _gen_ci_build(api, 'windows'),
   )
   yield api.test(
@@ -1194,6 +1250,7 @@ def GenTests(api):
               'dimensions': {
                   'pool': 'luci.flex.try',
               },
+              'execution_timeout_secs': 10 * 60,
               'priority': 42,
           }),
       _gen_try_build(api, 'windows'),
