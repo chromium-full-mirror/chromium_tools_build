@@ -551,8 +551,6 @@ def _cleanup_coverage_data(src_path, llvm_raw_data):
   cleaned_file_data = []
   for datum in llvm_raw_data['data']:
     for file_coverage_data in datum['files']:
-      # TODO(crbug.com/1010267) Remove prefixes when Clang supports
-      # relative paths for coverage.
       prefixes = [
           src_path,
           r'C:\botcode\w',  # crbug.com/1010267
