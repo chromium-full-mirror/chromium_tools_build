@@ -487,10 +487,20 @@ class _Swarming:
 
   def collect_tasks(self):
     try:
-      # TODO(crbug.com/pdfium/1933): Should we look at the results?
-      self.api.swarming.collect('collect tasks', self.tasks)
+      task_results = self.api.swarming.collect('collect tasks', self.tasks)
     finally:
       self.tasks.clear()
+
+    for result in task_results.get_result():
+      self._report_task_result(result)
+
+  @composite_step
+  def _report_task_result(self, result):
+    if result.state != self.api.swarming.TaskState.COMPLETED:
+      result.analyze()
+
+    status = self.api.step.SUCCESS if result.success else self.api.step.FAILURE
+    self.api.step.empty(result.name, status=status, log_text=result.output)
 
 
 def _validate_renderers(context_name, renderers):
@@ -1354,6 +1364,106 @@ def GenTests(api):
       _gen_properties(api, xfa=True, renderers=['agg', 'fake', 'gdi']),
       _gen_ci_build(api, 'windows'),
       api.expect_exception('ValueError'),
+  )
+
+  yield api.test(
+      'fail-swarming-infra',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, swarming={
+          'dimensions': {
+              'pool': 'luci.flex.ci',
+          },
+      }),
+      _gen_ci_build(api, 'linux'),
+      api.step_data(
+          'collect tasks',
+          api.swarming.collect([
+              {
+                  'output': 'hello world!',
+                  'results': {
+                      'exit_code': '0',
+                      'name': 'corpus tests',
+                      'state': 'COMPLETED',
+                      'task_id': '0',
+                  },
+              },
+              {
+                  'results': {
+                      'name': 'corpus tests (oneshot rendering enabled)',
+                      'state': 'BOT_DIED',
+                      'task_id': '1',
+                  },
+              },
+              {
+                  'error': 'goodbye world!',
+                  'results': {
+                      'task_id': '2',
+                  },
+              },
+              {
+                  'output': 'hello world!',
+                  'results': {
+                      'exit_code': '0',
+                      'name': 'corpus tests (javascript disabled)',
+                      'state': 'COMPLETED',
+                      'task_id': '3',
+                  },
+              },
+          ])),
+      api.expect_status('INFRA_FAILURE'),
+  )
+  yield api.test(
+      'fail-swarming-command',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, swarming={
+          'dimensions': {
+              'pool': 'luci.flex.ci',
+          },
+      }),
+      _gen_ci_build(api, 'linux'),
+      api.step_data(
+          'collect tasks',
+          api.swarming.collect([
+              {
+                  'output': 'hello world!',
+                  'results': {
+                      'exit_code': '0',
+                      'name': 'corpus tests',
+                      'state': 'COMPLETED',
+                      'task_id': '0',
+                  },
+              },
+              {
+                  'output': 'hello world!',
+                  'results': {
+                      'exit_code': '1',
+                      'name': 'corpus tests (oneshot rendering enabled)',
+                      'state': 'COMPLETED',
+                      'task_id': '1',
+                  },
+              },
+              {
+                  'output': 'hello world!',
+                  'results': {
+                      'exit_code': '0',
+                      'name': 'corpus tests (reverse byte order)',
+                      'state': 'COMPLETED',
+                      'task_id': '2',
+                  },
+              },
+              {
+                  'output': 'hello world!',
+                  'results': {
+                      'exit_code': '1',
+                      'name': 'corpus tests (javascript disabled)',
+                      'state': 'COMPLETED',
+                      'task_id': '3',
+                  },
+              },
+          ])),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(

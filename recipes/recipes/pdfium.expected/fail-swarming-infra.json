@@ -3,13 +3,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",
-      "[CACHE]\\builder"
+      "[CACHE]/builder"
     ],
     "infra_step": true,
     "luci_context": {
@@ -30,15 +30,15 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::bot_update]\\resources\\bot_update.py",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]\\\\git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'pdfium', 'url': 'https://pdfium.googlesource.com/pdfium.git'}]",
       "--revision_mapping_file",
       "{\"got_revision\": \"pdfium\"}",
       "--git-cache-dir",
-      "[CACHE]\\git",
+      "[CACHE]/git",
       "--cleanup-dir",
-      "[CLEANUP]\\bot_update",
+      "[CLEANUP]/bot_update",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
@@ -46,18 +46,18 @@
       "--refs",
       "refs/heads/main"
     ],
-    "cwd": "[CACHE]\\builder",
+    "cwd": "[CACHE]/builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/windows/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/linux/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
       "GIT_HTTP_LOW_SPEED_TIME": "1800",
       "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
-      "GIT_TRACE2_EVENT": "[CLEANUP]\\trace2-event",
-      "GIT_TRACE_CURL": "[CLEANUP]\\trace-curl",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]\\trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -123,12 +123,12 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]\\gclient.py",
+      "RECIPE_REPO[depot_tools]/gclient.py",
       "runhooks"
     ],
-    "cwd": "[CACHE]\\builder",
+    "cwd": "[CACHE]/builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/windows/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/linux/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -153,14 +153,14 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_REPO[depot_tools]\\gn.py",
+      "RECIPE_REPO[depot_tools]/gn.py",
       "--check",
-      "--root=[CACHE]\\builder\\pdfium",
+      "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_v8",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true symbol_level=1 is_clang=true"
+      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -182,7 +182,7 @@
   {
     "cmd": [
       "vpython3",
-      "[CACHE]\\builder\\pdfium\\buildtools\\reclient_cfgs\\fetch_reclient_cfgs.py"
+      "[CACHE]/builder/pdfium/buildtools/reclient_cfgs/fetch_reclient_cfgs.py"
     ],
     "env": {
       "RBE_instance": "projects/fake-reclient-instance/instances/default_instance"
@@ -209,13 +209,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",
-      "[CACHE]\\builder\\reclient\\deps\\windows"
+      "[CACHE]/builder/reclient/deps/linux"
     ],
     "infra_step": true,
     "luci_context": {
@@ -239,11 +239,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CACHE]\\builder\\reclient\\deps\\windows"
+      "[CACHE]/builder/reclient/deps/linux"
     ],
     "infra_step": true,
     "luci_context": {
@@ -267,16 +267,16 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
       "start",
       "--cloudtail-path",
-      "cloudtail.exe",
+      "cloudtail",
       "--cloudtail-project-id",
       "goma-logs",
       "--cloudtail-log-path",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy.exe.INFO",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
       "--pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -291,7 +291,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "preprocess for reclient.start cloudtail: reproxy.exe.INFO",
+    "name": "preprocess for reclient.start cloudtail: reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
@@ -300,16 +300,16 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
       "start",
       "--cloudtail-path",
-      "cloudtail.exe",
+      "cloudtail",
       "--cloudtail-project-id",
       "goma-logs",
       "--cloudtail-log-path",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.INFO",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.INFO",
       "--pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -332,24 +332,24 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\pdfium\\buildtools\\reclient\\bootstrap.exe"
+      "[CACHE]/builder/pdfium/buildtools/reclient/bootstrap"
     ],
     "env": {
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
-      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\windows",
-      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\windows",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux",
       "RBE_deps_cache_max_mb": "256",
       "RBE_enable_deps_cache": "true",
       "RBE_fail_early_min_action_count": "4000",
       "RBE_fail_early_min_fallback_ratio": "0.5",
       "RBE_instance": "projects/fake-reclient-instance/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_1",
-      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
-      "RBE_re_proxy": "[CACHE]\\builder\\pdfium\\buildtools\\reclient\\reproxy.exe",
-      "RBE_server_address": "pipe://reproxy.pipe",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]/builder/pdfium/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
@@ -374,54 +374,17 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "preprocess for reclient.get reclient version",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@reclient_version@{@@@",
-      "@@@STEP_LOG_LINE@reclient_version@  \"HASH\": \"aaaaaaaa\",@@@",
-      "@@@STEP_LOG_LINE@reclient_version@  \"MAJOR\": 0,@@@",
-      "@@@STEP_LOG_LINE@reclient_version@  \"MINOR\": 110,@@@",
-      "@@@STEP_LOG_LINE@reclient_version@  \"PATCH\": 0@@@",
-      "@@@STEP_LOG_LINE@reclient_version@}@@@",
-      "@@@STEP_LOG_END@reclient_version@@@"
-    ]
-  },
-  {
     "cmd": [
-      "[CACHE]\\builder\\pdfium\\buildtools\\reclient\\bootstrap.exe",
-      "--version"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient.get reclient version.call bootstrap --version",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[CACHE]\\builder\\pdfium\\third_party\\ninja\\ninja",
+      "[CACHE]/builder/pdfium/third_party/ninja/ninja",
       "-C",
-      "[CACHE]\\builder\\pdfium\\out\\debug_v8",
+      "[CACHE]/builder/pdfium/out/debug_v8",
       "-j",
       "500",
       "pdfium_all"
     ],
     "env": {
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
-      "RBE_server_address": "pipe://reproxy.pipe"
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {
@@ -443,25 +406,25 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\pdfium\\buildtools\\reclient\\bootstrap.exe",
+      "[CACHE]/builder/pdfium/buildtools/reclient/bootstrap",
       "-shutdown"
     ],
     "env": {
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
-      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\windows",
-      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\windows",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux",
       "RBE_deps_cache_max_mb": "256",
       "RBE_enable_deps_cache": "true",
       "RBE_fail_early_min_action_count": "4000",
       "RBE_fail_early_min_fallback_ratio": "0.5",
       "RBE_instance": "projects/fake-reclient-instance/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_1",
-      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
-      "RBE_re_proxy": "[CACHE]\\builder\\pdfium\\buildtools\\reclient\\reproxy.exe",
-      "RBE_server_address": "pipe://reproxy.pipe",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]/builder/pdfium/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
@@ -488,10 +451,10 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
       "stop",
       "--killed-pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -514,10 +477,10 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
       "stop",
       "--killed-pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "infra_step": true,
     "luci_context": {
@@ -541,11 +504,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]\\reclient_log_tmp_1\\rbe_metrics.pb",
+      "[CLEANUP]/reclient_log_tmp_1/rbe_metrics.pb",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -577,13 +540,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\latest"
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest"
     ],
     "infra_step": true,
     "luci_context": {
@@ -605,10 +568,10 @@
   },
   {
     "cmd": [
-      "cipd.bat",
+      "cipd",
       "ensure",
       "-root",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\latest",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest",
       "-ensure-file",
       "infra/tools/bqupload/${platform} latest",
       "-max-threads",
@@ -647,7 +610,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\latest\\bqupload",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
       "goma-logs.rbe_metrics.builds"
     ],
     "infra_step": true,
@@ -726,11 +689,11 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\generate_rpl_gzip.py",
+      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
       "--reclient-log-dir",
-      "[CLEANUP]\\reclient_log_tmp_1",
+      "[CLEANUP]/reclient_log_tmp_1",
       "--output-gzip-path",
-      "[TMP_BASE]\\reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -754,12 +717,12 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz",
+      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
     "infra_step": true,
@@ -785,11 +748,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CLEANUP]\\reclient_log_tmp_1"
+      "[CLEANUP]/reclient_log_tmp_1"
     ],
     "infra_step": true,
     "luci_context": {
@@ -807,11 +770,11 @@
     "name": "postprocess for reclient.list reclient log directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy.rpl@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_1\\rewrapper.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/rewrapper.INFO@@@",
       "@@@STEP_LOG_END@listdir@@@"
     ]
   },
@@ -826,11 +789,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -846,7 +809,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -855,13 +818,13 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "infra_step": true,
     "luci_context": {
@@ -876,21 +839,21 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "name": "postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
     ]
   },
   {
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -906,7 +869,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -915,13 +878,13 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO"
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO"
     ],
     "infra_step": true,
     "luci_context": {
@@ -936,21 +899,21 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO",
+    "name": "postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO@@@"
     ]
   },
   {
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -966,7 +929,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
+    "name": "postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -975,13 +938,13 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log"
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log"
     ],
     "infra_step": true,
     "luci_context": {
@@ -996,22 +959,22 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log",
+    "name": "postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/[CLEANUP]\\reclient_log_tmp_1\\reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log@@@"
     ]
   },
   {
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
       "fake tar contents",
-      "[TMP_BASE]\\reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
+      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1035,12 +998,12 @@
     "cmd": [
       "python3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
       "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz",
+      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz",
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
     "infra_step": true,
@@ -1065,9 +1028,9 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\perform_health_check.py",
+      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
       "--reclient-log-dir",
-      "[CLEANUP]\\reclient_log_tmp_1",
+      "[CLEANUP]/reclient_log_tmp_1",
       "--build-exit-status",
       "-1"
     ],
@@ -1093,11 +1056,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CLEANUP]\\reclient_log_tmp_1"
+      "[CLEANUP]/reclient_log_tmp_1"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1121,11 +1084,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\pdfium\\out\\debug_v8\\test_runner_py.json",
+      "[CACHE]/builder/pdfium/out/debug_v8/test_runner_py.json",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -1147,11 +1110,11 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "RECIPE_MODULE[recipe_engine::cas]\\resources\\infra.sha1",
+      "RECIPE_MODULE[recipe_engine::cas]/resources/infra.sha1",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -1181,13 +1144,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\git_revision%3Amock_infra_git_revision"
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1209,10 +1172,10 @@
   },
   {
     "cmd": [
-      "cipd.bat",
+      "cipd",
       "ensure",
       "-root",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\git_revision%3Amock_infra_git_revision",
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision",
       "-ensure-file",
       "infra/tools/luci/cas/${platform} git_revision:mock_infra_git_revision",
       "-max-threads",
@@ -1251,14 +1214,14 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\cas\\git_revision%3Amock_infra_git_revision\\cas",
+      "[START_DIR]/cipd_tool/infra/tools/luci/cas/git_revision%3Amock_infra_git_revision/cas",
       "archive",
       "-cas-instance",
       "projects/example-cas-server/instances/default_instance",
       "-dump-digest",
       "/path/to/tmp/",
       "-paths-json",
-      "[[\"[CACHE]\\\\builder\\\\pdfium\", \".vpython3\"], [\"[CACHE]\\\\builder\\\\pdfium\", \"out\\\\debug_v8\\\\snapshot_blob.bin\"], [\"[CACHE]\\\\builder\\\\pdfium\", \"testing\\\\resources\"]]"
+      "[[\"[CACHE]/builder/pdfium\", \".vpython3\"], [\"[CACHE]/builder/pdfium\", \"out/debug_v8/snapshot_blob.bin\"], [\"[CACHE]/builder/pdfium\", \"testing/resources\"]]"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1286,13 +1249,13 @@
     "cmd": [
       "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin"
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1314,10 +1277,10 @@
   },
   {
     "cmd": [
-      "cipd.bat",
+      "cipd",
       "ensure",
       "-root",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin",
       "-ensure-file",
       "infra/tools/luci/swarming/${platform} swarming_module_pin",
       "-max-threads",
@@ -1356,12 +1319,12 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin\\swarming",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
       "spawn-tasks",
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"corpus tests\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:windows\", \"-var\", \"test_suite:corpus\", \"-tag\", \"step_name:corpus tests\", \"--\", \"vpython3\", \"-u\", \"testing\\\\tools\\\\run_corpus_tests.py\", \"--build-dir\", \"out\\\\debug_v8\", \"--gold_output_dir\", \"out\\\\debug_v8\\\\gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"clang true debug true is_standalone true javascript_runtime enabled os windows skia false symbol_level 1 v8 true xfa false xfa_runtime disabled\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}, {\"name\": \"corpus tests (oneshot rendering enabled)\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:windows\", \"-var\", \"test_suite:corpus_oneshot\", \"-tag\", \"step_name:corpus tests (oneshot rendering enabled)\", \"--\", \"vpython3\", \"-u\", \"testing\\\\tools\\\\run_corpus_tests.py\", \"--build-dir\", \"out\\\\debug_v8\", \"--gold_output_dir\", \"out\\\\debug_v8\\\\gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite oneshot symbol_level 1 v8 true xfa false xfa_runtime disabled\", \"--render-oneshot\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}, {\"name\": \"corpus tests (reverse byte order)\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:windows\", \"-var\", \"test_suite:corpus_reverse_byte_order\", \"-tag\", \"step_name:corpus tests (reverse byte order)\", \"--\", \"vpython3\", \"-u\", \"testing\\\\tools\\\\run_corpus_tests.py\", \"--build-dir\", \"out\\\\debug_v8\", \"--gold_output_dir\", \"out\\\\debug_v8\\\\gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite reverse_byte_order symbol_level 1 v8 true xfa false xfa_runtime disabled\", \"--reverse-byte-order\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}, {\"name\": \"corpus tests (javascript disabled)\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:windows\", \"-var\", \"test_suite:corpus_javascript_disabled\", \"-tag\", \"step_name:corpus tests (javascript disabled)\", \"--\", \"vpython3\", \"-u\", \"testing\\\\tools\\\\run_corpus_tests.py\", \"--build-dir\", \"out\\\\debug_v8\", \"--gold_output_dir\", \"out\\\\debug_v8\\\\gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"clang true debug true is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled symbol_level 1 v8 true xfa false xfa_runtime disabled\", \"--disable-javascript\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"corpus tests\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:linux\", \"-var\", \"test_suite:corpus\", \"-tag\", \"step_name:corpus tests\", \"--\", \"vpython3\", \"-u\", \"testing/tools/run_corpus_tests.py\", \"--build-dir\", \"out/debug_v8\", \"--gold_output_dir\", \"out/debug_v8/gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"debug true is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}, {\"name\": \"corpus tests (oneshot rendering enabled)\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:linux\", \"-var\", \"test_suite:corpus_oneshot\", \"-tag\", \"step_name:corpus tests (oneshot rendering enabled)\", \"--\", \"vpython3\", \"-u\", \"testing/tools/run_corpus_tests.py\", \"--build-dir\", \"out/debug_v8\", \"--gold_output_dir\", \"out/debug_v8/gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"debug true is_standalone true javascript_runtime enabled os linux skia false suite oneshot v8 true xfa false xfa_runtime disabled\", \"--render-oneshot\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}, {\"name\": \"corpus tests (reverse byte order)\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:linux\", \"-var\", \"test_suite:corpus_reverse_byte_order\", \"-tag\", \"step_name:corpus tests (reverse byte order)\", \"--\", \"vpython3\", \"-u\", \"testing/tools/run_corpus_tests.py\", \"--build-dir\", \"out/debug_v8\", \"--gold_output_dir\", \"out/debug_v8/gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"debug true is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order v8 true xfa false xfa_runtime disabled\", \"--reverse-byte-order\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}, {\"name\": \"corpus tests (javascript disabled)\", \"priority\": \"25\", \"realm\": \"pdfium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"rdb\", \"stream\", \"-test-id-prefix\", \"ninja://testing/tools:run_corpus_tests/\", \"-var\", \"builder:linux\", \"-var\", \"test_suite:corpus_javascript_disabled\", \"-tag\", \"step_name:corpus tests (javascript disabled)\", \"--\", \"vpython3\", \"-u\", \"testing/tools/run_corpus_tests.py\", \"--build-dir\", \"out/debug_v8\", \"--gold_output_dir\", \"out/debug_v8/gold_output\", \"--run-skia-gold\", \"--git-revision\", \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"--buildbucket-id\", \"8945511751514863184\", \"--gold_key\", \"debug true is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled\", \"--disable-javascript\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"pool\", \"value\": \"luci.flex.ci\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1456,7 +1419,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-test-id-prefix\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"ninja://testing/tools:run_corpus_tests/\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"builder:windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:corpus\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
@@ -1464,18 +1427,18 @@
       "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"testing\\\\tools\\\\run_corpus_tests.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"testing/tools/run_corpus_tests.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--build-dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_output_dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\\\\gold_output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8/gold_output\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--run-skia-gold\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--git-revision\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--buildbucket-id\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_key\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"clang true debug true is_standalone true javascript_runtime enabled os windows skia false symbol_level 1 v8 true xfa false xfa_runtime disabled\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"debug true is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
@@ -1524,7 +1487,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-test-id-prefix\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"ninja://testing/tools:run_corpus_tests/\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"builder:windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:corpus_oneshot\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
@@ -1532,18 +1495,18 @@
       "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"testing\\\\tools\\\\run_corpus_tests.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"testing/tools/run_corpus_tests.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--build-dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_output_dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\\\\gold_output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8/gold_output\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--run-skia-gold\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--git-revision\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--buildbucket-id\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_key\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite oneshot symbol_level 1 v8 true xfa false xfa_runtime disabled\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"debug true is_standalone true javascript_runtime enabled os linux skia false suite oneshot v8 true xfa false xfa_runtime disabled\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--render-oneshot\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
@@ -1593,7 +1556,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-test-id-prefix\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"ninja://testing/tools:run_corpus_tests/\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"builder:windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:corpus_reverse_byte_order\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
@@ -1601,18 +1564,18 @@
       "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"testing\\\\tools\\\\run_corpus_tests.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"testing/tools/run_corpus_tests.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--build-dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_output_dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\\\\gold_output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8/gold_output\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--run-skia-gold\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--git-revision\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--buildbucket-id\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_key\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite reverse_byte_order symbol_level 1 v8 true xfa false xfa_runtime disabled\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"debug true is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order v8 true xfa false xfa_runtime disabled\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--reverse-byte-order\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
@@ -1662,7 +1625,7 @@
       "@@@STEP_LOG_LINE@json.input@              \"-test-id-prefix\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"ninja://testing/tools:run_corpus_tests/\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"builder:windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"builder:linux\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"test_suite:corpus_javascript_disabled\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
@@ -1670,18 +1633,18 @@
       "@@@STEP_LOG_LINE@json.input@              \"--\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"vpython3\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-u\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"testing\\\\tools\\\\run_corpus_tests.py\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"testing/tools/run_corpus_tests.py\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--build-dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_output_dir\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"out\\\\debug_v8\\\\gold_output\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"out/debug_v8/gold_output\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--run-skia-gold\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--git-revision\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--buildbucket-id\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--gold_key\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"clang true debug true is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled symbol_level 1 v8 true xfa false xfa_runtime disabled\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"debug true is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"--disable-javascript\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
@@ -1722,23 +1685,23 @@
       "-test-id-prefix",
       "ninja://:pdfium_unittests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:pdfium_unittests",
       "-tag",
       "step_name:unittests",
       "--",
-      "[CACHE]\\builder\\pdfium\\tools\\resultdb\\result_adapter.exe",
+      "[CACHE]/builder/pdfium/tools/resultdb/result_adapter",
       "gtest_json",
       "-artifact-directory",
       "[CLEANUP]",
       "-result-file",
-      "[CLEANUP]\\tmp_tmp_1",
+      "[CLEANUP]/tmp_tmp_1",
       "--",
-      "out\\debug_v8\\pdfium_unittests.exe",
-      "--gtest_output=json:[CLEANUP]\\tmp_tmp_1"
+      "out/debug_v8/pdfium_unittests",
+      "--gtest_output=json:[CLEANUP]/tmp_tmp_1"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1760,23 +1723,23 @@
       "-test-id-prefix",
       "ninja://:pdfium_embeddertests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:pdfium_embeddertests",
       "-tag",
       "step_name:embeddertests",
       "--",
-      "[CACHE]\\builder\\pdfium\\tools\\resultdb\\result_adapter.exe",
+      "[CACHE]/builder/pdfium/tools/resultdb/result_adapter",
       "gtest_json",
       "-artifact-directory",
       "[CLEANUP]",
       "-result-file",
-      "[CLEANUP]\\tmp_tmp_2",
+      "[CLEANUP]/tmp_tmp_2",
       "--",
-      "out\\debug_v8\\pdfium_embeddertests.exe",
-      "--gtest_output=json:[CLEANUP]\\tmp_tmp_2"
+      "out/debug_v8/pdfium_embeddertests",
+      "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1798,7 +1761,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:javascript",
       "-tag",
@@ -1806,20 +1769,20 @@
       "--",
       "vpython3",
       "-u",
-      "testing\\tools\\run_javascript_tests.py",
+      "testing/tools/run_javascript_tests.py",
       "--build-dir",
-      "out\\debug_v8",
+      "out/debug_v8",
       "--gold_output_dir",
-      "out\\debug_v8\\gold_output",
+      "out/debug_v8/gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false symbol_level 1 v8 true xfa false xfa_runtime disabled"
+      "debug true is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1841,7 +1804,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:javascript_javascript_disabled",
       "-tag",
@@ -1849,21 +1812,21 @@
       "--",
       "vpython3",
       "-u",
-      "testing\\tools\\run_javascript_tests.py",
+      "testing/tools/run_javascript_tests.py",
       "--build-dir",
-      "out\\debug_v8",
+      "out/debug_v8",
       "--gold_output_dir",
-      "out\\debug_v8\\gold_output",
+      "out/debug_v8/gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled symbol_level 1 v8 true xfa false xfa_runtime disabled",
+      "debug true is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1885,7 +1848,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:pixel",
       "-tag",
@@ -1893,20 +1856,20 @@
       "--",
       "vpython3",
       "-u",
-      "testing\\tools\\run_pixel_tests.py",
+      "testing/tools/run_pixel_tests.py",
       "--build-dir",
-      "out\\debug_v8",
+      "out/debug_v8",
       "--gold_output_dir",
-      "out\\debug_v8\\gold_output",
+      "out/debug_v8/gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false symbol_level 1 v8 true xfa false xfa_runtime disabled"
+      "debug true is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1928,7 +1891,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:pixel_oneshot",
       "-tag",
@@ -1936,21 +1899,21 @@
       "--",
       "vpython3",
       "-u",
-      "testing\\tools\\run_pixel_tests.py",
+      "testing/tools/run_pixel_tests.py",
       "--build-dir",
-      "out\\debug_v8",
+      "out/debug_v8",
       "--gold_output_dir",
-      "out\\debug_v8\\gold_output",
+      "out/debug_v8/gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite oneshot symbol_level 1 v8 true xfa false xfa_runtime disabled",
+      "debug true is_standalone true javascript_runtime enabled os linux skia false suite oneshot v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1972,7 +1935,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:pixel_reverse_byte_order",
       "-tag",
@@ -1980,21 +1943,21 @@
       "--",
       "vpython3",
       "-u",
-      "testing\\tools\\run_pixel_tests.py",
+      "testing/tools/run_pixel_tests.py",
       "--build-dir",
-      "out\\debug_v8",
+      "out/debug_v8",
       "--gold_output_dir",
-      "out\\debug_v8\\gold_output",
+      "out/debug_v8/gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia false suite reverse_byte_order symbol_level 1 v8 true xfa false xfa_runtime disabled",
+      "debug true is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2016,7 +1979,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:windows",
+      "builder:linux",
       "-var",
       "test_suite:pixel_javascript_disabled",
       "-tag",
@@ -2024,21 +1987,21 @@
       "--",
       "vpython3",
       "-u",
-      "testing\\tools\\run_pixel_tests.py",
+      "testing/tools/run_pixel_tests.py",
       "--build-dir",
-      "out\\debug_v8",
+      "out/debug_v8",
       "--gold_output_dir",
-      "out\\debug_v8\\gold_output",
+      "out/debug_v8/gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled symbol_level 1 v8 true xfa false xfa_runtime disabled",
+      "debug true is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium",
+    "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2055,7 +2018,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin\\swarming",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
       "collect",
       "-server",
       "https://example.swarmingserver.appspot.com",
@@ -2092,106 +2055,43 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"0\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [],@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35,@@@",
       "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"1\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [],@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests (oneshot rendering enabled)\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"state\": \"BOT_DIED\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"2\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"error\": \"goodbye world!\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests (reverse byte order)\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"3\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [],@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35,@@@",
       "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests (javascript disabled)\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@task stdout+stderr: None@goodbye world!@@@",
+      "@@@STEP_LOG_END@task stdout+stderr: None@@@",
       "@@@STEP_LOG_LINE@task stdout+stderr: corpus tests@hello world!@@@",
       "@@@STEP_LOG_END@task stdout+stderr: corpus tests@@@",
       "@@@STEP_LOG_LINE@task stdout+stderr: corpus tests (javascript disabled)@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: corpus tests (javascript disabled)@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: corpus tests (oneshot rendering enabled)@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: corpus tests (oneshot rendering enabled)@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: corpus tests (reverse byte order)@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: corpus tests (reverse byte order)@@@",
-      "@@@STEP_LINK@task cas outputs: corpus tests@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@",
-      "@@@STEP_LINK@task cas outputs: corpus tests (javascript disabled)@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@",
-      "@@@STEP_LINK@task cas outputs: corpus tests (oneshot rendering enabled)@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@",
-      "@@@STEP_LINK@task cas outputs: corpus tests (reverse byte order)@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@"
+      "@@@STEP_LOG_END@task stdout+stderr: corpus tests (javascript disabled)@@@"
     ]
   },
   {
@@ -2211,22 +2111,9 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "corpus tests (oneshot rendering enabled)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "corpus tests (reverse byte order)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
+    "failure": {
+      "humanReason": "2 out of 13 aggregated steps failed: Failed to collect:\ngoodbye world!, The bot running this task died"
+    },
     "name": "$result"
   }
 ]

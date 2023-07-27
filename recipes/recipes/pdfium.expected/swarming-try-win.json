@@ -2295,6 +2295,38 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "corpus tests",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "corpus tests (javascript disabled)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "corpus tests (oneshot rendering enabled)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "corpus tests (reverse byte order)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]
