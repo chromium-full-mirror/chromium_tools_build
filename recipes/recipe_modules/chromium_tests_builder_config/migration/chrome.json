@@ -242,7 +242,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -256,7 +255,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -853,6 +851,7 @@
       "chromium.perf:android-go-perf",
       "chromium.perf:android-go-processor-perf",
       "chromium.perf:android-go-wembley-perf",
+      "chromium.perf:android-go-wembley_webview-perf",
       "chromium.perf:android-go_webview-perf"
     ]
   },
@@ -867,6 +866,7 @@
       "chromium.perf:android-go-perf",
       "chromium.perf:android-go-processor-perf",
       "chromium.perf:android-go-wembley-perf",
+      "chromium.perf:android-go-wembley_webview-perf",
       "chromium.perf:android-go_webview-perf"
     ]
   },
@@ -876,6 +876,7 @@
       "chromium.perf:android-go-perf",
       "chromium.perf:android-go-processor-perf",
       "chromium.perf:android-go-wembley-perf",
+      "chromium.perf:android-go-wembley_webview-perf",
       "chromium.perf:android-go_webview-perf"
     ]
   },
@@ -885,6 +886,17 @@
       "chromium.perf:android-go-perf",
       "chromium.perf:android-go-processor-perf",
       "chromium.perf:android-go-wembley-perf",
+      "chromium.perf:android-go-wembley_webview-perf",
+      "chromium.perf:android-go_webview-perf"
+    ]
+  },
+  "chromium.perf:android-go-wembley_webview-perf": {
+    "builders": [
+      "chromium.perf:android-builder-perf",
+      "chromium.perf:android-go-perf",
+      "chromium.perf:android-go-processor-perf",
+      "chromium.perf:android-go-wembley-perf",
+      "chromium.perf:android-go-wembley_webview-perf",
       "chromium.perf:android-go_webview-perf"
     ]
   },
@@ -894,6 +906,7 @@
       "chromium.perf:android-go-perf",
       "chromium.perf:android-go-processor-perf",
       "chromium.perf:android-go-wembley-perf",
+      "chromium.perf:android-go-wembley_webview-perf",
       "chromium.perf:android-go_webview-perf"
     ]
   },
@@ -905,7 +918,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -919,7 +931,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -933,7 +944,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -947,7 +957,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -961,7 +970,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -975,21 +983,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
-      "chromium.perf:android_arm64-builder-perf",
-      "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
-      "chromium.perf.fyi:android-pixel2-perf-fyi"
-    ]
-  },
-  "chromium.perf:android-pixel4a_power-perf": {
-    "builders": [
-      "chromium.perf:android-pixel2-perf",
-      "chromium.perf:android-pixel2-processor-perf",
-      "chromium.perf:android-pixel2_webview-perf",
-      "chromium.perf:android-pixel2_webview-processor-perf",
-      "chromium.perf:android-pixel4-perf",
-      "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"
@@ -1017,7 +1010,6 @@
       "chromium.perf:android-pixel2_webview-processor-perf",
       "chromium.perf:android-pixel4-perf",
       "chromium.perf:android-pixel4_webview-perf",
-      "chromium.perf:android-pixel4a_power-perf",
       "chromium.perf:android_arm64-builder-perf",
       "chromium.perf.fyi:android-pixel2-perf-aab-fyi",
       "chromium.perf.fyi:android-pixel2-perf-fyi"

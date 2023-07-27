@@ -303,9 +303,6 @@ _AddIsolatedTestSpec('android-pixel4-perf', 'android',
 _AddIsolatedTestSpec('android-pixel4_webview-perf', 'android',
                      'android_arm64-builder-perf')
 
-_AddIsolatedTestSpec('android-pixel4a_power-perf', 'android',
-                     'android_arm64-builder-perf')
-
 _AddIsolatedTestSpec('android-pixel6-perf', 'android',
                      'android_arm64_high_end-builder-perf')
 _AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
@@ -313,6 +310,12 @@ _AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
 
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',
+    'android',
+    'android-builder-perf',
+    target_bits=32)
+
+_AddIsolatedTestSpec(
+    'android-go-wembley_webview-perf',
     'android',
     'android-builder-perf',
     target_bits=32)
