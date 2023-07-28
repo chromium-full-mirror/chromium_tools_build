@@ -8,7 +8,7 @@
       "-b",
       "master"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/builder",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -35,7 +35,7 @@
       "-j16",
       "--no-tags"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/builder",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -62,7 +62,7 @@
       "-o",
       "-"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/builder",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -89,9 +89,9 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/art/out"
+      "[CACHE]/builder/out"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -123,7 +123,7 @@
       "0777",
       "[START_DIR]/cipd_tool/fuchsia/third_party/qemu/latest"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -155,7 +155,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/builder",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -187,15 +187,15 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/buildbot-build.sh",
+      "[CACHE]/builder/art/tools/buildbot-build.sh",
       "--target",
       "--installclean"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/builder",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ADB": "[CACHE]/builder/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/builder",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/builder/out/target/product/generic_riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -208,7 +208,7 @@
       "ART_USE_GENERATIONAL_CC": "true",
       "ART_USE_READ_BARRIER": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/builder/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/builder/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "false",

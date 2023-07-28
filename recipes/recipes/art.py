@@ -640,8 +640,11 @@ def RunSteps(api):
     if buildername in builder_config:
       builder_found = True
       builder_dict = builder_config[buildername]
-      # Use the cached builder directory to enable incremental builds.
-      with api.context(cwd=api.path['cache'].join('art')):
+      # Use shared 'art' directory to enable incremental builds.
+      # Use different (private) directory for RISC to avoid interference.
+      is_riscv = (builder_dict.get('device') == 'qemu-riscv64')
+      cache_name = "builder" if is_riscv else "art"
+      with api.context(cwd=api.path['cache'].join(cache_name)):
         _CONFIG_DISPATCH_MAP[builder_type](api, **builder_dict)
       break
 
