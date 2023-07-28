@@ -50,10 +50,15 @@ PROPERTIES = {
             help='Parameters to be passed down to the test runner for running'
             ' stress e2e tests.',
             default=None),
+    'parallel':
+        Property(
+            kind=bool,
+            help='Switch swarming assisted parallel executions of tests',
+            default=False),
 }
 
 
-def RunSteps(api, clobber, e2e_env, runner_args):
+def RunSteps(api, clobber, e2e_env, runner_args, parallel):
   builder_config = 'Debug'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
@@ -69,7 +74,7 @@ def RunSteps(api, clobber, e2e_env, runner_args):
     with api.context(env=e2e_env):
       args = runner_args.split() if runner_args else []
       e2e_env = e2e_env or {}
-      if not api.devtools.is_parallel_run():
+      if not parallel:
         api.devtools.run_e2e(builder_config, args)
       else:
         cas_digest = api.devtools.archive_to_cas()
@@ -150,6 +155,7 @@ def GenTests(api):
       'parallel stress builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_stressor_linux'),
+      api.properties(parallel=True),
       api.properties(e2e_env={
           'ITERATIONS': '100',
           'TEST_PATTERNS': 'test/example_test.ts'
@@ -162,7 +168,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
-    )
+  )
 
   data = {
       'shards': [{
@@ -173,6 +179,7 @@ def GenTests(api):
       'failed parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -184,4 +191,4 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
-    )
+  )

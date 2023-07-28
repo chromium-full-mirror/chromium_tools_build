@@ -19,10 +19,11 @@ DEPS = [
 PROPERTIES = {
     'builder_config': Property(kind=str, default='Release'),
     'clobber': Property(kind=bool, default=False),
+    'parallel': Property(kind=bool, default=False),
 }
 
 
-def RunSteps(api, builder_config, clobber):
+def RunSteps(api, builder_config, clobber, parallel):
 
   api.devtools.configure(
       builder_config, is_official_build=True, devtools_skip_typecheck=True)
@@ -31,7 +32,7 @@ def RunSteps(api, builder_config, clobber):
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
 
-    if not api.devtools.is_parallel_run():
+    if not parallel:
       api.devtools.run_e2e(builder_config)
       with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
         api.step('Nothing', [])
@@ -95,6 +96,7 @@ def GenTests(api):
   yield api.test(
       'parallel release',
       try_build(builder='parallel builder'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -112,6 +114,7 @@ def GenTests(api):
   yield api.test(
       'failed parallel release',
       try_build(builder='parallel builder'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(

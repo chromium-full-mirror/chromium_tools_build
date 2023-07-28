@@ -60,9 +60,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
       return self.m.step(step_name, ["vpython3", "-u", sc_path] + args,
                          **kwargs)
 
-  def is_parallel_run(self):
-    return 'parallel' in self.m.buildbucket.builder_name.lower()
-
   def is_shuffled_run(self):
     return 'shuffled' in self.m.buildbucket.builder_name.lower()
 

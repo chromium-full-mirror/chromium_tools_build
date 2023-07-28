@@ -51,6 +51,11 @@ PROPERTIES = {
             kind=bool,
             help='Should the builder clean up the out/ folder before building',
             default=False),
+    'parallel':
+        Property(
+            kind=bool,
+            help='Switch swarming assisted parallel executions of tests',
+            default=False),
 }
 
 
@@ -234,7 +239,7 @@ class E2ETests(DevToolsTests):
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber):
+             clobber, parallel):
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
   api.devtools.update()
@@ -246,7 +251,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
 
-    if not api.devtools.is_parallel_run():
+    if not parallel:
       run_unit_tests(api, builder_config)
       run_interactions(api, builder_config)
       publish_coverage_points(api)
@@ -492,6 +497,7 @@ def GenTests(api):
       'cq parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -500,12 +506,13 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
-    )
+  )
 
   yield api.test(
       'ci parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -536,6 +543,7 @@ def GenTests(api):
       'failed parallel builder on E2E',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -570,6 +578,7 @@ def GenTests(api):
       'cq failed parallel builder on interactions',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -597,6 +606,7 @@ def GenTests(api):
       'ci failed parallel builder on interactions',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -624,6 +634,7 @@ def GenTests(api):
       'ci failed parallel builder on unit tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -655,6 +666,7 @@ def GenTests(api):
       'ci failed parallel builder on unit, interactions, and E2E tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
+      api.properties(parallel=True),
       api.step_data(
           'E2E Tests.divide test run',
           api.raw_io.stream_output_text(
