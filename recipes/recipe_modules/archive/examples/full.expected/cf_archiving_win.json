@@ -44,7 +44,8 @@
       "[CLEANUP]\\chrome_staging",
       "chrome-asan-win32-release-refs_heads_B1-123456",
       "[\"chrome\", \"icu.dat\", \"lib\", \"file.obj\"]",
-      "[START_DIR]\\src\\out\\Release"
+      "[START_DIR]\\src\\out\\Release",
+      "None\\third_party\\lzma_sdk\\bin\\win64"
     ],
     "infra_step": true,
     "name": "zipping"

@@ -26,11 +26,17 @@ from common import chromium_utils
 def main(argv):
   with open(argv[3], 'r') as f:
     zip_file_list = json.load(f)
-  (zip_dir, zip_file) = chromium_utils.MakeZip(argv[1],
-                                               argv[2],
-                                               zip_file_list,
-                                               argv[4],
-                                               raise_error=True)
+  if len(argv) > 5:
+    lzma_sdk_bin = argv[5]
+  else:
+    lzma_sdk_bin = None
+  (zip_dir, zip_file) = chromium_utils.MakeZip(
+      argv[1],
+      argv[2],
+      zip_file_list,
+      argv[4],
+      lzma_sdk_bin=lzma_sdk_bin,
+      raise_error=True)
   chromium_utils.RemoveDirectory(zip_dir)
   if not os.path.exists(zip_file):
     raise Exception('Failed to make zip package %s' % zip_file)
