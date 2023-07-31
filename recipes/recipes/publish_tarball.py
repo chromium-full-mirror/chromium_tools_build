@@ -343,9 +343,13 @@ def publish_tarball(api):
 
   update_script = 'build.py'
   update_args = [
-      '--without-android', '--use-system-cmake', '--gcc-toolchain=/usr',
-      '--skip-build', '--without-fuchsia'
+      '--without-android', '--use-system-cmake', '--skip-build',
+      '--without-fuchsia'
   ]
+  # This argument was removed in https://crrev.com/c/4702649
+  # See https://bugs.chromium.org/p/chromium/issues/detail?id=1459650#c17
+  if [int(x) for x in version.split('.')] < [117, 0, 5917, 0]:
+    update_args.append('--gcc-toolchain=/usr')
   # Explicitly passing python3 will not be necessary once
   # https://chromium-review.googlesource.com/c/chromium/src/+/3253157
   # is in all release channels.
@@ -479,12 +483,21 @@ def RunSteps(api):
 def GenTests(api):
   yield (
       api.test('basic') + api.buildbucket.generic_build() +
-      api.properties(version='117.0.5884.0') + api.platform('linux', 64) +
+      api.properties(version='117.0.5917.0') + api.platform('linux', 64) +
       api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
       api.path.exists(api.path['checkout'].join('third_party', 'node',
                                                 'node_modules.tar.gz.sha1')))
+
+  yield (api.test('basic-with-gcc-toolchain-arg') +
+         api.buildbucket.generic_build() +
+         api.properties(version='117.0.5884.0') + api.platform('linux', 64) +
+         api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
+         api.step_data(
+             'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)'))
+         + api.path.exists(api.path['checkout'].join(
+             'third_party', 'node', 'node_modules.tar.gz.sha1')))
 
   yield (
       api.test('basic-no-dawn-version') + api.buildbucket.generic_build() +
