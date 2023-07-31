@@ -196,20 +196,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'no identification',
-      api.buildbucket.try_build(
-          'chromium',
-          'mac',
-          git_repo='https://chromium.googlesource.com/chromium/src',
-          change_number=91827,
-          patch_set=1),
-      api.flakiness(
-          check_for_flakiness=False,
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'non-existent-try-builder',
       api.buildbucket.try_build(
           'chromium',

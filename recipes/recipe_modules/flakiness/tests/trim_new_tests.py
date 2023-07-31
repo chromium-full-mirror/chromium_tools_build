@@ -1,9 +1,9 @@
-# Copyright 2021 The Chromium Authors. All rights reserved.
+# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from recipe_engine import post_process
-from RECIPE_MODULES.build.flakiness.api import TestDefinition
+from RECIPE_MODULES.build.flakiness.utils import TestDefinition
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
@@ -33,15 +33,12 @@ def RunSteps(api):
   for _ in range(15):
     new_tests.append(_generate_test_definition())
 
-  filtered_test = api.flakiness.maybe_trim_new_tests(new_tests, 'final')
+  filtered_test = api.flakiness.trim_new_tests(new_tests, 10)
   api.assertions.assertEqual(
       len(filtered_test), api.flakiness._max_test_targets)
 
 
 def GenTests(api):
   # max_test_targets defaults to 10
-  yield api.test(
-      'basic',
-      api.flakiness(
-          check_for_flakiness=True,
-      ), api.post_process(post_process.DropExpectation))
+  yield api.test('basic', api.flakiness(check_for_flakiness=True,),
+                 api.post_process(post_process.DropExpectation))

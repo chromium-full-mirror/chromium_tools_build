@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine import post_process
-from RECIPE_MODULES.build.flakiness.api import TestDefinition
+from RECIPE_MODULES.build.flakiness.utils import TestDefinition
 
 DEPS = [
     'flakiness',

@@ -1335,3 +1335,22 @@ def GenTests(api):
       api.post_check(post_process.DoesNotRun, 'searching_for_new_tests'),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'no identification',
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          builder_db=builder_db,
+          try_db=ctbc.TryDatabase.create({
+              'fake-try-group': {
+                  'fake-try-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          builder_group='fake-group',
+                          buildername='fake-builder',
+                      ),
+              },
+          })),
+      api.flakiness(check_for_flakiness=False,),
+      api.post_process(post_process.DropExpectation),
+  )

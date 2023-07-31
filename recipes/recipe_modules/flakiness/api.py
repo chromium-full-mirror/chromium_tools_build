@@ -20,68 +20,13 @@ from PB.go.chromium.org.luci.analysis.proto.v1 import common as common_weetbix_p
 from PB.go.chromium.org.luci.analysis.proto.v1 import predicate as predicate_pb2
 from PB.recipe_engine import result as result_pb2
 
+from . import utils
+
 # A regular expression for file paths indicating that change in the matched file
 # might introduce new tests.
 # TODO(crbug.com/1204163): Extend for new tests from DEPS and build file changes
 # with '^(.+(BUILD\.gn|DEPS|\.gni)|src/chromeos/CHROMEOS_LKGM|.+[T|t]est.*)$'.
 _FILE_PATH_ADDING_TESTS_PATTERN = '^(?!testing/buildbot).+[T|t]est.*$'
-
-# Internal labels used when we need to trim test sets at different steps.
-_FINAL_TRIM = 'final'
-_CROSS_REFERENCE_TRIM = 'cross reference'
-
-
-class TestDefinition():
-  """A class to contain ResultDB TestReuslt Proto information.
-
-  Test ID, variant hash (see go/resultdb-concepts) and whether the test comes
-  from an experimental suite distinguish a |TestDefinition|. This is achieved by
-  overriding __eq__ and __hash__ methods.
-
-  Attributes:
-    * duration_milliseconds: (int) Test duration in milliseconds.
-    * test_id: (str) ResultDB's test_id (go/resultdb-concepts)
-    * test_object: (steps.AbstractTest) The test object where this test
-      comes from.
-    * variant_hash: (str) ResultDB's variant_hash (go/resultdb-concepts)
-    * file_path: (str) path to the test, defined through ResultDB's
-                 test_metadata.location.file_loc. See proto at
-                 https://source.chromium.org/chromium/infra/infra/+/main:
-                 go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
-  """
-
-  def __init__(self,
-               test_id,
-               test_name=None,
-               duration_milliseconds=None,
-               test_object=None,
-               variant_hash=None,
-               file_path=None):
-    """
-    Args:
-      * test_id: (str) ResultDB test id
-      * test_name: (str) Test name to input to test suites.
-      * duration_milliseconds: (int) Test duration in milliseconds.
-      * test_object: (steps.AbstractTest) The test object where this
-        test comes from.
-      * variant_hash: (str) ResultDB's variant hash
-      * file_path: (str) path to the test, defined through ResultDB's
-        test_metadata.location.file_loc. See proto at
-        https://source.chromium.org/chromium/infra/infra/+/main:
-        go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
-    """
-    self.test_id = test_id
-    self.test_name = test_name
-    self.duration_milliseconds = duration_milliseconds
-    self.variant_hash = variant_hash
-    self.test_object = test_object
-    self.file_path = file_path
-
-  def __eq__(self, t2):
-    return (self.test_id, self.variant_hash) == t2
-
-  def __hash__(self):
-    return hash((self.test_id, self.variant_hash))
 
 
 class FlakinessApi(recipe_api.RecipeApi):
@@ -119,6 +64,10 @@ class FlakinessApi(recipe_api.RecipeApi):
   def test_suffix(self):
     return self._suffix_by_shard_index(0)
 
+  def _suffix_by_shard_index(self, index):
+    """Suffix used for the input shard index when step.Test is sharded."""
+    return 'check flakiness shard #%d' % index
+
   @property
   def check_for_flakiness(self):
     """Boolean to determine whether flakiness logic should be run for trybots.
@@ -134,10 +83,6 @@ class FlakinessApi(recipe_api.RecipeApi):
   @property
   def gs_bucket(self):
     return 'flake_endorser'
-
-  def _suffix_by_shard_index(self, index):
-    """Suffix used for the input shard index when step.Test is sharded."""
-    return 'check flakiness shard #%d' % index
 
   def gs_source_template(self, experimental=False):
     """Provides template for generator recipe
@@ -244,7 +189,7 @@ class FlakinessApi(recipe_api.RecipeApi):
     tests = set()
     for test_entry in test_data:
       tests.add(
-          TestDefinition(
+          utils.TestDefinition(
               test_entry['test_id'],
               variant_hash=test_entry.get('variant_hash', None)))
     return tests
@@ -294,7 +239,7 @@ class FlakinessApi(recipe_api.RecipeApi):
           partition_time_range=search_range)
 
       for test_verdict in verdicts:
-        test = TestDefinition(
+        test = utils.TestDefinition(
             test_id=test_verdict.test_id,
             variant_hash=test_verdict.variant_hash,
         )
@@ -313,28 +258,41 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return prelim_tests
 
-  def maybe_trim_new_tests(self, new_tests, trim_step_label):
-    assert trim_step_label in [_FINAL_TRIM, _CROSS_REFERENCE_TRIM]
-    limit = (
-        self._max_test_targets if trim_step_label == _FINAL_TRIM else
-        self._max_test_variants_to_cross_reference)
+  def trim_new_tests(self, new_tests, limit: int, step_name=None):
+    """trim_new_tests will return a subset of new_tests according to the limit
 
-    if new_tests and len(new_tests) > limit:
-      # There are more new tests detected than what we're permitting, so we're
-      # taking a random subset for the specific step.
-      res = random.sample(new_tests, limit)
-      s = self.m.step('subset of new tests (%s)' % trim_step_label, cmd=None)
-      s.presentation.step_text = (
-          'the total number of new tests at "{}" step exceed what we permit {},'
-          ' so a random subset of those tests have been selected.'.format(
-              trim_step_label, self._max_test_targets))
-      s.presentation.logs['new_test_subset(%s)' % trim_step_label] = '\n'.join([
-          'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-              t.test_id, t.variant_hash, t.duration_milliseconds) for t in res
-      ])
-      return res
+    Our infrastructure won't allow us to test for flakiness for every single
+    new test detected. To prevent us from overloading the infrastructure, this
+    method will take a random subset according to the size limit provided.
+    A step is generated to make note of the random subset taken alongside logs
+    to indicate what the new test looks like.
+    """
+    if not new_tests or len(new_tests) <= limit:
+      return new_tests
 
-    return new_tests
+    # There are more new tests detected than what we're permitting, so we're
+    # taking a random subset for the specific step.
+    res = random.sample(new_tests, limit)
+    step_name = step_name or 'randomly sampling {} tests '.format(limit)
+
+    log_text = [
+        ('The system only permits a total of {} new tests to prevent overloading '
+         'CQ.'.format(limit)),
+        'The following are the randomly selected subset that will be tested:\n',
+    ]
+
+    log_text += '\n'.join([
+        'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
+            t.test_id, t.variant_hash, t.duration_milliseconds) for t in res
+    ])
+
+    self.m.step.empty(
+        step_name,
+        step_text='too many new tests detected.',
+        log_text=log_text,
+        log_name='new_tests')
+
+    return res
 
   def identify_new_tests(self, test_objects):
     """Coordinating method for identifying new tests on the current build.
@@ -351,21 +309,6 @@ class FlakinessApi(recipe_api.RecipeApi):
     Returns:
         A set of TestDefinition objects.
     """
-    def join_tests(test_set):
-      """Joins set of test_id, variant hash tuples into strings.
-
-      For step presentations, test tuple sets cannot be logged so it is
-      necessary and preferred to convert to lists of sorted concatenated
-      strings.
-      """
-      return sorted([
-          '_'.join([test_result.test_id, test_result.variant_hash])
-          for test_result in test_set
-      ])
-
-    if not self.check_for_flakiness:
-      return set()
-
     with self.m.step.nest(self.IDENTIFY_STEP_NAME) as p:
       builder_name = self.m.buildbucket.builder_name
 
@@ -386,8 +329,10 @@ class FlakinessApi(recipe_api.RecipeApi):
                        'precomputed.')
         return set()
 
+      # Historical tests are a set of TestDefinition objects with just
+      # test_id and variant_hash from the precomputed JSON files.
       historical_tests = self.process_precomputed_test_data(precomputed_json)
-      p.logs['historical_tests'] = join_tests(historical_tests)
+      p.logs['historical_tests'] = utils.set_to_string(historical_tests)
 
       # For logging purpose only.
       skipped_test_suites = set([])
@@ -415,7 +360,7 @@ class FlakinessApi(recipe_api.RecipeApi):
             duration_milliseconds = individual_test.duration_milliseconds or 0
 
             test_id = individual_test.test_id
-            test_definition = TestDefinition(
+            test_definition = utils.TestDefinition(
                 test_id,
                 test_name=individual_test.test_name,
                 duration_milliseconds=duration_milliseconds,
@@ -436,14 +381,14 @@ class FlakinessApi(recipe_api.RecipeApi):
       if skipped_test_suites:
         p.logs['skipped_test_suites'] = '\n'.join(sorted(skipped_test_suites))
 
-      p.logs['preliminary_tests'] = join_tests(preliminary_new_tests)
+      p.logs['preliminary_tests'] = utils.set_to_string(preliminary_new_tests)
 
       if not preliminary_new_tests:
         return set()
 
       # Trim once before verify_new_tests to avoid input too large for RDB RPC.
-      preliminary_new_tests = self.maybe_trim_new_tests(preliminary_new_tests,
-                                                        _CROSS_REFERENCE_TRIM)
+      preliminary_new_tests = self.trim_new_tests(
+          preliminary_new_tests, self._max_test_variants_to_cross_reference)
 
       # Cross-referencing the potential new tests with ResultDB to ensure they
       # are not present in existing builds.
@@ -605,6 +550,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     Returns:
       A mapping from test suffixes to lists of steps.Test objects.
     """
+    # Do not run anything if property is not set.
+    if not self.check_for_flakiness:
+      return []
+
     # Check if there are endorser footers to parse
     commit_footer_values = [
         val.lower()
@@ -623,13 +572,16 @@ class FlakinessApi(recipe_api.RecipeApi):
         self.m.chromium_checkout.get_files_affected_by_patch())
 
     if not self.is_test_file_present(affected_files=affected_files):
-      self.m.step('no test files were detected with this change.', cmd=None)
+      self.m.step.empty('no test files were detected with this change.')
       return []
-
     new_tests = self.identify_new_tests(test_objects)
-    new_tests = self.maybe_trim_new_tests(new_tests, _FINAL_TRIM)
+    new_tests = self.trim_new_tests(new_tests, self._max_test_targets)
     new_tests = self.check_test_files(new_tests, affected_files)
 
+    # This is a dict of test suffix to list of test objects. In this case,
+    # "check flakiness shard #X" to a test object, where X defaults to 0.
+    # For Swarming test objects, tests are sharded by duration. See method
+    # _shard_runs() for how it's sharded.
     test_objects_by_suffix = collections.defaultdict(list)
 
     s = self.m.step('match single new tests with test suites', cmd=None)
@@ -637,18 +589,24 @@ class FlakinessApi(recipe_api.RecipeApi):
     # This operation is O(len(test_obj) * len(new_tests)) because parsing
     # test_id is only intended for LUCI UI grouping, see
     # http://shortn/_StMScXolrz. max_test_targets will also bind the number of
-    # iterations here. We loop the test objects and check all new tests to see
-    # if the test_id start similarly.
+    # iterations here.
+    #
+    # We loop the test objects and check all new tests to see if the test_id
+    # start similarly.
     for test in test_objects:
       total_duration_milliseconds = 0
       new_tests_in_test_object = []
       # find whether the Test object has a matching test_id.
+      # add TestDefinition to list of the new tests if there's a test object
+      # match.
       for new_test in new_tests:
         if (new_test.test_object == test):
           new_tests_in_test_object.append(new_test)
           total_duration_milliseconds += (new_test.duration_milliseconds or 0)
-      if new_tests_in_test_object:
 
+      # For each new test update the test filters to repeat and rerun
+      # these new tests 20 times.
+      if new_tests_in_test_object:
         log_lines = [
             'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
                 t.test_id, t.variant_hash, t.duration_milliseconds)
@@ -663,59 +621,23 @@ class FlakinessApi(recipe_api.RecipeApi):
             new_test.test_name for new_test in new_tests_in_test_object
         ]
         if isinstance(test.spec, steps.AndroidJunitTestSpec):
-          # android junit need the spec's additional_args updated with the
-          # repeat and filter clauses.
-
-          # TODO: (crbug/1311721) - parameterized tests have a [0], [1] suffix
-          # appended to indicate the parameter, but it won't map to a test in
-          # these filters, so we escape them with backslashes for now such that
-          # they don't fail.
-          # ie/ org.chromium.suite.SomeTest#testMethod[0] ->
-          #     org.chromium.suite.SomeTest#testMethod\[0\]
-          updated_filter = []
-          for test_name in test_filter:
-            if re.match('.*\[\d+\]$', test_name):
-              left = (
-                  test_name[:test_name.rindex('[')] + "\\" +
-                  test_name[test_name.rindex('['):])
-              full = left[:left.rindex(']')] + "\\" + "]"
-              updated_filter.append(full)
-            else:
-              updated_filter.append(test_name)
-          additional_args = list([
-              '--gtest_repeat=%s' % str(self._repeat_count),
-              '--gtest_filter=%s' % str(':'.join(updated_filter)),
-              '--shards=1',
-          ])
-          test.spec = attr.evolve(test.spec, additional_args=additional_args)
-          test_objects_by_suffix[self.test_suffix].append(test)
+          test_objects_by_suffix[self.test_suffix].append(
+              utils.apply_android_test_filter(test, test_filter,
+                                              self._repeat_count))
         elif isinstance(test.spec, steps.ScriptTestSpec):
-          script_args = list([
-              '--gtest_repeat=%s' % str(self._repeat_count),
-              '--gtest_filter=%s' % str(':'.join(test_filter)),
-              '--shards=1',
-          ])
-          test.spec = attr.evolve(test.spec, script_args=script_args)
-          test_objects_by_suffix[self.test_suffix].append(test)
+          test_objects_by_suffix[self.test_suffix].append(
+              utils.apply_script_test_filter(test, test_filter,
+                                             self._repeat_count))
         elif isinstance(test.spec, steps.SwarmingTestSpec):
           shards = self._shard_runs(total_duration_milliseconds)
           for index, shard_runs in enumerate(shards):
-            test_copy = copy.copy(test)
-            options = steps.TestOptions.create(
-                test_filter=test_filter, repeat_count=shard_runs, retry_limit=0)
-            test_copy.test_options = options
-            # we don't use swarming's shard mechanism for endorser runs.
-            test_copy.spec = test.spec.with_shards(1)
             test_objects_by_suffix[self._suffix_by_shard_index(index)].append(
-                test_copy)
+                utils.apply_swarming_shard_test_filter(test, test_filter,
+                                                       shard_runs))
         else:
-          test_copy = copy.copy(test)
-          options = steps.TestOptions.create(
-              test_filter=test_filter,
-              repeat_count=self._repeat_count,
-              retry_limit=0)
-          test_copy.test_options = options
-          test_objects_by_suffix[self.test_suffix].append(test_copy)
+          test_objects_by_suffix[self.test_suffix].append(
+              utils.apply_default_test_filter(test, test_filter,
+                                              self._repeat_count))
 
     return test_objects_by_suffix
 
