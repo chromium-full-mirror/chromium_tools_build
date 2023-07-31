@@ -6,7 +6,7 @@
       "-u",
       "https://android.googlesource.com/platform/manifest",
       "-b",
-      "master"
+      "master-art"
     ],
     "cwd": "[CACHE]/art",
     "env": {
@@ -195,7 +195,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -211,9 +211,9 @@
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -239,7 +239,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -255,9 +255,9 @@
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -283,7 +283,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -299,9 +299,9 @@
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -327,7 +327,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -343,9 +343,9 @@
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -370,7 +370,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -387,9 +387,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -415,7 +415,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -432,9 +432,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -459,7 +459,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -475,9 +475,9 @@
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -502,7 +502,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -519,9 +519,9 @@
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -550,7 +550,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -567,9 +567,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -594,7 +594,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -611,9 +611,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -640,7 +640,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -657,9 +657,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -688,7 +688,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -705,9 +705,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -736,7 +736,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -753,9 +753,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -780,7 +780,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -797,9 +797,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -826,7 +826,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -843,9 +843,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -875,7 +875,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -892,9 +892,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -923,7 +923,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -940,9 +940,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -967,7 +967,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -984,9 +984,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1013,7 +1013,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1030,9 +1030,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1062,7 +1062,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1079,9 +1079,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1110,7 +1110,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1127,9 +1127,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1154,7 +1154,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1171,9 +1171,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1200,7 +1200,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1217,9 +1217,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1248,7 +1248,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1265,9 +1265,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1296,7 +1296,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1313,9 +1313,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1340,7 +1340,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1357,9 +1357,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1386,7 +1386,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1403,9 +1403,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1434,7 +1434,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1451,9 +1451,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1482,7 +1482,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1499,9 +1499,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1526,7 +1526,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1543,9 +1543,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1572,7 +1572,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1589,9 +1589,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1620,7 +1620,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1637,9 +1637,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1668,7 +1668,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1685,9 +1685,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1712,7 +1712,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1729,9 +1729,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1758,7 +1758,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1775,9 +1775,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1806,7 +1806,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1823,9 +1823,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1854,7 +1854,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1871,9 +1871,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1898,7 +1898,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1915,9 +1915,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1944,7 +1944,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -1961,9 +1961,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1990,7 +1990,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2007,9 +2007,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2038,7 +2038,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2055,9 +2055,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2082,7 +2082,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2099,9 +2099,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2128,7 +2128,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2145,9 +2145,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2174,7 +2174,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2191,9 +2191,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2222,7 +2222,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2239,9 +2239,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2266,7 +2266,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2283,9 +2283,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2312,7 +2312,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2329,9 +2329,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2359,7 +2359,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2376,9 +2376,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2407,7 +2407,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2424,9 +2424,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2451,7 +2451,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2468,9 +2468,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2497,7 +2497,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2514,9 +2514,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2541,7 +2541,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2558,9 +2558,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2585,7 +2585,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2602,9 +2602,9 @@
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2630,7 +2630,7 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/generic_riscv64",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/riscv64",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
@@ -2646,9 +2646,9 @@
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "false",
+      "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "aosp_riscv64",
+      "TARGET_PRODUCT": "riscv64",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {

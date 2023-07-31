@@ -24,42 +24,34 @@ _TARGET_DEVICE_MAP = {
     'walleye-armv7': {
         'bitness': 32,
         'product': 'arm_krait',
-        'product_out': 'arm_krait',
     },
     'walleye-armv8': {
         'bitness': 64,
         'product': 'armv8',
-        'product_out': 'armv8',
     },
     'angler-armv7': {
         'bitness': 32,
         'product': 'arm_krait',
-        'product_out': 'arm_krait',
     },
     'fugu': {
         'bitness': 32,
         'product': 'silvermont',
-        'product_out': 'silvermont'
     },
     'angler-armv8': {
         'bitness': 64,
         'product': 'armv8',
-        'product_out': 'armv8',
     },
     'bullhead-armv8': {
         'bitness': 64,
         'product': 'armv8',
-        'product_out': 'armv8',
     },
     'bullhead-armv7': {
         'bitness': 32,
         'product': 'arm_krait',
-        'product_out': 'arm_krait',
     },
     'qemu-riscv64': {
         'bitness': 64,
-        'product': 'aosp_riscv64',
-        'product_out': 'generic_riscv64',
+        'product': 'riscv64',
     },
 }
 
@@ -311,14 +303,13 @@ def setup_target(api,
       'ART_TEST_SSH_HOST': 'localhost',
       'ART_TEST_SSH_PORT': '10001',
       'ART_TEST_ON_VM': 'true',
-      'TARGET_BUILD_UNBUNDLED': 'false',
     })
 
   bitness = _TARGET_DEVICE_MAP[device]['bitness']
   env.update(
       {'TARGET_PRODUCT': _TARGET_DEVICE_MAP[device]['product'],
        'ANDROID_PRODUCT_OUT': build_top_dir.join('out','target', 'product',
-         _TARGET_DEVICE_MAP[device]['product_out'])
+         _TARGET_DEVICE_MAP[device]['product'])
       })
 
   env.update({ 'ART_TEST_CHROOT' : chroot_dir })
@@ -616,13 +607,11 @@ _CONFIG_MAP = {
             'device': 'qemu-riscv64',
             'debug': False,
             'on_virtual_machine': True,
-            'manifest_branch': 'master',
         },
         'qemu-riscv64-ndebug-build_only': {
             'device': 'qemu-riscv64',
             'debug': False,
             'on_virtual_machine': True,
-            'manifest_branch': 'master',
             'build_only': True,
         },
     },
