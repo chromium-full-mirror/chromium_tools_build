@@ -434,6 +434,57 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     return new_tests
 
+  def identify_new_test_variants(self) -> (str, str):
+    """Utilize ResultDB to determine if tests are new
+
+    Query for new test variants through ResultDB QueryNewTestVariants RPC.
+    A baseline is a set of test variants, usually identified by the buildbucket
+    bucket and builder name. ResultDB tracks test variants run against baselines
+    when changes are submitted.
+
+    QueryNewTestVariants calculates new test variants through the difference
+    between the test variants in the current run and the set of test variants
+    for the baseline.
+
+    New builders (and thus new baselines) will not be ready for querying
+    if the builder has not run any tests for 72 hours.
+    """
+    curr_inv = self.m.resultdb.current_invocation
+    builder = self.m.buildbucket.build.builder
+    baseline = 'projects/{}/baselines/{}:{}'.format(
+        builder.project,
+        builder.bucket,
+        builder.builder,
+    )
+
+    step_name = '{} with ResultDB'.format(self.IDENTIFY_STEP_NAME)
+    with self.m.step.nest(step_name) as p:
+      # Note that this RPC limits the number of new tests detected to 10,000.
+      resp = self.m.resultdb.query_new_test_variants(curr_inv, baseline)
+
+      if not resp.is_baseline_ready:
+        # baseline is not ready, which means we cannot calculate for new tests.
+        self.m.step.empty('Baseline is not yet ready to calculate new tests')
+        return []
+
+      resp_new_tests = resp.new_test_variants
+      if not resp_new_tests:
+        self.m.step.empty('No new tests detected')
+        return []
+
+      # Add all new tests into a set as tuples that we can check against while
+      # we loop the test objects to find the correct ones.
+      new_tests_identified = set()
+      for new_test in resp_new_tests:
+        new_tests_identified.add((new_test.test_id, new_test.variant_hash))
+
+      p.logs['new_tests'] = [
+          'test_id: {}, variant_hash: {}'.format(t[0], t[1])
+          for t in new_tests_identified
+      ]
+
+    return new_tests_identified
+
   def check_test_files(self, new_tests, affected_files):
     """Determines whether the correct test files are being modified by the patch
 
@@ -553,6 +604,15 @@ class FlakinessApi(recipe_api.RecipeApi):
     # Do not run anything if property is not set.
     if not self.check_for_flakiness:
       return []
+
+    # new tests tuples, in format (test_id, variant_hash)
+    step_name = 'Experimental Step'
+    with self.m.step.nest(step_name) as p:
+      try:
+        self.identify_new_test_variants()
+      except Exception as e:  # pragma: no cover
+        # ignore all errors with this step and continue onwards.
+        p.logs['error'] = str(e)
 
     # Check if there are endorser footers to parse
     commit_footer_values = [
