@@ -121,44 +121,25 @@ CFT_LKGR_URL = 'https://googlechromelabs.github.io/chrome-for-testing/last-known
 
 # Some dependent repositories still use the deprecated term as their main branch
 RETSAM = 'retsam'[::-1]
+CHROME_VAR = 'chrome'
 
-
-class ChromiumPinSolver:
-
-  def __init__(self, var_name, platform):
-    self.var_name = var_name
-    self.platform = platform
-
-  def get_latest_version(self, api):
-    return api.url.get_text(
-        STORAGE_URL % self.platform,
-        step_name=f'check latest {self.var_name}',
-        default_test_data='123').output
+class ChromePinSolver():
 
   def current_raw_value(self, api):
     try:
       step_result = api.gclient(
-          f'get {self.var_name} deps', ['getdep', f'--var={self.var_name}'],
+          f'get {CHROME_VAR} deps', ['getdep', f'--var={CHROME_VAR}'],
           stdout=api.raw_io.output_text())
       # The first line contains the commit position number. Strip the rest.
       return step_result.stdout.strip().splitlines()[0].strip()
     except Exception:
-      api.step.empty(f'Failed get dep {self.var_name}')
+      api.step.empty(f'Failed get dep {CHROME_VAR}')
       return None  # Ensure no roll attempt
-
-  def should_roll(self, current, latest):
-    return current and int(current) < int(latest)
-
-
-class ChromePinSolver(ChromiumPinSolver):
-
-  def __init__(self, var_name):
-    super().__init__(var_name, None)
 
   def get_latest_version(self, api):
     return api.url.get_json(
         CFT_LKGR_URL,
-        step_name=f'check latest {self.var_name}',
+        step_name=f'check latest {CHROME_VAR}',
         default_test_data={
             'channels': {
                 'Canary': {
@@ -173,15 +154,6 @@ class ChromePinSolver(ChromiumPinSolver):
   def should_roll(self, current, latest):
     return current and (self.version_tuple(current) <
                         self.version_tuple(latest))
-
-
-CHROMIUM_PINS = [
-    ChromiumPinSolver('chromium_linux', 'Linux_x64'),
-    ChromiumPinSolver('chromium_mac', 'Mac'),
-    ChromiumPinSolver('chromium_mac_arm', 'Mac_Arm'),
-    ChromiumPinSolver('chromium_win', 'Win_x64'),
-    ChromePinSolver('chrome'),
-]
 
 
 # Custom vars by project. They are added to the gclient solution when
@@ -636,7 +608,7 @@ def update_dependencies(api, step, updates, autoroller_config, trusted):
 
     commit_lines.extend(update.commit_lines)
 
-  commit_lines.append(f'\nRoll created at {api.buildbucket.build_url()}')
+  commit_lines.append(roll_origin_line(api))
 
   upload_cl(
       api,
@@ -650,33 +622,34 @@ def update_dependencies(api, step, updates, autoroller_config, trusted):
   return len(updates)
 
 
-def update_chromium_pin(api, step, autoroller_config):
+def roll_origin_line(api):
+  return f'\nRoll created at {api.buildbucket.build_url()}'
+
+
+def update_chrome_pin(api, step, autoroller_config):
   """Updates the values of gclient variables chromium_(win|mac|mac_arm|linux)
   with the latest prebuilt versions.
+
+  Returns True if the pin was updated, False otherwise.
   """
-  change_count = 0
   with api.context(cwd=api.path['checkout']):
-    for pin_solver in CHROMIUM_PINS:
-      current_value = pin_solver.current_raw_value(api)
-      new_value = pin_solver.get_latest_version(api)
-      if pin_solver.should_roll(current_value, new_value):
-        change_count += 1
-        api.gclient(f'set {pin_solver.var_name} deps',
-                    ['setdep', f'--var={pin_solver.var_name}={new_value}'])
-
-  step.presentation.step_text = f'{change_count} update(s)'
-
-  upload_cl(
-      api,
-      step,
-      subject=CHROMIUM_PIN_CL_SUBJECT,
-      reviewers=autoroller_config['reviewers'],
-      set_bot_commit=True,
-      commit_lines=[],
-      bugs_label=autoroller_config.get('bugs', None),
-  )
-
-  return change_count
+    pin_solver = ChromePinSolver()
+    current_value = pin_solver.current_raw_value(api)
+    new_value = pin_solver.get_latest_version(api)
+    needs_update = pin_solver.should_roll(current_value, new_value)
+    if needs_update:
+      api.gclient(f'set {CHROME_VAR} deps',
+                  ['setdep', f'--var={CHROME_VAR}={new_value}'])
+    upload_cl(
+        api,
+        step,
+        subject=CHROMIUM_PIN_CL_SUBJECT,
+        reviewers=autoroller_config['reviewers'],
+        set_bot_commit=True,
+        commit_lines=[roll_origin_line(api)],
+        bugs_label=autoroller_config.get('bugs', None),
+    )
+    return needs_update
 
 
 def handle_failed_deps(api, failed_deps):
@@ -725,9 +698,9 @@ def RunSteps(api, autoroller_config):
   if autoroller_config['roll_chromium_pin']:
     with api.step.nest('Roll chromium pin') as step:
       discard_local_changes(api)
-      pin_updates = update_chromium_pin(api, step, autoroller_config)
-    if pin_updates:
-      summary.append(f'{pin_updates} chromium pin(s)')
+      updated = update_chrome_pin(api, step, autoroller_config)
+    if updated:
+      summary.append('1 chrome pin')
 
   result = result_pb2.RawResult()
   result.status = common_pb2.SUCCESS
@@ -873,22 +846,6 @@ remote:"""
                 'deadbeef\trefs/heads/main', stream='stdout'),
         ),
         api.override_step_data(
-            'Roll chromium pin.gclient get chromium_linux deps',
-            api.raw_io.stream_output_text('122', stream='stdout'),
-        ),
-        api.override_step_data(
-            'Roll chromium pin.gclient get chromium_win deps',
-            api.raw_io.stream_output_text('123', stream='stdout'),
-        ),
-        api.override_step_data(
-            'Roll chromium pin.gclient get chromium_mac deps',
-            api.raw_io.stream_output_text('124', stream='stdout'),
-        ),
-        api.override_step_data(
-            'Roll chromium pin.gclient get chromium_mac_arm deps',
-            api.raw_io.stream_output_text('125', stream='stdout'),
-        ),
-        api.override_step_data(
             'Roll chromium pin.gclient get chrome deps',
             api.raw_io.stream_output_text('123.0.4500.7', stream='stdout'),
         ),
@@ -913,7 +870,7 @@ remote:"""
   yield api.test(*template('default') + [
       api.post_process(
           SummaryMarkdown,
-          'updated 4 trusted dep(s), 6 reviewed dep(s), 1 chromium pin(s)')],
+          'updated 4 trusted dep(s), 6 reviewed dep(s)')],
   )
 
   # No chrome pin roll
@@ -976,22 +933,6 @@ remote:"""
               'v8/tools: https://example.com/chromium/tools.git@42',
               stream='stdout',
           ),
-      ),
-      api.override_step_data(
-          'Roll chromium pin.gclient get chromium_linux deps',
-          api.raw_io.stream_output_text('123', stream='stdout'),
-      ),
-      api.override_step_data(
-          'Roll chromium pin.gclient get chromium_win deps',
-          api.raw_io.stream_output_text('123', stream='stdout'),
-      ),
-      api.override_step_data(
-          'Roll chromium pin.gclient get chromium_mac deps',
-          api.raw_io.stream_output_text('123', stream='stdout'),
-      ),
-      api.override_step_data(
-          'Roll chromium pin.gclient get chromium_mac_arm deps',
-          api.raw_io.stream_output_text('123', stream='stdout'),
       ),
       api.override_step_data(
           'Roll chromium pin.gclient get chrome deps',
