@@ -160,8 +160,8 @@
       "RECIPE_REPO[depot_tools]\\gn.py",
       "--root=[CACHE]\\builder\\dawn",
       "gen",
-      "//out/release_x86_static",
-      "--args=is_debug=false is_component_build=false use_goma=false dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true is_clang=false target_cpu=\"x86\""
+      "//out/29c83d0edca5b50d9eb01bd7be2a197c10463518",
+      "--args=target_cpu=\"x86\" is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
     "env": {
@@ -185,7 +185,10 @@
     "cmd": [
       "[CACHE]\\builder\\dawn\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]\\builder\\dawn\\out\\release_x86_static"
+      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518",
+      "default",
+      "dawn_unittests",
+      "tint_unittests"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
@@ -206,7 +209,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\release_x86_static\\dawn_unittests"
+      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\dawn_unittests"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
@@ -227,7 +230,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\release_x86_static\\dawn_unittests",
+      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\dawn_unittests",
       "--use-wire"
     ],
     "env": {
@@ -249,29 +252,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\release_x86_static\\dawn_unittests",
-      "--enable-toggles=use_tint_generator"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run the Dawn unittests (2)"
-  },
-  {
-    "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\release_x86_static\\tint_unittests"
+      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\tint_unittests"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
@@ -296,8 +277,8 @@
       "RECIPE_REPO[depot_tools]\\gn.py",
       "--root=[CACHE]\\builder\\dawn",
       "gen",
-      "//out/release_x86_component",
-      "--args=is_debug=false is_component_build=true use_goma=false dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true dawn_enable_d3d12=false is_clang=false target_cpu=\"x86\""
+      "//out/41354d41edc234dda1e301356c1f74e8ab38b389",
+      "--args=target_cpu=\"x86\" is_debug=false is_clang=false is_component_build=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
     "env": {
@@ -321,7 +302,7 @@
     "cmd": [
       "[CACHE]\\builder\\dawn\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]\\builder\\dawn\\out\\release_x86_component",
+      "[CACHE]\\builder\\dawn\\out\\41354d41edc234dda1e301356c1f74e8ab38b389",
       "dawn_end2end_tests"
     ],
     "env": {
@@ -343,7 +324,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\release_x86_component\\dawn_end2end_tests",
+      "[CACHE]\\builder\\dawn\\out\\41354d41edc234dda1e301356c1f74e8ab38b389\\dawn_end2end_tests",
       "--adapter-vendor-id=0x1AE0"
     ],
     "env": {
@@ -365,7 +346,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\release_x86_component\\dawn_end2end_tests",
+      "[CACHE]\\builder\\dawn\\out\\41354d41edc234dda1e301356c1f74e8ab38b389\\dawn_end2end_tests",
       "--backend=opengles",
       "--use-angle=swiftshader"
     ],

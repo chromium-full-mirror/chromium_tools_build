@@ -332,8 +332,8 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/dawn",
       "gen",
-      "//out/release_static",
-      "--args=is_debug=false is_component_build=false use_goma=true dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true goma_dir=\"[CACHE]/goma/client\""
+      "//out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f",
+      "--args=is_debug=false is_component_build=false dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_goma=true goma_dir=\"[CACHE]/goma/client\""
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
@@ -449,9 +449,12 @@
     "cmd": [
       "[CACHE]/builder/dawn/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/dawn/out/release_static",
+      "[CACHE]/builder/dawn/out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f",
       "-j",
-      "80"
+      "80",
+      "default",
+      "dawn_unittests",
+      "tint_unittests"
     ],
     "luci_context": {
       "realm": {
@@ -616,9 +619,9 @@
       "--json-status",
       "[TMP_BASE]/goma_jsonstatus.json",
       "--ninja-log-outdir",
-      "[CACHE]/builder/dawn/out/release_static",
+      "[CACHE]/builder/dawn/out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/dawn/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/dawn/out/release_static\", \"-j\", 80]",
+      "[\"[CACHE]/builder/dawn/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/dawn/out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f\", \"-j\", 80, \"default\", \"dawn_unittests\", \"tint_unittests\"]",
       "--build-exit-status",
       "0",
       "--build-step-name",
@@ -691,7 +694,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/out/release_static/dawn_unittests"
+      "[CACHE]/builder/dawn/out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f/dawn_unittests"
     ],
     "luci_context": {
       "realm": {
@@ -709,7 +712,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/out/release_static/dawn_unittests",
+      "[CACHE]/builder/dawn/out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f/dawn_unittests",
       "--use-wire"
     ],
     "luci_context": {
@@ -728,26 +731,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/out/release_static/dawn_unittests",
-      "--enable-toggles=use_tint_generator"
-    ],
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run the Dawn unittests (2)"
-  },
-  {
-    "cmd": [
-      "[CACHE]/builder/dawn/out/release_static/tint_unittests"
+      "[CACHE]/builder/dawn/out/685d02199d93022ebcde5b7c9ea3f7892bd41d8f/tint_unittests"
     ],
     "luci_context": {
       "realm": {
@@ -857,8 +841,8 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/dawn",
       "gen",
-      "//out/release_component",
-      "--args=is_debug=false is_component_build=true use_goma=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true goma_dir=\"[CACHE]/goma/client\" dawn_enable_d3d12=false"
+      "//out/a1a4563bad00e05ca0dfca2a815cb1897725eda4",
+      "--args=is_debug=false is_component_build=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_goma=true goma_dir=\"[CACHE]/goma/client\" dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
@@ -974,7 +958,7 @@
     "cmd": [
       "[CACHE]/builder/dawn/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/dawn/out/release_component",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4",
       "-j",
       "80",
       "dawn_end2end_tests"
@@ -1142,9 +1126,9 @@
       "--json-status",
       "[TMP_BASE]/goma_jsonstatus.json",
       "--ninja-log-outdir",
-      "[CACHE]/builder/dawn/out/release_component",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/dawn/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/dawn/out/release_component\", \"-j\", 80, \"dawn_end2end_tests\"]",
+      "[\"[CACHE]/builder/dawn/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4\", \"-j\", 80, \"dawn_end2end_tests\"]",
       "--build-exit-status",
       "0",
       "--build-step-name",
@@ -1217,7 +1201,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/out/release_component/dawn_end2end_tests",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4/dawn_end2end_tests",
       "--adapter-vendor-id=0x1AE0"
     ],
     "luci_context": {
@@ -1236,7 +1220,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/out/release_component/dawn_end2end_tests",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4/dawn_end2end_tests",
       "--backend=opengles",
       "--use-angle=swiftshader"
     ],

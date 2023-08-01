@@ -20,6 +20,8 @@ DEPS = [
   'recipe_engine/time',
 ]
 
+import hashlib
+from contextlib import contextmanager
 from recipe_engine.recipe_api import Property
 
 PROPERTIES = {
@@ -50,57 +52,48 @@ def _checkout_steps(api):
     api.gclient.runhooks()
 
 
-def _out_path(target_cpu, debug, clang, static):
-  out_dir = 'debug' if debug else 'release'
-  if clang:
-    out_dir += '_clang'
-  if target_cpu:
-    out_dir += '_' + target_cpu
-  if static:
-    out_dir += '_static'
-  else:
-    out_dir += '_component'
-  return out_dir
+# Make a GN build for Dawn using **kwargs as the GN args.
+# Yields a function `build` which compiles the targets specified by *args and
+# returns a tuple of the file paths where those targets' executables should be located.
+@contextmanager
+def _gn_build(api, **kwargs):
+  use_goma = kwargs['is_clang'] is True or kwargs['is_clang'] is None
+  gn_args = []
+  for key, value in kwargs.items():
+    if value is None:
+      continue
+    if isinstance(value, str):
+      value = api.json.dumps(value)
+    elif isinstance(value, bool):
+      value = 'true' if value else 'false'
+    gn_args.append('%s=%s' % (key, value))
 
-
-def _gn_gen_builds(api, target_cpu, debug, clang, use_goma, out_dir, static,
-                   swiftshader):
-  """calls 'gn gen'"""
-  gn_bool = {True: 'true', False: 'false'}
-  # Generate build files by GN.
-  checkout = api.path['checkout']
-  gn_cmd = api.depot_tools.gn_py_path
-
-  # Prepare the arguments to pass in.
-  args = [
-      'is_debug=%s' % gn_bool[debug],
-      'is_component_build=%s' % gn_bool[not static],
-      'use_goma=%s' % gn_bool[use_goma],
-      'dawn_use_swiftshader=%s' % gn_bool[swiftshader],
+  gn_args.extend([
       'tint_build_spv_reader=true',
       'tint_build_spv_writer=true',
       'tint_build_wgsl_reader=true',
       'tint_build_wgsl_writer=true',
       'tint_build_msl_writer=true',
       'tint_build_hlsl_writer=true',
-  ]
+  ])
 
   if use_goma:
     api.goma.ensure_goma()
-    args.append('goma_dir="%s"' % api.goma.goma_dir)
+    gn_args.append('use_goma=true')
+    gn_args.append('goma_dir="%s"' % api.goma.goma_dir)
 
   # We run the end2end tests with SwiftShader, but the D3D12 backend,
   # though it would run zero tests, crashes on Windows 7.
   # Disable it for now.
-  if swiftshader:
-    args.append('dawn_enable_d3d12=false')
+  if kwargs['dawn_use_swiftshader']:
+    gn_args.append('dawn_enable_d3d12=false')
 
-  if clang is not None:
-    args.append('is_clang=%s' % gn_bool[clang])
+  # Create a unique outdir name.
+  out_dir = hashlib.sha1(api.json.dumps(
+      kwargs, sort_keys=True).encode('utf8')).hexdigest()
 
-  if target_cpu:
-    args.append('target_cpu="%s"' % target_cpu)
-
+  gn_cmd = api.depot_tools.gn_py_path
+  checkout = api.path['checkout']
   with api.context(cwd=checkout):
     api.step('gn gen', [
         'python3',
@@ -108,73 +101,40 @@ def _gn_gen_builds(api, target_cpu, debug, clang, use_goma, out_dir, static,
         '--root=' + str(checkout),
         'gen',
         '//out/' + out_dir,
-        '--args=' + ' '.join(args),
+        '--args=' + ' '.join(gn_args),
     ])
 
-
-def _build_steps(api, out_dir, clang, use_goma, *targets):
-  debug_path = api.path['checkout'].join('out', out_dir)
-  ninja_path = api.path['checkout'].join('third_party', 'ninja', 'ninja')
-  ninja_cmd = [ninja_path, '-C', debug_path]
+  build_path = checkout.join('out', out_dir)
+  ninja_path = checkout.join('third_party', 'ninja', 'ninja')
+  base_ninja_cmd = [ninja_path, '-C', build_path]
   if use_goma:
-    ninja_cmd.extend(['-j', api.goma.recommended_goma_jobs])
-  ninja_cmd.extend(targets)
+    base_ninja_cmd.extend(['-j', api.goma.recommended_goma_jobs])
 
-  if use_goma:
-    api.goma.build_with_goma(
-        name='compile with ninja',
-        ninja_command=ninja_cmd,
-        ninja_log_outdir=debug_path,
-        ninja_log_compiler='clang')
-  else:
-    api.step('compile with ninja', ninja_cmd)
+  def build(*targets):
+    ninja_cmd = base_ninja_cmd.copy()
+    ninja_cmd.extend(targets)
+    if use_goma:
+      api.goma.build_with_goma(
+          name='compile with ninja',
+          ninja_command=ninja_cmd,
+          ninja_log_outdir=build_path,
+          ninja_log_compiler='clang')
+    else:
+      api.step('compile with ninja', ninja_cmd)
 
+    return tuple(build_path.join(t) for t in targets)
 
-def _run_dawn_unittests(api, out_dir):
-  test_path = api.path['checkout'].join('out', out_dir, 'dawn_unittests')
-  api.step('Run the Dawn unittests', [test_path])
-  api.step('Run the Dawn unittests with the wire', [test_path, '--use-wire'])
-
-
-def _run_tint_unittests(api, out_dir):
-  test_path = api.path['checkout'].join('out', out_dir, 'tint_unittests')
-  api.step('Run the Tint unittests', [test_path])
+  yield build
 
 
-def _run_tint_generator_unittests(api, out_dir):
-  test_path = api.path['checkout'].join('out', out_dir, 'dawn_unittests')
-  api.step('Run the Dawn unittests',
-           [test_path, '--enable-toggles=use_tint_generator'])
-
-
-def _run_swiftshader_end2end_tests(api, out_dir):
-  test_path = api.path['checkout'].join('out', out_dir, 'dawn_end2end_tests')
-  api.step('Run the Dawn end2end tests with SwiftShader',
-           [test_path, '--adapter-vendor-id=0x1AE0'])
-
-
-def _run_swangle_end2end_tests(api, out_dir):
-  test_path = api.path['checkout'].join('out', out_dir, 'dawn_end2end_tests')
-  api.step('Run the Dawn end2end tests with ANGLE/SwiftShader',
-           [test_path, '--backend=opengles', '--use-angle=swiftshader'])
-
-
-def _generate_fuzz_corpus(api, target_cpu, debug, clang, use_goma):
-  out_dir_component = _out_path(target_cpu, debug, clang, static=False)
-  _gn_gen_builds(
-      api,
-      target_cpu,
-      debug,
-      clang,
-      use_goma,
-      out_dir_component,
-      static=False,
-      swiftshader=True)
-
-  # Build the targets
-  _build_steps(api, out_dir_component, clang, use_goma, 'dawn_unittests',
-               'dawn_end2end_tests')
-
+def _generate_fuzz_corpus(api, **kwargs):
+  kwargs.update({
+      'is_component_build': True,
+      'dawn_use_swiftshader': True,
+  })
+  with _gn_build(api, **kwargs) as build:
+    (dawn_unittests, dawn_end2end_tests) = build('dawn_unittests',
+                                                 'dawn_end2end_tests')
   # Collect the traces in temporary directories.
   testcase_dir = api.path['tmp_base'].join('testcases')
   hashed_testcase_dir = api.path['tmp_base'].join('hashed_testcases')
@@ -184,13 +144,11 @@ def _generate_fuzz_corpus(api, target_cpu, debug, clang, use_goma):
                             hashed_testcase_dir)
 
   api.step('Trace the dawn_unittests', [
-      api.path['checkout'].join('out', out_dir_component, 'dawn_unittests'),
-      '--use-wire', '--wire-trace-dir={}'.format(testcase_dir)
+      dawn_unittests, '--use-wire', '--wire-trace-dir={}'.format(testcase_dir)
   ])
 
   api.step('Trace the dawn_end2end_tests with SwiftShader', [
-      api.path['checkout'].join('out', out_dir_component, 'dawn_end2end_tests'),
-      '--adapter-vendor-id=0x1AE0', '--use-wire',
+      dawn_end2end_tests, '--adapter-vendor-id=0x1AE0', '--use-wire',
       '--wire-trace-dir={}'.format(testcase_dir)
   ])
 
@@ -227,48 +185,47 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
     api.path['cache'].join('win_toolchain'))
 
-  use_goma = bool(clang or clang is None)
-
   with api.context(env=env):
     _checkout_steps(api)
     if gen_fuzz_corpus:
-      _generate_fuzz_corpus(api, target_cpu, debug, clang, use_goma)
+      _generate_fuzz_corpus(
+          api, target_cpu=target_cpu, is_debug=debug, is_clang=clang)
       return
 
-    out_dir_static = _out_path(target_cpu, debug, clang, static=True)
-    out_dir_component = _out_path(target_cpu, debug, clang, static=False)
     with api.osx_sdk('mac'):
-      # Static build all targets and run unittests
-      _gn_gen_builds(
+      with _gn_build(
           api,
-          target_cpu,
-          debug,
-          clang,
-          use_goma,
-          out_dir_static,
-          static=True,
-          swiftshader=False)
-      _build_steps(api, out_dir_static, clang, use_goma)
-      _run_dawn_unittests(api, out_dir_static)
-      _run_tint_generator_unittests(api, out_dir_static)
-      _run_tint_unittests(api, out_dir_static)
+          target_cpu=target_cpu,
+          is_debug=debug,
+          is_clang=clang,
+          is_component_build=False,
+          dawn_use_swiftshader=False,
+      ) as build:
+        # Build default targets, and specifically the unittest binaries.
+        (_, dawn_unittests, tint_unittests) = build('default', 'dawn_unittests',
+                                                    'tint_unittests')
+      api.step('Run the Dawn unittests', [dawn_unittests])
+      api.step('Run the Dawn unittests with the wire',
+               [dawn_unittests, '--use-wire'])
+      api.step('Run the Tint unittests', [tint_unittests])
 
       # Component build and run dawn_end2end_tests with SwiftShader
       # When using SwiftShader a component build should be used.
       # See anglebug.com/4396.
-      _gn_gen_builds(
+      with _gn_build(
           api,
-          target_cpu,
-          debug,
-          clang,
-          use_goma,
-          out_dir_component,
-          static=False,
-          swiftshader=True)
-      _build_steps(api, out_dir_component, clang, use_goma,
-                   'dawn_end2end_tests')
-      _run_swiftshader_end2end_tests(api, out_dir_component)
-      _run_swangle_end2end_tests(api, out_dir_component)
+          target_cpu=target_cpu,
+          is_debug=debug,
+          is_clang=clang,
+          is_component_build=True,
+          dawn_use_swiftshader=True,
+      ) as build:
+        (dawn_end2end_tests,) = build('dawn_end2end_tests')
+      api.step('Run the Dawn end2end tests with SwiftShader',
+               [dawn_end2end_tests, '--adapter-vendor-id=0x1AE0'])
+      api.step(
+          'Run the Dawn end2end tests with ANGLE/SwiftShader',
+          [dawn_end2end_tests, '--backend=opengles', '--use-angle=swiftshader'])
 
 
 def GenTests(api):

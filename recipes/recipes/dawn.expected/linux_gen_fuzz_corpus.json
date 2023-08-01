@@ -243,8 +243,8 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/dawn",
       "gen",
-      "//out/release_component",
-      "--args=is_debug=false is_component_build=true use_goma=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true goma_dir=\"[CACHE]/goma/client\" dawn_enable_d3d12=false"
+      "//out/a1a4563bad00e05ca0dfca2a815cb1897725eda4",
+      "--args=is_debug=false is_component_build=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_goma=true goma_dir=\"[CACHE]/goma/client\" dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]/builder/dawn",
     "luci_context": {
@@ -360,7 +360,7 @@
     "cmd": [
       "[CACHE]/builder/dawn/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/dawn/out/release_component",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4",
       "-j",
       "80",
       "dawn_unittests",
@@ -529,9 +529,9 @@
       "--json-status",
       "[TMP_BASE]/goma_jsonstatus.json",
       "--ninja-log-outdir",
-      "[CACHE]/builder/dawn/out/release_component",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/dawn/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/dawn/out/release_component\", \"-j\", 80, \"dawn_unittests\", \"dawn_end2end_tests\"]",
+      "[\"[CACHE]/builder/dawn/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4\", \"-j\", 80, \"dawn_unittests\", \"dawn_end2end_tests\"]",
       "--build-exit-status",
       "0",
       "--build-step-name",
@@ -658,7 +658,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/out/release_component/dawn_unittests",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4/dawn_unittests",
       "--use-wire",
       "--wire-trace-dir=[TMP_BASE]/testcases"
     ],
@@ -678,7 +678,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/dawn/out/release_component/dawn_end2end_tests",
+      "[CACHE]/builder/dawn/out/a1a4563bad00e05ca0dfca2a815cb1897725eda4/dawn_end2end_tests",
       "--adapter-vendor-id=0x1AE0",
       "--use-wire",
       "--wire-trace-dir=[TMP_BASE]/testcases"
