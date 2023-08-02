@@ -64,7 +64,7 @@ COMPARISON_BUILDERS = freeze({
     'Comparison Android (reclient)': {
         'chromium_config': 'android',
         'gclient_config': 'chromium',
-        'chromium_apply_config': ['mb', 'download_vr_test_apks'],
+        'chromium_apply_config': ['mb', 'download_xr_test_apks'],
         'gclient_apply_config_1': ['android'],
         'gclient_apply_config_2': ['android', 'reclient_test'],
         'chromium_config_kwargs': {

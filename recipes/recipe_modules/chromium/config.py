@@ -54,7 +54,9 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
               bool, empty_val=False, required=False),
       ),
       gyp_env=ConfigGroup(
+          # VR version is deprecated, use XR version going forward.
           DOWNLOAD_VR_TEST_APKS=Single(int, required=False),
+          DOWNLOAD_XR_TEST_APKS=Single(int, required=False),
           GYP_DEFINES=Dict(equal_fn, ' '.join, (str, int, Path)),
       ),
       # This allows clients to opt out of using GYP variables in the
@@ -637,9 +639,15 @@ def codesearch(c):
     c.env.FORCE_MAC_TOOLCHAIN = 0
 
 
+# VR version is deprecated, use XR version going forward.
 @config_ctx()
 def download_vr_test_apks(c):
   c.gyp_env.DOWNLOAD_VR_TEST_APKS = 1
+
+
+@config_ctx()
+def download_xr_test_apks(c):
+  c.gyp_env.DOWNLOAD_XR_TEST_APKS = 1
 
 
 @config_ctx()

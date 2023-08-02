@@ -109,6 +109,8 @@ def GenTests(api):
 
   yield from_config('download_vr_test_apks')
 
+  yield from_config('download_xr_test_apks')
+
   yield api.test(
       'mac_toolchain',
       api.platform('mac', 64),
