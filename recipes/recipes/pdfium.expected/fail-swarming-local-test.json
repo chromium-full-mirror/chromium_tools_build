@@ -2199,10 +2199,11 @@
       "/path/to/tmp/json",
       "-task-output-stdout",
       "json",
+      "-eager",
       "0",
-      "3",
       "1",
-      "2"
+      "2",
+      "3"
     ],
     "cost": {
       "cpu": 100,

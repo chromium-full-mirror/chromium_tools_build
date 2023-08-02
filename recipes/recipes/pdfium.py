@@ -31,6 +31,9 @@ DEPS = [
 
 from dataclasses import dataclass
 
+from RECIPE_MODULES.recipe_engine.swarming.api import (TaskRequest,
+                                                       TaskRequestMetadata)
+from RECIPE_MODULES.recipe_engine.swarming.state import TaskState
 from recipe_engine import post_process
 from recipe_engine.config import Set
 from recipe_engine.recipe_api import Property, composite_step
@@ -159,8 +162,8 @@ class _ReverseByteOrderOption(_DefaultOption):
 
 
 @dataclass
-class _LocalTestRequest:
-  """A request to run a test locally."""
+class _TestRequest:
+  """A request to run a test."""
 
   step_name: str
   command: str
@@ -437,6 +440,22 @@ class _ResultDb:
 
 class _Swarming:
 
+  @dataclass
+  class _TestTask:
+    """State for a swarmed test task."""
+
+    # The test task name (typically the step name).
+    name: str
+
+    # The test request.
+    test_request: _TestRequest
+
+    # The task request to trigger.
+    task_request: TaskRequest
+
+    # The triggered task request.
+    task: TaskRequestMetadata = None
+
   def __init__(self, api, out_dir, properties):
     self.api = api
     self.out_dir = out_dir
@@ -452,8 +471,7 @@ class _Swarming:
                                  'latest', _SWARMING_CIPD_PATH)
 
     self.test_inputs_digest = None
-    self.requests = []
-    self.tasks = []
+    self.requests = {}
 
   def _ensure_test_inputs(self):
     if self.test_inputs_digest:
@@ -491,21 +509,24 @@ class _Swarming:
                                                    *archive_paths)
 
   @composite_step
-  def request_task(self, step_name, command, *, env):
+  def request_task(self, test_request, *, env):
+    assert test_request.step_name not in self.requests, (
+        f'Duplicate request for "{test_request.step_name}"')
     self._ensure_test_inputs()
 
-    request = (
-        self.api.swarming.task_request().with_name(step_name).with_priority(
-            self.properties.get('priority',
-                                _DEFAULT_SWARMING_TEST_PRIORITY)).with_resultdb(
-                                ).with_service_account(
-                                    self.properties.get('service_account', '')))
+    # Construct the task request with a single slice.
+    task_request = (
+        self.api.swarming.task_request().with_name(
+            test_request.step_name).with_priority(
+                self.properties.get('priority', _DEFAULT_SWARMING_TEST_PRIORITY)
+            ).with_resultdb().with_service_account(
+                self.properties.get('service_account', '')))
 
     # TODO(crbug.com/1465963): Try to make this idempotent after switching to
     # `task_template_deployment`.
-    task_slice = request[0]
+    task_slice = task_request[0]
     task_slice = (
-        task_slice.with_command(command).with_cas_input_root(
+        task_slice.with_command(test_request.command).with_cas_input_root(
             self.test_inputs_digest).with_dimensions(
                 **self.properties['dimensions']).with_cipd_ensure_file(
                     self.ensure_file).with_env_vars(**env)
@@ -518,35 +539,75 @@ class _Swarming:
                         _DEFAULT_SWARMING_EXECUTION_TIMEOUT_SECS)
                 ).with_named_caches(_SWARMING_NAMED_CACHES))
 
-    self.requests.append(request.with_slice(0, task_slice))
+    # Start tracking the task.
+    request = _Swarming._TestTask(
+        name=test_request.step_name,
+        test_request=test_request,
+        task_request=task_request.with_slice(0, task_slice),
+    )
+    self.requests[request.name] = request
 
   @composite_step
   def trigger_tasks(self):
-    try:
-      self.tasks = self.api.swarming.trigger('trigger tasks', self.requests)
-    finally:
-      self.requests.clear()
+    # Gather untriggered task requests.
+    task_requests = [
+        request.task_request
+        for request in self.requests.values()
+        if not request.task
+    ]
+    assert task_requests
 
     # TODO(b/277799110): Replace with `str.removeprefix()`.
     def removeprefix(s, prefix):
       assert s.startswith(prefix)
       return s[len(prefix):]
 
-    self.api.resultdb.include_invocations(
-        [removeprefix(task.invocation, 'invocations/') for task in self.tasks])
+    # Trigger tasks and add the corresponding ResultDB invocation.
+    invocations = []
+    for task in self.api.swarming.trigger('trigger tasks', task_requests):
+      request = self.requests[task.name]
+
+      assert not request.task
+      request.task = task
+
+      invocations.append(removeprefix(task.invocation, 'invocations/'))
+
+    assert len(task_requests) == len(invocations)
+    self.api.resultdb.include_invocations(invocations)
 
   def collect_tasks(self):
-    try:
-      task_results = self.api.swarming.collect('collect tasks', self.tasks)
-    finally:
-      self.tasks.clear()
+    # Gather triggered requests and key by task ID.
+    requests_by_id = {
+        request.task.id: request
+        for request in self.requests.values()
+        if request.task
+    }
+    if not requests_by_id:
+      return False
 
+    # Attempt to collect the first task that finishes.
+    forward_progress = False
+    task_results = self.api.swarming.collect(
+        'collect tasks', [request.task for request in requests_by_id.values()],
+        eager=True)
     for result in task_results.get_result():
+      request = requests_by_id[result.id]
+      assert request
+
+      if result.state is None:
+        # Need to collect the task again.
+        continue
+      forward_progress = True
+
       self._report_task_result(result)
+      del self.requests[request.name]
+
+    assert forward_progress
+    return True
 
   @composite_step
   def _report_task_result(self, result):
-    if result.state != self.api.swarming.TaskState.COMPLETED:
+    if result.state != TaskState.COMPLETED:
       result.analyze()
 
     status = self.api.step.SUCCESS if result.success else self.api.step.FAILURE
@@ -729,7 +790,7 @@ class _TestRunner:
         base_variant=variant,
         base_tags=tags)
     self.local_requests.append(
-        _LocalTestRequest(step_name=step_name, command=command))
+        _TestRequest(step_name=step_name, command=command))
 
   def _request_test_runner_py(self, step_name, *, test_type, args,
                               test_suite_suffix, remote):
@@ -749,11 +810,11 @@ class _TestRunner:
         test_id_prefix=f'ninja://testing/tools:run_{test_type}_tests/',
         base_variant=variant,
         base_tags=tags)
+    request = _TestRequest(step_name=step_name, command=command)
     if remote and self.swarming:
-      self.swarming.request_task(step_name, command, env=self.env)
+      self.swarming.request_task(request, env=self.env)
     else:
-      self.local_requests.append(
-          _LocalTestRequest(step_name=step_name, command=command))
+      self.local_requests.append(request)
 
   def run_tests(self):
     """Runs previously requested tests."""
@@ -768,7 +829,9 @@ class _TestRunner:
             self.api.step(request.step_name, request.command)
 
         if self.swarming:
-          self.swarming.collect_tasks()
+          # Repeatedly collect until all swarming tasks complete.
+          while self.swarming.collect_tasks():
+            pass
     finally:
       self.local_requests.clear()
 
@@ -1302,7 +1365,6 @@ def GenTests(api):
                   },
               },
           ])),
-      api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
       'swarming-expired-task',
@@ -1565,6 +1627,54 @@ def GenTests(api):
               },
           ])),
       api.expect_status('INFRA_FAILURE'),
+  )
+  yield api.test(
+      'fail-swarming-forward-progress',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, swarming={
+          'dimensions': {
+              'pool': 'luci.flex.ci',
+          },
+      }),
+      _gen_ci_build(api, 'linux'),
+      api.step_data(
+          'collect tasks',
+          api.swarming.collect([
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests',
+                      'state': 'PENDING',
+                      'task_id': '0',
+                  },
+              },
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests (oneshot rendering enabled)',
+                      'state': 'PENDING',
+                      'task_id': '1',
+                  },
+              },
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests (reverse byte order)',
+                      'state': 'PENDING',
+                      'task_id': '2',
+                  },
+              },
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests (javascript disabled)',
+                      'state': 'PENDING',
+                      'task_id': '3',
+                  },
+              },
+          ])),
+      api.expect_exception('AssertionError'),
   )
   yield api.test(
       'fail-swarming-command',

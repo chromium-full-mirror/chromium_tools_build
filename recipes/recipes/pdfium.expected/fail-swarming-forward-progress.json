@@ -2225,137 +2225,65 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"0\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"error\": \"context canceled\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"state\": \"PENDING\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"1\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"error\": \"context canceled\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests (oneshot rendering enabled)\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"BOT_DIED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"state\": \"PENDING\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"2\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"error\": \"goodbye world!\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"error\": \"context canceled\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests (reverse byte order)\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"state\": \"PENDING\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"3\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"error\": \"context canceled\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests (javascript disabled)\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"state\": \"PENDING\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"3\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: None@goodbye world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: None@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: corpus tests@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: corpus tests@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: corpus tests (javascript disabled)@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: corpus tests (javascript disabled)@@@"
+      "@@@STEP_LOG_LINE@task stdout+stderr: None@context canceled@@@",
+      "@@@STEP_LOG_END@task stdout+stderr: None@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "corpus tests",
+    "name": "RECIPE CRASH (Uncaught exception)",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "corpus tests (javascript disabled)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
-      "collect",
-      "-server",
-      "https://example.swarmingserver.appspot.com",
-      "-task-summary-json",
-      "/path/to/tmp/json",
-      "-task-output-stdout",
-      "json",
-      "-eager",
-      "2"
-    ],
-    "cost": {
-      "cpu": 100,
-      "disk": 0,
-      "memory": 50,
-      "net": 0
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "collect tasks (2)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"2\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"hello world!\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"outputs\": [],@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"results\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"bot_id\": \"vm-123\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"cas_output_root\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"cas_instance\": \"projects/example-project/instances/default_instance\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"digest\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"hash\": \"24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"size_bytes\": \"73\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"0\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"name\": \"corpus tests (reverse byte order)\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@task stdout+stderr: corpus tests (reverse byte order)@hello world!@@@",
-      "@@@STEP_LOG_END@task stdout+stderr: corpus tests (reverse byte order)@@@",
-      "@@@STEP_LINK@task cas outputs: corpus tests (reverse byte order)@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "corpus tests (reverse byte order)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
-      "@@@STEP_LOG_END@stdout@@@"
+      "@@@STEP_EXCEPTION@@@",
+      "The recipe has crashed at point 'Uncaught exception'!",
+      "",
+      "Traceback (most recent call last):",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 984, in RunSteps",
+      "    _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 385, in _run_tests",
+      "    test_runner.run_tests()",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 833, in run_tests",
+      "    while self.swarming.collect_tasks():",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 605, in collect_tasks",
+      "    assert forward_progress",
+      "AssertionError()"
     ]
   },
   {
     "failure": {
-      "humanReason": "1 out of 14 aggregated steps failed: The bot running this task died"
+      "humanReason": "Uncaught Exception: AssertionError()"
     },
     "name": "$result"
   }
