@@ -1255,6 +1255,102 @@ def GenTests(api):
           }),
       _gen_try_build(api, 'windows'),
   )
+  yield api.test(
+      'swarming-eager-task',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, swarming={
+          'dimensions': {
+              'pool': 'luci.flex.ci',
+          },
+      }),
+      _gen_try_build(api, 'linux'),
+      api.step_data(
+          'collect tasks',
+          api.swarming.collect([
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests',
+                      'state': 'PENDING',
+                      'task_id': '0',
+                  },
+              },
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests (oneshot rendering enabled)',
+                      'state': 'PENDING',
+                      'task_id': '1',
+                  },
+              },
+              {
+                  'output': 'hello world!',
+                  'results': {
+                      'exit_code': '0',
+                      'name': 'corpus tests (reverse byte order)',
+                      'state': 'COMPLETED',
+                      'task_id': '2',
+                  },
+              },
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests (javascript disabled)',
+                      'state': 'PENDING',
+                      'task_id': '3',
+                  },
+              },
+          ])),
+      api.expect_status('INFRA_FAILURE'),
+  )
+  yield api.test(
+      'swarming-expired-task',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, swarming={
+          'dimensions': {
+              'pool': 'luci.flex.ci',
+          },
+      }),
+      _gen_try_build(api, 'linux'),
+      api.step_data(
+          'collect tasks',
+          api.swarming.collect([
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests',
+                      'state': 'PENDING',
+                      'task_id': '0',
+                  },
+              },
+              {
+                  'results': {
+                      'name': 'corpus tests (oneshot rendering enabled)',
+                      'state': 'EXPIRED',
+                      'task_id': '1',
+                  },
+              },
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests (reverse byte order)',
+                      'state': 'PENDING',
+                      'task_id': '2',
+                  },
+              },
+              {
+                  'error': 'context canceled',
+                  'results': {
+                      'name': 'corpus tests (javascript disabled)',
+                      'state': 'PENDING',
+                      'task_id': '3',
+                  },
+              },
+          ])),
+      api.expect_status('INFRA_FAILURE'),
+  )
 
   yield api.test(
       'fail-unittests',
@@ -1520,6 +1616,19 @@ def GenTests(api):
                   },
               },
           ])),
+      api.expect_status('FAILURE'),
+  )
+  yield api.test(
+      'fail-swarming-local-test',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, swarming={
+          'dimensions': {
+              'pool': 'luci.flex.ci',
+          },
+      }),
+      _gen_ci_build(api, 'linux'),
+      api.step_data('unittests', retcode=1),
       api.expect_status('FAILURE'),
   )
 
