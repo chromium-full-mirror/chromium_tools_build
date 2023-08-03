@@ -71,20 +71,19 @@ def get_next_v8_revision(api, last_v8_revision):
     last_v8_revision: The previously rolled revision.
   """
   with api.step.nest('Choose revision') as parent:
-    with api.context(cwd=api.v8.checkout_root.join('v8')):
-      api.git('fetch', 'origin', '+refs/tags/*:refs/tags/*')
+    api.git('fetch', 'origin', '+refs/tags/*:refs/tags/*')
 
-      last_version = get_v8_tag(api, last_v8_revision)
-      assert last_version, 'The last rolled v8 revision is not tagged.'
+    last_version = get_v8_tag(api, last_v8_revision)
+    assert last_version, 'The last rolled v8 revision is not tagged.'
 
-      ref_lines = api.v8.git_output(
-          'for-each-ref', '--count=160', '--sort=-committerdate',
-          '--format', '%(refname) %(objectname) %(committerdate)',
-          'refs/tags/*',
-      ).split('\n')
-      revision, reason = choose_revision_to_roll(ref_lines, last_version)
-      parent.presentation.step_text = reason
-      return revision
+    ref_lines = api.v8.git_output(
+        'for-each-ref', '--count=160', '--sort=-committerdate',
+        '--format', '%(refname) %(objectname) %(committerdate)',
+        'refs/tags/*',
+    ).split('\n')
+    revision, reason = choose_revision_to_roll(ref_lines, last_version)
+    parent.presentation.step_text = reason
+    return revision
 
 
 def RunSteps(api):
@@ -92,7 +91,7 @@ def RunSteps(api):
   api.v8.checkout()
 
   last_v8_revision = get_last_v8_revision(api)
-  with api.context(cwd=api.path['checkout'].join('v8'),
+  with api.context(cwd=api.path['checkout'],
                    env={'DEPOT_TOOLS_UPDATE': '0'},
                    env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)
