@@ -1,0 +1,160 @@
+# Copyright 2023 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import re
+
+from recipe_engine.post_process import (
+    DoesNotRun, DropExpectation, StepCommandContains, StepTextEquals)
+
+from RECIPE_MODULES.build.v8.v8version import choose_revision_to_roll
+
+DEPS = [
+  'depot_tools/bot_update',
+  'depot_tools/gclient',
+  'depot_tools/git',
+  'depot_tools/gitiles',
+  'recipe_engine/context',
+  'recipe_engine/file',
+  'recipe_engine/path',
+  'recipe_engine/raw_io',
+  'recipe_engine/step',
+  'v8',
+]
+
+TEST_DEPS_FILE = """
+vars = {
+  'chromium_git': 'https://chromium.googlesource.com',
+  'v8_revision': '%s',
+}
+
+deps = {
+  'src/v8':
+    Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
+}
+"""
+
+V8_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+(?:\.\d+)?$')
+
+
+def get_last_v8_revision(api):
+  """Retrieve the last V8 revision in Chromium from gitiles."""
+  deps = api.gitiles.download_file(
+      'https://chromium.googlesource.com/chromium/src',
+      'DEPS',
+      branch='refs/heads/main',
+      step_test_data=lambda: api.gitiles.test_api.make_encoded_file(
+          TEST_DEPS_FILE % 'deadbeef'),
+  )
+
+  deps_file = api.path.mkdtemp('gitiles').join('DEPS')
+  api.file.write_text('gitiles', deps_file, deps)
+  revision = api.gclient(
+      'get gitiles deps',
+      ['getdep', '--var=v8_revision', f'--deps-file={deps_file}'],
+      stdout=api.raw_io.output_text(),
+  ).stdout.strip()
+  api.step.active_result.presentation.logs['revision'] = [revision]
+  return revision
+
+
+def get_v8_tag(api, revision):
+  """Returns the V8 version tag associated with a revision or None."""
+  tags = api.v8.git_output('tag', '--points-at', revision).split('\n')
+  return next((tag for tag in tags if V8_VERSION_RE.match(tag)), None)
+
+
+def get_next_v8_revision(api, last_v8_revision):
+  """Choose the next newest viable V8 revision to roll.
+
+  Args:
+    last_v8_revision: The previously rolled revision.
+  """
+  with api.step.nest('Choose revision') as parent:
+    with api.context(cwd=api.v8.checkout_root.join('v8')):
+      api.git('fetch', 'origin', '+refs/tags/*:refs/tags/*')
+
+      last_version = get_v8_tag(api, last_v8_revision)
+      assert last_version, 'The last rolled v8 revision is not tagged.'
+
+      ref_lines = api.v8.git_output(
+          'for-each-ref', '--count=160', '--sort=-committerdate',
+          '--format', '%(refname) %(objectname) %(committerdate)',
+          'refs/tags/*',
+      ).split('\n')
+      revision, reason = choose_revision_to_roll(ref_lines, last_version)
+      parent.presentation.step_text = reason
+      return revision
+
+
+def RunSteps(api):
+  api.gclient.set_config('v8_bare')
+  api.v8.checkout()
+
+  last_v8_revision = get_last_v8_revision(api)
+  with api.context(cwd=api.path['checkout'].join('v8'),
+                   env={'DEPOT_TOOLS_UPDATE': '0'},
+                   env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+    next_v8_revision = get_next_v8_revision(api, last_v8_revision)
+    if not next_v8_revision:
+      return
+
+    api.git(
+        'push', 'https://chromium.googlesource.com/v8/v8',
+        f'refs/heads/roll:{next_v8_revision}')
+
+
+TEST_REF_DATA = """
+refs/tags/11.7.10-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2 Fri Jul 7 11:32:02 2023 +0000
+refs/tags/11.7.10 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2 Fri Jul 7 11:32:02 2023 +0000
+refs/tags/11.7.9-pgo aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1 Fri Jul 7 10:32:02 2023 +0000
+refs/tags/11.7.9 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1 Fri Jul 7 10:32:02 2023 +0000
+"""
+
+
+def GenTests(api):
+  def last_v8_revision():
+    return api.override_step_data(
+        'gclient get gitiles deps',
+        api.raw_io.stream_output_text('deadbeef', stream='stdout'))
+
+  def v8_tag(tag):
+    return api.override_step_data(
+        'Choose revision.git tag',
+        api.raw_io.stream_output_text(f'{tag}-pgo\n{tag}', stream='stdout'))
+
+  def v8_ref_data():
+    return api.override_step_data(
+        'Choose revision.git for-each-ref',
+        api.raw_io.stream_output_text(TEST_REF_DATA, stream='stdout'))
+
+  yield api.test(
+      'standard',
+      last_v8_revision(),
+      v8_tag('11.7.8'),
+      v8_ref_data(),
+      api.post_process(
+          StepTextEquals,
+          'Choose revision',
+          'found revision to roll: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2'),
+      api.post_process(
+          StepCommandContains,
+          'git push',
+          ['refs/heads/roll:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2']),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'nothing_new',
+      last_v8_revision(),
+      v8_tag('11.7.11'),
+      v8_ref_data(),
+      api.post_process(
+          StepTextEquals,
+          'Choose revision',
+          'found no newer revision than: 11.7.11'),
+      api.post_process(DoesNotRun, 'git push'),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
