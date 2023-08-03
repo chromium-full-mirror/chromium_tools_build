@@ -15,6 +15,7 @@ import re
 
 
 DEPS = [
+  'depot_tools/depot_tools',
   'depot_tools/gclient',
   'depot_tools/gerrit',
   'depot_tools/git',
@@ -83,6 +84,8 @@ PROPERTIES = {
                 reviewers=List(str),
                 # Flag for rolling the binary chromium pin in target project
                 roll_chromium_pin=Single(bool),
+                # List of keys of supported script assisted rolls
+                scripted_rolls=Single(list, empty_val=None),
                 # Add extra log entries to the commit message.
                 show_commit_log=Single(bool),
                 # Bugs included in roll CL description
@@ -155,6 +158,42 @@ class ChromePinSolver():
     return current and (self.version_tuple(current) <
                         self.version_tuple(latest))
 
+class ScriptedRoll:
+
+  @staticmethod
+  def supported():
+    """Returns a dict of supported scripted rolls. The key is the script key
+    and the value is a tuple of the title and the path elements to the script.
+    """
+    return {
+        'puppeteer': (
+            'Puppeteer',
+            'scripts/deps/roll_front_end_third_party.py'
+        ),
+        # Add more scripts here
+    }
+
+  @staticmethod
+  def subjects(roller_subject):
+    """Returns a list of possible subjects for the given roller. The list is
+    constructed from the titles of the supported scripts.
+    """
+    return [
+      f'{roller_subject} ({title})'
+      for title, _  in ScriptedRoll.supported().values()
+    ]
+
+  def __init__(self, script_key):
+    self.title, self.path  = ScriptedRoll.supported()[script_key]
+    self.updated = False
+
+  def run(self, api):
+    with api.depot_tools.on_path():
+      api.step(f'Run {self.title} script',[
+          'python3',
+          '-u',
+          api.path['checkout'].join(*self.path.split('/'))
+      ])
 
 # Custom vars by project. They are added to the gclient solution when
 # determining current deps versions.
@@ -206,6 +245,7 @@ def abandon_active_cls(api, autoroller_config):
       trusted_subject,
       reviewed_subject,
       CHROMIUM_PIN_CL_SUBJECT,
+      *ScriptedRoll.subjects(autoroller_config['subject']),
   }]
   for commit in commits:
     api.gerrit.abandon_change(
@@ -521,6 +561,13 @@ def get_dep_updates(api, autoroller_config):
 
 def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
     bugs_label):
+  """
+  Verify that the local checkout is dirty, commit changes and upload a CL with
+  the given subject and reviewers. If the local checkout is not dirty, we do
+  nothing.
+
+  Returns whether a CL was uploaded.
+  """
   # Check for a difference. If no deps changed, the diff is empty.
   with api.context(cwd=api.path['checkout']):
     step_result = api.git(
@@ -531,7 +578,7 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
   step_result.presentation.logs['diff'] = diff.splitlines()
 
   if not diff:
-    return
+    return False
 
   # Create a rolling CL
   args = ['commit', '-a', '-m', subject]
@@ -575,6 +622,7 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
 
     step.presentation.links['CL'] = cl_link
 
+  return True
 
 def update_dependencies(api, step, updates, autoroller_config, trusted):
   """Create CLs to update the dependencies in the target repository.
@@ -652,6 +700,31 @@ def update_chrome_pin(api, step, autoroller_config):
     return needs_update
 
 
+def update_scripted_rolls(api, step, autoroller_config):
+  """Applies a scripted roll to the target repository.
+
+  Returns a summary string with the titles of all scripted rolls where we
+  created a new CL.
+  """
+  with api.context(cwd=api.path['checkout']), api.depot_tools.on_path():
+    script_keys = autoroller_config['scripted_rolls']
+    scripted_rolls = [ScriptedRoll(key) for key in script_keys]
+    for scripted in scripted_rolls:
+      with api.step.nest(f'Roll {scripted.title}'):
+        discard_local_changes(api)
+        scripted.run(api)
+        scripted.updated = upload_cl(
+            api,
+            step,
+            subject=f'Roll {scripted.title}',
+            reviewers=autoroller_config['reviewers'],
+            set_bot_commit=False,
+            commit_lines=[roll_origin_line(api)],
+            bugs_label=autoroller_config.get('bugs', None),
+        )
+    return ', '.join(s.title for s in scripted_rolls if s.updated)
+
+
 def handle_failed_deps(api, failed_deps):
   if not failed_deps:
     return
@@ -662,6 +735,7 @@ def handle_failed_deps(api, failed_deps):
 
 def set_defaults(autoroller_config):
   autoroller_config.setdefault('roll_chromium_pin', False)
+  autoroller_config.setdefault('scripted_rolls', [])
   target_config = autoroller_config['target_config']
   target_config.setdefault('gerrit_base_url', GERRIT_BASE_URL)
   target_config.setdefault('base_url', BASE_URL)
@@ -701,6 +775,12 @@ def RunSteps(api, autoroller_config):
       updated = update_chrome_pin(api, step, autoroller_config)
     if updated:
       summary.append('1 chrome pin')
+
+  if autoroller_config['scripted_rolls']:
+    with api.step.nest('Scripted rolls') as step:
+      script_summary = update_scripted_rolls(api, step, autoroller_config)
+      if script_summary:
+        summary.append(script_summary)
 
   result = result_pb2.RawResult()
   result.status = common_pb2.SUCCESS
@@ -757,6 +837,7 @@ remote:"""
       },
       'show_commit_log': True,
       'roll_chromium_pin': True,
+      'scripted_rolls': ['puppeteer'],
       'bugs': 'none',
   }
 
@@ -868,9 +949,20 @@ remote:"""
 
   # Happy path
   yield api.test(*template('default') + [
+      api.override_step_data(
+          'Scripted rolls.Roll Puppeteer.git diff',
+          api.raw_io.stream_output_text(
+              'diff generated by script',
+              stream='stdout'
+          ),
+      ),
+      api.override_step_data(
+          'Scripted rolls.Roll Puppeteer.git cl',
+          api.raw_io.stream_output_text(git_cl_info, stream='stdout'),
+      ),
       api.post_process(
           SummaryMarkdown,
-          'updated 4 trusted dep(s), 6 reviewed dep(s)')],
+          'updated 4 trusted dep(s), 6 reviewed dep(s), Puppeteer')],
   )
 
   # No chrome pin roll
