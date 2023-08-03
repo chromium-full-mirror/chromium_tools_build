@@ -3,21 +3,21 @@
 # found in the LICENSE file.
 
 DEPS = [
-  'depot_tools/bot_update',
-  'depot_tools/depot_tools',
-  'depot_tools/gclient',
-  'depot_tools/gsutil',
-  'depot_tools/osx_sdk',
-  'goma',
-  'recipe_engine/buildbucket',
-  'recipe_engine/context',
-  'recipe_engine/file',
-  'recipe_engine/json',
-  'recipe_engine/path',
-  'recipe_engine/platform',
-  'recipe_engine/properties',
-  'recipe_engine/step',
-  'recipe_engine/time',
+    'depot_tools/bot_update',
+    'depot_tools/depot_tools',
+    'depot_tools/gclient',
+    'depot_tools/gsutil',
+    'depot_tools/osx_sdk',
+    'reclient',
+    'recipe_engine/buildbucket',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/step',
+    'recipe_engine/time',
 ]
 
 import hashlib
@@ -57,7 +57,8 @@ def _checkout_steps(api):
 # returns a tuple of the file paths where those targets' executables should be located.
 @contextmanager
 def _gn_build(api, **kwargs):
-  use_goma = kwargs['is_clang'] is True or kwargs['is_clang'] is None
+  use_remoteexec = (kwargs['is_clang'] is True or
+                    kwargs['is_clang'] is None) and api.reclient.instance
   gn_args = []
   for key, value in kwargs.items():
     if value is None:
@@ -77,10 +78,8 @@ def _gn_build(api, **kwargs):
       'tint_build_hlsl_writer=true',
   ])
 
-  if use_goma:
-    api.goma.ensure_goma()
-    gn_args.append('use_goma=true')
-    gn_args.append('goma_dir="%s"' % api.goma.goma_dir)
+  if use_remoteexec:
+    gn_args.append('use_remoteexec=true')
 
   # We run the end2end tests with SwiftShader, but the D3D12 backend,
   # though it would run zero tests, crashes on Windows 7.
@@ -107,18 +106,15 @@ def _gn_build(api, **kwargs):
   build_path = checkout.join('out', out_dir)
   ninja_path = checkout.join('third_party', 'ninja', 'ninja')
   base_ninja_cmd = [ninja_path, '-C', build_path]
-  if use_goma:
-    base_ninja_cmd.extend(['-j', api.goma.recommended_goma_jobs])
+  if use_remoteexec:
+    base_ninja_cmd.extend(['-j', api.reclient.jobs])
 
   def build(*targets):
     ninja_cmd = base_ninja_cmd.copy()
     ninja_cmd.extend(targets)
-    if use_goma:
-      api.goma.build_with_goma(
-          name='compile with ninja',
-          ninja_command=ninja_cmd,
-          ninja_log_outdir=build_path,
-          ninja_log_compiler='clang')
+    if use_remoteexec:
+      with api.reclient.process('compile with ninja', ''):
+        api.step('compile with ninja', ninja_cmd)
     else:
       api.step('compile with ninja', ninja_cmd)
 
@@ -204,10 +200,6 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
         # Build default targets, and specifically the unittest binaries.
         (_, dawn_unittests, tint_unittests) = build('default', 'dawn_unittests',
                                                     'tint_unittests')
-      api.step('Run the Dawn unittests', [dawn_unittests])
-      api.step('Run the Dawn unittests with the wire',
-               [dawn_unittests, '--use-wire'])
-      api.step('Run the Tint unittests', [tint_unittests])
 
       # Component build and run dawn_end2end_tests with SwiftShader
       # When using SwiftShader a component build should be used.
@@ -221,16 +213,23 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
           dawn_use_swiftshader=True,
       ) as build:
         (dawn_end2end_tests,) = build('dawn_end2end_tests')
-      api.step('Run the Dawn end2end tests with SwiftShader',
-               [dawn_end2end_tests, '--adapter-vendor-id=0x1AE0'])
-      api.step(
-          'Run the Dawn end2end tests with ANGLE/SwiftShader',
-          [dawn_end2end_tests, '--backend=opengles', '--use-angle=swiftshader'])
+
+  api.step('Run the Dawn unittests', [dawn_unittests])
+  api.step('Run the Dawn unittests with the wire',
+           [dawn_unittests, '--use-wire'])
+  api.step('Run the Tint unittests', [tint_unittests])
+
+  api.step('Run the Dawn end2end tests with SwiftShader',
+           [dawn_end2end_tests, '--adapter-vendor-id=0x1AE0'])
+  api.step(
+      'Run the Dawn end2end tests with ANGLE/SwiftShader',
+      [dawn_end2end_tests, '--backend=opengles', '--use-angle=swiftshader'])
 
 
 def GenTests(api):
   yield api.test(
       'linux',
+      api.reclient.properties(),
       api.platform('linux', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='linux', git_repo=DAWN_REPO),
@@ -244,18 +243,21 @@ def GenTests(api):
   )
   yield api.test(
       'mac',
+      api.reclient.properties(),
       api.platform('mac', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='mac', git_repo=DAWN_REPO),
   )
   yield api.test(
       'win',
+      api.reclient.properties(),
       api.platform('win', 64),
       api.buildbucket.ci_build(
           project='dawn', builder='win', git_repo=DAWN_REPO),
   )
   yield api.test(
       'win_clang',
+      api.reclient.properties(),
       api.platform('win', 64),
       api.properties(clang=True),
       api.buildbucket.ci_build(
@@ -270,6 +272,7 @@ def GenTests(api):
   )
   yield api.test(
       'linux_gen_fuzz_corpus',
+      api.reclient.properties(),
       api.platform('linux', 64),
       api.properties(gen_fuzz_corpus=True),
       api.buildbucket.ci_build(

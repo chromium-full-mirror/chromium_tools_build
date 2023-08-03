@@ -209,70 +209,6 @@
   },
   {
     "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\dawn_unittests"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run the Dawn unittests"
-  },
-  {
-    "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\dawn_unittests",
-      "--use-wire"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run the Dawn unittests with the wire"
-  },
-  {
-    "cmd": [
-      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\tint_unittests"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Run the Tint unittests"
-  },
-  {
-    "cmd": [
       "python3",
       "RECIPE_REPO[depot_tools]\\gn.py",
       "--root=[CACHE]\\builder\\dawn",
@@ -324,12 +260,64 @@
   },
   {
     "cmd": [
+      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\dawn_unittests"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run the Dawn unittests"
+  },
+  {
+    "cmd": [
+      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\dawn_unittests",
+      "--use-wire"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run the Dawn unittests with the wire"
+  },
+  {
+    "cmd": [
+      "[CACHE]\\builder\\dawn\\out\\29c83d0edca5b50d9eb01bd7be2a197c10463518\\tint_unittests"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run the Tint unittests"
+  },
+  {
+    "cmd": [
       "[CACHE]\\builder\\dawn\\out\\41354d41edc234dda1e301356c1f74e8ab38b389\\dawn_end2end_tests",
       "--adapter-vendor-id=0x1AE0"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -350,9 +338,6 @@
       "--backend=opengles",
       "--use-angle=swiftshader"
     ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
