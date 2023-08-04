@@ -142,26 +142,25 @@ class DevToolsAPI(recipe_api.RecipeApi):
     self.m.chromium_swarming.default_priority = (
         25 if self.m.tryserver.is_tryserver else 35)
 
-    with self.m.step.nest(f'{step_name} shards'):
-      for i in range(len(commands)):
-        if commands[i][0].startswith('ITERATIONS='):
-          env['ITERATIONS'] = commands[i].pop(0).split('=')[1]
-        task = self.m.chromium_swarming.task(
-            name=f'{step_name} (Shard #{i})',
-            raw_cmd=["vpython3", "-u"] + commands[i] + args,
-            task_output_dir=task_output_dir,
-            cas_input_root=cas_digest,
-            env=env)
+    for i in range(len(commands)):
+      if commands[i][0].startswith('ITERATIONS='):
+        env['ITERATIONS'] = commands[i].pop(0).split('=')[1]
+      task = self.m.chromium_swarming.task(
+          name=f'{step_name} (Shard #{i})',
+          raw_cmd=["vpython3", "-u"] + commands[i] + args,
+          task_output_dir=task_output_dir,
+          cas_input_root=cas_digest,
+          env=env)
 
-        task_slice = task.request[0]
-        task_dimensions = task_slice.dimensions
-        task_dimensions.update(self.m.devtools.get_dimensions_for_platform())
-        task_slice = task_slice.with_dimensions(**task_dimensions)
-        task.request = task.request.with_slice(0, task_slice)
+      task_slice = task.request[0]
+      task_dimensions = task_slice.dimensions
+      task_dimensions.update(self.m.devtools.get_dimensions_for_platform())
+      task_slice = task_slice.with_dimensions(**task_dimensions)
+      task.request = task.request.with_slice(0, task_slice)
 
-        self.m.chromium_swarming.trigger_task(task)
+      self.m.chromium_swarming.trigger_task(task)
 
-        tasks.append(task)
+      tasks.append(task)
 
     return tasks
 
