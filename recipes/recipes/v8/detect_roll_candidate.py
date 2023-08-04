@@ -100,7 +100,7 @@ def RunSteps(api):
 
     api.git(
         'push', 'https://chromium.googlesource.com/v8/v8',
-        f'refs/heads/roll:{next_v8_revision}')
+        f'{next_v8_revision}:refs/heads/roll')
 
 
 TEST_REF_DATA = """
@@ -139,7 +139,7 @@ def GenTests(api):
       api.post_process(
           StepCommandContains,
           'git push',
-          ['refs/heads/roll:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2']),
+          ['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2:refs/heads/roll']),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
