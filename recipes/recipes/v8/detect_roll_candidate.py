@@ -99,6 +99,9 @@ def RunSteps(api):
       return
 
     api.git(
+        'fetch', 'https://chromium.googlesource.com/v8/v8',
+        'refs/heads/roll', next_v8_revision)
+    api.git(
         'push', 'https://chromium.googlesource.com/v8/v8',
         f'{next_v8_revision}:refs/heads/roll')
 
