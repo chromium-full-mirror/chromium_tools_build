@@ -982,7 +982,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       property_args.append('{}={}'.format(k, self.m.json.dumps(v)))
 
     project = self.m.buildbucket.build.builder.project
-    bucket = self.m.buildbucket.build.builder.bucket
+    # If this is an led real build, then the bucket will be the shadow bucket
+    # and getting a builder from the shadow bucket doesn't work, so get the
+    # builder from the shadowed bucket
+    bucket = (
+        self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket)
     with self.m.step.nest('trigger') as trigger_presentation:
       # Clear out SWARMING_TASK_ID in the environment so that the created tasks
       # do not have a parent task ID. This allows the triggered tasks to outlive
@@ -993,7 +997,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       with self.m.context(env={'SWARMING_TASK_ID': None}):
         for child_builder in to_trigger:
           child_builder_name = '{}/{}/{}'.format(project, bucket, child_builder)
-          with self.m.step.nest(child_builder_name) as builder_presentation:
+          with self.m.step.nest(child_builder_name):
             led_builder_id = 'luci.{}.{}:{}'.format(project, bucket,
                                                     child_builder)
             led_job = self.m.led('get-builder', led_builder_id)
@@ -1002,9 +1006,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             led_job = led_job.then('edit', *property_args)
             result = led_job.then('launch').launch_result
 
-            swarming_task_url = result.swarming_task_url
-            builder_presentation.links['swarming task'] = swarming_task_url
-            trigger_presentation.links[child_builder_name] = swarming_task_url
+            child_link = result.build_url or result.swarming_task_url
+            trigger_presentation.links[child_builder_name] = child_link
 
   def trigger_child_builds(self,
                            builder_id,

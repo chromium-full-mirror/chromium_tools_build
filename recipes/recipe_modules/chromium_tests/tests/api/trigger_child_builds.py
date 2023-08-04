@@ -49,8 +49,9 @@ def GenTests(api):
     check('stdin for %s contained %s' % (step, regex),
           re.match(regex, step_odict[step].stdin))
 
-  def builder_with_tester_to_trigger(**kwargs):
+  def builder_with_tester_to_trigger(bucket='ci', **kwargs):
     return api.chromium_tests_builder_config.ci_build(
+        bucket=bucket,
         builder_group='fake-group',
         builder='fake-builder',
         builder_db=ctbc.BuilderDatabase.create({
@@ -118,6 +119,37 @@ def GenTests(api):
                               size_bytes=71,
                           ),
                       ),
+                  ),
+          }),
+      api.post_process(post_process.StepSuccess, led_trigger_prefix),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led get-builder'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led edit (2)'),
+      api.post_process(post_process.StepSuccess,
+                       led_trigger_prefix + '.led launch'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'led-real-build',
+      builder_with_tester_to_trigger(bucket='ci.shadow'),
+      api.properties(
+          **{
+              '$recipe_engine/led':
+                  led_properties_pb.InputProperties(
+                      led_run_id='fake-run-id',
+                      rbe_cas_input=swarming_pb.CASReference(
+                          cas_instance=(
+                              'projects/example/instances/default_instance'),
+                          digest=swarming_pb.Digest(
+                              hash='examplehash',
+                              size_bytes=71,
+                          ),
+                      ),
+                      shadowed_bucket='ci',
                   ),
           }),
       api.post_process(post_process.StepSuccess, led_trigger_prefix),
