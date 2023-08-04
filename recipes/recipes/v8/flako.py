@@ -763,7 +763,9 @@ class ProgressionBisector(Bisector):
   def bisect(self, known_bad_offset):
     head_offset = self.builds.find_closest_build(self.depot.get_head_offset())
 
-    if not self.is_bad_func(head_offset):
+    # Check if this reproduces at ToT, if different from the already checked
+    # known bad revision.
+    if head_offset == known_bad_offset or not self.is_bad_func(head_offset):
       return RawResult(
           status=common_pb.FAILURE, summary_markdown='Flake still reproduces.')
 
@@ -1144,6 +1146,21 @@ def GenTests(api):
       is_flaky(0, 0, 5, calibration_attempt=1),
       # The flake still reproduces.
       is_flaky(-3, 0, 2),
+      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+      api.post_process(DropExpectation),
+      status='FAILURE',
+  )
+
+  # Progression testing starting with ToT revision.
+  yield api.test(
+      'progression_on_tot_revision',
+      builder_properties(mode='progression'),
+      # Initial fetch covers all required revisions.
+      init_head(0, 1),
+      # Simulate existing builds.
+      successful_lookups(0),
+      # Calibration with successful repro at offset 0.
+      is_flaky(0, 0, 5, calibration_attempt=1),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
       api.post_process(DropExpectation),
       status='FAILURE',
