@@ -556,11 +556,11 @@ def GenTests(api):
               stream='stdout')),
       api.step_data(
           'E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #0) on Ubuntu-18',
+          'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.step_data(
           'E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #1) on Ubuntu-18',
+          'E2E Tests (Shard #1) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data2)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'Trigger Tests.Trigger E2E Tests'),
@@ -589,7 +589,7 @@ def GenTests(api):
               'node runner config pattern', stream='stdout')),
       api.step_data(
           'Interactions Tests.Interactions Tests shards ' +
-          'results.Interactions Tests (Shard #0) on Ubuntu-18',
+          'results.Interactions Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.SummaryMarkdown,
                        'Failure in Interactions Tests'),
@@ -616,7 +616,7 @@ def GenTests(api):
               'node runner config pattern', stream='stdout')),
       api.step_data(
           'Interactions Tests.Interactions Tests shards ' +
-          'results.Interactions Tests (Shard #0) on Ubuntu-18',
+          'results.Interactions Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.SummaryMarkdown,
                        'Failure in Interactions Tests'),
@@ -643,7 +643,7 @@ def GenTests(api):
               'node runner config pattern', stream='stdout')),
       api.step_data(
           'Unit Tests.Unit Tests ' +
-          'shards results.Unit Tests (Shard #0) on Ubuntu-18',
+          'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.SummaryMarkdown, 'Failure in Unit Tests'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
@@ -675,19 +675,19 @@ def GenTests(api):
               stream='stdout')),
       api.step_data(
           'Unit Tests.Unit Tests ' +
-          'shards results.Unit Tests (Shard #0) on Ubuntu-18',
+          'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.step_data(
           'Interactions Tests.Interactions Tests shards ' +
-          'results.Interactions Tests (Shard #0) on Ubuntu-18',
+          'results.Interactions Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.step_data(
           'E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #0) on Ubuntu-18',
+          'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data1)),
       api.step_data(
           'E2E Tests.E2E Tests shards results.' +
-          'E2E Tests (Shard #1) on Ubuntu-18',
+          'E2E Tests (Shard #1) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data2)),
       api.post_process(
           post_process.SummaryMarkdown,

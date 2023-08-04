@@ -121,7 +121,7 @@ def GenTests(api):
               'node runner config pattern', stream='stdout')),
       api.step_data(
           'E2E Tests.E2E Tests result collection.E2E Tests shards results.' +
-          'E2E Tests (Shard #0) on Ubuntu-18',
+          'E2E Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation),
