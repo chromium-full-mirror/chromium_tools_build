@@ -16,7 +16,8 @@ class ResultDB:
   Attributes:
     * enable - Whether or not ResultDB-integration is enabled.
     * has_native_resultdb_integration - If True, indicates the test will upload
-      its results to ResultDB and that ResultSink is not needed.
+      its results to ResultDB via ResultSink and that `result_adapter` is not
+      needed.
     * result_format - The format of the test results.
     * test_id_as_test_location - Whether the test ID will be used as the
       test location. It only makes sense to set this for blink_web_tests
