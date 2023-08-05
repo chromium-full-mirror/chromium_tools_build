@@ -9,11 +9,16 @@ class FlakinessTestApi(recipe_test_api.RecipeTestApi):
 
   def __call__(self,
                check_for_flakiness=False,
+               check_for_flakiness_with_resultdb=False,
                max_test_targets=10):
     return self.m.properties(
         **{
             '$build/flakiness': {
-                'check_for_flakiness': check_for_flakiness,
-                'max_test_targets': max_test_targets,
+                'check_for_flakiness':
+                    check_for_flakiness,
+                'check_for_flakiness_with_resultdb':
+                    check_for_flakiness_with_resultdb,
+                'max_test_targets':
+                    max_test_targets,
             }
         })

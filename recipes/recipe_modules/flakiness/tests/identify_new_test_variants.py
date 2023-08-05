@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine import post_process
+
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto \
   import builder_common as builder_common_pb2
@@ -12,6 +13,8 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 DEPS = [
     'flakiness',
     'recipe_engine/buildbucket',
+    'recipe_engine/led',
+    'recipe_engine/properties',
     'recipe_engine/resultdb',
 ]
 
@@ -49,8 +52,8 @@ def GenTests(api):
                       variant_hash="12345",
                   )
               ]),
-          step_name='searching_for_new_tests with ResultDB.query_new_test_variants'
-      ),
+          step_name=('searching_for_new_tests with ResultDB.'
+                     'query_new_test_variants')),
       api.post_process(
           post_process.StepCommandContains,
           ('searching_for_new_tests with ResultDB.query_new_test_variants'), [
@@ -69,8 +72,8 @@ def GenTests(api):
       api.resultdb.query_new_test_variants(
           rdb_pb2.QueryNewTestVariantsResponse(
               is_baseline_ready=False, new_test_variants=[]),
-          step_name='searching_for_new_tests with ResultDB.query_new_test_variants'
-      ),
+          step_name=('searching_for_new_tests with ResultDB.'
+                     'query_new_test_variants')),
       api.post_process(
           post_process.MustRun,
           'searching_for_new_tests with ResultDB.'
@@ -86,12 +89,36 @@ def GenTests(api):
       api.resultdb.query_new_test_variants(
           rdb_pb2.QueryNewTestVariantsResponse(
               is_baseline_ready=True, new_test_variants=[]),
-          step_name='searching_for_new_tests with ResultDB.query_new_test_variants'
-      ),
+          step_name=('searching_for_new_tests with ResultDB.'
+                     'query_new_test_variants')),
       api.post_process(
           post_process.MustRun,
           'searching_for_new_tests with ResultDB.'
           'No new tests detected',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  def _stdin_equals(check, step_odict, step, stdin):
+    check(step_odict[step].stdin == stdin)
+
+  yield api.test(
+      'led',
+      api.buildbucket.build(basic_build),
+      api.flakiness(check_for_flakiness=True),
+      api.properties(**{'$recipe_engine/led': {
+          'shadowed_bucket': 'try-real',
+      }}),
+      api.resultdb.query_new_test_variants(
+          rdb_pb2.QueryNewTestVariantsResponse(
+              is_baseline_ready=True, new_test_variants=[]),
+          step_name=('searching_for_new_tests with ResultDB.'
+                     'query_new_test_variants')),
+      api.post_process(
+          _stdin_equals,
+          'searching_for_new_tests with ResultDB.query_new_test_variants',
+          ('{\"baseline\": \"projects/chromium/baselines/try-real:Builder\", '
+           '\"invocation\": \"invocations/100\"}'),
       ),
       api.post_process(post_process.DropExpectation),
   )

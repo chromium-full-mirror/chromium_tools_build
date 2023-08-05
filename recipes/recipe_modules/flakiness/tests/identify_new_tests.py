@@ -265,3 +265,41 @@ def GenTests(api):
           }])),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'led',
+      api.buildbucket.build(basic_build),
+      api.flakiness(check_for_flakiness=True,),
+      api.properties(**{'$recipe_engine/led': {
+          'shadowed_bucket': 'try-real',
+      }}),
+      api.step_data(
+          # All build tests are returned from history.
+          'searching_for_new_tests.process precomputed test history',
+          api.file.read_json([{
+              'test_id': 'ninja://sample/test:some_test/TestSuite.Test0',
+              'variant_hash': '0hash',
+              'invocation': ['invocation/3']
+          }, {
+              'test_id': 'ninja://sample/test:some_test/TestSuite.Test1',
+              'variant_hash': '1hash',
+              'invocation': ['invocation/1']
+          }, {
+              'test_id': 'ninja://sample/test:some_test/TestSuite.Test2',
+              'variant_hash': '2hash',
+              'invocation': ['invocation/1']
+          }, {
+              'test_id': 'ninja://sample/test:some_test/TestSuite.Test3',
+              'variant_hash': '3hash',
+              'invocation': ['invocation/1']
+          }, {
+              'test_id': 'TestSuite.Test4',
+              'variant_hash': '4hash',
+              'invocation': ['invocation/1']
+          }])),
+      api.post_process(
+          post_process.StepCommandContains,
+          'searching_for_new_tests.process precomputed test history',
+          ['copy', '[CLEANUP]/flake_endorser/chromium/try-real/Builder.json']),
+      api.post_process(post_process.DropExpectation),
+  )

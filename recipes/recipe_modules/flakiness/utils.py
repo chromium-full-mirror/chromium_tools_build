@@ -9,6 +9,7 @@ import re
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
+# TODO (crbug/1456545) - delete this class once it's not in use.
 class TestDefinition():
   """A class to contain ResultDB TestReuslt Proto information.
 
@@ -49,7 +50,6 @@ class TestDefinition():
         go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
     """
     self.test_id = test_id
-    # TODO (crbug/1456545) deprecate test name
     self.test_name = test_name
     self.duration_milliseconds = duration_milliseconds
     self.variant_hash = variant_hash

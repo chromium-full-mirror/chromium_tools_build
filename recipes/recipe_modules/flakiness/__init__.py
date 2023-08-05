@@ -17,6 +17,7 @@ DEPS = [
     'recipe_engine/file',
     'recipe_engine/futures',
     'recipe_engine/json',
+    'recipe_engine/led',
     'recipe_engine/luci_analysis',
     'recipe_engine/path',
     'recipe_engine/platform',

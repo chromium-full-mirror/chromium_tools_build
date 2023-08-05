@@ -9,6 +9,7 @@ import inspect
 import random
 import re
 import sys
+from typing import Dict, List, Tuple
 
 from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
@@ -35,6 +36,7 @@ class FlakinessApi(recipe_api.RecipeApi):
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._check_for_flakiness = properties.check_for_flakiness
+    self._check_for_flakiness_with_resultdb = properties.check_for_flakiness_with_resultdb
     # Input to cross reference step in "verify_new_tests" might be too large
     # and cause step failure, when there are too many new tests to verify
     # (caused by stale history JSON file, or a config roll adding new test
@@ -118,9 +120,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     """
     # a list of builder names are queried for by the pre-computing builder, and
     # requires a mechanism to set this value for the correct upload path.
+    bucket = self.m.led.shadowed_bucket or builder.bucket
     return self.gs_source_template(experimental=experimental).format(
         builder.project,
-        builder.bucket,
+        bucket,
         builder.builder,
         str(build_number) if build_number else 'latest',
     ) + '{}.json.tar.gz'.format(builder.builder)
@@ -160,9 +163,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     output_dir = self.m.path['cleanup'].join('flake_endorser')
     self.m.tar.untar('unpack {}'.format(source), local_dest, output_dir)
 
+    bucket = self.m.led.shadowed_bucket or builder.bucket
     return self.m.file.read_json(
         'process precomputed test history',
-        output_dir.join(builder.project, builder.bucket,
+        output_dir.join(builder.project, bucket,
                         '{}.json'.format(builder.builder)),
         test_data=[{
             'test_id':
@@ -451,9 +455,11 @@ class FlakinessApi(recipe_api.RecipeApi):
     """
     curr_inv = self.m.resultdb.current_invocation
     builder = self.m.buildbucket.build.builder
+    bucket = self.m.led.shadowed_bucket or builder.bucket
+
     baseline = 'projects/{}/baselines/{}:{}'.format(
         builder.project,
-        builder.bucket,
+        bucket,
         builder.builder,
     )
 
@@ -484,6 +490,43 @@ class FlakinessApi(recipe_api.RecipeApi):
       ]
 
     return new_tests_identified
+
+  def _map_test_object(
+      self, test_objects: List[steps.Test],
+      new_test_tuples: Tuple[str, str]) -> Dict[steps.Test, Tuple[str, str]]:
+    """_map_test_object formats tests objects to test filters and durations.
+
+    One test object may be host to many new tests (ie/ if test_suite =
+    browser_tests, there may be several test_ids as part of that test_suite
+    that are actually new). So, we map test object to a test definition
+    and create a list of tests on the fly.
+
+    A dict of test object to a tuple of (test filter, duration) is returned
+    """
+    # new_tests is a dict of Test object to list of test names (test filter).
+    # If exists, the TestDefinition's filter list should be updated to store
+    # the list of tests.
+    new_tests = {}
+    for test_obj in test_objects:
+      # There are two types of suffixes: with patch, retry with patch.
+      # We're not determining new tests anymore - the new ones are already
+      # defined for us by ResultDB. Whether it's retried or not, we just need
+      # to find the corresponding test objects, so we'll use with patch.
+      suffix = 'with patch'
+      test_suite_results = test_obj.get_rdb_results(suffix)
+      vh = test_suite_results.variant_hash
+
+      for test in test_suite_results.all_tests:
+        if (test.test_id, vh) in new_test_tuples:
+          # Test object in list of new tests already, so update the filter.
+          # Otherwise create a new one.
+          test_filter, duration_milliseconds = new_tests.setdefault(
+              test_obj, ([], 0))
+          test_filter.append(test.test_name)
+          duration_milliseconds += test.duration_milliseconds
+          new_tests[test_obj] = (test_filter, duration_milliseconds)
+
+    return new_tests
 
   def check_test_files(self, new_tests, affected_files):
     """Determines whether the correct test files are being modified by the patch
@@ -601,18 +644,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     Returns:
       A mapping from test suffixes to lists of steps.Test objects.
     """
-    # Do not run anything if property is not set.
-    if not self.check_for_flakiness:
+    # Do not run anything if both properties are not set.
+    if not (self.check_for_flakiness or
+            self._check_for_flakiness_with_resultdb):
       return []
-
-    # new tests tuples, in format (test_id, variant_hash)
-    step_name = 'Experimental Step'
-    with self.m.step.nest(step_name) as p:
-      try:
-        self.identify_new_test_variants()
-      except Exception as e:  # pragma: no cover
-        # ignore all errors with this step and continue onwards.
-        p.logs['error'] = str(e)
 
     # Check if there are endorser footers to parse
     commit_footer_values = [
@@ -627,6 +662,22 @@ class FlakinessApi(recipe_api.RecipeApi):
           cmd=None)
       return []
 
+    # TODO (crbug/1456545) - With ResultDB, the new test detection system is
+    # more accurate as we don't rely on a cron-based system to compute the
+    # test history. The ResultDB solution also allows us to identify new tests
+    # for the larger test suites (wpt, etc.) that we previously were not able to
+    # check.
+    #
+    # Thus, we may want to consider removing this check so that tests being
+    # introduced through testing/buildbot or other means (ie/ disabled
+    # annotations) are tested for flakiness. ResultDB's mechanism to track test
+    # history for a baseline only requires it to be from a submitted build, so
+    # tests introduced through infra configuration changes would become a part
+    # of the history anyways.
+    #
+    # Note that even though we remove this check, we'd still have the upper
+    # bound limit (at the time of writing, 40) through the random sampling to
+    # avoid overloading CQ.
     affected_files = (
         affected_files or
         self.m.chromium_checkout.get_files_affected_by_patch())
@@ -634,71 +685,108 @@ class FlakinessApi(recipe_api.RecipeApi):
     if not self.is_test_file_present(affected_files=affected_files):
       self.m.step.empty('no test files were detected with this change.')
       return []
-    new_tests = self.identify_new_tests(test_objects)
-    new_tests = self.trim_new_tests(new_tests, self._max_test_targets)
-    new_tests = self.check_test_files(new_tests, affected_files)
+
+    # This is a map of test object to a tuple of ([test_names], total_duration).
+    filter_and_time_by_test_object = {}
 
     # This is a dict of test suffix to list of test objects. In this case,
     # "check flakiness shard #X" to a test object, where X defaults to 0.
-    # For Swarming test objects, tests are sharded by duration. See method
-    # _shard_runs() for how it's sharded.
     test_objects_by_suffix = collections.defaultdict(list)
 
-    s = self.m.step('match single new tests with test suites', cmd=None)
+    ### ResultDB-Based Identification ###
+    if self._check_for_flakiness_with_resultdb:
+      # new tests tuples, in format (test_id, variant_hash)
+      # terminate early if there's nothing
+      new_test_tuples = self.identify_new_test_variants()
+      if not new_test_tuples:
+        return test_objects_by_suffix
 
-    # This operation is O(len(test_obj) * len(new_tests)) because parsing
-    # test_id is only intended for LUCI UI grouping, see
-    # http://shortn/_StMScXolrz. max_test_targets will also bind the number of
-    # iterations here.
-    #
-    # We loop the test objects and check all new tests to see if the test_id
-    # start similarly.
-    for test in test_objects:
-      total_duration_milliseconds = 0
-      new_tests_in_test_object = []
-      # find whether the Test object has a matching test_id.
-      # add TestDefinition to list of the new tests if there's a test object
-      # match.
-      for new_test in new_tests:
-        if (new_test.test_object == test):
-          new_tests_in_test_object.append(new_test)
-          total_duration_milliseconds += (new_test.duration_milliseconds or 0)
+      # TODO (crbug/1456545) - remove this comment when
+      # "check_flakiness_for_new_tests" on test objects has been deprecated.
+      # It was used previously to skip large test suites, but this limitation
+      # is resolved with ResultDB, so this workflow disregards that check.
 
-      # For each new test update the test filters to repeat and rerun
-      # these new tests 20 times.
-      if new_tests_in_test_object:
-        log_lines = [
-            'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-                t.test_id, t.variant_hash, t.duration_milliseconds)
-            for t in new_tests_in_test_object
-        ]
-        log_lines.append('total_duration_milliseconds: %d' %
-                         total_duration_milliseconds)
-        s.presentation.logs['new tests to run in %s' %
-                            test.canonical_name] = '\n'.join(log_lines)
+      # This is effectively trim_new_tests() minus the logging specific to
+      # using TestDefinition object.
+      if len(new_test_tuples) > self._max_test_targets:
+        new_test_tuples = random.sample(new_test_tuples, self._max_test_targets)
+        self.m.step.empty(
+            'randomly sampling {} tests'.format(self._max_test_targets),
+            step_text='too many new tests detected',
+            log_text=[
+                'test_id: {} variant_hash: {}'.format(t[0], t[1])
+                for t in new_test_tuples
+            ],
+            log_name='new_tests')
 
-        test_filter = [
-            new_test.test_name for new_test in new_tests_in_test_object
-        ]
-        if isinstance(test.spec, steps.AndroidJunitTestSpec):
-          test_objects_by_suffix[self.test_suffix].append(
-              utils.apply_android_test_filter(test, test_filter,
-                                              self._repeat_count))
-        elif isinstance(test.spec, steps.ScriptTestSpec):
-          test_objects_by_suffix[self.test_suffix].append(
-              utils.apply_script_test_filter(test, test_filter,
-                                             self._repeat_count))
-        elif isinstance(test.spec, steps.SwarmingTestSpec):
-          shards = self._shard_runs(total_duration_milliseconds)
-          for index, shard_runs in enumerate(shards):
-            test_objects_by_suffix[self._suffix_by_shard_index(index)].append(
-                utils.apply_swarming_shard_test_filter(test, test_filter,
-                                                       shard_runs))
-        else:
-          test_objects_by_suffix[self.test_suffix].append(
-              utils.apply_default_test_filter(test, test_filter,
-                                              self._repeat_count))
+      # test object to list of test names
+      filter_and_time_by_test_object = self._map_test_object(
+          test_objects, new_test_tuples)
+    ### Original Cron-History-Based Workflow ###
+    # TODO (crbug/1456545) - this workflow and methods specific to this workflow
+    # should deprecate once all CQ builders migrate to the workflow above.
+    else:
+      new_tests = self.identify_new_tests(test_objects)
+      new_tests = self.trim_new_tests(new_tests, self._max_test_targets)
+      new_tests = self.check_test_files(new_tests, affected_files)
 
+      s = self.m.step('match single new tests with test suites', cmd=None)
+
+      # This operation is O(len(test_obj) * len(new_tests)) because parsing
+      # test_id is only intended for LUCI UI grouping, see
+      # http://shortn/_StMScXolrz. max_test_targets will also bind the number of
+      # iterations here.
+      #
+      # We loop the test objects and check all new tests to see if the test_id
+      # start similarly.
+      for test in test_objects:
+        total_duration_ms = 0
+        test_filter = []
+        for new_test in new_tests:
+          if new_test.test_object == test:
+            test_filter.append(new_test)
+            total_duration_ms += (new_test.duration_milliseconds or 0)
+
+        if test_filter:
+          log_lines = [
+              'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
+                  t.test_id, t.variant_hash, t.duration_milliseconds)
+              for t in test_filter
+          ]
+          log_lines.append('total_duration_milliseconds: %d' %
+                           total_duration_ms)
+          s.presentation.logs['new tests to run in %s' %
+                              test.canonical_name] = '\n'.join(log_lines)
+
+          # Rework test filter into the required format
+          test_filter = [new_test.test_name for new_test in test_filter]
+          filter_and_time_by_test_object[test] = (test_filter,
+                                                  total_duration_ms)
+
+    # For each new test update all test filters to repeat and rerun 20 times.
+    for test, metadata in filter_and_time_by_test_object.items():
+      test_filter = metadata[0]
+      if isinstance(test.spec, steps.AndroidJunitTestSpec):
+        test_objects_by_suffix[self.test_suffix].append(
+            utils.apply_android_test_filter(test, test_filter,
+                                            self._repeat_count))
+      elif isinstance(test.spec, steps.ScriptTestSpec):
+        test_objects_by_suffix[self.test_suffix].append(
+            utils.apply_script_test_filter(test, test_filter,
+                                           self._repeat_count))
+      elif isinstance(test.spec, steps.SwarmingTestSpec):
+        # For Swarming test objects, tests are sharded by duration, if the total
+        # duration exceeds 20 minutes.
+        total_duration_ms = metadata[1]
+        shards = self._shard_runs(total_duration_ms)
+        for index, shard_runs in enumerate(shards):
+          test_objects_by_suffix[self._suffix_by_shard_index(index)].append(
+              utils.apply_swarming_shard_test_filter(test, test_filter,
+                                                     shard_runs))
+      else:
+        test_objects_by_suffix[self.test_suffix].append(
+            utils.apply_default_test_filter(test, test_filter,
+                                            self._repeat_count))
     return test_objects_by_suffix
 
   def _add_test_to_stats(self, test, step_name, variant_hash, stats):
