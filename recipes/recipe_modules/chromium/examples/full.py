@@ -399,7 +399,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'mac_toolchain_properties_xcode_15a5161b',
+      'mac_toolchain_properties_xcode_15a5209g',
       api.platform('mac', 64),
       api.chromium.ci_build(
           builder_group='fake-group',
@@ -416,10 +416,10 @@ def GenTests(api):
           out_dir='/tmp',
           target_platform='mac',
           configs=['mac_toolchain'],
-          xcode_build_version='15a5161b',
+          xcode_build_version='15a5209g',
       ),
       api.post_process(post_process.StepSuccess,
-                       'ensure xcode.force override xc15 beta 2 runtime build'),
+                       'ensure xcode.force override xc15 beta 5 runtime build'),
       api.post_process(post_process.DropExpectation),
   )
 

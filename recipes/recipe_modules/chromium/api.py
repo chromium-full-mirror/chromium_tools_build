@@ -1003,15 +1003,15 @@ class ChromiumApi(recipe_api.RecipeApi):
           'select xcode', ['sudo', 'xcode-select', '-switch', xcode_app_path],
           infra_step=True)
 
-      # TODO(crbug.com/1457029): remove the below hack once we roll to xc15 beta3.
-      # The hack is required for Xcode simulators to work in xc15 beta2.
-      if xcode_build_version.lower() == '15a5161b':
+      # TODO(crbug.com/1457029): remove the below hack once we roll to xc15 beta6.
+      # The hack is required for Xcode simulators to work in xc15 beta5.
+      if xcode_build_version.lower() == '15a5209g':
         set_runtime_cmd = [
             'xcrun', 'simctl', 'runtime', 'match', 'set', 'iphoneos17.0',
-            '21A5268h', '--sdkBuild', '21A5268f'
+            '21A5291g', '--sdkBuild', '21A5291f'
         ]
         self.m.step(
-            'force override xc15 beta 2 runtime build',
+            'force override xc15 beta 5 runtime build',
             set_runtime_cmd,
             infra_step=True)
 
