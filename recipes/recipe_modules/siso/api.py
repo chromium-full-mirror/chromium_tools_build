@@ -113,6 +113,8 @@ class SisoApi(recipe_api.RecipeApi):
           'siso_metrics.json',
           'siso_output',
           'siso_trace.json',
+          '.siso_config',
+          '.siso_filegroups',
           '.siso_fs_state',
       ]:
         abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
