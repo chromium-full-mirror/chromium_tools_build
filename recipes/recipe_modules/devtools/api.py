@@ -140,7 +140,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
       env = {}
 
     self.m.chromium_swarming.default_priority = (
-        25 if self.m.tryserver.is_tryserver else 35)
+        30 if self.m.tryserver.is_tryserver else 25)
 
     for i in range(len(commands)):
       if commands[i][0].startswith('ITERATIONS='):
