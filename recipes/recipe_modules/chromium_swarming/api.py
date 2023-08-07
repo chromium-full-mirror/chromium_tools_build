@@ -54,57 +54,6 @@ _TEXT_EXTENSIONS = ('.txt', '.json', '')
 _MAX_FILE_CONTENT_SIZE = 1024
 
 
-def _summarize_outdir(output_dir):
-  """Create a summary of contents of a raw_io.output_dir.
-
-  Returns:
-    A json-encodable object that summarizes the contents of the output
-    directory for user-informational purposes.
-  """
-  outdir_json = {}
-  for filename in sorted(output_dir):
-    _, ext = os.path.splitext(filename)
-
-    contents_bytes = output_dir[filename]
-    contents = None
-    content_type = 'binary'
-
-    if ext in _TEXT_EXTENSIONS:
-      content_type = 'text'
-      try:
-        contents = contents_bytes.decode('utf-8')
-      except UnicodeDecodeError:
-        pass
-
-    if contents is None:
-      output = {
-          'sha1': hashlib.sha1(contents_bytes).hexdigest(),
-          'size': len(contents_bytes),
-          'type': content_type,
-      }
-    elif len(contents) < _MAX_FILE_CONTENT_SIZE:
-      output = contents
-    else:
-      hsize = _MAX_FILE_CONTENT_SIZE // 2
-      output = {
-          'sha1':
-              hashlib.sha1(contents_bytes).hexdigest(),
-          'size':
-              len(contents_bytes),
-          'type':
-              content_type,
-          # Space in the name so it sorts a[ :x],a[-x:]
-          'contents[ :%s]' % hsize:
-              contents[:hsize],
-          'contents[-%s:]' % hsize:
-              contents[-hsize:],
-      }
-
-    outdir_json[filename] = output
-
-  return outdir_json
-
-
 def text_for_task(task):
   lines = []
 
@@ -674,7 +623,6 @@ class SwarmingApi(recipe_api.RecipeApi):
         cas_input_root=cas_input_root)
     task.extra_args = extra_args
     task.merge = merge
-    task.collect_step = self._isolated_script_collect_step
     return task
 
   def trigger_task(self, task, resultdb=None, **kwargs):
@@ -1416,32 +1364,6 @@ class SwarmingApi(recipe_api.RecipeApi):
             **kwargs)
     return step_result
 
-  def _task_has_all_shards(self, merged_results_json, active_step, task):
-    """Checks if a task has all of its shards present in its results.
-
-    The 'failed_shards' property on the task is mutated to include the
-    relevant missing shards present in the merged_results_json.
-
-    Args:
-      merged_results_json: The merged result json of a test suite.
-      active_step: The active collection step. The presentation of this step
-      is modified.
-      task: The swarming task being collected.
-    Returns:
-      If the task has missing shards.
-    """
-    if merged_results_json:
-      missing_shards = merged_results_json.get('missing_shards') or []
-      if missing_shards:
-        active_step.presentation.status = self.m.step.EXCEPTION
-        for index in missing_shards:
-          active_step.presentation.links['missing shard #%d' % index] = \
-              task.get_shard_view_url(index)
-        task.failed_shards = list(set(task.failed_shards + missing_shards))
-        return False
-
-    return True
-
   def wait_for_finished_task_set(self, task_sets, suffix=None, attempts=0):
     """Waits for a finished set of tasks.
 
@@ -1487,41 +1409,6 @@ class SwarmingApi(recipe_api.RecipeApi):
     return [
         tuple(task_set) for task_set in result.json.output['sets']
     ], result.json.output['attempts']
-
-  def _isolated_script_collect_step(self, task, **kwargs):
-    """Collects results for a step that is *not* a googletest, like telemetry.
-    """
-
-    def step_test_data():
-      isolated_script_results_test_data = self.m.json.test_api.output(
-          {'version': 3})
-
-      # The call to collect_isolated_script_task emits two JSON files:
-      #  1) a task summary JSON emitted by swarming
-      #  2) a test results JSON emitted by the task
-      # This builds an instance of StepTestData that covers both.
-      dispatched_task_placeholder = (isolated_script_results_test_data +
-          self.test_api.merge_script_log_file('Merged succesfully'))
-      return self._collect_step_test_data(task, dispatched_task_placeholder)
-
-    step_result, has_valid_results = self._default_collect_step(
-        task, step_test_data=step_test_data, **kwargs)
-
-    # Regardless of the outcome of the test (pass or fail), we try to parse
-    # the results. If any error occurs while parsing results, then we set them
-    # to None, which caller should treat as invalid results.
-    # Note that try-except block below will not mask the
-    # recipe_api.StepFailure exception from the collect step above. Instead
-    # it is being allowed to propagate after the results have been parsed.
-    outdir = _summarize_outdir(step_result.raw_io.output_dir)
-    outdir_json = self.m.json.dumps(outdir, indent=2)
-    step_result.presentation.logs['outdir_json'] = (
-        outdir_json.splitlines())
-
-    has_valid_results = has_valid_results and self._task_has_all_shards(
-        step_result.json.output, step_result, task)
-
-    return step_result, has_valid_results
 
   def get_step_name(self, prefix, task):
     """SwarmingTask -> name of a step of a waterfall.
@@ -1641,7 +1528,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         expected_error_present_as_exception = True
         failed_shards.append(index)
         has_valid_results = False
-      elif shard.get('state') == 'EXPIRED':
+      elif shard.get('state') in ('EXPIRED', 'NO_RESOURCE'):
         display_text = (
           'shard #%d expired, not enough capacity' % index)
         expected_errors.append(display_text)

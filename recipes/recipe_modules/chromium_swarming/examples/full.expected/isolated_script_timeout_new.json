@@ -817,9 +817,7 @@
     "name": "hello_world on Windows-10",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Windows-10'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"version\": 3@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
@@ -852,10 +850,6 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LOG_LINE@outdir_json@{@@@",
-      "@@@STEP_LOG_LINE@outdir_json@  \"summary.json\": \"{\\\"shards\\\": [{\\\"abandoned_ts\\\": \\\"2014-09-25T01:41:00.123\\\", \\\"bot_id\\\": \\\"vm30\\\", \\\"completed_ts\\\": null, \\\"created_ts\\\": \\\"2014-09-25T01:41:00.123\\\", \\\"duration\\\": 60, \\\"failure\\\": false, \\\"id\\\": \\\"148aa78d7aa0100\\\", \\\"internal_failure\\\": false, \\\"modified_ts\\\": \\\"2014-09-25 01:42:00\\\", \\\"name\\\": \\\"heartbeat-canary-2014-09-25_01:41:55-os=Windows\\\", \\\"outputs\\\": [], \\\"started_ts\\\": \\\"2014-09-25T01:42:11.123\\\", \\\"state\\\": \\\"TIMED_OUT\\\", \\\"task_id\\\": \\\"0\\\", \\\"try_number\\\": null, \\\"user\\\": \\\"unknown\\\"}]}\"@@@",
-      "@@@STEP_LOG_LINE@outdir_json@}@@@",
-      "@@@STEP_LOG_END@outdir_json@@@",
       "@@@STEP_LINK@shard #0 test results@https://luci-milo.appspot.com/ui/inv/0/test-results@@@",
       "@@@STEP_LINK@shard #0 (runtime (32s) + overhead (29s): 1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]

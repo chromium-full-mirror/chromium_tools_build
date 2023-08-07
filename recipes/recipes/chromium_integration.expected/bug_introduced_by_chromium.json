@@ -2476,8 +2476,6 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LOG_LINE@outdir_json@{}@@@",
-      "@@@STEP_LOG_END@outdir_json@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"blink_web_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
@@ -2499,6 +2497,48 @@
       "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@",
       "@@@STEP_LINK@Test.One@https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One@@@",
       "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_tests]/resources/archive_layout_test_results.py",
+      "--results-dir",
+      "[START_DIR]/layout-test-results",
+      "--build-number",
+      "571",
+      "--builder-name",
+      "fake-try-builder",
+      "--gs-bucket",
+      "gs://chromium-layout-test-archives",
+      "--staging-dir",
+      "[CACHE]/chrome_staging",
+      "--task-ids",
+      "0",
+      "--step-name",
+      "blink_web_tests (with patch)",
+      "--bot-utils-gsutil-py-path",
+      "RECIPE_REPO[depot_tools]/gsutil.py"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "archive results for blink_web_tests (with patch)",
+    "~followup_annotations": [
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28with%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {
@@ -3106,8 +3146,6 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LOG_LINE@outdir_json@{}@@@",
-      "@@@STEP_LOG_END@outdir_json@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"blink_web_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
@@ -3127,6 +3165,48 @@
       "@@@STEP_LOG_END@step_metadata@@@",
       "@@@STEP_LINK@Test.One@https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One@@@",
       "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_tests]/resources/archive_layout_test_results.py",
+      "--results-dir",
+      "[START_DIR]/layout-test-results",
+      "--build-number",
+      "571",
+      "--builder-name",
+      "fake-try-builder",
+      "--gs-bucket",
+      "gs://chromium-layout-test-archives",
+      "--staging-dir",
+      "[CACHE]/chrome_staging",
+      "--task-ids",
+      "1",
+      "--step-name",
+      "blink_web_tests (retry shards with patch)",
+      "--bot-utils-gsutil-py-path",
+      "RECIPE_REPO[depot_tools]/gsutil.py"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "archive results for blink_web_tests (retry shards with patch)",
+    "~followup_annotations": [
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28retry%20shards%20with%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {
@@ -4515,8 +4595,6 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LOG_LINE@outdir_json@{}@@@",
-      "@@@STEP_LOG_END@outdir_json@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"blink_web_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
@@ -4538,6 +4616,48 @@
       "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=2@@@",
       "@@@STEP_LINK@Test.One@https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One@@@",
       "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_tests]/resources/archive_layout_test_results.py",
+      "--results-dir",
+      "[START_DIR]/layout-test-results",
+      "--build-number",
+      "571",
+      "--builder-name",
+      "fake-try-builder",
+      "--gs-bucket",
+      "gs://chromium-layout-test-archives",
+      "--staging-dir",
+      "[CACHE]/chrome_staging",
+      "--task-ids",
+      "2",
+      "--step-name",
+      "blink_web_tests (without patch)",
+      "--bot-utils-gsutil-py-path",
+      "RECIPE_REPO[depot_tools]/gsutil.py"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "archive results for blink_web_tests (without patch)",
+    "~followup_annotations": [
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28without%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {

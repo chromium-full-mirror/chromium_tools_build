@@ -2471,8 +2471,6 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LOG_LINE@outdir_json@{}@@@",
-      "@@@STEP_LOG_END@outdir_json@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"blink_web_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
@@ -2494,6 +2492,48 @@
       "@@@STEP_LINK@shard #0 (failed) (1m 0s)@https://example.swarmingserver.appspot.com/task?id=0@@@",
       "@@@STEP_LINK@Test.One@https://luci-milo.appspot.com/ui/inv/build:8945511751514863184/test-results?q=Test.One@@@",
       "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::chromium_tests]/resources/archive_layout_test_results.py",
+      "--results-dir",
+      "[START_DIR]/layout-test-results",
+      "--build-number",
+      "571",
+      "--builder-name",
+      "fake-try-builder",
+      "--gs-bucket",
+      "gs://chromium-layout-test-archives",
+      "--staging-dir",
+      "[CACHE]/chrome_staging",
+      "--task-ids",
+      "0",
+      "--step-name",
+      "blink_web_tests (with patch)",
+      "--bot-utils-gsutil-py-path",
+      "RECIPE_REPO[depot_tools]/gsutil.py"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "archive results for blink_web_tests (with patch)",
+    "~followup_annotations": [
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28with%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {
@@ -3059,9 +3099,7 @@
     "name": "blink_web_tests (retry shards with patch)",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Linux'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"version\": 3@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
@@ -3094,8 +3132,6 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  ]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
-      "@@@STEP_LOG_LINE@outdir_json@{}@@@",
-      "@@@STEP_LOG_END@outdir_json@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"blink_web_tests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",

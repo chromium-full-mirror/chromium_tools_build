@@ -102,11 +102,6 @@ def RunSteps(api):
       result.presentation.logs['details'].append(
           'has_valid_results: %r' % test.has_valid_results('with patch'))
 
-    if 'expected_has_valid_results' in api.properties:
-      api.assertions.assertEqual(
-          test.has_valid_results('with patch'),
-          api.properties['expected_has_valid_results'])
-
 
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
@@ -134,26 +129,6 @@ def GenTests(api):
       api.properties(swarm_hashes={
           'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
       }),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'missing_shards',
-      arbitrary_tester(),
-      api.properties(
-          swarm_hashes={
-              'blink_web_tests':
-                  'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          expected_has_valid_results=False,
-      ),
-      api.override_step_data(
-          'blink_web_tests on Intel GPU on Linux (with patch)',
-          api.chromium_swarming.canned_summary_output(
-              api.test_utils.m.json.output({
-                  'missing_shards': [0],
-              }, 0),
-              shards=1)),
       api.post_process(post_process.DropExpectation),
   )
 

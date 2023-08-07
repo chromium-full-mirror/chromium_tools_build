@@ -84,9 +84,6 @@ class SwarmingTestApi(recipe_test_api.RecipeTestApi):
         ],
     }
 
-  def merge_script_log_file(self, data):
-    return self.m.raw_io.output(data)
-
   def wait_for_finished_task_set(self, states, suffix=None,
                                  nest_step_name=None):
     res = None
