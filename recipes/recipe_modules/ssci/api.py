@@ -5,6 +5,7 @@
 import json
 
 from pathlib import Path
+from os.path import splitext
 from recipe_engine import recipe_api
 
 class SsciAPI(recipe_api.RecipeApi):
@@ -105,9 +106,8 @@ class SsciAPI(recipe_api.RecipeApi):
                 }], name="spdx")))
 
       if sbom_bucket and sbom_folder:
-        filename = entry_point.replace("//", "") + ".json"
-        if filename_postfix:
-          filename = entry_point.replace("//", "") + filename_postfix + ".json"
+        filename, target_ext = splitext(entry_point.replace("//", ""))
+        filename = f"{filename}{filename_postfix or ''}{target_ext}.json"
         full_path = Path(sbom_folder, execution_id, filename).as_posix()
         self.m.gsutil.upload(
             spdx_file,

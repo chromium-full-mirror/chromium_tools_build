@@ -34,7 +34,7 @@ def GenTests(api):
               name="summary",
               data={
                   "targets": [{
-                      "entry_point": "//example:example",
+                      "entry_point": "example.apk",
                       "target": "//example:example",
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
