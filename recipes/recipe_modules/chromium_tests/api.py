@@ -169,6 +169,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self._enable_snoopy = input_properties.enable_snoopy
 
+  def initialize(self):
+    # TODO: crbug.com/1421068 - Once parent relationship is propagated through
+    # scheduler, this can be removed
+    parent_build_id = self.m.properties.get('parent_build_id')
+    if parent_build_id is not None:
+      result = self.m.step.empty('parent build link')
+      result.presentation.links['parent build'] = (
+          f'https://ci.chromium.org/ui/b/{parent_build_id}')
+
   def log(self, message):
     presentation = self.m.step.active_result.presentation
     presentation.logs.setdefault('stdout', []).append(message)
@@ -1110,6 +1119,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     properties = {
         'parent_builder_group': builder_id.group,
         'parent_buildername': builder_id.builder,
+        # TODO: crbug.com/1421068 - Once parent relationship is propagated
+        # through scheduler, this can be removed
+        'parent_build_id': str(self.m.buildbucket.build.id),
     }
     for name, value in update_step.presentation.properties.items():
       if name.startswith('got_'):

@@ -1,6 +1,13 @@
 [
   {
     "cmd": [],
+    "name": "parent build link",
+    "~followup_annotations": [
+      "@@@STEP_LINK@parent build@https://ci.chromium.org/ui/b/1337@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "report builders",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>running tester 'fake-tester' on group 'fake-group' against builder 'fake-builder' on group 'fake-group'@@@",

@@ -1,5 +1,12 @@
 [
   {
+    "cmd": [],
+    "name": "parent build link",
+    "~followup_annotations": [
+      "@@@STEP_LINK@parent build@https://ci.chromium.org/ui/b/1337@@@"
+    ]
+  },
+  {
     "cmd": [
       "vpython3",
       "-u",

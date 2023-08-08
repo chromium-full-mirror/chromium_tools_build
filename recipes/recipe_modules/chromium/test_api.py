@@ -26,13 +26,13 @@ class ChromiumTestApi(recipe_test_api.RecipeTestApi):
     """
     return line_limit
 
-  def _common_test_data(
-      self,
-      bot_id,
-      default_builder_group,
-      builder_group=None,
-      parent_builder_group=None,
-      parent_buildername=None):
+  def _common_test_data(self,
+                        bot_id,
+                        default_builder_group,
+                        builder_group=None,
+                        parent_builder_group=None,
+                        parent_buildername=None,
+                        parent_build_id=1337):
     test_data = self.m.properties(bot_id=bot_id)
     builder_group = builder_group or default_builder_group
     if builder_group is not None:
@@ -40,7 +40,9 @@ class ChromiumTestApi(recipe_test_api.RecipeTestApi):
     if parent_buildername is not None:
       parent_builder_group = parent_builder_group or builder_group
       test_data += self.m.builder_group.for_parent(parent_builder_group)
-      test_data += self.m.properties(parent_buildername=parent_buildername)
+      test_data += self.m.properties(
+          parent_buildername=parent_buildername,
+          parent_build_id=parent_build_id)
     return test_data
 
   def ci_build(self,

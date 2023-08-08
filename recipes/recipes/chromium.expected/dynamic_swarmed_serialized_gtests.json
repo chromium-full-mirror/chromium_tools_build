@@ -1,6 +1,13 @@
 [
   {
     "cmd": [],
+    "name": "parent build link",
+    "~followup_annotations": [
+      "@@@STEP_LINK@parent build@https://ci.chromium.org/ui/b/1337@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "report builders",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>running tester 'fake-tester' on group 'fake-group' against builder 'fake-builder' on group 'fake-group'@@@",
@@ -1555,7 +1562,7 @@
       "--merge-additional-args",
       "[]",
       "--build-properties",
-      "{\"bot_id\": \"test_bot\", \"builder_group\": \"fake-group\", \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\", \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\", \"got_buildtools_revision\": \"f0319a328b2809876916353cb994259692140934\", \"got_buildtools_revision_cp\": \"refs/heads/main@{#182578}\", \"got_dawn_revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\", \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\", \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\", \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\", \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"got_revision_cp\": \"refs/heads/main@{#170242}\", \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\", \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\", \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"got_v8_revision_cp\": \"refs/heads/main@{#43426}\", \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\", \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\", \"parent_builder_group\": \"fake-group\", \"parent_buildername\": \"fake-builder\", \"recipe\": \"chromium\", \"swarm_hashes\": {\"base_unittests\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"browser_tests\": \"ffffffffffffffffffffffffffffff/size\"}}",
+      "{\"bot_id\": \"test_bot\", \"builder_group\": \"fake-group\", \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\", \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\", \"got_buildtools_revision\": \"f0319a328b2809876916353cb994259692140934\", \"got_buildtools_revision_cp\": \"refs/heads/main@{#182578}\", \"got_dawn_revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\", \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\", \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\", \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\", \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"got_revision_cp\": \"refs/heads/main@{#170242}\", \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\", \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\", \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"got_v8_revision_cp\": \"refs/heads/main@{#43426}\", \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\", \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\", \"parent_build_id\": 1337, \"parent_builder_group\": \"fake-group\", \"parent_buildername\": \"fake-builder\", \"recipe\": \"chromium\", \"swarm_hashes\": {\"base_unittests\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"browser_tests\": \"ffffffffffffffffffffffffffffff/size\"}}",
       "--summary-json-file",
       "/path/to/tmp/json",
       "--",
@@ -1662,7 +1669,7 @@
       "--merge-additional-args",
       "[]",
       "--build-properties",
-      "{\"bot_id\": \"test_bot\", \"builder_group\": \"fake-group\", \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\", \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\", \"got_buildtools_revision\": \"f0319a328b2809876916353cb994259692140934\", \"got_buildtools_revision_cp\": \"refs/heads/main@{#182578}\", \"got_dawn_revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\", \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\", \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\", \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\", \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"got_revision_cp\": \"refs/heads/main@{#170242}\", \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\", \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\", \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"got_v8_revision_cp\": \"refs/heads/main@{#43426}\", \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\", \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\", \"parent_builder_group\": \"fake-group\", \"parent_buildername\": \"fake-builder\", \"recipe\": \"chromium\", \"swarm_hashes\": {\"base_unittests\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"browser_tests\": \"ffffffffffffffffffffffffffffff/size\"}}",
+      "{\"bot_id\": \"test_bot\", \"builder_group\": \"fake-group\", \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\", \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\", \"got_buildtools_revision\": \"f0319a328b2809876916353cb994259692140934\", \"got_buildtools_revision_cp\": \"refs/heads/main@{#182578}\", \"got_dawn_revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\", \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\", \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\", \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\", \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"got_revision_cp\": \"refs/heads/main@{#170242}\", \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\", \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\", \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"got_v8_revision_cp\": \"refs/heads/main@{#43426}\", \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\", \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\", \"parent_build_id\": 1337, \"parent_builder_group\": \"fake-group\", \"parent_buildername\": \"fake-builder\", \"recipe\": \"chromium\", \"swarm_hashes\": {\"base_unittests\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"browser_tests\": \"ffffffffffffffffffffffffffffff/size\"}}",
       "--summary-json-file",
       "/path/to/tmp/json",
       "--",
