@@ -80,7 +80,7 @@ class FlakinessApi(recipe_api.RecipeApi):
     Returns:
         A boolean of whether the build is identifying new tests.
     """
-    return self._check_for_flakiness
+    return self._check_for_flakiness or self._check_for_flakiness_with_resultdb
 
   @property
   def gs_bucket(self):
