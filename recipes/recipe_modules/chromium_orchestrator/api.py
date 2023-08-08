@@ -461,7 +461,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           swarming_parent_run_id=self.m.swarming.task_id,
           properties=compilator_properties,
           gitiles_commit=gitiles_commit,
-          tags=self.m.buildbucket.tags(**{'hide-in-gerrit': 'pointless'}),
+          tags=self.m.buildbucket.tags(**{
+              'hide-in-gerrit': 'pointless',
+              'skip-rety-in-gerrit': 'pointless',
+          }),
       )
 
       build = self.m.buildbucket.schedule([request], step_name=step_name)[0]
