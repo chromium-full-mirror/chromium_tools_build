@@ -41,6 +41,8 @@ class CompilatorOutputProps:
   Attributes:
     swarming_props: Dict containing swarming information to trigger tests
     got_revisions: Dict containing revisions checked out for src and other deps
+    bot_update_manifest: Dict containing revisions checked out for deps and
+      other sub-deps, if any.
     affected_files: List containing paths (str) of files affected by the patch
     src_side_deps_digest: CAS digest hash (str) for downloading src-side deps
     src_side_test_spec_dir: Path (str) to downloaded src-side directory that
@@ -50,6 +52,7 @@ class CompilatorOutputProps:
   """
 
   swarming_props = attrib(mapping[str, ...])
+  bot_update_manifest = attrib(mapping[str, mapping[str, str]])
   got_revisions = attrib(mapping[str, str])
   affected_files = attrib(sequence[str], default=None)
   src_side_deps_digest = attrib(str, default=None)
@@ -373,6 +376,15 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # Trigger another compilator build with the targets needed
     compilator_properties['swarming_targets'] = list(
         set(t.target_name for t in failing_test_suites))
+
+    # Set deps_revision_overrides for all deps and sub-deps so that the
+    # without patch compilator build checks out the same deps as the with
+    # patch compilator build.
+    deps_overrides = {}
+    for path, revision_dict in comp_output.bot_update_manifest.items():
+      deps_overrides[path] = revision_dict['revision']
+    compilator_properties['deps_revision_overrides'] = deps_overrides
+
     wo_build = self._trigger_compilator('trigger compilator (without patch)',
                                         compilator_properties, gitiles_commit)
 
@@ -630,6 +642,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
       comp_output = CompilatorOutputProps(
           swarming_props=output_props[swarming_prop_key],
+          bot_update_manifest=output_props['bot_update_manifest'],
           got_revisions=got_revisions,
           affected_files=affected_files,
           src_side_deps_digest=src_side_deps_digest,

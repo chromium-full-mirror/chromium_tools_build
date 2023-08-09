@@ -121,6 +121,11 @@ def compilator_steps(api, properties):
           rts_setting=rts_setting)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
+      bot_update_step = task.bot_update_step
+
+    bot_update_manifest_step = api.step.empty('output bot_update manifest')
+    bot_update_manifest_step.presentation.properties['bot_update_manifest'] = (
+        bot_update_step.json.output['manifest'])
 
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
@@ -378,6 +383,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
       api.post_process(post_process.MustRun,
                        'check_static_initializers (with patch)'),
+      api.post_process(post_process.PropertiesContain, 'bot_update_manifest'),
       api.post_process(post_process.DropExpectation),
   )
 
