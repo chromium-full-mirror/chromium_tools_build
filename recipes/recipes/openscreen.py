@@ -54,12 +54,6 @@ FLEX_CI_POOL = 'luci.flex.ci'
 POOL_DIMENSION = 'pool'
 
 
-# This is almost certainly not right, but api.path objects are absolute paths on
-# the bot, not the relative paths required by swarming tasks.
-def OutputRelativePath(binary_name):
-  return './out/{}/{}'.format(BUILD_CONFIG, binary_name)
-
-
 class RepositoryPaths:
   """Container for checkout_path dependent repository paths, such as
      unit test binary location.
@@ -71,6 +65,7 @@ class RepositoryPaths:
     Args:
         api (recipe_api.RecipeApi): API generated from recipe dependencies.
     """
+    self.api = api
     self.checkout_path = api.path['checkout']
     self.output_path = self.checkout_path.join('out', BUILD_CONFIG)
     self.unit_test_binary_path = self.output_path.join(UNIT_TEST_BINARY_NAME)
@@ -83,6 +78,11 @@ class RepositoryPaths:
         CAST_RECEIVER_BINARY_NAME)
     self.test_data_path = self.checkout_path.join('test', 'data')
     self.ninja_path = self.checkout_path.join('third_party', 'ninja', 'ninja')
+
+
+  def SwarmingBinaryPath(self, binary_name):
+    """Returns a relative path in the CAS archive to binary_name."""
+    return self.api.path.join('.', 'out', BUILD_CONFIG, binary_name)
 
 
 def GetSwarmingDimensions(is_ci):
@@ -145,10 +145,10 @@ def GetChangedFiles(api, checkout_path):
 
   Args:
       api (recipe_api.RecipeApi): API generated from recipe dependencies.
-      checkout_path (os.path): Location of open screen checkout.
+      checkout_path (api.path): Location of open screen checkout.
 
   Returns:
-      list: os.path: list of changed files.
+      list: api.path: list of changed files.
   """
   files = []
   if api.tryserver.gerrit_change:
@@ -316,12 +316,10 @@ def SwarmTests(api, paths, dimensions):
   """
 
   cas_digest = UploadOpenscreenTestFilesToCas(api, paths)
-  unit_tests_request = SwarmRequest(cas_digest,
-                                    OutputRelativePath(UNIT_TEST_BINARY_NAME),
-                                    'unit tests')
-  e2e_tests_request = SwarmRequest(cas_digest,
-                                   OutputRelativePath(E2E_TEST_BINARY_NAME),
-                                   'e2e tests')
+  unit_tests_request = SwarmRequest(
+      cas_digest, paths.SwarmingBinaryPath(UNIT_TEST_BINARY_NAME), 'unit tests')
+  e2e_tests_request = SwarmRequest(
+      cas_digest, paths.SwarmingBinaryPath(E2E_TEST_BINARY_NAME), 'e2e tests')
   unit_test_metadata = TriggerTest(api, dimensions, unit_tests_request)
   e2e_test_metadata = TriggerTest(api, dimensions, e2e_tests_request)
 
@@ -331,8 +329,9 @@ def SwarmTests(api, paths, dimensions):
   cast_certificate_enabled = api.properties.get(
       'cast_allow_developer_certificate')
   if (cast_certificate_enabled):
-    cast_request = SwarmRequest(cas_digest, CAST_E2E_TEST_SCRIPT_NAME,
-                                'cast streaming e2e tests')
+    cast_request = SwarmRequest(
+        cas_digest, api.path.join('.', 'cast', CAST_E2E_TEST_SCRIPT_NAME),
+        'cast streaming e2e tests')
     cast_metadata = TriggerTest(api, dimensions, cast_request)
     CollectTest(api, paths, dimensions, cast_request, cast_metadata)
 
@@ -347,7 +346,7 @@ def SetCodeCoverageConstants(api, checkout_path, host_tool_label):
 
   Args:
       api (recipe_api.RecipeApi): API generated from recipe dependencies.
-      checkout_path (os.path): Location of open screen checkout.
+      checkout_path (api.path): Location of openscreen checkout.
       host_tool_label (str): Host label from GetHostToolLabel.
   """
   llvm_dir = checkout_path.join('third_party', 'llvm-build', 'Release+Asserts',

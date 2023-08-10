@@ -642,7 +642,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"cast streaming e2e tests\", \"priority\": \"200\", \"realm\": \"openscreen:try\", \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"standalone_e2e.py\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"arm64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-20.04\"}, {\"key\": \"pool\", \"value\": \"luci.flex.try\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"cast streaming e2e tests\", \"priority\": \"200\", \"realm\": \"openscreen:try\", \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"./cast/standalone_e2e.py\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"arm64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-20.04\"}, {\"key\": \"pool\", \"value\": \"luci.flex.try\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -692,7 +692,7 @@
       "@@@STEP_LOG_LINE@json.input@              }@@@",
       "@@@STEP_LOG_LINE@json.input@            },@@@",
       "@@@STEP_LOG_LINE@json.input@            \"command\": [@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"standalone_e2e.py\"@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"./cast/standalone_e2e.py\"@@@",
       "@@@STEP_LOG_LINE@json.input@            ],@@@",
       "@@@STEP_LOG_LINE@json.input@            \"containment\": {@@@",
       "@@@STEP_LOG_LINE@json.input@              \"containment_type\": \"NONE\"@@@",
