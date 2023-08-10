@@ -108,6 +108,9 @@ class SisoApi(recipe_api.RecipeApi):
     finally:
       files_to_upload = []
       for file in [
+          # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
+          # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
+          'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
           'siso_build.pprof',
           'siso_explain',
           'siso_metrics.json',
