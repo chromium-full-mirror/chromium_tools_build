@@ -158,7 +158,7 @@ class SisoApi(recipe_api.RecipeApi):
 
   @property
   def _cache_dir(self):
-    return self.m.path['cache'].join('siso')
+    return self.m.path['cache'].join('builder', 'siso')
 
   @property
   def deps_log(self):
