@@ -28,21 +28,24 @@ message InputProperties {
   // This is forced to true when ran by trybots.
   bool force_build = 3;
 
-  // A explicit list of package paths to be built. If empty, all known package
-  // paths will be built.
+  // A explicit list of package paths in git submodules to be built. By default
+  // only packages are directly contained in src/ will be built.
   //
-  // Package paths are src-relative paths to the folder(s) that contain the
-  // file "3pp/3pp.pb". For example, the package path is "third_party/guava"
-  // for a directory like:
+  // Package paths are src-relative paths to the folder(s) which scans all the
+  // subdirectories within the path's git repository that contain the file
+  // "3pp/3pp.pb". For example, the package path is "clank" for a directory
+  // like:
   //
-  //   - third_party/
-  //     - guava/
-  //       - 3pp/
-  //         - 3pp.pb
-  //         - install.sh
-  //
-  // Could also be a glob pattern like "third_party/android_deps/**" which scans
-  // all the subdirectories under third_party/android_deps.
+  //   - clank/
+  //     - third_party/
+  //       - android_sdk
+  //         - 3pp/
+  //           - 3pp.pb
+  //           - ...
+  //       - android_system_sdk
+  //         - 3pp/
+  //           - 3pp.pb
+  //           - ...
   //
   // Note that in tryjobs, package paths from the CLs will be added to
   // this list, if there were any.

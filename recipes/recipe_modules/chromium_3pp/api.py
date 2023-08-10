@@ -149,8 +149,8 @@ class Chromium3ppApi(recipe_api.RecipeApi):
       with self.m.step.nest('Load to-build packages from %s' % package_path):
         cipd_pkg_names_to_build.update(
             self.m.support_3pp.load_packages_from_path(
-                self._checkout_path.join('src'),
-                glob_pattern='%s/%s' % (package_path.strip('/'), '3pp/3pp.pb'),
+                self._checkout_path.join('src', *package_path.split('/')),
+                glob_pattern='**/3pp/3pp.pb',
                 check_dup=False))
 
     _, unsupported = self.m.support_3pp.ensure_uploaded(
