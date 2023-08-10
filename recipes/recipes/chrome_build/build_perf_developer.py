@@ -39,8 +39,6 @@ def _incremental_build_with_one_day_changes(api, target):
      (a.k.a morning build).
   """
   time_format = '%Y-%m-%d %H:%M:%S %z'
-  # Ninja+Recilent builds only for now.
-  phase = 'reproxy'
 
   with api.step.nest('Incremental build with 1-day of changes'):
     cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
@@ -64,31 +62,103 @@ def _incremental_build_with_one_day_changes(api, target):
             'abcd\nefgh\n')).stdout.split()[0]
 
     # Run a warm up build for remote caches at the current revision.
-    api.chromium_build_perf.recreate_build_dir(phase=phase)
+    api.chromium_build_perf.checkout(cur_rev)
+
+    ##  Ninja+Reclient
+    api.chromium_build_perf.recreate_build_dir(phase='reproxy')
     raw_result = api.chromium_build_perf.build_with_ninja(
         target,
         with_remote_cache=True,
-        step_name_suffix=' at current revision (warmup)',
-        revision=cur_rev)
+        step_name_suffix=' at current revision (warmup)')
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    # Clean up build dir and deps cache.
-    api.chromium_build_perf.recreate_build_dir(phase=phase)
-    api.chromium_build_perf.remove_deps_cache()
+    ## Siso+Reclient
+    api.chromium_build_perf.recreate_build_dir(
+        phase='reproxy', build_dir=api.chromium.c.build_dir.join('rbe'))
+    suffix = ' with Siso in Reproxy mode at current revision (warmup)'
+    raw_result = api.chromium_build_perf.build_with_siso(
+        target,
+        with_remote_cache=True,
+        out_sub_dir='rbe',
+        step_name_suffix=suffix)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
 
-    # Run a warm up build for local build dir at the base revision.
+    ## Siso native build
+    api.chromium_build_perf.recreate_build_dir(
+        phase='builtin', build_dir=api.chromium.c.build_dir.join('siso'))
+    suffix = ' with Siso in native mode at current revision (warmup)'
+    raw_result = api.chromium_build_perf.build_with_siso(
+        target,
+        with_remote_cache=True,
+        out_sub_dir='siso',
+        step_name_suffix=suffix)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
+
+    # Clean up deps cache and check out to the base revision.
+    api.chromium_build_perf.remove_deps_cache()
+    api.chromium_build_perf.checkout(base_rev)
+
+    # Run a warm up build for local build dir.
+    ## Ninja+Reclient
+    api.chromium_build_perf.recreate_build_dir(phase='reproxy')
     raw_result = api.chromium_build_perf.build_with_ninja(
         target,
         with_remote_cache=True,
-        step_name_suffix=' at base revision (warmup)',
-        revision=base_rev)
+        step_name_suffix=' at base revision (warmup)')
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
+
+    ## Siso+Reclient
+    api.chromium_build_perf.recreate_build_dir(
+        phase='reproxy', build_dir=api.chromium.c.build_dir.join('rbe'))
+    raw_result = api.chromium_build_perf.build_with_siso(
+        target,
+        with_remote_cache=True,
+        out_sub_dir='rbe',
+        step_name_suffix=' with Siso in Reproxy mode at base revision (warmup)')
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
+
+    api.chromium_build_perf.recreate_build_dir(
+        phase='builtin', build_dir=api.chromium.c.build_dir.join('siso'))
+    raw_result = api.chromium_build_perf.build_with_siso(
+        target,
+        with_remote_cache=True,
+        out_sub_dir='siso',
+        step_name_suffix=' with Siso in native mode at base revision (warmup)')
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
     # Incremental build with remote caches at the current revision.
-    return api.chromium_build_perf.build_with_ninja(
-        target, with_remote_cache=True, revision=cur_rev)
+    api.chromium_build_perf.checkout(cur_rev)
+
+    ## Ninja+Reclient
+    raw_result = api.chromium_build_perf.build_with_ninja(
+        target, with_remote_cache=True)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
+
+    ## Siso+Reclient
+    raw_result = api.chromium_build_perf.build_with_siso(
+        target,
+        with_remote_cache=True,
+        out_sub_dir='rbe',
+        step_name_suffix=' with Siso in Reproxy mode')
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
+
+    raw_result = api.chromium_build_perf.build_with_siso(
+        target,
+        with_remote_cache=True,
+        out_sub_dir='siso',
+        step_name_suffix=' with Siso in native mode')
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
+
+    return raw_result
 
 
 def _incremental_builds_with_patch(api, target):
@@ -164,11 +234,11 @@ def _incremental_builds_with_patch(api, target):
         with_remote_cache = False
         step_name_suffix = ''
 
+      api.chromium_build_perf.checkout(rev)
       raw_result = api.chromium_build_perf.build_with_ninja(
           target,
           with_remote_cache=with_remote_cache,
-          step_name_suffix=step_name_suffix,
-          revision=rev)
+          step_name_suffix=step_name_suffix)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     return raw_result
@@ -283,17 +353,26 @@ def GenTests(api):
         target,
         'Clean builds.Build %s with remote cache with Siso in native mode' %
         target,
-        # TODO(b/270902505): enable Siso native builds with phase.
-        # 'Clean builds.Build %s with remote cache with Siso in Native mode' %
-        # target,
-        'Incremental build with 1-day of changes.Build %s with remote cache at current revision (warmup)'
-        % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache at base revision (warmup)'
-        % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'at current revision (warmup)' % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'with Siso in Reproxy mode at current revision (warmup)' % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'with Siso in native mode at current revision (warmup)' % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'at base revision (warmup)' % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'with Siso in Reproxy mode at base revision (warmup)' % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'with Siso in native mode at base revision (warmup)' % target,
         'Incremental build with 1-day of changes.Build %s with remote cache' %
         target,
-        'Incremental builds with patch.Build %s with remote cache at base revision (warmup)'
-        % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'with Siso in Reproxy mode' % target,
+        'Incremental build with 1-day of changes.Build %s with remote cache '
+        'with Siso in native mode' % target,
+        'Incremental builds with patch.Build %s with remote cache at base '
+        'revision (warmup)' % target,
         'Incremental builds with patch.Build %s without remote cache' % target,
     ]
 

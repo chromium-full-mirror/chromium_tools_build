@@ -32,10 +32,10 @@ def RunSteps(api):
   api.chromium_build_perf.build_with_siso('all', with_remote_cache=False)
   api.chromium_build_perf.build_with_ninja(
       'all', with_remote_cache=False, step_name_suffix=' suffix')
-  api.chromium_build_perf.build_with_ninja(
-      'all', with_remote_cache=False, revision='abcd')
   api.chromium_build_perf.recreate_build_dir()
+  api.chromium_build_perf.recreate_build_dir(build_dir='foo')
   api.chromium_build_perf.remove_deps_cache()
+  api.chromium_build_perf.checkout('abcd')
 
 
 def GenTests(api):
