@@ -26,6 +26,7 @@ CHROME_REQUIRED_FILES = {
         'icudtl.dat',
         'libclearkeycdm.so',
         'libclearkeycdmadapter.so',
+        'libvk_swiftshader.so',
         'libwidevinecdm.so',
         'libwidevinecdmadapter.so',
         'locales',
