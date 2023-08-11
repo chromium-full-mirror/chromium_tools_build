@@ -1681,15 +1681,10 @@ class SwarmingApi(recipe_api.RecipeApi):
     if precommit:
       self.default_priority = 30
       self.add_default_tag('purpose:pre-commit')
-      requester = self.m.properties.get('requester')
-      if requester == 'commit-bot@chromium.org':
+      if self.m.cv.active:
         self.add_default_tag('purpose:CQ')
-        blamelist = self.m.properties.get('blamelist')
-        if len(blamelist) == 1:
-          requester = blamelist[0]
       else:
         self.add_default_tag('purpose:ManualTS')
-      self.default_user = requester
 
       if self.m.tryserver.gerrit_change:
         self.add_default_tag(
