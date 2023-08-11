@@ -104,8 +104,14 @@ class PgoApi(recipe_api.RecipeApi):
         target_platform
         if target_platform in ['android', 'chromeos'] else self.m.platform.name)
 
-    # if is_win or if android, should append bits [32,64]
-    if self.m.platform.is_win or platform == 'android':
+    # if is_win, we support [32,64,arm64].
+    if self.m.platform.is_win:
+      if self.m.chromium.c.TARGET_ARCH == 'arm':
+        platform += '-arm'
+      platform += str(self.m.chromium.c.TARGET_BITS)
+
+    # if android, should append bits [32,64]
+    if platform == 'android':
       platform += str(self.m.chromium.c.TARGET_BITS)
 
     # only supporting -arm for mac for now.
