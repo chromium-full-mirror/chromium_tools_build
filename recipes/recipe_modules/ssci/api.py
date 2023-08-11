@@ -107,7 +107,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
       if sbom_bucket and sbom_folder:
         filename, target_ext = splitext(entry_point.replace("//", ""))
-        filename = f"{filename}{filename_postfix or ''}{target_ext}.json"
+        filename = f"{filename}{filename_postfix or ''}{target_ext}.spdx.json"
         full_path = Path(sbom_folder, execution_id, filename).as_posix()
         self.m.gsutil.upload(
             spdx_file,
