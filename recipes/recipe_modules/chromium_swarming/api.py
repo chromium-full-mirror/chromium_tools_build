@@ -7,8 +7,6 @@ import copy
 import datetime
 import decimal
 import functools
-import hashlib
-import os.path
 
 from recipe_engine import recipe_api
 from recipe_engine import util as recipe_util
@@ -16,45 +14,41 @@ from recipe_engine.config_types import Path
 
 from . import types as chromium_swarming
 
-# Minimally supported version of swarming.py script (reported by --version).
-MINIMAL_SWARMING_VERSION = (0, 8, 6)
-
-PER_TARGET_SWARMING_DIMS = collections.defaultdict(dict)
-PER_TARGET_SWARMING_DIMS.update({
-    'android': {
-      'cpu': None,
-      'gpu': None,
-      'os': 'Android',
+_PER_TARGET_SWARMING_DIMS = collections.defaultdict(
+    dict,
+    {
+        'android': {
+            'cpu': None,
+            'gpu': None,
+            'os': 'Android',
+        },
+        'chromeos': {
+            'cpu': None,
+            'gpu': None,
+            'os': 'ChromeOS',
+        },
     },
-    'chromeos': {
-      'cpu': None,
-      'gpu': None,
-      'os': 'ChromeOS',
-    }
-})
+)
 
-
-BUILDER_GROUP_SWARMING_PRIORITIES = collections.defaultdict(lambda: 25)
-BUILDER_GROUP_SWARMING_PRIORITIES.update({
-    'chromium.android.fyi': 35,
-    'chromium.fyi': 35,
-    'chromium.fuchsia.fyi': 35,
-    'chromium.goma.fyi': 35,  # This should be lower than the CQ.
-    'chromium.memory.fyi': 35,
-    'chromium.reclient.fyi': 35,
-    'client.v8.chromium': 35,
-    'client.v8.fyi': 35,
-})
+_BUILDER_GROUP_SWARMING_PRIORITIES = collections.defaultdict(
+    lambda: 25,
+    {
+        'chromium.android.fyi': 35,
+        'chromium.fyi': 35,
+        'chromium.fuchsia.fyi': 35,
+        'chromium.goma.fyi': 35,  # This should be lower than the CQ.
+        'chromium.memory.fyi': 35,
+        'chromium.reclient.fyi': 35,
+        'client.v8.chromium': 35,
+        'client.v8.fyi': 35,
+    },
+)
 
 # Path to the location based tags file.
-LOCATION_TAGS_FILE = '../../testing/location_tags.json'
+_LOCATION_TAGS_FILE = '../../testing/location_tags.json'
 
 
-_TEXT_EXTENSIONS = ('.txt', '.json', '')
-_MAX_FILE_CONTENT_SIZE = 1024
-
-
-def text_for_task(task):
+def _text_for_task(task):
   lines = []
 
   dimensions = task.request[0].dimensions
@@ -71,7 +65,7 @@ def text_for_task(task):
   return '<br/>'.join(lines)
 
 
-def parse_time(value):
+def _parse_time(value):
   """Converts serialized time from the API to datetime.datetime."""
   # When microseconds are 0, the '.123456' suffix is elided. This means the
   # serialized format is not consistent, which confuses the hell out of python.
@@ -84,7 +78,7 @@ def parse_time(value):
   raise ValueError('Failed to parse %s' % value)  # pragma: no cover
 
 
-def fmt_time(seconds):
+def _fmt_time(seconds):
   """Formats some number of seconds into a string. If this is < 60, it will
   render as `NNs`. If it's >= 60 seconds, it will render as 'Xm Xs'."""
   seconds = decimal.Decimal.from_float(seconds).to_integral_value(
@@ -98,7 +92,8 @@ def fmt_time(seconds):
   return out
 
 
-class ReadOnlyDict(dict):
+class _ReadOnlyDict(dict):
+
   def __setitem__(self, key, value):
     raise TypeError('ReadOnlyDict is immutable')
 
@@ -290,7 +285,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     This value can be changed per individual task.
     """
-    return ReadOnlyDict(self._default_dimensions)
+    return _ReadOnlyDict(self._default_dimensions)
 
   def set_default_dimension(self, key, value):
     assert isinstance(key, str), key
@@ -309,7 +304,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     This value can be changed per individual task.
     """
-    return ReadOnlyDict(self._default_env)
+    return _ReadOnlyDict(self._default_env)
 
   def set_default_env(self, key, value):
     assert isinstance(key, str), key
@@ -799,7 +794,7 @@ class SwarmingApi(recipe_api.RecipeApi):
                   step_name=step_name,
                   base_variant=var,
                   require_build_inv=False,
-                  location_tags_file=LOCATION_TAGS_FILE,
+                  location_tags_file=_LOCATION_TAGS_FILE,
               )))
 
     return req
@@ -962,7 +957,7 @@ class SwarmingApi(recipe_api.RecipeApi):
                                          shard_indices, resultdb_enabled),
         infra_step=True,
         **kwargs)
-    step_result.presentation.step_text += text_for_task(task)
+    step_result.presentation.step_text += _text_for_task(task)
 
     task._trigger_output = step_result.json.output
     links = step_result.presentation.links
@@ -1007,7 +1002,7 @@ class SwarmingApi(recipe_api.RecipeApi):
                                          [shard_index], resultdb_enabled),
         infra_step=True,
         **kwargs)
-    step_result.presentation.step_text += text_for_task(task)
+    step_result.presentation.step_text += _text_for_task(task)
 
     # While it might make more sense to update all presentation links in
     # trigger_task(), this is currently not possible. Steps are run in series,
@@ -1100,14 +1095,14 @@ class SwarmingApi(recipe_api.RecipeApi):
     total = sum(self._shards_durations)
     mean = total / len(self._shards_durations)
     stats.extend([
-      'Total runtime: %s ' % fmt_time(total),
+        'Total runtime: %s ' % _fmt_time(total),
     ])
     detailed_stats = stats + [
-      'Min/mean/max: %s / %s / %s' % (
-          fmt_time(min(self._shards_durations)),
-          fmt_time(mean),
-          fmt_time(max(self._shards_durations)),
-      ),
+        'Min/mean/max: %s / %s / %s' % (
+            _fmt_time(min(self._shards_durations)),
+            _fmt_time(mean),
+            _fmt_time(max(self._shards_durations)),
+        ),
     ]
     step_text = self.m.presentation_utils.format_step_text([('Stats', stats)])
     result = self.m.step.empty('Tests statistics', step_text=step_text)
@@ -1131,8 +1126,8 @@ class SwarmingApi(recipe_api.RecipeApi):
       if not shard or not shard.get('started_ts'):
         continue
 
-      created = parse_time(shard['created_ts'])
-      started = parse_time(shard['started_ts'])
+      created = _parse_time(shard['created_ts'])
+      started = _parse_time(shard['started_ts'])
 
       pending = (started - created).total_seconds()
       if pending > max_pending[0]:
@@ -1142,7 +1137,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       runtime = shard.get('duration')
 
       if completed_ts and runtime:
-        duration = (parse_time(completed_ts) - started).total_seconds()
+        duration = (_parse_time(completed_ts) - started).total_seconds()
         overhead = duration - runtime
 
         duration_sum += duration
@@ -1159,29 +1154,30 @@ class SwarmingApi(recipe_api.RecipeApi):
     if max_pending[0] > 10:
       prefix = 'P' if len(shards) <= 1 else 'Max p'
       suffix = '' if len(shards) <= 1 else ' (shard #%d)' % max_pending[1]
-      step_presentation.step_text += ('<br>%sending time: %s%s' % (
-          prefix, fmt_time(max_pending[0]), suffix))
+      step_presentation.step_text += (
+          '<br>%sending time: %s%s' %
+          (prefix, _fmt_time(max_pending[0]), suffix))
 
     if max_duration.duration is not None and max_duration.duration > 0:
       prefix = 'S' if len(shards) <= 1 else 'Max s'
       suffix = '' if len(shards) <= 1 else ' (shard #%d)' % max_duration.index
       step_presentation.step_text += (
           '<br>%shard runtime (%s) + overhead (%s): %s%s' %
-          (prefix, fmt_time(max_duration.runtime),
-           fmt_time(max_duration.overhead), fmt_time(max_duration.duration),
-           suffix))
+          (prefix, _fmt_time(max_duration.runtime),
+           _fmt_time(max_duration.overhead), _fmt_time(
+               max_duration.duration), suffix))
 
     if min_duration.duration is not None and len(shards) > 1:
       step_presentation.step_text += (
           '<br>Min shard runtime (%s) + overhead (%s): %s (shard #%d)' %
-          (fmt_time(min_duration.runtime), fmt_time(min_duration.overhead),
-           fmt_time(min_duration.duration), min_duration.index))
+          (_fmt_time(min_duration.runtime), _fmt_time(min_duration.overhead),
+           _fmt_time(min_duration.duration), min_duration.index))
 
     if len(shards) > 1:
       step_presentation.step_text += (
-          '<br>Total shard runtime (%s) + overhead(%s): %s'
-          % (fmt_time(runtime_sum), fmt_time(overhead_sum),
-             fmt_time(duration_sum)))
+          '<br>Total shard runtime (%s) + overhead(%s): %s' %
+          (_fmt_time(runtime_sum), _fmt_time(overhead_sum),
+           _fmt_time(duration_sum)))
 
   def get_collect_task_args(self,
                             merge_script,
@@ -1334,7 +1330,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         task_args=collect_task_args,
         step_test_data=step_test_data,
         **kwargs)
-    step_result.presentation.step_text = text_for_task(task)
+    step_result.presentation.step_text = _text_for_task(task)
 
     links = {}
     if hasattr(step_result, 'json') and hasattr(
@@ -1492,13 +1488,14 @@ class SwarmingApi(recipe_api.RecipeApi):
       if (shard and not shard.get('internal_failure') and
           shard.get('completed_ts') and shard.get('started_ts')):
         # Display text for shard duration to reflect runtime + overhead
-        delta = parse_time(shard['completed_ts']) - parse_time(
+        delta = _parse_time(shard['completed_ts']) - _parse_time(
             shard['started_ts'])
         duration = delta.total_seconds()
         runtime = shard.get('duration', duration)
         overhead = duration - runtime
-        display_text = ('shard #%d (runtime (%s) + overhead (%s): %s)' % (
-            index, fmt_time(runtime), fmt_time(overhead), fmt_time(duration)))
+        display_text = ('shard #%d (runtime (%s) + overhead (%s): %s)' %
+                        (index, _fmt_time(runtime), _fmt_time(overhead),
+                         _fmt_time(duration)))
       else:
         display_text = 'shard #%d' % index
 
@@ -1537,8 +1534,8 @@ class SwarmingApi(recipe_api.RecipeApi):
         has_valid_results = False
       elif shard.get('state') == 'TIMED_OUT':
         if duration is not None:
-          display_text = (
-              'shard #%d timed out after %s' % (index, fmt_time(duration)))
+          display_text = ('shard #%d timed out after %s' %
+                          (index, _fmt_time(duration)))
         else:
           display_text = (
               'shard #%d timed out, took too much time to complete' % index)
@@ -1547,7 +1544,8 @@ class SwarmingApi(recipe_api.RecipeApi):
         has_valid_results = False
       elif self._get_exit_code(shard) != 0:
         if duration is not None:
-          display_text = 'shard #%d (failed) (%s)' % (index, fmt_time(duration))
+          display_text = 'shard #%d (failed) (%s)' % (index,
+                                                      _fmt_time(duration))
         else:
           display_text = 'shard #%d (failed)' % index
         expected_errors.append(display_text)
@@ -1669,7 +1667,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     """
     # Set platform-specific default dims.
     target_platform = self.m.chromium.c.TARGET_PLATFORM
-    swarming_dims = PER_TARGET_SWARMING_DIMS[target_platform]
+    swarming_dims = _PER_TARGET_SWARMING_DIMS[target_platform]
 
     for k, v in swarming_dims.items():
       self.set_default_dimension(k, v)
@@ -1690,7 +1688,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         self.add_default_tag(
             'patch_project:%s' % self.m.tryserver.gerrit_change.project)
     else:
-      self.default_priority = BUILDER_GROUP_SWARMING_PRIORITIES[builder_group]
+      self.default_priority = _BUILDER_GROUP_SWARMING_PRIORITIES[builder_group]
       self.add_default_tag('purpose:post-commit')
       self.add_default_tag('purpose:CI')
 
