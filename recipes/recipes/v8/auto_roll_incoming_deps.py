@@ -193,8 +193,8 @@ class ScriptedRoll:
     constructed from the titles of the supported scripts.
     """
     return [
-      f'{roller_subject} ({s.title})'
-      for s in ScriptedRoll.supported().values()
+      f'{roller_subject} ({key})'
+      for key in ScriptedRoll.supported()
     ]
 
   def __init__(self, script_key):
@@ -579,7 +579,7 @@ def get_dep_updates(api, autoroller_config):
 
 
 def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
-    bugs_label, add=False):
+    bugs_label, add=False, trigger_cq=False, reqiure_owner_review=False):
   """
   Verify that the local checkout is dirty, commit changes and upload a CL with
   the given subject and reviewers. If the local checkout is not dirty, we do
@@ -637,6 +637,12 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
 
     if bugs_label is not None:
       upload_args += ['-b', bugs_label]
+
+    if trigger_cq:
+      upload_args.append('-d')
+
+    if reqiure_owner_review:
+      upload_args.append('--r-owners')
 
     step_result = api.git(*upload_args, stdout=api.raw_io.output_text())
 
@@ -745,6 +751,8 @@ def update_scripted_rolls(api, step, autoroller_config):
             commit_lines=[roll_origin_line(api)],
             bugs_label=autoroller_config.get('bugs', None),
             add=True,
+            trigger_cq=True,
+            reqiure_owner_review=True,
         )
     return ', '.join(s.title for s in scripted_rolls if s.updated)
 

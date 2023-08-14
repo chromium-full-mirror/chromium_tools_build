@@ -2565,7 +2565,9 @@
       "--bypass-hooks",
       "--send-mail",
       "-b",
-      "none"
+      "none",
+      "-d",
+      "--r-owners"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
