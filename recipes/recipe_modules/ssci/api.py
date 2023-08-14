@@ -224,5 +224,7 @@ class SsciAPI(recipe_api.RecipeApi):
 
       # set generated in output properties
       info_step = self.m.step.empty("SBOM's generated")
+      info_step.presentation.logs['ssci_generated_artifacts'] = sorted(
+          self.generated_sbom_artifacts)
       info_step.presentation.properties.update(
           {'ssci_generated_artifacts': sorted(self.generated_sbom_artifacts)})

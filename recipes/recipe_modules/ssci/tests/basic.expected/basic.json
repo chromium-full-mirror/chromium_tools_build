@@ -720,6 +720,8 @@
     "name": "SSCI collection.SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@gs://my-bucket/os/version/luci-8945511751514863184/exampleStable.apk.spdx.json@@@",
+      "@@@STEP_LOG_END@ssci_generated_artifacts@@@",
       "@@@SET_BUILD_PROPERTY@ssci_generated_artifacts@[\"gs://my-bucket/os/version/luci-8945511751514863184/exampleStable.apk.spdx.json\"]@@@"
     ]
   },
