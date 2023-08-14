@@ -188,7 +188,8 @@ class SsciAPI(recipe_api.RecipeApi):
           ])
 
       self.m.step('upload third party dependencies to BigQuery', [
-          bqupload_cipd_path, "--json-list=true", self.bq_thirdparty_table,
+          bqupload_cipd_path, "--json-list=true", "-column",
+          f'execution_id="{execution_id}"', self.bq_thirdparty_table,
           third_party_out
       ])
 

@@ -413,6 +413,8 @@
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
       "--json-list=true",
+      "-column",
+      "execution_id=\"luci-8945511751514863184\"",
       "project.dataset.table",
       "[CLEANUP]/tmp_tmp_2/third_party.json"
     ],
