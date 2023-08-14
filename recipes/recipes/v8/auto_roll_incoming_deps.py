@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.recipe_engine import result as result_pb2
 
@@ -127,92 +129,7 @@ CFT_LKGR_URL = 'https://googlechromelabs.github.io/chrome-for-testing/last-known
 RETSAM = 'retsam'[::-1]
 CHROME_VAR = 'chrome'
 
-class ChromePinSolver():
 
-  def current_raw_value(self, api):
-    try:
-      step_result = api.gclient(
-          f'get {CHROME_VAR} deps', ['getdep', f'--var={CHROME_VAR}'],
-          stdout=api.raw_io.output_text())
-      # The first line contains the commit position number. Strip the rest.
-      return step_result.stdout.strip().splitlines()[0].strip()
-    except Exception:
-      api.step.empty(f'Failed get dep {CHROME_VAR}')
-      return None  # Ensure no roll attempt
-
-  def get_latest_version(self, api):
-    return api.url.get_json(
-        CFT_LKGR_URL,
-        step_name=f'check latest {CHROME_VAR}',
-        default_test_data={
-            'channels': {
-                'Canary': {
-                    'version': '123.0.4500.6'
-                }
-            }
-        }).output['channels']['Canary']['version']
-
-  def version_tuple(self, version):
-    return tuple(map(int, version.split('.')))
-
-  def should_roll(self, current, latest):
-    return current and (self.version_tuple(current) <
-                        self.version_tuple(latest))
-
-
-
-class ScriptedRoll:
-  SupportedScript = namedtuple('SupportedScript', ['title', 'exe', 'args'])
-
-  @staticmethod
-  def supported():
-    """Returns a dict of supported scripted rolls. The key is the script key
-    and the value is a tuple of the title and the path elements to the script.
-    """
-    return {
-        'puppeteer-core': ScriptedRoll.SupportedScript(
-            'Puppeteer Core',
-            'scripts/deps/roll_front_end_third_party.py',
-            [ 'puppeteer-core'
-            , 'puppeteer'
-            , 'lib/esm' ]
-        ),
-        'puppeteer-replay': ScriptedRoll.SupportedScript(
-            'Puppeteer Replay',
-            'scripts/deps/roll_front_end_third_party.py',
-            [ '@puppeteer/replay'
-            , 'puppeteer-replay'
-            , 'lib' ]
-        ),
-        # Add more scripts here
-    }
-
-  @staticmethod
-  def subjects(roller_subject):
-    """Returns a list of possible subjects for the given roller. The list is
-    constructed from the titles of the supported scripts.
-    """
-    return [
-      f'{roller_subject} ({key})'
-      for key in ScriptedRoll.supported()
-    ]
-
-  def __init__(self, script_key):
-    self.script  = ScriptedRoll.supported()[script_key]
-    self.updated = False
-
-  def run(self, api):
-    with api.depot_tools.on_path():
-      api.step(f'Run {self.title} script', [
-          'python3',
-          '-u',
-          api.path['checkout'].join(*self.script.exe.split('/')),
-          *self.script.args
-      ])
-
-  @property
-  def title(self):
-    return self.script.title
 
 # Custom vars by project. They are added to the gclient solution when
 # determining current deps versions.
@@ -227,17 +144,11 @@ GCLIENT_CUSTOM_VARS = {
 
 
 class DepUpdate:
-  def __init__(self, name, is_trusted, next_version, commit_lines):
+
+  def __init__(self, name, next_version, commit_msg_lines):
     self.name = name
-    self.is_trusted = is_trusted
     self.next_version = next_version
-    self.commit_lines = commit_lines
-
-
-def get_subject(autoroller_config, is_trusted):
-  subject = autoroller_config['subject']
-  suffix = 'trusted' if is_trusted else 'reviewed'
-  return f'{subject} ({suffix})'
+    self.commit_msg_lines = commit_msg_lines
 
 
 def abandon_active_cls(api, autoroller_config):
@@ -258,14 +169,16 @@ def abandon_active_cls(api, autoroller_config):
   )
 
   # The auto-roller might have a CL open for a particular roll config.
-  trusted_subject = get_subject(autoroller_config, is_trusted=True)
-  reviewed_subject = get_subject(autoroller_config, is_trusted=False)
-  commits = [c for c in commits if c['subject'] in {
-      trusted_subject,
-      reviewed_subject,
-      CHROMIUM_PIN_CL_SUBJECT,
-      *ScriptedRoll.subjects(autoroller_config['subject']),
-  }]
+  trusted_subject = TrustedRollHandler(api, autoroller_config).get_subject()
+  reviewed_subject = UntrustedRollHandler(api, autoroller_config).get_subject()
+  commits = [
+      c for c in commits if c['subject'] in {
+          trusted_subject,
+          reviewed_subject,
+          CHROMIUM_PIN_CL_SUBJECT,
+          *SriptedRollsFactory(autoroller_config).subjects(),
+      }
+  ]
   for commit in commits:
     api.gerrit.abandon_change(
         target_config['gerrit_base_url'], commit['_number'], 'stale roll')
@@ -488,7 +401,8 @@ def get_dep_updates(api, autoroller_config):
   target_dep_names = [
       k for k in target_dep_names if includes is None or k in includes]
 
-  updates = []
+  trusted_updates = []
+  untrusted_updates = []
   failed_deps = []
   for target_name in target_dep_names:
     source_name = key_mapper(target_name)
@@ -547,7 +461,7 @@ def get_dep_updates(api, autoroller_config):
       continue
 
     # Construct commit message lines
-    commit_lines = []
+    commit_msg_lines = []
     if is_cipd_dep:
       # Unfortunately CIPD does not provide a way to generate a link that
       # lists all versions from v8_rev to new_ver. Even just creating a link
@@ -555,37 +469,39 @@ def get_dep_updates(api, autoroller_config):
       # contain ${platform}, which can usually be resolved to multiple
       # distinct packages.
       path, _ = target_name.split(':')
-      commit_lines.append(
-        cipd_log_template % (path, target_version, next_version)
-      )
+      commit_msg_lines.append(cipd_log_template %
+                              (path, target_version, next_version))
     else:
       params = (
           target_name, clean_target_location, target_version[:7],
           next_version[:7])
-      commit_lines.append(git_log_template % params)
+      commit_msg_lines.append(git_log_template % params)
       if autoroller_config['show_commit_log']:
-        commit_lines.extend(commit_messages_log_entries(
-            api, clean_target_location, target_version, next_version))
+        commit_msg_lines.extend(
+            commit_messages_log_entries(api, clean_target_location,
+                                        target_version, next_version))
+    (trusted_updates if is_trusted else untrusted_updates).append(
+        DepUpdate(
+            name=target_name,
+            next_version=next_version,
+            commit_msg_lines=commit_msg_lines,
+        ))
 
-    updates.append(DepUpdate(
-        name=target_name,
-        is_trusted=is_trusted,
-        next_version=next_version,
-        commit_lines=commit_lines,
-    ))
+  return trusted_updates, untrusted_updates, failed_deps
 
 
-  return updates, failed_deps
-
-
-def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
-    bugs_label, add=False, trigger_cq=False, reqiure_owner_review=False):
+def upload_cl(api,
+              subject,
+              upload_flags,
+              commit_msg_lines,
+              bugs_label,
+              add=False):
   """
   Verify that the local checkout is dirty, commit changes and upload a CL with
   the given subject and reviewers. If the local checkout is not dirty, we do
   nothing.
 
-  Returns whether a CL was uploaded.
+  Returns the URL to the uploaded CL, or None if no CL was uploaded.
   """
   # Check for a difference. If no deps changed, the diff is empty.
   with api.context(cwd=api.path['checkout']):
@@ -597,7 +513,7 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
   step_result.presentation.logs['diff'] = diff.splitlines()
 
   if not diff:
-    return False
+    return None
 
   if add:
     # Add all files to the commit
@@ -606,16 +522,8 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
   # Create a rolling CL
   args = ['commit', '-a', '-m', subject]
 
-  if not set_bot_commit:
-    args.extend(['-m', (
-      'This roll requires a manual review. See http://go/reviewed-rolls for '
-      'guidance.')])
-
-  for commit_line in commit_lines:
+  for commit_line in commit_msg_lines:
     args.extend(['-m', commit_line])
-
-  if not set_bot_commit:
-    args.extend(['-m', f'R={",".join(reviewers)}'])
 
   kwargs = {'stdout': api.raw_io.output_text()}
   with api.context(
@@ -632,129 +540,271 @@ def upload_cl(api, step, subject, reviewers, set_bot_commit, commit_lines,
         '--send-mail',
     ]
 
-    if set_bot_commit:
-      upload_args.append('--set-bot-commit')
-
     if bugs_label is not None:
       upload_args += ['-b', bugs_label]
 
-    if trigger_cq:
-      upload_args.append('-d')
-
-    if reqiure_owner_review:
-      upload_args.append('--r-owners')
-
+    upload_args.extend(upload_flags)
     step_result = api.git(*upload_args, stdout=api.raw_io.output_text())
 
     # Extract the cl link from stdout
     cl_link = re.search(r'https:\/\/.*\/\+\/\d+', step_result.stdout).group(0)
 
-    step.presentation.links['CL'] = cl_link
+    return cl_link
 
-  return True
 
-def update_dependencies(api, step, updates, autoroller_config, trusted):
-  """Create CLs to update the dependencies in the target repository.
+class RollHandler(ABC):
 
-  1. Filter for trusted / reviewed `DepUpdate`s
-  2. Construct the commit message, including the diffs for each dependency
-     update
-  3. Create the rolling CLs, using bot-commit for trusted dependency updates
-  """
-  updates = [u for u in updates if trusted == u.is_trusted]
-  step.presentation.step_text = f'{len(updates)} update(s)'
+  def __init__(self, api, autoroller_config):
+    self.api = api
+    self.config = autoroller_config
+    self.enabled = True
+    self.add_new_files = False
 
-  if not updates:
-    return len(updates)
+  def roll(self, summary):
+    if self.enabled:
+      with self.api.step.nest(f'Update {self.name()} deps') as step:
+        with self.roll_contex():
+          step.presentation.step_text = self.summary()
+          discard_local_changes(self.api)
+          changes = self.apply_changes()
+          cl_link = upload_cl(
+              self.api,
+              subject=self.get_subject(),
+              upload_flags=self.upload_flags(),
+              commit_msg_lines=self.commit_msg_lines(changes),
+              bugs_label=self.config.get('bugs', None),
+              add=self.add_new_files,
+          )
+          if cl_link:
+            step.presentation.links['CL'] = cl_link
+            summary.append(self.summary())
 
-  discard_local_changes(api)
+  @contextmanager
+  def roll_contex(self):
+    with self.api.context(
+        cwd=self.api.path['checkout']), self.api.depot_tools.on_path():
+      yield
 
-  commit_lines = []
-  for update in updates:
-    with api.context(cwd=api.path['checkout']):
+  @abstractmethod
+  def name(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def summary(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def apply_changes(self):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def get_subject(self):
+    pass  # pragma: no cover
+
+  def upload_flags(self):
+    return []
+
+  @abstractmethod
+  def commit_msg_lines(self, changes):
+    pass  # pragma: no cover
+
+
+class DEPSRollHandler(RollHandler, ABC):
+
+  def __init__(self, api, autoroller_config, updates=None):
+    super().__init__(api, autoroller_config)
+    self.updates = updates
+
+  def apply_changes(self):
+    return [update for update in self.updates if self.set_dep(update)]
+
+  def set_dep(self, update):
+    with self.api.context(cwd=self.api.path['checkout']):
       clean_name = update.name.replace('/', '_')
-      step_result = api.gclient(
+      step_result = self.api.gclient(
           f'setdep {clean_name}',
           ['setdep', '-r', f'{update.name}@{update.next_version}'],
           ok_ret='any',
       )
-
     if step_result.retcode != 0:
-      step_result.presentation.status = api.step.WARNING
-      continue
+      step_result.presentation.status = self.api.step.WARNING
+      return False
+    return True
 
-    commit_lines.extend(update.commit_lines)
+  def get_subject(self):
+    return f'{self.config["subject"]} ({self.name()})'
 
-  commit_lines.append(roll_origin_line(api))
+  def commit_msg_lines(self, changes):
+    return [line for c in changes for line in c.commit_msg_lines
+           ] + [roll_origin_line(self.api)]
 
-  upload_cl(
-      api,
-      step,
-      subject=get_subject(autoroller_config, trusted),
-      reviewers=autoroller_config['reviewers'],
-      set_bot_commit=trusted,
-      commit_lines=commit_lines,
-      bugs_label=autoroller_config.get('bugs', None),
-  )
-  return len(updates)
+  def summary(self):
+    return f'{len(self.updates)} {self.name()} dep(s)'
+
+
+class TrustedRollHandler(DEPSRollHandler):
+
+  def upload_flags(self):
+    return ['--set-bot-commit']
+
+  def name(self):
+    return 'trusted'
+
+
+class UntrustedRollHandler(DEPSRollHandler):
+
+  def name(self):
+    return 'reviewed'
+
+  def commit_msg_lines(self, changes):
+    return commit_msg_lines_w_reviewes(super().commit_msg_lines(changes),
+                                       self.config['reviewers'])
+
+
+class ChromiumPinRollHandler(RollHandler):
+
+  def __init__(self, api, autoroller_config):
+    super().__init__(api, autoroller_config)
+    self.enabled = self.config['roll_chromium_pin']
+
+  def name(self):
+    return 'chromium pin'
+
+  def summary(self):
+    return f'1 {self.name()}'
+
+  def apply_changes(self):
+    current_value = self.current_raw_value(self.api)
+    new_value = self.get_latest_version(self.api)
+    needs_update = self.should_roll(current_value, new_value)
+    if needs_update:
+      self.api.gclient(f'set {CHROME_VAR} deps',
+                       ['setdep', f'--var={CHROME_VAR}={new_value}'])
+      return f'Chromium pin updated to {new_value}'
+    return None
+
+  def current_raw_value(self, api):
+    try:
+      step_result = api.gclient(
+          f'get {CHROME_VAR} deps', ['getdep', f'--var={CHROME_VAR}'],
+          stdout=api.raw_io.output_text())
+      # The first line contains the commit position number. Strip the rest.
+      return step_result.stdout.strip().splitlines()[0].strip()
+    except Exception:
+      api.step.empty(f'Failed get dep {CHROME_VAR}')
+      return None  # Ensure no roll attempt
+
+  def get_latest_version(self, api):
+    return api.url.get_json(
+        CFT_LKGR_URL,
+        step_name=f'check latest {CHROME_VAR}',
+        default_test_data={
+            'channels': {
+                'Canary': {
+                    'version': '123.0.4500.6'
+                }
+            }
+        }).output['channels']['Canary']['version']
+
+  def version_tuple(self, version):
+    return tuple(map(int, version.split('.')))
+
+  def should_roll(self, current, latest):
+    return current and (self.version_tuple(current) <
+                        self.version_tuple(latest))
+
+  def get_subject(self):
+    return CHROMIUM_PIN_CL_SUBJECT
+
+  def upload_flags(self):
+    return ['--set-bot-commit']
+
+  def commit_msg_lines(self, changes):
+    lines = []
+    if changes:
+      lines.append(changes)
+    lines.append(roll_origin_line(self.api))
+    return lines
+
+
+class SriptedRollsFactory:
+  SupportedScript = namedtuple('SupportedScript', ['title', 'exe', 'args'])
+
+  def __init__(self, autoroller_config):
+    self.config = autoroller_config
+
+  def supported(self):
+    """Returns a dict of supported scripted rolls. The key is the script key
+    and the value is a tuple of the title and the path elements to the script.
+    """
+    return {
+        'puppeteer-core':
+            SriptedRollsFactory.SupportedScript(
+                'Puppeteer Core', 'scripts/deps/roll_front_end_third_party.py',
+                ['puppeteer-core', 'puppeteer', 'lib/esm']),
+        'puppeteer-replay':
+            SriptedRollsFactory.SupportedScript(
+                'Puppeteer Replay',
+                'scripts/deps/roll_front_end_third_party.py',
+                ['@puppeteer/replay', 'puppeteer-replay', 'lib']),
+        # Add more scripts here
+    }
+
+  def subjects(self):
+    """Returns a list of possible subjects for the given roller. The list is
+    constructed from the titles of the supported scripts.
+    """
+    return (f'{self.config["subject"]} ({key})' for key in self.supported())
+
+  def get_rollers(self, api):
+    script_keys = self.config.get('scripted_rolls', [])
+    return [
+        ScriptedRollHandler(api, self.config,
+                            self.supported()[key], key) for key in script_keys
+    ]
+
+
+class ScriptedRollHandler(RollHandler):
+
+  def __init__(self, api, autoroller_config, script, key):
+    super().__init__(api, autoroller_config)
+    self.add_new_files = True
+    self.script = script
+    self.key = key
+    self.updated = False
+
+  def name(self):
+    return self.script.title
+
+  def apply_changes(self):
+    self.api.step(f'Run {self.name()} script', [
+        'python3', '-u', self.api.path['checkout'].join(
+            *self.script.exe.split('/')), *self.script.args
+    ])
+
+  def get_subject(self):
+    return f'Roll ({self.key})'
+
+  def upload_flags(self):
+    return ['--r-owners']
+
+  def commit_msg_lines(self, _):
+    return commit_msg_lines_w_reviewes([roll_origin_line(self.api)],
+                                       self.config['reviewers'])
+
+  def summary(self):
+    return self.name()
+
+
+def commit_msg_lines_w_reviewes(commit_msg_lines, reviewers):
+  return [
+      ('This roll requires a manual review. See http://go/reviewed-rolls for '
+       'guidance.')
+  ] + commit_msg_lines + [f'R={",".join(reviewers)}']
 
 
 def roll_origin_line(api):
   return f'\nRoll created at {api.buildbucket.build_url()}'
-
-
-def update_chrome_pin(api, step, autoroller_config):
-  """Updates the values of gclient variables chromium_(win|mac|mac_arm|linux)
-  with the latest prebuilt versions.
-
-  Returns True if the pin was updated, False otherwise.
-  """
-  with api.context(cwd=api.path['checkout']):
-    pin_solver = ChromePinSolver()
-    current_value = pin_solver.current_raw_value(api)
-    new_value = pin_solver.get_latest_version(api)
-    needs_update = pin_solver.should_roll(current_value, new_value)
-    if needs_update:
-      api.gclient(f'set {CHROME_VAR} deps',
-                  ['setdep', f'--var={CHROME_VAR}={new_value}'])
-    upload_cl(
-        api,
-        step,
-        subject=CHROMIUM_PIN_CL_SUBJECT,
-        reviewers=autoroller_config['reviewers'],
-        set_bot_commit=True,
-        commit_lines=[roll_origin_line(api)],
-        bugs_label=autoroller_config.get('bugs', None),
-    )
-    return needs_update
-
-
-def update_scripted_rolls(api, step, autoroller_config):
-  """Applies a scripted roll to the target repository.
-
-  Returns a summary string with the titles of all scripted rolls where we
-  created a new CL.
-  """
-  with api.context(cwd=api.path['checkout']), api.depot_tools.on_path():
-    script_keys = autoroller_config['scripted_rolls']
-    scripted_rolls = [ScriptedRoll(key) for key in script_keys]
-    for scripted in scripted_rolls:
-      with api.step.nest(f'Roll {scripted.title}'):
-        discard_local_changes(api)
-        scripted.run(api)
-        scripted.updated = upload_cl(
-            api,
-            step,
-            subject=f'Roll {scripted.title}',
-            reviewers=autoroller_config['reviewers'],
-            set_bot_commit=False,
-            commit_lines=[roll_origin_line(api)],
-            bugs_label=autoroller_config.get('bugs', None),
-            add=True,
-            trigger_cq=True,
-            reqiure_owner_review=True,
-        )
-    return ', '.join(s.title for s in scripted_rolls if s.updated)
 
 
 def handle_failed_deps(api, failed_deps):
@@ -784,35 +834,21 @@ def RunSteps(api, autoroller_config):
 
   with api.step.nest('Find updated deps'):
     discard_local_changes(api)
-    updates, failed = get_dep_updates(api, autoroller_config)
+    trusted_updates, untrusted_updates, failed = get_dep_updates(
+        api, autoroller_config)
 
-  with api.step.nest('Update trusted deps') as step:
-    trusted_updates = update_dependencies(
-        api, step, updates, autoroller_config, trusted=True)
-    if trusted_updates:
-      summary.append(f'{trusted_updates} trusted dep(s)')
-
-  with api.step.nest('Update reviewed deps') as step:
-    reviewed_updates = update_dependencies(
-        api, step, updates, autoroller_config, trusted=False)
-    if reviewed_updates:
-      summary.append(f'{reviewed_updates} reviewed dep(s)')
+  TrustedRollHandler(api, autoroller_config, trusted_updates).roll(summary)
+  UntrustedRollHandler(api, autoroller_config, untrusted_updates).roll(summary)
 
   with api.step.nest('Check failed deps'):
     handle_failed_deps(api, failed)
 
-  if autoroller_config['roll_chromium_pin']:
-    with api.step.nest('Roll chromium pin') as step:
-      discard_local_changes(api)
-      updated = update_chrome_pin(api, step, autoroller_config)
-    if updated:
-      summary.append('1 chrome pin')
+  ChromiumPinRollHandler(api, autoroller_config).roll(summary)
 
   if autoroller_config['scripted_rolls']:
-    with api.step.nest('Scripted rolls') as step:
-      script_summary = update_scripted_rolls(api, step, autoroller_config)
-      if script_summary:
-        summary.append(script_summary)
+    with api.step.nest('Scripted rolls'):
+      for roller in SriptedRollsFactory(autoroller_config).get_rollers(api):
+        roller.roll(summary)
 
   result = result_pb2.RawResult()
   result.status = common_pb2.SUCCESS
@@ -959,7 +995,7 @@ remote:"""
                 'deadbeef\trefs/heads/main', stream='stdout'),
         ),
         api.override_step_data(
-            'Roll chromium pin.gclient get chrome deps',
+            'Update chromium pin deps.gclient get chrome deps',
             api.raw_io.stream_output_text('123.0.4500.7', stream='stdout'),
         ),
     ]
@@ -980,30 +1016,30 @@ remote:"""
 
 
   # Happy path
-  yield api.test(*template('default') + [
-      api.override_step_data(
-          'Scripted rolls.Roll Puppeteer Core.git diff',
-          api.raw_io.stream_output_text(
-              'diff generated by script',
-              stream='stdout'
+  yield api.test(
+      *template('default') + [
+          api.override_step_data(
+              'Scripted rolls.Update Puppeteer Core deps.git diff',
+              api.raw_io.stream_output_text(
+                  'diff generated by script', stream='stdout'),
           ),
-      ),
-      api.override_step_data(
-          'Scripted rolls.Roll Puppeteer Core.git cl',
-          api.raw_io.stream_output_text(git_cl_info, stream='stdout'),
-      ),
-      api.post_process(
-          SummaryMarkdown,
-          'updated 4 trusted dep(s), 6 reviewed dep(s), Puppeteer Core')],
-  )
+          api.override_step_data(
+              'Scripted rolls.Update Puppeteer Core deps.git cl',
+              api.raw_io.stream_output_text(git_cl_info, stream='stdout'),
+          ),
+          api.post_process(
+              SummaryMarkdown,
+              'updated 4 trusted dep(s), 6 reviewed dep(s), Puppeteer Core')
+      ],)
 
   # No chrome pin roll
   yield api.test(*template('missing key') + [
       api.override_step_data(
-          'Roll chromium pin.gclient get chrome deps',
+          'Update chromium pin deps.gclient get chrome deps',
           api.raw_io.stream_output_text(
               'Could not find any variable called chrome.', stream='stderr')),
-      api.post_process(MustRun, "Roll chromium pin.Failed get dep chrome"),
+      api.post_process(MustRun,
+                       "Update chromium pin deps.Failed get dep chrome"),
       api.post_process(DropExpectation),
   ])
 
@@ -1059,12 +1095,13 @@ remote:"""
           ),
       ),
       api.override_step_data(
-          'Roll chromium pin.gclient get chrome deps',
+          'Update chromium pin deps.gclient get chrome deps',
           api.raw_io.stream_output_text('123', stream='stdout'),
       ),
       api.post_process(DoesNotRunRE, r'^Update \w* deps\.gclient setdep .*'),
-      api.post_process(DoesNotRun,
-                       'Roll chromium pin.gclient set chromium_linux deps'),
+      api.post_process(
+          DoesNotRun,
+          'Update chromium pin deps.gclient set chromium_linux deps'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )

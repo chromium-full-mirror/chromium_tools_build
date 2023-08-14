@@ -1069,7 +1069,7 @@
     "cmd": [],
     "name": "Update trusted deps",
     "~followup_annotations": [
-      "@@@STEP_TEXT@4 update(s)@@@",
+      "@@@STEP_TEXT@4 trusted dep(s)@@@",
       "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/chromium/tools/build/+/3840339@@@",
       "@@@STEP_WARNINGS@@@"
     ]
@@ -1085,6 +1085,14 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -1118,6 +1126,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1148,6 +1164,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1176,6 +1200,14 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -1210,7 +1242,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1247,7 +1283,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1283,7 +1323,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1319,7 +1363,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1347,6 +1395,14 @@
       "diff"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1393,6 +1449,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1422,6 +1486,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1449,14 +1521,22 @@
       "--use-commit-queue",
       "--bypass-hooks",
       "--send-mail",
-      "--set-bot-commit",
       "-b",
-      "none"
+      "none",
+      "--set-bot-commit"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -1481,7 +1561,7 @@
     "cmd": [],
     "name": "Update reviewed deps",
     "~followup_annotations": [
-      "@@@STEP_TEXT@6 update(s)@@@",
+      "@@@STEP_TEXT@6 reviewed dep(s)@@@",
       "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/chromium/tools/build/+/3840339@@@"
     ]
   },
@@ -1496,6 +1576,14 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -1529,6 +1617,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1559,6 +1655,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1587,6 +1691,14 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -1621,7 +1733,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1657,7 +1773,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1693,7 +1813,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1729,7 +1853,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1765,7 +1893,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1801,7 +1933,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -1829,6 +1965,14 @@
       "diff"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1897,6 +2041,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1924,6 +2076,14 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -1962,6 +2122,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1986,7 +2154,10 @@
   },
   {
     "cmd": [],
-    "name": "Roll chromium pin"
+    "name": "Update chromium pin deps",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@1 chromium pin@@@"
+    ]
   },
   {
     "cmd": [
@@ -1999,6 +2170,14 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
       ]
     },
     "infra_step": true,
@@ -2014,7 +2193,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Roll chromium pin.git checkout",
+    "name": "Update chromium pin deps.git checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2032,6 +2211,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2045,7 +2232,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Roll chromium pin.git branch",
+    "name": "Update chromium pin deps.git branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2062,6 +2249,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2075,7 +2270,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Roll chromium pin.git clean",
+    "name": "Update chromium pin deps.git clean",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2092,6 +2287,14 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2105,7 +2308,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Roll chromium pin.git new-branch",
+    "name": "Update chromium pin deps.git new-branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2123,7 +2326,11 @@
       "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
     },
     "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
       "PATH": [
+        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -2140,7 +2347,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Roll chromium pin.gclient get chrome deps",
+    "name": "Update chromium pin deps.gclient get chrome deps",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2158,6 +2365,14 @@
       "/path/to/tmp/json"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "v8:ci"
@@ -2170,7 +2385,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Roll chromium pin.check latest chrome",
+    "name": "Update chromium pin deps.check latest chrome",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2181,6 +2396,14 @@
       "diff"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -2194,7 +2417,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Roll chromium pin.git diff",
+    "name": "Update chromium pin deps.git diff",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@diff@@@"
@@ -2202,16 +2425,15 @@
   },
   {
     "cmd": [],
-    "name": "Scripted rolls",
-    "~followup_annotations": [
-      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/chromium/tools/build/+/3840339@@@"
-    ]
+    "name": "Scripted rolls"
   },
   {
     "cmd": [],
-    "name": "Scripted rolls.Roll Puppeteer Core",
+    "name": "Scripted rolls.Update Puppeteer Core deps",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@Puppeteer Core@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/chromium/tools/build/+/3840339@@@"
     ]
   },
   {
@@ -2248,7 +2470,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git checkout",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2287,7 +2509,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git branch",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2325,7 +2547,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git clean",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git clean",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2363,7 +2585,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git new-branch",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git new-branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2380,11 +2602,9 @@
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
-        "0",
         "0"
       ],
       "PATH": [
-        "RECIPE_REPO[depot_tools]",
         "RECIPE_REPO[depot_tools]"
       ]
     },
@@ -2400,7 +2620,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.Run Puppeteer Core script",
+    "name": "Scripted rolls.Update Puppeteer Core deps.Run Puppeteer Core script",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2432,7 +2652,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git diff",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git diff",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@diff@diff generated by script@@@",
@@ -2467,7 +2687,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git add",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git add",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2478,7 +2698,7 @@
       "commit",
       "-a",
       "-m",
-      "Roll Puppeteer Core",
+      "Roll (puppeteer-core)",
       "-m",
       "This roll requires a manual review. See http://go/reviewed-rolls for guidance.",
       "-m",
@@ -2513,7 +2733,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git commit",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git commit",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2550,7 +2770,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git show",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git show",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2566,7 +2786,6 @@
       "--send-mail",
       "-b",
       "none",
-      "-d",
       "--r-owners"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -2596,7 +2815,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Roll Puppeteer Core.git cl",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git cl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
