@@ -64,6 +64,9 @@ class SkylabApi(recipe_api.RecipeApi):
 
           cmd.extend(['-board', t.spec.cros_board])
 
+          if t.spec.cros_model:
+            cmd.extend(['-model', t.spec.cros_model])
+
           if t.spec.secondary_cros_board:
             cmd.extend(['-secondary-boards', t.spec.secondary_cros_board])
             if t.spec.secondary_cros_img:

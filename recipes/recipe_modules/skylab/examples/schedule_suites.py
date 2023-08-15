@@ -50,6 +50,7 @@ def gen_skylab_rdb(suite):
 SKYLAB_TEST_SPEC_TEMPLATE = dict(
     autotest_name='lacros.tast',
     cros_board='eve',
+    cros_model='',
     tast_expr=None,
     tast_expr_key='default',
     test_args=None,
@@ -84,6 +85,7 @@ REQUESTS = [
         'm88_tast_with_retry',
         tast_expr=LACROS_TAST_EXPR,
         retries=3,
+        cros_model='baks',
         bucket='a_different_chromium_bucket',
         public_builder='ctp-public-builder',
         public_builder_bucket='public-bucket'),
@@ -169,8 +171,8 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[0].name + '.schedule', [
-              'run', 'test', '-json', '-board', 'eve', '-bucket',
-              'a_different_chromium_bucket', '-public-builder',
+              'run', 'test', '-json', '-board', 'eve', '-model', 'baks',
+              '-bucket', 'a_different_chromium_bucket', '-public-builder',
               'ctp-public-builder', '-public-builder-bucket', 'public-bucket',
               '-pool', 'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
               '-timeout-mins', '60', '-qs-account', 'lacros', '-max-retries',

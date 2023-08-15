@@ -2985,6 +2985,8 @@ class SkylabTestSpec(TestSpec):
   """Spec for a suite that runs on CrOS Skylab."""
   # The CrOS build target name, e.g. eve, kevin.
   cros_board = attrib(str)
+  # The CrOS DUT model.
+  cros_model = attrib(str, default='')
   # The GS path presenting CrOS image to provision the DUT,
   # e.g. atlas-release/R88-13545.0.0
   cros_img = attrib(str)
