@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from PB.recipes.build.art import InputProperties
+
 DEPS = [
   'recipe_engine/buildbucket',
   'recipe_engine/context',
@@ -17,6 +19,8 @@ DEPS = [
 
 # Value passed to option `-j` of command `repo sync`.
 REPO_SYNC_JOBS = 16
+
+PROPERTIES = InputProperties
 
 HOST_TEST_INTERPRETER_MAKE_JOBS = 5
 
@@ -55,6 +59,49 @@ _TARGET_DEVICE_MAP = {
     },
 }
 
+def RunSteps(api, props):
+  manifest_branch = props.manifest_branch or 'master-art'
+  if props.use_props:
+    if props.device:
+      with api.context(cwd=api.path['cache'].join('art')):
+        setup_target(
+          api,
+          device=props.device,
+          debug=props.debug,
+          build_only=props.build_only,
+          concurrent_collector=props.concurrent_collector,
+          generational_cc=props.generational_cc,
+          heap_poisoning=props.heap_poisoning,
+          gcstress=props.gcstress,
+          on_virtual_machine=props.on_virtual_machine,
+          manifest_branch=manifest_branch or 'master-art'
+        )
+    else:
+      with api.context(cwd=api.path['cache'].join('art')):
+        setup_host_x86(
+          api,
+          debug=props.debug,
+          bitness=props.bitness,
+          concurrent_collector=props.concurrent_collector,
+          generational_cc=props.generational_cc,
+          heap_poisoning=props.heap_poisoning,
+          gcstress=props.gcstress,
+          cdex_level=props.cdex_level or 'none',
+          manifest_branch=manifest_branch or 'master-art'
+        )
+  else:
+    buildername = api.buildbucket.builder_name
+    for builder_type, builder_config in _CONFIG_MAP.items():
+      if buildername in builder_config:
+        builder_dict = builder_config[buildername]
+        # Use the cached builder directory to enable incremental builds.
+        with api.context(cwd=api.path['cache'].join('art')):
+          _CONFIG_DISPATCH_MAP[builder_type](api, **builder_dict)
+        break
+
+    else: # pragma: no cover
+      error = "Builder not found in recipe's local config!"
+      raise KeyError(error)
 
 def checkout(api, manifest_branch):
   # (https://crbug.com/1153114): do not attempt to update repo when
@@ -622,22 +669,6 @@ _CONFIG_DISPATCH_MAP = {
   'target': setup_target,
 }
 
-def RunSteps(api):
-  builder_found = False
-  buildername = api.buildbucket.builder_name
-  for builder_type, builder_config in _CONFIG_MAP.items():
-    if buildername in builder_config:
-      builder_found = True
-      builder_dict = builder_config[buildername]
-      # Use the cached builder directory to enable incremental builds.
-      with api.context(cwd=api.path['cache'].join('art')):
-        _CONFIG_DISPATCH_MAP[builder_type](api, **builder_dict)
-      break
-
-  if not builder_found: # pragma: no cover
-    error = "Builder not found in recipe's local config!"
-    raise KeyError(error)
-
 def GenTests(api):
 
   def build(builder):
@@ -660,10 +691,35 @@ def GenTests(api):
 
   yield api.test(
     'target_angler_try',
-    sum([api.buildbucket.try_build(
+    api.buildbucket.try_build(
       project='art',
       builder='angler-armv7-ndebug',
-    )], api.empty_test_data())
+    )
+  )
+
+  yield api.test(
+    'host_with_props',
+    api.buildbucket.ci_build(
+      project='art',
+      builder='host-x86-ndebug',
+    ),
+    api.properties(
+      use_props=True,
+      bitness=32,
+    ),
+  )
+
+  yield api.test(
+    'target_angler_with_props',
+    api.buildbucket.try_build(
+      project='art',
+      builder='angler-armv7-ndebug',
+    ),
+    api.properties(
+      use_props=True,
+      device='angler-armv7',
+      bitness=32,
+    ),
   )
 
   yield api.test(
