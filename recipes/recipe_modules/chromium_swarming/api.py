@@ -127,7 +127,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       return 0
     return None  # pragma: no cover
 
-  def __init__(self, **kwargs):
+  def __init__(self, properties, **kwargs):
     super().__init__(**kwargs)
     # All tests default to a x86-64 bot running with no GPU. This simplifies
     # management so that new tests are not executed on exotic bots by accidents
@@ -148,7 +148,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     self._default_tags = set()
     self._default_user = None
     self._pending_tasks = set()
-    self._verbose = False
+    self._verbose = properties.verbose
 
     # Record all durations of shards for aggregation.
     self._shards_durations = []

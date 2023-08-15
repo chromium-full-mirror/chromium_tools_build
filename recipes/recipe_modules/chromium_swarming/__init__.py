@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from PB.recipe_modules.build.chromium_swarming import properties as properties_pb
+
 DEPS = [
     'builder_group',
     'chromium',
@@ -25,6 +27,8 @@ DEPS = [
     'recipe_engine/swarming',
     'swarming_client',
 ]
+
+PROPERTIES = properties_pb.InputProperties
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True
