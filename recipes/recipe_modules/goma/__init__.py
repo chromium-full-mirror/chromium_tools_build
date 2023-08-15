@@ -3,10 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
-    'builder_group',
     'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'puppet_service_account',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',
@@ -19,8 +16,6 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/runtime',
     'recipe_engine/step',
-    'recipe_engine/swarming',
-    'recipe_engine/time',
 ]
 
 from recipe_engine.recipe_api import Property
@@ -46,9 +41,6 @@ PROPERTIES = {
       server_host=Single(str),
       # Extra parameters to append to RPC path in `server_host`.
       rpc_extra_params=Single(str),
-      # Whether to use ambient luci auth rather than puppet-provided
-      # credentials.
-      use_luci_auth=Single(bool),
     ),
     default={},
   ),

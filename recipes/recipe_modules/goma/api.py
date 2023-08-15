@@ -378,11 +378,6 @@ class GomaApi(recipe_api.RecipeApi):
       if 'GOMA_CACHE_DIR' not in env:
         self._goma_ctl_env['GOMA_CACHE_DIR'] = self.default_cache_path
 
-      # TODO(tikuta): Remove this after debug for subprocess killing is
-      # finished. b/80404226
-      if self._client_type == 'latest':
-        self._goma_ctl_env['GOMA_DONT_KILL_SUBPROCESS'] = False
-
       goma_ctl_start_env = self._goma_ctl_env.copy()
 
       goma_ctl_start_env.update(env)
