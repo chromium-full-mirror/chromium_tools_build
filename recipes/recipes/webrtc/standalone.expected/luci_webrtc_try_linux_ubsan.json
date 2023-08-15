@@ -20,7 +20,10 @@
       "@@@STEP_LOG_LINE@config@  \"solutions\": [@@@",
       "@@@STEP_LOG_LINE@config@    {@@@",
       "@@@STEP_LOG_LINE@config@      \"custom_deps\": {},@@@",
-      "@@@STEP_LOG_LINE@config@      \"custom_vars\": {},@@@",
+      "@@@STEP_LOG_LINE@config@      \"custom_vars\": {@@@",
+      "@@@STEP_LOG_LINE@config@        \"download_remoteexec_cfg\": \"True\",@@@",
+      "@@@STEP_LOG_LINE@config@        \"rbe_instance\": \"projects/test-rbe-project/instances/default_instance\"@@@",
+      "@@@STEP_LOG_LINE@config@      },@@@",
       "@@@STEP_LOG_LINE@config@      \"deps_file\": \"DEPS\",@@@",
       "@@@STEP_LOG_LINE@config@      \"managed\": true,@@@",
       "@@@STEP_LOG_LINE@config@      \"name\": \"src\",@@@",
@@ -102,7 +105,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'src', 'url': 'https://webrtc.googlesource.com/src'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'download_remoteexec_cfg': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': 'DEPS', 'managed': True, 'name': 'src', 'url': 'https://webrtc.googlesource.com/src'}]",
       "--patch_root",
       "src",
       "--revision_mapping_file",
@@ -622,12 +625,21 @@
   {
     "cmd": [
       "vpython3",
-      "[CACHE]/builder/src/buildtools/reclient_cfgs/fetch_reclient_cfgs.py"
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "download_remoteexec_cfg"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "RBE_instance": "projects/test-rbe-project/instances/default_instance"
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/try/linux_ubsan/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "luci_context": {
@@ -642,9 +654,89 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "preprocess for reclient.install reclient_cfgs",
+    "name": "preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "rbe_instance"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/try/linux_ubsan/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "preprocess for reclient.gclient check if rbe_instance var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/src/buildtools/reclient_cfgs",
+      "--recursive"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "webrtc:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "preprocess for reclient.list reclient_cfgs dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/src/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/src/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_END@listdir@@@"
     ]
   },
   {

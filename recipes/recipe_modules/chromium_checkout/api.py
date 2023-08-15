@@ -106,6 +106,10 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
     timeout = int(self.timeout) if self.timeout else timeout
 
+    if self.m.reclient.instance:
+      self.m.reclient.use_download_remoteexec_cfg_hook(
+          self.m.gclient.c.solutions[0])
+
     gclient_config = self.m.gclient.c
     with self.m.chromium_bootstrap.update_gclient_config(
         gclient_config) as callback:

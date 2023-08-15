@@ -19,6 +19,7 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/step',
+    'reclient',
 ]
 
 PROPERTIES = {
@@ -60,6 +61,28 @@ def GenTests(api):
       'full_ci',
       api.platform('linux', 64),
       api.buildbucket.generic_build(),
+      api.path.exists(
+          api.chromium_checkout.src_dir.join('out/Release/browser_tests')),
+      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
+      api.post_process(StepSuccess, 'gclient config'),
+      api.post_process(StepSuccess, 'bot_update'),
+      api.post_process(DropExpectation),
+  )
+
+  def verify_rbe_instance(check, steps, expected):
+    gclient_config = api.json.loads(steps["gclient config"].logs["config"])
+    check(gclient_config["solutions"][0]["custom_vars"]["rbe_instance"] ==
+          expected)
+    check(gclient_config["solutions"][0]["custom_vars"]
+          ["download_remoteexec_cfg"] == 'True')
+
+  yield api.test(
+      'set_rbe_instance',
+      api.platform('linux', 64),
+      api.buildbucket.generic_build(),
+      api.reclient.properties(instance='someinstance'),
+      api.post_check(verify_rbe_instance,
+                     'projects/someinstance/instances/default_instance'),
       api.path.exists(
           api.chromium_checkout.src_dir.join('out/Release/browser_tests')),
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),

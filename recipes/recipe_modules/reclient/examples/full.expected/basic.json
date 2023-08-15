@@ -24,6 +24,26 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
+      "listdir",
+      "[TMP_BASE]/checkout/buildtools/reclient_cfgs",
+      "--recursive"
+    ],
+    "infra_step": true,
+    "name": "preprocess for reclient.list reclient_cfgs dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@listdir@[TMP_BASE]/checkout/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[TMP_BASE]/checkout/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0777",

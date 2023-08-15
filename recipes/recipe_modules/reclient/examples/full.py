@@ -10,6 +10,7 @@ import PB.go.chromium.org.foundry_x.re_client.api.proxy.log as log_pb
 import PB.go.chromium.org.foundry_x.re_client.api.stats.stats as stats_pb
 
 DEPS = [
+    'depot_tools/gclient',
     'recipe_engine/assertions',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -30,6 +31,19 @@ _BQ_UPLOAD_STEP_NAME = 'postprocess for reclient.upload RBE metrics to BigQuery'
 
 
 def RunSteps(api):
+  if 'enable_deps_hook' in api.properties:
+    src_cfg = api.gclient.make_config(CACHE_DIR=api.path['cache'].join('git'))
+    soln = src_cfg.solutions.add()
+    soln.name = 'src'
+    soln.url = 'https://chromium.googlesource.com/chromium/src.git'
+    soln.custom_vars = {}
+    api.reclient.use_download_remoteexec_cfg_hook(soln)
+    api.assertions.assertEqual(soln.custom_vars["download_remoteexec_cfg"],
+                               'True')
+    api.assertions.assertEqual(
+        soln.custom_vars["rbe_instance"],
+        'projects/test-rbe-project/instances/default_instance')
+
   api.path['checkout'] = api.path['tmp_base'].join('checkout')
 
   # Verify that checkout_dir can be overridden...
@@ -77,6 +91,44 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.reclient.properties(),
+  )
+
+  def no_install_reclient_cfgs_checker(check, steps):
+    check(
+        "preprocess for reclient.install reclient_cfgs (already run by DEPS hook)"
+        in steps)
+    check("preprocess for reclient.install reclient_cfgs" not in steps)
+
+  yield api.test(
+      'install_reclient_cfgs_diabled_by_deps_hook',
+      api.properties(
+          enable_deps_hook=True,
+          gclient_rbe_instance_expected='projects/test-rbe-project/instances/default_instance',
+          gclient_download_remoteexec_cfg_expected='True',
+      ),
+      api.reclient.properties(),
+      api.post_check(no_install_reclient_cfgs_checker),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  def install_reclient_cfgs_checker(check, steps):
+    check(
+        "preprocess for reclient.install reclient_cfgs (already run by DEPS hook)"
+        not in steps)
+    check("preprocess for reclient.install reclient_cfgs" in steps)
+
+  yield api.test(
+      'install_reclient_cfgs_not_diabled_by_deps_hook_if_missing',
+      api.properties(enable_deps_hook=True),
+      api.reclient.properties(),
+      api.step_data(
+          'preprocess for reclient.gclient check if download_remoteexec_cfg var exists',
+          retcode=1),
+      api.step_data(
+          'preprocess for reclient.gclient check if rbe_instance var exists',
+          retcode=1),
+      api.post_check(install_reclient_cfgs_checker),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

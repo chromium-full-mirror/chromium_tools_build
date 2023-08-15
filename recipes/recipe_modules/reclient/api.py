@@ -139,6 +139,7 @@ class ReclientApi(recipe_api.RecipeApi):
     self._scandeps_server = props.scandeps_server
     self._disable_bq_upload = props.disable_bq_upload
     self._reclient_version = None
+    self._download_remoteexec_cfg_hook_vars_used = None
 
     if self._test_data.enabled:
       self._hostname = 'fakevm999-m9'
@@ -340,6 +341,13 @@ class ReclientApi(recipe_api.RecipeApi):
       deps_cache_path = deps_cache_path.join(ninja_step_name)
     with self.m.step.nest('preprocess for reclient'):
       self._install_reclient_cfgs()
+      self.m.file.listdir(
+          'list reclient_cfgs dir',
+          self.m.path['checkout'].join('buildtools', 'reclient_cfgs'),
+          recursive=True,
+          test_data=[
+              'reproxy.cfg', 'chromium-browser-clang/rewrapper_windows.cfg'
+          ])
       self._make_reclient_cache_dir(deps_cache_path)
       self._list_reclient_cache_dir(deps_cache_path)
 
@@ -394,8 +402,30 @@ class ReclientApi(recipe_api.RecipeApi):
           self.m.step.empty(
               'verification', status=status, step_text=self._mismatch)
 
+  def _gclient_var_exists(self, var):
+    with self.m.context(cwd=self.m.path['checkout']):
+      return self.m.gclient(
+          'check if %s var exists' % var, ['getdep', '--var', var],
+          ok_ret='any').retcode == 0
+
+  def use_download_remoteexec_cfg_hook(self, gclient_solution):
+    gclient_solution.custom_vars['rbe_instance'] = self.m.reclient.instance
+    gclient_solution.custom_vars['download_remoteexec_cfg'] = 'True'
+    self._download_remoteexec_cfg_hook_vars_used = ('download_remoteexec_cfg',
+                                                    'rbe_instance')
+
+  # TODO: b/292501270 - Remove this once all users use use_download_remoteexec_cfg_hook
   def _install_reclient_cfgs(self):
     """Install reclient cfgs."""
+    if self._download_remoteexec_cfg_hook_vars_used is not None:
+      all_vars_exist = True
+      # Check each variable without short circuiting so that it is clear in the
+      # logs why the install step was run or skipped
+      for var in self._download_remoteexec_cfg_hook_vars_used:
+        all_vars_exist = self._gclient_var_exists(var) and all_vars_exist
+      if all_vars_exist:
+        self.m.step.empty('install reclient_cfgs (already run by DEPS hook)')
+        return
     env = {
         'RBE_instance': self.instance,
     }
