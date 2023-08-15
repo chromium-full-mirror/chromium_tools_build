@@ -131,6 +131,8 @@ message ArchiveData {
   //     in {major}.{minor}.{build}.{patch} format.
   // {%builder_name%} -> name of the builder, fetched from buildbucket
   // {%build_number%} -> number of the current build, fetched from buildbucket
+  // {%milestone_position%} -> distance the milestone is from the current canary
+  //     milestone, ex: "canary", "canary-1"
   // Custom string substitutions are also supported through the 'custom_vars'
   // parameter in generic_archive().
   string gcs_path = 4;

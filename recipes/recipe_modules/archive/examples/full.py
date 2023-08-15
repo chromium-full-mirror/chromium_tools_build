@@ -40,6 +40,12 @@ def RunSteps(api):
         api.properties.get('channel'), api.archive.get_channel_name())
     return
 
+  if 'test_get_milestone_position' in api.properties:
+    api.assertions.assertEqual(
+        api.properties.get('milestone_position'),
+        api.archive._get_milestone_position())
+    return
+
   if 'build_archive_url' in api.properties:
     api.archive.zip_and_upload_build(
         step_name='zip build',
@@ -979,4 +985,31 @@ def GenTests(api):
       'test_get_channel_name',
       api.properties(test_get_channel_name=True, channel='canary'),
       api.step_data('get version', api.file.read_text(TEST_CHROME_VERSION)),
+      api.post_process(post_process.DropExpectation))
+
+  input_properties = properties.InputProperties(
+      archive_datas=[
+          {
+              'files': ['path/to/some/file.txt'],
+              'gcs_bucket': 'any-bucket',
+              'gcs_path': '{%milestone_position%}/',
+              'archive_type': properties.ArchiveData.ARCHIVE_TYPE_FILES,
+          },
+      ],)
+
+  yield api.test(
+      'test_get_milestone_position_basic',
+      api.properties(
+          gcs_archive=True,
+          update_properties={},
+          **{'$build/archive': input_properties}),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'test_get_previous_milestone_position',
+      api.properties(
+          test_get_milestone_position=True, milestone_position='canary-1'),
+      api.step_data(
+          'get version',
+          api.file.read_text('MAJOR=90\nMINOR=0\nBUILD=4711\nPATCH=0')),
       api.post_process(post_process.DropExpectation))

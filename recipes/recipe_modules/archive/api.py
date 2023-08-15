@@ -558,13 +558,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     return output_path
 
-  def get_channel_name(self):
-    """Get the current branch's channel name.
-
-    Returns:
-      The string of channel's name: it can be 'canary', 'dev', 'beta', 'stable',
-       or 'legacy88'. Or no return with an empty step.
-    """
+  def _get_canary_milestone(self):
     base_name = '/'.join(['chrome', 'VERSION'])
 
     def step_test_data():
@@ -582,6 +576,24 @@ class ArchiveApi(recipe_api.RecipeApi):
         step_test_data=step_test_data,
     )
     canary_milestone = int(contents.split('\n')[0].split('=')[1])
+
+    return canary_milestone
+
+  def _get_milestone_position(self):
+    canary_milestone = self._get_canary_milestone()
+    milestone = int(self.m.chromium.get_version()['MAJOR'])
+    position = canary_milestone - milestone
+
+    return "canary" if position == 0 else "canary-%s" % position
+
+  def get_channel_name(self):
+    """Get the current branch's channel name.
+
+    Returns:
+      The string of channel's name: it can be 'canary', 'beta', 'stable'
+      'legacy<milestone>' or no return with an empty step.
+    """
+    canary_milestone = self._get_canary_milestone()
     milestone = int(self.m.chromium.get_version()['MAJOR'])
 
     # Compare the milestone of latest Chromium with the current build to
@@ -613,6 +625,12 @@ class ArchiveApi(recipe_api.RecipeApi):
                 'the {%position%} placeholder'))
       _, position = self.m.commit_position.parse(commit_position)
       input_str = input_str.replace(position_placeholder, str(position))
+
+    milestone_position_placeholder = '{%milestone_position%}'
+    if milestone_position_placeholder in input_str:
+      milestone_position = self._get_milestone_position()
+      input_str = input_str.replace(milestone_position_placeholder,
+                                    milestone_position)
 
     channel_placeholder = '{%channel%}'
     if channel_placeholder in input_str:
