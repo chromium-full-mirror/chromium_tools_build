@@ -94,30 +94,6 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     if is_swarming_phase:
       if not empty_props:
         output_json_obj = {
-            'bot_update_manifest': {
-                'src': {
-                    'repository':
-                        'https://chromium.googlesource.com/chromium/src.git',
-                    'revision':
-                        '568396b93b850dc7c3dcf85fbdd67e396c82611b'
-                },
-                'src/chrome/test/data/perf/canvas_bench': {
-                    'repository':
-                        'https://chromium.googlesource.com/chromium/canvas_bench.git',
-                    'revision':
-                        'a7b40ea5ae0239517d78845a5fc9b12976bfc732'
-                },
-                'src/chrome/test/data/perf/frame_rate/content': {
-                    'repository':
-                        'https://chromium.googlesource.com/chromium/frame_rate/content.git',
-                    'revision':
-                        'c10272c88463efeef6bb19c9ec07c42bc8fe22b9'
-                },
-                'src/v8': {
-                    'repository': 'https://chromium.googlesource.com/v8/v8.git',
-                    'revision': '79aec72034961c94e53dfd6d27bc818b502fa41f'
-                },
-            },
             'swarming_trigger_properties':
                 self.get_fake_swarming_trigger_properties(tests),
             'got_angle_revision':
