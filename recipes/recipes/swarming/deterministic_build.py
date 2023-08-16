@@ -193,13 +193,15 @@ def RunSteps(api):
   targets = recipe_config['targets']
 
   api.chromium.ensure_goma()
+  use_reclient = bool(api.reclient.instance)
+  if use_reclient:
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
   # Whether do first build in local or use goma.
   compare_local = recipe_config.get('compare_local', False)
 
-  use_reclient = bool(api.reclient.instance)
   use_goma = not use_reclient
   remote_phase = 'goma' if use_goma else 'reclient'
 
@@ -275,6 +277,14 @@ def GenTests(api):
         api.platform(DETERMINISTIC_BUILDERS[buildername]['platform'], 64),
         api.properties(
             buildername=buildername, buildnumber=571, configuration='Release'),
+    )
+    yield api.test(
+        test_name + '_reclient',
+        api.chromium.ci_build(builder_group=builder_group, builder=buildername),
+        api.platform(DETERMINISTIC_BUILDERS[buildername]['platform'], 64),
+        api.properties(
+            buildername=buildername, buildnumber=571, configuration='Release'),
+        api.reclient.properties(),
     )
     yield api.test(
         test_name + '_fail',
