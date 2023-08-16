@@ -87,6 +87,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                   is_swarming_phase=True,
                                   with_patch=True,
                                   tests=None,
+                                  include_override_deps=False,
                                   affected_files=None,
                                   skipping_coverage=None):
     tests = tests or ['browser_tests']
@@ -116,6 +117,11 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                 "ref": "refs/heads/main"
             }
         }
+        if include_override_deps:
+          output_json_obj['override_deps'] = {
+              'src/v8': '79aec72034961c94e53dfd6d27bc818b502fa41f',
+          }
+
         if with_patch:
           if not affected_files:
             affected_files = [
@@ -142,6 +148,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                 is_swarming_phase=True,
                                 with_patch=True,
                                 tests=None,
+                                include_override_deps=False,
                                 affected_files=None,
                                 skipping_coverage=None):
     output_json_obj = self.get_compilator_output_props(
@@ -150,6 +157,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         is_swarming_phase=is_swarming_phase,
         with_patch=with_patch,
         tests=tests,
+        include_override_deps=include_override_deps,
         affected_files=affected_files,
         skipping_coverage=skipping_coverage)
 

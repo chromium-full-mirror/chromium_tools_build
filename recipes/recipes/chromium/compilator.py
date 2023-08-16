@@ -121,6 +121,18 @@ def compilator_steps(api, properties):
           rts_setting=rts_setting)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
+      bot_update_step = task.bot_update_step
+
+      # In case a without patch build is needed later, output the needed
+      # deps override
+      patch_root = bot_update_step.json.output['patch_root']
+      if patch_root != bot_update_step.json.output['root']:
+        deps_overrides = {}
+        deps_revision_dict = bot_update_step.json.output['manifest'][patch_root]
+        deps_overrides[patch_root] = deps_revision_dict['revision']
+        output_deps_override = api.step.empty('output override_deps')
+        output_deps_override.presentation.properties['override_deps'] = (
+            deps_overrides)
 
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
@@ -378,6 +390,58 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
       api.post_process(post_process.MustRun,
                        'check_static_initializers (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'override deps output',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+      ),
+      api.platform.name('linux'),
+      api.path.exists(api.path['checkout'].join('out/Release/browser_tests')),
+      ctbc_properties(),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'))),
+      api.step_data(
+          'bot_update',
+          api.json.output({
+              'did_run': True,
+              'fixed_revisions': {
+                  'src': '3cf43af95eeb84f4f09861e74c6f3709e9a8e12a',
+                  'src/v8': 'deadbeef',
+              },
+              'manifest': {
+                  'src': {
+                      'repository':
+                          ('https://chromium.googlesource.com/chromium/src.git'
+                          ),
+                      'revision': '3cf43af95eeb84f4f09861e74c6f3709e9a8e12a',
+                  },
+                  'src/v8': {
+                      'repository':
+                          'https://chromium.googlesource.com/v8/v8.git',
+                      'revision':
+                          'deadbeef',
+                  },
+              },
+              'patch_root': 'src/v8',
+              'properties': {
+                  'got_revision': '3cf43af95eeb84f4f09861e74c6f3709e9a8e12a',
+                  'got_revision_cp': 'refs/heads/main@{#1183721}',
+                  'got_v8_revision': "deadbeef",
+                  'got_v8_revision_cp': 'refs/heads/main@{#89522}',
+              },
+              'root': 'src',
+          }),
+      ),
+      override_test_spec(),
+      api.post_process(post_process.PropertiesContain, 'override_deps'),
       api.post_process(post_process.DropExpectation),
   )
 

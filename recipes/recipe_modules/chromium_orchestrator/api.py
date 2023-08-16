@@ -41,6 +41,9 @@ class CompilatorOutputProps:
   Attributes:
     swarming_props: Dict containing swarming information to trigger tests
     got_revisions: Dict containing revisions checked out for src and other deps
+    override_deps: Dict containing deps to override for without patch runs, if
+      any. This is only populated for CLs where the patch root is different
+      from the root, like v8 CLs.
     affected_files: List containing paths (str) of files affected by the patch
     src_side_deps_digest: CAS digest hash (str) for downloading src-side deps
     src_side_test_spec_dir: Path (str) to downloaded src-side directory that
@@ -50,6 +53,7 @@ class CompilatorOutputProps:
   """
 
   swarming_props = attrib(mapping[str, ...])
+  override_deps = attrib(mapping[str, str], default=None)
   got_revisions = attrib(mapping[str, str])
   affected_files = attrib(sequence[str], default=None)
   src_side_deps_digest = attrib(str, default=None)
@@ -373,6 +377,11 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # Trigger another compilator build with the targets needed
     compilator_properties['swarming_targets'] = list(
         set(t.target_name for t in failing_test_suites))
+
+    if comp_output.override_deps != None:
+      compilator_properties['deps_revision_overrides'] = (
+          dict(comp_output.override_deps))
+
     wo_build = self._trigger_compilator('trigger compilator (without patch)',
                                         compilator_properties, gitiles_commit)
 
@@ -630,6 +639,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
       comp_output = CompilatorOutputProps(
           swarming_props=output_props[swarming_prop_key],
+          override_deps=output_props.get('override_deps'),
           got_revisions=got_revisions,
           affected_files=affected_files,
           src_side_deps_digest=src_side_deps_digest,

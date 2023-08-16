@@ -234,6 +234,48 @@ def GenTests(api):
   )
 
   yield api.test(
+      'without_patch_compilator_non_src_CL',
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.chromium.try_build(
+          builder='fake-orchestrator',
+          git_repo='https://chromium.googlesource.com/v8/v8',
+      ),
+      api.chromium_orchestrator.override_compilator_steps(
+          include_override_deps=True),
+      api.chromium_orchestrator.override_compilator_steps(
+          with_patch=True, is_swarming_phase=False, include_override_deps=True),
+      api.chromium_orchestrator.override_compilator_steps(with_patch=False),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'retry shards with patch', failures=['Test.One']),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'without patch', failures=['Test.One']),
+      api.post_process(post_process.MustRun,
+                       'trigger compilator (without patch)'),
+      api.post_process(
+          post_process.LogContains,
+          'trigger compilator (without patch)',
+          'request',
+          ['deps_revision_overrides', 'src/v8'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'coverage_not_enabled',
       get_try_build(),
       ctbc_properties(),
