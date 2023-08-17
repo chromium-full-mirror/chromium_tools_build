@@ -22,6 +22,7 @@ DEPS = [
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'depot_tools/gclient',
     'depot_tools/git',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -308,6 +309,11 @@ def RunSteps(api):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
+
+  # TODO: b/296368945 - reclient version 0.112 fails on the builders.
+  cv = api.gclient.c.solutions[0].custom_vars
+  cv['reclient_version'] = 're_client_version:0.111.0.1ccaa23-gomaip'
+
   api.chromium_checkout.ensure_checkout()
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
