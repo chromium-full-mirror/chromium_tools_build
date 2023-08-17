@@ -151,42 +151,6 @@ class DepUpdate:
     self.commit_msg_lines = commit_msg_lines
 
 
-def abandon_active_cls(api, autoroller_config):
-  """Ensure no other active roll exists. If it does, abandon the old one."""
-  target_config = autoroller_config['target_config']
-
-  commits = api.gerrit.get_changes(
-      target_config['gerrit_base_url'],
-      query_params=[
-          ('project', target_config['project_name']),
-          # TODO(sergiyb): Use api.service_account.default().get_email() when
-          # https://crbug.com/846923 is resolved.
-          ('owner', target_config['account']),
-          ('status', 'open'),
-      ],
-      limit=20,
-      step_test_data=api.gerrit.test_api.get_empty_changes_response_data,
-  )
-
-  # The auto-roller might have a CL open for a particular roll config.
-  trusted_subject = TrustedRollHandler(api, autoroller_config).get_subject()
-  reviewed_subject = UntrustedRollHandler(api, autoroller_config).get_subject()
-  commits = [
-      c for c in commits if c['subject'] in {
-          trusted_subject,
-          reviewed_subject,
-          CHROMIUM_PIN_CL_SUBJECT,
-          *SriptedRollsFactory(autoroller_config).subjects(),
-      }
-  ]
-  for commit in commits:
-    api.gerrit.abandon_change(
-        target_config['gerrit_base_url'], commit['_number'], 'stale roll')
-
-    step_result = api.step('Previous roll failed', cmd=None)
-    step_result.presentation.step_text = 'Notify sheriffs!'
-    step_result.presentation.status = 'FAILURE'
-
 
 def setup_gclient(api, autoroller_config):
   target_config = autoroller_config['target_config']
@@ -565,6 +529,7 @@ class RollHandler(ABC):
       with self.api.step.nest(f'Update {self.name()} deps') as step:
         with self.roll_contex():
           step.presentation.step_text = self.summary()
+          self.abandon_active_cls()
           discard_local_changes(self.api)
           changes = self.apply_changes()
           cl_link = upload_cl(
@@ -584,6 +549,35 @@ class RollHandler(ABC):
     with self.api.context(
         cwd=self.api.path['checkout']), self.api.depot_tools.on_path():
       yield
+
+  def abandon_active_cls(self):
+    """Ensure no other active roll exists. If it does, abandon the old one."""
+    target_config = self.config['target_config']
+
+    commits = self.api.gerrit.get_changes(
+        target_config['gerrit_base_url'],
+        query_params=[
+            ('project', target_config['project_name']),
+            # TODO(sergiyb): Use api.service_account.default().get_email() when
+            # https://crbug.com/846923 is resolved.
+            ('owner', target_config['account']),
+            ('status', 'open'),
+            ('subject', f'"{self.get_subject()}"'),
+        ],
+        limit=20,
+        step_test_data=self.api.gerrit.test_api.get_empty_changes_response_data,
+    )
+
+    # Querying gerrit with a subject is not exact, so filter the results for precise match.
+    commits = [c for c in commits if c['subject'] == self.get_subject()]
+
+    for commit in commits:
+      self.api.gerrit.abandon_change(target_config['gerrit_base_url'],
+                                     commit['_number'], 'stale roll')
+
+      step_result = self.api.step('Previous roll failed', cmd=None)
+      step_result.presentation.step_text = 'Notify sheriffs!'
+      step_result.presentation.status = 'FAILURE'
 
   @abstractmethod
   def name(self):
@@ -750,12 +744,6 @@ class SriptedRollsFactory:
         # Add more scripts here
     }
 
-  def subjects(self):
-    """Returns a list of possible subjects for the given roller. The list is
-    constructed from the titles of the supported scripts.
-    """
-    return (f'{self.config["subject"]} ({key})' for key in self.supported())
-
   def get_rollers(self, api):
     script_keys = self.config.get('scripted_rolls', [])
     return [
@@ -783,7 +771,7 @@ class ScriptedRollHandler(RollHandler):
     ])
 
   def get_subject(self):
-    return f'Roll ({self.key})'
+    return f'Roll {self.key}'
 
   def upload_flags(self):
     return ['--r-owners']
@@ -828,7 +816,6 @@ def RunSteps(api, autoroller_config):
   summary = []
 
   with api.step.nest('Setup'):
-    abandon_active_cls(api, autoroller_config)
     setup_gclient(api, autoroller_config)
     setup_target_repository(api)
 
@@ -1044,29 +1031,39 @@ remote:"""
   ])
 
   # Stale rolls: If active roll CLs exists in gerrit, we abandon those first
-  yield api.test(*(template('no-stale-roll') + [
-      api.post_process(DoesNotRun, 'Setup.gerrit abandon'),
-      api.post_process(DropExpectation),
-  ]), status='SUCCESS')
-  yield api.test(*(template('stale-roll') + [
-      api.override_step_data(
-          'Setup.gerrit changes',
-          api.json.output([
-              {
-                  '_number': '123',
-                  'subject': 'Update V8 deps (trusted)'
-              },
-              {
-                  '_number': '123',
-                  'subject': 'Update V8 deps (reviewed)'
-              },
-          ])),
-      api.post_process(MustRun, 'Setup.gerrit abandon'),
-      api.post_process(MustRun, 'Setup.Previous roll failed'),
-      api.post_process(MustRun, 'Setup.gerrit abandon (2)'),
-      api.post_process(MustRun, 'Setup.Previous roll failed (2)'),
-      api.post_process(DropExpectation),
-  ]), status='SUCCESS')
+  yield api.test(
+      *(template('no-stale-roll') + [
+          api.post_process(DoesNotRunRE, 'Update .* deps\.gerrit abandon'),
+          api.post_process(DropExpectation),
+      ]),
+      status='SUCCESS')
+
+  yield api.test(
+      *(template('stale-roll') + [
+          api.override_step_data(
+              'Update trusted deps.gerrit changes',
+              api.json.output([
+                  {
+                      '_number': '123',
+                      'subject': 'Update V8 deps (trusted)'
+                  },
+              ])),
+          api.override_step_data(
+              'Update reviewed deps.gerrit changes',
+              api.json.output([
+                  {
+                      '_number': '123',
+                      'subject': 'Update V8 deps (reviewed)'
+                  },
+              ])),
+          api.post_process(MustRun, 'Update trusted deps.gerrit abandon'),
+          api.post_process(MustRun, 'Update trusted deps.Previous roll failed'),
+          api.post_process(MustRun, 'Update reviewed deps.gerrit abandon'),
+          api.post_process(MustRun,
+                           'Update reviewed deps.Previous roll failed'),
+          api.post_process(DropExpectation),
+      ]),
+      status='SUCCESS')
 
   # No version difference: There is no new dependency version, and we do not try
   # to update any dep (via `gclient setdep`).
