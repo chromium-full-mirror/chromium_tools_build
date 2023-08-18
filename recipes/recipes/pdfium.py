@@ -583,10 +583,11 @@ class _Swarming:
         if request.task
     }
     if not requests_by_id:
-      return False
+      return False, None
 
     # Attempt to collect the first task that finishes.
     forward_progress = False
+    expired_test_requests = []
     task_results = self.api.swarming.collect(
         'collect tasks', [request.task for request in requests_by_id.values()],
         eager=True)
@@ -599,11 +600,16 @@ class _Swarming:
         continue
       forward_progress = True
 
-      self._report_task_result(result)
+      if result.state == TaskState.EXPIRED:
+        # Let the caller handle any expired tasks.
+        expired_test_requests.append(request.test_request)
+      else:
+        self._report_task_result(result)
+
       del self.requests[request.name]
 
     assert forward_progress
-    return True
+    return True, expired_test_requests
 
   @composite_step
   def _report_task_result(self, result):
@@ -824,14 +830,20 @@ class _TestRunner:
 
       # Defer individual failures until the end of this block.
       with self.api.step.defer_results():
-        with self.api.context(cwd=self._local_root_dir, env=self.env):
-          for request in self.local_requests:
-            self.api.step(request.step_name, request.command)
+        collecting = bool(self.swarming)
+        while self.local_requests or collecting:
+          if self.local_requests:
+            with self.api.context(cwd=self._local_root_dir, env=self.env):
+              for request in self.local_requests:
+                self.api.step(request.step_name, request.command)
+            self.local_requests.clear()
 
-        if self.swarming:
-          # Repeatedly collect until all swarming tasks complete.
-          while self.swarming.collect_tasks():
-            pass
+          if collecting:
+            collecting, expired_requests = self.swarming.collect_tasks()
+            if expired_requests:
+              # Fall back to executing expired tasks locally.
+              # TODO(crbug.com/pdfium/1933): Execute concurrently with swarming.
+              self.local_requests.extend(expired_requests)
     finally:
       self.local_requests.clear()
 
@@ -1411,7 +1423,6 @@ def GenTests(api):
                   },
               },
           ])),
-      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(

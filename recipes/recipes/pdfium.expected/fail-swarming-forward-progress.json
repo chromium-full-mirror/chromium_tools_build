@@ -2304,13 +2304,13 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 984, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 996, in RunSteps",
       "    _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 385, in _run_tests",
       "    test_runner.run_tests()",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 833, in run_tests",
-      "    while self.swarming.collect_tasks():",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 605, in collect_tasks",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 842, in run_tests",
+      "    collecting, expired_requests = self.swarming.collect_tasks()",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 611, in collect_tasks",
       "    assert forward_progress",
       "AssertionError()"
     ]

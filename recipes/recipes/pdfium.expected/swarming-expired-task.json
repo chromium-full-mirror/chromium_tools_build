@@ -2397,6 +2397,54 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_corpus_tests/",
+      "-var",
+      "builder:linux",
+      "-var",
+      "test_suite:corpus_oneshot",
+      "-tag",
+      "step_name:corpus tests (oneshot rendering enabled)",
+      "--",
+      "vpython3",
+      "-u",
+      "testing/tools/run_corpus_tests.py",
+      "--build-dir",
+      "out/debug_v8",
+      "--gold_output_dir",
+      "out/debug_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "d69d97171c17fdb12a52f78847e2ee2f0594eff1",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gerrit-issue",
+      "123456",
+      "--gerrit-patchset",
+      "7",
+      "--gold_key",
+      "debug true is_standalone true javascript_runtime enabled os linux skia false suite oneshot v8 true xfa false xfa_runtime disabled",
+      "--render-oneshot"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "corpus tests (oneshot rendering enabled)"
+  },
+  {
+    "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin/swarming",
       "collect",
       "-server",
@@ -2536,9 +2584,6 @@
     ]
   },
   {
-    "failure": {
-      "humanReason": "1 out of 14 aggregated steps failed: Timed out waiting for a bot to run on"
-    },
     "name": "$result"
   }
 ]
