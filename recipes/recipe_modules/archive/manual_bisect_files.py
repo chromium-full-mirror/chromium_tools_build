@@ -49,6 +49,7 @@ CHROME_REQUIRED_FILES = {
         'resources/*',
         'resources.pak',
         'v8_context_snapshot.bin',
+        'vk_swiftshader_icd.json',
         'xdg-mime',
         'xdg-settings',
     ],
