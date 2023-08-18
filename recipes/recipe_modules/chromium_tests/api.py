@@ -33,8 +33,6 @@ AUTOROLLER_ACCOUNT_IDS = (1302611, 1274527)
 
 ALL_TEST_BINARIES_ISOLATE_NAME = 'all_test_binaries'
 
-DISABLE_RTS_FOOTER = 'Disable-Rts'
-
 REPOSITORY_MAPPING = {
     'chromium': 'chromium',
     'chromium/src': 'chromium',
@@ -2319,7 +2317,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
          builder_config.regression_test_selection == try_spec.QUICK_RUN_ONLY) or
         builder_config.regression_test_selection == try_spec.ALWAYS)
 
-    if (use_rts or inverted_rts) and not self.is_rts_footer_disabled():
+    if (use_rts or
+        inverted_rts) and not self.m.chromium_rts.is_rts_footer_disabled():
       if ('chromium_rts.experimental_model' in
           self.m.buildbucket.build.input.experiments):
         rts_setting = 'rts-ml-chromium'
@@ -2338,14 +2337,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           'template=Quick%20Run%20Issue')
 
     return rts_setting
-
-  def is_rts_footer_disabled(self):
-    disabled = False
-    if self.m.tryserver.is_tryserver:
-      footer_vals = self.m.tryserver.get_footer(DISABLE_RTS_FOOTER)
-      if footer_vals:
-        disabled = footer_vals[-1].lower() == 'true'
-    return disabled
 
   def build_affected_targets(self,
                              builder_id,

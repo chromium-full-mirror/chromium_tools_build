@@ -129,7 +129,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         'chromium_rts.inverted_rts_bail_early' in
         self.m.buildbucket.build.input.experiments)
 
-    if self.m.chromium_tests.is_rts_footer_disabled():
+    if self.m.chromium_rts.is_rts_footer_disabled():
       log_step = self.m.step.empty('log rts disabled by footer')
       log_step.presentation.properties['rts_footer_disabled'] = True
 
@@ -149,7 +149,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     if inverted_rts_bail_early_experiment or (
         inverted_rts_experiment and self.m.cq.active and
         self.m.cq.run_mode == self.m.cq.FULL_RUN
-    ) and not self.m.chromium_tests.is_rts_footer_disabled():
+    ) and not self.m.chromium_rts.is_rts_footer_disabled():
       reuseable_quick_run_build = self.find_compatible_quick_run_build()
 
       if reuseable_quick_run_build:
