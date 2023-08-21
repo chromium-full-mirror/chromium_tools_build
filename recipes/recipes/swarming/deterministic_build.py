@@ -134,7 +134,7 @@ def MoveBuildDirectory(api, src_dir, dst_dir):
   api.step('Move %s to %s' % (src_dir, dst_dir), cmd)
 
 
-def ConfigureChromiumBuilder(api, recipe_config):
+def ConfigureChromiumBuilder(api, recipe_config, use_reclient):
   api.chromium.set_config(recipe_config['chromium_config'],
                           **recipe_config.get('chromium_config_kwargs',
                                               {'BUILD_CONFIG': 'Release'}))
@@ -148,6 +148,9 @@ def ConfigureChromiumBuilder(api, recipe_config):
     api.chromium_android.configure_from_properties(
         recipe_config.get('android_config'),
         **recipe_config.get('chromium_config_kwargs', {}))
+
+  if use_reclient:
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
   # Checkout chromium.
   api.bot_update.ensure_checkout()
@@ -164,8 +167,9 @@ def RunSteps(api):
   solution_path = api.path['cache'].join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
+  use_reclient = bool(api.reclient.instance)
   with api.context(cwd=solution_path):
-    ConfigureChromiumBuilder(api, recipe_config)
+    ConfigureChromiumBuilder(api, recipe_config, use_reclient)
 
   # The default setup by this recipe is to do a clobber build in one directory,
   # move it elsewhere, then do another clobber build in the original directory,
@@ -199,7 +203,6 @@ def RunSteps(api):
   # Whether do first build in local or use goma.
   compare_local = recipe_config.get('compare_local', False)
 
-  use_reclient = bool(api.reclient.instance)
   use_goma = not use_reclient
   remote_phase = 'goma' if use_goma else 'reclient'
 
@@ -275,6 +278,14 @@ def GenTests(api):
         api.platform(DETERMINISTIC_BUILDERS[buildername]['platform'], 64),
         api.properties(
             buildername=buildername, buildnumber=571, configuration='Release'),
+    )
+    yield api.test(
+        test_name + '_reclient',
+        api.chromium.ci_build(builder_group=builder_group, builder=buildername),
+        api.platform(DETERMINISTIC_BUILDERS[buildername]['platform'], 64),
+        api.properties(
+            buildername=buildername, buildnumber=571, configuration='Release'),
+        api.reclient.properties(),
     )
     yield api.test(
         test_name + '_fail',
