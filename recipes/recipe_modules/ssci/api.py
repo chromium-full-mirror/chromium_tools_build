@@ -127,6 +127,8 @@ class SsciAPI(recipe_api.RecipeApi):
       chrome_version=None,
   ):
 
+    self.generated_sbom_artifacts = []
+
     # prefer targets supplied in properties.
     targets = self.targets or targets
 

@@ -22,6 +22,14 @@ def RunSteps(api):
       sbom_filename_postfix='Stable',
       targets=["//example:example"])
 
+  api.ssci.run(
+      src_dir=api.path.abspath(api.path['checkout']),
+      build_dir='out/Release',
+      sbom_bucket='my-bucket',
+      sbom_folder='os/version',
+      sbom_filename_postfix='Canary',
+      targets=["//example:example"])
+
 
 def GenTests(api):
   yield api.test(
