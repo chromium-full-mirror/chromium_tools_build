@@ -219,11 +219,19 @@ def _incremental_builds_with_patch(api, target):
       gitlog_result.presentation.step_text = 'No commits to build'
       return
 
-    # Run a build at each revision.
+    # Set up build dirs for Ninja+Reclient/Siso+Reclient/Siso native builds.
     api.chromium_build_perf.recreate_build_dir(phase='reproxy')
+    api.chromium_build_perf.recreate_build_dir(
+        phase='reproxy', build_dir=api.chromium.c.build_dir.join('rbe'))
+    api.chromium_build_perf.recreate_build_dir(
+        phase='builtin', build_dir=api.chromium.c.build_dir.join('siso'))
     api.chromium_build_perf.remove_deps_cache()
+
+    # Run a build at each revision.
     raw_result = None
     for i, rev in enumerate(revs):
+      api.chromium_build_perf.checkout(rev)
+
       if i == 0:
         # The warm up builds at base revision won't be included
         # in perf metrics.
@@ -235,11 +243,29 @@ def _incremental_builds_with_patch(api, target):
         with_remote_cache = False
         step_name_suffix = ''
 
-      api.chromium_build_perf.checkout(rev)
+      # Ninja+Reclient
       raw_result = api.chromium_build_perf.build_with_ninja(
           target,
           with_remote_cache=with_remote_cache,
           step_name_suffix=step_name_suffix)
+      if raw_result.status != common_pb.SUCCESS:
+        return raw_result
+
+      # Siso+Reclient
+      raw_result = api.chromium_build_perf.build_with_siso(
+          target,
+          with_remote_cache=with_remote_cache,
+          out_sub_dir='rbe',
+          step_name_suffix=' with Siso in Reproxy mode' + step_name_suffix)
+      if raw_result.status != common_pb.SUCCESS:
+        return raw_result
+
+      # Siso native build
+      raw_result = api.chromium_build_perf.build_with_siso(
+          target,
+          with_remote_cache=with_remote_cache,
+          out_sub_dir='siso',
+          step_name_suffix=' with Siso in native mode' + step_name_suffix)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     return raw_result
@@ -379,7 +405,15 @@ def GenTests(api):
         'with Siso in native mode' % target,
         'Incremental builds with patch.Build %s with remote cache at base '
         'revision (warmup)' % target,
+        'Incremental builds with patch.Build %s with remote cache with Siso '
+        'in Reproxy mode at base revision (warmup)' % target,
+        'Incremental builds with patch.Build %s with remote cache with Siso '
+        'in native mode at base revision (warmup)' % target,
         'Incremental builds with patch.Build %s without remote cache' % target,
+        'Incremental builds with patch.Build %s without remote cache with Siso '
+        'in Reproxy mode' % target,
+        'Incremental builds with patch.Build %s without remote cache with Siso '
+        'in native mode' % target,
     ]
 
   def _success_builds(target):
