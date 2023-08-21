@@ -610,7 +610,9 @@ class DEPSRollHandler(RollHandler, ABC):
     self.updates = updates
 
   def apply_changes(self):
-    return [update for update in self.updates if self.set_dep(update)]
+    updates = [update for update in self.updates if self.set_dep(update)]
+    self.api.gclient('gitmodules', ['gitmodules'], ok_ret='any')
+    return updates
 
   def set_dep(self, update):
     with self.api.context(cwd=self.api.path['checkout']):
