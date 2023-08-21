@@ -498,12 +498,29 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
+  def did_complete(self, suffix: str) -> bool:
+    """Returns True if the test had a chance to run to completion.
+
+    False implies invalid results (see below).
+    """
+    raise NotImplementedError()  # pragma: no cover
+
+  @abc.abstractmethod
   def has_valid_results(self, suffix: str) -> bool:
     """Returns True if results (failures) are valid.
 
-    This makes it possible to distinguish between the case of no failures
-    and the test failing to even report its results in machine-readable
-    format.
+    If False, this indicates the test failed but also failed to report any
+    results in machine-readable format.
+
+    With did_complete() above and deterministic_failures() below, this
+    makes it possible to distinguish between the following cases:
+    a) Test ran, and exited zero,
+    b) Test ran, exited non-zero, and reported failures.
+    c) Test ran, exited non-zero, but did not report any failures:
+    d) Test was not able to run.
+
+    Both b) and c) are often due to the code-under-test. d) is often due to an
+    infrastructure failure.
     """
     raise NotImplementedError()  # pragma: no cover
 
@@ -945,6 +962,9 @@ class Test(AbstractTest):
 
   def failure_on_exit(self, suffix: str) -> bool:
     return self._failure_on_exit_suffix_map.get(suffix, True)
+
+  def did_complete(self, suffix: str) -> bool:
+    return True
 
   def has_valid_results(self, suffix: str) -> bool:
     if suffix not in self._rdb_results:
@@ -2131,6 +2151,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
   @property
   def supports_inverted_rts(self) -> bool:
     return bool(self.inverted_raw_cmd)
+
+  def did_complete(self, suffix) -> bool:
+    return not self._tasks[suffix].has_incomplete_shards
 
   @abc.abstractmethod
   def _create_task(

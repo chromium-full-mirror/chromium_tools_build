@@ -623,7 +623,8 @@ def GenTests(api):
         # We should emit a link for shard#1
         api.post_check(has_shard_1_link),
         api.post_process(post_process.DropExpectation),
-        api.expect_status('FAILURE'),
+        api.expect_status(
+            'INFRA_FAILURE' if failure_type == 'expired' else 'FAILURE'),
     )
 
   yield api.test(

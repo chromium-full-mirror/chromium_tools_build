@@ -348,7 +348,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     self.set_test_command_lines(builder_id, tests)
     test_runner = self.m.chromium_tests.create_test_runner(
-        tests, enable_infra_failure=True)
+        tests, surface_invalid_results_as_infra_failure=True)
     test_failure_summary = test_runner()
 
     if self.m.code_coverage.using_coverage:

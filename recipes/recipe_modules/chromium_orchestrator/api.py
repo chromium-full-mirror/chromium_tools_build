@@ -357,7 +357,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             comp_output.src_side_test_spec_dir)):
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
 
-      summary_markdown = self.m.chromium_tests._format_unrecoverable_failures(
+      summary_markdown = self.m.chromium_tests.format_unrecoverable_failures(
           failing_test_suites, 'with patch')
       if (local_tests_raw_result and
           local_tests_raw_result.status != common_pb.SUCCESS):
@@ -367,8 +367,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           test.is_rts or test.is_inverted_rts for test in invalid_test_suites):
         summary_markdown += RTS_SUMMARY
 
+      status = self.m.chromium_tests.determine_build_status_from_tests(
+          failing_test_suites, 'with patch')
       return result_pb2.RawResult(
-          summary_markdown=summary_markdown, status=common_pb.FAILURE)
+          summary_markdown=summary_markdown, status=status)
 
     # =====================================================================
     # Now we're going into the without patch phase
@@ -422,9 +424,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     if unrecoverable_test_suites:
       self.m.chromium_tests.handle_invalid_test_suites(
           unrecoverable_test_suites)
-      summary_markdown += self.m.chromium_tests._format_unrecoverable_failures(
+      summary_markdown += self.m.chromium_tests.format_unrecoverable_failures(
           unrecoverable_test_suites, 'with patch')
-      final_status = common_pb.FAILURE
+      final_status = self.m.chromium_tests.determine_build_status_from_tests(
+          unrecoverable_test_suites, 'with patch')
 
     if (local_tests_raw_result and
         local_tests_raw_result.status != common_pb.SUCCESS):

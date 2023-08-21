@@ -404,7 +404,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                          serialize_tests=False,
                          retry_failed_shards=False,
                          retry_invalid_shards=False,
-                         enable_infra_failure=False):
+                         surface_invalid_results_as_infra_failure=False):
     """Creates a test runner to run a set of tests.
 
     Args
@@ -418,8 +418,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         run_tests documentation in test_utils module.
       retry_invalid_shards: If true, retry swarming tests with no valid results,
         See run_tests documentation in test_utils module.
-      enable_infra_failure: If true, an infra failure will be returned when all
-        the failed tests have invalid results.
+      surface_invalid_results_as_infra_failure: If true, an infra failure will
+        be returned when all the failed tests have invalid results.
 
     Returns:
       A function that can be passed to setup_chromium_tests or run directly.
@@ -432,26 +432,26 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests_list = [tests]
 
-      failed_tests = set()
-      infra_failure = enable_infra_failure
+      all_failed_tests = set()
       for tl in tests_list:
-        invalid_ts, failed_ts = self.m.test_utils.run_tests(
+        invalid_tests, failed_tests = self.m.test_utils.run_tests(
             tl,
             suffix,
             retry_failed_shards=retry_failed_shards,
             retry_invalid_shards=retry_invalid_shards)
-        failed_tests = failed_tests.union(failed_ts, invalid_ts)
-        if set(invalid_ts) != set(failed_ts):
-          infra_failure = False
+        all_failed_tests = all_failed_tests.union(failed_tests, invalid_tests)
 
       self.m.chromium_swarming.report_stats()
-
-      if failed_tests:
-        status = common_pb.INFRA_FAILURE if infra_failure else common_pb.FAILURE
+      if all_failed_tests:
+        status = self.determine_build_status_from_tests(
+            all_failed_tests, suffix)
+        if (surface_invalid_results_as_infra_failure and
+            all(not t.has_valid_results(suffix) for t in all_failed_tests)):
+          status = common_pb.INFRA_FAILURE
         return result_pb2.RawResult(
             status=status,
-            summary_markdown=self._format_unrecoverable_failures(
-                failed_tests, suffix))
+            summary_markdown=self.format_unrecoverable_failures(
+                all_failed_tests, suffix))
 
     return test_runner
 
@@ -2058,10 +2058,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       if unrecoverable_test_suites:
         self.handle_invalid_test_suites(unrecoverable_test_suites)
+        status = self.determine_build_status_from_tests(
+            unrecoverable_test_suites, 'with patch')
         return result_pb2.RawResult(
-            summary_markdown=self._format_unrecoverable_failures(
+            summary_markdown=self.format_unrecoverable_failures(
                 unrecoverable_test_suites, 'with patch'),
-            status=common_pb.FAILURE)
+            status=status)
 
       # This means the tests passed, and we'll check for new flaky tests if
       # enabled for the builder.
@@ -2083,7 +2085,25 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if not invalid_suites:
         self.m.cq.set_do_not_retry_build()
 
-  def _format_unrecoverable_failures(self,
+  def determine_build_status_from_tests(self, test_suites, suffix):
+    """Determines the appropriate build status based on the tests' results.
+
+    Args:
+      test_suites: List of steps.Tests that ran in this build.
+      suffix: Phase of the build to check test results for.
+              Note: not necessarily the current phase of the build.
+
+    Returns: a buildbucket.proto.common.Status
+    """
+    status = common_pb.SUCCESS
+    for t in test_suites:
+      if not t.has_valid_results(suffix) or t.failures(suffix):
+        status = common_pb.FAILURE
+      if not t.did_complete(suffix):
+        return common_pb.INFRA_FAILURE  # Nothing should override INFRA_FAILURE
+    return status
+
+  def format_unrecoverable_failures(self,
                                      unrecoverable_test_suites,
                                      suffix,
                                      size_limit=700,

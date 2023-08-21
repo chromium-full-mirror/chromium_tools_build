@@ -11,7 +11,6 @@ DEPS = [
     'chromium',
     'chromium_tests',
     'depot_tools/tryserver',
-    'recipe_engine/legacy_annotation',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
@@ -35,7 +34,9 @@ def RunSteps(api):
               api.chromium_tests),
       ],
       serialize_tests=api.properties.get('serialize_tests'),
-      retry_failed_shards=api.properties.get('retry_failed_shards'))
+      retry_failed_shards=api.properties.get('retry_failed_shards'),
+      surface_invalid_results_as_infra_failure=api.properties.get(
+          'surface_invalid_results_as_infra_failure'))
   return test_runner()
 
 
@@ -52,13 +53,36 @@ def GenTests(api):
           buildnumber=123),
       api.override_step_data(
           'base_unittests',
-          api.legacy_annotation.failure_step,
+          retcode=1,
           stderr=api.raw_io.output_text(
               'rdb-stream: included "invocations/test-inv" in "build-inv"')),
       api.post_process(DoesNotRun, 'test_pre_run (2)'),
       api.post_process(SummaryMarkdown,
                        '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
       api.expect_status('FAILURE'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'infra_failure',
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.builder_group.for_current('test_group'),
+      api.properties(
+          buildername='test_buildername', bot_id='test_bot_id',
+          buildnumber=123,
+          surface_invalid_results_as_infra_failure=True),
+      api.override_step_data(
+          'base_unittests',
+          retcode=1,
+          stderr=api.raw_io.output_text(
+              'rdb-stream: included "invocations/test-inv" in "build-inv"')),
+      api.post_process(DoesNotRun, 'test_pre_run (2)'),
+      api.post_process(SummaryMarkdown,
+                       '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(DropExpectation),
   )
 
@@ -76,7 +100,7 @@ def GenTests(api):
           serialize_tests=True),
       api.override_step_data(
           'base_unittests',
-          api.legacy_annotation.failure_step,
+          retcode=1,
           stderr=api.raw_io.output_text(
               'rdb-stream: included "invocations/test-inv" in "build-inv"')),
       api.post_process(MustRun, 'test_pre_run (2)'),

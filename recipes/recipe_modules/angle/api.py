@@ -172,11 +172,11 @@ class ANGLEApi(recipe_api.RecipeApi):
       if invalid_test_suites:
         return result_pb2.RawResult(
             summary_markdown=self.m.chromium_tests
-            ._format_unrecoverable_failures(invalid_test_suites, ''),
+            .format_unrecoverable_failures(invalid_test_suites, ''),
             status=common_pb.FAILURE)
 
       if failing_test_suites:
         return result_pb2.RawResult(
             summary_markdown=self.m.chromium_tests
-            ._format_unrecoverable_failures(failing_test_suites, ''),
+            .format_unrecoverable_failures(failing_test_suites, ''),
             status=common_pb.FAILURE)

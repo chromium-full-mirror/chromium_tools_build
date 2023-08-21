@@ -82,7 +82,7 @@ def RunSteps(api):
     test_runner = api.chromium_tests.create_test_runner(
         tests,
         serialize_tests=builder_config.serialize_tests,
-        enable_infra_failure=True)
+        surface_invalid_results_as_infra_failure=True)
     with api.chromium_tests.wrap_chromium_tests(builder_config, tests=tests):
       test_result = test_runner()
       if api.code_coverage.using_coverage:

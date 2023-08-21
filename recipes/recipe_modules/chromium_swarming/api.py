@@ -1467,10 +1467,10 @@ class SwarmingApi(recipe_api.RecipeApi):
     # build. Format is tuple of (error message, shard that failed)
     unexpected_errors = []
     expected_errors = []
-    # Test failures should present as FAILURE [red].
-    # Some expected errors [e.g. expiration] should present as EXCEPTION
-    # [purple].
-    expected_error_present_as_exception = False
+    # Tasks that run and fail should be presented as FAILURE [red].
+    # Tasks that are unable to run [e.g. expiration] should be presented as
+    # EXCEPTION [purple].
+    has_incomplete_shards = False
     # Do we have valid results? We count shards as not having valid results if
     # they weren't able to complete execution normally, due to timing out or
     # the bot dying. Completing execution, but failing, gives valid results.
@@ -1522,14 +1522,14 @@ class SwarmingApi(recipe_api.RecipeApi):
         # Since we cannot distinguish between infra failures and test failures,
         # we mark this as an unexpected error.
         expected_errors.append((index, 'Internal swarming failure'))
-        expected_error_present_as_exception = True
+        has_incomplete_shards = True
         failed_shards.append(index)
         has_valid_results = False
       elif shard.get('state') in ('EXPIRED', 'NO_RESOURCE'):
         display_text = (
           'shard #%d expired, not enough capacity' % index)
         expected_errors.append(display_text)
-        expected_error_present_as_exception = True
+        has_incomplete_shards = True
         failed_shards.append(index)
         has_valid_results = False
       elif shard.get('state') == 'TIMED_OUT':
@@ -1577,6 +1577,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     # will decide if they want to retry, we just keep track of failed shards
     # here.
     task.failed_shards = failed_shards
+    task.has_incomplete_shards = has_incomplete_shards
 
     self._display_time_stats(summary_shards, step_result.presentation)
 
@@ -1589,7 +1590,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     if expected_errors:
       step_result.presentation.status = (self.m.step.EXCEPTION if
-          expected_error_present_as_exception else self.m.step.FAILURE)
+          has_incomplete_shards else self.m.step.FAILURE)
 
     return has_valid_results
 
@@ -1763,6 +1764,7 @@ class SwarmingTask:
     self.containment_type = containment_type
     self.extra_args = extra_args or []
     self.failed_shards = []
+    self.has_incomplete_shards = False
     self.merge = merge
     self.named_caches = named_caches or {}
     self.optional_dimensions = optional_dimensions
