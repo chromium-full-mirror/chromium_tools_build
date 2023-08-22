@@ -325,6 +325,12 @@ class Generator:
         yield test_spec
       return
 
+    # TODO crbug.com/1466328 Support for the dimension_sets field should be
+    # removed once both of the following are true:
+    # * It is after 2023, Oct 15 (crrev.com/c/4781549 will have been present for
+    #   2 months, which is the window for pinpoint)
+    # * M108, M109 and M112 have been either turned down or had the necessary
+    #   changes cherry-picked for generating dimensions instead of dimension sets
     if 'dimension_sets' in swarming_spec and 'dimensions' in swarming_spec:
       self._chromium_tests_api.m.step.empty(
           'test spec format error',
