@@ -160,11 +160,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         inverted_rts_experiment and self.m.cq.active and
         self.m.cq.run_mode == self.m.cq.FULL_RUN
     ) and not self.m.chromium_rts.is_rts_footer_disabled():
-      reuseable_quick_run_build = self.find_compatible_quick_run_build()
+      reuseable_quick_run_build = self.m.chromium_rts.find_compatible_quick_run_build(
+      )
 
       if reuseable_quick_run_build:
-        reuseable_compilator_build = self.get_compilator_from_build(
-            reuseable_quick_run_build)
+        reuseable_compilator_build = self.m.chromium_rts.get_compilator_from_build(
+            reuseable_quick_run_build, self.compilator)
         if reuseable_compilator_build:
           log_step = self.m.step.empty('log reused builds')
           log_step.presentation.properties['reused_quick_run_build'] = str(
@@ -312,7 +313,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           not comp_output.skipping_coverage):
         # Grab the coverage from the reused build
         if reuseable_compilator_build:
-          self.download_previous_code_coverage(reuseable_quick_run_build)
+          self.m.chromium_rts.download_previous_code_coverage(
+              reuseable_quick_run_build)
 
         all_test_binaries_future.result()
         self.m.code_coverage.process_coverage_data(tests)
@@ -742,79 +744,3 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       if t.uses_isolate and not t.runs_on_swarming:
         raise self.m.step.StepFailure(
             '{} is an isolated test but is not swarmed.'.format(t.target_name))
-
-  def find_compatible_quick_run_build(self):
-    """Finds a Quick Run build that can be reused for the current build
-
-    Returns:
-      A single build who's compilator should be reuseable
-    """
-    equivalent_key = self.m.cq.equivalent_cl_group_key
-    predicate = builds_service_pb2.BuildPredicate(
-        builder=self.m.buildbucket.build.builder,
-        tags=self.m.buildbucket.tags(
-            cq_equivalent_cl_group_key=str(equivalent_key)),
-        create_time=common_pb.TimeRange(
-            start_time=timestamp_pb2.Timestamp(
-                # Look back 1 day
-                seconds=self.m.buildbucket.build.create_time.ToSeconds() -
-                60 * 60 * 24)),
-        status=common_pb.SUCCESS,
-    )
-    if predicate.builder.builder.endswith('-inverse-fyi'):
-      predicate.builder.builder = predicate.builder.builder[:-len('-inverse-fyi'
-                                                                 )]
-    builds = self.m.buildbucket.search(
-        predicate, step_name='find successful Quick Runs')
-
-    builds = [
-        build for build in builds
-        if 'rts_was_used' in build.output.properties and
-        build.output.properties['rts_was_used']
-    ]
-
-    return builds[0] if builds else None
-
-  def get_compilator_from_build(self, quick_run_build):
-    """Finds the compilator build from a given Quick Run build
-
-    Args:
-      quick_run_build (Build): The compatible Quick Run build to get the
-        compilator build from
-
-    Returns:
-      The compilator build to be reused
-    """
-    predicate = builds_service_pb2.BuildPredicate(
-        child_of=quick_run_build.id,
-        status=common_pb.SUCCESS,
-        builder=self.m.buildbucket.build.builder,
-    )
-    predicate.builder.builder = self.compilator
-
-    builds = self.m.buildbucket.search(
-        predicate, step_name='get compilator build')
-
-    if not builds:
-      return None
-
-    # If more than one compilator is found the earliest would be '(with patch)'
-    compilator_build = min(builds, key=lambda b: b.start_time.ToSeconds())
-    return compilator_build
-
-  def download_previous_code_coverage(self, quick_run_build):
-    if ('coverage_gs_bucket' not in quick_run_build.output.properties or
-        'merged_profdata_gs_paths' not in quick_run_build.output.properties):
-      return
-    bucket = quick_run_build.output.properties['coverage_gs_bucket']
-    for path in quick_run_build.output.properties['merged_profdata_gs_paths']:
-      # Make the _unit coverage data match the unit regex used in code coverage
-      if '/%s_unit/' % self.m.buildbucket.builder_name in path:
-        dest = self.m.profiles.profile_dir().join(
-            constants.QUICK_RUN_UNIT_PROFDATA)
-        step_name = 'download Quick Run unit coverage from GS'
-      else:
-        dest = self.m.profiles.profile_dir().join(
-            constants.QUICK_RUN_OVERALL_PROFDATA)
-        step_name = 'download Quick Run overall coverage from GS'
-      self.m.gsutil.download(bucket, path, dest, name=step_name)

@@ -1,0 +1,91 @@
+# Copyright 2023 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+from google.protobuf import timestamp_pb2
+from recipe_engine import post_process
+
+from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
+
+DEPS = [
+    'chromium',
+    'chromium_rts',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cq',
+    'recipe_engine/file',
+]
+
+
+def RunSteps(api):
+  quick_run_build = api.chromium_rts.find_compatible_quick_run_build()
+  api.chromium_rts.get_compilator_from_build(quick_run_build, 'compilator')
+  api.chromium_rts.download_previous_code_coverage(quick_run_build)
+
+
+def GenTests(api):
+
+  def _create_quick_run_build(include_coverage=True):
+    reuseable_qr = build_pb2.Build(
+        id=1234,
+        status='SUCCESS',
+        create_time=timestamp_pb2.Timestamp(seconds=1598338800),
+        output=build_pb2.Build.Output())
+    reuseable_qr.output.properties['rts_was_used'] = True
+    if include_coverage:
+      reuseable_qr.output.properties[
+          'coverage_gs_bucket'] = "code-coverage-data"
+      reuseable_qr.output.properties['merged_profdata_gs_paths'] = [
+          "presubmit/chromium-review.googlesource.com/111111/1/try/fake-orchestrator/123456789/merged.profdata",
+          "presubmit/chromium-review.googlesource.com/111111/1/try/fake-orchestrator_unit/123456789/merged.profdata"
+      ]
+    return reuseable_qr
+
+  yield api.test(
+      'basic',
+      api.chromium.try_build(
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
+      api.cq(run_mode='FULL_RUN'),
+      api.buildbucket.simulated_search_results(
+          [_create_quick_run_build()], step_name='find successful Quick Runs'),
+      api.chromium_rts.override_reused_compilator_steps(
+          tests=['browser_tests', 'content_unittests']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'inverse_fyi',
+      api.chromium.try_build(
+          builder='builder-inverse-fyi',
+          tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
+      api.cq(run_mode='FULL_RUN'),
+      api.buildbucket.simulated_search_results(
+          [_create_quick_run_build()], step_name='find successful Quick Runs'),
+      api.chromium_rts.override_reused_compilator_steps(
+          tests=['browser_tests', 'content_unittests']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no_compilator_in_build',
+      api.chromium.try_build(
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
+      api.cq(run_mode='FULL_RUN'),
+      api.buildbucket.simulated_search_results(
+          [_create_quick_run_build()], step_name='find successful Quick Runs'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no_reusable_coverage',
+      api.chromium.try_build(
+          tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
+      api.cq(run_mode='FULL_RUN'),
+      api.buildbucket.simulated_search_results(
+          [_create_quick_run_build(include_coverage=False)],
+          step_name='find successful Quick Runs'),
+      api.chromium_rts.override_reused_compilator_steps(
+          tests=['browser_tests', 'content_unittests']),
+      api.post_process(post_process.DropExpectation),
+  )

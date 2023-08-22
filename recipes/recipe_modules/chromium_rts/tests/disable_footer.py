@@ -7,9 +7,9 @@ from recipe_engine.recipe_api import Property
 
 DEPS = [
     'chromium',
+    'chromium_rts',
     'recipe_engine/json',
     'recipe_engine/properties',
-    'chromium_rts',
 ]
 
 PROPERTIES = {
