@@ -20,7 +20,7 @@ DEPS = [
     'recipe_engine/time',
 ]
 
-REJECTION_DATA_WINDOW = datetime.timedelta(weeks=12)
+REJECTION_DATA_WINDOW = datetime.timedelta(weeks=4)
 TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
 # Processing 10% of 1w-worth test durations takes 7h on a 32-core bot.
 TEST_DURATION_DATA_PERCENTAGE = 1
@@ -106,6 +106,7 @@ def _fetch_model_data(api, exec_path, rejection_date_range,
           [
               str(exec_path),
               'fetch-rejections',
+              '-ignore-file',
               f'-out={rejections_dir}',
           ] + _date_range_flags(rejection_date_range),
       ),
