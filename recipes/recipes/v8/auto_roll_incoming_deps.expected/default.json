@@ -1475,6 +1475,8 @@
   {
     "cmd": [
       "git",
+      "-c",
+      "diff.ignoreSubmodules=all",
       "commit",
       "-a",
       "-m",
@@ -1519,7 +1521,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Update trusted deps.git commit",
+    "name": "Update trusted deps.git -c",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2136,6 +2138,8 @@
   {
     "cmd": [
       "git",
+      "-c",
+      "diff.ignoreSubmodules=all",
       "commit",
       "-a",
       "-m",
@@ -2202,7 +2206,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Update reviewed deps.git commit",
+    "name": "Update reviewed deps.git -c",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2941,6 +2945,8 @@
   {
     "cmd": [
       "git",
+      "-c",
+      "diff.ignoreSubmodules=all",
       "commit",
       "-a",
       "-m",
@@ -2979,7 +2985,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Scripted rolls.Update Puppeteer Core deps.git commit",
+    "name": "Scripted rolls.Update Puppeteer Core deps.git -c",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]

@@ -483,8 +483,8 @@ def upload_cl(api,
     # Add all files to the commit
     api.git('add', '-A')
 
-  # Create a rolling CL
-  args = ['commit', '-a', '-m', subject]
+  # Create a rolling CL. Ignore submodule updates
+  args = ['-c', 'diff.ignoreSubmodules=all', 'commit', '-a', '-m', subject]
 
   for commit_line in commit_msg_lines:
     args.extend(['-m', commit_line])
