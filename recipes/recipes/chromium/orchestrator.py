@@ -15,6 +15,7 @@ DEPS = [
     'code_coverage',
     'depot_tools/tryserver',
     'recipe_engine/cas',
+    'recipe_engine/cv',
     'recipe_engine/json',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -46,6 +47,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-tester',
           ).assemble()),
+      api.cv(run_mode='FULL_RUN'),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -94,6 +96,7 @@ def GenTests(api):
                       'TARGET_PLATFORM': 'mac',
                   },
               )).assemble()),
+      api.cv(run_mode='FULL_RUN'),
       api.properties(
           **{
               '$build/chromium_orchestrator':
