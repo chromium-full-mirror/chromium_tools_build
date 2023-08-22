@@ -712,8 +712,16 @@
       "chromium.perf.pinpoint:mac-laptop_low_end-perf"
     ]
   },
+  "chromium.perf.pinpoint:mac-14-m1-pro-perf": {
+    "builders": [
+      "chromium.perf.pinpoint:mac-14-m1-pro-perf",
+      "chromium.perf.pinpoint:mac-arm-builder-perf",
+      "chromium.perf.pinpoint:mac-m1_mini_2020-perf"
+    ]
+  },
   "chromium.perf.pinpoint:mac-arm-builder-perf": {
     "builders": [
+      "chromium.perf.pinpoint:mac-14-m1-pro-perf",
       "chromium.perf.pinpoint:mac-arm-builder-perf",
       "chromium.perf.pinpoint:mac-m1_mini_2020-perf"
     ]
@@ -771,6 +779,7 @@
   },
   "chromium.perf.pinpoint:mac-m1_mini_2020-perf": {
     "builders": [
+      "chromium.perf.pinpoint:mac-14-m1-pro-perf",
       "chromium.perf.pinpoint:mac-arm-builder-perf",
       "chromium.perf.pinpoint:mac-m1_mini_2020-perf"
     ]
