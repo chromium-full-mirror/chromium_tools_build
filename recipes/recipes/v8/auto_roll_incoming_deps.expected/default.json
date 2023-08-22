@@ -1475,8 +1475,40 @@
   {
     "cmd": [
       "git",
+      "add",
+      "-A"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Update trusted deps.git add",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
       "commit",
-      "-a",
       "-m",
       "Update V8 deps (trusted)",
       "-m",
@@ -2136,8 +2168,40 @@
   {
     "cmd": [
       "git",
+      "add",
+      "-A"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "v8:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Update reviewed deps.git add",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
       "commit",
-      "-a",
       "-m",
       "Update V8 deps (reviewed)",
       "-m",
@@ -2942,7 +3006,6 @@
     "cmd": [
       "git",
       "commit",
-      "-a",
       "-m",
       "Roll puppeteer-core",
       "-m",

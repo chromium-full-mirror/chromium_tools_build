@@ -458,8 +458,7 @@ def upload_cl(api,
               subject,
               upload_flags,
               commit_msg_lines,
-              bugs_label,
-              add=False):
+              bugs_label):
   """
   Verify that the local checkout is dirty, commit changes and upload a CL with
   the given subject and reviewers. If the local checkout is not dirty, we do
@@ -479,12 +478,11 @@ def upload_cl(api,
   if not diff:
     return None
 
-  if add:
-    # Add all files to the commit
-    api.git('add', '-A')
+  api.git('add', '-A')
 
   # Create a rolling CL
-  args = ['commit', '-a', '-m', subject]
+
+  args = ['commit', '-m', subject]
 
   for commit_line in commit_msg_lines:
     args.extend(['-m', commit_line])
@@ -522,7 +520,6 @@ class RollHandler(ABC):
     self.api = api
     self.config = autoroller_config
     self.enabled = True
-    self.add_new_files = False
 
   def roll(self, summary):
     if self.enabled:
@@ -538,7 +535,6 @@ class RollHandler(ABC):
               upload_flags=self.upload_flags(),
               commit_msg_lines=self.commit_msg_lines(changes),
               bugs_label=self.config.get('bugs', None),
-              add=self.add_new_files,
           )
           if cl_link:
             step.presentation.links['CL'] = cl_link
@@ -758,7 +754,6 @@ class ScriptedRollHandler(RollHandler):
 
   def __init__(self, api, autoroller_config, script, key):
     super().__init__(api, autoroller_config)
-    self.add_new_files = True
     self.script = script
     self.key = key
     self.updated = False
