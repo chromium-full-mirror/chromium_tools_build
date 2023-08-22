@@ -181,7 +181,7 @@ def _incremental_builds_with_patch(api, target):
       last_rev = builds[0].input.gitiles_commit.id
 
     # List up commits between the current revision and the last revision.
-    max_builds = 50
+    max_builds = 20
     gitlog_args = ['log', '-n', max_builds, "--format='%H %ae'", '--reverse']
     if last_rev:
       cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
