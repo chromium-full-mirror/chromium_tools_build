@@ -22,7 +22,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.ssci_version = props.ssci_version or "latest"
     # Proto3 defaults boolean fields to False
     self.minimal_spdx = props.minimal_spdx or False
-    self.generated_sbom_artifacts = []
+    self.generated_sbom_artifacts = {}
 
   def _cipd_version(self, package_name, package_version):
     """
@@ -105,6 +105,8 @@ class SsciAPI(recipe_api.RecipeApi):
                     "spdx": "yes"
                 }], name="spdx")))
 
+      spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
+
       if sbom_bucket and sbom_folder:
         filename, target_ext = splitext(entry_point.replace("//", ""))
         filename = f"{filename}{filename_postfix or ''}{target_ext}.spdx.json"
@@ -114,7 +116,12 @@ class SsciAPI(recipe_api.RecipeApi):
             sbom_bucket,
             full_path,
             name="upload %s SBOM " % filename)
-        self.generated_sbom_artifacts.append(f'gs://{sbom_bucket}/{full_path}')
+        self.generated_sbom_artifacts.update({
+            entry_point: {
+                'digest': spdx_digest,
+                'file': f'gs://{sbom_bucket}/{full_path}'
+            }
+        })
 
   def run(
       self,
@@ -127,7 +134,10 @@ class SsciAPI(recipe_api.RecipeApi):
       chrome_version=None,
   ):
 
-    self.generated_sbom_artifacts = []
+    # ensure this dict is reset between calls to the module
+    # in the same build, so the log step shows the actual SBOM's
+    # generated not all of the SBOM's generated in the build.
+    self.generated_sbom_artifacts = {}
 
     # prefer targets supplied in properties.
     targets = self.targets or targets
@@ -170,7 +180,7 @@ class SsciAPI(recipe_api.RecipeApi):
               name="summary",
               data={
                   "targets": [{
-                      "entry_point": "//example:example",
+                      "entry_point": "Example.apk",
                       "target": "//example:example",
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
@@ -227,7 +237,11 @@ class SsciAPI(recipe_api.RecipeApi):
 
       # set generated in output properties
       info_step = self.m.step.empty("SBOM's generated")
-      info_step.presentation.logs['ssci_generated_artifacts'] = sorted(
-          self.generated_sbom_artifacts)
-      info_step.presentation.properties.update(
-          {'ssci_generated_artifacts': sorted(self.generated_sbom_artifacts)})
+      info_step.presentation.logs[
+          'ssci_generated_artifacts'] = self.generated_sbom_artifacts
+      info_step.presentation.properties.update({
+          'ssci_generated_artifacts': [
+              a['file'] for a in self.generated_sbom_artifacts.values()
+          ]
+      })
+      return self.generated_sbom_artifacts

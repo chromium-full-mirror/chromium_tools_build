@@ -362,7 +362,7 @@
       "@@@STEP_LOG_LINE@json.output[summary]@  \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@    {@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@      \"artifacts_file_path\": \"out/Release/artifacts.json\",@@@",
-      "@@@STEP_LOG_LINE@json.output[summary]@      \"entry_point\": \"example.apk\",@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"entry_point\": \"Example.apk\",@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@      \"libraries_file_path\": \"out/Release/libs.json\",@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@      \"target\": \"//example:example\"@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@    }@@@",
@@ -563,7 +563,7 @@
   },
   {
     "cmd": [],
-    "name": "SSCI collection.target specific steps for example.apk",
+    "name": "SSCI collection.target specific steps for Example.apk",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -577,7 +577,7 @@
       "-column",
       "execution_id=\"luci-8945511751514863184\"",
       "-column",
-      "entry_point=\"example.apk\"",
+      "entry_point=\"Example.apk\"",
       "-column",
       "target=\"//example:example\"",
       "project.dataset.table",
@@ -595,7 +595,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for example.apk.upload example.apk artifacts to BigQuery",
+    "name": "SSCI collection.target specific steps for Example.apk.upload Example.apk artifacts to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -609,7 +609,7 @@
       "-column",
       "execution_id=\"luci-8945511751514863184\"",
       "-column",
-      "entry_point=\"example.apk\"",
+      "entry_point=\"Example.apk\"",
       "-column",
       "target=\"//example:example\"",
       "project.dataset.table",
@@ -627,7 +627,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for example.apk.upload example.apk libraries to BigQuery",
+    "name": "SSCI collection.target specific steps for Example.apk.upload Example.apk libraries to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -656,7 +656,7 @@
       "-chromium-src",
       "None",
       "-product",
-      "basic.luci-8945511751514863184.example.apk",
+      "basic.luci-8945511751514863184.Example.apk",
       "-product-version",
       "2d7251",
       "-platform",
@@ -678,25 +678,23 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for example.apk.run ssci tool to generate example.apk SPDX sbom",
+    "name": "SSCI collection.target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.example.apk] (read error)@JSON file was missing or unreadable:@@@",
-      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.example.apk] (read error)@  [CLEANUP]/tmp_tmp_3/spdx-out.json@@@",
-      "@@@STEP_LOG_END@json.output[basic.luci-8945511751514863184.example.apk] (read error)@@@"
+      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.Example.apk] (read error)@JSON file was missing or unreadable:@@@",
+      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.Example.apk] (read error)@  [CLEANUP]/tmp_tmp_3/spdx-out.json@@@",
+      "@@@STEP_LOG_END@json.output[basic.luci-8945511751514863184.Example.apk] (read error)@@@"
     ]
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
-      "gs://my-bucket/os/version/luci-8945511751514863184/exampleStable.apk.spdx.json"
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "file_hash",
+      "[CLEANUP]/tmp_tmp_3/spdx-out.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -711,10 +709,41 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for example.apk.gsutil upload exampleStable.apk.spdx.json SBOM ",
+    "name": "SSCI collection.target specific steps for Example.apk.Compute file hash",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/exampleStable.apk.spdx.json@@@"
+      "@@@STEP_TEXT@Hash calculated: testhash@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/tmp_tmp_3/spdx-out.json",
+      "gs://my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.target specific steps for Example.apk.gsutil upload ExampleStable.apk.spdx.json SBOM ",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json@@@"
     ]
   },
   {
@@ -722,9 +751,9 @@
     "name": "SSCI collection.SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@gs://my-bucket/os/version/luci-8945511751514863184/exampleStable.apk.spdx.json@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@Example.apk@@@",
       "@@@STEP_LOG_END@ssci_generated_artifacts@@@",
-      "@@@SET_BUILD_PROPERTY@ssci_generated_artifacts@[\"gs://my-bucket/os/version/luci-8945511751514863184/exampleStable.apk.spdx.json\"]@@@"
+      "@@@SET_BUILD_PROPERTY@ssci_generated_artifacts@[\"gs://my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json\"]@@@"
     ]
   },
   {
@@ -774,7 +803,7 @@
       "@@@STEP_LOG_LINE@json.output[summary]@  \"targets\": [@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@    {@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@      \"artifacts_file_path\": \"out/Release/artifacts.json\",@@@",
-      "@@@STEP_LOG_LINE@json.output[summary]@      \"entry_point\": \"//example:example\",@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"entry_point\": \"Example.apk\",@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@      \"libraries_file_path\": \"out/Release/libs.json\",@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@      \"target\": \"//example:example\"@@@",
       "@@@STEP_LOG_LINE@json.output[summary]@    }@@@",
@@ -975,7 +1004,7 @@
   },
   {
     "cmd": [],
-    "name": "SSCI collection (2).target specific steps for //example:example",
+    "name": "SSCI collection (2).target specific steps for Example.apk",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -989,7 +1018,7 @@
       "-column",
       "execution_id=\"luci-8945511751514863184\"",
       "-column",
-      "entry_point=\"//example:example\"",
+      "entry_point=\"Example.apk\"",
       "-column",
       "target=\"//example:example\"",
       "project.dataset.table",
@@ -1007,7 +1036,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for //example:example.upload //example:example artifacts to BigQuery",
+    "name": "SSCI collection (2).target specific steps for Example.apk.upload Example.apk artifacts to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1021,7 +1050,7 @@
       "-column",
       "execution_id=\"luci-8945511751514863184\"",
       "-column",
-      "entry_point=\"//example:example\"",
+      "entry_point=\"Example.apk\"",
       "-column",
       "target=\"//example:example\"",
       "project.dataset.table",
@@ -1039,7 +1068,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for //example:example.upload //example:example libraries to BigQuery",
+    "name": "SSCI collection (2).target specific steps for Example.apk.upload Example.apk libraries to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1068,7 +1097,7 @@
       "-chromium-src",
       "None",
       "-product",
-      "basic.luci-8945511751514863184.example:example",
+      "basic.luci-8945511751514863184.Example.apk",
       "-product-version",
       "2d7251",
       "-platform",
@@ -1090,25 +1119,23 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for //example:example.run ssci tool to generate //example:example SPDX sbom",
+    "name": "SSCI collection (2).target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.example:example] (read error)@JSON file was missing or unreadable:@@@",
-      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.example:example] (read error)@  [CLEANUP]/tmp_tmp_6/spdx-out.json@@@",
-      "@@@STEP_LOG_END@json.output[basic.luci-8945511751514863184.example:example] (read error)@@@"
+      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.Example.apk] (read error)@JSON file was missing or unreadable:@@@",
+      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.Example.apk] (read error)@  [CLEANUP]/tmp_tmp_6/spdx-out.json@@@",
+      "@@@STEP_LOG_END@json.output[basic.luci-8945511751514863184.Example.apk] (read error)@@@"
     ]
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]/tmp_tmp_6/spdx-out.json",
-      "gs://my-bucket/os/version/luci-8945511751514863184/example:exampleCanary.spdx.json"
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "file_hash",
+      "[CLEANUP]/tmp_tmp_6/spdx-out.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1123,10 +1150,41 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for //example:example.gsutil upload example:exampleCanary.spdx.json SBOM ",
+    "name": "SSCI collection (2).target specific steps for Example.apk.Compute file hash",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/example:exampleCanary.spdx.json@@@"
+      "@@@STEP_TEXT@Hash calculated: testhash@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/tmp_tmp_6/spdx-out.json",
+      "gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload ExampleCanary.apk.spdx.json SBOM ",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json@@@"
     ]
   },
   {
@@ -1134,9 +1192,9 @@
     "name": "SSCI collection (2).SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@gs://my-bucket/os/version/luci-8945511751514863184/example:exampleCanary.spdx.json@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@Example.apk@@@",
       "@@@STEP_LOG_END@ssci_generated_artifacts@@@",
-      "@@@SET_BUILD_PROPERTY@ssci_generated_artifacts@[\"gs://my-bucket/os/version/luci-8945511751514863184/example:exampleCanary.spdx.json\"]@@@"
+      "@@@SET_BUILD_PROPERTY@ssci_generated_artifacts@[\"gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json\"]@@@"
     ]
   },
   {

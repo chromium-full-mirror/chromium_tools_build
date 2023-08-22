@@ -5,6 +5,7 @@
 from recipe_engine.post_process import DropExpectation
 
 DEPS = [
+    'recipe_engine/assertions',
     'recipe_engine/buildbucket',
     'recipe_engine/json',
     'recipe_engine/path',
@@ -22,13 +23,23 @@ def RunSteps(api):
       sbom_filename_postfix='Stable',
       targets=["//example:example"])
 
-  api.ssci.run(
+  res = api.ssci.run(
       src_dir=api.path.abspath(api.path['checkout']),
       build_dir='out/Release',
       sbom_bucket='my-bucket',
       sbom_folder='os/version',
       sbom_filename_postfix='Canary',
-      targets=["//example:example"])
+      targets=["Example.apk"])
+
+  api.assertions.assertEqual(
+      res, {
+          'Example.apk': {
+              'digest':
+                  'testhash',
+              'file':
+                  'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json'
+          }
+      })
 
 
 def GenTests(api):
@@ -42,12 +53,20 @@ def GenTests(api):
               name="summary",
               data={
                   "targets": [{
-                      "entry_point": "example.apk",
+                      "entry_point": "Example.apk",
                       "target": "//example:example",
                       "artifacts_file_path": "out/Release/artifacts.json",
                       "libraries_file_path": "out/Release/libs.json"
                   }],
               })),
+      api.override_step_data(
+          'SSCI collection.target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom',
+          api.json.output(
+              name='basic.luci-8945511751514863184.example.apk', data={})),
+      api.override_step_data(
+          'SSCI collection (2).target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom',
+          api.json.output(
+              name='basic.luci-8945511751514863184.example.apk', data={})),
       api.properties(
           **{
               '$build/ssci': {
