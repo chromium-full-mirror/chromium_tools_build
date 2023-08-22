@@ -2779,7 +2779,6 @@
     "name": "Set builder output properties",
     "~followup_annotations": [
       "@@@SET_BUILD_PROPERTY@coverage_gs_bucket@\"code-coverage-data\"@@@",
-      "@@@SET_BUILD_PROPERTY@coverage_is_presubmit@true@@@",
       "@@@SET_BUILD_PROPERTY@coverage_metadata_gs_paths@[]@@@",
       "@@@SET_BUILD_PROPERTY@merged_profdata_gs_paths@[]@@@",
       "@@@SET_BUILD_PROPERTY@mimic_builder_names@[]@@@"

@@ -458,8 +458,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
   def _set_builder_output_properties_for_uploads(self, has_coverage_data=True):
     """Sets the output property of the builder."""
     result = self.m.step.empty('Set builder output properties')
-    result.presentation.properties['coverage_is_presubmit'] = (
-        self._is_per_cl_coverage)
     if not has_coverage_data:
       return
     result.presentation.properties['coverage_metadata_gs_paths'] = (
