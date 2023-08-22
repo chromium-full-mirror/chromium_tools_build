@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Buildbot recipe to build and test Dawn standalone.
+"""
+
+# TODO(enga): Move this recipe to the dawn/ subdirectory.
+
 DEPS = [
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
