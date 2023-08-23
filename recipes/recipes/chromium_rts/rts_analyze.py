@@ -4,6 +4,7 @@
 """Runs the rts-suite-analysis tool against builder suite combinations"""
 
 import datetime
+import re
 
 from recipe_engine import post_process
 from PB.recipe_engine import result as result_pb2
@@ -61,18 +62,29 @@ def RunSteps(api):
     test_suite = builder_suite['test_suite']
     builder = builder_suite['builder']
     futures.append(
-        api.futures.spawn_immediate(_analzye_builder_suite, api, builder,
+        api.futures.spawn_immediate(_analyze_builder_suite, api, builder,
                                     test_suite, rejections_dir, durations_dir,
                                     exec_path))
 
+  savings = []
   # Check future's exception.
   for f in futures:
-    f.result()
+    result = f.result()
+    if result:
+      savings.append(result)
 
-  return result_pb2.RawResult(status=common_pb.SUCCESS,)
+  # Sort by recall. There will be lots of low savings but it should be easy
+  # to scan for the best candidates
+  savings.sort(key=lambda r: r[2], reverse=True)
+
+  summary = 'Analysis Summary (recall, savings):\n\n' + '\n\n'.join(
+      f'{builder}:{testsuite} {recall}%, {savings}%'
+      for builder, testsuite, recall, savings in savings)
+  return result_pb2.RawResult(
+      status=common_pb.SUCCESS, summary_markdown=summary)
 
 
-def _analzye_builder_suite(api, builder, test_suite, rejections_dir,
+def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
                            durations_dir, exec_path):
   step_result = api.step(
       f'analyze {test_suite} on {builder}', [
@@ -85,6 +97,14 @@ def _analzye_builder_suite(api, builder, test_suite, rejections_dir,
       ],
       stdout=api.raw_io.output_text())
   step_result.presentation.step_text = step_result.stdout
+  match = re.search(r'(\d+\.\d+)%\s*\|\s*(\d+\.\d+)%', step_result.stdout)
+  if not match:
+    # No summary table implies something went wrong with the analysis
+    step_result.presentation.status = api.step.FAILURE
+  else:
+    recall = float(match.group(1))
+    savings = float(match.group(2))
+    return builder, test_suite, recall, savings
 
 
 def _fetch_model_data(api, exec_path, rejection_date_range,
@@ -151,6 +171,9 @@ def GenTests(api):
           }, {
               'builder': 'android-nougat-x86-rel',
               'test_suite': 'chrome_public_test_apk'
+          }, {
+              'builder': 'mac',
+              'test_suite': 'suite_fails_to_complete'
           }])),
       api.step_data(
           'analyze browser_tests on linux-chromeos-rel',
@@ -170,12 +193,32 @@ Rejection:
  ''')),
       api.step_data(
           'analyze chrome_public_test_apk on android-nougat-x86-rel',
-          stdout=api.raw_io.output_text('Fake data with no summary')),
+          stdout=api.raw_io.output_text('''
+Rejection:
+     Most affected test: +Inf distance
+     https://chromium-review.googlesource.com/c/4398410/4
+       //chrome/file.cc
+     Failed and not selected tests:
+       - builder:android-nougat-x86-rel | os:android | test_suite:chrome_public_test_apk
+         in //chrome/file.cc
+           ninja://chrome/test:chrome_public_test_apk/test.case
+ ChangeRecall | Savings
+ ----------------------
+  100.00%     |  90.37% 
+ based on 837 rejections, 862565 test failures, 2 years 52 days 20 hours 22 minutes 37 seconds testing time
+ ''')),
+      api.step_data(
+          'analyze suite_fails_to_complete on mac',
+          stdout=api.raw_io.output_text('Failed to run')),
       api.post_process(post_process.MustRun,
                        'analyze browser_tests on linux-chromeos-rel'),
       api.post_process(
           post_process.MustRun,
           'analyze chrome_public_test_apk on android-nougat-x86-rel'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Analysis Summary (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
+      ),
       api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
