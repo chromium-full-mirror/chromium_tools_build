@@ -1,12 +1,13 @@
-# Copyright 2022 The Chromium Authors
+# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 DEPS = [
+    'chromium',
+    'chromium_rts',
     'chromium_tests',
     'recipe_engine/properties',
     'recipe_engine/step',
-    'chromium_rts',
 ]
 
 from recipe_engine import post_process
@@ -31,5 +32,13 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic',
+      api.post_process(post_process.DropExpectation),
+  )
+
+  # RTS on dry run causes builds to be compatible for different run modes and
+  # can only be determined when the individual tests are set
+  yield api.test(
+      'dry_run_rts',
+      api.chromium.try_build(experiments=['chromium_rts.dry_run_rts'],),
       api.post_process(post_process.DropExpectation),
   )

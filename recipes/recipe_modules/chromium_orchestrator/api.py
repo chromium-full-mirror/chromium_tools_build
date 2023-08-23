@@ -259,7 +259,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         targets_config,
         include_inverted_rts=bool(reuseable_compilator_build))
 
-    tests = self.m.chromium_tests.setup_quickrun_tests(
+    tests = self.m.chromium_rts.setup_quickrun_tests(
         tests, rts_setting, bool(reuseable_compilator_build))
 
     if reuseable_compilator_build and not tests:
@@ -463,7 +463,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     builder_id, builder_config = (
         self.m.chromium_tests_builder_config.lookup_builder())
 
-    rts_setting = self.m.chromium_tests.get_quickrun_options(
+    rts_setting = self.m.chromium_rts.get_quickrun_options(
         builder_config, inverted_rts=inverted_rts)
     self.m.chromium_tests.configure_build(
         builder_config, rts_setting, test_only=True)

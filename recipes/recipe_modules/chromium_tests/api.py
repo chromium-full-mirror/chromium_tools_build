@@ -2036,7 +2036,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config)
     self.print_link_to_results()
-    rts_setting = self.get_quickrun_options(builder_config)
+    rts_setting = self.m.chromium_rts.get_quickrun_options(builder_config)
     raw_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
@@ -2255,109 +2255,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if task_output_stdout:
       self.m.chromium_swarming.task_output_stdout = task_output_stdout
 
-  def setup_quickrun_tests(self, tests, rts_setting, inverted_rts):
-    # If we only need to run the tests that were skipped in the last build
-    if inverted_rts:
-      tests = [t for t in tests if t.supports_inverted_rts]
-      for test in tests:
-        test.is_rts = False
-        test.is_inverted_rts = True
-    elif rts_setting:
-      for test in tests:
-        test.is_inverted_rts = False
-        if test.supports_rts:
-          test.is_rts = True
-
-    if any(test.is_rts for test in tests):
-      # RTS-enabled builds can't be reused for non-RTS because they are slightly
-      # less safe than normal builds
-      log_step = self.m.step.empty('RTS was used')
-      log_step.presentation.properties['rts_was_used'] = True
-
-      compatible_run_modes = ('chromium_rts.dry_run_rts'
-                              in self.m.buildbucket.build.input.experiments)
-      if compatible_run_modes:
-        self.m.cq.allow_reuse_for(self.m.cq.DRY_RUN, self.m.cq.QUICK_DRY_RUN)
-      else:
-        self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
-    return tests
-
-  def log_rts_heuristics(self):
-    # TODO(https://crbug.com/1445185): Remove this after we have enough data to
-    # evaluate these heuristics
-    try:
-      with self.m.step.nest('log rts heuristics') as presentation:
-        gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
-        reviewers = self.m.gerrit.call_raw_api(
-            f'https://{gerrit_change.host}',
-            f'/changes/{gerrit_change.change}/reviewers/',
-            method='GET',
-            name='get reviewer status')
-        reviewers = [
-            reviewer for reviewer in reviewers
-            if reviewer.get('approvals', {}).get('Code-Review') and
-            not reviewer.get('approvals', {}).get('Auto-Submit')
-        ]
-        presentation.logs['reviewers'] = self.m.json.dumps(reviewers, indent=4)
-        presentation.properties['reviewers'] = len(reviewers)
-
-        change = self.m.gerrit.get_changes(
-            f'https://{gerrit_change.host}',
-            query_params=[
-                ('change', gerrit_change.change),
-            ],
-            limit=1)
-        has_review_started = False
-        if len(change) > 0:
-          has_review_started = change[0].get('has_review_started', False)
-        presentation.properties['has_review_started'] = has_review_started
-    except Exception:
-      # This is purely informational, we don't want to fail the build and the
-      # abscense of output properties can be used to identify if the heuristic
-      # is not available
-      pass
-
-  def get_quickrun_options(self, builder_config, inverted_rts=False):
-    self.log_rts_heuristics()
-    # TODO(sshrimp): cq.active/cq.run_mode no longer works from the compilator
-    # this should go back to using that module when gerrit no longer skips
-    # copying tags on reruns and cq.active no longer checks created_by
-    run_mode = None
-    props = self.m.properties.get('$recipe_engine/cq', None)
-    if props:
-      run_mode = props.get('run_mode', props.get('runMode'))
-    experiment_active = False
-    if run_mode == self.m.cq.DRY_RUN:
-      experiment_active = ('chromium_rts.dry_run_rts'
-                           in self.m.buildbucket.build.input.experiments)
-
-    rts_setting = None
-    use_rts = (
-        ((experiment_active or run_mode == self.m.cq.QUICK_DRY_RUN) and
-         builder_config.regression_test_selection == try_spec.QUICK_RUN_ONLY) or
-        builder_config.regression_test_selection == try_spec.ALWAYS)
-
-    if (use_rts or
-        inverted_rts) and not self.m.chromium_rts.is_rts_footer_disabled():
-      if ('chromium_rts.experimental_model' in
-          self.m.buildbucket.build.input.experiments):
-        rts_setting = 'rts-ml-chromium'
-      else:
-        rts_setting = 'rts-chromium'
-
-      step_result = self.m.step('quick run options', [])
-      if experiment_active:
-        step_result.presentation.step_text = 'RTS was enabled by an experiment'
-
-      step_result.presentation.properties['rts_setting'] = rts_setting
-      step_result.presentation.links[
-          'use_rts: true'] = 'https://bit.ly/chromium-rts'
-      step_result.presentation.links['file a bug'] = (
-          'https://bugs.chromium.org/p/chromium/issues/entry?'
-          'template=Quick%20Run%20Issue')
-
-    return rts_setting
-
   def build_affected_targets(self,
                              builder_id,
                              builder_config,
@@ -2469,7 +2366,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests = []
 
-    tests = self.setup_quickrun_tests(tests, rts_setting, False)
+    tests = self.m.chromium_rts.setup_quickrun_tests(tests, rts_setting, False)
 
     return raw_result, Task(builder_config, tests, bot_update_step,
                             affected_files, execution_info)
