@@ -21,11 +21,11 @@ message InputProperties {
   BuilderId target_builder = 1;
 
   // Test represents the test to rerun.
-  // We only support the rerun of a single test.
   message Test {
     string test_suite_name = 1;
     string test_name = 2;
   }
 
-  Test test_to_run = 2;
+  // We support running multiple tests in the same build.
+  repeated Test tests_to_run = 2;
 }

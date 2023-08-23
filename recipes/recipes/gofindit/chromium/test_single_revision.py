@@ -19,6 +19,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'findit',
+    'test_utils',
     'recipe_engine/properties',
     'recipe_engine/step',
 ]
@@ -44,8 +45,8 @@ def RunSteps(api, properties):
         builder_config, set_output_commit=False)
     api.chromium_swarming.configure_swarming('chromium', precommit=False)
 
-    step_test, compile_targets = compute_step_test_and_compile_targets(
-        api, targets_config, properties.test_to_run)
+    step_tests, compile_targets = compute_step_test_and_compile_targets(
+        api, targets_config, properties.tests_to_run)
     api.step.empty(
         'Compute compile targets for test',
         step_text="There are {0} compile targets. Compile targets are {1}."
@@ -59,37 +60,38 @@ def RunSteps(api, properties):
         targets_config,
         compile_targets,
         override_execution_mode=ctbc.COMPILE_AND_TEST,
-        tests=step_test)
+        tests=step_tests)
 
     if compile_result and compile_result.status != common_pb.SUCCESS:
       # TODO (nqmtuan): Send result back to LUCI Bisection.
       return compile_result.status
-
-    # Run tests.
-    test_runner = api.chromium_tests.create_test_runner(
-        step_test, suffix='bisection')
     with api.chromium_tests.wrap_chromium_tests(
-        builder_config, tests=step_test):
-      test_result = test_runner()
+        builder_config, tests=step_tests):
+      rdb_results, _, _ = api.test_utils.run_tests_once(step_tests, 'bisection')
       # TODO (nqmtuan): Send to LUCI bisection.
       api.step.empty(
           'Send result to LUCI Bisection',
-          step_text=(
-              'Send to LUCI Bisection with result {}'.format(test_result)))
-      return test_result
+          step_text=('Send to LUCI Bisection with result {}'.format(
+              rdb_results.to_jsonish())))
 
 
-def compute_step_test_and_compile_targets(api, targets_config, test_to_run):
-  """Returns the step test and compile targets.
+def compute_step_test_and_compile_targets(api, targets_config, tests_to_run):
+  """Returns the step tests and compile targets.
 
-  The step test will be set with the test filter to run only the test_to_run.
-  Note: the step test returned will be in an array, for the purpose of passing
-  to other functions down the line.
+  The step tests will be set with the test filter to run only the tests_to_run.
   """
+  test_names_by_test_suite = dict()
+  for test_to_run in tests_to_run:
+    test_names = test_names_by_test_suite.setdefault(
+        test_to_run.test_suite_name, [])
+    test_names.append(test_to_run.test_name)
+
+  test_suites = []
+  compile_targets = []
   for test in targets_config.all_tests:
-    if test.canonical_name == test_to_run.test_suite_name:
-      # Only runs this test in the test suite.
-      test_filter = [test_to_run.test_name]
+    if test.canonical_name in test_names_by_test_suite:
+      # Only runs tests presented in tests_to_run.
+      test_filter = test_names_by_test_suite[test.canonical_name]
       test_options = steps.TestOptions.create(test_filter=test_filter)
       test.test_options = test_options
 
@@ -97,13 +99,15 @@ def compute_step_test_and_compile_targets(api, targets_config, test_to_run):
       # This may prevent errors in the result handlers, for example,
       # when we don't have the permission to upload the result.
       test.spec = attr.evolve(test.spec, results_handler_name=None)
-      return [test], test.compile_targets()
-  # No tests found.
-  api.step.empty(
-      'Error: Could not find test',
-      status=api.step.FAILURE,
-      step_text=('Could not find test {} in test suite {}'.format(
-          test_to_run.test_name, test_to_run.test_suite_name)))
+      test_suites.append(test)
+      compile_targets.extend(test.compile_targets())
+  if not test_suites:
+    # No tests found.
+    api.step.empty(
+        'Error: Could not find test',
+        status=api.step.FAILURE,
+        step_text=('Could not find tests {}'.format(tests_to_run)))
+  return test_suites, compile_targets
 
 
 def GenTests(api):
@@ -125,7 +129,11 @@ def GenTests(api):
     _default_spec = target_builder_group, {
         target_builder: {
             'gtest_tests': [{
-                'test': 'fake-gtest',
+                'test': 'fake-gtest'
+            }, {
+                'test': 'fake-gtest-2'
+            }, {
+                'test': 'fake-gtest-3'
             }],
             'scripts': [{
                 'name': 'fake-script-test',
@@ -144,25 +152,38 @@ def GenTests(api):
     ], api.empty_test_data())
     return t
 
-  def setup_input_properties(api,
-                             target_builder_group='fake-group',
-                             target_builder='fake-builder',
-                             test_suite_name='fake-gtest',
-                             test_name='gtest-test'):
-    props_proto = InputProperties()
+  def setup_input_properties(
+      api,
+      tests_to_run,
+      target_builder_group='fake-group',
+      target_builder='fake-builder',
+  ):
+    """Set up input properties to test this recipe.
+
+    Attributes:
+      * tests_to_run - A list in the form of [(suite_name: test_name), ...].
+    """
+
+    props_proto = InputProperties(tests_to_run=[{
+        "test_suite_name": test[0],
+        "test_name": test[1]
+    } for test in tests_to_run])
     props_proto.target_builder.group = target_builder_group
     props_proto.target_builder.builder = target_builder
-    props_proto.test_to_run.test_suite_name = test_suite_name
-    props_proto.test_to_run.test_name = test_name
     return sum([api.properties(props_proto)], api.empty_test_data())
 
   yield api.test(
-      'should_run_test',
+      'should_run_tests',
       setup(api),
-      setup_input_properties(api),
+      setup_input_properties(
+          api,
+          tests_to_run=[('fake-gtest', 'gtest-test'),
+                        ('fake-gtest-2', 'gtest-test-2')]),
       api.post_process(MustRun, 'bot_update'),
       api.post_process(MustRun, 'compile'),
       api.post_process(MustRun, 'fake-gtest (bisection)'),
+      api.post_process(MustRun, 'fake-gtest-2 (bisection)'),
+      api.post_process(DoesNotRun, 'fake-gtest-3 (bisection)'),
       api.post_process(DoesNotRun, 'fake-script-test (bisection)'),
       api.post_process(DropExpectation),
   )
@@ -170,7 +191,7 @@ def GenTests(api):
   yield api.test(
       'compile_failure',
       setup(api),
-      setup_input_properties(api),
+      setup_input_properties(api, tests_to_run=[('fake-gtest', 'gtest-test')]),
       api.step_data('compile', retcode=1),
       api.post_process(MustRun, 'bot_update'),
       api.expect_status('FAILURE'),
@@ -181,7 +202,7 @@ def GenTests(api):
   yield api.test(
       'Test not found',
       setup(api),
-      setup_input_properties(api, test_suite_name='not_found'),
+      setup_input_properties(api, tests_to_run=[('not_found', 'gtest-test')]),
       api.post_process(MustRun, 'Error: Could not find test'),
       api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
