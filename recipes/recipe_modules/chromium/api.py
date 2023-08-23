@@ -1003,29 +1003,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           'select xcode', ['sudo', 'xcode-select', '-switch', xcode_app_path],
           infra_step=True)
 
-      # TODO(crbug.com/1472416): remove the below hack once we have implemented
-      # a programmatic way to set the correct version of runtime build every
-      # time. The hack is required for Xcode simulators to work in
-      # xc15 beta5 and 6, and possibly more xcode version in the future.
-      if xcode_build_version.lower() == '15a5209g':
-        set_runtime_cmd = [
-            'xcrun', 'simctl', 'runtime', 'match', 'set', 'iphoneos17.0',
-            '21A5291g', '--sdkBuild', '21A5291f'
-        ]
-        self.m.step(
-            'force override xc15 beta 5 runtime build',
-            set_runtime_cmd,
-            infra_step=True)
-      elif xcode_build_version.lower() == '15a5219j':
-        set_runtime_cmd = [
-            'xcrun', 'simctl', 'runtime', 'match', 'set', 'iphoneos17.0',
-            '21A5303d', '--sdkBuild', '21A5303c'
-        ]
-        self.m.step(
-            'force override xc15 beta 6 runtime build',
-            set_runtime_cmd,
-            infra_step=True)
-
       # Kill all ibtoold processes. When multiple Xcode version is used on the
       # same bot, multiple ibtoold processes from different Xcode might cause
       # compile failues. See crbug.com/1297159. The cmd returns 0 if processes

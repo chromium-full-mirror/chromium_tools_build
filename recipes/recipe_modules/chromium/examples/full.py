@@ -399,56 +399,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'mac_toolchain_properties_xcode_15a5209g',
-      api.platform('mac', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          out_dir='/tmp',
-          target_platform='mac',
-          configs=['mac_toolchain'],
-          xcode_build_version='15a5209g',
-      ),
-      api.post_process(post_process.StepSuccess,
-                       'ensure xcode.force override xc15 beta 5 runtime build'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'mac_toolchain_properties_xcode_15a5219j',
-      api.platform('mac', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          out_dir='/tmp',
-          target_platform='mac',
-          configs=['mac_toolchain'],
-          xcode_build_version='15a5219j',
-      ),
-      api.post_process(post_process.StepSuccess,
-                       'ensure xcode.force override xc15 beta 6 runtime build'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'chromeos_simplechrome',
       api.platform('linux', 64),
       api.chromium.ci_build(
