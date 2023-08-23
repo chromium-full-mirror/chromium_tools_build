@@ -24,6 +24,8 @@ CHROME_REQUIRED_FILES = {
         'default_apps',
         'default_apps/*',
         'icudtl.dat',
+        'libEGL.so',
+        'libGLESv2.so',
         'libclearkeycdm.so',
         'libclearkeycdmadapter.so',
         'libvk_swiftshader.so',
