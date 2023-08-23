@@ -2104,10 +2104,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return status
 
   def format_unrecoverable_failures(self,
-                                     unrecoverable_test_suites,
-                                     suffix,
-                                     size_limit=700,
-                                     failure_limit=4):
+                                    unrecoverable_test_suites,
+                                    suffix,
+                                    size_limit=700,
+                                    failure_limit=4):
     """Creates list of failed tests formatted using markdown.
 
     Args:
@@ -2145,7 +2145,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         deterministic_failures = suite.deterministic_failures(suffix)
 
       deterministic_failures = deterministic_failures or set()
-      if deterministic_failures:
+      if not suite.did_complete(suffix):
+        test_suite_header = (
+            '**%s** did not complete, likely due to an infra bug.' % suite.name)
+      elif deterministic_failures:
         test_suite_header = '**%s** failed because of:' % suite.name
 
       current_size += len(test_suite_header)
@@ -2155,6 +2158,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         return '\n\n'.join(test_summary_lines)
 
       test_summary_lines.append(test_suite_header)
+      if not deterministic_failures:
+        continue
 
       for idx, failure in enumerate(sorted(deterministic_failures)):
         if idx >= failure_limit or current_size >= size_limit:
