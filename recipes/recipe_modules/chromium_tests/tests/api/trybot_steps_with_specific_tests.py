@@ -959,8 +959,6 @@ def GenTests(api):
               api.test_utils.gtest_results(
                   api.json.dumps({'per_iteration_data': []}), retcode=1),
               failure=True)),
-      api.post_process(post_process.StepTextEquals, 'base_unittests',
-                       'TEST RESULTS WERE INVALID'),
       api.post_process(post_process.SummaryMarkdown,
                        '1 Test Suite(s) failed.\n\n**base_unittests** failed.'),
       api.expect_status('FAILURE'),

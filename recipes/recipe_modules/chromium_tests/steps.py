@@ -2672,12 +2672,6 @@ class LocalIsolatedScriptTest(LocalTest):
 
     _present_info_messages(step_result.presentation, self, info_messages)
 
-    if step_result.retcode == 0 and not self.has_valid_results(suffix):
-      # This failure won't be caught automatically. Need to manually
-      # raise it as a step failure.
-      raise self.api.m.step.StepFailure(
-          self.api.m.test_utils.INVALID_RESULTS_MAGIC)
-
     self.api.m.step.raise_on_failure(step_result, status)
 
 

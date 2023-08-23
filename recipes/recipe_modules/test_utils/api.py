@@ -44,9 +44,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
   deterministic errors.
   """
 
-  # This magic string is depended on by other infra tools.
-  INVALID_RESULTS_MAGIC = 'TEST RESULTS WERE INVALID'
-
   # Header for test failures that caused the build to fail.
   NEW_FAILURES_TEXT = 'Tests failed with patch, and caused build to fail:'
 
@@ -874,29 +871,12 @@ class TestUtilsApi(recipe_api.RecipeApi):
           otherwise unspecified reasons. This is a superset of
           invalid_test_suites.
     """
-    invalid_test_suites, all_failing_test_suites = self.run_tests(
+    return self.run_tests(
         test_suites,
         'with patch',
         sort_by_shard=True,
         retry_failed_shards=retry_failed_shards,
         retry_invalid_shards=retry_failed_shards)
-
-    # Set metadata about invalid test suites.
-    for t in invalid_test_suites:
-      self._invalid_test_results(t)
-
-    return (invalid_test_suites, all_failing_test_suites)
-
-  def _invalid_test_results(self, test):
-    """Marks test results as invalid.
-
-    If |fatal| is True, emits a failing step. Otherwise emits a succeeding step.
-    """
-    self.m.tryserver.set_invalid_test_results_tryjob_result()
-
-    # Record a step with INVALID_RESULTS_MAGIC, which chromium_try_flakes uses
-    # for analysis.
-    self.m.step.empty(test.name, step_text=self.INVALID_RESULTS_MAGIC)
 
   # TODO(crbug/1314194): Refactor ignored_failures and ignored_flakes to take
   # into account for ignored ToT failures exonerated by luci analysis.
@@ -992,7 +972,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
     valid_results, ignored_failures = (
         test_suite.without_patch_failures_to_ignore())
     if not valid_results:
-      self._invalid_test_results(test_suite)
       result = self.m.step.empty(
           '%s (test results summary)' % test_suite.name,
           step_text=('\n%s (without patch) did not produce valid results. '

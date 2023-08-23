@@ -2844,22 +2844,6 @@
   },
   {
     "cmd": [],
-    "name": "TRYJOB FAILURE",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@INVALID_TEST_RESULTS@@@",
-      "@@@SET_BUILD_PROPERTY@failure_type@\"INVALID_TEST_RESULTS\"@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "base_unittests",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@TEST RESULTS WERE INVALID@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "base_unittests (test results summary)",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>base_unittests (without patch) did not produce valid results. The suite likely reported no failed tests but exited non-zero.@@@",
@@ -2868,7 +2852,7 @@
   },
   {
     "cmd": [],
-    "name": "TRYJOB FAILURE (2)",
+    "name": "TRYJOB FAILURE",
     "~followup_annotations": [
       "@@@STEP_TEXT@TEST_FAILURE@@@",
       "@@@SET_BUILD_PROPERTY@failure_type@\"TEST_FAILURE\"@@@",
