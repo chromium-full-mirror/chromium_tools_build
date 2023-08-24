@@ -133,7 +133,8 @@ class DevToolsAPI(recipe_api.RecipeApi):
                                   commands,
                                   task_output_dir=None,
                                   env=None,
-                                  args=None):
+                                  args=None,
+                                  rdb_wrapped=False):
     args = list(args or [])
     tasks = []
     if not env:
@@ -145,9 +146,10 @@ class DevToolsAPI(recipe_api.RecipeApi):
     for i in range(len(commands)):
       if commands[i][0].startswith('ITERATIONS='):
         env['ITERATIONS'] = commands[i].pop(0).split('=')[1]
+      full_command = ["vpython3", "-u"] + commands[i] + args
       task = self.m.chromium_swarming.task(
           name=f'{step_name} (Shard #{i})',
-          raw_cmd=["vpython3", "-u"] + commands[i] + args,
+          raw_cmd=full_command,
           task_output_dir=task_output_dir,
           cas_input_root=cas_digest,
           env=env)
@@ -157,6 +159,12 @@ class DevToolsAPI(recipe_api.RecipeApi):
       task_dimensions.update(self.m.devtools.get_dimensions_for_platform())
       task_slice = task_slice.with_dimensions(**task_dimensions)
       task.request = task.request.with_slice(0, task_slice)
+
+      if rdb_wrapped:
+        request = task.request.with_resultdb()
+        wrapped_cmd = self.m.v8_tests.resultdb.wrap(self.m, full_command)
+        request_slice = request[0].with_command(wrapped_cmd)
+        task.request = request.with_slice(0, request_slice)
 
       self.m.chromium_swarming.trigger_task(task)
 

@@ -26,6 +26,7 @@ DEPS = [
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
+    'recipe_engine/resultdb',
     'recipe_engine/step',
     'recipe_engine/swarming',
 ]
@@ -89,6 +90,12 @@ class DevToolsTests(ABC):
                           f'#{", ".join(failed_shards)}')
 
     return failures
+
+  def include_invocations(self):
+    for task in self.tasks:
+      # Remove 'invocations/' because it is added again in include_invocations.
+      self.api.resultdb.include_invocations(
+        [i[len('invocations/'):] for i in task.get_invocation_names()])
 
   @abstractmethod
   def trigger(self):
@@ -230,6 +237,7 @@ class E2ETests(DevToolsTests):
           step_name=self.step_name,
           cas_digest=self.cas_digest,
           commands=commands,
+          rdb_wrapped=True,
       )
 
   def process_results(self):
@@ -273,6 +281,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       with api.step.nest('Trigger Tests'):
         for t in tests:
           t.trigger()
+          t.include_invocations()
 
       with api.step.nest('Linting'):
         run_lint_check(api)
@@ -530,7 +539,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.post_process(post_process.DropExpectation),
+      api.post_process(post_process.Filter().include_re('Trigger Tests.*|.*\(Shard #\d*\).*')),
       status='SUCCESS',
   )
 

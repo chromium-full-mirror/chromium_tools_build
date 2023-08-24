@@ -21,4 +21,5 @@ DEPS = [
     'recipe_engine/step',
     'recipe_engine/swarming',
     'recipe_engine/url',
+    'v8_tests',
 ]
