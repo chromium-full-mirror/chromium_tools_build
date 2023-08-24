@@ -312,6 +312,8 @@ class Generator:
     # TODO(crbug.com/1074033): Remove full_test_target.
     kwargs['full_test_target'] = raw_test_spec.get('test_target')
     kwargs['test_id_prefix'] = raw_test_spec.get('test_id_prefix')
+    kwargs['retry_only_failed_tests'] = raw_test_spec.get(
+        'retry_only_failed_tests', False)
     kwargs['check_flakiness_for_new_tests'] = raw_test_spec.get(
         'check_flakiness_for_new_tests', True)
     kwargs['allowed_failure_percentage'] = raw_test_spec.get(
