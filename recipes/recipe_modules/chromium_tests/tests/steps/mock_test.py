@@ -47,6 +47,8 @@ def RunSteps(api):
   test.relative_cwd = 'relative-cwd'
   api.assertions.assertEqual(test.relative_cwd, 'relative-cwd')
 
+  api.assertions.assertEqual(test.retry_only_failed_tests, False)
+
 
 def GenTests(api):
   failure_code = steps.MockTest.ExitCodes.FAILURE

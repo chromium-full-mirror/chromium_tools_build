@@ -467,6 +467,12 @@ class AbstractTest(abc.ABC):
     """Get the test options that will be used when running the test."""
     raise NotImplementedError()  # pragma: no cover
 
+  @property
+  @abc.abstractmethod
+  def retry_only_failed_tests(self) -> bool:
+    """Whether to retry only the failed tests, with patch."""
+    raise NotImplementedError()  # pragma: no cover
+
   @test_options.setter
   @abc.abstractmethod
   def test_options(self, value: TestOptions) -> None:
@@ -697,6 +703,8 @@ class TestSpec(AbstractTestSpec):
     * allowed_failure_percentage: Percentage in int to represent the
       allowed failure rate of a suite. If a suite has fewer
       test failures than this threshold, it will not fail the build.
+    * retry_only_failed_tests: Whether to retry only the failed tests, with
+      patch. The alternative is the status quo of retrying the entire shard.
   """
 
   _name = attrib(str)
@@ -711,6 +719,7 @@ class TestSpec(AbstractTestSpec):
   check_flakiness_for_new_tests = attrib(bool, default=True)
   results_handler_name = attrib(str, default=None)
   allowed_failure_percentage = attrib(int, default=0)
+  retry_only_failed_tests = attrib(bool, default=False)
 
   @property
   def name(self):
@@ -922,6 +931,10 @@ class Test(AbstractTest):
     return False
 
   @property
+  def retry_only_failed_tests(self) -> bool:
+    return self.spec.retry_only_failed_tests
+
+  @property
   def api(self):
     """Returns the chromium_tests RecipeApi object associated with the test."""
     return self._chromium_tests_api
@@ -1014,20 +1027,24 @@ class Test(AbstractTest):
     Args:
       suffix: A unique identifier for this test suite invocation. Must be 'with
       patch', 'retry shards with patch', or 'without patch'.
+      retry_only_failed_tests: When this is True, shards will receive a filter
+      to retry only the failed tests.
 
     Returns:
       A list of tests to retry. Returning None means all tests should be run.
     """
-    # For the initial invocation, run every test in the test suite. Also run
-    # every test when retrying shards, as we explicitly want to run every test
-    # when retrying a shard.
-    if suffix in ('with patch', 'retry shards with patch'):
+    # For the initial invocation, run every test in the test suite. Unless
+    # retry_only_failed_tests is True, run every test when retrying shards, as
+    # we explicitly want to run every test when retrying a shard.
+    if suffix == 'with patch' or (suffix == 'retry shards with patch' and
+                                  not self.retry_only_failed_tests):
       return None
 
     # For the second invocation, run previously deterministically failing tests.
     # When a patch is adding a new test (and it fails), the test runner is
     # required to just ignore the unknown test.
-    if suffix == 'without patch':
+    if suffix == 'without patch' or (suffix == 'retry shards with patch' and
+                                     self.retry_only_failed_tests):
       # Invalid results should be treated as if every test failed.
       valid_results, failures = self.with_patch_failures_including_retry()
       return sorted(
@@ -2327,12 +2344,23 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     elif self.spec.idempotent is not None:
       task_slice = task_slice.with_idempotent(self.spec.idempotent)
 
+    # task.shard_indices dictates how many shards will be triggered
     if suffix == 'retry shards with patch':
       task.task_to_retry = self._tasks['with patch']
       assert task.task_to_retry, (
           '\'retry_shards_with_patch\' expects that the \'with patch\' phase '
           'has already run, but it apparently hasn\'t.')
-      task.shard_indices = task.task_to_retry.failed_shards
+      # Even though the handful of failed tests can probably run fine inside
+      # just 1 shard, the failed tests could each be taking 2-3 minutes causing
+      # the whole shard to time out. To prevent 60m timed out shards, spread
+      # out the failed tests across multiple shards. The quantity of shards
+      # used will be the quantity of failed shards from the first invocation.
+      if self.retry_only_failed_tests:
+        len_failed_shards = len(task.task_to_retry.failed_shards)
+        task.shards = len_failed_shards
+        task.shard_indices = range(len_failed_shards)
+      else:
+        task.shard_indices = task.task_to_retry.failed_shards
       # Test suite failure is determined by merging and examining the JSON
       # output from the shards. Failed shards are determined by looking at the
       # swarming output [retcode !=0 or state != 'SUCCESS']. It is possible that
@@ -2463,7 +2491,12 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self._update_failure_on_exit(suffix,
                                  bool(self._tasks[suffix].failed_shards))
 
-    _present_info_messages(step_result.presentation, self, info_messages)
+    info_message_list = list(info_messages)
+    if suffix == 'retry shards with patch' and self.retry_only_failed_tests:
+      info_message_list.append(
+          'Ran only previously failing tests, instead of the entire shard. '
+          'This is enabled on a per suite and per builder basis.\n')
+    _present_info_messages(step_result.presentation, self, info_message_list)
 
     self._present_rdb_results(step_result, self._rdb_results.get(suffix))
 
@@ -2843,6 +2876,8 @@ class MockTestSpec(TestSpec):
       valid results for the suffix.
     * invocation_names - Used as return value in |MockTest|'s
       |get_invocation_names| method.
+    * retry_only_failed_tests - Whether to only retry failed tests, instead
+      of the entire shard.
   """
 
   failures = attrib(sequence[str], default=())
@@ -2854,6 +2889,7 @@ class MockTestSpec(TestSpec):
   invocation_names = attrib(sequence[str], default=[])
   supports_rts = attrib(bool, default=False)
   option_flags = attrib(TestOptionFlags, default=_DEFAULT_OPTION_FLAGS)
+  retry_only_failed_tests = attrib(bool, default=False)
 
   @property
   def test_class(self):
@@ -2937,6 +2973,10 @@ class MockTest(AbstractSwarmingTest, Test):
   def shards(self):
     assert self.runs_on_swarming
     return self.spec.shards
+
+  @property
+  def retry_only_failed_tests(self) -> bool:
+    return self.spec.retry_only_failed_tests
 
   def get_task(self, suffix):
     assert self.runs_on_swarming

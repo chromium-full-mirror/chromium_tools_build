@@ -60,6 +60,9 @@ def RunSteps(api, fail_calculate_tests, fail_mb_and_compile,
   kwargs = {}
   if api.properties.get('shards'):
     kwargs['shards'] = api.properties['shards']
+  if api.properties.get('retry_only_failed_tests'):
+    kwargs['retry_only_failed_tests'] = (
+        api.properties['retry_only_failed_tests'])
 
   test_specs = [steps.SwarmingGTestTestSpec.create('base_unittests', **kwargs)]
 
@@ -510,6 +513,48 @@ def GenTests(api):
           '(without patch)', lambda check, req: check(req.priority == 29)),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'retry_only_failed_tests',
+      api.platform('linux', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          },
+          retry_failed_shards=True,
+          retry_only_failed_tests=True,
+      ),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests',
+          'with patch',
+          failures=['Test.One'],
+          successes=['Test.Two'],
+      ),
+      api.post_process(
+          post_process.LogContains,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests '
+          '(retry shards with patch)',
+          'json.input',
+          ['--gtest_filter', 'Test.One'],
+      ),
+      api.post_process(
+          post_process.LogDoesNotContain,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests '
+          '(retry shards with patch)',
+          'json.input',
+          ['Test.Two'],
+      ),
+      api.post_process(post_process.DropExpectation),
   )
 
   def generate_one_failed_shard_raw():
