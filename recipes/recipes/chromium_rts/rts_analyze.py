@@ -97,7 +97,7 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
       ],
       stdout=api.raw_io.output_text())
   step_result.presentation.step_text = step_result.stdout
-  match = re.search(r'(\d+\.\d+)%\s*\|\s*(\d+\.\d+)%', step_result.stdout)
+  match = re.search(r'(\d+\.\d+)%\s*\|\s*<?(\d+\.\d+)%', step_result.stdout)
   if not match:
     # No summary table implies something went wrong with the analysis
     step_result.presentation.status = api.step.FAILURE
