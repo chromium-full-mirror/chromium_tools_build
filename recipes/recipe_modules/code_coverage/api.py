@@ -454,6 +454,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     for test_type in self._test_types:
       if test_type not in constants.SUPPORTED_TEST_TYPES:
         raise Exception('Unsupported test type %s.' % test_type)
+    assert not self.use_javascript_coverage or len(self._test_types) == 1, (
+        'JS coverage only supports one test type, current types: %s' %
+        self._test_types)
 
   def _set_builder_output_properties_for_uploads(self, has_coverage_data=True):
     """Sets the output property of the builder."""
