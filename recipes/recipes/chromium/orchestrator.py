@@ -14,6 +14,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'code_coverage',
     'depot_tools/tryserver',
+    'recipe_engine/buildbucket',
     'recipe_engine/cas',
     'recipe_engine/cv',
     'recipe_engine/json',
@@ -38,6 +39,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
@@ -83,6 +85,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.platform('linux', 64),
       ctbc_api.properties(

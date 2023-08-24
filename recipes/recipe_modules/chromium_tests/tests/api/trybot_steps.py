@@ -840,6 +840,7 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
           experiments=['chromium_rts.experimental_model'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {
@@ -871,6 +872,7 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
           experiments=['chromium_rts.dry_run_rts'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
@@ -928,6 +930,7 @@ def GenTests(api):
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
           experiments=['chromium_rts.dry_run_rts'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
@@ -982,6 +985,7 @@ def GenTests(api):
           builder='rts-rel',
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
@@ -1070,6 +1074,7 @@ def GenTests(api):
           builder='rts-rel',
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec(
           'chromium.test', {
@@ -1104,6 +1109,7 @@ def GenTests(api):
           builder='rts-rel',
           builder_db=_TEST_BUILDERS,
           try_db=_TEST_TRYBOTS,
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests.read_targets_spec('chromium.test', {
           'chromium-rel': {

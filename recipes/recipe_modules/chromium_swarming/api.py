@@ -1680,8 +1680,13 @@ class SwarmingApi(recipe_api.RecipeApi):
     if precommit:
       self.default_priority = 30
       self.add_default_tag('purpose:pre-commit')
-      if self.m.cv.active:
+      # Attempting to get the attempt key when launched by led will raise an
+      # exception since the necessary build tag won't be there. Also, led builds
+      # aren't really serving the purpose of CQ, so this will remove them from
+      # consideration when doing data analysis on CQ tasks.
+      if self.m.cv.active and not self.m.led.launched_by_led:
         self.add_default_tag('purpose:CQ')
+        self.add_default_tag(f'cq-attempt-key:{self.m.cv.attempt_key}')
       else:
         self.add_default_tag('purpose:ManualTS')
 

@@ -1433,6 +1433,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         An array of test suites which irrecoverably failed.
           If all test suites succeeded, returns an empty array.
     """
+    self.configure_swarming(
+        self.m.tryserver.is_tryserver, task_output_stdout='none')
+
     with self.wrap_chromium_tests(task.builder_config, task.test_suites):
       # Run the test. The isolates have already been created.
       invalid_test_suites, failing_test_suites = (
@@ -2304,9 +2307,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         timeout=3600,
         no_fetch_tags=True,
         root_solution_revision=root_solution_revision)
-
-    self.configure_swarming(
-        self.m.tryserver.is_tryserver, task_output_stdout='none')
 
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True

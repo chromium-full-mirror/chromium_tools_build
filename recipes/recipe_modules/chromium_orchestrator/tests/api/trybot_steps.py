@@ -93,7 +93,8 @@ def GenTests(api):
         builder=builder,
         experiments=experiments,
         revision='d3advegg13',
-        tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345'),
+        tags=api.buildbucket.tags(
+            cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
     )
 
   yield api.test(
@@ -165,7 +166,9 @@ def GenTests(api):
           experiments=['chromium.compile_only_for_non_rollers'],
           tags=api.buildbucket.tags(
               cq_cl_owner=('chromium-internal-autoroll'
-                           '@skia-corp.google.com.iam.gserviceaccount.com'),),
+                           '@skia-corp.google.com.iam.gserviceaccount.com'),
+              cq_attempt_key='fake-cq-attempt-key',
+          ),
       ),
       api.post_process(post_process.DoesNotRun,
                        'trigger compilator (with patch)'),
@@ -187,6 +190,7 @@ def GenTests(api):
           builder_group='fake-try-group',
           builder='fake-orchestrator',
           experiments=['chromium.compile_only_for_non_rollers'],
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_orchestrator.override_compilator_build_proto_fetch(),
       api.chromium_orchestrator.override_schedule_compilator_build(),
@@ -201,6 +205,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -229,7 +234,8 @@ def GenTests(api):
   )
 
   yield api.test(
-      'non_src_CL', default_properties(),
+      'non_src_CL',
+      default_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -241,19 +247,23 @@ def GenTests(api):
       api.chromium.try_build(
           builder='fake-orchestrator',
           git_repo='https://chromium.googlesource.com/v8/v8',
-      ), api.code_coverage(use_clang_coverage=True),
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      api.code_coverage(use_clang_coverage=True),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
           tester='fake-tester',
-      ), api.chromium_orchestrator.override_compilator_steps(),
+      ),
+      api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
           is_swarming_phase=False),
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'without_patch_compilator',
@@ -306,6 +316,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder='fake-orchestrator',
           git_repo='https://chromium.googlesource.com/v8/v8',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_orchestrator.override_compilator_steps(
           include_override_deps=True),
@@ -389,6 +400,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.cv(run_mode='FULL_RUN'),
       api.post_process(post_process.DoesNotRun,
@@ -402,6 +414,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -427,6 +440,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -461,6 +475,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -477,6 +492,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -501,6 +517,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -525,6 +542,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -562,6 +580,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.chromium_tests_builder_config.try_build(
           builder_group='fake-group',
@@ -590,6 +609,7 @@ def GenTests(api):
                       ),
               }
           }),
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.properties(
           **{
@@ -635,10 +655,6 @@ def GenTests(api):
 
   yield api.test(
       'quick run enabled but not used',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-      ),
       api.chromium_tests_builder_config.try_build(
           builder_group='fake-group',
           builder='fake-tester',
@@ -666,6 +682,7 @@ def GenTests(api):
                       ),
               }
           }),
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       api.properties(
           **{
@@ -759,6 +776,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -783,6 +801,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -817,6 +836,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -860,6 +880,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -897,6 +918,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -937,6 +959,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -973,6 +996,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1015,6 +1039,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1061,6 +1086,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1106,6 +1132,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1218,6 +1245,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1260,6 +1288,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1307,6 +1336,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1344,6 +1374,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1374,6 +1405,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1424,6 +1456,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1454,6 +1487,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1477,6 +1511,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1515,6 +1550,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1540,6 +1576,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
@@ -1956,6 +1993,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
       default_properties(),
       api.properties(
