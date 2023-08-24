@@ -176,8 +176,13 @@ class InteractionsTests(DevToolsTests):
           cas_digest=self.cas_digest,
           task_output_dir=self.output_dir,
           env={
-              "FORCE_UPDATE_ALL_GOLDENS": 'True',
-              "THROW_AFTER_GOLDENS_UPDATE": 'True',
+              "FORCE_UPDATE_ALL_GOLDENS":
+                  'True',
+              "THROW_AFTER_GOLDENS_UPDATE":
+                  'True',
+              "HTML_OUTPUT_FILE":
+                  self.api.path.join('${ISOLATED_OUTDIR}',
+                                     'interactions_failure_screenshots.html'),
           },
           commands=[[
               self.api.path.join('third_party', 'node', 'node.py'),
@@ -238,6 +243,11 @@ class E2ETests(DevToolsTests):
           cas_digest=self.cas_digest,
           commands=commands,
           rdb_wrapped=True,
+          env={
+              "HTML_OUTPUT_FILE":
+                  self.api.path.join('${ISOLATED_OUTDIR}',
+                                     'e2e_failure_screenshots.html'),
+          },
       )
 
   def process_results(self):

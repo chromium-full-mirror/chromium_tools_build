@@ -90,6 +90,11 @@ def RunSteps(api, clobber, e2e_env, runner_args, parallel):
               cas_digest=cas_digest,
               commands=api.devtools.divided_e2e_commands(
                   builder_config, 4, test_pattern, iterations),
+              env={
+                  "HTML_OUTPUT_FILE":
+                      api.path.join('${ISOLATED_OUTDIR}',
+                                    'e2e_failure_screenshots.html'),
+              },
           )
         with api.step.nest('E2E Tests shards results'):
           failed_shards = []
