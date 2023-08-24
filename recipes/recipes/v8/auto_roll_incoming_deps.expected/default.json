@@ -1402,44 +1402,6 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
-      "gitmodules"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
-    },
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "v8:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Update trusted deps.gclient gitmodules",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
       "git",
       "diff"
     ],
@@ -2059,44 +2021,6 @@
       }
     },
     "name": "Update reviewed deps.gclient setdep tools_clang-reviewed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
-      "gitmodules"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "v8/ci/default/8945511751514863184"
-    },
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "v8:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Update reviewed deps.gclient gitmodules",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
