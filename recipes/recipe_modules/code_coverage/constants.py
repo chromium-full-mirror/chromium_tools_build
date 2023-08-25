@@ -127,3 +127,6 @@ PLATFORM_TO_TARGET_NAME_PATTERN_MAP[
     'linux64'] = PLATFORM_TO_TARGET_NAME_PATTERN_MAP['linux']
 
 BINARY_RELATIVE_PATHS_JSON_FILE_NAME = 'binary_relative_paths_for_clang_code_coverage.json'
+
+JAVA_COVERAGE_DIR = 'java_coverage'
+JS_COVERAGE_DIR = 'js_coverage'

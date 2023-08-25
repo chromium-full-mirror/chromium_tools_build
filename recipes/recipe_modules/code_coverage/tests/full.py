@@ -56,7 +56,7 @@ def RunSteps(api):
     api.path.mock_add_paths(metadata_dir.join('all.json.gz'))
   if api.properties.get('mock_javascript_lcov_path', True):
     api.path.mock_add_paths(
-        api.chromium.output_dir.join('coverage').join('lcov.info'))
+        api.chromium.output_dir.join('js_coverage').join('lcov.info'))
   if api.properties.get('build_dir'):
     api.code_coverage.build_dir = api.properties.get('build_dir')
 

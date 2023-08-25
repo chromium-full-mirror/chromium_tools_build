@@ -598,7 +598,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             '--sources-json-dir',
             self.build_dir,
             '--java-coverage-dir',
-            self.build_dir.join('coverage'),
+            self.build_dir.join(constants.JAVA_COVERAGE_DIR),
         ])
 
     if self.use_javascript_coverage:
@@ -711,7 +711,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     with self.m.step.nest('process java coverage (%s)' %
                           self._current_processing_test_type):
       try:
-        coverage_dir = self.build_dir.join('coverage')
+        coverage_dir = self.build_dir.join(constants.JAVA_COVERAGE_DIR)
         output_dir = self.metadata_dir
         cmd = [
             'python3',
@@ -798,7 +798,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     with self.m.step.nest('process javascript coverage (%s)' %
                           self._current_processing_test_type):
       try:
-        coverage_dir = self.build_dir.join('coverage')
+        coverage_dir = self.build_dir.join(constants.JS_COVERAGE_DIR)
         if not self.m.path.exists('%s/lcov.info' % coverage_dir):
           raise self.m.step.StepFailure("Required lcov.info is missing at %s" %
                                         coverage_dir)
@@ -1042,7 +1042,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if self.use_java_coverage:
       args.extend([
           '--java-coverage-dir',
-          self.build_dir.join('coverage'),
+          self.build_dir.join(constants.JAVA_COVERAGE_DIR),
           '--jacococli-path',
           self.src_dir.join('third_party', 'jacoco', 'lib', 'jacococli.jar'),
           '--merged-jacoco-filename',
@@ -1051,7 +1051,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if self.use_javascript_coverage:
       args.extend([
           '--javascript-coverage-dir',
-          self.build_dir.join('coverage'),
+          self.build_dir.join(constants.JS_COVERAGE_DIR),
           '--chromium-src-dir',
           self.src_dir,
           '--build-dir',
