@@ -35,6 +35,7 @@ def RunSteps(api):
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(builder_config)
+  metadata_dir = api.code_coverage.metadata_dir
   # Fake path.
   api.profiles.src_dir = api.path['start_dir']
   api.code_coverage.src_dir = api.path['start_dir']
@@ -52,8 +53,7 @@ def RunSteps(api):
     api.path.mock_add_paths(
         api.profiles.profile_dir().join('overall-merged.profdata'))
   if api.properties.get('mock_java_tests_metadata_path', True):
-    api.path.mock_add_paths(
-        api.chromium.output_dir.join('coverage').join('all.json.gz'))
+    api.path.mock_add_paths(metadata_dir.join('all.json.gz'))
   if api.properties.get('mock_javascript_lcov_path', True):
     api.path.mock_add_paths(
         api.chromium.output_dir.join('coverage').join('lcov.info'))

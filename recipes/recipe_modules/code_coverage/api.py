@@ -712,13 +712,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                           self._current_processing_test_type):
       try:
         coverage_dir = self.build_dir.join('coverage')
+        output_dir = self.metadata_dir
         cmd = [
             'python3',
             self.resource('generate_coverage_metadata_for_java.py'),
             '--src-path',
             self.src_dir,
             '--output-dir',
-            coverage_dir,
+            output_dir,
             '--coverage-dir',
             coverage_dir,
             '--sources-json-dir',
@@ -751,7 +752,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if self._export_coverage_to_zoss:
           for repo in constants.COVERAGE_REPOS:
             self.m.gsutil.upload(
-                source=coverage_dir.join('coverage.xml'),
+                source=output_dir.join('coverage.xml'),
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/coverage.xml' % self._compose_gs_path_for_zoss_upload(
                     builder=self._compose_current_mimic_builder_name(),
@@ -762,14 +763,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 name='export coverage data to zoss for host %s' % repo['host'])
             self.m.file.write_json(
                 name='create zoss metadata json for host %s' % repo['host'],
-                dest=coverage_dir.join('zoss_metadata.json'),
+                dest=output_dir.join('zoss_metadata.json'),
                 data=self._get_zoss_metadata(
                     zoss_host=repo['host'],
                     zoss_project=repo['project'],
                     coverage_format='JACOCO_XML',
                     coverage_type=self._current_processing_test_type))
             self.m.gsutil.upload(
-                source=coverage_dir.join('zoss_metadata.json'),
+                source=output_dir.join('zoss_metadata.json'),
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
                     builder=self._compose_current_mimic_builder_name(),
@@ -779,13 +780,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 multithreaded=True,
                 name='export metadata to zoss for host %s' % repo['host'])
 
-        metadata_path = coverage_dir.join('all.json.gz')
+        metadata_path = output_dir.join('all.json.gz')
         if not self.m.path.exists(metadata_path):
           self.m.step.empty(
               'skip processing because %s tests metadata was missing' %
               self._current_processing_test_type)
           return
-        self._persist_coverage_artifacts(source_dir=coverage_dir, **kwargs)
+        self._persist_coverage_artifacts(source_dir=output_dir, **kwargs)
       except self.m.step.StepFailure:
         self.m.step.active_result.presentation.properties[
             'process_coverage_data_failure'] = True
@@ -801,13 +802,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if not self.m.path.exists('%s/lcov.info' % coverage_dir):
           raise self.m.step.StepFailure("Required lcov.info is missing at %s" %
                                         coverage_dir)
+        output_dir = self.metadata_dir
         cmd = [
             'python3',
             self.resource('generate_coverage_metadata_for_javascript.py'),
             '--src-path',
             self.src_dir,
             '--output-dir',
-            coverage_dir,
+            output_dir,
             '--coverage-dir',
             coverage_dir,
         ]
@@ -822,7 +824,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               dir_metadata_path,
           ])
         self.m.step('Generate JavaScript coverage metadata', cmd)
-        self._persist_coverage_artifacts(source_dir=coverage_dir, **kwargs)
+        self._persist_coverage_artifacts(source_dir=output_dir, **kwargs)
         # Upload data to zoss to show it on code search
         if self._export_coverage_to_zoss:
           for repo in constants.COVERAGE_REPOS:
@@ -838,14 +840,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 name='export coverage data to zoss for host %s' % repo['host'])
             self.m.file.write_json(
                 name='create zoss metadata json for host %s' % repo['host'],
-                dest=coverage_dir.join('zoss_metadata.json'),
+                dest=output_dir.join('zoss_metadata.json'),
                 data=self._get_zoss_metadata(
                     zoss_host=repo['host'],
                     zoss_project=repo['project'],
                     coverage_format='LCOV',
                     coverage_type=self._current_processing_test_type))
             self.m.gsutil.upload(
-                source=coverage_dir.join('zoss_metadata.json'),
+                source=output_dir.join('zoss_metadata.json'),
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
                     builder=self._compose_current_mimic_builder_name(),
