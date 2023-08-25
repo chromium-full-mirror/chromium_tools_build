@@ -186,6 +186,13 @@ class Command:
     return ['python3', '-u'] + cmd
 
 
+class ReturnException(Exception):
+
+  def __init__(self, message):
+    super().__init__()
+    self.message = message
+
+
 def raw_gs_url_template(builder_group, buildername):
   return f'gs://chromium-v8/isolated/{builder_group}/{buildername}/%s.json'
 
@@ -561,6 +568,10 @@ class Runner:
     if self.failure_regexp and not self.failure_regexp.search(output):
       return 0
 
+    no_cas = re.search(r'\w+\/\d+ not found in the CAS', output)
+    if no_cas:
+      raise ReturnException(
+          'Bisect goes too far back. Builds went out of retention.')
     match = re.search(r'=== (\d+) tests failed', output)
     assert match
     return int(match.group(1))
@@ -695,25 +706,19 @@ class Bisector(Validator):
         represents the range of good..bad revision found.
     """
     commit_offset = 1
-    for bisect_step_num in range(MAX_BISECT_STEPS):
+    for _ in range(MAX_BISECT_STEPS):
       from_offset = to_offset + commit_offset
 
       # Check if from_offset is a good revision, otherwise iterate backwards.
       from_offset = self.builds.find_closest_build(from_offset)
       self.report_revision('Checking %s', from_offset)
-      try:
-        if not self.is_bad_func(from_offset):
-          return from_offset, to_offset
-      except self.api.step.InfraFailure as e:
-        if bisect_step_num >= MAX_BISECT_STEPS / 2:
-          raise self.api.step.StepFailure(
-              'Unable to retrieve from CAS, probably went out of retention')
-        raise e
+      if not self.is_bad_func(from_offset):
+        return from_offset, to_offset
 
       to_offset = from_offset
       commit_offset *= 2
 
-    raise api.step.StepFailure(
+    raise self.api.step.StepFailure(
         'Could not find a good revision.')  # pragma: no cover
 
   def bisect_into(self, from_offset, to_offset):
@@ -905,7 +910,13 @@ def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
     'bug_url': '<bug-url>',
   })
 
-  return bisector.bisect(known_bad_offset)
+  try:
+    return bisector.bisect(known_bad_offset)
+  except ReturnException as e:
+    return RawResult(
+        status=common_pb.FAILURE,
+        summary_markdown=e.message,
+    )
 
 
 def GenTests(api):
@@ -1235,22 +1246,6 @@ def GenTests(api):
       status='FAILURE',
   )
 
-  # Simulate not returning a JSON output after many iterations.
-  yield api.test(
-      'long_bisection_with_no_json_output',
-      builder_properties(),
-      successful_lookups(0),
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      sum((one_bisect_iteration(i) for i in range(1, 10)),
-          api.empty_test_data()),
-      is_flaky(511, 0, 1, no_output=True),
-      api.post_process(
-          SummaryMarkdown,
-          'Unable to retrieve from CAS, probably went out of retention'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
-  )
-
   # Simulate not returning a JSON output after a few iterations.
   yield api.test(
       'short_bisection_with_no_json_output',
@@ -1328,6 +1323,21 @@ def GenTests(api):
           output_prefix='has foo and bar in the output...\n'),
       api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
       api.post_process(DropExpectation),
+  )
+
+  # Simulate digest not found in CAS.
+  yield api.test(
+      'repro_digest_not_found',
+      builder_properties(mode='regression'),
+      get_revisions(1, 1),
+      successful_lookups(0, 1),
+      is_flaky(0, 0, 5, calibration_attempt=1),
+      is_flaky(1, 0, 0, output_prefix='abc123/123 not found in the CAS\n'),
+      api.post_process(
+          SummaryMarkdown,
+          'Bisect goes too far back. Builds went out of retention.'),
+      api.post_process(DropExpectation),
+      status='FAILURE',
   )
 
   # Simulate repro-only mode not reproducing a flake by regexp.
