@@ -84,7 +84,7 @@ def RunSteps(api, clobber, e2e_env, runner_args, parallel):
           test_pattern = e2e_env['TEST_PATTERNS']
         if 'ITERATIONS' in e2e_env:
           iterations = e2e_env['ITERATIONS']
-        with api.step.nest('E2E Tests'):
+        with api.step.nest('Trigger Tests'):
           tasks = api.devtools.trigger_test_swarming_tasks(
               step_name='E2E Tests',
               cas_digest=cas_digest,
@@ -96,7 +96,7 @@ def RunSteps(api, clobber, e2e_env, runner_args, parallel):
                                     'e2e_failure_screenshots.html'),
               },
           )
-        with api.step.nest('E2E Tests shards results'):
+        with api.step.nest('E2E Tests'):
           failed_shards = []
           for i in range(len(tasks)):
             step, is_valid = api.chromium_swarming.collect_task(tasks[i])
@@ -166,7 +166,7 @@ def GenTests(api):
           'TEST_PATTERNS': 'test/example_test.ts'
       }),
       api.step_data(
-          'E2E Tests.divide test run',
+          'Trigger Tests.divide test run',
           api.raw_io.stream_output_text(
               'node runner config pattern', stream='stdout')),
       api.post_process(post_process.MustRun, 'archive'),
@@ -186,12 +186,11 @@ def GenTests(api):
       try_build(builder='parallel_linux'),
       api.properties(parallel=True),
       api.step_data(
-          'E2E Tests.divide test run',
+          'Trigger Tests.divide test run',
           api.raw_io.stream_output_text(
               'node runner config pattern', stream='stdout')),
-      api.step_data(
-          'E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04',
-          api.chromium_swarming.summary(None, data)),
+      api.step_data('E2E Tests.E2E Tests (Shard #0) on Ubuntu-22.04',
+                    api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation),
