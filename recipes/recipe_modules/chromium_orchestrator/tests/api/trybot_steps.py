@@ -1283,6 +1283,10 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  def StepTextDoesNotContain(check, step_odict, step, unexpected_substrs):
+    for unexpected in unexpected_substrs:
+      check(unexpected not in step_odict[step].step_text)
+
   yield api.test(
       'retry_without_patch_fails_tests_and_local_tests',
       api.chromium.try_build(
@@ -1318,14 +1322,18 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'without patch', failures=['Test.One']),
+          'browser_tests',
+          'without patch',
+          failures=['Test.One'],
+          expected_skips=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'content_unittests', 'with patch', failures=['Test.One']),
       api.post_process(post_process.ResultReasonRE,
                        '.*headless_python_unittests.*'),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
-      api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
+      api.post_process(StepTextDoesNotContain, 'browser_tests (without patch)',
+                       ['Test.Two']),
       api.post_process(post_process.MustRun, 'Tests statistics'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),

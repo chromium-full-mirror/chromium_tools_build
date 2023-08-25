@@ -428,6 +428,8 @@ class RDBPerSuiteResults:
           if all(tr.status == test_result_pb2.SKIP for tr in test_results):
             unexpected_skipped_tests.add(individual_test)
           continue
+      if all(tr.expected for tr in test_results):
+        continue
       individual_unexpected_test_by_test_name[
           individual_test.test_name] = individual_test
       if all(tr.status != test_result_pb2.PASS for tr in test_results):

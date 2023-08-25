@@ -153,6 +153,7 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
                   passed_tests=None,
                   expected_failing_tests=None,
                   skipped_tests=None,
+                  expected_skipped_tests=None,
                   flaky_failing_tests=None,
                   flaky_passing_tests=None,
                   successful_tests=None):
@@ -167,6 +168,8 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       expected_failing_tests: Like failing_tests above, but resultdb will report
           these tests as expected to fail.
       skipped_tests: Same as failing_tests above, but with rdb_test_result.SKIP.
+      expected_skipped_tests: Same as expected_failing_tests above, but with
+          rdb_test_result.SKIP.
       flaky_failing_tests: List of test cases that fail with statuses
           (PASS, FAIL)
       flaky_passing_tests: List of test cases that pass with statuses
@@ -207,6 +210,8 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       invocations.append(_generate_invocation(t, rdb_test_result.FAIL, True))
     for t in skipped_tests or []:
       invocations.append(_generate_invocation(t, rdb_test_result.SKIP, False))
+    for t in expected_skipped_tests or []:
+      invocations.append(_generate_invocation(t, rdb_test_result.SKIP, True))
     for t in passed_tests or []:
       invocations.append(_generate_invocation(t, rdb_test_result.PASS, True))
     for t in flaky_failing_tests or []:

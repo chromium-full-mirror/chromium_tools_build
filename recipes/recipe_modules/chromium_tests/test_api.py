@@ -55,7 +55,8 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
                                    successes=None,
                                    flaky_failing_tests=None,
                                    expected_failures=None,
-                                   skips=None):
+                                   skips=None,
+                                   expected_skips=None):
     """Adds overrides for the swarming-collect and rdb-query steps of a test.
 
     To mock a swarming test's results, step data needs to be provided for the
@@ -77,6 +78,7 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
       failures: List of names of test cases that failed.
       flaky_failing_tests: List of names of test cases that failed and passed.
       expected_failures: List of names of test cases that failed expectedly.
+      expected_failures: List of names of test cases that expectedly skipped.
       skips: List of names of test cases that were unexpectedly skipped.
     """
     failures = failures if failures else []
@@ -109,4 +111,5 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
                     passed_tests=successes,
                     flaky_failing_tests=flaky_failing_tests,
                     expected_failing_tests=expected_failures,
-                    skipped_tests=skips)))
+                    skipped_tests=skips,
+                    expected_skipped_tests=expected_skips)))
