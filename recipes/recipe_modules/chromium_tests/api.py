@@ -6,6 +6,7 @@ import attr
 import collections
 import contextlib
 import itertools
+import time
 import traceback
 from typing import Iterable
 from urllib.parse import urlencode
@@ -2632,7 +2633,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     gcs_path = ''
     if builder_config.skylab_gs_extra:
       gcs_path += '%s/' % builder_config.skylab_gs_extra
-    gcs_path += '%d_%s' % (self.m.buildbucket.build.id, phase.replace(' ', '_'))
+    _build_id = self.m.buildbucket.build.id
+    # This is for `led launch`, where the build_id is always 0.
+    if not _build_id:  # pragma: no cover
+      _build_id = int(time.time())
+    gcs_path += '%d_%s' % (_build_id, phase.replace(' ', '_'))
     with self.m.step.nest('prepare skylab tests'):
       # Allow other account to access files we send to skylab.
       # Some tests may use non-root account to run the executable in
