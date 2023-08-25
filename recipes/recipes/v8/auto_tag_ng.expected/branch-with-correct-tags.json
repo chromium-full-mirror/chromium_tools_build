@@ -275,6 +275,27 @@
     ]
   },
   {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://chromium.googlesource.com/v8/v8.git",
+      "refs/tags/11.4.3.3"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking branch 11.3.git ls-remote refs_tags_11.4.3.3",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@stdout@112233@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "Checking branch 11.3.Verify LKGR",
     "~followup_annotations": [
@@ -303,27 +324,6 @@
     ]
   },
   {
-    "cmd": [
-      "git",
-      "ls-remote",
-      "https://chromium.googlesource.com/v8/v8.git",
-      "refs/tags/11.4.3.3"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "name": "Checking branch 11.3.Verify LKGR.git ls-remote refs_tags_11.4.3.3",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@stdout@112233@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Checking branch 11.3.Verify LKGR.LKGR commit 112233",
     "~followup_annotations": [
@@ -339,7 +339,67 @@
   },
   {
     "cmd": [],
-    "name": "Checking branch 11.3.Verify LKGR.There is no new lkgr.",
+    "name": "Checking branch 11.3.Verify LKGR.There is no new LKGR ref.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Checking branch 11.3.Verify Chromium",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://chromium.googlesource.com/v8/v8.git",
+      "refs/heads/chromium/5113"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking branch 11.3.Verify Chromium.git ls-remote refs_heads_chromium_5113",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Checking branch 11.3.Verify Chromium.Chromium commit ",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Checking branch 11.3.Verify Chromium.HEAD commit 112233",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "push",
+      "https://chromium.googlesource.com/v8/v8.git",
+      "+112233:refs/heads/chromium/5113"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Checking branch 11.3.Verify Chromium.git push",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -348,7 +408,7 @@
     "cmd": [],
     "name": "Summary",
     "~followup_annotations": [
-      "@@@STEP_TEXT@-none-@@@"
+      "@@@STEP_TEXT@Updated refs/heads/chromium/5113@@@"
     ]
   },
   {

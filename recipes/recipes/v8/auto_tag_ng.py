@@ -44,6 +44,7 @@ DEPS = [
     'v8',
 ]
 
+CHROMIUM_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/(\d+)$')
 RELEASE_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/\d+\.\d+$')
 MAX_COMMIT_WAIT_RETRIES = 5
 REMOTE_REPO_URL = 'https://chromium.googlesource.com/v8/v8.git'
@@ -70,14 +71,10 @@ def RunSteps(api):
       cwd=api.path['checkout'],
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.v8.git_output('fetch', 'origin', '--prune')
-    milestones = fetch_active_milestones(api)
 
     build_results = BuildResults()
-    # TODO(https://crbug.com/1472354): Use the blank config field to update
-    # chromium branch refs.
-    for chromium_milestone, _ in sorted(milestones.items(), reverse=True):
-      chromium_milestone_str = api.v8.version_num2str(int(chromium_milestone))
-      check_branch(api, chromium_milestone_str, build_results)
+    for v8_version, chromium_version in milestone_version_mapping(api):
+      check_branch(api, v8_version, chromium_version, build_results)
 
     result = api.step('Summary', cmd=None)
     result.presentation.step_text = "\n".join(build_results.performed_actions
@@ -86,12 +83,37 @@ def RunSteps(api):
       return RawResult(status=FAILURE)
 
 
-def fetch_active_milestones(api):
-  return json.loads(api.gitiles.download_file(
+def milestone_version_mapping(api):
+  """Returns a list of tuples (V8 version, Chromium version) for all active
+  Chromium milestones.
+
+  The V8 version is of the form used in V8 refs:
+  refs/branch-heads/X, e.g. X="11.8".
+
+  The Chromium version is of the form used in Chromium refs:
+  refs/branch-heads/X, e.g. X="5814".
+
+  The Chromium verison of the tuple matches the milestone of the V8 version.
+  """
+  milestones = json.loads(api.gitiles.download_file(
       CHROMIUM_REPO_URL, MILESTONES_FILE, step_name='fetch milestones'))
 
+  def milestone2version(milestone):
+    return api.v8.version_num2str(int(milestone))
 
-def check_branch(api, branch_version, build_results):
+  def ref2version(config):
+    ref = config['ref']
+    match = CHROMIUM_BRANCH_REF_RE.match(ref)
+    assert match, f'Chromium branch ref {ref} did not match.'
+    return match.group(1)
+
+  return [
+    (milestone2version(milestone), ref2version(config))
+    for milestone, config in sorted(milestones.items(), reverse=True)
+  ]
+
+
+def check_branch(api, branch_version, chromium_version, build_results):
   with api.step.nest('Checking branch %s' % branch_version):
     branch_ref = 'branch-heads/%s' % branch_version
     api.v8.git_output('checkout', branch_ref)
@@ -111,9 +133,12 @@ def check_branch(api, branch_version, build_results):
           (int(version_at_head.major), int(version_at_head.minor)) < (11, 2))
 
       if has_pgo_tag or before_cutoff:
-        # We only update the lkgr if pgo profiles are available. If they are not
-        # generated yet, we update the lkgr in the next run of auto-tag ng.
-        verify_lkgr(api, branch_version, version_at_head, build_results)
+        # We only update the lkgr and chromium ref if pgo profiles are
+        # available. If they are not generated yet, we update the refs in the
+        # next run of auto-tag ng.
+        verify_floating_refs(
+            api, version_at_head, branch_version, chromium_version,
+            build_results)
 
     else:
       maybe_increment_version(api, branch_ref, version_at_head, build_results)
@@ -151,27 +176,40 @@ def get_commit_at_tag(api, tag):
       ok_ret='any')
 
 
-def verify_lkgr(api, branch_version, version_at_branch_head,
-        build_results):
-  with api.step.nest('Verify LKGR'):
-    lkgr_ref = 'refs/heads/%s-lkgr' % branch_version
-    current_lkgr = get_commit_for_ref(api, lkgr_ref)
-    branch_head = get_commit_for_ref(api,
-                                     'refs/tags/%s' % version_at_branch_head)
-    api.step('LKGR commit %s' % current_lkgr, [])
-    api.step('HEAD commit %s' % branch_head, [])
-    if branch_head != current_lkgr:
-      set_lkgr(api, branch_head, lkgr_ref, build_results)
+def verify_floating_refs(
+    api, version_at_head, branch_version, chromium_version, build_results):
+  """Update the two floating refs pointing to a valid tip of the release branch.
+
+  The two refs are:
+  refs/heads/<branch_version>-lkgr
+  refs/heads/chromium/<chromium_version>
+
+  Both refs are kept in sync.
+  """
+  branch_head = get_commit_for_ref(api, f'refs/tags/{version_at_head}')
+  lkgr_ref = f'refs/heads/{branch_version}-lkgr'
+  verify_ref(api, 'LKGR', lkgr_ref, branch_head, build_results)
+  chromium_ref = f'refs/heads/chromium/{chromium_version}'
+  verify_ref(api, 'Chromium', chromium_ref, branch_head, build_results)
+
+
+def verify_ref(api, name, ref, branch_head, build_results):
+  with api.step.nest(f'Verify {name}'):
+    current_commit = get_commit_for_ref(api, ref)
+    api.step(f'{name} commit {current_commit}', [])
+    api.step(f'HEAD commit {branch_head}', [])
+    if branch_head != current_commit:
+      set_ref(api, branch_head, ref, build_results)
     else:
-      api.step('There is no new lkgr.', [])
+      api.step(f'There is no new {name} ref.', [])
 
 
-def set_lkgr(api, branch_head, lkgr_ref, build_results):
+def set_ref(api, branch_head, ref, build_results):
   if api.properties.get('dry_run') or api.runtime.is_experimental:
-    api.step('Dry-run lkgr update %s' % branch_head, cmd=None)
+    api.step('Dry-run ref update %s' % branch_head, cmd=None)
   else:
-    push_ref(api, REMOTE_REPO_URL, lkgr_ref, branch_head)
-  build_results.performed_actions.append("Ref updated %s" % lkgr_ref)
+    push_ref(api, REMOTE_REPO_URL, ref, branch_head)
+  build_results.performed_actions.append(f'Updated {ref}')
 
 
 def get_commit_for_ref(api, ref):
@@ -226,7 +264,9 @@ def GenTests(api):
         step_name, api.raw_io.stream_output_text(text, stream='stdout'))
 
   def milestones(*numbers):
-    config = dict((str(number), {}) for number in numbers)
+    def ref_config(number):
+      return {'ref': f'refs/branch-heads/{5000 + number}'}
+    config = dict((str(number), ref_config(number)) for number in numbers)
     return api.override_step_data(
         'fetch milestones',
         api.gitiles.make_encoded_file(api.json.dumps(config)))
@@ -323,14 +363,12 @@ def GenTests(api):
       stdout(
           'Checking branch 11.3.Verify LKGR.'
           'git ls-remote refs_heads_11.3-lkgr', '112233'),
-      stdout(
-          'Checking branch 11.3.Verify LKGR.'
-          'git ls-remote refs_tags_11.4.3.3', '112233'),
+      stdout('Checking branch 11.3.git ls-remote refs_tags_11.4.3.3', '112233'),
       api.post_process(DoesNotRunRE, 'Checking branch 11.3.'
                        'Verify version tag.git tag'),
       api.post_process(
           MustRun, 'Checking branch 11.3.Verify LKGR.'
-          'There is no new lkgr.'),
+          'There is no new LKGR ref.'),
       status='SUCCESS',
   )
 
@@ -347,9 +385,11 @@ def GenTests(api):
           'Checking branch 11.3.Verify LKGR.'
           'git ls-remote refs_heads_11.3-lkgr', 'faceb00c'),
       stdout(
-          'Checking branch 11.3.Verify LKGR.'
-          'git ls-remote refs_tags_11.4.3.3', '404'),
+          'Checking branch 11.3.Verify Chromium.'
+          'git ls-remote refs_heads_chromium_5113', 'deadbeef'),
+      stdout('Checking branch 11.3.git ls-remote refs_tags_11.4.3.3', '404'),
       api.post_process(MustRun, 'Checking branch 11.3.Verify LKGR.git push'),
+      api.post_process(MustRun, 'Checking branch 11.3.Verify Chromium.git push'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
@@ -365,6 +405,10 @@ def GenTests(api):
       api.post_process(
           DoesNotRunRE,
           '.*Verify LKGR.*',
+      ),
+      api.post_process(
+          DoesNotRunRE,
+          '.*Verify Chromium.*',
       ),
       api.post_process(DropExpectation),
       status='SUCCESS',
@@ -383,10 +427,14 @@ def GenTests(api):
           'Checking branch 11.3.Verify LKGR.'
           'git ls-remote refs_heads_11.3-lkgr', '3e1a'),
       stdout(
-          'Checking branch 11.3.Verify LKGR.'
-          'git ls-remote refs_tags_11.4.3.3', '404'),
+          'Checking branch 11.3.Verify Chromium.'
+          'git ls-remote refs_heads_chromium_5113', '3e1a'),
+      stdout('Checking branch 11.3.git ls-remote refs_tags_11.4.3.3', '404'),
       api.post_process(
           MustRun, 'Checking branch 11.3.Verify LKGR.'
-          'Dry-run lkgr update 404'),
+          'Dry-run ref update 404'),
+      api.post_process(
+          MustRun, 'Checking branch 11.3.Verify Chromium.'
+          'Dry-run ref update 404'),
       status='SUCCESS',
   )
