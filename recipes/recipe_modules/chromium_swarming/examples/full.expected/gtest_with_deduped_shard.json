@@ -999,6 +999,7 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    },@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@    {@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"deduped_from\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"duration\": 10,@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"internal_failure\": false,@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"state\": \"COMPLETED\",@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@      \"task_id\": \"3\"@@@",
@@ -1008,6 +1009,14 @@
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LINK@shard #0@https://example.swarmingserver.appspot.com/task?id=0@@@",
       "@@@STEP_LINK@shard #1@https://example.swarmingserver.appspot.com/task?id=1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Test statistics",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>Stats<br/>Total shards: 0<br/>Total deduped shards: 1<br/><br/>Total runtime: 0s<br/>Total saved runtime from deduping: 10s<br/>@@@",
+      "@@@STEP_LOG_END@detailed stats@@@"
     ]
   },
   {

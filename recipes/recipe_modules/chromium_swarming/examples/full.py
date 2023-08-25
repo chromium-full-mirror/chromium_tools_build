@@ -800,6 +800,7 @@ def GenTests(api):
               'state': 'COMPLETED',
               'internal_failure': False,
               'deduped_from': 'deadbeef',
+              'duration': 10,
               'task_id': '3',
           },
       ]

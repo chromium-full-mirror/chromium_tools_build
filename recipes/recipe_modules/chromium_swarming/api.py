@@ -152,6 +152,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     # Record all durations of shards for aggregation.
     self._shards_durations = []
+    self._deduped_shards_durations = []
 
     # Counter used to ensure test data task ids are unique across different
     # triggers.
@@ -1089,23 +1090,31 @@ class SwarmingApi(recipe_api.RecipeApi):
 
   def report_stats(self):
     """Report statistics on all tasks ran so far."""
-    if not self._shards_durations:
+    if not self._shards_durations and not self._deduped_shards_durations:
       return
-    stats = ['Total shards: %d' % len(self._shards_durations)]
-    total = sum(self._shards_durations)
-    mean = total / len(self._shards_durations)
-    stats.extend([
-        'Total runtime: %s ' % _fmt_time(total),
-    ])
-    detailed_stats = stats + [
-        'Min/mean/max: %s / %s / %s' % (
-            _fmt_time(min(self._shards_durations)),
-            _fmt_time(mean),
-            _fmt_time(max(self._shards_durations)),
-        ),
+    stats = [
+        'Total shards: %d' % len(self._shards_durations),
+        'Total deduped shards: %d' % len(self._deduped_shards_durations),
+        '',
     ]
+    total = sum(self._shards_durations)
+    total_saved = sum(self._deduped_shards_durations)
+    stats.extend([
+        'Total runtime: %s' % _fmt_time(total),
+        'Total saved runtime from deduping: %s' % _fmt_time(total_saved),
+    ])
+    detailed_stats = []
+    if self._shards_durations:
+      mean = total / len(self._shards_durations)
+      detailed_stats = stats + [
+          'Min/mean/max: %s / %s / %s' % (
+              _fmt_time(min(self._shards_durations)),
+              _fmt_time(mean),
+              _fmt_time(max(self._shards_durations)),
+          ),
+      ]
     step_text = self.m.presentation_utils.format_step_text([('Stats', stats)])
-    result = self.m.step.empty('Tests statistics', step_text=step_text)
+    result = self.m.step.empty('Test statistics', step_text=step_text)
     result.presentation.logs['detailed stats'] = detailed_stats
 
   @staticmethod
@@ -1482,7 +1491,10 @@ class SwarmingApi(recipe_api.RecipeApi):
     for index, shard in enumerate(summary_shards):
       url = task.get_shard_view_url(index)
       if shard and shard.get('duration'):
-        self._shards_durations.append(shard['duration'])
+        if shard.get('deduped_from'):
+          self._deduped_shards_durations.append(shard['duration'])
+        else:
+          self._shards_durations.append(shard['duration'])
 
       duration = None
       if (shard and not shard.get('internal_failure') and
