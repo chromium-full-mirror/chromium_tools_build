@@ -52,7 +52,7 @@ message SquashfsParams {
   string block_size = 2;
 }
 
-// Next id: 19
+// Next id: 20
 message ArchiveData {
   // A list of relative paths to files that should be archived. All files are
   // relative to the build directory, which is passed alongside this proto to
@@ -232,6 +232,10 @@ message ArchiveData {
   // If set to true, the archive step will not fail if one of the referenced
   // directories or files does not exist.
   bool skip_empty_source = 17;
+
+  // If set to true, the '-n' flag will be used for gsutil uploads. This
+  // prevents overwriting file content and will skip over existing files.
+  bool prevent_overwrites = 19;
 }
 
 message Compression {

@@ -1013,3 +1013,23 @@ def GenTests(api):
           'get version',
           api.file.read_text('MAJOR=90\nMINOR=0\nBUILD=4711\nPATCH=0')),
       api.post_process(post_process.DropExpectation))
+
+  input_properties = properties.InputProperties()
+  archive_data = properties.ArchiveData()
+  archive_data.dirs.extend(['anydir'])
+  archive_data.gcs_bucket = 'any-bucket'
+  archive_data.gcs_path = 'foo/bar'
+  archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_ZIP
+  archive_data.prevent_overwrites = True
+  input_properties.archive_datas.extend([archive_data])
+
+  yield api.test(
+      'generic_archive_with_prevent_overwrites',
+      api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+      api.post_process(post_process.StepCommandContains,
+                       "Generic Archiving Steps.gsutil upload foo/bar", [
+                           "cp",
+                           "-n",
+                       ]),
+      api.post_process(post_process.DropExpectation),
+  )

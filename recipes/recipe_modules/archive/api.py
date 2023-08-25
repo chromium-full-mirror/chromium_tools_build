@@ -1109,6 +1109,9 @@ class ArchiveApi(recipe_api.RecipeApi):
           self.m.bcid_reporter.report_gcs(
               file_hash, 'gs://%s/%s' % (gcs_bucket, uploads[f]))
 
+    if archive_data.prevent_overwrites:
+      gcs_args.append('-n')
+
     for file_path in uploads.keys():
       self.m.gsutil.upload(
           file_path,
