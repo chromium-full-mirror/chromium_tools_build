@@ -15,6 +15,7 @@ The recipe will:
   incremented version and that is tagged with that version.
 """
 
+import json
 import re
 
 
@@ -29,6 +30,7 @@ DEPS = [
     'depot_tools/gclient',
     'depot_tools/gerrit',
     'depot_tools/git',
+    'depot_tools/gitiles',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/json',
@@ -44,20 +46,15 @@ DEPS = [
 
 RELEASE_BRANCH_REF_RE = re.compile(r'^refs/branch-heads/\d+\.\d+$')
 MAX_COMMIT_WAIT_RETRIES = 5
-MAX_NUMBER_OF_TRACKED_BRANCHES = 10
 REMOTE_REPO_URL = 'https://chromium.googlesource.com/v8/v8.git'
+CHROMIUM_REPO_URL = 'https://chromium.googlesource.com/chromium/src'
+MILESTONES_FILE = 'infra/config/milestones.json'
 
 # TODO(sergiyb): Replace with api.service_account.default().get_email() when
 # https://crbug.com/846923 is resolved.
 PUSH_ACCOUNT = (
     'v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com')
 
-PROPERTIES = {
-    'tracked_branches_count': Property(
-            kind=int,
-            help='Number of maximum branches that we want to track.',
-            default=MAX_NUMBER_OF_TRACKED_BRANCHES)
-}
 
 class BuildResults:
   def __init__(self):
@@ -65,7 +62,7 @@ class BuildResults:
     self.performed_actions = []
 
 
-def RunSteps(api, tracked_branches_count):
+def RunSteps(api):
   api.gclient.set_config('v8')
   api.v8.checkout(with_branch_heads=True)
 
@@ -73,12 +70,13 @@ def RunSteps(api, tracked_branches_count):
       cwd=api.path['checkout'],
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.v8.git_output('fetch', 'origin', '--prune')
-    branches = api.v8.latest_branches()
-    assert len(branches) >= tracked_branches_count, "Too few branches"
+    milestones = fetch_active_milestones(api)
 
     build_results = BuildResults()
-    for chromium_milestone in branches[:tracked_branches_count]:
-      chromium_milestone_str = api.v8.version_num2str(chromium_milestone)
+    # TODO(https://crbug.com/1472354): Use the blank config field to update
+    # chromium branch refs.
+    for chromium_milestone, _ in sorted(milestones.items(), reverse=True):
+      chromium_milestone_str = api.v8.version_num2str(int(chromium_milestone))
       check_branch(api, chromium_milestone_str, build_results)
 
     result = api.step('Summary', cmd=None)
@@ -86,6 +84,11 @@ def RunSteps(api, tracked_branches_count):
         or ["-none-"])
     if not build_results.success:
       return RawResult(status=FAILURE)
+
+
+def fetch_active_milestones(api):
+  return json.loads(api.gitiles.download_file(
+      CHROMIUM_REPO_URL, MILESTONES_FILE, step_name='fetch milestones'))
 
 
 def check_branch(api, branch_version, build_results):
@@ -222,6 +225,12 @@ def GenTests(api):
     return api.override_step_data(
         step_name, api.raw_io.stream_output_text(text, stream='stdout'))
 
+  def milestones(*numbers):
+    config = dict((str(number), {}) for number in numbers)
+    return api.override_step_data(
+        'fetch milestones',
+        api.gitiles.make_encoded_file(api.json.dumps(config)))
+
   def tracked_branches_count(branches):
     return api.properties(tracked_branches_count=branches)
 
@@ -239,7 +248,7 @@ def GenTests(api):
   yield test(
       'branches-to-update-version-for',
       tracked_branches_count(2),
-      stdout('last branches', 'branch-heads/11.1\nbranch-heads/11.2'),
+      milestones(111, 112),
       version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
       version_file(
           4,
@@ -257,7 +266,7 @@ def GenTests(api):
       'dry-run-branches-to-update-version-for',
       tracked_branches_count(2),
       api.runtime(is_experimental=True),
-      stdout('last branches', 'branch-heads/11.1\nbranch-heads/11.2'),
+      milestones(111, 112),
       version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
       version_file(
           4,
@@ -273,7 +282,7 @@ def GenTests(api):
 
   yield test(
       'branche-with-stale-version-update',
-      stdout('last branches', 'branch-heads/11.2'),
+      milestones(112),
       version_file(3, 'branch-heads/11.2', prefix="Checking branch 11.2."),
       api.override_step_data(
           'Checking branch 11.2.'
@@ -291,7 +300,7 @@ def GenTests(api):
 
   yield test(
       'branch-with-updated-version-but-no-tag',
-      stdout('last branches', 'branch-heads/11.3'),
+      milestones(113),
       version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
       stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -304,7 +313,7 @@ def GenTests(api):
 
   yield test(
       'branch-with-correct-tags',
-      stdout('last branches', 'branch-heads/11.3'),
+      milestones(113),
       version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
       stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -327,7 +336,7 @@ def GenTests(api):
 
   yield test(
       'lkgr-branch',
-      stdout('last branches', 'branch-heads/11.3'),
+      milestones(113),
       version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
       stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -347,7 +356,7 @@ def GenTests(api):
 
   yield test(
       'no-pgo-profiles',
-      stdout('last branches', 'branch-heads/11.3'),
+      milestones(113),
       version_file(3, 'branch-heads/11.3', prefix="Checking branch 11.3."),
       stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
@@ -364,7 +373,7 @@ def GenTests(api):
   yield test(
       'dry-run-branch-no-tag-no-lkgr',
       api.runtime(is_experimental=True),
-      stdout('last branches', 'branch-heads/11.3'),
+      milestones(113),
       stdout('Checking branch 11.3.Proof of version change',
              'dummy proof of version change'),
       stdout('Checking branch 11.3.Verify version tag.Commit at HEAD', '123'),

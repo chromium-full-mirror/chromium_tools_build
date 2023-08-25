@@ -115,11 +115,15 @@
   },
   {
     "cmd": [
-      "git",
-      "branch",
-      "-r",
-      "--list",
-      "branch-heads/*"
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/chromium/src/+/main/infra/config/milestones.json",
+      "--format",
+      "text"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {
@@ -127,12 +131,7 @@
         "[CACHE]/builder/v8/third_party/depot_tools"
       ]
     },
-    "infra_step": true,
-    "name": "last branches",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@branch-heads/11.3@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
+    "name": "fetch milestones"
   },
   {
     "cmd": [],
