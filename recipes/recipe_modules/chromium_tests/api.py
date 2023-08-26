@@ -2639,14 +2639,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       _build_id = int(time.time())
     gcs_path += '%d_%s' % (_build_id, phase.replace(' ', '_'))
     with self.m.step.nest('prepare skylab tests'):
-      # Allow other account to access files we send to skylab.
-      # Some tests may use non-root account to run the executable in
-      # squashfs, which does not exist in the build bot. For these tests,
-      # we make the squashfs image account agnostic by expanding its
-      # content's mode bit of others, e.g. 750 to 755 or 640 to 644.
-      self.m.step('update permissions',
-                  ['chmod', '-R', 'o=g',
-                   str(self.m.path['checkout'])])
       tests_by_target = collections.defaultdict(list)
       for t in tests:
         tests_by_target[t.target_name].append(t)
