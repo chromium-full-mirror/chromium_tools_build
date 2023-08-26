@@ -945,12 +945,14 @@ class ArchiveApi(recipe_api.RecipeApi):
           archive_data.root_permission_override,
           str(temp_dir),
       ])
+    created = set()
     for filename in sorted(expanded_files):
       tmp_file_path = self.m.path.join(temp_dir, filename)
       tmp_file_dir = self.m.path.dirname(tmp_file_path)
-      if str(tmp_file_dir) != str(temp_dir):
+      if not str(tmp_file_dir) in created:
         self.m.file.ensure_directory(
             'Create temp dir %s' % os.path.dirname(filename), tmp_file_dir)
+        created.add(str(tmp_file_dir))
       self.m.file.copy(
           "Copy file %s" % filename,
           self.m.path.join(base_path, filename),
