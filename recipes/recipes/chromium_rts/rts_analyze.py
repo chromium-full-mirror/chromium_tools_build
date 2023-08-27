@@ -77,9 +77,9 @@ def RunSteps(api):
   # to scan for the best candidates
   savings.sort(key=lambda r: r[2], reverse=True)
 
-  summary = 'Analysis Summary (recall, savings):\n\n' + '\n\n'.join(
+  summary = 'Analysis Summary top 100 (recall, savings):\n\n' + '\n\n'.join(
       f'{builder}:{testsuite} {recall}%, {savings}%'
-      for builder, testsuite, recall, savings in savings)
+      for builder, testsuite, recall, savings in savings[:100])
   return result_pb2.RawResult(
       status=common_pb.SUCCESS, summary_markdown=summary)
 
@@ -96,14 +96,16 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
           f'-testSuite={test_suite}',
       ],
       stdout=api.raw_io.output_text())
-  step_result.presentation.step_text = step_result.stdout
   match = re.search(r'(\d+\.\d+)%\s*\|\s*<?(\d+\.\d+)%', step_result.stdout)
   if not match:
     # No summary table implies something went wrong with the analysis
     step_result.presentation.status = api.step.FAILURE
+    step_result.presentation.step_text = step_result.stdout
   else:
     recall = float(match.group(1))
     savings = float(match.group(2))
+    step_result.presentation.step_text = (
+        f'Recall {recall} Savings {savings}\n' + step_result.stdout)
     return builder, test_suite, recall, savings
 
 
@@ -217,7 +219,7 @@ Rejection:
           'analyze chrome_public_test_apk on android-nougat-x86-rel'),
       api.post_process(
           post_process.SummaryMarkdown,
-          'Analysis Summary (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
+          'Analysis Summary top 100 (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
       ),
       api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
