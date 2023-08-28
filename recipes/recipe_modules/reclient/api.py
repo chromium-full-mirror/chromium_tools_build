@@ -496,6 +496,7 @@ class ReclientApi(recipe_api.RecipeApi):
         labels += 'builder=' + re.sub(r'[=,]', '_', builder_id.builder) + ','
       labels += 'source=' + ('led'
                              if self.m.led.launched_by_led else 'prod') + ','
+      labels += 'tool=' + ('siso' if self.m.siso.enabled else 'ninja')
       if labels != '':
         env['RBE_metrics_labels'] = labels
 

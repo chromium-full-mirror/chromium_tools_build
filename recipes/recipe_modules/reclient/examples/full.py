@@ -22,6 +22,7 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'reclient',
+    'siso',
 ]
 
 _NINJA_STEP_NAME = 'compile (reclient)'
@@ -167,17 +168,25 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  def get_metrics_labels_checker(source='prod', tool='ninja'):
+
+    def checker(check, steps):
+      env = steps["postprocess for reclient.shutdown reproxy via bootstrap"].env
+      check("RBE_metrics_labels" in env)
+      check(
+          env["RBE_metrics_labels"] ==
+          "project=chromium,bucket=ci,builder=Linux reclient,source=%s,tool=%s"
+          % (source, tool))
+
+    return checker
+
   yield api.test(
       'override_metrics_project',
       api.buildbucket.ci_build(project='chromium', builder='Linux reclient'),
       api.reclient.properties(metrics_project='goma'),
+      api.post_check(get_metrics_labels_checker()),
+      api.post_process(post_process.DropExpectation),
   )
-
-  def metrics_labels_checker(check, steps):
-    env = steps["postprocess for reclient.shutdown reproxy via bootstrap"].env
-    check("RBE_metrics_labels" in env)
-    check(env["RBE_metrics_labels"] ==
-          "project=chromium,bucket=ci,builder=Linux reclient,source=led,")
 
   yield api.test(
       'override_metrics_project_led',
@@ -186,7 +195,16 @@ def GenTests(api):
       api.properties(**{
           '$recipe_engine/led': InputProperties(led_run_id='some-led-run'),
       }),
-      api.post_check(metrics_labels_checker),
+      api.post_check(get_metrics_labels_checker(source='led')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'override_metrics_tool_siso',
+      api.buildbucket.ci_build(project='chromium', builder='Linux reclient'),
+      api.reclient.properties(metrics_project='goma'),
+      api.siso.properties(),
+      api.post_check(get_metrics_labels_checker(tool='siso')),
       api.post_process(post_process.DropExpectation),
   )
 
