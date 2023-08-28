@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
-
-from pathlib import Path
-from os.path import splitext
+import os
+import pathlib
 from recipe_engine import recipe_api
+
 
 class SsciAPI(recipe_api.RecipeApi):
 
@@ -23,6 +22,7 @@ class SsciAPI(recipe_api.RecipeApi):
     # Proto3 defaults boolean fields to False
     self.minimal_spdx = props.minimal_spdx or False
     self.generated_sbom_artifacts = {}
+    self.bqupload_cipd_path = None
 
   def _cipd_version(self, package_name, package_version):
     """
@@ -50,12 +50,26 @@ class SsciAPI(recipe_api.RecipeApi):
     # This case is handled by the SSCI tool which will fetch the git hash instead.
     return self.m.buildbucket.gitiles_commit.id[:6]
 
+  def _upload_to_bigquery(self, data_name, bq_args):
+    """
+    Runs the BigQuery upload and logs an error if it fails. If there's a failure in
+    this step, we should still produce an SBOM.
+
+    Args:
+      data_name: name of what's being uploaded
+      bq_args: list of args to provide to bqupload command
+    """
+    step_name = f"upload {data_name} to BigQuery"
+    try:
+      self.m.step(step_name, [self.bqupload_cipd_path] + bq_args)
+    except self.m.step.StepFailure:
+      pass
+
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
-                             filename_postfix, bqupload_cipd_path,
-                             ssci_cipd_path, depbot_cipd_version,
-                             partybot_cipd_version, ssci_cipd_version,
-                             chrome_version, execution_id, minimal_config,
-                             third_party_out):
+                             filename_postfix, ssci_cipd_path,
+                             depbot_cipd_version, partybot_cipd_version,
+                             ssci_cipd_version, chrome_version, execution_id,
+                             minimal_config, third_party_out):
     library_file = target.get("libraries_file_path")
     artifact_file = target.get("artifacts_file_path")
     entry_point = target.get("entry_point")
@@ -66,16 +80,17 @@ class SsciAPI(recipe_api.RecipeApi):
     target_column = 'target="%s"' % target.get("target")
 
     with self.m.step.nest('target specific steps for %s' % entry_point):
-      self.m.step('upload %s artifacts to BigQuery' % entry_point, [
-          bqupload_cipd_path, "-json-list=true", "-column", builder_column,
-          "-column", execution_id_column, "-column", entry_point_column,
-          "-column", target_column, self.bq_art_table, artifact_file
+
+      self._upload_to_bigquery(f"{entry_point} artifacts", [
+          "-json-list=true", "-column", builder_column, "-column",
+          execution_id_column, "-column", entry_point_column, "-column",
+          target_column, self.bq_art_table, artifact_file
       ])
 
-      self.m.step('upload %s libraries to BigQuery' % entry_point, [
-          bqupload_cipd_path, "--json-list=true", "-column", builder_column,
-          "-column", execution_id_column, "-column", entry_point_column,
-          "-column", target_column, self.bq_lib_table, library_file
+      self._upload_to_bigquery(f"{entry_point} libraries", [
+          "-json-list=true", "-column", builder_column, "-column",
+          execution_id_column, "-column", entry_point_column, "-column",
+          target_column, self.bq_art_table, library_file
       ])
 
       # Combines the recipe name with the DepBot target as the product name.
@@ -108,14 +123,11 @@ class SsciAPI(recipe_api.RecipeApi):
       spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
 
       if sbom_bucket and sbom_folder:
-        filename, target_ext = splitext(entry_point.replace("//", ""))
+        filename, target_ext = os.path.splitext(entry_point.replace("//", ""))
         filename = f"{filename}{filename_postfix or ''}{target_ext}.spdx.json"
-        full_path = Path(sbom_folder, execution_id, filename).as_posix()
+        full_path = pathlib.Path(sbom_folder, execution_id, filename).as_posix()
         self.m.gsutil.upload(
-            spdx_file,
-            sbom_bucket,
-            full_path,
-            name="upload %s SBOM " % filename)
+            spdx_file, sbom_bucket, full_path, name=f"upload {filename} SBOM")
         self.generated_sbom_artifacts.update({
             entry_point: {
                 'digest': spdx_digest,
@@ -148,7 +160,7 @@ class SsciAPI(recipe_api.RecipeApi):
       depbot_path = self.m.cipd.ensure_tool(
           'infra_internal/tools/security/depbot/${platform}',
           self.depbot_version)
-      bqupload_cipd_path = self.m.cipd.ensure_tool(
+      self.bqupload_cipd_path = self.m.cipd.ensure_tool(
           'infra/tools/bqupload/${platform}', 'latest')
       partybot_cipd_path = self.m.cipd.ensure_tool(
           'infra_internal/tools/partybot', self.partybot_version)
@@ -199,10 +211,9 @@ class SsciAPI(recipe_api.RecipeApi):
               self.m.buildbucket.build.builder.builder
           ])
 
-      self.m.step('upload third party dependencies to BigQuery', [
-          bqupload_cipd_path, "--json-list=true", "-column",
-          f'execution_id="{execution_id}"', self.bq_thirdparty_table,
-          third_party_out
+      self._upload_to_bigquery('third party dependencies', [
+          "--json-list=true", "-column", f'execution_id="{execution_id}"',
+          self.bq_thirdparty_table, third_party_out
       ])
 
       # Ensure the CIPD tool versions we're about to use in the SPDX
@@ -227,11 +238,10 @@ class SsciAPI(recipe_api.RecipeApi):
         futures.append(
             self.m.futures.spawn(self._target_specific_steps, target, src_dir,
                                  sbom_bucket, sbom_folder,
-                                 sbom_filename_postfix, bqupload_cipd_path,
-                                 ssci_cipd_path, depbot_cipd_version,
-                                 partybot_cipd_version, ssci_cipd_version,
-                                 chrome_version, execution_id, minimal_config,
-                                 third_party_out))
+                                 sbom_filename_postfix, ssci_cipd_path,
+                                 depbot_cipd_version, partybot_cipd_version,
+                                 ssci_cipd_version, chrome_version,
+                                 execution_id, minimal_config, third_party_out))
       for fut in self.m.futures.iwait(futures):
         fut.result()
 

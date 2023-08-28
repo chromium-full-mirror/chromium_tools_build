@@ -603,7 +603,7 @@
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "--json-list=true",
+      "-json-list=true",
       "-column",
       "builder=\"myproject/mybucket/mybuilder\"",
       "-column",
@@ -740,7 +740,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for Example.apk.gsutil upload ExampleStable.apk.spdx.json SBOM ",
+    "name": "SSCI collection.target specific steps for Example.apk.gsutil upload ExampleStable.apk.spdx.json SBOM",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/ExampleStable.apk.spdx.json@@@"
@@ -1044,7 +1044,7 @@
   {
     "cmd": [
       "[START_DIR]/cipd_tool/infra/tools/bqupload/latest/bqupload",
-      "--json-list=true",
+      "-json-list=true",
       "-column",
       "builder=\"myproject/mybucket/mybuilder\"",
       "-column",
@@ -1181,7 +1181,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload ExampleCanary.apk.spdx.json SBOM ",
+    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload ExampleCanary.apk.spdx.json SBOM",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json@@@"

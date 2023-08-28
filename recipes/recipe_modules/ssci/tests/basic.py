@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import DropExpectation
+from recipe_engine import post_process
 
 DEPS = [
     'recipe_engine/assertions',
@@ -104,4 +104,24 @@ def GenTests(api):
                   "bq_thirdparty_table": "project.dataset.table",
                   "minimal_spdx": True,
               }
-          }), api.post_process(DropExpectation))
+          }), api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'bq-upload-fail',
+      api.buildbucket.ci_build(
+          project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.step_data(
+          'SSCI collection.upload third party dependencies to BigQuery',
+          retcode=1),
+      api.properties(
+          **{
+              '$build/ssci': {
+                  "bq_artifact_table": "project.dataset.table",
+                  "bq_library_table": "project.dataset.table",
+                  "bq_thirdparty_table": "project.dataset.table",
+                  "minimal_spdx": True,
+              }
+          }),
+      api.post_process(post_process.MustRun,
+                       "SSCI collection.SBOM's generated"),
+      api.post_process(post_process.DropExpectation))
