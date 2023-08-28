@@ -77,11 +77,11 @@ def RunSteps(api):
   # to scan for the best candidates
   savings.sort(key=lambda r: r[2], reverse=True)
 
-  summary = 'Analysis Summary top 100 (recall, savings):\n\n' + '\n\n'.join(
+  summary = 'Analysis Summary top (recall, savings):\n\n' + '\n\n'.join(
       f'{builder}:{testsuite} {recall}%, {savings}%'
-      for builder, testsuite, recall, savings in savings[:100])
+      for builder, testsuite, recall, savings in savings)
   return result_pb2.RawResult(
-      status=common_pb.SUCCESS, summary_markdown=summary)
+      status=common_pb.SUCCESS, summary_markdown=summary[:4000])
 
 
 def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
@@ -219,7 +219,7 @@ Rejection:
           'analyze chrome_public_test_apk on android-nougat-x86-rel'),
       api.post_process(
           post_process.SummaryMarkdown,
-          'Analysis Summary top 100 (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
+          'Analysis Summary top (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
       ),
       api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
