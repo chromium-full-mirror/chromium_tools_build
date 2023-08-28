@@ -369,38 +369,39 @@ class ReclientApi(recipe_api.RecipeApi):
       with self.m.context(env=rewrapper_env):
         yield p
     finally:
-      with self.m.step.nest('postprocess for reclient'):
-        self._stop_reproxy(deps_cache_path)
-        self._stop_cloudtail(self._get_platform_exe_name('reproxy') + '.INFO')
-        self._stop_cloudtail('reproxy-gomaip.INFO')
-        self._upload_rbe_metrics(self._reclient_log_dir)
-        if self._props.publish_trace:
-          self._upload_reclient_traces(self._reclient_log_dir)
-        filename_maker = FilenameMaker(self.m.time.utcnow(),
-                                       self.m.uuid.random())
-        if ninja_command:
-          self._upload_ninja_log(ninja_step_name, ninja_command,
-                                 p.build_exit_status, filename_maker)
-        self._upload_rpl(self._reclient_log_dir, filename_maker)
-        log_dir_files = self.m.file.listdir(
-            'list reclient log directory',
-            self._reclient_log_dir,
-            test_data=[
-                'reproxy.INFO', 'rewrapper.INFO', 'reproxy.rpl',
-                'reproxy_stderr.log',
-                'reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256'
-            ])
-        self._upload_logs(log_dir_files, filename_maker)
-        self._upload_crash_dumps(self._reclient_log_dir, log_dir_files,
-                                 filename_maker)
-        self._perform_reclient_health_check(p.build_exit_status)
-        self.m.file.rmtree('cleanup reclient log dir', self._reclient_log_dir)
-        if self._ensure_verified:
-          status = self.m.step.SUCCESS
-          if self._mismatch:
-            status = self.m.step.INFRA_FAILURE
-          self.m.step.empty(
-              'verification', status=status, step_text=self._mismatch)
+      if not self.m.runtime.in_global_shutdown:
+        with self.m.step.nest('postprocess for reclient'):
+          self._stop_reproxy(deps_cache_path)
+          self._stop_cloudtail(self._get_platform_exe_name('reproxy') + '.INFO')
+          self._stop_cloudtail('reproxy-gomaip.INFO')
+          self._upload_rbe_metrics(self._reclient_log_dir)
+          if self._props.publish_trace:
+            self._upload_reclient_traces(self._reclient_log_dir)
+          filename_maker = FilenameMaker(self.m.time.utcnow(),
+                                         self.m.uuid.random())
+          if ninja_command:
+            self._upload_ninja_log(ninja_step_name, ninja_command,
+                                   p.build_exit_status, filename_maker)
+          self._upload_rpl(self._reclient_log_dir, filename_maker)
+          log_dir_files = self.m.file.listdir(
+              'list reclient log directory',
+              self._reclient_log_dir,
+              test_data=[
+                  'reproxy.INFO', 'rewrapper.INFO', 'reproxy.rpl',
+                  'reproxy_stderr.log',
+                  'reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256'
+              ])
+          self._upload_logs(log_dir_files, filename_maker)
+          self._upload_crash_dumps(self._reclient_log_dir, log_dir_files,
+                                   filename_maker)
+          self._perform_reclient_health_check(p.build_exit_status)
+          self.m.file.rmtree('cleanup reclient log dir', self._reclient_log_dir)
+          if self._ensure_verified:
+            status = self.m.step.SUCCESS
+            if self._mismatch:
+              status = self.m.step.INFRA_FAILURE
+            self.m.step.empty(
+                'verification', status=status, step_text=self._mismatch)
 
   def _gclient_var_exists(self, var):
     with self.m.context(cwd=self.m.path['checkout']):
