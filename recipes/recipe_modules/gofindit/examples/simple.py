@@ -4,6 +4,7 @@
 
 from recipe_engine.post_process import LogEquals, StepCommandRE, DropExpectation
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import test_result as test_result_pb2
 
 DEPS = [
     'gofindit',
@@ -23,6 +24,21 @@ def RunSteps(api):
   api.gofindit.send_result_to_luci_bisection("send_result_to_luci_bisection3",
                                              123, common_pb.STATUS_UNSPECIFIED,
                                              "luci-bisection.appspot.com")
+  api.gofindit.send_test_results_to_luci_bisection(
+      "send_test_results_to_luci_bisection", [
+          test_result_pb2.TestResult(
+              test_id='gtest-test-2',
+              variant_hash="123",
+              expected=False,
+              status=test_result_pb2.PASS,
+          ),
+          test_result_pb2.TestResult(
+              test_id='gtest-test',
+              variant_hash="123",
+              expected=False,
+              status=test_result_pb2.PASS,
+          ),
+      ], "luci-bisection.appspot.com")
 
 
 def GenTests(api):
@@ -71,6 +87,19 @@ def GenTests(api):
       api.post_process(
           LogEquals, "send_result_to_luci_bisection3", "input",
           '{\n  "analysisId": 123,\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "gitilesCommit": {\n    "host": "",\n    "id": "",\n    "project": "",\n    "ref": ""\n  },\n  "rerunResult": {\n    "rerunStatus": "RERUN_STATUS_UNSPECIFIED"\n  }\n}'
+      ),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'send test results',
+      api.post_process(StepCommandRE, "send_test_results_to_luci_bisection", [
+          "prpc", "call", "luci-bisection.appspot.com",
+          "luci.bisection.v1.BotUpdates.UpdateTestAnalysisProgress"
+      ]),
+      api.post_process(
+          LogEquals, "send_test_results_to_luci_bisection", "input",
+          '{\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "results": [\n    {\n      "isExpected": false,\n      "status": 1,\n      "testId": "gtest-test-2",\n      "variantHash": "123"\n    },\n    {\n      "isExpected": false,\n      "status": 1,\n      "testId": "gtest-test",\n      "variantHash": "123"\n    }\n  ]\n}'
       ),
       api.post_process(DropExpectation),
   )

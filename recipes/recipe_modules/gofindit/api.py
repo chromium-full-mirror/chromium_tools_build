@@ -32,6 +32,20 @@ class LuciBisectionApi(recipe_api.RecipeApi):
     }
     self._call_prpc(step_name, host, method, request_input)
 
+  def send_test_results_to_luci_bisection(self, step_name, test_results, host):
+    bbid = str(self.m.buildbucket.build.id)
+    bot_id = self.m.swarming.bot_id
+    # Leave the test data here for the purpose of led testing, because led build has no bbid
+    # bbid = "8804856879691073905"
+
+    method = "luci.bisection.v1.BotUpdates.UpdateTestAnalysisProgress"
+    request_input = {
+        "bbid": bbid,
+        "botId": bot_id,
+        "results": self._rerun_test_results(test_results)
+    }
+    self._call_prpc(step_name, host, method, request_input)
+
   def _call_prpc(self, step_name, host, method, request_input):
     args = [
         'prpc',
@@ -48,6 +62,17 @@ class LuciBisectionApi(recipe_api.RecipeApi):
     result.presentation.logs['input'] = self.m.json.dumps(
         request_input, indent=2)
     return result.stdout
+
+  def _rerun_test_results(self, test_results):
+    res = []
+    for r in test_results:
+      res.append({
+          "testId": r.test_id,
+          "variantHash": r.variant_hash,
+          "isExpected": r.expected,
+          "status": r.status,
+      })
+    return res
 
   def rerun_result(self, result):
     if result == common_pb.SUCCESS:

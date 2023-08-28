@@ -22,10 +22,17 @@ message InputProperties {
 
   // Test represents the test to rerun.
   message Test {
+    // A name from https://cs.chromium.org/chromium/src/testing/buildbot/test_suites.pyl.
     string test_suite_name = 1;
+    // The name of the test. Note that it is different from test_id.
     string test_name = 2;
+    // Equivalent of luci.resultdb.v1.TestResult.TestId.
+    string test_id = 3;
   }
 
   // We support running multiple tests in the same build.
   repeated Test tests_to_run = 2;
+
+  // The host to send the result to
+  string bisection_host = 3;
 }
