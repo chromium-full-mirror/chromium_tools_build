@@ -5,7 +5,8 @@
 import attr
 from PB.recipes.build.gofindit.chromium.test_single_revision import InputProperties
 from recipe_engine import post_process
-from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun)
+from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
+                                        LogContains)
 
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -36,51 +37,56 @@ PROPERTIES = InputProperties
 # TODO (nqmtuan): Extract out common step for compile and test failures.
 def RunSteps(api, properties):
   """Run tests for a particular revision."""
+  try:
+    test_results = []
+    run_succeeded = False  # Whether the build finish running the tests and collecting results.
+    target_builder = properties.target_builder
+    target_builder_id = chromium.BuilderId.create_for_group(
+        target_builder.group, target_builder.builder)
 
-  target_builder = properties.target_builder
-  target_builder_id = chromium.BuilderId.create_for_group(
-      target_builder.group, target_builder.builder)
+    # If target_builder_id is a tester, this will return the config
+    # of the parent builder, which will be used for compile.
+    builder_config = api.findit.get_builder_config(target_builder_id)
+    builder_id = builder_config.builder_ids[0]
+    api.chromium_tests.configure_build(builder_config)
+    if properties.should_clobber:
+      api.chromium.c.clobber_before_runhooks = True
 
-  # If target_builder_id is a tester, this will return the config
-  # of the parent builder, which will be used for compile.
-  builder_config = api.findit.get_builder_config(target_builder_id)
-  builder_id = builder_config.builder_ids[0]
-  api.chromium_tests.configure_build(builder_config)
+    with api.chromium.chromium_layout():
+      update_step, targets_config = api.chromium_tests.prepare_checkout(
+          builder_config, set_output_commit=False)
+      api.chromium_swarming.configure_swarming('chromium', precommit=False)
 
-  with api.chromium.chromium_layout():
-    update_step, targets_config = api.chromium_tests.prepare_checkout(
-        builder_config, set_output_commit=False)
-    api.chromium_swarming.configure_swarming('chromium', precommit=False)
+      step_tests, compile_targets = compute_step_test_and_compile_targets(
+          api, targets_config, properties.tests_to_run, properties.run_all)
+      api.step.empty(
+          'Compute compile targets for test',
+          step_text="There are {0} compile targets. Compile targets are {1}."
+          .format(len(compile_targets), compile_targets))
 
-    step_tests, compile_targets = compute_step_test_and_compile_targets(
-        api, targets_config, properties.tests_to_run)
-    api.step.empty(
-        'Compute compile targets for test',
-        step_text="There are {0} compile targets. Compile targets are {1}."
-        .format(len(compile_targets), compile_targets))
+      # Compile.
+      compile_result, _ = api.chromium_tests.compile_specific_targets(
+          builder_id,
+          builder_config,
+          update_step,
+          targets_config,
+          compile_targets,
+          override_execution_mode=ctbc.COMPILE_AND_TEST,
+          tests=step_tests)
 
-    # Compile.
-    compile_result, _ = api.chromium_tests.compile_specific_targets(
-        builder_id,
-        builder_config,
-        update_step,
-        targets_config,
-        compile_targets,
-        override_execution_mode=ctbc.COMPILE_AND_TEST,
-        tests=step_tests)
+      if compile_result and compile_result.status != common_pb.SUCCESS:
+        return compile_result.status
+      # Run tests.
+      with api.chromium_tests.wrap_chromium_tests(
+          builder_config, tests=step_tests):
+        api.test_utils.run_tests_once(step_tests, 'bisection')
 
-    if compile_result and compile_result.status != common_pb.SUCCESS:
-      # TODO (nqmtuan): Send result back to LUCI Bisection.
-      return compile_result.status
-
-    # Run tests.
-    with api.chromium_tests.wrap_chromium_tests(
-        builder_config, tests=step_tests):
-      api.test_utils.run_tests_once(step_tests, 'bisection')
-
-    test_results = fetch_test_results(api, properties.tests_to_run, step_tests)
+      test_results = fetch_test_results(api, properties.tests_to_run,
+                                        step_tests)
+      run_succeeded = True
+  finally:
     api.gofindit.send_test_results_to_luci_bisection(
-        "send_test_results_to_luci_bisection", test_results,
+        "send_test_results_to_luci_bisection", test_results, run_succeeded,
         properties.bisection_host)
 
 
@@ -103,7 +109,8 @@ def fetch_test_results(api, tests_to_run, step_tests):
   return test_results
 
 
-def compute_step_test_and_compile_targets(api, targets_config, tests_to_run):
+def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
+                                          run_all):
   """Returns the step tests and compile targets.
 
   The step tests will be set with the test filter to run only the tests_to_run.
@@ -119,9 +126,10 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run):
   for test in targets_config.all_tests:
     if test.canonical_name in test_names_by_test_suite:
       # Only runs tests presented in tests_to_run.
-      test_filter = test_names_by_test_suite[test.canonical_name]
-      test_options = steps.TestOptions.create(
-          test_filter=test_filter, retry_limit=0)
+      test_options = steps.TestOptions.create(retry_limit=0)
+      if not run_all:
+        test_filter = test_names_by_test_suite[test.canonical_name]
+        test_options = attr.evolve(test_options, test_filter=test_filter)
       test.test_options = test_options
 
       # Do not run the result handler when running the test.
@@ -207,12 +215,11 @@ def GenTests(api):
     ] + query, api.empty_test_data())
     return t
 
-  def setup_input_properties(
-      api,
-      tests_to_run,
-      target_builder_group='fake-group',
-      target_builder='fake-builder',
-  ):
+  def setup_input_properties(api,
+                             tests_to_run,
+                             target_builder_group='fake-group',
+                             target_builder='fake-builder',
+                             should_clobber=False):
     """Set up input properties to test this recipe.
 
     Attributes:
@@ -226,6 +233,7 @@ def GenTests(api):
     } for test in tests_to_run])
     props_proto.target_builder.group = target_builder_group
     props_proto.target_builder.builder = target_builder
+    props_proto.should_clobber = should_clobber
     return sum([api.properties(props_proto)], api.empty_test_data())
 
   yield api.test(
@@ -240,8 +248,27 @@ def GenTests(api):
       api.post_process(MustRun, 'fake-gtest (bisection)'),
       api.post_process(MustRun, 'fake-gtest-2 (bisection)'),
       api.post_process(MustRun, 'send_test_results_to_luci_bisection'),
+      api.post_process(LogContains, "send_test_results_to_luci_bisection",
+                       "input", ['"run_succeeded": true']),
       api.post_process(DoesNotRun, 'fake-gtest-3 (bisection)'),
       api.post_process(DoesNotRun, 'fake-script-test (bisection)'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'run_tests_with_clobber',
+      setup(api, query_resultdb=True),
+      setup_input_properties(
+          api,
+          tests_to_run=[('fake-gtest', 'gtest-test'),
+                        ('fake-gtest-2', 'gtest-test-2')],
+          should_clobber=True),
+      api.post_process(MustRun, 'bot_update'),
+      api.post_process(MustRun, 'clobber'),
+      api.post_process(MustRun, 'compile'),
+      api.post_process(MustRun, 'fake-gtest (bisection)'),
+      api.post_process(LogContains, "send_test_results_to_luci_bisection",
+                       "input", ['"run_succeeded": true']),
       api.post_process(DropExpectation),
   )
 
@@ -253,14 +280,18 @@ def GenTests(api):
       api.post_process(MustRun, 'bot_update'),
       api.expect_status('FAILURE'),
       api.post_process(MustRun, 'compile'),
+      api.post_process(LogContains, "send_test_results_to_luci_bisection",
+                       "input", ['"run_succeeded": false']),
       api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'Test not found',
+      'test_not_found',
       setup(api),
       setup_input_properties(api, tests_to_run=[('not_found', 'gtest-test')]),
       api.post_process(MustRun, 'Error: No test is found'),
       api.expect_status('FAILURE'),
+      api.post_process(LogContains, "send_test_results_to_luci_bisection",
+                       "input", ['"run_succeeded": false']),
       api.post_process(DropExpectation),
   )

@@ -29,10 +29,18 @@ message InputProperties {
     // Equivalent of luci.resultdb.v1.TestResult.TestId.
     string test_id = 3;
   }
-
-  // We support running multiple tests in the same build.
+  // The tests to run in this build.
+  // When run_all is false, the build will only run tests in this list.
+  // When run_all is true, the build will run all tests in each test suite presents in the list.
+  // In both cases, this build will only collect and send test results belonging to tests in this list.
   repeated Test tests_to_run = 2;
 
-  // The host to send the result to
+  // The host to send the result to.
   string bisection_host = 3;
+
+  // Whether to run all tests in each test suites.
+  bool run_all = 4;
+
+  // Whether we should remove all builder cache for the rerun.
+  bool should_clobber = 5;
 }
