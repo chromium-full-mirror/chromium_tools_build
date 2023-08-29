@@ -20,6 +20,7 @@ DEPS = [
     'depot_tools/tryserver',
     'recipe_engine/assertions',
     'recipe_engine/json',
+    'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -335,7 +336,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'process javascript coverage for per-cl',
+      'javascript: per-cl',
       api.chromium.try_build(
           builder_group='fake-group', builder='fake-builder'),
       ctbc_api.properties(
@@ -348,6 +349,9 @@ def GenTests(api):
           'some/path/to/file.js',
           'some/other/path/to/file.js',
       ]),
+      api.override_step_data(
+          'process javascript coverage (overall).read lcov.info',
+          api.file.read_text('SF:some/path/to/file.js')),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
       api.post_process(
           post_process.MustRun, 'process javascript coverage (overall).'
@@ -362,7 +366,32 @@ def GenTests(api):
   )
 
   yield api.test(
-      'javascript coverage skipped per-cl when no js files',
+      'javascript: per-cl no data for js files in the CL',
+      api.chromium.try_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.code_coverage(use_javascript_coverage=True),
+      api.properties(files_to_instrument=[
+          'some/path/to/file.js',
+          'some/other/path/to/file.js',
+      ]),
+      api.override_step_data(
+          'process javascript coverage (overall).read lcov.info',
+          api.file.read_text('')),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'skip processing because lcov.info does not have data for eligible files'
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'javascript: per-cl no js files in the CL',
       api.chromium.try_build(
           builder_group='fake-try-group', builder='fake-builder'),
       api.chromium_tests_builder_config.properties(

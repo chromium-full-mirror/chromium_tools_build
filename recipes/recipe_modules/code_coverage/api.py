@@ -802,6 +802,18 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if not self.m.path.exists('%s/lcov.info' % coverage_dir):
           raise self.m.step.StepFailure("Required lcov.info is missing at %s" %
                                         coverage_dir)
+        lcov_data = self.m.file.read_text('read lcov.info',
+                                          '%s/lcov.info' % coverage_dir)
+        any_source_file_cov_available = False
+        for path in self._eligible_files:
+          if path in lcov_data:
+            any_source_file_cov_available = True
+            break
+        if self._is_per_cl_coverage and not any_source_file_cov_available:
+          self.m.step.empty(
+              'skip processing because lcov.info does not have data for eligible files'
+          )
+          return
         output_dir = self.metadata_dir
         cmd = [
             'python3',
