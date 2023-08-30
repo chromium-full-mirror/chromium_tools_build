@@ -8,11 +8,12 @@ import textwrap
 from RECIPE_MODULES.build import chromium
 
 DEPS = [
-  'chromium',
-  'recipe_engine/path',
-  'recipe_engine/platform',
-  'recipe_engine/properties',
-  'recipe_engine/json',
+    'chromium',
+    'chromium_rts',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/json',
 ]
 
 
@@ -31,6 +32,9 @@ def RunSteps(api):
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
 
+  api.chromium_rts.rts_setting = api.properties.get('rts_setting', None)
+  api.chromium_rts.rts_recall = api.properties.get('rts_recall', None)
+
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
@@ -40,8 +44,7 @@ def RunSteps(api):
       isolated_targets=['base_unittests_run'],
       android_version_code=3,
       android_version_name='example',
-      rts_setting=api.properties.get('rts_setting', None),
-      rts_recall=api.properties.get('rts_recall', None))
+  )
 
 
 def GenTests(api):

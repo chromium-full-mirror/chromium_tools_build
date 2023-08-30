@@ -22,11 +22,24 @@ def RunSteps(api):
       steps.MockTestSpec.create('MockTest',
                                 supports_rts=True).get_test(api.chromium_tests),
   ]
+  api.m.chromium_rts.rts_setting = 'rts-chromium'
+  api.m.chromium_rts.rts_recall = .95
+  api.m.chromium_rts.inverted_rts = False
 
-  api.m.chromium_rts.setup_quickrun_tests(tests, 'rts-chromium', False)
+  api.m.chromium_rts.setup_tests(tests)
   assert (tests[0].is_rts)
-  api.m.chromium_rts.setup_quickrun_tests(tests, 'rts-chromium', True)
+  assert (api.m.chromium_rts.inverted_rts == False)
+
+  api.m.chromium_rts.inverted_rts = True
+  api.m.chromium_rts.setup_tests(tests)
   assert (tests[0].is_inverted_rts)
+  assert (api.m.chromium_rts.inverted_rts == True)
+
+  mb_args = api.m.chromium_rts.mb_args()
+  assert (mb_args[0] == '--rts')
+  assert (mb_args[1] == 'rts-chromium')
+  assert (mb_args[2] == '--rts-target-change-recall')
+  assert (mb_args[3] == '0.95')
 
 
 def GenTests(api):
@@ -39,6 +52,6 @@ def GenTests(api):
   # can only be determined when the individual tests are set
   yield api.test(
       'dry_run_rts',
-      api.chromium.try_build(experiments=['chromium_rts.dry_run_rts'],),
+      api.chromium.try_build(experiments=['chromium_rts.dry_run_rts']),
       api.post_process(post_process.DropExpectation),
   )

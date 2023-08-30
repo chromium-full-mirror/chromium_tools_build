@@ -22,6 +22,7 @@ from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
 DEPS = [
     'chromium',
     'chromium_checkout',
+    'chromium_rts',
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
@@ -68,7 +69,9 @@ def compilator_steps(api, properties):
 
     api.chromium_tests.report_builders(orch_builder_config)
 
-    rts_setting = properties.rts_setting
+    # This should eventually be replaced with a property that controls compile
+    # with RTS independent of compilator
+    api.chromium_rts.rts_setting = properties.rts_setting
 
     # swarming_targets implies that this compilator build must be compiled
     # without a patch so that the orchestrator can retry these swarming tests
@@ -76,7 +79,6 @@ def compilator_steps(api, properties):
     if properties.swarming_targets:
       api.chromium_tests.configure_build(
           orch_builder_config,
-          rts_setting,
       )
       api.chromium.apply_config('trybot_flavor')
       bot_update_step, targets_config = api.chromium_tests.prepare_checkout(
@@ -110,15 +112,13 @@ def compilator_steps(api, properties):
               test_suites,
               bot_update_step,
               'without patch',
-              additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
-              rts_setting=rts_setting))
+              additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME]))
     else:
       raw_result, task = api.chromium_tests.build_affected_targets(
           orch_builder_id,
           orch_builder_config,
           isolate_output_files_for_coverage=True,
-          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
-          rts_setting=rts_setting)
+          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME])
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
       bot_update_step = task.bot_update_step

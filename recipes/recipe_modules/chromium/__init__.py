@@ -7,6 +7,7 @@ from . import types
 from PB.recipe_modules.build.chromium import properties
 
 DEPS = [
+    'chromium_rts',
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
     # in order to have set_config automatically populate gclient

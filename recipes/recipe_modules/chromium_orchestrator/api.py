@@ -133,53 +133,16 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     self.m.chromium_tests.raise_failure_if_cq_depends_footer_exists()
 
-    inverted_rts_experiment = ('chromium_rts.inverted_rts' in
-                               self.m.buildbucket.build.input.experiments)
+    reuseable_compilator_build = self.m.chromium_rts.get_reuseable_compilator_build(
+        self.compilator)
+
     inverted_rts_bail_early_experiment = (
         'chromium_rts.inverted_rts_bail_early' in
         self.m.buildbucket.build.input.experiments)
-
-    if self.m.chromium_rts.is_rts_footer_disabled():
-      log_step = self.m.step.empty('log rts disabled by footer')
-      log_step.presentation.properties['rts_footer_disabled'] = True
-
-    # The chromium_rts.inverted_rts attempts to run only the tests that were
-    # skipped as part of a previous compatible Quick Run build
-    reuseable_quick_run_build = None
-    reuseable_compilator_build = None
-    if (inverted_rts_bail_early_experiment and self.m.cq.active and
-        self.m.cq.run_mode == self.m.cq.QUICK_DRY_RUN):
-      # Prevent this build from getting reused for a later DRY_RUN or FULL_RUN
-      self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
-      return
-
-    # Allow the bail early experiment to run inverted since this is only used
-    # on experimental builders. Otherwise we only want FULL_RUN to run the
-    # inverted
-    if inverted_rts_bail_early_experiment or (
-        inverted_rts_experiment and self.m.cq.active and
-        self.m.cq.run_mode == self.m.cq.FULL_RUN
-    ) and not self.m.chromium_rts.is_rts_footer_disabled():
-      reuseable_quick_run_build = self.m.chromium_rts.find_compatible_quick_run_build(
-      )
-
-      if reuseable_quick_run_build:
-        reuseable_compilator_build = self.m.chromium_rts.get_compilator_from_build(
-            reuseable_quick_run_build, self.compilator)
-        if reuseable_compilator_build:
-          log_step = self.m.step.empty('log reused builds')
-          log_step.presentation.properties['reused_quick_run_build'] = str(
-              reuseable_quick_run_build.id)
-          log_step.presentation.properties['reused_compilator_build'] = str(
-              reuseable_compilator_build.id)
-
     if inverted_rts_bail_early_experiment and not reuseable_compilator_build:
-      # Prevent this build from getting reused for a later DRY_RUN or FULL_RUN
-      self.m.cq.allow_reuse_for(self.m.cq.QUICK_DRY_RUN)
       return None
 
-    builder_id, builder_config, rts_setting = self.configure_build(
-        inverted_rts=bool(reuseable_compilator_build))
+    builder_id, builder_config = self.configure_build()
 
     # Trigger compilator to compile and build targets with patch
     # Scheduled build inherits current build's project and bucket
@@ -189,8 +152,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             'builder_group': self.m.builder_group.for_current,
         }
     }
-    if rts_setting:
-      compilator_properties['rts_setting'] = rts_setting
+    if self.m.chromium_rts.rts_setting:
+      compilator_properties['rts_setting'] = self.m.chromium_rts.rts_setting
 
     gitiles_commit = None
 
@@ -207,7 +170,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             status='FAILURE',
             raise_on_failure=False)
     else:
-      # Pass in any RTS mode input props
+      # Pass in any input props
       compilator_properties.update(self.m.cq.props_for_child_build)
       self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)
       build = self._trigger_compilator('trigger compilator (with patch)',
@@ -253,14 +216,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     # Now let's get all the tests ready with the swarming trigger info
     # outputed by the compilator
-    tests = self.process_swarming_props(
-        comp_output.swarming_props,
-        builder_config,
-        targets_config,
-        include_inverted_rts=bool(reuseable_compilator_build))
+    tests = self.process_swarming_props(comp_output.swarming_props,
+                                        builder_config, targets_config)
 
-    tests = self.m.chromium_rts.setup_quickrun_tests(
-        tests, rts_setting, bool(reuseable_compilator_build))
+    tests = self.m.chromium_rts.setup_tests(tests)
 
     if reuseable_compilator_build and not tests:
       # No invertible tests were found and we have a successful build
@@ -313,8 +272,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           not comp_output.skipping_coverage):
         # Grab the coverage from the reused build
         if reuseable_compilator_build:
-          self.m.chromium_rts.download_previous_code_coverage(
-              reuseable_quick_run_build)
+          self.m.chromium_rts.download_previous_code_coverage()
 
         all_test_binaries_future.result()
         self.m.code_coverage.process_coverage_data(tests)
@@ -459,14 +417,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     return result_pb2.RawResult(
         summary_markdown=summary_markdown, status=final_status)
 
-  def configure_build(self, inverted_rts=False):
+  def configure_build(self):
     builder_id, builder_config = (
         self.m.chromium_tests_builder_config.lookup_builder())
 
-    rts_setting = self.m.chromium_rts.get_quickrun_options(
-        builder_config, inverted_rts=inverted_rts)
-    self.m.chromium_tests.configure_build(
-        builder_config, rts_setting, test_only=True)
+    self.m.chromium_rts.init_rts_options(builder_config)
+    self.m.chromium_tests.configure_build(builder_config, test_only=True)
 
     # Set self.m.chromium.c.compile_py.compiler to empty string so that
     # prepare_checkout() does not attempt to run ensure_goma()
@@ -475,7 +431,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium_tests.print_link_to_results()
 
     self.m.chromium.apply_config('trybot_flavor')
-    return builder_id, builder_config, rts_setting
+    return builder_id, builder_config
 
   def _trigger_compilator(self, step_name, compilator_properties,
                           gitiles_commit):
@@ -681,8 +637,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
                              swarming_props,
                              builder_config,
                              targets_config,
-                             tests=None,
-                             include_inverted_rts=False):
+                             tests=None):
     """Read isolate hashes swarming_props content and download command lines
 
     Args:
@@ -693,8 +648,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       targets_config (TargetsConfig): configuration for the tests' targets
       tests (list(Test)): Test objects to update with swarming info. If None,
         new Test objects will be created.
-      include_inverted_rts (bool): attempts to retrieve the inverted rts
-        command lines with the non-inverted commands
     Returns:
       List of Test objects with swarming info
     """
@@ -703,7 +656,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         'swarming_rts_command_lines_digest')
     swarming_inverted_rts_command_digest = swarming_props.get(
         'swarming_inverted_rts_command_lines_digest'
-    ) if include_inverted_rts else None
+    ) if self.m.chromium_rts.inverted_rts else None
     swarming_cwd = swarming_props['swarming_command_lines_cwd']
 
     swarm_hashes = dict(swarming_props['swarm_hashes'])

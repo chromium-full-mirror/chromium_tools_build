@@ -1432,8 +1432,6 @@ class ChromiumApi(recipe_api.RecipeApi):
              gn_args_location=None,
              gn_args_max_text_lines=None,
              recursive_lookup=False,
-             rts_setting=None,
-             rts_recall=None,
              **kwargs):
     """Generate the build files in the source tree.
 
@@ -1458,11 +1456,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         in the step_text when using the default behavior for displaying GN args.
       recursive_lookup: Whether the lookup of the GN arguments should
         recursively expand imported args files.
-      rts_setting - A string indicating which regression test selection model
-        to use. None will disable RTS (bit.ly/chromium-rts)
-      rts_recall - A float from (0 to 1] indicating what change recall rts
-        should aim for, 0 being the fastest and 1 being the safest, and
-        typically between .9 and 1
 
     Returns:
       The content of the args.gn file.
@@ -1497,11 +1490,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       mb_args += ['--swarming-targets-file', self.m.raw_io.input_text(data)]
 
     mb_args.extend(self._mb_build_dir_args(build_dir))
-    if rts_setting:
-      mb_args += ['--rts', rts_setting]
 
-      if rts_recall:
-        mb_args += ['--rts-target-change-recall', str(rts_recall)]
+    mb_args.extend(self.m.chromium_rts.mb_args())
 
     name = name or 'generate_build_files'
     try:

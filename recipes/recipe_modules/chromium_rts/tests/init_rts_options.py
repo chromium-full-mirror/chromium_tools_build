@@ -36,7 +36,8 @@ def RunSteps(api, builder_rts_selection, inverted_rts):
       ],
       regression_test_selection=builder_rts_selection,
   )
-  api.chromium_rts.get_quickrun_options(builder_config, inverted_rts)
+  api.chromium_rts.inverted_rts = inverted_rts
+  api.chromium_rts.init_rts_options(builder_config)
 
 
 def GenTests(api):

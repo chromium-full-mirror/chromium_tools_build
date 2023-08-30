@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'depot_tools/gclient',
     'depot_tools/gerrit',
     'depot_tools/gsutil',
     'depot_tools/tryserver',

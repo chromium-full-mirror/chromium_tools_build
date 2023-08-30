@@ -181,13 +181,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     presentation = self.m.step.active_result.presentation
     presentation.logs.setdefault('stdout', []).append(message)
 
-  def configure_build(self, builder_config, rts_setting=None, test_only=False):
+  def configure_build(self, builder_config, test_only=False):
     """Configure the modules that will be used by chromium_tests code.
 
     Args:
       builder_config - The BuilderConfig instance that defines the
         configuration to use for the various modules.
-      rts_setting - What RTS model to download and use. None will disable RTS.
       test_only - Whether or not the builder is just triggering tests.
         If the builder is not performing compilation, then some
         inapplicable validation is disabled. By default, the compilation
@@ -213,11 +212,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     for c in builder_config.gclient_apply_config:
       self.m.gclient.apply_config(c)
 
-    if rts_setting == 'rts-chromium':
-      self.m.gclient.c.solutions[0].custom_vars['checkout_rts_model'] = 'True'
-    elif rts_setting == 'rts-ml-chromium':
-      self.m.gclient.c.solutions[0].custom_vars[
-          'checkout_rts_experimental_model'] = 'True'
+    self.m.chromium_rts.configure_build()
 
     if (self.m.chromium.c.TARGET_CROS_BOARDS or
         self.m.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES):
@@ -511,8 +506,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                mb_config_path=None,
                                mb_recursive_lookup=True,
                                override_execution_mode=None,
-                               rts_setting=None,
-                               rts_recall=None,
                                isolate_output_files_for_coverage=False):
     """Runs compile and related steps for given builder.
 
@@ -544,11 +537,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         output will contain the include statement.
       override_execution_mode - An optional override to change the execution
         mode.
-      rts_setting - A string indicating which RTS model to use regression test
-        selection. None will disable RTS (bit.ly/chromium-rts)
-      rts_recall - A float from (0 to 1] indicating what change recall rts
-        should aim for, 0 being the fastest and 1 being the safest, and
-        typically between .9 and 1
       isolate_output_files_for_coverage: Whether to also upload all test
         binaries and other required code coverage output files to one hash.
 
@@ -610,9 +598,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         mb_config_path=mb_config_path,
         mb_recursive_lookup=mb_recursive_lookup,
         android_version_code=android_version_code,
-        android_version_name=android_version_name,
-        rts_setting=rts_setting,
-        rts_recall=rts_recall)
+        android_version_name=android_version_name)
 
     if raw_result.status != common_pb.SUCCESS:
       self.m.tryserver.set_compile_failure_tryjob_result()
@@ -1150,9 +1136,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                          mb_config_path=None,
                          mb_recursive_lookup=False,
                          android_version_code=None,
-                         android_version_name=None,
-                         rts_setting=None,
-                         rts_recall=None):
+                         android_version_name=None):
     with self.m.chromium.guard_compile(suffix=name_suffix):
       use_goma_module = False
       if self.m.chromium.c.project_generator.tool == 'mb':
@@ -1166,9 +1150,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             name='generate_build_files%s' % name_suffix,
             recursive_lookup=mb_recursive_lookup,
             android_version_code=android_version_code,
-            android_version_name=android_version_name,
-            rts_setting=rts_setting,
-            rts_recall=rts_recall)
+            android_version_name=android_version_name)
         use_goma_in_gn_args = self._use_goma_set_in_gn_args(gn_args)
         if use_goma_module and not use_goma_in_gn_args:
           self.m.step('goma is disabled by gn', cmd=None)
@@ -1296,8 +1278,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       failing_tests,
                                       bot_update_step,
                                       suffix,
-                                      additional_compile_targets=None,
-                                      rts_setting=None):
+                                      additional_compile_targets=None):
     """Builds and isolates test suites in |failing_tests|.
 
     Args:
@@ -1311,8 +1292,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         specified recipe-side. This field is intended for recipes to add
         targets needed for recipe functionality and not for configuring builder
         outputs (which should be specified src-side in waterfalls.pyl).
-      rts_setting (str): rts setting to be used in mb. This will control which
-        model is used for selecting tests. None will not perform any RTS.
     Returns:
       A tuple of:
         A RawResult object with the failure message and status or None if
@@ -1337,12 +1316,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     failing_swarming_tests = [t for t in failing_tests if t.uses_isolate]
 
     raw_result = self.run_mb_and_compile(
-        builder_id,
-        compile_targets,
+        builder_id, compile_targets,
         [t.isolate_target for t in failing_swarming_tests] + skylab_isolates,
-        ' (%s)' % suffix,
-        rts_setting=rts_setting,
-        rts_recall=builder_config.regression_test_selection_recall)
+        ' (%s)' % suffix)
     if raw_result:
       # Clobber the bot upon compile failure without patch.
       # See crbug.com/724533 for more detail.
@@ -2040,12 +2016,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config)
     self.print_link_to_results()
-    rts_setting = self.m.chromium_rts.get_quickrun_options(builder_config)
+    self.m.chromium_rts.init_rts_options(builder_config)
     raw_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
-        root_solution_revision=root_solution_revision,
-        rts_setting=rts_setting)
+        root_solution_revision=root_solution_revision)
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
@@ -2269,8 +2244,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                              builder_config,
                              root_solution_revision=None,
                              isolate_output_files_for_coverage=False,
-                             additional_compile_targets=None,
-                             rts_setting=None):
+                             additional_compile_targets=None):
     """Builds targets affected by change.
 
     Args:
@@ -2286,8 +2260,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         specified recipe-side. This field is intended for recipes to add
         targets needed for recipe functionality and not for configuring builder
         outputs (which should be specified src-side in waterfalls.pyl).
-      rts_setting (str): rts setting to be used in mb. This will control which
-        model is used for selecting tests. None will not perform any RTS.
 
     Returns:
       A Tuple of
@@ -2295,7 +2267,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           and the failure message if it failed
         Configuration of the build/test.
     """
-    self.configure_build(builder_config, rts_setting=rts_setting)
+    self.configure_build(builder_config)
 
     self.m.chromium.apply_config('trybot_flavor')
 
@@ -2350,8 +2322,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           compile_targets,
           tests,
           override_execution_mode=ctbc.COMPILE_AND_TEST,
-          rts_setting=rts_setting,
-          rts_recall=builder_config.regression_test_selection_recall,
           isolate_output_files_for_coverage=isolate_output_files_for_coverage)
     else:
 
@@ -2372,7 +2342,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests = []
 
-    tests = self.m.chromium_rts.setup_quickrun_tests(tests, rts_setting, False)
+    tests = self.m.chromium_rts.setup_tests(tests)
 
     return raw_result, Task(builder_config, tests, bot_update_step,
                             affected_files, execution_info)

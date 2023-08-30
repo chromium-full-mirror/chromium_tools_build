@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'chromium_rts',
     'chromium_tests',
     'recipe_engine/properties',
     'recipe_engine/step',
-    'chromium_rts',
 ]
 
 from recipe_engine import post_process
@@ -21,10 +21,13 @@ def RunSteps(api):
       steps.MockTestSpec.create('MockTest',
                                 supports_rts=True).get_test(api.chromium_tests),
   ]
+  api.m.chromium_rts.rts_setting = 'rts-chromium'
 
-  api.m.chromium_rts.setup_quickrun_tests(tests, 'rts-chromium', False)
+  api.m.chromium_rts.inverted_rts = False
+  api.m.chromium_rts.setup_tests(tests)
   assert (tests[0].is_rts)
-  api.m.chromium_rts.setup_quickrun_tests(tests, 'rts-chromium', True)
+  api.m.chromium_rts.inverted_rts = True
+  api.m.chromium_rts.setup_tests(tests)
   assert (tests[0].is_inverted_rts)
 
 

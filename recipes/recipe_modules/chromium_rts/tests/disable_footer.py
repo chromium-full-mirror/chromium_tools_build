@@ -18,7 +18,7 @@ PROPERTIES = {
 
 
 def RunSteps(api, expected_disable):
-  disabled = api.chromium_rts.is_rts_footer_disabled()
+  disabled = api.chromium_rts._is_rts_footer_disabled()
   assert expected_disable == disabled
 
 

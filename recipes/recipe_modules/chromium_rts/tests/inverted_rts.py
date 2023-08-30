@@ -13,13 +13,14 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/cq',
     'recipe_engine/file',
+    'recipe_engine/json',
 ]
 
 
 def RunSteps(api):
-  quick_run_build = api.chromium_rts.find_compatible_quick_run_build()
-  api.chromium_rts.get_compilator_from_build(quick_run_build, 'compilator')
-  api.chromium_rts.download_previous_code_coverage(quick_run_build)
+  api.chromium_rts.get_reuseable_compilator_build('builder-compilator')
+  if api.chromium_rts.inverted_rts:
+    api.chromium_rts.download_previous_code_coverage()
 
 
 def GenTests(api):
@@ -44,6 +45,7 @@ def GenTests(api):
       'basic',
       api.chromium.try_build(
           builder='fake-orchestrator',
+          experiments=['chromium_rts.inverted_rts'],
           tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
       api.cq(run_mode='FULL_RUN'),
       api.buildbucket.simulated_search_results(
@@ -57,6 +59,7 @@ def GenTests(api):
       'inverse_fyi',
       api.chromium.try_build(
           builder='builder-inverse-fyi',
+          experiments=['chromium_rts.inverted_rts'],
           tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
       api.cq(run_mode='FULL_RUN'),
       api.buildbucket.simulated_search_results(
@@ -70,6 +73,7 @@ def GenTests(api):
       'no_compilator_in_build',
       api.chromium.try_build(
           builder='fake-orchestrator',
+          experiments=['chromium_rts.inverted_rts'],
           tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
       api.cq(run_mode='FULL_RUN'),
       api.buildbucket.simulated_search_results(
@@ -80,6 +84,7 @@ def GenTests(api):
   yield api.test(
       'no_reusable_coverage',
       api.chromium.try_build(
+          experiments=['chromium_rts.inverted_rts'],
           tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
       api.cq(run_mode='FULL_RUN'),
       api.buildbucket.simulated_search_results(
@@ -87,5 +92,34 @@ def GenTests(api):
           step_name='find successful Quick Runs'),
       api.chromium_rts.override_reused_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'footer_disabled',
+      api.chromium.try_build(
+          experiments=['chromium_rts.inverted_rts'],
+          tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
+      api.cq(run_mode='FULL_RUN'),
+      api.step_data('parse description',
+                    api.json.output({'Disable-Rts': ['true']})),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'bail_early_experiment_bails_early',
+      api.chromium.try_build(
+          experiments=['chromium_rts.inverted_rts_bail_early'],
+          tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
+      api.cq(run_mode='QUICK_DRY_RUN'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'bail_early_experiment_reuse',
+      api.chromium.try_build(
+          experiments=['chromium_rts.inverted_rts_bail_early'],
+          tags=api.buildbucket.tags(cq_equivalent_cl_group_key='12345')),
+      api.cq(run_mode='DRY_RUN'),
       api.post_process(post_process.DropExpectation),
   )
