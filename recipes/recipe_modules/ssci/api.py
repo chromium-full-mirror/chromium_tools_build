@@ -57,21 +57,44 @@ class SsciAPI(recipe_api.RecipeApi):
     # This case is handled by the SSCI tool which will fetch the git hash instead.
     return self.m.buildbucket.gitiles_commit.id[:6]
 
-  def _upload_to_bigquery(self, data_name, bq_args):
+  def _upload_collected_data(self,
+                             data_name,
+                             bq_args,
+                             file_to_upload,
+                             gcs_file_name,
+                             sbom_folder,
+                             sbom_bucket="chrome-sbom"):
     """
-    Runs the BigQuery upload and logs an error if it fails. If there's a failure in
-    this step, we should still produce an SBOM.
+    Uploads collected data to both BigQuery and GCS. The BigQuery upload can be flaky
+    so a failure in this step should not cause the SBOM generation to fail. The data
+    collected during SBOM generation from DepBot and PartyBot should always be
+    uploading to the 'chrome-sbom' bucket regardless of where the final SBOM gets
+    uploaded. This data is used for debugging and data analysis and should not pollute
+    any signed or unsigned buckets.
 
     Args:
       data_name: name of what's being uploaded
       bq_args: list of args to provide to bqupload command
+      file_to_upload: Path to the file to upload
+      gcs_file_name: What to call the uploaded GCS file
+      sbom_folder: A folder prefix to use when uploading
+      sbom_bucket: Bucket that should be used for data upload
     """
     step_name = f"upload {data_name} to BigQuery"
     try:
-      self.m.step(step_name,
-                  [self.bqupload.tool_path, "-json-list=true"] + bq_args)
+      self.m.step(step_name, [self.bqupload.tool_path, "-json-list=true"] +
+                  bq_args + [file_to_upload])
     except self.m.step.StepFailure:
       pass
+
+    if sbom_bucket and sbom_folder:
+      cloud_file_path = pathlib.Path(sbom_folder, self.execution_id,
+                                     gcs_file_name).as_posix()
+      self.m.gsutil.upload(
+          file_to_upload,
+          sbom_bucket,
+          cloud_file_path,
+          name=f"upload {data_name} to GCS")
 
   def _setup_ssci_tools(self):
     """
@@ -119,13 +142,16 @@ class SsciAPI(recipe_api.RecipeApi):
 
     with self.m.step.nest('target specific steps for %s' % entry_point):
 
-      self._upload_to_bigquery(
-          f"{entry_point} artifacts",
-          extra_depbot_columns + [self.bq_art_table, artifact_file])
+      for data_name, bq_table, data_file in [
+          (f"{entry_point} artifacts", self.bq_art_table, artifact_file),
+          (f"{entry_point} libraries", self.bq_lib_table, library_file)
+      ]:
 
-      self._upload_to_bigquery(
-          f"{entry_point} libraries",
-          extra_depbot_columns + [self.bq_lib_table, library_file])
+        self._upload_collected_data(data_name,
+                                    extra_depbot_columns + [bq_table],
+                                    data_file,
+                                    f"{data_name.replace(' ', '_')}.json",
+                                    sbom_folder)
 
       # Combines the recipe name with the DepBot target as the product name.
       recipe_name = self.m.properties["recipe"].split("/")[-1]
@@ -237,10 +263,10 @@ class SsciAPI(recipe_api.RecipeApi):
               self.m.buildbucket.build.builder.builder
           ])
 
-      self._upload_to_bigquery('third party dependencies', [
+      self._upload_collected_data('third party dependencies', [
           "-column", f'execution_id="{self.execution_id}"',
-          self.bq_thirdparty_table, third_party_out
-      ])
+          self.bq_thirdparty_table
+      ], third_party_out, "third_party_data.json", sbom_folder)
 
       # Determine whether SPDX file should be generated with minimal fields or not
       minimal_config = "-full-spdx"
