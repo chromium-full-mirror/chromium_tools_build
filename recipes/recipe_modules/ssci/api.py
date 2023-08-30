@@ -13,9 +13,10 @@ from recipe_engine import recipe_api
 
 @dataclasses.dataclass
 class CIPDPkg:
-  version: str
+  ensure_version: str
   pkg_path: str
   tool_path: Union[str, None] = None
+  resolved_version: Union[str, None] = None
 
 
 class SsciAPI(recipe_api.RecipeApi):
@@ -34,15 +35,15 @@ class SsciAPI(recipe_api.RecipeApi):
 
     # Used to store CIPD package information for each of the tools used
     self.bqupload = CIPDPkg(
-        version="latest", pkg_path="infra/tools/bqupload/${platform}")
+        ensure_version="latest", pkg_path="infra/tools/bqupload/${platform}")
     self.depbot = CIPDPkg(
-        version=props.depbot_version or "latest",
+        ensure_version=props.depbot_version or "latest",
         pkg_path="infra_internal/tools/security/depbot/${platform}")
     self.partybot = CIPDPkg(
-        version=props.partybot_version or "latest",
+        ensure_version=props.partybot_version or "latest",
         pkg_path="infra_internal/tools/partybot")
     self.ssci_tool = CIPDPkg(
-        version=props.ssci_version or "latest",
+        ensure_version=props.ssci_version or "latest",
         pkg_path="infra_internal/tools/ssci")
 
   def _get_product_version(self, chrome_version):
@@ -105,24 +106,19 @@ class SsciAPI(recipe_api.RecipeApi):
         self.depbot, self.bqupload, self.partybot, self.ssci_tool
     ]:
       cipd_tool.tool_path = self.m.cipd.ensure_tool(cipd_tool.pkg_path,
-                                                    cipd_tool.version)
+                                                    cipd_tool.ensure_version)
 
-      # We don't need to get this data for bqupload as its not used to create
-      # the SBOM, only to upload collected data during the run.
-      if cipd_tool is self.bqupload:
+      # This becomes a no-op after the tag is resolved the first time.
+      if cipd_tool.resolved_version:
         continue
 
       # Checks if we're using a proper CIPD version tag, or 'latest'. If we're using
-      # latest, CIPD describe is used to resolve it to an InstanceID. After the tag
-      # is resolved the first time this becomes a no-op.
-      if cipd_tool.version != "latest":
-        continue
-
-      desc = self.m.cipd.describe(cipd_tool.pkg_path, cipd_tool.version)
-      # Adds a v in front of the CIPD package versions to prevent issues where CIPD
-      # package instance IDs can start with a `-` which can be interpreted as a CLI
+      # latest, CIPD describe is used to resolve it to an InstanceID.
+      desc = self.m.cipd.describe(cipd_tool.pkg_path, cipd_tool.ensure_version)
+      # This also adds a v in front of the CIPD package versions to prevent issues where
+      # CIPD package instance IDs can start with a `-` which can be interpreted as a CLI
       # flag.
-      cipd_tool.version = f"v{desc.pin.instance_id}"
+      cipd_tool.resolved_version = f"v{desc.pin.instance_id}"
 
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
                              filename_postfix, chrome_version, minimal_config,
@@ -168,9 +164,10 @@ class SsciAPI(recipe_api.RecipeApi):
                 "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
                 "-libraries", library_file, "-artifacts", artifact_file,
                 "-thirdparty", third_party_out, "-depbot-version",
-                self.depbot.version, "-partybot-version", self.partybot.version,
-                "-ssci-version", self.ssci_tool.version, "-output-file",
-                spdx_out, "-chromium-src", src_dir, "-product", product,
+                self.depbot.resolved_version, "-partybot-version",
+                self.partybot.resolved_version, "-ssci-version",
+                self.ssci_tool.resolved_version, "-output-file", spdx_out,
+                "-chromium-src", src_dir, "-product", product,
                 "-product-version", p_version, "-platform",
                 self.m.platform.name, "-arch",
                 f"{self.m.platform.arch}{self.m.platform.bits}", minimal_config
