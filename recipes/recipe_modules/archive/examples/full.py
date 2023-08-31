@@ -328,7 +328,7 @@ def GenTests(api):
                     # dir to a temp dir before the final move, thus the new
                     # 'tmp_tmp_3' in the path.
                     "move",
-                    "[CLEANUP]/tmp_tmp_3/tmp_tmp_2",
+                    "[CLEANUP]/tmp_tmp_4/tmp_tmp_2",
                     "[CLEANUP]/tmp_tmp_2/archive_root"
                 ]))
       return sum(post_tests, api.empty_test_data())
@@ -494,12 +494,14 @@ def GenTests(api):
               'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
           },
           **{'$build/archive': input_properties}),
-      api.post_process(post_process.MustRun,
-                       'Generic Archiving Steps.Copy file existing-file.json'),
+      api.post_process(post_process.LogContains,
+                       'Generic Archiving Steps.Write file list to copy',
+                       'tmp_tmp_3', ['existing-file.json']),
       api.post_process(post_process.MustRun,
                        'Generic Archiving Steps.Copy folder existing-dir'),
-      api.post_process(post_process.DoesNotRun,
-                       'Generic Archiving Steps.Copy file missing-file.json'),
+      api.post_process(post_process.LogDoesNotContain,
+                       'Generic Archiving Steps.Write file list to copy',
+                       'tmp_tmp_3', ['missing-file.json']),
       api.post_process(post_process.DoesNotRun,
                        'Generic Archiving Steps.Copy folder missing-dir'),
       api.post_process(check_stdin,
