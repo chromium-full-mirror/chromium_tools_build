@@ -8,7 +8,9 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'recipe_engine/buildbucket',
+    'recipe_engine/context',
     'recipe_engine/json',
+    'recipe_engine/platform',
     'recipe_engine/step',
 ]
 NO_SUFFIX = ''
@@ -37,8 +39,15 @@ def RunSteps(api, properties):
     api.chromium_tests.lookup_builder_gn_args(builder_id, builder_config)
     tests = build_config.tests_on(builder_id)
     api.chromium_tests.download_command_lines_for_tests(tests, builder_config)
-    test_failure_summary = api.chromium_tests.run_tests(builder_id,
-                                                        builder_config, tests)
+
+    env = {}
+    # Mac perf testers have a different behaviour when this environment var is
+    # set i.e. Chrome is started using 'open' command. See crbug/1454294
+    if api.platform.is_mac:
+      env['START_BROWSER_WITH_DEFAULT_PRIORITY'] = '1'
+    with api.context(env=env):
+      test_failure_summary = api.chromium_tests.run_tests(
+          builder_id, builder_config, tests)
 
     task_groups = {
         t.get_task(NO_SUFFIX).request.name:
@@ -86,5 +95,14 @@ def GenTests(api):
       api.chromium_tests_builder_config.ci_build(
           builder_group='chromium.perf', builder='linux-builder-perf'),
       api.expect_status('INFRA_FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'mac-tester-coverage',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.perf',
+          builder='mac-laptop_low_end-perf',
+          parent_buildername='mac-builder-perf'),
       api.post_process(post_process.DropExpectation),
   )
