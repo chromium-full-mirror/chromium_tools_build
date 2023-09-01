@@ -2468,11 +2468,12 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     # Export TARGET_PLATFORM to resultdb tags
     resultdb = self.spec.resultdb
+    base_tags = resultdb.base_tags or tuple()
     if (self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM):
       resultdb = attr.evolve(
           resultdb,
-          base_tags=(('target_platform',
-                      self.api.m.chromium.c.TARGET_PLATFORM),))
+          base_tags=base_tags +
+          (('target_platform', self.api.m.chromium.c.TARGET_PLATFORM),))
 
     self.api.m.chromium_swarming.trigger_task(
         self._tasks[suffix], resultdb=resultdb)

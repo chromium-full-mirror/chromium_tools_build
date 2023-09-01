@@ -38,6 +38,8 @@ PROPERTIES = InputProperties
 def RunSteps(api, properties):
   """Run tests for a particular revision."""
   try:
+    api.chromium_swarming.add_default_tag('is_luci_bisection:true')
+
     test_results = []
     run_succeeded = False  # Whether the build finish running the tests and collecting results.
     target_builder = properties.target_builder
@@ -132,10 +134,14 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
         test_options = attr.evolve(test_options, test_filter=test_filter)
       test.test_options = test_options
 
+      resultdb = test.spec.resultdb
+      resultdb = attr.evolve(
+          resultdb, base_tags=(('is_luci_bisection', 'true'),))
       # Do not run the result handler when running the test.
       # This may prevent errors in the result handlers, for example,
       # when we don't have the permission to upload the result.
-      test.spec = attr.evolve(test.spec, results_handler_name=None)
+      test.spec = attr.evolve(
+          test.spec, results_handler_name=None, resultdb=resultdb)
       test_suites.append(test)
       compile_targets.extend(test.compile_targets())
   if not test_suites:
