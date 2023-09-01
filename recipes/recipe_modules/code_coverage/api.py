@@ -57,6 +57,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self._exclude_sources_key = properties.coverage_exclude_sources
     # Current test type that's being processed.
     self._current_processing_test_type = 'overall'
+    # Current coverage tool of the data being processed.
+    self._current_processing_coverage_tool = 'default'
     # When set True, Clang coverage is enabled.
     self._use_clang_coverage = properties.use_clang_coverage
     # When set True, Java coverage is enabled.
@@ -126,15 +128,17 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     It's a temporary directory with a sub directory named in current test type.
     Temp dir is created on first access to this property. Subdirs are created
-    on first access when processing each test type.
+    on first access when processing each test type / tool type.
     """
     if not self._metadata_dir:
       self._metadata_dir = self.m.path.mkdtemp()
     metadata_test_type_dir = self._metadata_dir.join(
-        self._current_processing_test_type)
+        self._current_processing_test_type).join(
+            self._current_processing_coverage_tool)
     self.m.file.ensure_directory(
-        'ensure metadata dir for %s tests' % self._current_processing_test_type,
-        metadata_test_type_dir)
+        'ensure metadata dir for %s tests for %s coverage' %
+        (self._current_processing_test_type,
+         self._current_processing_coverage_tool), metadata_test_type_dir)
     return metadata_test_type_dir
 
   @property
@@ -440,14 +444,17 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       return source_files
 
     if self.use_clang_coverage:
-      self._eligible_files = _filter_source_file(
-          candidate_files, constants.TOOLS_TO_EXTENSIONS_MAP['clang'])
-    elif self.use_java_coverage:
-      self._eligible_files = _filter_source_file(
-          candidate_files, constants.TOOLS_TO_EXTENSIONS_MAP['jacoco'])
-    elif self.use_javascript_coverage:
-      self._eligible_files = _filter_source_file(
-          candidate_files, constants.TOOLS_TO_EXTENSIONS_MAP['v8'])
+      self._eligible_files.extend(
+          _filter_source_file(candidate_files,
+                              constants.TOOLS_TO_EXTENSIONS_MAP['clang']))
+    if self.use_java_coverage:
+      self._eligible_files.extend(
+          _filter_source_file(candidate_files,
+                              constants.TOOLS_TO_EXTENSIONS_MAP['jacoco']))
+    if self.use_javascript_coverage:
+      self._eligible_files.extend(
+          _filter_source_file(candidate_files,
+                              constants.TOOLS_TO_EXTENSIONS_MAP['v8']))
 
   def _validate_test_types(self):
     """Validates that test type to process in build is supported."""
@@ -582,11 +589,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         return
 
     if self.use_clang_coverage:
+      self._current_processing_coverage_tool = 'clang'
       for test_type in self._test_types:
         self._current_processing_test_type = test_type
         self.process_clang_coverage_data(tests)
 
     if self.use_java_coverage:
+      self._current_processing_coverage_tool = 'jacoco'
       try:
         for test_type in self._test_types:
           self._current_processing_test_type = test_type
@@ -602,8 +611,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         ])
 
     if self.use_javascript_coverage:
+      self._current_processing_coverage_tool = 'v8'
       self.process_javascript_coverage_data()
 
+    self._current_processing_coverage_tool = 'default'
     self._set_builder_output_properties_for_uploads()
 
   def _get_unsupported_projects(self):

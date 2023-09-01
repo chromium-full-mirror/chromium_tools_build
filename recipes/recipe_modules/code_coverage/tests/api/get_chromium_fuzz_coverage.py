@@ -16,10 +16,12 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'basic', api.post_process(post_process.MustRun, 'chmod llvm file'),
-      api.post_process(post_process.MustRun,
-                       'ensure metadata dir for overall tests'),
-      api.post_process(post_process.MustRun,
-                       'ensure metadata dir for overall tests (2)'),
+      api.post_process(
+          post_process.MustRun,
+          'ensure metadata dir for overall tests for default coverage'),
+      api.post_process(
+          post_process.MustRun,
+          'ensure metadata dir for overall tests for default coverage (2)'),
       api.post_process(post_process.MustRun, 'generate coverage metadata'),
       api.post_process(post_process.MustRun,
                        'gsutil Upload coverage artifacts'),

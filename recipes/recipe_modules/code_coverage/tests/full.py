@@ -36,7 +36,6 @@ def RunSteps(api):
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(builder_config)
-  metadata_dir = api.code_coverage.metadata_dir
   # Fake path.
   api.profiles.src_dir = api.path['start_dir']
   api.code_coverage.src_dir = api.path['start_dir']
@@ -53,8 +52,11 @@ def RunSteps(api):
         api.profiles.profile_dir().join('unit-merged.profdata'))
     api.path.mock_add_paths(
         api.profiles.profile_dir().join('overall-merged.profdata'))
-  if api.properties.get('mock_java_tests_metadata_path', True):
+  if api.properties.get('mock_java_tests_metadata_path_overall', True):
+    api.code_coverage._current_processing_coverage_tool = 'jacoco'
+    metadata_dir = api.code_coverage.metadata_dir
     api.path.mock_add_paths(metadata_dir.join('all.json.gz'))
+    api.code_coverage._current_processing_coverage_tool = 'default'
   if api.properties.get('mock_javascript_lcov_path', True):
     api.path.mock_add_paths(
         api.chromium.output_dir.join('js_coverage').join('lcov.info'))
@@ -798,7 +800,7 @@ def GenTests(api):
           'some/path/to/FileTest.java',
           'some/other/path/to/FileTest.java',
       ]),
-      api.properties(mock_java_tests_metadata_path=False),
+      api.properties(mock_java_tests_metadata_path_overall=False),
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
           'generate line number mapping from bot to Gerrit'),
