@@ -67,7 +67,8 @@ def RunSteps(api):
         build_dir=build_dir,
         update_properties=update_properties,
         custom_vars=custom_vars,
-        report_artifacts=True)
+        report_artifacts=True,
+        should_batch=api.properties.get('should_batch', False))
     api.archive.generic_archive_after_tests(
         build_dir=build_dir, upload_results=upload_results, test_success=True)
     return
@@ -426,6 +427,28 @@ def GenTests(api):
             },
             **{'$build/archive': input_properties}),
         api.expect_status('FAILURE'),
+        api.post_process(post_process.DropExpectation),
+    )
+
+    yield api.test(
+        f'generic_archive_batch_copy_{archive_type}',
+        api.properties(
+            gcs_archive=True,
+            update_properties={
+                'got_revision': TEST_HASH_MAIN,
+                'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
+            },
+            should_batch=True,
+            **{'$build/archive': input_properties}),
+        api.post_process(post_process.LogContains,
+                         'Generic Archiving Steps.Write file list to copy',
+                         'tmp_tmp_3', [
+                             'folder1/chrome',
+                             'folder2/snapshot_blob.bin',
+                             'before_rename_file',
+                             'glob1.txt',
+                             'glob2.txt',
+                         ]),
         api.post_process(post_process.DropExpectation),
     )
 

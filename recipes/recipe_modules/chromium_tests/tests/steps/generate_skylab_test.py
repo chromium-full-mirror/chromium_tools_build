@@ -198,16 +198,18 @@ def GenTests(api):
           'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
           ["-max-retries", "3"]),
       api.post_process(
-          post_process.MustRun,
+          post_process.LogContains,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
-           'Generic Archiving Steps.'
-           'Copy file out/Release/chrome') % TAST_TARGET,
+           'Generic Archiving Steps.Write file list to copy') % TAST_TARGET,
+          'tmp_tmp_2',
+          ['out/Release/chrome'],
       ),
       api.post_process(
-          post_process.MustRun,
+          post_process.LogContains,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
-           'Generic Archiving Steps.'
-           'Copy file metadata.json') % TAST_TARGET,
+           'Generic Archiving Steps.Write file list to copy (2)') % TAST_TARGET,
+          'tmp_tmp_5',
+          ['metadata.json'],
       ),
       api.post_process(
           post_process.MustRun,
@@ -314,11 +316,13 @@ def GenTests(api):
                   failing_tests=['Test.One'],
                   skipped_tests=['Test.One']))),
       api.post_process(
-          post_process.MustRun,
+          post_process.LogContains,
           'prepare skylab tests.'
           'upload skylab runtime deps for {target}.'
           'Generic Archiving Steps.'
-          'Copy file out/Release/bin/run_{target}'.format(target=GTEST_TARGET),
+          'Write file list to copy'.format(target=GTEST_TARGET),
+          'tmp_tmp_2',
+          [f'out/Release/bin/run_{GTEST_TARGET}'],
       ),
       api.post_process(
           post_process.MustRun,
@@ -579,7 +583,7 @@ def GenTests(api):
           'prepare skylab tests.'
           'upload skylab runtime deps for {target}.'
           'Generic Archiving Steps.'
-          'Copy file out/Release/bin/run_{target}'.format(target=GTEST_TARGET),
+          'Write file list to copy'.format(target=GTEST_TARGET),
       ),
       api.post_process(
           post_process.MustRun,

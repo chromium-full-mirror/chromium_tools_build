@@ -2589,7 +2589,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           build_dir=self.m.chromium_checkout.checkout_dir,
           update_properties={},
           config=arch_prop.InputProperties(
-              archive_datas=[squash_arch, metadata_arch]))
+              archive_datas=[squash_arch, metadata_arch]),
+          should_batch=True)
       return 'gs://{}{}/{}/{}'.format(
           gcs_bucket, '/experimental' if self.m.runtime.is_experimental else '',
           gcs_path, target)

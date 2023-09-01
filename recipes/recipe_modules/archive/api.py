@@ -775,7 +775,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                       update_properties,
                       custom_vars=None,
                       config=None,
-                      report_artifacts=False):
+                      report_artifacts=False,
+                      should_batch=False):
     """Archives one or multiple packages to either google cloud storage or CIPD.
 
     The exact configuration of the archive is specified by InputProperties. See
@@ -795,6 +796,8 @@ class ArchiveApi(recipe_api.RecipeApi):
               $build/archive.
       report_artifacts: A boolean flag to enable artifact reporting. This is
                         set by recipe that uses this module.
+      should_batch: A boolean for batching file operations via resource script,
+                    to avoid too many steps in the build.
 
     Returns:
       A dictionary that stores custom_vars and update_properties, as well as
@@ -822,7 +825,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         if not archive_data.only_upload_on_tests_success:
           gcs_uploads = self.gcs_archive(build_dir, update_properties,
                                          archive_data, custom_vars,
-                                         report_artifacts)
+                                         report_artifacts, should_batch)
           upload_results['gcs'].append(gcs_uploads)
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
@@ -869,12 +872,32 @@ class ArchiveApi(recipe_api.RecipeApi):
               version=upload_results['cipd'][pkg]['instance'],
               refs=upload_results['cipd'][pkg]['refs'])
 
+  def batch_copy(self, src, dst, file_list):
+    input_file_list = self.m.path.mkstemp()
+    self.m.file.write_text(
+        'Write file list to copy',
+        input_file_list,
+        (os.linesep).join(sorted(file_list)),
+    )
+    self.m.step('Copy files to a temp folder', [
+        'vpython3',
+        self.resource('batch.py'),
+        'copy',
+        '--des-dir',
+        dst,
+        '--base-dir',
+        src,
+        '--input-file-list',
+        input_file_list,
+    ])
+
   def gcs_archive(self,
                   build_dir,
                   update_properties,
                   archive_data,
                   custom_vars=None,
-                  report_artifacts=False):
+                  report_artifacts=False,
+                  should_batch=False):
     """Archives a single package to google cloud storage.
 
     The exact configuration of the archive is specified by InputProperties. See
@@ -892,6 +915,7 @@ class ArchiveApi(recipe_api.RecipeApi):
                    gcs_path='gcs/{%chrome_version%}/path' will be replaced to
                    'gcs/1.2.3.4/path'.
       report_artifacts: A boolean flag to enable artifact reporting.
+      should_batch: See generic_archive().
     """
 
     def _sanitize_gcs_path(gcs_path, file_path):
@@ -945,18 +969,20 @@ class ArchiveApi(recipe_api.RecipeApi):
           archive_data.root_permission_override,
           str(temp_dir),
       ])
-    created = set()
-    for filename in sorted(expanded_files):
-      tmp_file_path = self.m.path.join(temp_dir, filename)
-      tmp_file_dir = self.m.path.dirname(tmp_file_path)
-      if not str(tmp_file_dir) in created:
-        self.m.file.ensure_directory(
-            'Create temp dir %s' % os.path.dirname(filename), tmp_file_dir)
-        created.add(str(tmp_file_dir))
-      self.m.file.copy(
-          "Copy file %s" % filename,
-          self.m.path.join(base_path, filename),
-          tmp_file_path)
+
+    if should_batch:
+      self.batch_copy(base_path, temp_dir, expanded_files)
+    else:
+      created = set()
+      for filename in sorted(expanded_files):
+        tmp_file_path = self.m.path.join(temp_dir, filename)
+        tmp_file_dir = self.m.path.dirname(tmp_file_path)
+        if not str(tmp_file_dir) in created:
+          self.m.file.ensure_directory(
+              'Create temp dir %s' % os.path.dirname(filename), tmp_file_dir)
+          created.add(str(tmp_file_dir))
+        self.m.file.copy("Copy file %s" % filename,
+                         self.m.path.join(base_path, filename), tmp_file_path)
 
     updated_dirs = self._validate_paths(
         'directories', archive_data, base_path, list(archive_data.dirs))
