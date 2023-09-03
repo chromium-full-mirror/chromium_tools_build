@@ -97,6 +97,26 @@ class SsciAPI(recipe_api.RecipeApi):
           cloud_file_path,
           name=f"upload {data_name} to GCS")
 
+  def _make_filename_from_target(self,
+                                 artifact_name,
+                                 artifact_postfix,
+                                 file_extension="json"):
+    """
+    Creates a filename which makes sense for artifacts and files by combining
+    the target entry point name with the build channel and file name suffix.
+
+    Args:
+      artifact_name: Used to specify the base filename, or entry point.
+      artifact_postfix:
+        A postfix to add directly after the filename. This is typically used
+        to specify the build channel.
+      file_extension: File extension to use when naming the file
+
+    Returns: A full file name to use when uploading data
+    """
+    filename, artifact_ext = os.path.splitext(artifact_name)
+    return f"{filename}{artifact_postfix or ''}{artifact_ext}.{file_extension}"
+
   def _setup_ssci_tools(self):
     """
     Gets each of the CIPD tools needed to run the SSCI collection steps and verifies
@@ -126,6 +146,7 @@ class SsciAPI(recipe_api.RecipeApi):
     library_file = target.get("libraries_file_path")
     artifact_file = target.get("artifacts_file_path")
     entry_point = target.get("entry_point")
+    entry_point_name = entry_point.replace("//", "")
 
     # These columns are added to collected depbot data before the data is
     # uploaded to BigQuery
@@ -139,19 +160,20 @@ class SsciAPI(recipe_api.RecipeApi):
     with self.m.step.nest('target specific steps for %s' % entry_point):
 
       for data_name, bq_table, data_file in [
-          (f"{entry_point} artifacts", self.bq_art_table, artifact_file),
-          (f"{entry_point} libraries", self.bq_lib_table, library_file)
+          ("artifacts", self.bq_art_table, artifact_file),
+          ("libraries", self.bq_lib_table, library_file)
       ]:
-
+        # Renames the files so they align with their generated SBOMs.
+        # eg. SystemWebViewStable.apk.libraries.json
+        filename = self._make_filename_from_target(
+            entry_point_name, f"{filename_postfix}.{data_name}")
         self._upload_collected_data(data_name,
                                     extra_depbot_columns + [bq_table],
-                                    data_file,
-                                    f"{data_name.replace(' ', '_')}.json",
-                                    sbom_folder)
+                                    data_file, filename, sbom_folder)
 
       # Combines the recipe name with the DepBot target as the product name.
       recipe_name = self.m.properties["recipe"].split("/")[-1]
-      product = f'{recipe_name}.{self.execution_id}.{entry_point.replace("//", "")}'
+      product = f'{recipe_name}.{self.execution_id}.{entry_point_name}'
       p_version = self._get_product_version(chrome_version)
 
       spdx_file = self.m.path.mkdtemp().join("spdx-out.json")
@@ -180,8 +202,9 @@ class SsciAPI(recipe_api.RecipeApi):
       spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
 
       if sbom_bucket and sbom_folder:
-        filename, target_ext = os.path.splitext(entry_point.replace("//", ""))
-        filename = f"{filename}{filename_postfix or ''}{target_ext}.spdx.json"
+        filename = self._make_filename_from_target(
+            entry_point_name, filename_postfix, file_extension="spdx.json")
+
         full_path = pathlib.Path(sbom_folder, self.execution_id,
                                  filename).as_posix()
         self.m.gsutil.upload(
@@ -260,10 +283,12 @@ class SsciAPI(recipe_api.RecipeApi):
               self.m.buildbucket.build.builder.builder
           ])
 
+      filename = self._make_filename_from_target("ThirdPartyData",
+                                                 sbom_filename_postfix)
       self._upload_collected_data('third party dependencies', [
           "-column", f'execution_id="{self.execution_id}"',
           self.bq_thirdparty_table
-      ], third_party_out, "third_party_data.json", sbom_folder)
+      ], third_party_out, filename, sbom_folder)
 
       # Determine whether SPDX file should be generated with minimal fields or not
       minimal_config = "-full-spdx"

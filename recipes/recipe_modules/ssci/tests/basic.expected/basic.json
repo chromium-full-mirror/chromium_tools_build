@@ -697,7 +697,7 @@
       "----",
       "cp",
       "[CLEANUP]/tmp_tmp_2/third_party.json",
-      "gs://chrome-sbom/os/version/luci-8945511751514863184/third_party_data.json"
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataStable.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -715,7 +715,7 @@
     "name": "SSCI collection.gsutil upload third party dependencies to GCS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/third_party_data.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataStable.json@@@"
     ]
   },
   {
@@ -752,7 +752,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for Example.apk.upload Example.apk artifacts to BigQuery",
+    "name": "SSCI collection.target specific steps for Example.apk.upload artifacts to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -767,7 +767,7 @@
       "----",
       "cp",
       "out/Release/artifacts.json",
-      "gs://chrome-sbom/os/version/luci-8945511751514863184/Example.apk_artifacts.json"
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ExampleStable.artifacts.apk.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -782,10 +782,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for Example.apk.gsutil upload Example.apk artifacts to GCS",
+    "name": "SSCI collection.target specific steps for Example.apk.gsutil upload artifacts to GCS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/Example.apk_artifacts.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ExampleStable.artifacts.apk.json@@@"
     ]
   },
   {
@@ -815,7 +815,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for Example.apk.upload Example.apk libraries to BigQuery",
+    "name": "SSCI collection.target specific steps for Example.apk.upload libraries to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -830,7 +830,7 @@
       "----",
       "cp",
       "out/Release/libs.json",
-      "gs://chrome-sbom/os/version/luci-8945511751514863184/Example.apk_libraries.json"
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ExampleStable.libraries.apk.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -845,10 +845,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection.target specific steps for Example.apk.gsutil upload Example.apk libraries to GCS",
+    "name": "SSCI collection.target specific steps for Example.apk.gsutil upload libraries to GCS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/Example.apk_libraries.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ExampleStable.libraries.apk.json@@@"
     ]
   },
   {
@@ -1105,7 +1105,7 @@
       "----",
       "cp",
       "[CLEANUP]/tmp_tmp_5/third_party.json",
-      "gs://chrome-sbom/os/version/luci-8945511751514863184/third_party_data.json"
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataCanary.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1123,7 +1123,7 @@
     "name": "SSCI collection (2).gsutil upload third party dependencies to GCS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/third_party_data.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataCanary.json@@@"
     ]
   },
   {
@@ -1160,7 +1160,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for Example.apk.upload Example.apk artifacts to BigQuery",
+    "name": "SSCI collection (2).target specific steps for Example.apk.upload artifacts to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1175,7 +1175,7 @@
       "----",
       "cp",
       "out/Release/artifacts.json",
-      "gs://chrome-sbom/os/version/luci-8945511751514863184/Example.apk_artifacts.json"
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.artifacts.apk.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1190,10 +1190,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload Example.apk artifacts to GCS",
+    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload artifacts to GCS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/Example.apk_artifacts.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.artifacts.apk.json@@@"
     ]
   },
   {
@@ -1223,7 +1223,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for Example.apk.upload Example.apk libraries to BigQuery",
+    "name": "SSCI collection (2).target specific steps for Example.apk.upload libraries to BigQuery",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -1238,7 +1238,7 @@
       "----",
       "cp",
       "out/Release/libs.json",
-      "gs://chrome-sbom/os/version/luci-8945511751514863184/Example.apk_libraries.json"
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.libraries.apk.json"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1253,10 +1253,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload Example.apk libraries to GCS",
+    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload libraries to GCS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/Example.apk_libraries.json@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.libraries.apk.json@@@"
     ]
   },
   {
