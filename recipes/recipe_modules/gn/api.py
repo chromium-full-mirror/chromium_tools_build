@@ -176,6 +176,32 @@ class GnApi(recipe_api.RecipeApi):
     output = step_result.stdout
     return set(output.splitlines())
 
+  def desc(self,
+           build_dir,
+           label_or_pattern,
+           what_to_show,
+           step_name='Run gn desc',
+           **kwargs):
+    """Displays information about a given target or config.
+
+    See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_desc for
+    more documentation of the command.
+
+    Args:
+      build_dir: Path to build output directory.
+      label_or_pattern: The <label or pattern> can be a target label, a config label, or a label pattern
+      what_to_show: type of information we're looking for.
+      step_name: Optional recipe step name to give to the "gn desc" command.
+      kwargs: Other arguments passed to the underlying python step.
+    Returns:
+      The set of dependencies found.
+    """
+    cmd = ['desc', build_dir, label_or_pattern, what_to_show]
+
+    step_result = self._gn_cmd(step_name, cmd, log_name='desc', **kwargs)
+    output = step_result.stdout
+    return set(output.splitlines())
+
   def ls(self, build_dir, inputs, output_type=None, output_format='label',
          step_name='list gn targets'):
     """List targets for a given set of inputs.

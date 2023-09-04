@@ -5,7 +5,7 @@
 import re
 
 from recipe_engine import post_process
-from recipe_engine.post_process import StepCommandRE, DropExpectation
+from recipe_engine.post_process import StepCommandRE, DropExpectation, LogEquals
 from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium
@@ -22,6 +22,7 @@ DEPS = [
     'gn',
     'reclient',
     'recipe_engine/context',
+    'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
@@ -321,6 +322,29 @@ def gn_refs(api, step_name, target):
       output_format='label')
 
 
+def copy_path(api, path_name):
+  """Copies the path_name, which could be a file or a directory into ${build_dir}/src_root.
+    """
+  assert path_name.startswith(
+      '../../'), path_name + " is expected to start with ../../"
+  relative_path = path_name[len('../../'):]
+  src = api.chromium_checkout.src_dir.join(relative_path)
+  dest = api.chromium.output_dir.join('src_root', relative_path)
+  src = api.path.abspath(str(src))
+  dest = api.path.abspath(str(dest))
+  if api.path.exists(dest):
+    # Nothing to be done as this file/directory already exists in destination.
+    return
+  if api.path.isfile(src):
+    dstfolder = api.path.dirname(dest)
+    if not api.path.exists(dstfolder):
+      # Make sure the destination folder exists.
+      api.file.ensure_directory('ensure builder cache dir', dstfolder)
+    api.file.copy('copying file:' + str(src), src, dest)
+  else:
+    api.file.copytree('copying directory:' + str(src), src, dest)
+
+
 def RunSteps(api):
   builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
   checkout_results = api.chromium_checkout.ensure_checkout(bot_config)
@@ -368,6 +392,7 @@ def RunSteps(api):
       # goma dir.
       api.chromium.mb_gen(builder_id, gn_args_location=api.gn.LOGS)
 
+    gn_targets = targets
     # Up until now we work in terms of GN labels so that we can use
     # api.filter.analyze above in the trybot case. We now convert the GN labels
     # to ninja targets and pass them into compile.
@@ -434,6 +459,34 @@ def RunSteps(api):
               'fuzz coverage logs'] = "Could not process fuzz coverage"
 
     else:
+      # copy data deps outside the build directory
+      # Needed for tests
+      api.path.mock_add_paths('[CACHE]/builder/src/out/Release/src_root/path1',
+                              'FILE')
+      api.path.mock_add_paths('[CACHE]/builder/src/path2', 'FILE')
+
+      paths_to_copy = set()
+      with api.step.nest(
+          'generate runtime dependencies to copy') as step_result:
+        for target in gn_targets:
+          # run gn desc out_dir target_name runtime_deps
+          results = api.gn.desc(
+              api.chromium.output_dir,
+              target,
+              'runtime_deps',
+              step_name='get runtime dependencies of ' + target)
+          for result in results:
+            # Add runtime dependencies that are not already under
+            #  {build_dir}/ to the set of paths to copy.
+            if result.startswith("../.."):
+              paths_to_copy.add(result)
+        paths_to_copy = sorted(paths_to_copy)
+        step_result.logs['runtime_dependencies_to_copy'] = paths_to_copy
+
+      with api.step.nest('copy runtime dependencies to build directory'):
+        for path_name in paths_to_copy:
+          copy_path(api, path_name)
+
       api.archive.clusterfuzz_archive(
           build_dir=api.chromium.output_dir,
           update_properties=checkout_results.json.output['properties'],
@@ -449,10 +502,37 @@ def GenTests(api):
     test += api.reclient.properties()
     test += api.step_data(
         'calculate all_fuzzers',
-        stdout=api.raw_io.output_text('target1 target2 target3')
+        stdout=api.raw_io.output_text('target1\ntarget2\ntarget3\n')
     ) + api.step_data(
         'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
     if not (("tryserver" in test.name) or ("fuzz_coverage" in test.name)):
+      test += api.post_process(post_process.MustRun,
+                               'generate runtime dependencies to copy')
+      # this will lead to us having ../../path2 and ../../path4 as runtime dependencies to copy
+      if not (("V8" in test.name) or ("Win" in test.name) or
+              ("iOS" in test.name)):
+        test += api.step_data(
+            'generate runtime dependencies to copy.get runtime dependencies of target2',
+            stdout=api.raw_io.output_text('../../path1\n../../path2\n'))
+        test += api.step_data(
+            'generate runtime dependencies to copy.get runtime dependencies of target3',
+            stdout=api.raw_io.output_text('./path3\n../../path4\n'))
+        # ../../path1, ../../path2 and ../../path4 need to be copied.
+        test += api.post_process(LogEquals,
+                                 'generate runtime dependencies to copy',
+                                 'runtime_dependencies_to_copy',
+                                 '../../path1\n../../path2\n../../path4')
+        test += api.post_process(
+            post_process.MustRun,
+            'copy runtime dependencies to build directory')
+        test += api.post_process(
+            post_process.MustRun,
+            'copy runtime dependencies to build directory.copying file:[CACHE]/builder/src/path2'
+        )
+        test += api.post_process(
+            post_process.MustRun,
+            'copy runtime dependencies to build directory.copying directory:[CACHE]/builder/src/path4'
+        )
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if "fuzz_coverage" in test.name:
       test += api.post_process(post_process.MustRun, 'process fuzz coverage')
