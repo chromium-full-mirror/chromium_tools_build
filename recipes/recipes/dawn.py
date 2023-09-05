@@ -53,6 +53,8 @@ def _checkout_steps(api):
     # hooks relative to the variable "root" which is set to . by default and
     # then to 'dawn' on bots here:
     api.gclient.c.solutions[0].custom_vars = {'dawn_root': 'dawn'}
+    if api.reclient.instance:
+      api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
     api.bot_update.ensure_checkout()
     api.gclient.runhooks()
 
