@@ -9,7 +9,6 @@ from RECIPE_MODULES.build import chromium
 
 DEPS = [
     'chromium',
-    'chromium_rts',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -31,9 +30,6 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
-
-  api.chromium_rts.rts_setting = api.properties.get('rts_setting', None)
-  api.chromium_rts.rts_recall = api.properties.get('rts_recall', None)
 
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
@@ -183,21 +179,5 @@ def GenTests(api):
       api.properties(chromium_apply_config=['mb', 'mb_no_luci_auth']),
       api.post_process(_StepCommandNotContains, 'generate_build_files',
                        '--luci-auth'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'use_rts',
-      api.properties(rts_setting='rts-chromium', rts_recall=.98),
-      api.post_process(post_process.StepCommandContains, 'generate_build_files',
-                       ['--rts', 'rts-chromium']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'use_experimental_rts',
-      api.properties(rts_setting='rts-ml-chromium', rts_recall=.98),
-      api.post_process(post_process.StepCommandContains, 'generate_build_files',
-                       ['--rts', 'rts-ml-chromium']),
       api.post_process(post_process.DropExpectation),
   )

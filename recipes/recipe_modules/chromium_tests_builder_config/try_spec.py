@@ -93,10 +93,6 @@ class TrySpec:
   retry_failed_shards = attrib(bool, default=True)
   # Whether or not failed test suites should be retried without patch
   retry_without_patch = attrib(bool, default=True)
-  # See http://bit.ly/chromium-rts
-  regression_test_selection = attrib(
-      enum([ALWAYS, QUICK_RUN_ONLY, NEVER]), default=NEVER)
-  regression_test_selection_recall = attrib(float, default=0.95)
 
   @classmethod
   def create(cls, mirrors, **kwargs):

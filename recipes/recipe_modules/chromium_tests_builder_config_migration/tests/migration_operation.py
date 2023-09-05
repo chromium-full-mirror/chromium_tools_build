@@ -134,10 +134,6 @@ def GenTests(api):
               ],
               retry_failed_shards = False,
               retry_without_patch = False,
-              rts_config = builder_config.rts_config(
-                  condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-                  recall = 0.5,
-              ),
           ),
       """)
 
@@ -250,8 +246,6 @@ def GenTests(api):
                           ],
                           retry_failed_shards=False,
                           retry_without_patch=False,
-                          regression_test_selection=ctbc.QUICK_RUN_ONLY,
-                          regression_test_selection_recall=0.5,
                       ),
               },
           }),

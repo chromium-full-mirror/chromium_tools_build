@@ -21,18 +21,6 @@ parser.add_argument(
     help='Path to a directory to search for *.isolate files')
 parser.add_argument(
     '--output-json', required=True, help='File to dump JSON results into.')
-parser.add_argument(
-    '--inverted',
-    action='store_true',
-    default=False,
-    required=False,
-    help='Find any inverted rts command lines instead.')
-parser.add_argument(
-    '--rts',
-    action='store_true',
-    default=False,
-    required=False,
-    help='Find any rts command lines instead.')
 args = parser.parse_args()
 
 command_line_map = {}
@@ -41,13 +29,7 @@ for path in glob.glob(os.path.join(args.build_dir, '*.isolate')):
   target_name = os.path.splitext(os.path.basename(path))[0]
   with open(path) as fp:
     isolate = ast.literal_eval(fp.read())
-    if args.rts:
-      key = 'rts_command'
-    elif args.inverted:
-      key = 'inverted_command'
-    else:
-      key = 'command'
-    cmd = isolate.get('variables', {}).get(key)
+    cmd = isolate.get('variables', {}).get('command')
     if cmd is not None:
       command_line_map[target_name] = cmd
 

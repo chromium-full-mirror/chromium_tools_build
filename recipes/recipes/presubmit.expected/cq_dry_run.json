@@ -81,7 +81,7 @@
     },
     "name": "ensure builder cache dir",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@$recipe_engine/cq/output@{\"reusability\": {\"modeAllowlist\": [\"DRY_RUN\", \"QUICK_DRY_RUN\"]}, \"reuse\": [{\"modeRegexp\": \"DRY_RUN\"}, {\"modeRegexp\": \"QUICK_DRY_RUN\"}]}@@@"
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/cq/output@{\"reusability\": {\"modeAllowlist\": [\"DRY_RUN\"]}, \"reuse\": [{\"modeRegexp\": \"DRY_RUN\"}]}@@@"
     ]
   },
   {

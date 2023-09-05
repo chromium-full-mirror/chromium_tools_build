@@ -481,10 +481,7 @@ _SETTINGS_ATTRS = tuple(
     a.name
     for a in attr.fields(ctbc.TrySpec)
     # There is no default for mirrors, so we don't compare against that.
-    # regression_test_selection_recall only has an effect if
-    # regression_test_selection is set, so we don't set it in the src snippet
-    # unless regression_test_selection is also modified.
-    if a.name not in ('mirrors', 'regression_test_selection_recall'))
+    if a.name not in ('mirrors'))
 
 
 def _migrate_try_spec(
@@ -524,18 +521,6 @@ def _migrate_try_spec(
 
       if not try_spec.retry_without_patch:
         ts_fact.set_raw_arg('retry_without_patch', 'False')
-
-      if (rts_condition := try_spec.regression_test_selection) != ctbc.NEVER:
-        with ts_fact.start_call_arg(
-            'rts_config',
-            'builder_config.rts_config',
-        ) as rc_fact:
-          rc_fact.set_raw_arg(
-              'condition',
-              f'builder_config.rts_condition.{rts_condition.upper()}')
-          if ((recall := try_spec.regression_test_selection_recall) !=
-              _DEFAULT_TRY_SPEC.regression_test_selection_recall):
-            rc_fact.set_raw_arg('recall', recall)
 
 
 class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):

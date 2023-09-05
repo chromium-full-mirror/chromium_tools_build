@@ -38,12 +38,6 @@ def RunSteps(api):
   test.raw_cmd = ['raw-cmd']
   api.assertions.assertEqual(test.raw_cmd, ['raw-cmd'])
 
-  test.rts_raw_cmd = ['rts-raw-cmd']
-  api.assertions.assertEqual(test.rts_raw_cmd, ['rts-raw-cmd'])
-
-  test.inverted_raw_cmd = ['inverted-raw-cmd']
-  api.assertions.assertEqual(test.inverted_raw_cmd, ['inverted-raw-cmd'])
-
   test.relative_cwd = 'relative-cwd'
   api.assertions.assertEqual(test.relative_cwd, 'relative-cwd')
 

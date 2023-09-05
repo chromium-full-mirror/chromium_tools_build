@@ -49,8 +49,6 @@ TRY_DB = ctbc.TryDatabase.create({
                 analyze_names=('foo', 'bar'),
                 retry_failed_shards=False,
                 retry_without_patch=False,
-                regression_test_selection=ctbc.QUICK_RUN_ONLY,
-                regression_test_selection_recall=0.5,
             ),
     },
     # Some of the internal try builders have the same builder group and name as
@@ -97,8 +95,6 @@ def GenTests(api):
               analyze_names=(),
               retry_failed_shards=True,
               retry_without_patch=True,
-              regression_test_selection=ctbc.NEVER,
-              regression_test_selection_recall=0.95,
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -119,8 +115,6 @@ def GenTests(api):
               analyze_names=(),
               retry_failed_shards=True,
               retry_without_patch=True,
-              regression_test_selection=ctbc.NEVER,
-              regression_test_selection_recall=0.95,
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -164,8 +158,6 @@ def GenTests(api):
               analyze_names=('foo', 'bar'),
               retry_failed_shards=False,
               retry_without_patch=False,
-              regression_test_selection=ctbc.QUICK_RUN_ONLY,
-              regression_test_selection_recall=0.5,
           )),
       api.post_process(post_process.DropExpectation),
   )
@@ -302,8 +294,6 @@ def GenTests(api):
               analyze_names=(),
               retry_failed_shards=True,
               retry_without_patch=True,
-              regression_test_selection=ctbc.ALWAYS,
-              regression_test_selection_recall=0.95,
           )),
       api.post_process(post_process.DropExpectation),
   )

@@ -23,16 +23,6 @@ COMPILATOR_SWARMING_TASK_COLLECT_STEP = (
 
 BUILD_CANCELED_SUMMARY = 'Build was canceled.'
 
-RTS_SUMMARY = '''
-
-Tests were run with RTS. If failures are suspected to be caused by RTS skipped
-tests this can be disabled by adding this footer to your CL message:
-
-    Disable-Rts: True
-
-See https://bit.ly/regression-test-selection for more information on RTS
-'''
-
 
 @attrs()
 class CompilatorOutputProps:
@@ -133,15 +123,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     self.m.chromium_tests.raise_failure_if_cq_depends_footer_exists()
 
-    reuseable_compilator_build = self.m.chromium_rts.get_reuseable_compilator_build(
-        self.compilator)
-
-    inverted_rts_bail_early_experiment = (
-        'chromium_rts.inverted_rts_bail_early' in
-        self.m.buildbucket.build.input.experiments)
-    if inverted_rts_bail_early_experiment and not reuseable_compilator_build:
-      return None
-
     builder_id, builder_config = self.configure_build()
 
     # Trigger compilator to compile and build targets with patch
@@ -152,35 +133,20 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             'builder_group': self.m.builder_group.for_current,
         }
     }
-    if self.m.chromium_rts.rts_setting:
-      compilator_properties['rts_setting'] = self.m.chromium_rts.rts_setting
 
     gitiles_commit = None
 
-    if reuseable_compilator_build:
-      build_to_process = reuseable_compilator_build
-      if build_to_process.output.HasField('gitiles_commit'):
-        self.m.buildbucket.set_output_gitiles_commit(
-            build_to_process.output.gitiles_commit)
-      else:
-        # If the compilator didn't have a commit position we want to know about
-        # it but not fail the build
-        self.m.step.empty(
-            'compilator gitiles_commit missing',
-            status='FAILURE',
-            raise_on_failure=False)
-    else:
-      # Pass in any input props
-      compilator_properties.update(self.m.cq.props_for_child_build)
-      self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)
-      build = self._trigger_compilator('trigger compilator (with patch)',
-                                       compilator_properties, gitiles_commit)
+    # Pass in any input props
+    compilator_properties.update(self.m.cq.props_for_child_build)
+    self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)
+    build = self._trigger_compilator('trigger compilator (with patch)',
+                                     compilator_properties, gitiles_commit)
 
-      # Now that we've finished the Orchestrator's bot_update and analyze,
-      # let's check on the triggered compilator and display its steps (until
-      # it outputs the swarming trigger props).
-      build_to_process = self.launch_compilator_watcher(
-          build, is_swarming_phase=True, with_patch=True)
+    # Now that we've finished the Orchestrator's bot_update and analyze,
+    # let's check on the triggered compilator and display its steps (until
+    # it outputs the swarming trigger props).
+    build_to_process = self.launch_compilator_watcher(
+        build, is_swarming_phase=True, with_patch=True)
 
     comp_output, maybe_raw_result = self.process_sub_build(
         build_to_process, is_swarming_phase=True, with_patch=True)
@@ -218,12 +184,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # outputed by the compilator
     tests = self.process_swarming_props(comp_output.swarming_props,
                                         builder_config, targets_config)
-
-    tests = self.m.chromium_rts.setup_tests(tests)
-
-    if reuseable_compilator_build and not tests:
-      # No invertible tests were found and we have a successful build
-      return result_pb2.RawResult(status=common_pb.SUCCESS)
 
     self.m.chromium_tests.configure_swarming(
         self.m.tryserver.is_tryserver, builder_group=builder_id.group)
@@ -270,22 +230,15 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
       if (self.m.code_coverage.using_coverage and
           not comp_output.skipping_coverage):
-        # Grab the coverage from the reused build
-        if reuseable_compilator_build:
-          self.m.chromium_rts.download_previous_code_coverage()
-
         all_test_binaries_future.result()
         self.m.code_coverage.process_coverage_data(tests)
 
-    # Led compilator build has already been collected with the local tests
-    # finished
-    if not reuseable_compilator_build:
-      # Let's check back on the compilator to see the results of the local
-      # scripts/tests. The sub_build will only display steps relevant to those
-      # local scripts/tests.
-      local_tests_sub_build = self.launch_compilator_watcher(
-          build, is_swarming_phase=False, with_patch=True)
-      build_to_process = local_tests_sub_build
+    # Let's check back on the compilator to see the results of the local
+    # scripts/tests. The sub_build will only display steps relevant to those
+    # local scripts/tests.
+    local_tests_sub_build = self.launch_compilator_watcher(
+        build, is_swarming_phase=False, with_patch=True)
+    build_to_process = local_tests_sub_build
 
     _, local_tests_raw_result = self.process_sub_build(
         build_to_process, is_swarming_phase=False, with_patch=True)
@@ -337,9 +290,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           local_tests_raw_result.status != common_pb.SUCCESS):
         summary_markdown += '\n\n From compilator:\n{}'.format(
             local_tests_raw_result.summary_markdown)
-      if any(
-          test.is_rts or test.is_inverted_rts for test in invalid_test_suites):
-        summary_markdown += RTS_SUMMARY
 
       status = self.m.chromium_tests.determine_build_status_from_tests(
           failing_test_suites, 'with patch')
@@ -410,10 +360,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       if final_status == common_pb.SUCCESS:
         final_status = local_tests_raw_result.status
 
-    if unrecoverable_test_suites and any(test.is_rts or test.is_inverted_rts
-                                         for test in unrecoverable_test_suites):
-      summary_markdown += RTS_SUMMARY
-
     return result_pb2.RawResult(
         summary_markdown=summary_markdown, status=final_status)
 
@@ -421,7 +367,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     builder_id, builder_config = (
         self.m.chromium_tests_builder_config.lookup_builder())
 
-    self.m.chromium_rts.init_rts_options(builder_config)
     self.m.chromium_tests.configure_build(builder_config, test_only=True)
 
     # Set self.m.chromium.c.compile_py.compiler to empty string so that
@@ -652,11 +597,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       List of Test objects with swarming info
     """
     swarming_digest = swarming_props['swarming_command_lines_digest']
-    swarming_rts_command_digest = swarming_props.get(
-        'swarming_rts_command_lines_digest')
-    swarming_inverted_rts_command_digest = swarming_props.get(
-        'swarming_inverted_rts_command_lines_digest'
-    ) if self.m.chromium_rts.inverted_rts else None
     swarming_cwd = swarming_props['swarming_command_lines_cwd']
 
     swarm_hashes = dict(swarming_props['swarm_hashes'])
@@ -675,9 +615,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         tests,
         builder_config,
         swarming_command_lines_digest=swarming_digest,
-        swarming_rts_command_digest=swarming_rts_command_digest,
-        swarming_inverted_rts_command_digest=(
-            swarming_inverted_rts_command_digest),
         swarming_command_lines_cwd=swarming_cwd)
     return tests
 

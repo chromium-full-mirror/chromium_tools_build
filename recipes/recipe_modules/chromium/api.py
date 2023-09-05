@@ -1491,8 +1491,6 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     mb_args.extend(self._mb_build_dir_args(build_dir))
 
-    mb_args.extend(self.m.chromium_rts.mb_args())
-
     name = name or 'generate_build_files'
     try:
       with self.mb_failure_handler(name):

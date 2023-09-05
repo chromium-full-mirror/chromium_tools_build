@@ -72,9 +72,8 @@ def RunSteps(api):
     api.gclient.c.target_os.add('android')
     api.gclient.c.target_os.add('linux')
 
-  dry_run_modes = (api.cq.DRY_RUN, api.cq.QUICK_DRY_RUN)
-  if api.cq.active and api.cq.run_mode in dry_run_modes:
-    api.cq.allow_reuse_for(*dry_run_modes)
+  if api.cq.active and api.cq.run_mode == api.cq.DRY_RUN:
+    api.cq.allow_reuse_for(*[api.cq.DRY_RUN])
   with api.context(cwd=cwd):
     bot_update_step = api.presubmit.prepare()
     if not api.tryserver.gerrit_change:

@@ -12,7 +12,6 @@ DEPS = [
     'chromium_android',
     'chromium_bootstrap',
     'chromium_checkout',
-    'chromium_rts',
     'chromium_swarming',
     'code_coverage',
     'depot_tools/bot_update',

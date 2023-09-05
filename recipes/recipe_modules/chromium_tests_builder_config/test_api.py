@@ -333,9 +333,7 @@ class _TryBuilderPropertiesAssembler:
              is_compile_only=False,
              analyze_names=None,
              retry_failed_shards=True,
-             retry_without_patch=True,
-             regression_test_selection=None,
-             regression_test_selection_recall=None):
+             retry_without_patch=True):
     props_assembler = _PropertiesAssembler()
 
     builder_config_kwargs = {}
@@ -347,16 +345,6 @@ class _TryBuilderPropertiesAssembler:
       builder_config_kwargs['retry_failed_shards'] = False
     if not retry_without_patch:
       builder_config_kwargs['retry_without_patch'] = False
-    if regression_test_selection_recall is not None:
-      assert regression_test_selection is not None, (
-          'regression_test_selection_recall can only be set when setting'
-          ' regression_test_selection')
-    if regression_test_selection:
-      rts_config = properties_pb.BuilderConfig.RtsConfig(
-          condition=_RTS_CONDITION_MAP[regression_test_selection])
-      if regression_test_selection_recall:
-        rts_config.recall = regression_test_selection_recall
-      builder_config_kwargs['rts_config'] = rts_config
 
     return cls(props_assembler, builder_config_kwargs)
 

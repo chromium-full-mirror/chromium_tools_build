@@ -293,8 +293,6 @@ def GenTests(api):
               analyze_names=['foo', 'bar'],
               retry_failed_shards=False,
               retry_without_patch=False,
-              regression_test_selection=ctbc.ALWAYS,
-              regression_test_selection_recall=0.5,
           ).with_mirrored_builder(
               builder_group='fake-group',
               builder='fake-builder',
@@ -339,8 +337,6 @@ def GenTests(api):
               'analyze_names': ('foo', 'bar'),
               'retry_failed_shards': False,
               'retry_without_patch': False,
-              'regression_test_selection': ctbc.ALWAYS,
-              'regression_test_selection_recall': 0.5,
               'targets_spec_directory': 'fake-targets-spec-directory',
           },
       ),
