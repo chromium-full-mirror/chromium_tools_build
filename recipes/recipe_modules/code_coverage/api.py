@@ -365,6 +365,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['chromedriver_replay_unittests', 'chrome'],
           ['chrome_all_tast_tests', 'chrome'],
           ['cros_browser_sanity_test', 'chrome'],
+          ['mini_installer_tests', 'setup'],
           ['webdriver_wpt_tests', 'chrome'],
           ['xr_browser_tests', 'xr_browser_tests_binary'],
           ['content_shell_crash_test', 'content_shell'],
