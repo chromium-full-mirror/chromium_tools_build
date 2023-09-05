@@ -557,6 +557,46 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'retry_only_failed_tests_unless_invalid_failures',
+      api.platform('linux', 64),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(
+          shards=10,
+          retry_failed_shards=True,
+          retry_only_failed_tests=True,
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          }),
+      # Initial tests & retry shards with patch produce invalid results.
+      api.override_step_data(
+          'base_unittests (with patch)',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results(test_results_json='', retcode=1),
+              failure=True)),
+      api.post_process(
+          post_process.LogDoesNotContain,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests '
+          '(retry shards with patch)',
+          'json.input',
+          ['--gtest_filter'],
+      ),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run (retry shards with patch).[trigger] base_unittests '
+          '(retry shards with patch)', lambda check, req: check(req[0].env_vars[
+              'GTEST_TOTAL_SHARDS'] == '10')),
+      api.post_process(post_process.DropExpectation),
+  )
+
   def generate_one_failed_shard_raw():
     shard_zero = api.chromium_swarming.canned_summary_output_raw(
         shard_indices=[0], failure=False)

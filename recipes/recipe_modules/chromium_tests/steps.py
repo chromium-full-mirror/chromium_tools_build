@@ -1040,13 +1040,21 @@ class Test(AbstractTest):
                                   not self.retry_only_failed_tests):
       return None
 
+    valid_results, failures = self.with_patch_failures_including_retry()
+
+    if (suffix == 'retry shards with patch' and self.retry_only_failed_tests):
+      if valid_results:
+        # Failures may also include known_luci_analysis_flaky_failures that
+        # are still being retried if they are weak exonerations.
+        return failures
+      # Invalid results should be treated as if every test failed.
+      return None
+
     # For the second invocation, run previously deterministically failing tests.
     # When a patch is adding a new test (and it fails), the test runner is
     # required to just ignore the unknown test.
-    if suffix == 'without patch' or (suffix == 'retry shards with patch' and
-                                     self.retry_only_failed_tests):
+    if suffix == 'without patch':
       # Invalid results should be treated as if every test failed.
-      valid_results, failures = self.with_patch_failures_including_retry()
       return sorted(
           failures -
           self.known_luci_analysis_flaky_failures) if valid_results else None
@@ -2363,7 +2371,10 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       # the whole shard to time out. To prevent 60m timed out shards, spread
       # out the failed tests across multiple shards. The quantity of shards
       # used will be the quantity of failed shards from the first invocation.
-      if self.retry_only_failed_tests:
+      # If tests_to_retry is None, that means the entire failed shards need to
+      # rerun. Not checking tests_to_retry will cause the retry shards to
+      # trigger without a gtest filter, with the wrong GTEST_TOTAL_SHARDS value!
+      if self.retry_only_failed_tests and tests_to_retry:
         len_failed_shards = len(task.task_to_retry.failed_shards)
         task.shards = len_failed_shards
         task.shard_indices = range(len_failed_shards)
