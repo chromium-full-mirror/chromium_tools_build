@@ -115,7 +115,9 @@ class SsciAPI(recipe_api.RecipeApi):
     Returns: A full file name to use when uploading data
     """
     filename, artifact_ext = os.path.splitext(artifact_name)
-    return f"{filename}{artifact_postfix or ''}{artifact_ext}.{file_extension}"
+    if file_extension:
+      file_extension = f".{file_extension}"
+    return f"{filename}{artifact_postfix or ''}{artifact_ext}{file_extension}"
 
   def _setup_ssci_tools(self):
     """
@@ -209,8 +211,11 @@ class SsciAPI(recipe_api.RecipeApi):
                                  filename).as_posix()
         self.m.gsutil.upload(
             spdx_file, sbom_bucket, full_path, name=f"upload {filename} SBOM")
+
+        final_apk_name = self._make_filename_from_target(
+            entry_point_name, filename_postfix, file_extension="")
         self.generated_sbom_artifacts.update({
-            entry_point: {
+            final_apk_name: {
                 'digest': spdx_digest,
                 'file': f'gs://{sbom_bucket}/{full_path}'
             }

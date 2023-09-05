@@ -33,7 +33,7 @@ def RunSteps(api):
 
   api.assertions.assertEqual(
       res, {
-          'Example.apk': {
+          'ExampleCanary.apk': {
               'digest':
                   'testhash',
               'file':
