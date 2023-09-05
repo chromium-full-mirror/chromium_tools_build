@@ -7,6 +7,9 @@ import datetime
 import re
 
 from recipe_engine import post_process
+
+from RECIPE_MODULES.build.attr_utils import attrib, attrs
+
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
@@ -27,6 +30,17 @@ TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
 TEST_DURATION_DATA_PERCENTAGE = 1
 
 _CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
+
+
+@attrs()
+class SavingsAnalysis:
+  builder = attrib(str)
+  test_suite = attrib(str)
+  recall = attrib(float)
+  savings = attrib(float)
+
+  def report(self):
+    return f'{self.builder}:{self.test_suite} {self.recall}%, {self.savings}%'
 
 
 def RunSteps(api):
@@ -66,20 +80,20 @@ def RunSteps(api):
                                     test_suite, rejections_dir, durations_dir,
                                     exec_path))
 
-  savings = []
+  analyses = []
   # Check future's exception.
   for f in futures:
     result = f.result()
     if result:
-      savings.append(result)
+      analyses.append(result)
 
   # Sort by recall. There will be lots of low savings but it should be easy
   # to scan for the best candidates
-  savings.sort(key=lambda r: r[2], reverse=True)
+  analyses.sort(
+      key=lambda analysis: (analysis.recall, analysis.savings), reverse=True)
 
   summary = 'Analysis Summary top (recall, savings):\n\n' + '\n\n'.join(
-      f'{builder}:{testsuite} {recall}%, {savings}%'
-      for builder, testsuite, recall, savings in savings)
+      analysis.report() for analysis in analyses)
   return result_pb2.RawResult(
       status=common_pb.SUCCESS, summary_markdown=summary[:4000])
 
@@ -106,7 +120,12 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
     savings = float(match.group(2))
     step_result.presentation.step_text = (
         f'Recall {recall} Savings {savings}\n' + step_result.stdout)
-    return builder, test_suite, recall, savings
+    return SavingsAnalysis(
+        builder=builder,
+        test_suite=test_suite,
+        recall=recall,
+        savings=savings,
+    )
 
 
 def _fetch_model_data(api, exec_path, rejection_date_range,
