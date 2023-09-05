@@ -300,8 +300,11 @@ def GenTests(api):
               'base_unittests_invalid_results_2':
                   '[dummy hash for base_unittests_2/size]',
           }),
-      api.chromium_swarming.wait_for_finished_task_set(
-          [([], 1), ([['0'], ['1']], 1)], nest_step_name='collect tasks'),
+      api.override_step_data(
+          'base_unittests_invalid_results',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results('invalid_results', 1),
+              failure=True)),
       api.post_process(post_process.MustRun,
                        'base_unittests_invalid_results (retry shards)'),
       api.post_process(post_process.DoesNotRun,

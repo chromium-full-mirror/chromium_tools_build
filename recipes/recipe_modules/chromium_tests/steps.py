@@ -2345,8 +2345,16 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       task_slice = task_slice.with_idempotent(self.spec.idempotent)
 
     # task.shard_indices dictates how many shards will be triggered
-    if suffix == 'retry shards with patch':
-      task.task_to_retry = self._tasks['with patch']
+    # CI builders retry invalid shards with the suffix "retry shards", instead
+    # of "retry shards with patch" so check for both options.
+    if suffix in ['retry shards', 'retry shards with patch']:
+      if suffix == 'retry shards':
+        # CI builders use the default '' suffix when calling run_tests()
+        # in test_utils/api
+        task_suffix = ''
+      else:
+        task_suffix = 'with patch'
+      task.task_to_retry = self._tasks[task_suffix]
       assert task.task_to_retry, (
           '\'retry_shards_with_patch\' expects that the \'with patch\' phase '
           'has already run, but it apparently hasn\'t.')
