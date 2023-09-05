@@ -56,6 +56,9 @@ class ANGLEApi(recipe_api.RecipeApi):
     solution_path = self.m.path['cache'].join('builder')
     self.m.file.ensure_directory('init cache if not exists', solution_path)
     with self.m.context(cwd=solution_path):
+      if self.m.reclient.instance:
+        self.m.reclient.use_download_remoteexec_cfg_hook(
+            self.m.gclient.c.solutions[0])
       update_step = self.m.bot_update.ensure_checkout()
 
     assert update_step.json.output['did_run']

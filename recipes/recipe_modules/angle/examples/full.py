@@ -21,6 +21,7 @@ DEPS = [
     'recipe_engine/properties',
     'recipe_engine/path',
     'recipe_engine/raw_io',
+    'reclient',
     'test_utils',
 ]
 
@@ -129,6 +130,11 @@ def GenTests(api):
   yield api.test(
       'basic_test',
       ci_build('linux-clang-builder'),
+  )
+  yield api.test(
+      'basic_test_reclient',
+      ci_build('linux-clang-builder'),
+      api.reclient.properties(),
   )
   yield api.test(
       'basic_mac_test',
