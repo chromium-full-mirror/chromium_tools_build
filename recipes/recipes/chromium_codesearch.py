@@ -35,6 +35,7 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/time',
+    'reclient',
 ]
 
 # Regular expression to identify a Git hash.
@@ -198,6 +199,9 @@ def RunSteps(api, properties):
 
   if internal:
     api.gclient.apply_config('chrome_internal')
+
+  if api.reclient.instance:
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
   checkout_dir = api.path['cache'].join('builder')
   with api.context(cwd=checkout_dir, env={'PACKFILE_OFFLOADING': 1}):
