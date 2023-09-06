@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
-from recipe_engine.recipe_api import StepFailure
+from recipe_engine.recipe_api import InfraFailure, StepFailure
 
 DEPS = [
     'builder_group',
@@ -60,6 +60,36 @@ PROPERTIES = {
 }
 
 
+class Results():
+
+  def __init__(self, infra_failures=None, test_failures=None):
+    self.infra_failures = infra_failures or []
+    self.test_failures = test_failures or []
+
+  def __add__(self, result):
+    return Results(
+        self.infra_failures + result.infra_failures,
+        self.test_failures + result.test_failures,
+    )
+
+  def add_infra_failure(self, failure):
+    self.infra_failures.append(failure)
+
+  def add_test_failure(self, failure):
+    self.test_failures.append(failure)
+
+  def raise_on_failure(self):
+    """
+    Prioritize test failures in order to be able to close the tree even if we
+    have infra failures.
+    """
+    if self.test_failures:
+      raise StepFailure(', '.join(self.test_failures))
+
+    if self.infra_failures:
+      raise InfraFailure(', '.join(self.infra_failures))
+
+
 class DevToolsTests(ABC):
 
   def __init__(self, api, cas_digest, builder_config, step_name):
@@ -72,24 +102,20 @@ class DevToolsTests(ABC):
 
   def collect(self):
     """
-    Returns a list of the failures as strings (empty list if there are no
-    failures).
+    Returns a Results object that contains a list of the infra failures and
+    another one for test failures (empty lists if there are no failures).
     """
-    failures = []
+    results = Results()
     with self.api.step.nest(f'{self.step_name} shards results'):
-      failed_shards = []
       for i in range(len(self.tasks)):
         step, is_valid = self.api.chromium_swarming.collect_task(self.tasks[i])
-        if step.presentation.status != self.api.step.SUCCESS or not is_valid:
-          failed_shards.append(str(i))
-      if failed_shards:
-        if len(self.tasks) == 1:
-          failures.append(f'Failure in {self.step_name}')
-        else:
-          failures.append(f'{self.step_name} failed in shard(s) ' +
-                          f'#{", ".join(failed_shards)}')
+        if not is_valid:
+          results.add_infra_failure(
+              f'Infra Failure in {self.step_name} (shard #{i})')
+        elif step.presentation.status != self.api.step.SUCCESS:
+          results.add_test_failure(f'Failure in {self.step_name} (shard #{i})')
 
-    return failures
+    return results
 
   def include_invocations(self):
     for task in self.tasks:
@@ -131,9 +157,10 @@ class UnitTests(DevToolsTests):
 
   def process_results(self):
     with self.api.step.nest(self.step_name):
-      failures = self.collect()
-      self.copy_coverage_data()
-      return failures
+      result = self.collect()
+      if not result.infra_failures:
+        self.copy_coverage_data()
+      return result
 
   def copy_coverage_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
@@ -163,11 +190,12 @@ class InteractionsTests(DevToolsTests):
         as presentation:
         self.api.chromium_swarming.collect_task(self.tasks[0]).get_result()
       if presentation.status != self.api.step.SUCCESS:
-        return [f'Failure in {self.step_name}']
-    else:
-      return super().collect()
+        if presentation.status == self.api.step.EXCEPTION:
+          return Results(infra_failures=[f'Infra Failure in {self.step_name}'])
+        return Results(test_failures=[f'Failure in {self.step_name}'])
+      return Results()
 
-    return []
+    return super().collect()
 
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):
@@ -201,10 +229,11 @@ class InteractionsTests(DevToolsTests):
   def process_results(self):
     with self.api.step.nest(self.step_name):
       with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
-        failures = self.collect()
-        self.copy_coverage_data()
-        self.copy_golden_snapshots()
-      return failures
+        result = self.collect()
+        if not result.infra_failures:
+          self.copy_coverage_data()
+          self.copy_golden_snapshots()
+      return result
 
   def copy_coverage_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
@@ -296,13 +325,12 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       with api.step.nest('Linting'):
         run_lint_check(api)
 
-      all_failures = sum((t.process_results() for t in tests), [])
+      all_results = sum((t.process_results() for t in tests), Results())
 
       with api.step.nest('Coverage'):
         publish_coverage_points(api)
 
-      if all_failures:
-        raise StepFailure(', '.join(all_failures))
+      all_results.raise_on_failure()
 
     if can_run_experimental_steps(api):
       # Place here any unstable steps that you want to be performed on
@@ -549,7 +577,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
-      api.post_process(post_process.Filter().include_re('Trigger Tests.*|.*\(Shard #\d*\).*')),
+      api.post_process(post_process.Filter().include_re(
+          'Trigger Tests.*|.*\(Shard #\d*\).*')),
       status='SUCCESS',
   )
 
@@ -583,13 +612,69 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data2)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'Trigger Tests.Trigger E2E Tests'),
-      api.post_process(post_process.SummaryMarkdown,
-                       'E2E Tests failed in shard(s) #0, 1'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Failure in E2E Tests (shard #0), Failure in' +
+          ' E2E Tests (shard #1)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
+  )
+
+  data = {
+      'shards': [{
+          "internal_failure": True,
+      }]
+  }
+  yield api.test(
+      'ci infra failure for parallel builder on unit tests',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.properties(parallel=True),
+      api.step_data(
+          'Trigger Tests.Trigger E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data(
+          'Unit Tests.Unit Tests ' +
+          'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Infra Failure in Unit Tests (shard #0)'),
+      api.post_process(post_process.MustRun, 'Unit Tests'),
+      api.post_process(post_process.MustRun, 'Interactions Tests'),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.DropExpectation),
+      status='INFRA_FAILURE',
+  )
+
+  data = {
+      'shards': [{
+          "internal_failure": True,
+      }]
+  }
+  yield api.test(
+      'cq infra failure for parallel builder on interactions',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='parallel_linux'),
+      api.properties(parallel=True),
+      api.step_data(
+          'Trigger Tests.Trigger E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data(
+          'Interactions Tests.Interactions Tests shards ' +
+          'results.Interactions Tests (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data)),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Infra Failure in Interactions Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests'),
+      api.post_process(post_process.MustRun, 'Interactions Tests'),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.DropExpectation),
+      status='INFRA_FAILURE',
   )
 
   data = {
@@ -638,7 +723,7 @@ def GenTests(api):
           'results.Interactions Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.SummaryMarkdown,
-                       'Failure in Interactions Tests'),
+                       'Failure in Interactions Tests (shard #0)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
@@ -664,7 +749,8 @@ def GenTests(api):
           'Unit Tests.Unit Tests ' +
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
-      api.post_process(post_process.SummaryMarkdown, 'Failure in Unit Tests'),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Failure in Unit Tests (shard #0)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
@@ -710,8 +796,9 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data2)),
       api.post_process(
           post_process.SummaryMarkdown,
-          'Failure in Unit Tests, Failure in Interactions Tests, ' +
-          'E2E Tests failed in shard(s) #0, 1'),
+          'Failure in Unit Tests (shard #0), Failure in Interactions' +
+          ' Tests (shard #0), Failure in E2E Tests (shard #0),' +
+          ' Failure in E2E Tests (shard #1)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
