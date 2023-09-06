@@ -100,12 +100,12 @@ def fetch_test_results(api, tests_to_run, step_tests):
     test_ids.append(test_to_run.test_id)
   test_results = []
   for test in step_tests:
-    test_ids = test_ids_by_test_suite[test.name]
+    test_ids = test_ids_by_test_suite[test.canonical_name]
     res = api.resultdb.query_test_results(
         invocations=test.get_invocation_names('bisection'),
         test_id_regexp="({})".format("|".join(test_ids)),
         field_mask_paths=['test_id', 'variant_hash', 'expected', 'status'],
-        step_name='query_test_results %s' % test.name,
+        step_name='query_test_results %s' % test.canonical_name,
     )
     test_results.extend(res.test_results)
   return test_results
