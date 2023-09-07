@@ -117,6 +117,7 @@ class SsciAPI(recipe_api.RecipeApi):
     filename, artifact_ext = os.path.splitext(artifact_name)
     if file_extension:
       file_extension = f".{file_extension}"
+
     return f"{filename}{artifact_postfix or ''}{artifact_ext}{file_extension}"
 
   def _setup_ssci_tools(self):
@@ -168,7 +169,7 @@ class SsciAPI(recipe_api.RecipeApi):
         # Renames the files so they align with their generated SBOMs.
         # eg. SystemWebViewStable.apk.libraries.json
         filename = self._make_filename_from_target(
-            entry_point_name, f"{filename_postfix}.{data_name}")
+            entry_point_name, f"{filename_postfix or ''}.{data_name}")
         self._upload_collected_data(data_name,
                                     extra_depbot_columns + [bq_table],
                                     data_file, filename, sbom_folder)

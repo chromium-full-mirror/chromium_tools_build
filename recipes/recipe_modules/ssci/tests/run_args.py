@@ -16,28 +16,17 @@ def RunSteps(api):
   api.ssci.run(
       src_dir=api.path.abspath(api.path['checkout']),
       build_dir='out/Release',
-      targets=["//example:example"],
+      targets=["ChromeRemoteDesktop.apk"],
+      sbom_filename_postfix=None,
       sbom_bucket='my-bucket',
       sbom_folder='os/version/',
       chrome_version="111.111.111.11")
 
 def GenTests(api):
   yield api.test(
-      'basic',
+      'non-channel',
       api.buildbucket.ci_build(
           project='myproject', bucket='mybucket', builder='mybuilder'),
-      api.override_step_data(
-          'SSCI collection.run depbot',
-          api.json.output(
-              name="summary",
-              data={
-                  "targets": [{
-                      "entry_point": "//example:example",
-                      "target": "//example:example",
-                      "artifacts_file_path": "out/Release/artifacts.json",
-                      "libraries_file_path": "out/Release/libs.json"
-                  }],
-              })),
       api.properties(
           **{
               '$build/ssci': {
@@ -49,4 +38,5 @@ def GenTests(api):
                   "bq_thirdparty_table": "project.dataset.table",
                   "ssci_version": "latest",
               }
-          }), api.post_process(DropExpectation))
+          }),
+  )
