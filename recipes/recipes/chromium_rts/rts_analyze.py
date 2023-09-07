@@ -15,6 +15,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 DEPS = [
     'recipe_engine/cipd',
+    'recipe_engine/file',
     'recipe_engine/futures',
     'recipe_engine/json',
     'recipe_engine/path',
@@ -24,7 +25,8 @@ DEPS = [
     'recipe_engine/time',
 ]
 
-REJECTION_DATA_WINDOW = datetime.timedelta(weeks=4)
+# These are actually 4 week periods
+REJECTION_DATA_MONTHS = 3
 TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
 # Processing 10% of 1w-worth test durations takes 7h on a 32-core bot.
 TEST_DURATION_DATA_PERCENTAGE = 1
@@ -54,10 +56,6 @@ def RunSteps(api):
   rejections_dir, durations_dir = _fetch_model_data(
       api,
       exec_path,
-      rejection_date_range=(
-          yesterday - REJECTION_DATA_WINDOW,
-          yesterday,
-      ),
       duration_date_range=(
           yesterday - TEST_DURATION_DATA_WINDOW,
           yesterday,
@@ -92,7 +90,7 @@ def RunSteps(api):
   analyses.sort(
       key=lambda analysis: (analysis.recall, analysis.savings), reverse=True)
 
-  summary = 'Analysis Summary top (recall, savings):\n\n' + '\n\n'.join(
+  summary = 'Analysis Summary (recall, savings):\n\n' + '\n\n'.join(
       analysis.report() for analysis in analyses)
   return result_pb2.RawResult(
       status=common_pb.SUCCESS, summary_markdown=summary[:4000])
@@ -128,8 +126,7 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
     )
 
 
-def _fetch_model_data(api, exec_path, rejection_date_range,
-                      duration_date_range):
+def _fetch_model_data(api, exec_path, duration_date_range):
   """Fetches the data for model creation.
 
   Returns:
@@ -140,17 +137,32 @@ def _fetch_model_data(api, exec_path, rejection_date_range,
   rejections_dir = data_dir.join('rejections')
   durations_dir = data_dir.join('durations')
 
-  futures = api.futures.wait([
-      api.futures.spawn_immediate(
-          api.step,
-          'fetch rejections',
-          [
-              str(exec_path),
-              'fetch-rejections',
-              '-ignore-file',
-              f'-out={rejections_dir}',
-          ] + _date_range_flags(rejection_date_range),
-      ),
+  # Using -append flag doesn't clean the rejections folder so ensure it's
+  # cleaned before the fetches
+  api.file.rmcontents('clean rejections', rejections_dir)
+
+  fetches = []
+  end = api.time.utcnow().date() - datetime.timedelta(days=1)
+
+  for _ in range(REJECTION_DATA_MONTHS):
+    start = end - datetime.timedelta(weeks=4)
+
+    fetches.append(
+        api.futures.spawn_immediate(
+            api.step,
+            'fetch rejections',
+            [
+                str(exec_path),
+                'fetch-rejections',
+                '-ignore-file',
+                '-append',
+                f'-out={rejections_dir}',
+            ] + _date_range_flags((start, end)),
+        ))
+
+    end = start
+
+  fetches.append(
       api.futures.spawn_immediate(
           api.step,
           'fetch durations',
@@ -160,12 +172,11 @@ def _fetch_model_data(api, exec_path, rejection_date_range,
               f'-frac={TEST_DURATION_DATA_PERCENTAGE / 100.0 :.3f}',
               f'-out={durations_dir}',
           ] + _date_range_flags(duration_date_range),
-      ),
-  ])
+      ))
 
-  # Check future's exception.
-  for f in futures:
-    f.result()
+  with api.futures.iwait(fetches) as itr:
+    for future in itr:
+      future.result()
 
   return rejections_dir, durations_dir
 
@@ -238,8 +249,14 @@ Rejection:
           'analyze chrome_public_test_apk on android-nougat-x86-rel'),
       api.post_process(
           post_process.SummaryMarkdown,
-          'Analysis Summary top (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
+          'Analysis Summary (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
       ),
+      api.post_process(post_process.StepCommandContains, 'fetch rejections',
+                       ['-from=2012-04-15', '-to=2012-05-13']),
+      api.post_process(post_process.StepCommandContains, 'fetch rejections (2)',
+                       ['-from=2012-03-18', '-to=2012-04-15']),
+      api.post_process(post_process.StepCommandContains, 'fetch rejections (3)',
+                       ['-from=2012-02-19', '-to=2012-03-18']),
       api.post_check(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
