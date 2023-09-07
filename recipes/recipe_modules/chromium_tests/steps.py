@@ -2131,8 +2131,12 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
       if expected_filter_length < char_limit:
         test_list = filter_delimiter.join(tests_to_retry)
+        # Append filter with individual tests to retry
         args = _merge_arg(args, filter_flag, test_list)
-        shards = self._shards_to_retry_with(shards, len(tests_to_retry))
+        # Only reassign total shards for without patch suffix. For retry
+        # shards with patch, we want to retry the same failed shard indices.
+        if suffix == 'without patch':
+          shards = self._shards_to_retry_with(shards, len(tests_to_retry))
 
     task.extra_args.extend(args)
     task.shards = shards
@@ -2201,20 +2205,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       assert task.task_to_retry, (
           '\'retry_shards_with_patch\' expects that the \'with patch\' phase '
           'has already run, but it apparently hasn\'t.')
-      # Even though the handful of failed tests can probably run fine inside
-      # just 1 shard, the failed tests could each be taking 2-3 minutes causing
-      # the whole shard to time out. To prevent 60m timed out shards, spread
-      # out the failed tests across multiple shards. The quantity of shards
-      # used will be the quantity of failed shards from the first invocation.
-      # If tests_to_retry is None, that means the entire failed shards need to
-      # rerun. Not checking tests_to_retry will cause the retry shards to
-      # trigger without a gtest filter, with the wrong GTEST_TOTAL_SHARDS value!
-      if self.retry_only_failed_tests and tests_to_retry:
-        len_failed_shards = len(task.task_to_retry.failed_shards)
-        task.shards = len_failed_shards
-        task.shard_indices = range(len_failed_shards)
-      else:
-        task.shard_indices = task.task_to_retry.failed_shards
+      task.shard_indices = task.task_to_retry.failed_shards
       # Test suite failure is determined by merging and examining the JSON
       # output from the shards. Failed shards are determined by looking at the
       # swarming output [retcode !=0 or state != 'SUCCESS']. It is possible that
