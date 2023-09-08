@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
 import re
 
 from recipe_engine import post_process
@@ -345,6 +346,33 @@ def copy_path(api, path_name):
     api.file.copytree('copying directory:' + str(src), src, dest)
 
 
+# How many elements to return per batch by `batched()`.
+#
+# Picked by checking how many arguments was finally too much for the Windows
+# command line in https://crbug.com/1477042: 629!
+BATCH_SIZE = 500
+
+
+def batched(iterable):
+  """Batch `iterable` into lists of length `BATCH_SIZE`.
+
+  The last batch may be shorter.
+
+  For example, for `BATCH_SIZE == 3`, `batched('ABCDEFG')` yields:
+
+    ['A', 'B', 'C']
+    ['D', 'E', 'F']
+    ['G']
+
+  Shamelessly cribbed from the `itertools` python module's docs.
+  """
+  it = iter(iterable)
+
+  # `islice(it, n)` returns an iterator over the first `n` elements of `it`.
+  while batch := list(itertools.islice(it, BATCH_SIZE)):
+    yield batch
+
+
 def RunSteps(api):
   builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
   checkout_results = api.chromium_checkout.ensure_checkout(bot_config)
@@ -392,11 +420,24 @@ def RunSteps(api):
       # goma dir.
       api.chromium.mb_gen(builder_id, gn_args_location=api.gn.LOGS)
 
-    gn_targets = targets
     # Up until now we work in terms of GN labels so that we can use
     # api.filter.analyze above in the trybot case. We now convert the GN labels
     # to ninja targets and pass them into compile.
-    targets = list(api.gn.ls(outdir, targets, output_format='output'))
+
+    gn_targets = targets
+
+    # `targets` can grow to be quite large, larger than can fit on a Windows
+    # command line... We work around this by batching `gn ls` invocations.
+    #
+    # TODO(https://crbug.com/1477042): Define a static list of fuzzer targets
+    # in the build instead of dynamically generating it based on `gn refs` in
+    # this manner.
+    target_set = set()
+    for target_batch in batched(targets):
+      target_set |= api.gn.ls(outdir, target_batch, output_format='output')
+
+    targets = list(target_set)
+    targets.sort()  # Ensure stable order for tests.
 
     # For iOS, the target list from |api.gn.refs| is a list of paths like
     # obj/.../XXX_fuzzer. The last part of the path is the target name to be
@@ -404,14 +445,26 @@ def RunSteps(api):
     if api.chromium.c.TARGET_PLATFORM == 'ios':
       targets = [target.split('/')[-1] for target in targets]
 
-    raw_result = api.chromium.compile(
-        targets=targets,
-        use_goma_module=not use_reclient,
-        use_reclient=use_reclient)
-    if (raw_result.status != common_pb.SUCCESS) or (
-        api.tryserver.is_tryserver and not (bot_config.collect_fuzz_coverage)):
+    # Same as above, the list of targets can grow so large that Windows chokes
+    # on a single `ninja` invocation against the full list.
+    #
+    # TODO(https://crbug.com/1477042): Define a static target that builds all
+    # fuzzers for ClusterFuzz instead of dynamically generating it like this.
+    raw_result = None
+    for target_batch in batched(targets):
+      raw_result = api.chromium.compile(
+          targets=target_batch,
+          use_goma_module=not use_reclient,
+          use_reclient=use_reclient)
+
+      if raw_result.status != common_pb.SUCCESS:
+        return raw_result
+
+    # Stop here if we're only running on a trybot.
+    if api.tryserver.is_tryserver and not bot_config.collect_fuzz_coverage:
       return raw_result
-    if bot_config.collect_fuzz_coverage is False:
+
+    if not bot_config.collect_fuzz_coverage:
       assert (bot_config.upload_directory is not None)
       assert (bot_config.upload_bucket is not None)
 
@@ -552,6 +605,11 @@ def GenTests(api):
       ),
       api.platform.name('mac'),
       api.reclient.properties(),
+      api.step_data(
+          'calculate all_fuzzers',
+          stdout=api.raw_io.output_text('//foo/bar:target1')),
+      api.step_data(
+          'list gn targets', stdout=api.raw_io.output_text('target1')),
       api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
@@ -622,4 +680,40 @@ def GenTests(api):
       ),
       api.step_data(
           'list gn targets', stdout=api.raw_io.output_text('target2')),
+  )
+
+  yield api.test(
+      'basic_linux_tryjob_with_compile_many_targets',
+      api.chromium.try_build(
+          builder_group='tryserver.chromium.linux',
+          builder='linux-libfuzzer-asan-rel'),
+      api.step_data(
+          'calculate all_fuzzers',
+          stdout=api.raw_io.output_text('\n'.join(
+              f'//foo/bar:target{i}' for i in range(1500)))),
+      api.step_data(
+          'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
+      api.step_data(
+          'list gn targets',
+          stdout=api.raw_io.output_text('\n'.join(
+              f'target{i}' for i in range(500)))),
+      api.step_data(
+          'list gn targets (2)',
+          stdout=api.raw_io.output_text('\n'.join(
+              f'target{i}' for i in range(500, 1000)))),
+      api.step_data(
+          'list gn targets (3)',
+          stdout=api.raw_io.output_text('\n'.join(
+              f'target{i}' for i in range(1000, 1500)))),
+      # So many targets get batched into several gn ls invocations.
+      api.post_check(post_process.MustRun, 'list gn targets'),
+      api.post_check(post_process.MustRun, 'list gn targets (2)'),
+      api.post_check(post_process.MustRun, 'list gn targets (3)'),
+      api.post_check(post_process.DoesNotRun, 'list gn targets (4)'),
+      # Same goes for ninja invocations.
+      api.post_check(post_process.MustRun, 'compile'),
+      api.post_check(post_process.MustRun, 'compile (3)'),
+      api.post_check(post_process.MustRun, 'compile (3)'),
+      api.post_check(post_process.DoesNotRun, 'compile (4)'),
+      api.post_process(post_process.DropExpectation),
   )
