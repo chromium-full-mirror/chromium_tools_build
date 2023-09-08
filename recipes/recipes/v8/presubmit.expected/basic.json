@@ -1,6 +1,9 @@
 [
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "--",
       "vpython3",
       "-u",
       "[CACHE]/builder/v8/tools/v8_presubmit.py",
