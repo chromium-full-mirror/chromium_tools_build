@@ -1755,7 +1755,7 @@ def _archive_layout_test_results(api,
   # LayoutTest's special archive and upload results
   results_dir = api.path['start_dir'].join('layout-test-results')
 
-  buildername = api.buildbucket.builder_name
+  buildername = api.buildbucket.builder_full_name
   buildnumber = api.buildbucket.build.number
 
   gcs_bucket = 'chromium-layout-test-archives'

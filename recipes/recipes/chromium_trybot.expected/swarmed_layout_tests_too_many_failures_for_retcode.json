@@ -2393,7 +2393,7 @@
       "--build-number",
       "571",
       "--builder-name",
-      "fake-try-builder",
+      "chromium/try/fake-try-builder",
       "--gs-bucket",
       "gs://chromium-layout-test-archives",
       "--staging-dir",
@@ -2423,7 +2423,7 @@
     },
     "name": "archive results for blink_web_tests (with patch)",
     "~followup_annotations": [
-      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28with%20patch%29/full_results_jsonp.js@@@"
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=chromium/try/fake-try-builder/571/blink_web_tests%20%28with%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {
@@ -3054,7 +3054,7 @@
       "--build-number",
       "571",
       "--builder-name",
-      "fake-try-builder",
+      "chromium/try/fake-try-builder",
       "--gs-bucket",
       "gs://chromium-layout-test-archives",
       "--staging-dir",
@@ -3084,7 +3084,7 @@
     },
     "name": "archive results for blink_web_tests (retry shards with patch)",
     "~followup_annotations": [
-      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28retry%20shards%20with%20patch%29/full_results_jsonp.js@@@"
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=chromium/try/fake-try-builder/571/blink_web_tests%20%28retry%20shards%20with%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {
@@ -4425,7 +4425,7 @@
       "--build-number",
       "571",
       "--builder-name",
-      "fake-try-builder",
+      "chromium/try/fake-try-builder",
       "--gs-bucket",
       "gs://chromium-layout-test-archives",
       "--staging-dir",
@@ -4455,7 +4455,7 @@
     },
     "name": "archive results for blink_web_tests (without patch)",
     "~followup_annotations": [
-      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=fake-try-builder/571/blink_web_tests%20%28without%20patch%29/full_results_jsonp.js@@@"
+      "@@@STEP_LINK@web_test_results@https://chromium-layout-test-archives.storage.googleapis.com/results.html?json=chromium/try/fake-try-builder/571/blink_web_tests%20%28without%20patch%29/full_results_jsonp.js@@@"
     ]
   },
   {
