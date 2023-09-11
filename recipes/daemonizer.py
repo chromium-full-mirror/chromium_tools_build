@@ -93,7 +93,7 @@ def daemonize(cmd, pid_file_path):
   sys.stderr.flush()
   si = open(os.devnull, 'r')
   so = open(os.devnull, 'a+')
-  se = open(os.devnull, 'a+', 0)
+  se = open(os.devnull, 'a+')
   os.dup2(si.fileno(), sys.stdin.fileno())
   os.dup2(so.fileno(), sys.stdout.fileno())
   os.dup2(se.fileno(), sys.stderr.fileno())
