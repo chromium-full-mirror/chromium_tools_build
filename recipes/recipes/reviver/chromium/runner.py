@@ -86,7 +86,8 @@ def RunSteps(api):
     with api.chromium_tests.wrap_chromium_tests(builder_config, tests=tests):
       test_result = test_runner()
       if api.code_coverage.using_coverage:
-        api.code_coverage.process_coverage_data(tests)
+        api.code_coverage.process_coverage_data(
+            tests, override_builder_name=target_builder.builder)
       if (test_result and
           test_result.status not in (common_pb.SUCCESS, common_pb.FAILURE)):
         return test_result

@@ -44,6 +44,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self._merged_profdata_gs_paths = []
     # The list of coverage metadata gs paths to be uploaded.
     self._coverage_metadata_gs_paths = []
+    # When set, the base builder name (without test type suffix) to use instead
+    # of the real builder name to compose mimic builder names
+    self._override_builder_name = None
     # The list of mimic builder names to be uploaded.
     self._mimic_builder_names = []
     # The bucket to which code coverage data should be uploaded.
@@ -202,10 +205,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     If currently processing overall coverage data, return real builder name.
     Otherwise, return {real_builder_name}_{current_test_type}.
+
+    Use override_builder_name instead of real builder name if provided.
     """
+    builder_name = (
+        self._override_builder_name or self.m.buildbucket.build.builder.builder)
     suffix = '' if self._current_processing_test_type == 'overall' else (
         '_' + self._current_processing_test_type)
-    return self.m.buildbucket.build.builder.builder + suffix
+    return builder_name + suffix
 
   @property
   def using_coverage(self):
@@ -557,7 +564,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         ] + files_to_instrument,
         stdout=self.m.raw_io.output_text(add_output_log=True))
 
-  def process_coverage_data(self, tests):
+  def process_coverage_data(self, tests, override_builder_name=None):
     """Processes the coverage data for html report or metadata.
 
     Args:
@@ -588,6 +595,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             'skip processing coverage data, project(s) %s is(are) unsupported' %
             unsupported_projects)
         return
+
+    if override_builder_name:
+      self._override_builder_name = override_builder_name
 
     if self.use_clang_coverage:
       self._current_processing_coverage_tool = 'clang'
