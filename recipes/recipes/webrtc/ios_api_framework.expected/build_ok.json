@@ -678,6 +678,7 @@
       "--use-remoteexec"
     ],
     "env": {
+      "RBE_exec_strategy": "remote_local_fallback",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },

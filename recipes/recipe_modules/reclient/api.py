@@ -218,6 +218,11 @@ class ReclientApi(recipe_api.RecipeApi):
       if self._reclient_log_dir:
         self._rewrapper_env['RBE_log_dir'] = self._reclient_log_dir
 
+    # TODO: b/299613159 Validate if racing can be used in CQ
+    # Once performance has been validated either remove this comment or enable racing
+    if 'RBE_exec_strategy' not in self._rewrapper_env:
+      self._rewrapper_env['RBE_exec_strategy'] = 'remote_local_fallback'
+
     if (self.m.platform.is_win and self.reclient_version["MAJOR"] <= 0 and
         self.reclient_version["MINOR"] < 109):
       self._rewrapper_env['RBE_canonicalize_working_dir'] = 'false'
