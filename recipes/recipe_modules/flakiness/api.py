@@ -523,7 +523,10 @@ class FlakinessApi(recipe_api.RecipeApi):
           test_filter, duration_milliseconds = new_tests.setdefault(
               test_obj, ([], 0))
           test_filter.append(test.test_name)
-          duration_milliseconds += test.duration_milliseconds
+          # duration_milliseconds can default to 0 for our calculations because
+          # it's only calculated if duration values are reported to ResultDB.
+          test_duration_ms = test.duration_milliseconds or 0
+          duration_milliseconds += test_duration_ms
           new_tests[test_obj] = (test_filter, duration_milliseconds)
 
     return new_tests
