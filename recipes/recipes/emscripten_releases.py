@@ -80,6 +80,7 @@ def RunSteps(api):
   use_reclient = api.reclient.instance
   if use_reclient:
     env.update({'USE_RECLIENT': '1'})
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   else:
     goma_dir = api.goma.ensure_goma()
     env.update({'GOMA_DIR': goma_dir})

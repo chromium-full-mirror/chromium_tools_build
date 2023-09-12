@@ -348,7 +348,7 @@ class ReclientApi(recipe_api.RecipeApi):
       self._install_reclient_cfgs()
       self.m.file.listdir(
           'list reclient_cfgs dir',
-          self.m.path['checkout'].join('buildtools', 'reclient_cfgs'),
+          self.reclient_dir.join('reclient_cfgs'),
           recursive=True,
           test_data=[
               'reproxy.cfg', 'chromium-browser-clang/rewrapper_windows.cfg'
