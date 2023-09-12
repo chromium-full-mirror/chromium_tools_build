@@ -87,6 +87,8 @@ def RunSteps(api, platforms, custom_trigger_script,
 
   # Prepare a bunch of swarming tasks to run hello_world on multiple platforms.
   tasks = []
+  resultdb_spec.setdefault('base_variant',
+                           {}).update({'builder': api.buildbucket.builder_name})
   resultdb = ResultDB.create(**resultdb_spec)
   for platform in platforms:
     # Isolate example hello_world.isolate from swarming client repo.

@@ -33,6 +33,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'code_coverage',
     'test_utils',
+    'recipe_engine/buildbucket',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
 ]
@@ -44,6 +45,7 @@ def RunSteps(api):
   # Set the ResultDB variants so that tests for the target builder can be queried
   target_builder = api.chromium_polymorphic.target_builder_id
   api.chromium_tests.base_variant_getter = lambda spec: {
+      'builder': api.buildbucket.builder_name,
       'reviver_project': target_builder.project,
       'reviver_bucket': target_builder.bucket,
       'reviver_builder': spec.waterfall_buildername,

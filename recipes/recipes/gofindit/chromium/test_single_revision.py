@@ -39,6 +39,9 @@ def RunSteps(api, properties):
   """Run tests for a particular revision."""
   try:
     api.chromium_swarming.add_default_tag('is_luci_bisection:true')
+    api.chromium_tests.base_variant_getter = lambda spec: {
+        'builder': spec.waterfall_buildername,
+    }
 
     test_results = []
     run_succeeded = False  # Whether the build finish running the tests and collecting results.

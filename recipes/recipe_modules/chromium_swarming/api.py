@@ -775,10 +775,8 @@ class SwarmingApi(recipe_api.RecipeApi):
       # resultdb is supported only if the slice was set with raw_cmd.
       if not task_slice.command:
         continue  # pragma: no cover
-
       var = {
           k: v for k, v in [
-              ('builder', self.m.buildbucket.builder_name),
               ('device_type', task_slice.dimensions.get('device_type')),
               ('device_os', task_slice.dimensions.get('device_os')),
               ('gpu', task_slice.dimensions.get('gpu')),
