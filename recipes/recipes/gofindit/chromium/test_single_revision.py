@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import attr
+import re
 from PB.recipes.build.gofindit.chromium.test_single_revision import InputProperties
 from recipe_engine import post_process
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
@@ -106,7 +107,8 @@ def fetch_test_results(api, tests_to_run, step_tests):
     test_ids = test_ids_by_test_suite[test.canonical_name]
     res = api.resultdb.query_test_results(
         invocations=test.get_invocation_names('bisection'),
-        test_id_regexp="({})".format("|".join(test_ids)),
+        test_id_regexp="({})".format("|".join(
+            [re.escape(id) for id in test_ids])),
         field_mask_paths=['test_id', 'variant_hash', 'expected', 'status'],
         step_name='query_test_results %s' % test.canonical_name,
     )
