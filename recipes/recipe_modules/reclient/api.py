@@ -356,8 +356,8 @@ class ReclientApi(recipe_api.RecipeApi):
       self._make_reclient_cache_dir(deps_cache_path)
       self._list_reclient_cache_dir(deps_cache_path)
 
-      # TODO: Shall we use the same project providing the RBE workers?
-      cloudtail_project_id = 'goma-logs'
+      # TODO: remove 'goma-logs' fallback
+      cloudtail_project_id = self.metrics_project or 'goma-logs'
       log_dir = self._reclient_log_dir
       self._start_cloudtail(cloudtail_project_id, log_dir,
                             self._get_platform_exe_name('reproxy') + '.INFO')
