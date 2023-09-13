@@ -214,6 +214,22 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         '_' + self._current_processing_test_type)
     return builder_name + suffix
 
+  def ensure_clang_coverage_tools(self):
+    """Runs a clang script to ensure llvm-profdata tool exists.
+
+    The tool is needed when merging clang coverage data for each test step and
+    processing clang coverage data afterwards. The other way to set up the tool
+    in chromium is to use `checkout_clang_coverage_tools` gclient config:
+    bit.ly/45OU2rA
+    """
+    clang_update_script = self.m.chromium_checkout.src_dir.join(
+        'tools', 'clang', 'scripts', 'update.py')
+    args = ['python3', clang_update_script, '--package', 'coverage_tools']
+    self.m.step(
+        'ensure clang coverage tools',
+        args,
+    )
+
   @property
   def using_coverage(self):
     """Checks if the current build is running coverage-instrumented targets."""

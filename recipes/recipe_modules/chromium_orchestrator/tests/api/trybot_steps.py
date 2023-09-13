@@ -125,11 +125,8 @@ def GenTests(api):
                        'downloading cas digest all_test_binaries'),
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.MustRun,
-                       'run tools/clang/scripts/update.py'),
+      api.post_process(post_process.MustRun, 'ensure clang coverage tools'),
       api.post_process(post_process.MustRun, 'download src-side deps'),
-      api.post_process(post_process.MustRun,
-                       'run tools/clang/scripts/update.py'),
       api.post_process(
           post_process.StepTextContains,
           'read test spec (fake-group.json)',

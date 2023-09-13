@@ -1360,6 +1360,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     self.configure_swarming(
         self.m.tryserver.is_tryserver, task_output_stdout='none')
 
+    # crbug/1346781
+    # src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata is needed
+    # when running code_coverage merge scripts
+    if self.m.code_coverage.use_clang_coverage:
+      self.m.code_coverage.ensure_clang_coverage_tools()
+
     with self.wrap_chromium_tests(task.builder_config, task.test_suites):
       # Run the test. The isolates have already been created.
       invalid_test_suites, failing_test_suites = (

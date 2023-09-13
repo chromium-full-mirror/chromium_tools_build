@@ -192,13 +192,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata is needed
     # when running code_coverage merge scripts
     if self.m.code_coverage.use_clang_coverage:
-      clang_update_script = self.m.chromium_checkout.src_dir.join(
-          'tools', 'clang', 'scripts', 'update.py')
-      args = ['python3', clang_update_script, '--package', 'coverage_tools']
-      self.m.step(
-          'run tools/clang/scripts/update.py',
-          args,
-      )
+      self.m.code_coverage.ensure_clang_coverage_tools()
 
     if (self.m.code_coverage.using_coverage and
         not comp_output.skipping_coverage):

@@ -62,6 +62,8 @@ def RunSteps(api):
         api.chromium.output_dir.join('js_coverage').join('lcov.info'))
   if api.properties.get('build_dir'):
     api.code_coverage.build_dir = api.properties.get('build_dir')
+  if api.properties.get('ensure_clang_coverage_tools'):
+    api.code_coverage.ensure_clang_coverage_tools()
 
   test_specs = [
       steps.LocalIsolatedScriptTestSpec.create('checkdeps'),
@@ -424,11 +426,13 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.code_coverage(use_clang_coverage=True),
+      api.properties(ensure_clang_coverage_tools=True),
       api.properties(files_to_instrument=[
           'some/path/to/file.cc',
           'some/other/path/to/file.cc',
       ]),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(post_process.MustRun, 'ensure clang coverage tools'),
       api.post_process(post_process.MustRunRE, 'ensure profile dir for .*',
                        _NUM_TESTS, _NUM_TESTS),
       api.post_process(

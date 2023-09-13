@@ -7,6 +7,7 @@ from PB.recipe_modules.build.code_coverage import properties
 
 DEPS = [
     'chromium',
+    'chromium_checkout',
     'gn',
     'depot_tools/gclient',
     'depot_tools/git',
