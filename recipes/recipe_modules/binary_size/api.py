@@ -152,8 +152,15 @@ class BinarySizeApi(recipe_api.RecipeApi):
     is_trunk_builder = (
         self.m.buildbucket.build.builder.project == 'chromium' and
         self.m.buildbucket.build.builder.bucket == 'try')
+
+    # Subrepos like V8 may use call builders that use this recipe. Since
+    # a CI builder is only set up for chromium/src, if the project is
+    # not chromium/src try_gs_analysis should be False.
+    gerrit_change_project = self.m.tryserver.gerrit_change.project
+
     try_gs_analysis = (
-        try_gs_analysis and gclient_config == 'chromium' and is_trunk_builder)
+        try_gs_analysis and gclient_config == 'chromium' and
+        is_trunk_builder and gerrit_change_project == 'chromium/src')
 
     with self.m.chromium.chromium_layout():
       self.m.gclient.set_config(gclient_config)
