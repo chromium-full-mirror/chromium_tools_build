@@ -479,6 +479,9 @@ class V8Api(recipe_api.RecipeApi):
       revision = f'{branch}:{revision}'
     solution.revision = revision
 
+    if self.m.reclient.instance:
+      self.m.reclient.use_download_remoteexec_cfg_hook(solution)
+
     self.checkout_root = self.m.path['cache'].join('builder')
     self.m.file.ensure_directory(
         'ensure builder cache dir', self.checkout_root)
