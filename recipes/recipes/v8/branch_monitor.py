@@ -102,8 +102,7 @@ def RunSteps(api, max_gap_seconds):
 
 def check_branch(api, branch, max_gap_seconds, now):
   chromium_branch = branch['chromium_branch']
-  assert branch['v8_branch'].endswith('-lkgr')
-  v8_branch = branch['v8_branch'][:-len('-lkgr')]
+  v8_branch = branch['v8_branch'].replace('-lkgr', '')
 
   with api.step.nest(f'branch {v8_branch} ({chromium_branch})') as step:
     deps_file = download_chromium_deps(api, chromium_branch)
