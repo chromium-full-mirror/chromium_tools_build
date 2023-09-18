@@ -63,7 +63,9 @@ def RunSteps(api, props):
   manifest_branch = props.manifest_branch or 'master-art'
   if props.use_props:
     if props.device:
-      with api.context(cwd=api.path['cache'].join('art')):
+      # Use different cache directory for RISCV to avoid interference.
+      cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
+      with api.context(cwd=api.path['cache'].join(cache_name)):
         setup_target(
           api,
           device=props.device,
@@ -734,6 +736,20 @@ def GenTests(api):
       build('angler-armv7-ndebug'),
       api.step_data('device pre-run cleanup', retcode=1),
       api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'host_riscv',
+      api.buildbucket.ci_build(
+          project='art',
+          builder='qemu-riscv64-ndebug',
+      ),
+      api.properties(
+          use_props=True,
+          debug=False,
+          device="qemu-riscv64",
+          on_virtual_machine=True,
+      ),
   )
 
 #  This test *should* exist, but can't be included as it causes the recipe
