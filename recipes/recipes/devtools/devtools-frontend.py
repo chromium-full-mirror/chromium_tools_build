@@ -146,6 +146,7 @@ class UnitTests(DevToolsTests):
           step_name=self.step_name,
           cas_digest=self.cas_digest,
           task_output_dir=self.output_dir,
+          rdb_wrapped=True,
           commands=[[
               self.api.path.join('scripts', 'test', 'run_unittests.py'),
               '--target=' + self.builder_config,
