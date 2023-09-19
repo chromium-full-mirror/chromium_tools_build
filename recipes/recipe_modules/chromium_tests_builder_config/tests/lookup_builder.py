@@ -197,6 +197,9 @@ def GenTests(api):
                                       'fake-board1',
                                       'fake-board2',
                                   ]),
+                              additional_exclusions=[
+                                  'fake-group/fake-builder/gn-args.json'
+                              ],
                           ),
                       ),
                       properties_pb.BuilderDatabase.Entry(
@@ -224,6 +227,9 @@ def GenTests(api):
                                       'fake-board1',
                                       'fake-board2',
                                   ]),
+                              additional_exclusions=[
+                                  'fake-group/fake-tester/gn-args.json'
+                              ],
                           ),
                       ),
                   ]),
@@ -262,6 +268,9 @@ def GenTests(api):
                                   'TARGET_CROS_BOARDS':
                                       'fake-board1:fake-board2',
                               },
+                              additional_exclusions=[
+                                  'fake-group/fake-builder/gn-args.json'
+                              ],
                           ),
                       'fake-tester':
                           ctbc.BuilderSpec.create(
@@ -276,6 +285,9 @@ def GenTests(api):
                                   'TARGET_CROS_BOARDS':
                                       'fake-board1:fake-board2',
                               },
+                              additional_exclusions=[
+                                  'fake-group/fake-tester/gn-args.json'
+                              ],
                           ),
                   },
               }),
