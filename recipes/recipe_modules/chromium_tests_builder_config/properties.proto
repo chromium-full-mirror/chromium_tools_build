@@ -9,7 +9,7 @@ import "go.chromium.org/luci/buildbucket/proto/builder_common.proto";
 
 // The details configuring execution for a single builder
 //
-// Next ID: 19
+// Next ID: 18
 message BuilderSpec {
   // Required, the builder group that the builder is a part of
   //
@@ -190,11 +190,6 @@ message BuilderSpec {
       string archive_subdir = 2;
   }
   BisectArchive bisect_archive = 17;
-
-  // Optional, a list of path strings to be excluded from affected build target
-  // analysis. The paths should be relative paths to the root dir of the
-  // chromium/src checkout.
-  repeated string additional_exclusions = 18;
 }
 
 // A database of builder specs that can be used during a build

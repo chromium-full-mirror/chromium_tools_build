@@ -161,7 +161,6 @@ def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
       expose_trigger_properties=obj.expose_trigger_properties,
       skylab_gs_bucket=obj.skylab_upload_location.gs_bucket or None,
       skylab_gs_extra=obj.skylab_upload_location.gs_extra or None,
-      additional_exclusions=obj.additional_exclusions or None,
       **kwargs)
 
 

@@ -201,11 +201,6 @@ class BuilderSpec:
   # skylab pipeline.
   skylab_gs_extra = attrib(str, default=None)
 
-  # Additional relative path strings that are excluded for affected build
-  # target analysis. The paths should be relative to the root dir of
-  # the chromium/src checkout.
-  additional_exclusions = attrib(sequence[str], default=())
-
   def evolve(self, **kwargs):
     """Create a new BuilderSpec with updated values.
 
