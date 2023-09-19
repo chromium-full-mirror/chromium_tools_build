@@ -233,7 +233,21 @@ def GenTests(api):
   yield api.test(
       'android_cipd_archive_arm32',
       api.chromium.generic_build(
-          builder_group='chromium.clang', builder='ToTAndroidASan'),
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  android_config='asan_symbolize',
+                  chromium_config='clang_tot_android_asan',
+                  chromium_config_kwargs={
+                      'TARGET_BITS': 32,
+                      'TARGET_ARCH': 'arm',
+                  },
+              ),
+          ).assemble()),
       api.properties(
           cipd_archive=True,
           update_properties={},

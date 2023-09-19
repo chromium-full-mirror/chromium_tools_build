@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from .. import builder_db
-from . import chromium_clang
 from . import chromium_devtools_frontend
 from . import chromium_perf
 from . import chromium_perf_fyi
@@ -36,6 +35,7 @@ from . import migration_testing
 # * chromium.android.fyi
 # * chromium.angle
 # * chromium.chromiumos
+# * chromium.clang
 # * chromium.dawn
 # * chromium.dev
 # * chromium.fuzz
@@ -50,8 +50,6 @@ from . import migration_testing
 # * chromium.win
 
 BUILDERS = builder_db.BuilderDatabase.create({
-    'chromium.clang':
-        chromium_clang.SPEC,
     'chromium.devtools-frontend':
         chromium_devtools_frontend.SPEC,
     'chromium.perf':
