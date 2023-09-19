@@ -421,9 +421,9 @@ def CalculateCodeCoverage(api, paths):
   # Upload the coverage results to the code_coverage cloud storge
   # account, so that Gerrit can find it.
   # For more information, see:
-  # https://source.chromium.org/chromium/chromium/tools/build/+/main:scripts/slave/recipe_modules/code_coverage/api.py;l=363  #pylint: disable=line-too-long
+  # https://source.chromium.org/chromium/chromium/tools/build/+/main:recipes/recipe_modules/code_coverage/api.py;drc=70ad29c01fa623ddad8bd1d6db2009e6472504e8;l=666  #pylint: disable=line-too-long
   api.code_coverage.process_clang_coverage_data(
-      binaries={paths.unit_test_binary_path})
+      binaries={paths.unit_test_binary_path}, upload_metadata=True)
 
 
 def RunTestsLocally(api, paths):

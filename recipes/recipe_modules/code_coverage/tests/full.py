@@ -140,7 +140,6 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.'
           'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
@@ -243,9 +242,8 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun,
           'process java coverage (overall).Generate Java coverage metadata'),
-      api.post_process(
-          post_process.MustRun,
-          'process java coverage (overall).gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
           'create zoss metadata json for host chrome-internal'),
@@ -313,9 +311,8 @@ def GenTests(api):
       api.code_coverage(use_javascript_coverage=True),
       api.post_process(post_process.MustRun,
                        'process javascript coverage (overall)'),
-      api.post_process(
-          post_process.MustRun, 'process javascript coverage (overall).'
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -363,9 +360,8 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'process javascript coverage (overall).'
           'Generate JavaScript coverage metadata'),
-      api.post_process(
-          post_process.MustRun, 'process javascript coverage (overall).'
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -465,7 +461,6 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.'
           'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
@@ -610,10 +605,8 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS),
                     retcode=1),
       api.post_check(lambda check, steps: check(steps[
-          'process clang code coverage data '
-          'for overall test coverage.'
-          'gsutil Upload coverage artifacts'
-          ''].output_properties['process_coverage_data_failure'] == True)),
+          'process clang code coverage data for overall test coverage.ensure metadata dir for overall tests for clang coverage (2)'
+      ].output_properties['process_coverage_data_failure'] == True)),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -637,10 +630,8 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS),
                     retcode=1),
       api.post_check(lambda check, steps: check(steps[
-          'process clang code coverage data '
-          'for overall test coverage.'
-          'gsutil Upload coverage artifacts'
-          ''].output_properties['process_coverage_data_failure'] == True)),
+          'process clang code coverage data for overall test coverage.ensure metadata dir for overall tests for clang coverage (2)'
+      ].output_properties['process_coverage_data_failure'] == True)),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -696,9 +687,8 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
           'Generate Java coverage metadata'),
-      api.post_process(
-          post_process.MustRun, 'process java coverage (overall).'
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(post_process.MustRun, 'Clean up Java coverage files'),
       api.post_process(post_process.DropExpectation),
   )
@@ -783,9 +773,8 @@ def GenTests(api):
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
           'Generate Java coverage metadata'),
-      api.post_process(
-          post_process.MustRun, 'process java coverage (overall).'
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(post_process.MustRun, 'Clean up Java coverage files'),
       api.post_process(post_process.DropExpectation),
   )
@@ -909,10 +898,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
-      api.post_process(
-          post_process.MustRun,
-          'process clang code coverage data for overall test coverage.gsutil '
-          'Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.generate '
@@ -973,7 +960,6 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.'
           'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
@@ -1031,7 +1017,6 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.'
           'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
@@ -1122,7 +1107,6 @@ def GenTests(api):
            'metadata for unit test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for unit test coverage.'
           'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
@@ -1248,7 +1232,6 @@ def GenTests(api):
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.'
           'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
@@ -1268,7 +1251,6 @@ def GenTests(api):
       api.swarming.properties(task_id='some-task-id'),
       api.code_coverage(use_clang_coverage=True),
       api.post_check(lambda check, steps: check('some-task-id' in steps[
-          'process clang code coverage data for overall test coverage.'
           'gsutil Upload coverage artifacts'].cmd[-1])),
       api.post_process(post_process.DropExpectation),
   )
@@ -1284,9 +1266,86 @@ def GenTests(api):
           ).assemble()),
       api.code_coverage(use_clang_coverage=True),
       api.properties(build_dir='my/custom/build/dir'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'process multiple coverage toolings in per-cl coverage',
+      api.chromium.try_build(
+          builder_group='fake-try-group', builder='fake-try-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.code_coverage(
+          use_clang_coverage=True,
+          use_java_coverage=True,
+          use_javascript_coverage=True),
+      api.properties(files_to_instrument=[
+          'some/path/to/file.java',
+          'some/other/path/to/file.java',
+          'some/other/path/to/cpp_file.cpp',
+          'some/other/path/to/js_file.js',
+      ]),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(
+          post_process.MustRun, 'process java coverage (overall).'
+          'Generate Java coverage metadata'),
+      api.post_process(post_process.MustRun, 'Clean up Java coverage files'),
+      api.post_process(post_process.MustRunRE, 'ensure profile dir for .*',
+                       _NUM_TESTS, _NUM_TESTS),
       api.post_process(
           post_process.MustRun,
-          'process clang code coverage data for overall test coverage.'
-          'gsutil Upload coverage artifacts'),
+          'process clang code coverage data for overall test coverage.merge '
+          'all profile files into a single .profdata'),
+      # For uploading profdata files.
+      api.post_process(
+          post_process.MustRun,
+          'process clang code coverage data for overall test coverage.gsutil '
+          'upload artifact to GS'),
+      api.post_process(post_process.MustRun, (
+          'process clang code coverage data for overall test coverage.generate '
+          'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
+      api.post_process(
+          post_process.MustRun,
+          'process clang code coverage data for overall test coverage.generate '
+          'html report for overall test coverage in %s tests' % _NUM_TESTS),
+      api.post_process(
+          post_process.MustRun,
+          'process clang code coverage data for overall test coverage.gsutil '
+          'upload html report'),
+      api.override_step_data(
+          'process javascript coverage (overall).read lcov.info',
+          api.file.read_text('SF:some/other/path/to/js_file.js')),
+      api.post_process(
+          post_process.MustRun, 'process javascript coverage (overall).'
+          'Generate JavaScript coverage metadata'),
+      api.post_process(
+          post_process.MustRun, 'merge data from multiple coverage tools '
+          '(overall).Merge metadata'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun, 'Set builder output properties'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'multiple coverage toolings not supported in CI coverage',
+      api.chromium.generic_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.code_coverage(use_clang_coverage=True, use_java_coverage=True),
+      api.post_process(post_process.DoesNotRun, (
+          'process clang code coverage data for overall test coverage.generate '
+          'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
+      api.post_check(post_process.ResultReason,
+                     'CI coverage supports only 1 coverage tool type.'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

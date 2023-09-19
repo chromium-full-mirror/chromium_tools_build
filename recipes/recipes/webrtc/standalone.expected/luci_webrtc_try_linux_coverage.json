@@ -2780,16 +2780,6 @@
     "name": "skip processing coverage data because no profile data collected"
   },
   {
-    "cmd": [],
-    "name": "Set builder output properties",
-    "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@coverage_gs_bucket@\"code-coverage-data\"@@@",
-      "@@@SET_BUILD_PROPERTY@coverage_metadata_gs_paths@[]@@@",
-      "@@@SET_BUILD_PROPERTY@merged_profdata_gs_paths@[]@@@",
-      "@@@SET_BUILD_PROPERTY@mimic_builder_names@[]@@@"
-    ]
-  },
-  {
     "name": "$result"
   }
 ]

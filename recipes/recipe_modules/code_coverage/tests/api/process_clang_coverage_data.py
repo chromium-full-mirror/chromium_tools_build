@@ -1,6 +1,11 @@
 # Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+"""Test |process_clang_coverage_data| API when |upload_metadata|=True.
+
+The `|upload_metadata|=True` branch is not covered in full.py where
+|process_coverage_data| is invoked.
+"""
 
 import re
 
@@ -48,8 +53,7 @@ def RunSteps(api):
         sparse=True,
     )
 
-  api.code_coverage.process_coverage_data(
-      tests, override_builder_name='fake-builder')
+  api.code_coverage.process_clang_coverage_data(tests, upload_metadata=True)
 
 
 def GenTests(api):
@@ -59,21 +63,21 @@ def GenTests(api):
       'basic',
       api.code_coverage(use_clang_coverage=True),
       api.chromium.generic_build(
-          project='reviver-project',
-          bucket='reviver-bucket',
-          builder='fake-runner',
+          project='fake-project',
+          bucket='fake-bucket',
+          builder='fake-builder',
           builder_group='fake-group',
       ),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_ci_builder(
-              builder='fake-runner',
+              builder='fake-builder',
               builder_group='fake-group',
           ).assemble()),
       api.code_coverage(use_clang_coverage=True),
       api.post_process(post_process.MustRunRE, '.*coverage data.*'),
       api.post_process(
-          post_process.StepCommandContains,
-          'gsutil Upload coverage artifacts',
-          [re.compile('.*/reviver-bucket/fake-builder/.*')]),
+          post_process.MustRun,
+          'process clang code coverage data for overall test coverage.'
+          'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
