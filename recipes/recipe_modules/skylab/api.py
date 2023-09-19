@@ -38,6 +38,53 @@ def _base64_encode_str(s):
 class SkylabApi(recipe_api.RecipeApi):
   """Module for issuing commands to Skylab"""
 
+  def get_lkgm_version(self, board: str, chrome_src: str) -> str:
+    """Get LKGM or older latest version of ChromeOS available for the board.
+
+    The LKGM version is determined based on //chromeos/CHROMEOS_LKGM file
+    in the chrome checkout.
+    The returned version is usually the LKGM, but if the image for the board
+    is not available, an older version is searched as a fallback.
+    Also see chromite.ChromeLkgmSerivce/FindLkgm in BuildAPI description.
+
+    Args:
+    * board: The build target board with which tests are run.
+    * chrome_src: The location of the chrome checkout.
+
+    Returns:
+      The fully specified image name. e.g. "octopus-release/R89-13609".
+
+    """
+    build_api = os.path.join(chrome_src, 'third_party', 'chromite', 'bin',
+                             'build_api')
+    cmd = [
+        build_api,
+        'chromite.api.ChromeLkgmService/FindLkgm',
+        '--input-json',
+        self.m.json.input({
+            "build_target": {
+                "name": board,
+            },
+            "chrome_src": chrome_src,
+            "fallback_versions": 20
+        }),
+        '--output-json',
+        self.m.json.output(),
+    ]
+    step_result = self.m.step(
+        'call build API',
+        cmd,
+    )
+    response = step_result.json.output
+    if response.get('error'):
+      raise recipe_api.StepFailure(
+          'chromite.api.ChromeLkgmService/FindLkgm returned error:' +
+          response.get('error'))
+
+    result = '/'.join([response.get('configName'), response.get('fullVersion')])
+
+    return result
+
   def schedule_suites(self, tests, step_name='schedule skylab tests'):
     """Schedule CrOS autotest suites by invoking the cros_test_platform recipe.
 
@@ -83,7 +130,15 @@ class SkylabApi(recipe_api.RecipeApi):
               '-pool', t.spec.dut_pool if t.spec.dut_pool else 'DUT_POOL_QUOTA'
           ])
 
-          cmd.extend(['-image', t.spec.cros_img])
+          if t.spec.use_lkgm:
+            assert not t.spec.cros_img, 'cros_img should be empty when use_lkgm is True'
+            lkgm_cros_img = self.get_lkgm_version(
+                t.spec.cros_board, str(self.m.chromium_checkout.src_dir))
+            assert lkgm_cros_img, 'chromite build_api command not found'
+
+            cmd.extend(['-image', lkgm_cros_img])
+          else:
+            cmd.extend(['-image', t.spec.cros_img])
 
           cmd.extend(['-timeout-mins', str(int(t.spec.timeout_sec / 60))])
 

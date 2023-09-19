@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'chromium_checkout',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/json',

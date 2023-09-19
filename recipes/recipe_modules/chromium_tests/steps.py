@@ -2852,9 +2852,12 @@ class SkylabTestSpec(TestSpec):
   cros_board = attrib(str)
   # The CrOS DUT model.
   cros_model = attrib(str, default='')
+  # Use the LKGM version of CrOS image.
+  # When this is set to true, cros_img must be empty.
+  use_lkgm = attrib(bool, default=False)
   # The GS path presenting CrOS image to provision the DUT,
   # e.g. atlas-release/R88-13545.0.0
-  cros_img = attrib(str)
+  cros_img = attrib(str, default='')
   # The optional GS bucket of CrOS image.
   bucket = attrib(str, default='')
   # The optional Public CTP Builder and luci bucket.
