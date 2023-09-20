@@ -210,7 +210,7 @@ message BuilderDatabase {
 
 // The combined details of 1 or more builders
 //
-// Next ID: 11
+// Next ID: 12
 message BuilderConfig {
   // Required, the database of builders that can be accessed via the builder
   // config
@@ -253,6 +253,10 @@ message BuilderConfig {
   // Additional names to add when analyzing the change to determine affected
   // targets
   repeated string analyze_names = 6;
+  // Optional, a list of path strings to be excluded when analyzing the change
+  // to determine affected targets. The paths should be relative paths to the
+  // root dir of the chromium/src checkout.
+  repeated string additional_exclusions = 11;
 
   // Whether or not failed shards of tests should be retried
   optional bool retry_failed_shards = 7;

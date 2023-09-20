@@ -175,6 +175,10 @@ class BuilderConfig:
   # Additional names to add when analyzing the change to determine affected
   # targets
   analyze_names = attrib(sequence[str], default=())
+  # Additional relative path strings that are excluded when analyzing the
+  # change to determine affected targets. The paths should be relative to
+  # the root dir of the chromium/src checkout.
+  additional_exclusions = attrib(sequence[str], default=())
   # Whether or not failed shards of tests should be retried
   retry_failed_shards = attrib(bool, default=True)
   # Whether or not failed test suites should be retried without patch

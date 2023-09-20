@@ -329,11 +329,14 @@ class _TryBuilderPropertiesAssembler:
     self._builder_config_kwargs = builder_config_kwargs
 
   @classmethod
-  def create(cls,
-             is_compile_only=False,
-             analyze_names=None,
-             retry_failed_shards=True,
-             retry_without_patch=True):
+  def create(
+      cls,
+      is_compile_only=False,
+      analyze_names=None,
+      additional_exclusions=None,
+      retry_failed_shards=True,
+      retry_without_patch=True,
+  ):
     props_assembler = _PropertiesAssembler()
 
     builder_config_kwargs = {}
@@ -341,6 +344,8 @@ class _TryBuilderPropertiesAssembler:
       builder_config_kwargs['is_compile_only'] = True
     if analyze_names:
       builder_config_kwargs['analyze_names'] = list(analyze_names)
+    if additional_exclusions:
+      builder_config_kwargs['additional_exclusions'] = additional_exclusions
     if not retry_failed_shards:
       builder_config_kwargs['retry_failed_shards'] = False
     if not retry_without_patch:

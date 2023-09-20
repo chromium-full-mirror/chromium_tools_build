@@ -291,6 +291,7 @@ def GenTests(api):
           .properties_assembler_for_try_builder(
               is_compile_only=True,
               analyze_names=['foo', 'bar'],
+              additional_exclusions=['test.cc'],
               retry_failed_shards=False,
               retry_without_patch=False,
           ).with_mirrored_builder(
@@ -335,6 +336,7 @@ def GenTests(api):
           expected_attrs={
               'is_compile_only': True,
               'analyze_names': ('foo', 'bar'),
+              'additional_exclusions': ('test.cc',),
               'retry_failed_shards': False,
               'retry_without_patch': False,
               'targets_spec_directory': 'fake-targets-spec-directory',
