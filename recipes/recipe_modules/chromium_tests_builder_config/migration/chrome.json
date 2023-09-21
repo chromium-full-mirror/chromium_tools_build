@@ -1,14 +1,4 @@
 {
-  "chromium.perf.calibration:android-pixel2-perf-calibration": {
-    "builders": [
-      "chromium.perf.calibration:android-pixel2-perf-calibration"
-    ]
-  },
-  "chromium.perf.calibration:linux-perf-calibration": {
-    "builders": [
-      "chromium.perf.calibration:linux-perf-calibration"
-    ]
-  },
   "chromium.perf.fyi:android-cfi-builder-perf-fyi": {
     "builders": [
       "chromium.perf.fyi:android-cfi-builder-perf-fyi"
