@@ -41,6 +41,7 @@ class SkylabApi(recipe_api.RecipeApi):
   def get_lkgm_version(self, board: str, chrome_src: str) -> str:
     """Get LKGM or older latest version of ChromeOS available for the board.
 
+    This API call requires the read access of ChromeOS release images.
     The LKGM version is determined based on //chromeos/CHROMEOS_LKGM file
     in the chrome checkout.
     The returned version is usually the LKGM, but if the image for the board
@@ -132,6 +133,8 @@ class SkylabApi(recipe_api.RecipeApi):
 
           if t.spec.use_lkgm:
             assert not t.spec.cros_img, 'cros_img should be empty when use_lkgm is True'
+            # get_lkgm_version requires the read access of ChromeOS release images.
+            assert 'chromiumos' not in t.spec.bucket, 'use_lkgm is not supported for public builders'
             lkgm_cros_img = self.get_lkgm_version(
                 t.spec.cros_board, str(self.m.chromium_checkout.src_dir))
             assert lkgm_cros_img, 'chromite build_api command not found'

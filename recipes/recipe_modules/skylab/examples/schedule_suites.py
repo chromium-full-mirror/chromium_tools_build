@@ -149,9 +149,8 @@ LKGM_REQUESTS = [
         use_lkgm=True,
         cros_img='',
         retries=3,
-        bucket='a_different_chromium_bucket',
-        public_builder='ctp-public-builder',
-        public_builder_bucket='public-bucket'),
+        bucket='chromeos-image-archive',
+    ),
 ]
 
 PROPERTIES = {
@@ -323,11 +322,9 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab tests.' + LKGM_REQUESTS[0].name + '.schedule', [
               'run', 'test', '-json', '-board', 'eve', '-bucket',
-              'a_different_chromium_bucket', '-public-builder',
-              'ctp-public-builder', '-public-builder-bucket', 'public-bucket',
-              '-pool', 'DUT_POOL_QUOTA', '-image', 'eve-release/R118-15580.0.0',
-              '-timeout-mins', '60', '-qs-account', 'lacros', '-max-retries',
-              '3'
+              'chromeos-image-archive', '-pool', 'DUT_POOL_QUOTA', '-image',
+              'eve-release/R118-15580.0.0', '-timeout-mins', '60',
+              '-qs-account', 'lacros', '-max-retries', '3'
           ]),
       api.post_process(post_process.DropExpectation),
   )
