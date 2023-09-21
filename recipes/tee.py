@@ -26,7 +26,7 @@ def main():
   outfiles = [open(f, 'w') for f in files]
 
   while True:
-    buf = pipe.stdout.read(1024).decode('utf-8')
+    buf = pipe.stdout.read(1024).decode('latin1')
     if buf == '':
       break
 
