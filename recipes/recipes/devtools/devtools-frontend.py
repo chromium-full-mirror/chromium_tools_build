@@ -204,6 +204,7 @@ class InteractionsTests(DevToolsTests):
           step_name=self.step_name,
           cas_digest=self.cas_digest,
           task_output_dir=self.output_dir,
+          rdb_wrapped=True,
           env={
               "FORCE_UPDATE_ALL_GOLDENS":
                   'True',
