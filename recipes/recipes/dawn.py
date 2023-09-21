@@ -87,6 +87,10 @@ def _gn_build(api, **kwargs):
 
   if use_remoteexec:
     gn_args.append('use_remoteexec=true')
+    if api.platform.is_win:
+      # We need to ensure that DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT
+      # is still under the exec root.
+      gn_args.append('rbe_exec_root="' + str(api.path['cache']) + '"')
 
   # We run the end2end tests with SwiftShader, but the D3D12 backend,
   # though it would run zero tests, crashes on Windows 7.

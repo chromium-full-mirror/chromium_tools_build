@@ -161,7 +161,7 @@
       "--root=[CACHE]\\builder\\dawn",
       "gen",
       "//out/0b56882cfeaad2236fa7b8dfd92e4768d3c325fe",
-      "--args=is_debug=false is_clang=true is_component_build=false dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true"
+      "--args=is_debug=false is_clang=true is_component_build=false dawn_use_swiftshader=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true rbe_exec_root=\"[CACHE]\""
     ],
     "cwd": "[CACHE]\\builder\\dawn",
     "env": {
@@ -1304,7 +1304,7 @@
       "--root=[CACHE]\\builder\\dawn",
       "gen",
       "//out/49ffbfb8c952db98e8eec8d6a6bbff4a3636ad62",
-      "--args=is_debug=false is_clang=true is_component_build=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true dawn_enable_d3d12=false"
+      "--args=is_debug=false is_clang=true is_component_build=true dawn_use_swiftshader=true tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true use_remoteexec=true rbe_exec_root=\"[CACHE]\" dawn_enable_d3d12=false"
     ],
     "cwd": "[CACHE]\\builder\\dawn",
     "env": {
