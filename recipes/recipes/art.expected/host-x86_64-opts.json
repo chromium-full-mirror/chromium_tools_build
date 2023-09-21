@@ -83,6 +83,32 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CACHE]/art/out"
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "clobber"
+  },
+  {
+    "cmd": [
       "[CACHE]/art/art/tools/buildbot-build.sh",
       "--host",
       "--installclean"
@@ -90,12 +116,12 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -128,12 +154,12 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -163,17 +189,19 @@
       "--verbose",
       "--host",
       "--debug",
+      "--gcstress",
+      "--cdex-fast",
       "--optimizing"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -203,18 +231,20 @@
       "--verbose",
       "--host",
       "--debug",
+      "--gcstress",
+      "--cdex-fast",
       "--jit",
       "--debuggable"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -244,18 +274,20 @@
       "--verbose",
       "--host",
       "--debug",
+      "--gcstress",
+      "--cdex-fast",
       "-j5",
       "--interpreter"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -285,17 +317,19 @@
       "--verbose",
       "--host",
       "--debug",
+      "--gcstress",
+      "--cdex-fast",
       "--baseline"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -325,17 +359,19 @@
       "--verbose",
       "--host",
       "--debug",
+      "--gcstress",
+      "--cdex-fast",
       "--jit"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -365,17 +401,107 @@
       "--verbose",
       "--host",
       "--debug",
+      "--gcstress",
+      "--cdex-fast",
+      "--optimizing",
+      "--redefine-stress",
+      "--debuggable"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "armv8"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test cdex-redefine-stress-optimizing"
+  },
+  {
+    "cmd": [
+      "./art/test/testrunner/testrunner.py",
+      "--verbose",
+      "--host",
+      "--debug",
+      "--gcstress",
+      "--cdex-fast",
+      "--jit",
+      "--redefine-stress",
+      "--debuggable"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "armv8"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test cdex-redefine-stress-jit"
+  },
+  {
+    "cmd": [
+      "./art/test/testrunner/testrunner.py",
+      "--verbose",
+      "--host",
+      "--debug",
+      "--gcstress",
+      "--cdex-fast",
       "--speed-profile"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -404,17 +530,18 @@
       "[CACHE]/art/art/tools/run-libcore-tests.sh",
       "--mode=host",
       "--variant=X64",
-      "--debug"
+      "--debug",
+      "--gcstress"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -443,17 +570,19 @@
       "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
       "--mode=host",
       "--variant=X64",
-      "--debug"
+      "--debug",
+      "--vm-arg",
+      "-Xgc:gcstress"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
+      "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
       "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_READ_BARRIER": "false",
       "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
@@ -476,46 +605,6 @@
       }
     },
     "name": "test libjdwp jit"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
-      "--mode=host",
-      "--variant=X64",
-      "--debug",
-      "--no-jit"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "true",
-      "BUILD_BROKEN_DISABLE_BAZEL": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter"
   },
   {
     "name": "$result"

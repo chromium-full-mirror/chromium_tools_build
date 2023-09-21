@@ -82,14 +82,20 @@
     "name": "repo manifest"
   },
   {
+    "cmd": [],
+    "name": "install fuchsia/third_party/qemu"
+  },
+  {
     "cmd": [
       "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
-      "rmtree",
-      "[CACHE]/art/out"
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/fuchsia/third_party/qemu/latest"
     ],
     "cwd": "[CACHE]/art",
     "infra_step": true,
@@ -105,7 +111,53 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "clobber"
+    "name": "install fuchsia/third_party/qemu.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/fuchsia/third_party/qemu/latest",
+      "-ensure-file",
+      "fuchsia/third_party/qemu/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/art",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install fuchsia/third_party/qemu.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"fuchsia/third_party/qemu/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
   },
   {
     "cmd": [
@@ -117,21 +169,25 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -150,28 +206,164 @@
   },
   {
     "cmd": [
+      "[CACHE]/art/art/tools/buildbot-vm.sh",
+      "create"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "true",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_ON_VM": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "silvermont",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create the virtual machine"
+  },
+  {
+    "cmd": [
+      "[CACHE]/art/art/tools/buildbot-vm.sh",
+      "boot"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "true",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_ON_VM": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "silvermont",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "boot the virtual machine"
+  },
+  {
+    "cmd": [
+      "[CACHE]/art/art/tools/buildbot-vm.sh",
+      "setup-ssh"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "true",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_ON_VM": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "silvermont",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "copy ssh keys over to the virtual machine"
+  },
+  {
+    "cmd": [
       "[CACHE]/art/art/tools/buildbot-cleanup-device.sh"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -197,22 +389,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -237,21 +433,25 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -276,22 +476,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -320,22 +524,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -360,22 +568,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -402,22 +614,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -440,28 +656,33 @@
       "--target",
       "--verbose",
       "--debug",
+      "--gcstress",
       "--optimizing"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -490,22 +711,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -530,22 +755,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -572,22 +801,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -610,6 +843,7 @@
       "--target",
       "--verbose",
       "--debug",
+      "--gcstress",
       "--optimizing",
       "--debuggable"
     ],
@@ -617,22 +851,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -661,22 +899,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -701,22 +943,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -743,22 +989,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -781,6 +1031,7 @@
       "--target",
       "--verbose",
       "--debug",
+      "--gcstress",
       "--jit",
       "--debuggable"
     ],
@@ -788,22 +1039,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -832,22 +1087,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -872,22 +1131,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -914,22 +1177,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -952,28 +1219,33 @@
       "--target",
       "--verbose",
       "--debug",
+      "--gcstress",
       "--interpreter"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1002,22 +1274,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1042,22 +1318,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1084,22 +1364,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1122,28 +1406,33 @@
       "--target",
       "--verbose",
       "--debug",
+      "--gcstress",
       "--baseline"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1172,22 +1461,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1212,22 +1505,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1254,22 +1551,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1292,28 +1593,33 @@
       "--target",
       "--verbose",
       "--debug",
+      "--gcstress",
       "--jit"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1342,22 +1648,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1382,22 +1692,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1424,22 +1738,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1462,28 +1780,33 @@
       "--target",
       "--verbose",
       "--debug",
+      "--gcstress",
       "--speed-profile"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1512,22 +1835,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1552,22 +1879,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1594,22 +1925,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -1628,536 +1963,32 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-libcore-tests.sh",
-      "--mode=device",
-      "--variant=X64",
-      "--debug"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libcore"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libcore: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libcore: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libcore: adb clear log"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
-      "--mode=device",
-      "--variant=X64",
-      "--debug"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp jit"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp jit: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp jit: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp jit: adb clear log"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
-      "--mode=device",
-      "--variant=X64",
-      "--debug",
-      "--no-jit"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter: adb clear log"
-  },
-  {
-    "cmd": [
       "[CACHE]/art/art/tools/buildbot-teardown-device.sh"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2182,22 +2013,26 @@
     "env": {
       "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/armv8",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
       "ART_BUILD_HOST_DEBUG": "false",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_NO_SYNC": "true",
+      "ART_TEST_ON_VM": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
       "LANG": "en_US.UTF-8",
       "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
+      "TARGET_PRODUCT": "silvermont",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
@@ -2213,6 +2048,50 @@
       }
     },
     "name": "device post-run cleanup"
+  },
+  {
+    "cmd": [
+      "[CACHE]/art/art/tools/buildbot-vm.sh",
+      "quit"
+    ],
+    "cwd": "[CACHE]/art",
+    "env": {
+      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/art",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/silvermont",
+      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_HEAP_POISONING": "true",
+      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
+      "ART_TEST_KEEP_GOING": "true",
+      "ART_TEST_ON_VM": "true",
+      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
+      "ART_TEST_SSH_HOST": "localhost",
+      "ART_TEST_SSH_PORT": "10001",
+      "ART_TEST_SSH_USER": "ubuntu",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "LANG": "en_US.UTF-8",
+      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
+      "TARGET_BUILD_TYPE": "release",
+      "TARGET_BUILD_UNBUNDLED": "true",
+      "TARGET_BUILD_VARIANT": "eng",
+      "TARGET_PRODUCT": "silvermont",
+      "USE_DEX2OAT_DEBUG": "false"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "shut down virtual machine"
   },
   {
     "name": "$result"

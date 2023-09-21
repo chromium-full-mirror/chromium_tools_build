@@ -109,29 +109,26 @@
   {
     "cmd": [
       "[CACHE]/art/art/tools/buildbot-build.sh",
-      "--target",
+      "--host",
       "--installclean"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -145,153 +142,31 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build target"
+    "name": "build"
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/buildbot-cleanup-device.sh"
+      "build/soong/soong_ui.bash",
+      "--make-mode",
+      "test-art-host-gtest0"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "device pre-run cleanup"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-setup-device.sh",
-      "--verbose"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "setup device"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-sync.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "sync target"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/run-gtests.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -309,159 +184,29 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test gtest: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test gtest: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test gtest: adb clear log"
-  },
-  {
-    "cmd": [
       "./art/test/testrunner/testrunner.py",
-      "--target",
       "--verbose",
+      "--host",
       "--ndebug",
       "--optimizing"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -479,160 +224,30 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test optimizing: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test optimizing: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test optimizing: adb clear log"
-  },
-  {
-    "cmd": [
       "./art/test/testrunner/testrunner.py",
-      "--target",
       "--verbose",
+      "--host",
       "--ndebug",
-      "--optimizing",
+      "--jit",
       "--debuggable"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -650,330 +265,30 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test debuggable: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test debuggable: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test debuggable: adb clear log"
-  },
-  {
-    "cmd": [
       "./art/test/testrunner/testrunner.py",
-      "--target",
       "--verbose",
+      "--host",
       "--ndebug",
-      "--jit",
-      "--debuggable"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test jit debuggable"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test jit debuggable: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test jit debuggable: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test jit debuggable: adb clear log"
-  },
-  {
-    "cmd": [
-      "./art/test/testrunner/testrunner.py",
-      "--target",
-      "--verbose",
-      "--ndebug",
+      "-j5",
       "--interpreter"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -991,159 +306,29 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test interpreter: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test interpreter: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test interpreter: adb clear log"
-  },
-  {
-    "cmd": [
       "./art/test/testrunner/testrunner.py",
-      "--target",
       "--verbose",
+      "--host",
       "--ndebug",
       "--baseline"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -1161,159 +346,29 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test baseline: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test baseline: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test baseline: adb clear log"
-  },
-  {
-    "cmd": [
       "./art/test/testrunner/testrunner.py",
-      "--target",
       "--verbose",
+      "--host",
       "--ndebug",
       "--jit"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -1331,159 +386,29 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test jit: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test jit: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test jit: adb clear log"
-  },
-  {
-    "cmd": [
       "./art/test/testrunner/testrunner.py",
-      "--target",
       "--verbose",
+      "--host",
       "--ndebug",
       "--speed-profile"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -1501,157 +426,27 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test speed-profile: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test speed-profile: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test speed-profile: adb clear log"
-  },
-  {
-    "cmd": [
       "[CACHE]/art/art/tools/run-libcore-tests.sh",
-      "--mode=device",
-      "--variant=X32"
+      "--mode=host",
+      "--variant=X0"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -1669,157 +464,27 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libcore: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libcore: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libcore: adb clear log"
-  },
-  {
-    "cmd": [
       "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
-      "--mode=device",
-      "--variant=X32"
+      "--mode=host",
+      "--variant=X0"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -1837,158 +502,28 @@
   },
   {
     "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp jit: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp jit: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp jit: adb clear log"
-  },
-  {
-    "cmd": [
       "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
-      "--mode=device",
-      "--variant=X32",
+      "--mode=host",
+      "--variant=X0",
       "--no-jit"
     ],
     "cwd": "[CACHE]/art",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
+      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
       "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
+      "ART_USE_GENERATIONAL_CC": "false",
+      "ART_USE_READ_BARRIER": "false",
+      "BUILD_BROKEN_DISABLE_BAZEL": "true",
       "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
       "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
+      "TARGET_PRODUCT": "armv8"
     },
     "luci_context": {
       "realm": {
@@ -2003,212 +538,6 @@
       }
     },
     "name": "test libjdwp interpreter"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-d",
-      "-v",
-      "threadtime"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter: adb logcat"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-symbolize-crashes.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter: crashes"
-  },
-  {
-    "cmd": [
-      "adb",
-      "logcat",
-      "-c"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test libjdwp interpreter: adb clear log"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-teardown-device.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "tear down device"
-  },
-  {
-    "cmd": [
-      "[CACHE]/art/art/tools/buildbot-cleanup-device.sh"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "ART_BUILD_HOST_DEBUG": "false",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_CHROOT": "/data/local/art-test-chroot",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_NO_SYNC": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "true",
-      "ART_USE_READ_BARRIER": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "arm_krait",
-      "USE_DEX2OAT_DEBUG": "false"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "device post-run cleanup"
   },
   {
     "name": "$result"

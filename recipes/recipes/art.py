@@ -61,49 +61,35 @@ _TARGET_DEVICE_MAP = {
 
 def RunSteps(api, props):
   manifest_branch = props.manifest_branch or 'master-art'
-  if props.use_props:
-    if props.device:
-      # Use different cache directory for RISCV to avoid interference.
-      cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
-      with api.context(cwd=api.path['cache'].join(cache_name)):
-        setup_target(
-          api,
-          device=props.device,
-          debug=props.debug,
-          build_only=props.build_only,
-          concurrent_collector=props.concurrent_collector,
-          generational_cc=props.generational_cc,
-          heap_poisoning=props.heap_poisoning,
-          gcstress=props.gcstress,
-          on_virtual_machine=props.on_virtual_machine,
-          manifest_branch=manifest_branch or 'master-art'
-        )
-    else:
-      with api.context(cwd=api.path['cache'].join('art')):
-        setup_host_x86(
-          api,
-          debug=props.debug,
-          bitness=props.bitness,
-          concurrent_collector=props.concurrent_collector,
-          generational_cc=props.generational_cc,
-          heap_poisoning=props.heap_poisoning,
-          gcstress=props.gcstress,
-          cdex_level=props.cdex_level or 'none',
-          manifest_branch=manifest_branch or 'master-art'
-        )
+  if props.device:
+    # Use different cache directory for RISCV to avoid interference.
+    cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
+    with api.context(cwd=api.path['cache'].join(cache_name)):
+      setup_target(
+        api,
+        device=props.device,
+        debug=props.debug,
+        build_only=props.build_only,
+        concurrent_collector=props.concurrent_collector,
+        generational_cc=props.generational_cc,
+        heap_poisoning=props.heap_poisoning,
+        gcstress=props.gcstress,
+        on_virtual_machine=props.on_virtual_machine,
+        manifest_branch=manifest_branch or 'master-art'
+      )
   else:
-    buildername = api.buildbucket.builder_name
-    for builder_type, builder_config in _CONFIG_MAP.items():
-      if buildername in builder_config:
-        builder_dict = builder_config[buildername]
-        # Use the cached builder directory to enable incremental builds.
-        with api.context(cwd=api.path['cache'].join('art')):
-          _CONFIG_DISPATCH_MAP[builder_type](api, **builder_dict)
-        break
-
-    else: # pragma: no cover
-      error = "Builder not found in recipe's local config!"
-      raise KeyError(error)
+    with api.context(cwd=api.path['cache'].join('art')):
+      setup_host_x86(
+        api,
+        debug=props.debug,
+        bitness=props.bitness,
+        concurrent_collector=props.concurrent_collector,
+        generational_cc=props.generational_cc,
+        heap_poisoning=props.heap_poisoning,
+        gcstress=props.gcstress,
+        cdex_level=props.cdex_level or 'none',
+        manifest_branch=manifest_branch or 'master-art'
+      )
 
 def checkout(api, manifest_branch):
   # (https://crbug.com/1153114): do not attempt to update repo when
@@ -519,177 +505,36 @@ def setup_target(api,
         api.step('shut down virtual machine',
                  [art_tools.join('buildbot-vm.sh'), 'quit'])
 
-
-_CONFIG_MAP = {
-    'x86': {
-        'host-x86-ndebug': {
-            'debug': False,
-            'bitness': 32,
-        },
-        'host-x86-debug': {
-            'debug': True,
-            'bitness': 32,
-        },
-        'host-x86_64-ndebug': {
-            'debug': False,
-            'bitness': 64,
-        },
-        'host-x86_64-debug': {
-            'debug': True,
-            'bitness': 64,
-        },
-        # `userfaultfd`-based GC configuration.
-        # TODO: Rename this configuration to reflect its properties.
-        'host-x86-cms': {
-            'debug': True,
-            'bitness': 32,
-            'concurrent_collector': False,
-            'generational_cc': False,
-        },
-        # `userfaultfd`-based GC configuration.
-        # TODO: Rename this configuration to reflect its properties.
-        'host-x86_64-cms': {
-            'debug': True,
-            'bitness': 64,
-            'concurrent_collector': False,
-            'generational_cc': False,
-        },
-        'host-x86-poison-debug': {
-            'debug': True,
-            'bitness': 32,
-            'heap_poisoning': True,
-        },
-        'host-x86_64-poison-debug': {
-            'debug': True,
-            'bitness': 64,
-            'heap_poisoning': True,
-        },
-        'host-x86-gcstress-debug': {
-            'bitness': 32,
-            'debug': True,
-            'gcstress': True,
-        },
-        'host-x86_64-non-gen-cc': {
-            'bitness': 64,
-            'debug': True,
-            'generational_cc': False,
-        },
-        'host-x86_64-cdex-fast': {
-            'debug': True,
-            'bitness': 64,
-            'cdex_level': 'fast',
-        },
-    },
-    # TODO: Remove device names.
-    'target': {
-        'angler-armv7-ndebug': {
-            'device': 'angler-armv7',
-            'debug': False,
-        },
-        'angler-armv7-debug': {
-            'device': 'angler-armv7',
-            'debug': True,
-        },
-        'walleye-armv7-poison-debug': {
-            'device': 'walleye-armv7',
-            'debug': True,
-            'heap_poisoning': True,
-        },
-        'walleye-armv8-poison-ndebug': {
-            'device': 'walleye-armv8',
-            'debug': False,
-            'heap_poisoning': True,
-        },
-        'walleye-armv8-poison-debug': {
-            'device': 'walleye-armv8',
-            'debug': True,
-            'heap_poisoning': True
-        },
-        'fugu-ndebug': {
-            'device': 'fugu',
-            'debug': False,
-        },
-        'fugu-debug': {
-            'device': 'fugu',
-            'debug': True,
-        },
-        # `userfaultfd`-based GC configuration.
-        # TODO: Rename this configuration to reflect its properties.
-        'angler-armv7-non-gen-cc': {
-            'device': 'angler-armv7',
-            'debug': True,
-            'concurrent_collector': False,
-            'generational_cc': False,
-        },
-        'angler-armv8-ndebug': {
-            'device': 'angler-armv8',
-            'debug': False,
-        },
-        'angler-armv8-debug': {
-            'device': 'angler-armv8',
-            'debug': True,
-        },
-        # `userfaultfd`-based GC configuration.
-        # TODO: Rename this configuration to reflect its properties.
-        'angler-armv8-non-gen-cc': {
-            'device': 'angler-armv8',
-            'debug': True,
-            'concurrent_collector': False,
-            'generational_cc': False,
-        },
-        'bullhead-armv8-gcstress-ndebug': {
-            'device': 'bullhead-armv8',
-            'debug': False,
-            'gcstress': True,
-        },
-        'bullhead-armv8-gcstress-debug': {
-            'device': 'bullhead-armv8',
-            'debug': True,
-            'gcstress': True,
-        },
-        'bullhead-armv7-gcstress-ndebug': {
-            'device': 'bullhead-armv7',
-            'debug': False,
-            'gcstress': True,
-        },
-        'qemu-riscv64-ndebug': {
-            'device': 'qemu-riscv64',
-            'debug': False,
-            'on_virtual_machine': True,
-        },
-        'qemu-riscv64-ndebug-build_only': {
-            'device': 'qemu-riscv64',
-            'debug': False,
-            'on_virtual_machine': True,
-            'build_only': True,
-        },
-    },
-}
-
-_CONFIG_DISPATCH_MAP = {
-  'x86': setup_host_x86,
-  'target': setup_target,
-}
-
 def GenTests(api):
+  yield api.test(
+    'host-x86_64-default_opts',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      bitness=32,
+      debug=False,
+      concurrent_collector=True,
+      generational_cc=True,
+    )
+  )
 
-  def build(builder):
-    return sum([
-        api.buildbucket.ci_build(
-            project='art',
-            builder=builder,
-        ),
-        api.properties(bot_id='TestSlave'),
-    ], api.empty_test_data())
-
-  for builders in _CONFIG_MAP.values():
-    for buildername in builders:
-      for clb in (None, True):
-        yield api.test(
-            '%s__%s' % (buildername, ('' if clb else 'no') + 'clobber'),
-            build(buildername),
-            (api.properties(clobber='') if clb else api.properties()),
-        )
+  yield api.test(
+    'host-x86_64-opts',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      bitness=64,
+      debug=True,
+      generational_cc=False,
+      clobber='',
+      concurrent_collector=False,
+      heap_poisoning=True,
+      gcstress=True,
+      cdex_level='fast',
+    )
+  )
 
   yield api.test(
     'target_angler_try',
@@ -700,66 +545,75 @@ def GenTests(api):
   )
 
   yield api.test(
-    'host_with_props',
+    'target-default_opts',
     api.buildbucket.ci_build(
       project='art',
-      builder='host-x86-ndebug',
     ),
     api.properties(
-      use_props=True,
-      bitness=32,
+      debug=False,
+      device="angler-armv7",
+      build_only=False,
+      concurrent_collector=True,
+      gcstress=False,
+      generational_cc=True,
+      heap_poisoning=False,
+      on_virtual_machine=False,
     ),
   )
 
   yield api.test(
-    'target_angler_with_props',
-    api.buildbucket.try_build(
+    'target-opts',
+    api.buildbucket.ci_build(
       project='art',
-      builder='angler-armv7-ndebug',
     ),
     api.properties(
-      use_props=True,
-      device='angler-armv7',
-      bitness=32,
+      debug=True,
+      device="fugu",
+      concurrent_collector=False,
+      gcstress=True,
+      generational_cc=False,
+      heap_poisoning=True,
+      on_virtual_machine=True,
+    ),
+  )
+
+  yield api.test(
+    'target-build_only',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      device="angler-armv7",
+      build_only=True,
     ),
   )
 
   yield api.test(
       'target_angler_setup_failure',
-      build('angler-armv7-ndebug'),
+      api.buildbucket.ci_build(
+            project='art',
+            builder='angler-armv7-ndebug',
+      ),
       api.step_data('setup device', retcode=1),
       api.expect_status('FAILURE'),
+      api.properties(
+        bot_id='TestBot',
+        device='angler-armv7',
+        debug=False,
+      )
   )
 
   yield api.test(
       'target_angler_device_pre_run_cleanup_failure',
-      build('angler-armv7-ndebug'),
+      api.buildbucket.ci_build(
+        project='art',
+        builder='angler-armv7-ndebug',
+      ),
       api.step_data('device pre-run cleanup', retcode=1),
       api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'host_riscv',
-      api.buildbucket.ci_build(
-          project='art',
-          builder='qemu-riscv64-ndebug',
-      ),
       api.properties(
-          use_props=True,
-          debug=False,
-          device="qemu-riscv64",
-          on_virtual_machine=True,
-      ),
+        bot_id='TestBot',
+        device='angler-armv7',
+        debug=False,
+      )
   )
-
-#  This test *should* exist, but can't be included as it causes the recipe
-#  simulation to error out, instead of showing that the build should become
-#  purple instead. This may need to be fixed in the simulation test script.
-#  yield api.test(
-#     'invalid buildername',
-#      api.properties(
-#        mastername='client.art',
-#        buildername='builder_does_not_exist',
-#        bot_id='TestSlave',
-#      ),
-#    )
