@@ -349,6 +349,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         cmd = ['ninja', '-failure_summary', failure_output] + ninja_command[1:]
         ninja_step_result = self.m.siso.run_ninja(
             cmd,
+            ninja_env=ninja_env,
             siso_args=siso_args,
             name=name,
             step_test_data=step_test_data,
