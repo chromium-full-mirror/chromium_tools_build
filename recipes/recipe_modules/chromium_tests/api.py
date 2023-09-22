@@ -2155,13 +2155,18 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           self.m.chromium.c.project_generator.config_path or
           self.m.path['checkout'].join('tools', 'mb', 'mb_config.pyl'))
       analyze_names.append(self.m.chromium.c.TARGET_PLATFORM)
+      additional_exclusions = {
+          exclusion: 'builder config additional exclusions'
+          for exclusion in builder_config.additional_exclusions
+      }
       test_targets, compile_targets = self.m.filter.analyze(
           affected_files,
           test_targets,
           additional_compile_targets,
           builder_id=builder_id,
           mb_config_path=mb_config_path,
-          additional_names=analyze_names)
+          additional_names=analyze_names,
+          additional_exclusions=additional_exclusions)
 
     return test_targets, compile_targets
 

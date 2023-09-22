@@ -61,3 +61,44 @@ def GenTests(api):
         api.post_check(lambda check, steps: check(steps['analyze'].cmd == [])),
         api.post_process(post_process.DropExpectation),
     )
+
+  ctbc_api = api.chromium_tests_builder_config
+  yield api.test(
+      'builder_config_additional_exclusions',
+      api.platform('linux', 64),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder(
+              additional_exclusions=['test.cc']).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.properties(affected_files=['test.cc']),
+      api.chromium_tests_builder_config.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'fake-try-group': {
+                  'fake-try-builder':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          'fake-group', 'fake-builder'),
+              },
+          })),
+      api.chromium_tests.read_targets_spec('fake-group', {
+          'fake-builder': {
+              'gtest_tests': [{
+                  'test': 'base_unittests',
+              }],
+          },
+      }),
+      api.post_check(lambda check, steps: check(steps['analyze'].cmd == [])),
+      api.post_process(post_process.DropExpectation),
+  )

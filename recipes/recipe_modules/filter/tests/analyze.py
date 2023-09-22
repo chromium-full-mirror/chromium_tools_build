@@ -133,6 +133,27 @@ def GenTests(api):
   )
 
   yield api.test(
+      'additional_exclusions',
+      api.platform('linux', 64),
+      api.properties(
+          affected_files=['generated/builder (dbg)/gn-args.json'],
+          test_targets=['test1', 'test2'],
+          compile_targets=['compile1', 'compile2'],
+          expected_affected_test_targets=['test1', 'test2'],
+          expected_affected_compile_targets=[
+              'test1', 'test2', 'compile1', 'compile2'
+          ],
+          analyze_kwargs={
+              'additional_exclusions': {
+                  'generated/builder (dbg)/gn-args.json': 'test source'
+              },
+          }),
+      api.post_check(post_process.StepTextContains, 'analyze',
+                     ['Analyze disabled: matched exclusion']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'error',
       api.platform('linux', 64),
       api.override_step_data(

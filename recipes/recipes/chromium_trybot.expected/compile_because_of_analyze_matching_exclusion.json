@@ -4,7 +4,7 @@
     "name": "analyze",
     "~followup_annotations": [
       "@@@STEP_TEXT@Analyze disabled: matched exclusion@@@",
-      "@@@STEP_LOG_LINE@excluded_files@foo.cc (regex = '.+')@@@",
+      "@@@STEP_LOG_LINE@excluded_files@foo.cc (regex = '.+'), exclusion source: analyze config file@@@",
       "@@@STEP_LOG_END@excluded_files@@@",
       "@@@STEP_LOG_LINE@analyze_details@{@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [@@@",

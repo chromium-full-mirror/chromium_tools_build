@@ -6,7 +6,7 @@ import functools
 import posixpath
 import re
 
-from typing import Any, Callable, Collection, Dict, List, Optional, Tuple
+from typing import Any, Callable, Collection, Dict, List, Mapping, Optional, Tuple
 
 from recipe_engine import config_types
 from recipe_engine import recipe_api
@@ -126,12 +126,12 @@ class FilterApi(recipe_api.RecipeApi):
   def _find_matching_pattern(
       path: str,
       regexes: Collection[re.Pattern],
-  ) -> Optional[str]:
+  ) -> Optional[re.Pattern]:
     """Returns the pattern string that matches a path (if any)."""
     for regex in regexes:
       match = regex.fullmatch(path)
       if match:
-        return regex.pattern
+        return regex
     return None
 
   def _convert_path_to_posix(self, path):
@@ -196,7 +196,7 @@ class FilterApi(recipe_api.RecipeApi):
       paths: Collection[str],
       test_targets: Collection[str],
       additional_compile_targets: Collection[str],
-      exclusions: Collection[re.Pattern],
+      exclusions: Mapping[re.Pattern, str],
       ignores: Collection[re.Pattern],
       analyzer: _Analyzer,
   ) -> Tuple[Collection[str], Collection[str]]:
@@ -212,7 +212,8 @@ class FilterApi(recipe_api.RecipeApi):
             'analyze',
             step_text='Analyze disabled: matched exclusion',
             log_name='excluded_files',
-            log_text=f'{path} (regex = \'{matched_pattern}\')')
+            log_text=f'{path} (regex = \'{matched_pattern.pattern}\'), '
+            f'exclusion source: {exclusions[matched_pattern]}')
         all_targets = set(test_targets) | set(additional_compile_targets)
         return sorted(test_targets), sorted(all_targets)
 
@@ -266,6 +267,7 @@ class FilterApi(recipe_api.RecipeApi):
       *,
       config_path: config_types.Path = None,
       additional_names: Optional[Collection[str]] = None,
+      additional_exclusions: Mapping[str, str] = None,
       builder_id: Optional[chromium.BuilderId] = None,
       mb_path: Optional[config_types.Path] = None,
       mb_config_path: Optional[config_types.Path] = None,
@@ -320,6 +322,9 @@ class FilterApi(recipe_api.RecipeApi):
       additional_names: Config names to look up exclusions and ignores,
         see |config_file_name|. If not provided, ['chromium'] will be
         used.
+      additional_exclusions: A mapping of additinal exclusion path strings
+        to their sources. The string paths are to be compiled into regex
+        and then added to the exclusions.
       builder_id: The ID of the builder with the config to run MB
         against.
       mb_path: The path to the source directory containing the mb.py
@@ -342,7 +347,14 @@ class FilterApi(recipe_api.RecipeApi):
           'either config_path must be passed in'
           ' or the chromium config must set analyze_config_path')
 
-    exclusions, ignores = self._get_path_matchers(additional_names, config_path)
+    exclusions_from_config, ignores = self._get_path_matchers(
+        additional_names, config_path)
+    exclusions = {
+        exclusion: 'analyze config file' for exclusion in exclusions_from_config
+    }
+    if additional_exclusions:
+      for path, source in additional_exclusions.items():
+        exclusions[re.compile(re.escape(path))] = source
 
     # TODO(gbeaty) Check if this is necessary, the documentation for the
     # parameter indicates that they should always have forward slashes
