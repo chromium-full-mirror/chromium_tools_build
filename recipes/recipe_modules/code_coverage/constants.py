@@ -86,9 +86,15 @@ SUPPORTED_PATCH_PROJECTS = [('chromium-review.googlesource.com',
                              'chromium/src'),
                             ('webrtc-review.googlesource.com', 'src')]
 
+
+# Test type literals.
+class test_types:
+  OVERALL = 'overall'
+  UNIT = 'unit'
+
 # A list of test types supported by code coverage api. The test types are
 # defined as str literals and used across multiple places.
-SUPPORTED_TEST_TYPES = ['overall', 'unit']
+SUPPORTED_TEST_TYPES = [test_types.OVERALL, test_types.UNIT]
 
 # A mapping of platform to test target names regex. This is used to filter
 # the test targets to be run for a certain test type. See SUPPORTED_TEST_TYPES
@@ -101,33 +107,36 @@ SUPPORTED_TEST_TYPES = ['overall', 'unit']
 # inverted run
 PLATFORM_TO_TARGET_NAME_PATTERN_MAP = {
     'ios': {
-        'unit': '(boringssl_crypto_|boringssl_ssl_'
-                '|.+_unit)tests',
-        'overall': '.+'
+        test_types.UNIT: '(boringssl_crypto_|boringssl_ssl_'
+                         '|.+_unit)tests',
+        test_types.OVERALL: '.+'
     },
     'linux': {
-        'unit': '(absl_hardening|blink_python|boringssl_crypto|boringssl_ssl'
-                '|content_shell_crash|crashpad|cronet|ipc|metrics_python'
-                '|vr_pixel|.*unit).*test.*',
-        'overall': '.+'
+        test_types.UNIT:
+            '(absl_hardening|blink_python|boringssl_crypto|boringssl_ssl'
+            '|content_shell_crash|crashpad|cronet|ipc|metrics_python'
+            '|vr_pixel|.*unit).*test.*',
+        test_types.OVERALL: '.+'
     },
     'mac': {
-        'unit': '(absl_hardening|boringssl_crypto|boringssl_ssl|crashpad'
-                '|cronet|ipc|.*unit).*test.*',
-        'overall': '.+'
+        test_types.UNIT:
+            '(absl_hardening|boringssl_crypto|boringssl_ssl|crashpad'
+            '|cronet|ipc|.*unit).*test.*',
+        test_types.OVERALL: '.+'
     },
     'win': {
-        'unit': '(absl_hardening|boringssl_crypto|boringssl_ssl|crashpad'
-                '|cronet|ipc|vr_pixel|.*unit).*test.*',
-        'overall': '.+'
+        test_types.UNIT:
+            '(absl_hardening|boringssl_crypto|boringssl_ssl|crashpad'
+            '|cronet|ipc|vr_pixel|.*unit).*test.*',
+        test_types.OVERALL: '.+'
     },
     'chromeos': {
-        'unit': '(crashpad|ipc|.*unit).*test.*',
-        'overall': '.+'
+        test_types.UNIT: '(crashpad|ipc|.*unit).*test.*',
+        test_types.OVERALL: '.+'
     },
     'android': {
-        'unit': '(.*unit).*test.*',
-        'overall': '.+'
+        test_types.UNIT: '(.*unit).*test.*',
+        test_types.OVERALL: '.+'
     }
 }
 PLATFORM_TO_TARGET_NAME_PATTERN_MAP[

@@ -54,13 +54,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self._gs_bucket = (
         properties.coverage_gs_bucket or constants.DEFAULT_BUCKET_NAME)
     # List of test types to run in a builder. By default, it runs overall
-    # coverage. This is only used in Clang coverage at present.
-    self._test_types = properties.coverage_test_types or ['overall']
+    # coverage. This is used in Clang and JaCoCo coverage at present.
+    self._test_types = properties.coverage_test_types or [
+        constants.test_types.OVERALL
+    ]
     # The key in constants.EXCLUDE_SOURCES to get corresponding excluded file
     # pattern.
     self._exclude_sources_key = properties.coverage_exclude_sources
-    # Current test type that's being processed.
-    self._current_processing_test_type = 'overall'
     # Internal nested dict to store paths to metadata folder lists, indexed by
     # test type and tool type. e.g.
     # {'overall': {'clang': 'path1', 'jacoco': 'path2'}}
@@ -202,18 +202,18 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       self._bot_to_gerrit_mapping_file = local_to_gerrit_diff_mapping_file
     return self._bot_to_gerrit_mapping_file
 
-  def _compose_current_mimic_builder_name(self):
-    """Current mimic builder name composed from the test type being processed.
+  def _compose_mimic_builder_name(self, test_type):
+    """Mimic builder name composed from the test type.
 
-    If currently processing overall coverage data, return real builder name.
-    Otherwise, return {real_builder_name}_{current_test_type}.
+    If test_type is overall coverage, return real builder name. Otherwise,
+    return {real_builder_name}_{test_type}.
 
     Use override_builder_name instead of real builder name if provided.
     """
     builder_name = (
         self._override_builder_name or self.m.buildbucket.build.builder.builder)
-    suffix = '' if self._current_processing_test_type == 'overall' else (
-        '_' + self._current_processing_test_type)
+    suffix = '' if test_type == constants.test_types.OVERALL else ('_' +
+                                                                   test_type)
     return builder_name + suffix
 
   def ensure_clang_coverage_tools(self):
@@ -308,7 +308,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     )
     return step_result.json.output
 
-  def get_binaries(self, tests, may_use_binaries_list_file):
+  def get_binaries(self,
+                   tests,
+                   may_use_binaries_list_file,
+                   test_type=constants.test_types.OVERALL):
     """Returns paths to the binary for the given test objects.
 
     By default, use the name of the target as the binary.
@@ -320,6 +323,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         orchestrator/compilator structure, this file is passed from
         compilator to orchestrator. It includes the binary list relevant
         to |tests|, discovered by |get_binaries| API invoked on compilator.
+      test_type (string): Test type being processed.
 
     Returns:
       List of Paths to test binaries
@@ -367,8 +371,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       # Do not get the test binary if it does not correspond to test type.
       if (self.platform in constants.PLATFORM_TO_TARGET_NAME_PATTERN_MAP and
           not re.search(
-              constants.PLATFORM_TO_TARGET_NAME_PATTERN_MAP[self.platform][
-                  self._current_processing_test_type], target)):
+              constants.PLATFORM_TO_TARGET_NAME_PATTERN_MAP[self.platform]
+              [test_type], target)):
         continue
 
       patterns = [
@@ -630,15 +634,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     all_success = True
     if self.use_clang_coverage:
       for test_type in self._test_types:
-        self._current_processing_test_type = test_type
-        success = self.process_clang_coverage_data(tests)
+        success = self.process_clang_coverage_data(tests, test_type=test_type)
         all_success = success and all_success
 
     if self.use_java_coverage:
       try:
         for test_type in self._test_types:
-          self._current_processing_test_type = test_type
-          success = self.process_java_coverage_data()
+          success = self.process_java_coverage_data(test_type)
           all_success = success and all_success
       finally:
         self.m.step('Clean up Java coverage files', [
@@ -653,7 +655,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if self.use_javascript_coverage:
       # JS coverage processing only supports 'overall' test type. This is
       # ensured in |_validate_test_types|.
-      success = self.process_javascript_coverage_data()
+      success = self.process_javascript_coverage_data(
+          test_type=constants.test_types.OVERALL)
       all_success = success and all_success
 
     # Do not upload data if not all required process step succeeded.
@@ -662,8 +665,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     # Upload metadata and accompanying files.
     for test_type in self._test_types:
-      self._current_processing_test_type = test_type
-
       assert ((len(self._metadata_dir_by_tool_type_by_test_type[test_type]) >
                1) == merge_from_multiple_tools
              ), 'multiple metadata folders correspond to multiple tools used!'
@@ -672,9 +673,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           list(self._metadata_dir_by_tool_type_by_test_type[test_type].values())
           [0])
       if merge_from_multiple_tools:
-        metadata_dir = self._merge_metadata_from_multiple_tools()
+        metadata_dir = self._merge_metadata_from_multiple_tools(test_type)
 
-      self._persist_coverage_artifacts(source_dir=metadata_dir)
+      self._persist_coverage_artifacts(
+          source_dir=metadata_dir, test_type=test_type)
 
     self._set_builder_output_properties_for_uploads()
 
@@ -687,7 +689,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         result.append((change.host, change.project))
     return ', '.join('/'.join(p) for p in result)
 
-  def _persist_coverage_artifacts(self, source_dir, **kwargs):
+  def _persist_coverage_artifacts(self, source_dir, test_type, **kwargs):
     """Uploads coverage artifacts to GCS bucket.
 
     Uploads coverage artifacts to google cloud storage. Also adds the gs_path
@@ -697,8 +699,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     Args:
       source_dir: Absolute location to dir containing coverage artifacts
+      test_type (str): Test type to process. e.g. 'overall', 'unit'.
     """
-    mimic_builder_name = self._compose_current_mimic_builder_name()
+    mimic_builder_name = self._compose_mimic_builder_name(test_type)
     gs_path = self._compose_gs_path_for_coverage_data(
         data_type='metadata', mimic_builder_name=mimic_builder_name)
     self.m.gsutil.upload(
@@ -718,6 +721,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
   def process_clang_coverage_data(self,
                                   tests=None,
                                   binaries=None,
+                                  test_type=constants.test_types.OVERALL,
                                   upload_metadata=False):
     """Processes the clang coverage data for html report or metadata.
 
@@ -728,6 +732,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           whose binaries we are to create a coverage report for.
       binaries: A list of binaries for which coverage reports should be
           created.
+      test_type (str): Test type to process. e.g. 'overall', 'unit'.
       upload_metadata (bool): Whether to upload metadata in this method.
 
       NOTE: Only one of the two above should be present.
@@ -742,9 +747,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     with self.m.step.nest(
         'process clang code coverage data for %s test coverage' %
-        self._current_processing_test_type) as processing_step:
+        test_type) as processing_step:
       try:
-        merged_profdata = self._merge_and_upload_profdata()
+        merged_profdata = self._merge_and_upload_profdata(test_type)
         if not merged_profdata:
           self.m.step.empty('skip processing because no profdata was generated')
           return
@@ -756,17 +761,19 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           result.presentation.properties['merge errors'] = merge_errors.stdout
 
         if not binaries:
-          binaries = self.get_binaries(tests, may_use_binaries_list_file=True)
+          binaries = self.get_binaries(
+              tests, may_use_binaries_list_file=True, test_type=test_type)
           binaries = self._get_binaries_with_valid_coverage_data_on_trybot(
               binaries, merged_profdata)
 
           if not binaries:
             self.m.step.empty('skip processing because no data is found')
             return
-        self._generate_clang_metadata(binaries, merged_profdata,
+        self._generate_clang_metadata(binaries, merged_profdata, test_type,
                                       upload_metadata)
         self._generate_and_upload_html_report_on_trybot(binaries,
-                                                        merged_profdata)
+                                                        merged_profdata,
+                                                        test_type)
         return True
       except:  # pylint: disable=bare-except
         self.m.step.active_result.presentation.properties[
@@ -781,7 +788,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         else:
           raise
 
-  def process_java_coverage_data(self, **kwargs):
+  def process_java_coverage_data(self,
+                                 test_type=constants.test_types.OVERALL,
+                                 **kwargs):
     """Generates metadata and JaCoCo HTML report to upload to storage bucket.
 
     Generates Java coverage metadata and JaCoCo HTML report by scripts.
@@ -789,9 +798,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     metadata.
 
     Args:
+      test_type (str): Test type to process. e.g. 'overall', 'unit'.
       **kwargs: Kwargs for python and gsutil steps.
     """
-    test_type = self._current_processing_test_type
     with self.m.step.nest('process java coverage (%s)' % test_type):
       try:
         coverage_dir = self.build_dir.join(constants.JAVA_COVERAGE_DIR)
@@ -839,7 +848,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 source=output_dir.join('coverage.xml'),
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/coverage.xml' % self._compose_gs_path_for_zoss_upload(
-                    builder=self._compose_current_mimic_builder_name(),
+                    builder=self._compose_mimic_builder_name(test_type),
                     build_id=self.build_id,
                     zoss_host=repo['host']),
                 link_name=None,
@@ -857,7 +866,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 source=output_dir.join('zoss_metadata.json'),
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
-                    builder=self._compose_current_mimic_builder_name(),
+                    builder=self._compose_mimic_builder_name(test_type),
                     build_id=self.build_id,
                     zoss_host=repo['host']),
                 link_name=None,
@@ -878,12 +887,15 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           # Do not raise coverage steps exception for per-cl coverage.
           raise
 
-  def process_javascript_coverage_data(self, **kwargs):
+  def process_javascript_coverage_data(self,
+                                       test_type=constants.test_types.OVERALL,
+                                       **kwargs):
     """Returns True if all processing steps run and succeed.
 
+    Args:
+      test_type (str): Test type to process. e.g. 'overall', 'unit'.
     Does not upload metadata.
     """
-    test_type = self._current_processing_test_type
     with self.m.step.nest('process javascript coverage (%s)' % test_type):
       try:
         coverage_dir = self.build_dir.join(constants.JS_COVERAGE_DIR)
@@ -931,7 +943,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 source=coverage_dir.join('lcov.info'),
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/lcov.info' % self._compose_gs_path_for_zoss_upload(
-                    builder=self._compose_current_mimic_builder_name(),
+                    builder=self._compose_mimic_builder_name(test_type),
                     build_id=self.build_id,
                     zoss_host=repo['host']),
                 link_name='lcov_info',
@@ -949,7 +961,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 source=output_dir.join('zoss_metadata.json'),
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
-                    builder=self._compose_current_mimic_builder_name(),
+                    builder=self._compose_mimic_builder_name(test_type),
                     build_id=self.build_id,
                     zoss_host=repo['host']),
                 link_name='Zoss Metadata',
@@ -963,9 +975,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           # Do not raise coverage steps exception for per-cl coverage.
           raise
 
-  def _merge_metadata_from_multiple_tools(self):
+  def _merge_metadata_from_multiple_tools(self, test_type):
     """Merges metadata from multiple tools processings."""
-    test_type = self._current_processing_test_type
     output_dir = self._ensure_metadata_dir(test_type, 'merged')
     with self.m.step.nest('merge data from multiple coverage tools (%s)' %
                           test_type):
@@ -986,7 +997,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     return output_dir
 
-  def _merge_and_upload_profdata(self):
+  def _merge_and_upload_profdata(self, test_type):
     """Merges the profdata generated by each step to a single profdata.
 
     Returns:
@@ -994,7 +1005,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       None. One possible reason that profdata doesn't exist is that there might
       be no .profraw files to merge at all.
     """
-    test_type = self._current_processing_test_type
     merged_profdata = self.m.profiles.profile_dir().join(
         '%s-merged.profdata' % test_type)
 
@@ -1021,7 +1031,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     # path.
     gs_path = self._compose_gs_path_for_coverage_data(
         data_type='merged.profdata',
-        mimic_builder_name=self._compose_current_mimic_builder_name())
+        mimic_builder_name=self._compose_mimic_builder_name(test_type))
     upload_step = self.m.profiles.upload(
         self._gs_bucket, gs_path, merged_profdata, link_name='Merged profdata')
     upload_step.presentation.links['merged.profdata'] = (
@@ -1080,7 +1090,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     )
     return step_result.json.output
 
-  def _generate_and_upload_html_report_on_trybot(self, binaries, profdata_path):
+  def _generate_and_upload_html_report_on_trybot(self, binaries, profdata_path,
+                                                 test_type):
     """Generate html coverage report for the given binaries.
 
     Produce a coverage report for the instrumented test targets and upload to
@@ -1112,14 +1123,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     self.m.step(
         ('generate html report for %s test coverage in %d tests' %
-         (self._current_processing_test_type,
-          len(self.m.profiles.profile_subdirs))),
+         (test_type, len(self.m.profiles.profile_subdirs))),
         cmd,
     )
 
     html_report_gs_path = self._compose_gs_path_for_coverage_data(
         data_type='html_report',
-        mimic_builder_name=self._compose_current_mimic_builder_name())
+        mimic_builder_name=self._compose_mimic_builder_name(test_type))
     upload_step = self.m.gsutil.upload(
         self.report_dir,
         self._gs_bucket,
@@ -1196,14 +1206,17 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     return chromium_swarming.MergeScript(
         script=self.m.profiles.merge_results_script, args=args)
 
-  def get_chromium_fuzz_coverage(self, src_dir, build_dir, llvm_raw_data,
-                                 profdata_dir):
+  def get_chromium_fuzz_coverage(self,
+                                 src_dir,
+                                 build_dir,
+                                 llvm_raw_data,
+                                 profdata_dir,
+                                 test_type=constants.test_types.OVERALL):
     """ Generates fuzz coverage information. """
     llvm_cov = src_dir.join('third_party').join('llvm-build').join(
         'Release+Asserts').join('bin').join('llvm-cov')
     self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
-    output_dir = self._ensure_metadata_dir(self._current_processing_test_type,
-                                           constants.tools.CLANG)
+    output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
     cmd = [
         'vpython3',
         self.resource('generate_coverage_metadata.py'),
@@ -1223,7 +1236,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     ]
     self.m.step('generate coverage metadata', cmd)
 
-    self._persist_coverage_artifacts(source_dir=output_dir)
+    self._persist_coverage_artifacts(source_dir=output_dir, test_type=test_type)
     self._set_builder_output_properties_for_uploads(has_coverage_data=True)
 
   def _compose_gs_path_for_coverage_data(self, data_type, mimic_builder_name):
@@ -1264,10 +1277,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       ])
     return dir_metadata
 
-  def _generate_clang_metadata(self, binaries, profdata_path, upload_metadata,
-                               **kwargs):
+  def _generate_clang_metadata(self, binaries, profdata_path, test_type,
+                               upload_metadata, **kwargs):
     """Generates the coverage info in metadata format."""
-    test_type = self._current_processing_test_type
     output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
     cmd = [
         'vpython3',
@@ -1311,7 +1323,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               source=output_dir.join('coverage.json'),
               bucket=constants.ZOSS_BUCKET_NAME,
               dest='%s/coverage.json' % self._compose_gs_path_for_zoss_upload(
-                  builder=self._compose_current_mimic_builder_name(),
+                  builder=self._compose_mimic_builder_name(test_type),
                   build_id=self.build_id,
                   zoss_host=repo['host']),
               link_name='coverage_json',
@@ -1329,7 +1341,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               source=output_dir.join('zoss_metadata.json'),
               bucket=constants.ZOSS_BUCKET_NAME,
               dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
-                  builder=self._compose_current_mimic_builder_name(),
+                  builder=self._compose_mimic_builder_name(test_type),
                   build_id=self.build_id,
                   zoss_host=repo['host']),
               link_name='Zoss Metadata',
@@ -1337,7 +1349,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               name='export metadata to zoss for host %s' % repo['host'])
 
       if upload_metadata:
-        self._persist_coverage_artifacts(source_dir=output_dir, **kwargs)
+        self._persist_coverage_artifacts(
+            source_dir=output_dir, test_type=test_type, **kwargs)
 
   def _compose_gs_path_for_zoss_upload(self, builder, build_id, zoss_host):
     commit = self.m.buildbucket.build.input.gitiles_commit
@@ -1355,7 +1368,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     """
     commit = self.m.buildbucket.build.input.gitiles_commit
     branch = 'main'
-    category = 'DEFAULT' if coverage_type == 'overall' else 'CHROME_UNIT_TEST'
+    category = 'DEFAULT' if coverage_type == constants.test_types.OVERALL else 'CHROME_UNIT_TEST'
     return {
         # Maps to https://source.corp.google.com/h/chrome-internal/codesearch/chrome/src
         # which is a view of https://chromium.googlesource.com/chromium/src/
