@@ -52,11 +52,11 @@ def RunSteps(api):
         api.profiles.profile_dir().join('unit-merged.profdata'))
     api.path.mock_add_paths(
         api.profiles.profile_dir().join('overall-merged.profdata'))
-  if api.properties.get('mock_java_tests_metadata_path_overall', True):
-    api.code_coverage._current_processing_coverage_tool = 'jacoco'
-    metadata_dir = api.code_coverage.metadata_dir
+  if api.properties.get('mock_java_tests_metadata_path_overall'):
+    # This has side effect of updating
+    # |api.code_coverage._metadata_dir_by_tool_type_by_test_type['overall']|
+    metadata_dir = api.code_coverage._ensure_metadata_dir('overall', 'jacoco')
     api.path.mock_add_paths(metadata_dir.join('all.json.gz'))
-    api.code_coverage._current_processing_coverage_tool = 'default'
   if api.properties.get('mock_javascript_lcov_path', True):
     api.path.mock_add_paths(
         api.chromium.output_dir.join('js_coverage').join('lcov.info'))
@@ -239,6 +239,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.code_coverage(use_java_coverage=True, export_coverage_to_zoss=True),
+      api.properties(mock_java_tests_metadata_path_overall=True),
       api.post_process(
           post_process.MustRun,
           'process java coverage (overall).Generate Java coverage metadata'),
@@ -604,9 +605,10 @@ def GenTests(api):
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS),
                     retcode=1),
-      api.post_check(lambda check, steps: check(steps[
-          'process clang code coverage data for overall test coverage.ensure metadata dir for overall tests for clang coverage (2)'
-      ].output_properties['process_coverage_data_failure'] == True)),
+      api.post_check(lambda check, steps: check(
+          steps['process clang code coverage data for overall test coverage.'
+                'generate metadata for overall test coverage in 7 tests'
+               ].output_properties['process_coverage_data_failure'] == True)),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -629,9 +631,10 @@ def GenTests(api):
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS),
                     retcode=1),
-      api.post_check(lambda check, steps: check(steps[
-          'process clang code coverage data for overall test coverage.ensure metadata dir for overall tests for clang coverage (2)'
-      ].output_properties['process_coverage_data_failure'] == True)),
+      api.post_check(lambda check, steps: check(
+          steps['process clang code coverage data for overall test coverage.'
+                'generate metadata for overall test coverage in 7 tests'
+               ].output_properties['process_coverage_data_failure'] == True)),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -681,6 +684,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.code_coverage(use_java_coverage=True, generate_blame_list=True),
+      api.properties(mock_java_tests_metadata_path_overall=True),
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
           'Extract directory metadata'),
@@ -744,6 +748,7 @@ def GenTests(api):
       api.properties(files_to_instrument=[
           'some/path/to/myfile.java', 'third_party/jacoco/BUILD.gn'
       ]),
+      api.properties(mock_java_tests_metadata_path_overall=True),
       api.post_process(
           post_process.MustRun,
           'Jacoco change detected. Instrumenting everything!' +
@@ -766,6 +771,7 @@ def GenTests(api):
           'some/path/to/file.java',
           'some/other/path/to/file.java',
       ]),
+      api.properties(mock_java_tests_metadata_path_overall=True),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'
@@ -1289,6 +1295,7 @@ def GenTests(api):
           'some/other/path/to/cpp_file.cpp',
           'some/other/path/to/js_file.js',
       ]),
+      api.properties(mock_java_tests_metadata_path_overall=True),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
       api.post_process(
           post_process.MustRun, 'process java coverage (overall).'

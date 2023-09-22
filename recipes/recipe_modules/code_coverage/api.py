@@ -32,7 +32,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     # Temp dir for report.
     self._report_dir = None
     # Temp dir for metadata
-    self._metadata_dir = None
+    self._metadata_root_dir = None
     # Path to checked out repo
     self._src_dir = None
     # Path to director containing the build artifacts e.g. <root>/out/coverage
@@ -61,13 +61,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self._exclude_sources_key = properties.coverage_exclude_sources
     # Current test type that's being processed.
     self._current_processing_test_type = 'overall'
-    # Current coverage tool of the data being processed.
-    # Valid values are 'default', 'clang', 'jacoco', 'v8', 'merged_tools'
-    self._current_processing_coverage_tool = 'default'
-    # Internal dict to store paths to metadata folder lists, indexed by test
-    # type. e.g. {'overall': ['path1', 'path2']}, where 'path1' could be the
-    # metadata dir of clang, while 'path2' is for jacoco.
-    self._metadata_dirs_by_test_type = collections.defaultdict(list)
+    # Internal nested dict to store paths to metadata folder lists, indexed by
+    # test type and tool type. e.g.
+    # {'overall': {'clang': 'path1', 'jacoco': 'path2'}}
+    self._metadata_dir_by_tool_type_by_test_type = collections.defaultdict(dict)
     # When set True, Clang coverage is enabled.
     self._use_clang_coverage = properties.use_clang_coverage
     # When set True, Java coverage is enabled.
@@ -131,24 +128,23 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       self._report_dir = self.m.path.mkdtemp()
     return self._report_dir
 
-  @property
-  def metadata_dir(self):
-    """A temporary directory for the metadata.
+  def _ensure_metadata_dir(self, test_type, tool_type):
+    """Returns a temporary directory for the metadata.
 
-    It's a temporary directory with a sub directory named in current test type.
-    Temp dir is created on first access to this property. Subdirs are created
-    on first access when processing each test type / tool type.
+    It's a temporary directory with nested directory structure for test type
+    and coverage tool type. Temp dir is created on first call to this method.
+    Subdirs are created on first access when processing each test type / tool
+    type. Also updates |self._metadata_dir_by_tool_type_by_test_type|.
     """
-    if not self._metadata_dir:
-      self._metadata_dir = self.m.path.mkdtemp()
-    metadata_test_type_dir = self._metadata_dir.join(
-        self._current_processing_test_type).join(
-            self._current_processing_coverage_tool)
+    if not self._metadata_root_dir:
+      self._metadata_root_dir = self.m.path.mkdtemp()
+    metadata_dir = self._metadata_root_dir.join(test_type).join(tool_type)
     self.m.file.ensure_directory(
         'ensure metadata dir for %s tests for %s coverage' %
-        (self._current_processing_test_type,
-         self._current_processing_coverage_tool), metadata_test_type_dir)
-    return metadata_test_type_dir
+        (test_type, tool_type), metadata_dir)
+    self._metadata_dir_by_tool_type_by_test_type[test_type][tool_type] = (
+        metadata_dir)
+    return metadata_dir
 
   @property
   def build_dir(self):
@@ -475,16 +471,19 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     if self.use_clang_coverage:
       self._eligible_files.extend(
-          _filter_source_file(candidate_files,
-                              constants.TOOLS_TO_EXTENSIONS_MAP['clang']))
+          _filter_source_file(
+              candidate_files,
+              constants.TOOLS_TO_EXTENSIONS_MAP[constants.tools.CLANG]))
     if self.use_java_coverage:
       self._eligible_files.extend(
-          _filter_source_file(candidate_files,
-                              constants.TOOLS_TO_EXTENSIONS_MAP['jacoco']))
+          _filter_source_file(
+              candidate_files,
+              constants.TOOLS_TO_EXTENSIONS_MAP[constants.tools.JACOCO]))
     if self.use_javascript_coverage:
       self._eligible_files.extend(
-          _filter_source_file(candidate_files,
-                              constants.TOOLS_TO_EXTENSIONS_MAP['v8']))
+          _filter_source_file(
+              candidate_files,
+              constants.TOOLS_TO_EXTENSIONS_MAP[constants.tools.V8]))
 
   def _validate_test_types(self):
     """Validates that test type to process in build is supported."""
@@ -630,14 +629,12 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     all_success = True
     if self.use_clang_coverage:
-      self._current_processing_coverage_tool = 'clang'
       for test_type in self._test_types:
         self._current_processing_test_type = test_type
         success = self.process_clang_coverage_data(tests)
         all_success = success and all_success
 
     if self.use_java_coverage:
-      self._current_processing_coverage_tool = 'jacoco'
       try:
         for test_type in self._test_types:
           self._current_processing_test_type = test_type
@@ -654,7 +651,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         ])
 
     if self.use_javascript_coverage:
-      self._current_processing_coverage_tool = 'v8'
       # JS coverage processing only supports 'overall' test type. This is
       # ensured in |_validate_test_types|.
       success = self.process_javascript_coverage_data()
@@ -668,18 +664,16 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     for test_type in self._test_types:
       self._current_processing_test_type = test_type
 
-      assert ((len(self._metadata_dirs_by_test_type[test_type]) >
+      assert ((len(self._metadata_dir_by_tool_type_by_test_type[test_type]) >
                1) == merge_from_multiple_tools
              ), 'multiple metadata folders correspond to multiple tools used!'
 
-      metadata_dir = self._metadata_dirs_by_test_type[test_type][0]
+      metadata_dir = (
+          list(self._metadata_dir_by_tool_type_by_test_type[test_type].values())
+          [0])
       if merge_from_multiple_tools:
-        # TODO(crbug.com/1484092): Use a method instead of `metadata_dir`
-        # property for readability.
-        self._current_processing_coverage_tool = 'merged_tools'
         metadata_dir = self._merge_metadata_from_multiple_tools()
 
-      self._current_processing_coverage_tool = 'default'
       self._persist_coverage_artifacts(source_dir=metadata_dir)
 
     self._set_builder_output_properties_for_uploads()
@@ -797,11 +791,12 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     Args:
       **kwargs: Kwargs for python and gsutil steps.
     """
-    with self.m.step.nest('process java coverage (%s)' %
-                          self._current_processing_test_type):
+    test_type = self._current_processing_test_type
+    with self.m.step.nest('process java coverage (%s)' % test_type):
       try:
         coverage_dir = self.build_dir.join(constants.JAVA_COVERAGE_DIR)
-        output_dir = self.metadata_dir
+        output_dir = self._ensure_metadata_dir(test_type,
+                                               constants.tools.JACOCO)
         cmd = [
             'python3',
             self.resource('generate_coverage_metadata_for_java.py'),
@@ -828,7 +823,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         cmd.extend([
             '--exec-filename-pattern',
             ("%s\.exec" % constants.PLATFORM_TO_TARGET_NAME_PATTERN_MAP[
-                self.platform][self._current_processing_test_type])
+                self.platform][test_type])
         ])
         cmd.extend(['--exclusion-pattern', constants.EXCLUDED_FILE_REGEX])
         cmd.append('--third-party-inclusion-subdirs')
@@ -857,7 +852,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                     zoss_host=repo['host'],
                     zoss_project=repo['project'],
                     coverage_format='JACOCO_XML',
-                    coverage_type=self._current_processing_test_type))
+                    coverage_type=test_type))
             self.m.gsutil.upload(
                 source=output_dir.join('zoss_metadata.json'),
                 bucket=constants.ZOSS_BUCKET_NAME,
@@ -873,10 +868,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if not self.m.path.exists(metadata_path):
           self.m.step.empty(
               'skip processing because %s tests metadata was missing' %
-              self._current_processing_test_type)
+              test_type)
           return
-        self._metadata_dirs_by_test_type[
-            self._current_processing_test_type].append(output_dir)
         return True
       except self.m.step.StepFailure:
         self.m.step.active_result.presentation.properties[
@@ -890,8 +883,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
     Does not upload metadata.
     """
-    with self.m.step.nest('process javascript coverage (%s)' %
-                          self._current_processing_test_type):
+    test_type = self._current_processing_test_type
+    with self.m.step.nest('process javascript coverage (%s)' % test_type):
       try:
         coverage_dir = self.build_dir.join(constants.JS_COVERAGE_DIR)
         if not self.m.path.exists('%s/lcov.info' % coverage_dir):
@@ -909,7 +902,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               'skip processing because lcov.info does not have data for eligible files'
           )
           return
-        output_dir = self.metadata_dir
+        output_dir = self._ensure_metadata_dir(test_type, constants.tools.V8)
         cmd = [
             'python3',
             self.resource('generate_coverage_metadata_for_javascript.py'),
@@ -931,8 +924,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               dir_metadata_path,
           ])
         self.m.step('Generate JavaScript coverage metadata', cmd)
-        self._metadata_dirs_by_test_type[
-            self._current_processing_test_type].append(output_dir)
         # Upload data to zoss to show it on code search
         if self._export_coverage_to_zoss:
           for repo in constants.COVERAGE_REPOS:
@@ -953,7 +944,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                     zoss_host=repo['host'],
                     zoss_project=repo['project'],
                     coverage_format='LCOV',
-                    coverage_type=self._current_processing_test_type))
+                    coverage_type=test_type))
             self.m.gsutil.upload(
                 source=output_dir.join('zoss_metadata.json'),
                 bucket=constants.ZOSS_BUCKET_NAME,
@@ -974,16 +965,18 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   def _merge_metadata_from_multiple_tools(self):
     """Merges metadata from multiple tools processings."""
-    output_dir = self.metadata_dir
+    test_type = self._current_processing_test_type
+    output_dir = self._ensure_metadata_dir(test_type, 'merged')
     with self.m.step.nest('merge data from multiple coverage tools (%s)' %
-                          self._current_processing_test_type):
-      test_type = self._current_processing_test_type
+                          test_type):
       cmd = [
           'python3',
           self.resource('merge_metadata_files.py'),
           '--input-dirs',
       ]
-      cmd.extend(self._metadata_dirs_by_test_type[test_type])
+      cmd.extend(
+          list(
+              self._metadata_dir_by_tool_type_by_test_type[test_type].values()))
       cmd.extend([
           '--output-dir',
           output_dir,
@@ -1209,11 +1202,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     llvm_cov = src_dir.join('third_party').join('llvm-build').join(
         'Release+Asserts').join('bin').join('llvm-cov')
     self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
+    output_dir = self._ensure_metadata_dir(self._current_processing_test_type,
+                                           constants.tools.CLANG)
     cmd = [
         'vpython3',
         self.resource('generate_coverage_metadata.py'),
         '--output-dir',
-        self.metadata_dir,
+        output_dir,
         '--build-dir',
         build_dir,
         '--llvm-cov',
@@ -1228,7 +1223,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     ]
     self.m.step('generate coverage metadata', cmd)
 
-    self._persist_coverage_artifacts(source_dir=self.metadata_dir)
+    self._persist_coverage_artifacts(source_dir=output_dir)
     self._set_builder_output_properties_for_uploads(has_coverage_data=True)
 
   def _compose_gs_path_for_coverage_data(self, data_type, mimic_builder_name):
@@ -1272,6 +1267,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
   def _generate_clang_metadata(self, binaries, profdata_path, upload_metadata,
                                **kwargs):
     """Generates the coverage info in metadata format."""
+    test_type = self._current_processing_test_type
+    output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
     cmd = [
         'vpython3',
         self.resource('generate_coverage_metadata.py'),
@@ -1280,7 +1277,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         '--src-path',
         self.src_dir,
         '--output-dir',
-        self.metadata_dir,
+        output_dir,
         '--profdata-path',
         profdata_path,
         '--llvm-cov',
@@ -1305,14 +1302,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     try:
       self.m.step(
           'generate metadata for %s test coverage in %d tests' %
-          (self._current_processing_test_type,
-           len(self.m.profiles.profile_subdirs)), cmd)
+          (test_type, len(self.m.profiles.profile_subdirs)), cmd)
     finally:
       # Upload data to zoss to show it on code search
       if self._export_coverage_to_zoss:
         for repo in constants.COVERAGE_REPOS:
           self.m.gsutil.upload(
-              source=self.metadata_dir.join('coverage.json'),
+              source=output_dir.join('coverage.json'),
               bucket=constants.ZOSS_BUCKET_NAME,
               dest='%s/coverage.json' % self._compose_gs_path_for_zoss_upload(
                   builder=self._compose_current_mimic_builder_name(),
@@ -1323,14 +1319,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               name='export coverage data to zoss for host %s' % repo['host'])
           self.m.file.write_json(
               name='create zoss metadata json for host %s' % repo['host'],
-              dest=self.metadata_dir.join('zoss_metadata.json'),
+              dest=output_dir.join('zoss_metadata.json'),
               data=self._get_zoss_metadata(
                   zoss_host=repo['host'],
                   zoss_project=repo['project'],
                   coverage_format='LLVM',
-                  coverage_type=self._current_processing_test_type))
+                  coverage_type=test_type))
           self.m.gsutil.upload(
-              source=self.metadata_dir.join('zoss_metadata.json'),
+              source=output_dir.join('zoss_metadata.json'),
               bucket=constants.ZOSS_BUCKET_NAME,
               dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
                   builder=self._compose_current_mimic_builder_name(),
@@ -1341,9 +1337,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               name='export metadata to zoss for host %s' % repo['host'])
 
       if upload_metadata:
-        self._persist_coverage_artifacts(source_dir=self.metadata_dir, **kwargs)
-      self._metadata_dirs_by_test_type[
-          self._current_processing_test_type].append(self.metadata_dir)
+        self._persist_coverage_artifacts(source_dir=output_dir, **kwargs)
 
   def _compose_gs_path_for_zoss_upload(self, builder, build_id, zoss_host):
     commit = self.m.buildbucket.build.input.gitiles_commit

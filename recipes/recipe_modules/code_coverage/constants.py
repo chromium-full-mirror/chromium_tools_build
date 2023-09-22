@@ -44,14 +44,21 @@ BOT_TO_GERRIT_LINE_NUM_MAPPING_FILE_NAME = (
 QUICK_RUN_UNIT_PROFDATA = 'quick_run_merged_unittest.profdata'
 QUICK_RUN_OVERALL_PROFDATA = 'quick_run_merged.profdata'
 
+
+# Tools constants
+class tools:
+  CLANG = 'clang'
+  JACOCO = 'jacoco'
+  V8 = 'v8'
+
 # Valid extensions of source files that supported per coverage tool.
 TOOLS_TO_EXTENSIONS_MAP = {
-    'clang': [
+    tools.CLANG: [
         '.mm', '.S', '.c', '.hh', '.cxx', '.hpp', '.cc', '.cpp', '.ipp', '.h',
         '.m', '.hxx'
     ],
-    'jacoco': ['.java'],
-    'v8': ['.js', '.ts']
+    tools.JACOCO: ['.java'],
+    tools.V8: ['.js', '.ts']
 }
 
 # Regex to identify files to be excluded from coverage

@@ -18,10 +18,7 @@ def GenTests(api):
       'basic', api.post_process(post_process.MustRun, 'chmod llvm file'),
       api.post_process(
           post_process.MustRun,
-          'ensure metadata dir for overall tests for default coverage'),
-      api.post_process(
-          post_process.MustRun,
-          'ensure metadata dir for overall tests for default coverage (2)'),
+          'ensure metadata dir for overall tests for clang coverage'),
       api.post_process(post_process.MustRun, 'generate coverage metadata'),
       api.post_process(post_process.MustRun,
                        'gsutil Upload coverage artifacts'),
