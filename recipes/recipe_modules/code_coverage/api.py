@@ -631,18 +631,40 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if override_builder_name:
       self._override_builder_name = override_builder_name
 
-    all_success = True
-    if self.use_clang_coverage:
+    try:
       for test_type in self._test_types:
-        success = self.process_clang_coverage_data(tests, test_type=test_type)
-        all_success = success and all_success
+        any_success = False
+        if self.use_clang_coverage:
+          success = self.process_clang_coverage_data(tests, test_type=test_type)
+          any_success = success or any_success
 
-    if self.use_java_coverage:
-      try:
-        for test_type in self._test_types:
+        if self.use_java_coverage:
           success = self.process_java_coverage_data(test_type)
-          all_success = success and all_success
-      finally:
+          any_success = success or any_success
+
+        if self.use_javascript_coverage:
+          # JS coverage processing only supports 'overall' test type. This is
+          # ensured in |_validate_test_types|.
+          success = self.process_javascript_coverage_data(test_type)
+          any_success = success or any_success
+
+        # Do not merge or upload data if no successful processing step for the
+        # test type.
+        if not any_success:
+          continue
+
+        metadata_dir = (
+            list(self._metadata_dir_by_tool_type_by_test_type[test_type].values(
+            ))[0])
+        if merge_from_multiple_tools:
+          metadata_dir = self._merge_metadata_from_multiple_tools(test_type)
+
+        self._persist_coverage_artifacts(
+            source_dir=metadata_dir, test_type=test_type)
+
+      self._set_builder_output_properties_for_uploads()
+    finally:
+      if self.use_java_coverage:
         self.m.step('Clean up Java coverage files', [
             'python3',
             self.resource('clean_up_java_coverage_files.py'),
@@ -651,34 +673,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             '--java-coverage-dir',
             self.build_dir.join(constants.JAVA_COVERAGE_DIR),
         ])
-
-    if self.use_javascript_coverage:
-      # JS coverage processing only supports 'overall' test type. This is
-      # ensured in |_validate_test_types|.
-      success = self.process_javascript_coverage_data(
-          test_type=constants.test_types.OVERALL)
-      all_success = success and all_success
-
-    # Do not upload data if not all required process step succeeded.
-    if not all_success:
-      return
-
-    # Upload metadata and accompanying files.
-    for test_type in self._test_types:
-      assert ((len(self._metadata_dir_by_tool_type_by_test_type[test_type]) >
-               1) == merge_from_multiple_tools
-             ), 'multiple metadata folders correspond to multiple tools used!'
-
-      metadata_dir = (
-          list(self._metadata_dir_by_tool_type_by_test_type[test_type].values())
-          [0])
-      if merge_from_multiple_tools:
-        metadata_dir = self._merge_metadata_from_multiple_tools(test_type)
-
-      self._persist_coverage_artifacts(
-          source_dir=metadata_dir, test_type=test_type)
-
-    self._set_builder_output_properties_for_uploads()
 
   def _get_unsupported_projects(self):
     """If the build input has changes in unsupported projects, return them."""
