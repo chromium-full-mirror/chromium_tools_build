@@ -7,42 +7,37 @@ syntax = "proto3";
 package recipes.build.art;
 
 message InputProperties {
-  // use_props is a temporary property to allow for a soft transition over to
-  // properties. When set to true, the recipe will use properties, otherwise
-  // properties will be determined by the builder name.
-  bool use_props = 1;
-
   // Whether to build with debug symbols.
-  bool debug = 2;
+  bool debug = 1;
 
   // What target device to build for. If unset, the recipe will run in host mode.
-  string device = 3;
+  string device = 2;
 
   // The bitness of the target architecture to build for.
-  int64 bitness = 4;
+  int64 bitness = 3;
 
   // Which repo manifest branch to use. If unset, default is 'master-art'.
-  string manifest_branch = 5;
+  string manifest_branch = 4;
 
   // Whether to enable the heap_poisoning build variant.
-  bool heap_poisoning = 6;
+  bool heap_poisoning = 5;
 
   // Whether to enable the concurrent_collector build variant.
-  bool concurrent_collector = 7;
+  bool concurrent_collector = 6;
 
   // Whether to enable the gcstress build variant.
-  bool gcstress = 8;
+  bool gcstress = 7;
 
   // Whether to enable the generational_cc build variant.
-  bool generational_cc = 9;
+  bool generational_cc = 8;
 
   // What level of cdex to use, default is 'none'.
-  string cdex_level = 10;
+  string cdex_level = 9;
 
   // Whether to boot up a virtual machine before running tests.
-  bool on_virtual_machine = 11;
+  bool on_virtual_machine = 10;
 
   // Whether to exit early after building or run the full test suite.
   // Used as an intermediary while builds are functional but tests are not.
-  bool build_only = 12;
+  bool build_only = 11;
 }
