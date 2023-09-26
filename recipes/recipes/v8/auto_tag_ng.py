@@ -94,6 +94,10 @@ def milestone_version_mapping(api):
   refs/branch-heads/X, e.g. X="5814".
 
   The Chromium verison of the tuple matches the milestone of the V8 version.
+
+  The Chromium version may be None. On branch-cut day, the V8 branch is
+  prepared before the Chromium branch and the Chromium version doesn't exist
+  yet. It will be updated as soon as it is provided by the active milestone.
   """
   milestones = json.loads(api.gitiles.download_file(
       CHROMIUM_REPO_URL, MILESTONES_FILE, step_name='fetch milestones'))
@@ -107,10 +111,19 @@ def milestone_version_mapping(api):
     assert match, f'Chromium branch ref {ref} did not match.'
     return match.group(1)
 
-  return [
+  result = [
     (milestone2version(milestone), ref2version(config))
     for milestone, config in sorted(milestones.items(), reverse=True)
   ]
+
+  # If needed, prepend the version with the latest branch on the V8 side even
+  # if it isn't active yet. Like that, most of the auto-tag work will be
+  # processed on the branch before Chromium's branch cut.
+  latest_version = milestone2version(api.v8.latest_branches()[0])
+  if float(latest_version) > float(result[0][0]):
+    result = [(latest_version, None)] + result
+
+  return result
 
 
 def check_branch(api, branch_version, chromium_version, build_results):
@@ -184,13 +197,16 @@ def verify_floating_refs(
   refs/heads/<branch_version>-lkgr
   refs/heads/chromium/<chromium_version>
 
-  Both refs are kept in sync.
+  Both refs are kept in sync. On branch-cut day, the V8 branch is prepared
+  before the Chromium branch and the Chromium version doesn't exist yet.
+  It will be updated as soon as it is provided by the active milestone.
   """
   branch_head = get_commit_for_ref(api, f'refs/tags/{version_at_head}')
   lkgr_ref = f'refs/heads/{branch_version}-lkgr'
   verify_ref(api, 'LKGR', lkgr_ref, branch_head, build_results)
-  chromium_ref = f'refs/heads/chromium/{chromium_version}'
-  verify_ref(api, 'Chromium', chromium_ref, branch_head, build_results)
+  if chromium_version:
+    chromium_ref = f'refs/heads/chromium/{chromium_version}'
+    verify_ref(api, 'Chromium', chromium_ref, branch_head, build_results)
 
 
 def verify_ref(api, name, ref, branch_head, build_results):
@@ -390,6 +406,39 @@ def GenTests(api):
       stdout('Checking branch 11.3.git ls-remote refs_tags_11.4.3.3', '404'),
       api.post_process(MustRun, 'Checking branch 11.3.Verify LKGR.git push'),
       api.post_process(MustRun, 'Checking branch 11.3.Verify Chromium.git push'),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield test(
+      'branch-on-branch-cut-day',
+
+      # Active milestone is 111, but on branch-cut day 112 is prepared on
+      # the V8 side.
+      milestones(111),
+      stdout('last branches', 'branch-heads/11.1\nbranch-heads/11.2'),
+
+      # Simulate processing 112 with all data except the Chromium ref,
+      # which doesn't exist yet.
+      version_file(2, 'branch-heads/11.2', prefix="Checking branch 11.2."),
+      stdout('Checking branch 11.2.Proof of version change',
+             'dummy proof of version change'),
+      stdout('Checking branch 11.2.Verify version tag.Commit at 11.4.3.2', '123'),
+      stdout('Checking branch 11.2.Verify pgo tag.Commit at 11.4.3.2-pgo', '123'),
+      stdout('Checking branch 11.2.Verify version tag.Commit at HEAD', '123'),
+      version_file(1, 'branch-heads/11.1', prefix="Checking branch 11.1."),
+      api.post_process(MustRun, 'Checking branch 11.2.Verify LKGR'),
+      api.post_process(DoesNotRunRE, 'Checking branch 11.2.Verify Chromium.*'),
+
+      # Simulate processing 111, where all data including Chromium ref exists.
+      stdout('Checking branch 11.1.Proof of version change',
+             'dummy proof of version change'),
+      stdout('Checking branch 11.1.Verify version tag.Commit at 11.4.3.1', '121'),
+      stdout('Checking branch 11.1.Verify pgo tag.Commit at 11.4.3.1-pgo', '121'),
+      stdout('Checking branch 11.1.Verify version tag.Commit at HEAD', '121'),
+      api.post_process(MustRun, 'Checking branch 11.1.Verify LKGR'),
+      api.post_process(MustRun, 'Checking branch 11.1.Verify Chromium'),
+
       api.post_process(DropExpectation),
       status='SUCCESS',
   )

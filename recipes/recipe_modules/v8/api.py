@@ -1374,7 +1374,8 @@ class V8Api(recipe_api.RecipeApi):
         '--list',
         'branch-heads/*',
         stdout=self.m.raw_io.output_text(),
-        name='last branches')
+        name='last branches',
+        step_test_data=self.test_api.example_latest_branches)
     output = branch_step.stdout
     branch_step.presentation.logs['stdout'] = output.splitlines()
     branch_pattern = re.compile(r"branch-heads/(\d+)\.(\d+)")

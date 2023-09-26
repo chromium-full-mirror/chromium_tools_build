@@ -134,6 +134,28 @@
     "name": "fetch milestones"
   },
   {
+    "cmd": [
+      "git",
+      "branch",
+      "-r",
+      "--list",
+      "branch-heads/*"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/v8/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "last branches",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@stdout@branch-heads/11.1@@@",
+      "@@@STEP_LOG_LINE@stdout@branch-heads/11.2@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "Checking branch 11.2"
   },

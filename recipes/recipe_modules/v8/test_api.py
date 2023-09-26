@@ -85,6 +85,12 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
         stream='stdout',
     )
 
+  def example_latest_branches(self):
+    return self.m.raw_io.stream_output_text(
+        'branch-heads/11.1\nbranch-heads/11.2',
+        stream='stdout',
+    )
+
   def example_build_dependencies(self):
     return self.m.json.output({
       'avg_deps': 1.2,
