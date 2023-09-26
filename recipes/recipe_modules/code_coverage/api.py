@@ -37,8 +37,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self._src_dir = None
     # Path to director containing the build artifacts e.g. <root>/out/coverage
     self._build_dir = None
-    # When set, subset of source files to include in the coverage report.
-    self._eligible_files = []
+    # When set, subset of source files to include in the coverage report for
+    # each tool.
+    self._eligible_files_by_tool = collections.defaultdict(list)
     # When set, indicates that current context is per-cl coverage for try jobs.
     self._is_per_cl_coverage = False
     # The list of profdata gs paths to be uploaded.
@@ -128,6 +129,22 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       self._report_dir = self.m.path.mkdtemp()
     return self._report_dir
 
+  def _all_eligible_files(self):
+    """Generates the list of eligible files of all tools."""
+    all_eligible_files = []
+    for files in self._eligible_files_by_tool.values():
+      all_eligible_files.extend(files)
+    return all_eligible_files
+
+  def _has_eligible_files_for_tool(self, tool):
+    """Checks as a step and returns if any eligible files for a given tool"""
+    if not self._eligible_files_by_tool.get(tool):
+      self.m.step.empty(
+          'skip processing %s coverage data because no related source file changed'
+          % tool)
+      return False
+    return True
+
   def _ensure_metadata_dir(self, test_type, tool_type):
     """Returns a temporary directory for the metadata.
 
@@ -196,7 +213,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               self.src_dir,
               '--output-file',
               local_to_gerrit_diff_mapping_file,
-          ] + self._eligible_files,
+          ] + self._all_eligible_files(),
           timeout=timeout_in_minutes * 60,
           stdout=self.m.json.output())
       self._bot_to_gerrit_mapping_file = local_to_gerrit_diff_mapping_file
@@ -448,7 +465,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
 
   def filter_and_set_eligible_files(self, candidate_files):
-    """Filter candidate_files and assigns them to self._eligible_files
+    """Filter candidate_files and assigns them to self._eligible_files_by_tool
 
     Args:
       candidate_files: A list of string file paths relative to the checkout path
@@ -474,17 +491,17 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       return source_files
 
     if self.use_clang_coverage:
-      self._eligible_files.extend(
+      self._eligible_files_by_tool[constants.tools.CLANG] = (
           _filter_source_file(
               candidate_files,
               constants.TOOLS_TO_EXTENSIONS_MAP[constants.tools.CLANG]))
     if self.use_java_coverage:
-      self._eligible_files.extend(
+      self._eligible_files_by_tool[constants.tools.JACOCO] = (
           _filter_source_file(
               candidate_files,
               constants.TOOLS_TO_EXTENSIONS_MAP[constants.tools.JACOCO]))
     if self.use_javascript_coverage:
-      self._eligible_files.extend(
+      self._eligible_files_by_tool[constants.tools.V8] = (
           _filter_source_file(
               candidate_files,
               constants.TOOLS_TO_EXTENSIONS_MAP[constants.tools.V8]))
@@ -498,11 +515,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         'JS coverage only supports one test type, current types: %s' %
         self._test_types)
 
-  def _set_builder_output_properties_for_uploads(self, has_coverage_data=True):
+  def _set_builder_output_properties_for_uploads(self):
     """Sets the output property of the builder."""
     result = self.m.step.empty('Set builder output properties')
-    if not has_coverage_data:
-      return
     result.presentation.properties['coverage_metadata_gs_paths'] = (
         self._coverage_metadata_gs_paths)
     result.presentation.properties['mimic_builder_names'] = (
@@ -569,7 +584,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         self._skipping_coverage = True
 
       self.filter_and_set_eligible_files(candidate_files)
-      files_to_instrument = self._eligible_files
+      files_to_instrument = self._all_eligible_files()
 
     if not output_dir:
       output_dir = self.m.chromium.output_dir
@@ -609,11 +624,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       return
 
     if self._is_per_cl_coverage:
-      if not self._eligible_files:
-        self.m.step.empty(
-            'skip processing coverage data because no source file changed')
-        self._set_builder_output_properties_for_uploads(has_coverage_data=False)
-        return
       unsupported_projects = self._get_unsupported_projects()
       if unsupported_projects:
         self.m.step.empty(
@@ -732,11 +742,15 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       NOTE: Only one of the two above should be present.
     """
     assert (tests and not binaries) or (not tests and binaries), \
-        'One of tests or binaries must be provided'
+        'One of tests or binaries must be provided for clang coverage'
 
+    if (self._is_per_cl_coverage and
+        not self._has_eligible_files_for_tool(constants.tools.CLANG)):
+      return
     if not self.m.profiles.profile_subdirs:  # pragma: no cover.
       self.m.step.empty(
-          'skip processing coverage data because no profile data collected')
+          'skip processing clang coverage data because no profile data collected'
+      )
       return
 
     with self.m.step.nest(
@@ -795,6 +809,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       test_type (str): Test type to process. e.g. 'overall', 'unit'.
       **kwargs: Kwargs for python and gsutil steps.
     """
+    if (self._is_per_cl_coverage and
+        not self._has_eligible_files_for_tool(constants.tools.JACOCO)):
+      return
     with self.m.step.nest('process java coverage (%s)' % test_type):
       try:
         coverage_dir = self.build_dir.join(constants.JAVA_COVERAGE_DIR)
@@ -815,7 +832,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
         if self._is_per_cl_coverage:
           cmd.append('--source-files')
-          cmd.extend(self._eligible_files)
+          cmd.extend(self._eligible_files_by_tool[constants.tools.JACOCO])
           cmd.extend(['--diff-mapping-path', self.bot_to_gerrit_mapping_file])
         else:
           dir_metadata_path = self._generate_dir_metadata()
@@ -890,6 +907,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       test_type (str): Test type to process. e.g. 'overall', 'unit'.
     Does not upload metadata.
     """
+    if (self._is_per_cl_coverage and
+        not self._has_eligible_files_for_tool(constants.tools.V8)):
+      return
     with self.m.step.nest('process javascript coverage (%s)' % test_type):
       try:
         coverage_dir = self.build_dir.join(constants.JS_COVERAGE_DIR)
@@ -899,7 +919,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         lcov_data = self.m.file.read_text('read lcov.info',
                                           '%s/lcov.info' % coverage_dir)
         any_source_file_cov_available = False
-        for path in self._eligible_files:
+        eligible_files = self._eligible_files_by_tool[constants.tools.V8]
+        for path in eligible_files:
           if path in lcov_data:
             any_source_file_cov_available = True
             break
@@ -921,7 +942,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         ]
         if self._is_per_cl_coverage:
           cmd.append('--source-files')
-          cmd.extend(self._eligible_files)
+          cmd.extend(eligible_files)
           cmd.extend(['--diff-mapping-path', self.bot_to_gerrit_mapping_file])
         else:
           dir_metadata_path = self._generate_dir_metadata()
@@ -1056,7 +1077,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     Returns:
       A list of absolute paths to the binaries with valid coverage data.
     """
-    if not (self._is_per_cl_coverage and self._eligible_files):
+    if not (self._is_per_cl_coverage and
+            self._eligible_files_by_tool[constants.tools.CLANG]):
       # Only gets binaries with valid coverage data for per-cl coverage.
       return binaries
 
@@ -1091,7 +1113,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     Produce a coverage report for the instrumented test targets and upload to
     the appropriate bucket.
     """
-    if not (self._is_per_cl_coverage and self._eligible_files):
+    if not (self._is_per_cl_coverage and
+            self._eligible_files_by_tool[constants.tools.CLANG]):
       # Only upload html report for CQ coverage bots.
       return
 
@@ -1110,7 +1133,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     ]
     cmd.extend(binaries)
     cmd.append('--sources')
-    cmd.extend([self.src_dir.join(s) for s in self._eligible_files])
+    cmd.extend([
+        self.src_dir.join(s)
+        for s in self._eligible_files_by_tool[constants.tools.CLANG]
+    ])
 
     if self.platform == 'ios':
       cmd.extend(['--arch', 'x86_64'])
@@ -1231,7 +1257,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self.m.step('generate coverage metadata', cmd)
 
     self._persist_coverage_artifacts(source_dir=output_dir, test_type=test_type)
-    self._set_builder_output_properties_for_uploads(has_coverage_data=True)
+    self._set_builder_output_properties_for_uploads()
 
   def _compose_gs_path_for_coverage_data(self, data_type, mimic_builder_name):
     build = self.m.buildbucket.build
@@ -1293,7 +1319,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     cmd.extend(binaries)
     if self._is_per_cl_coverage:
       cmd.append('--sources')
-      cmd.extend(self._eligible_files)
+      cmd.extend(self._eligible_files_by_tool[constants.tools.CLANG])
       cmd.extend(['--diff-mapping-path', self.bot_to_gerrit_mapping_file])
     else:
       cmd.extend(['--exclusion-pattern', constants.EXCLUDED_FILE_REGEX])

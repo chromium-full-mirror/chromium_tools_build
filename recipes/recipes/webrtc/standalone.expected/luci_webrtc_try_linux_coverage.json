@@ -2777,7 +2777,7 @@
   },
   {
     "cmd": [],
-    "name": "skip processing coverage data because no profile data collected"
+    "name": "skip processing clang coverage data because no profile data collected"
   },
   {
     "cmd": [],

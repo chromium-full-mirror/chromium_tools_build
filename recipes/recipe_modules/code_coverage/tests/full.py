@@ -408,8 +408,8 @@ def GenTests(api):
       ]),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
       api.post_process(
-          post_process.MustRun,
-          'skip processing coverage data because no source file changed'),
+          post_process.MustRun, 'skip processing v8 coverage data because'
+          ' no related source file changed'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -548,7 +548,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-try-builder',
-          git_repo='https://chromium.googlesource.com/v8/v8'),
+      ),
       ctbc_api.properties(
           ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
               builder_group='fake-group',
@@ -557,8 +557,8 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.properties(files_to_instrument=['some/path/to/non_source_file.txt']),
       api.post_process(
-          post_process.MustRun,
-          'skip processing coverage data because no source file changed'),
+          post_process.MustRun, 'skip processing clang coverage data because'
+          ' no related source file changed'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -730,8 +730,8 @@ def GenTests(api):
       api.properties(files_to_instrument=['some/path/to/non_source_file.txt']),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
       api.post_process(
-          post_process.MustRun,
-          'skip processing coverage data because no source file changed'),
+          post_process.MustRun, 'skip processing jacoco coverage data because'
+          ' no related source file changed'),
       api.post_process(post_process.DropExpectation),
   )
 
