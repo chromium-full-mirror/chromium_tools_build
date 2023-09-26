@@ -2886,6 +2886,8 @@
       "-m",
       "This roll requires a manual review. See http://go/reviewed-rolls for guidance.",
       "-m",
+      "In case of failures or errors, reach out to someone from config/owner/RECORDER_OWNERS.",
+      "-m",
       "\nRoll created at https://cr-buildbucket.appspot.com/build/8945511751514863184",
       "-m",
       "R=anybody@chromium.org,ciciobello@chromium.org"
@@ -2969,8 +2971,7 @@
       "--bypass-hooks",
       "--send-mail",
       "-b",
-      "none",
-      "--r-owners"
+      "none"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_prefixes": {

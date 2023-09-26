@@ -774,12 +774,15 @@ class ScriptedRollHandler(RollHandler):
   def get_subject(self):
     return f'Roll {self.key}'
 
-  def upload_flags(self):
-    return ['--r-owners']
-
   def commit_msg_lines(self, _):
-    return commit_msg_lines_w_reviewes([roll_origin_line(self.api)],
-                                       self.config['reviewers'])
+    return commit_msg_lines_w_reviewes(
+      [
+        'In case of failures or errors, reach out to someone from '
+        'config/owner/RECORDER_OWNERS.',
+        roll_origin_line(self.api)
+      ],
+      self.config['reviewers']
+    )
 
   def summary(self):
     return self.name()
