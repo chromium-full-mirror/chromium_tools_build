@@ -1,8 +1,5 @@
 [
     {
         "builder_group_regex": "(tryserver\\.)?chromium\\.clang(\\..+)?"
-    },
-    {
-        "builder_group_regex": "(tryserver\\.)?chromium\\.perf(\\..+)?"
     }
 ]
