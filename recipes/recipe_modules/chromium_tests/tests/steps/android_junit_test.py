@@ -47,7 +47,7 @@ def RunSteps(api):
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [
         'compile_targets: {!r}'.format(test.compile_targets()),
-        'failures: {!r}'.format(test.failures('')),
+        'failures: {!r}'.format(test.deterministic_failures('')),
         'uses_local_devices: {!r}'.format(test.uses_local_devices),
     ]
   if invalid_suites or failed_suites:

@@ -2009,7 +2009,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """
     status = common_pb.SUCCESS
     for t in test_suites:
-      if not t.has_valid_results(suffix) or t.failures(suffix):
+      if not t.has_valid_results(suffix) or t.deterministic_failures(suffix):
         status = common_pb.FAILURE
       if not t.did_complete(suffix):
         return common_pb.INFRA_FAILURE  # Nothing should override INFRA_FAILURE

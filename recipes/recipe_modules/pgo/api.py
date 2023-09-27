@@ -165,7 +165,8 @@ class PgoApi(recipe_api.RecipeApi):
         # we want to fail this run if any of them fail.
         for suffix in test._rdb_results:
           # Check that each suffix for this test is valid and has no failures
-          if not test.has_valid_results(suffix) or test.failures(suffix):
+          if (not test.has_valid_results(suffix) or
+              test.deterministic_failures(suffix)):
             failed_benchmarks.append(test.name + suffix)
             continue
 

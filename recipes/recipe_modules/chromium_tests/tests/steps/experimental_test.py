@@ -37,9 +37,9 @@ def RunSteps(api):
       api.step('has_valid_results {}'.format(self.step_name(suffix)), [])
       return super().has_valid_results(suffix)
 
-    def failures(self, suffix):
+    def deterministic_failures(self, suffix):
       api.step('failures {}'.format(self.step_name(suffix)), [])
-      return super().failures(suffix)
+      return super().deterministic_failures(suffix)
 
   option_flags = steps.TestOptionFlags.create(
       filter_flag='--filter-flag',
@@ -84,7 +84,6 @@ def RunSteps(api):
   experimental_test.update_rdb_results(suffix, {})
 
   assert experimental_test.has_valid_results('')
-  assert not experimental_test.failures('')
   assert not experimental_test.deterministic_failures('')
 
 

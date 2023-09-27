@@ -192,7 +192,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     """
     if not suite.spec.allowed_failure_percentage:
       return True
-    return (len(suite.failures(suffix)) /
+    return (len(suite.deterministic_failures(suffix)) /
             len(suite.get_rdb_results(suffix).all_tests)
            ) * 100 > suite.spec.allowed_failure_percentage
 

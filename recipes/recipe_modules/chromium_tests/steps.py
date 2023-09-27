@@ -470,11 +470,6 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def failures(self, suffix: str) -> AbstractSet[str]:
-    """Return tests that failed at least once."""
-    raise NotImplementedError()  # pragma: no cover
-
-  @abc.abstractmethod
   def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
     raise NotImplementedError()  # pragma: no cover
 
@@ -867,15 +862,6 @@ class Test(AbstractTest):
       return False
 
     return not self._rdb_results[suffix].invalid
-
-  def failures(self, suffix: str) -> AbstractSet[str]:
-    failure_msg = (
-        'There is no data for the test run suffix ({0}). This should never '
-        'happen as all calls to failures() should first check that the data '
-        'exists.'.format(suffix))
-    assert suffix in self._rdb_results, failure_msg
-    return set(
-        t.test_name for t in self._rdb_results[suffix].unexpected_failing_tests)
 
   def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
     failure_msg = (
@@ -1397,14 +1383,6 @@ class ExperimentalTest(TestWrapper):
     # ignore the result.
     super().failure_on_exit(self._experimental_suffix(suffix))
     return False
-
-  #override
-  def failures(self, suffix: str) -> AbstractSet[str]:
-    if self._actually_has_valid_results(suffix):
-      # Call the wrapped test's implementation in case it has side effects,
-      # but ignore the result.
-      super().failures(self._experimental_suffix(suffix))
-    return []
 
   #override
   def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
@@ -2829,14 +2807,10 @@ class MockTest(AbstractSwarmingTest, Test):
       return self.spec.per_suffix_valid[suffix]
     return self.spec.has_valid_results
 
-  def failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
     if suffix in self.spec.per_suffix_failures:  # pragma: no cover
       return self.spec.per_suffix_failures[suffix]
     return set(self._failures)
-
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
-    """Use same logic as failures for the Mock test."""
-    return self.failures(suffix)
 
   def compile_targets(self) -> Iterable[str]:  # pragma: no cover
     return []
