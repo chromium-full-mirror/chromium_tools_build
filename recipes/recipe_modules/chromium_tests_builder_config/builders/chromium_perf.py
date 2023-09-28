@@ -334,6 +334,7 @@ _AddIsolatedTestSpec(
     'mac-m1-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
 _AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
+_AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf-rel', 'linux', 'linux-builder-perf-rel')
 
 _AddIsolatedTestSpec(
@@ -354,6 +355,7 @@ _AddIsolatedTestSpec(
 
 # Perf result processors
 _AddIsolatedTestSpec('linux-processor-perf', 'linux', 'linux-perf')
+_AddIsolatedTestSpec('linux-r350-processor-perf', 'linux', 'linux-r350-perf')
 
 _AddIsolatedTestSpec(
     'android-go-processor-perf', 'android', 'android-go-perf', target_bits=32)
