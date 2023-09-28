@@ -418,6 +418,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           ['.*blink_web_tests', 'content_shell'],
           ['.*blink_wpt_tests', 'content_shell'],
           ['content_shell_wpt', 'content_shell'],
+          ['chrome_wpt_tests', 'content_shell'],
           ['.*_ozone', target[:-len('_ozone')]],
           ['.*_eg2tests_module', 'ios_chrome_eg2tests'],
           ['.*', target],
