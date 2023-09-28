@@ -119,7 +119,7 @@ TRUSTED_ORIGIN_DEPS = {
 
 BASE_URL = 'https://chromium.googlesource.com/'
 CIPD_DEP_URL_PREFIX = 'https://chrome-infra-packages.appspot.com/'
-CHROMIUM_PIN_CL_SUBJECT = 'Update Chromium PINS'
+CFT_PIN_CL_SUBJECT = 'Update Chrome (for Testing) PIN'
 GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
 MAX_COMMIT_LOG_ENTRIES = 8
 STORAGE_URL = ('https://commondatastorage.googleapis.com/'
@@ -656,7 +656,8 @@ class UntrustedRollHandler(DEPSRollHandler):
                                        self.config['reviewers'])
 
 
-class ChromiumPinRollHandler(RollHandler):
+class CfTPinRollHandler(RollHandler):
+  """Chrome for Testing pin roller."""
 
   def __init__(self, api, autoroller_config):
     super().__init__(api, autoroller_config)
@@ -709,7 +710,7 @@ class ChromiumPinRollHandler(RollHandler):
                         self.version_tuple(latest))
 
   def get_subject(self):
-    return CHROMIUM_PIN_CL_SUBJECT
+    return CFT_PIN_CL_SUBJECT
 
   def upload_flags(self):
     return ['--set-bot-commit']
@@ -834,7 +835,7 @@ def RunSteps(api, autoroller_config):
   with api.step.nest('Check failed deps'):
     handle_failed_deps(api, failed)
 
-  ChromiumPinRollHandler(api, autoroller_config).roll(summary)
+  CfTPinRollHandler(api, autoroller_config).roll(summary)
 
   if autoroller_config['scripted_rolls']:
     with api.step.nest('Scripted rolls'):

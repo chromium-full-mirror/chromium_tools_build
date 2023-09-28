@@ -2250,7 +2250,7 @@
       "-p",
       "status=open",
       "-p",
-      "subject=\"Update Chromium PINS\""
+      "subject=\"Update Chrome (for Testing) PIN\""
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {
