@@ -61,8 +61,9 @@ def fetch_files_content(host, project, change, patchset, file_paths):
 
   result = []
   for file_path in file_paths:
-    result.append(
-        _fetch_file_content(host, change_id, patchset_revision, file_path))
+    content = _fetch_file_content(host, change_id, patchset_revision, file_path)
+    if content:
+      result.append(content)
 
   return result
 
@@ -86,8 +87,12 @@ def _fetch_file_content(host, change_id, revision, file_path):
   url = 'https://%s/changes/%s/revisions/%s/files/%s/content' % (
       host, change_id, revision, quoted_file_path)
   response = _retry_url_open(url)
-  content = base64.b64decode(response.read())
-  return content.decode()
+  try:
+    content = base64.b64decode(response.read())
+    return content.decode()
+  except UnicodeDecodeError:
+    logging.error("Unable to decode content from gerrit")
+    return
 
 
 def _retry_url_open(url):
