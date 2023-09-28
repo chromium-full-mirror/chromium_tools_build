@@ -309,16 +309,6 @@ class _CiTesterPropertiesAssembler:
     return self._props_assembler.assemble()
 
 
-_RTS_CONDITION_MAP = {
-    NEVER:
-        properties_pb.BuilderConfig.RtsConfig.Condition.NEVER,
-    QUICK_RUN_ONLY:
-        properties_pb.BuilderConfig.RtsConfig.Condition.QUICK_RUN_ONLY,
-    ALWAYS:
-        properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS,
-}
-
-
 class _TryBuilderPropertiesAssembler:
 
   def __init__(self, props_assembler, builder_config_kwargs):

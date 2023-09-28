@@ -263,27 +263,8 @@ message BuilderConfig {
   // Whether or not failed test suites should be retried without patch
   optional bool retry_without_patch = 8;
 
-  // Configuration for RTS execution, see http://bit.ly/chromium-rts
-  //
-  // Next ID: 3
-  message RtsConfig {
-    // When RTS should be used
-    enum Condition {
-      CONDITION_UNSPECIFIED = 0;
-      // RTS will never be used for the builder.
-      NEVER = 1;
-      // RTS will be used if the build is for a CQ Quick Run.
-      QUICK_RUN_ONLY = 2;
-      // RTS will always be used for the builder.
-      ALWAYS = 3;
-    }
-    Condition condition = 1;
-
-    // A value indicating how likely the RTS run's success result should match a
-    // non-RTS run
-    float recall = 2;
-  }
-  RtsConfig rts_config = 9;
+  reserved 9;
+  reserved "rts_config";
 }
 
 // Module properties

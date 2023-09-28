@@ -203,11 +203,6 @@ def _validate_builder_group_and_name(obj, ctx):
   ctx.validate_field(obj, 'builder')
 
 
-@VALIDATORS.register(properties_pb.BuilderConfig.RtsConfig)
-def _validate_rts_config(obj, ctx):
-  ctx.validate_field(obj, 'condition')
-
-
 @VALIDATORS.register(properties_pb.BuilderConfig)
 def _validate_builder_config(obj, ctx):
   builders = set(
@@ -229,17 +224,6 @@ def _validate_builder_config(obj, ctx):
       callback=check_builder_id_in_db)
   ctx.validate_repeated_field(
       obj, 'mirroring_builder_group_and_names', optional=True)
-  ctx.validate_field(obj, 'rts_config', optional=True)
-
-
-_RTS_CONDITION_MAP = {
-    properties_pb.BuilderConfig.RtsConfig.Condition.NEVER:
-        NEVER,
-    properties_pb.BuilderConfig.RtsConfig.Condition.QUICK_RUN_ONLY:
-        QUICK_RUN_ONLY,
-    properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS:
-        ALWAYS,
-}
 
 
 def convert_builder_config(obj):

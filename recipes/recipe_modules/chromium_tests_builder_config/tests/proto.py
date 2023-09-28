@@ -212,16 +212,6 @@ def RunSteps(api):
           builder='builder',
       ))
 
-  # RtsConfig
-  assert_invalid(
-      BuilderConfig.RtsConfig(),
-      '$test.condition is not set',
-  )
-
-  assert_valid(
-      BuilderConfig.RtsConfig(
-          condition=BuilderConfig.RtsConfig.Condition.NEVER))
-
   # BuilderConfig
   assert_invalid(
       BuilderConfig(),
@@ -257,7 +247,6 @@ def RunSteps(api):
           mirroring_builder_group_and_names=[
               BuilderConfig.BuilderGroupAndName(group='group'),
           ],
-          rts_config=BuilderConfig.RtsConfig(),
       ),
       '$test.builder_db.entries is empty',
       '$test.builder_ids[0].builder is not set',
@@ -266,7 +255,6 @@ def RunSteps(api):
       ('there is no entry in $test.builder_db for'
        ' $test.builder_ids_in_scope_for_testing[1]'),
       '$test.mirroring_builder_group_and_names[0].builder is not set',
-      '$test.rts_config.condition is not set',
   )
 
   assert_valid(

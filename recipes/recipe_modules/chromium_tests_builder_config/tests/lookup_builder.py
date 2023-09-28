@@ -243,9 +243,6 @@ def GenTests(api):
                   ],
                   targets_spec_directory=('src/infra/config/generated/builders/'
                                           'ci/fake-builder/targets'),
-                  rts_config=properties_pb.BuilderConfig.RtsConfig(
-                      condition=properties_pb.BuilderConfig.RtsConfig.Condition
-                      .ALWAYS),
                   additional_exclusions=[
                       'fake-group/fake-builder/gn-args.json',
                   ],
