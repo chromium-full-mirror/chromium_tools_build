@@ -96,6 +96,22 @@ def x86_builder(_):
 def x86_builder_mb(_):
   pass
 
+
+@config_ctx()
+def riscv64_base(_):
+  pass
+
+
+@config_ctx(includes=['riscv64_base'])
+def riscv64_builder(_):
+  pass
+
+
+@config_ctx(includes=['riscv64_builder'])
+def riscv64_builder_mb(_):
+  pass
+
+
 @config_ctx()
 def mipsel_base(_):
   pass

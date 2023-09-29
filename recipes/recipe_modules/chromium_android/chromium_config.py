@@ -39,6 +39,24 @@ def clang_builder(c):
 def clang_builder_mb(_):
   pass
 
+
+@CONFIG_CTX(
+    includes=['base_config', 'default_compiler', 'goma'],
+    config_vars={
+        'TARGET_ARCH': 'riscv64',
+        'TARGET_BITS': 64
+    })
+def riscv64_builder(c):
+  if c.TARGET_ARCH != 'riscv64':  # pragma: no cover
+    raise recipe_config.BadConf('Cannot target riscv64 with TARGET_ARCH == %s' %
+                                c.TARGET_ARCH)
+
+
+@CONFIG_CTX(includes=['riscv64_builder', 'mb'])
+def riscv64_builder_mb(_):
+  pass
+
+
 @CONFIG_CTX(includes=['base_config', 'default_compiler', 'goma'],
             config_vars={'TARGET_ARCH': 'intel'})
 def x86_builder(c):

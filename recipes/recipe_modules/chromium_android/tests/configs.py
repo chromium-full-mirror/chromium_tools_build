@@ -86,6 +86,14 @@ def GenTests(api):
   )
 
   yield api.test(
+      'riscv64_builder_mb',
+      api.properties(
+          android_apply_config=['riscv64_builder_mb'],
+          chromium_config='riscv64_builder_mb'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'mipsel_builder_mb',
       api.properties(
           android_apply_config=['mipsel_builder_mb'],

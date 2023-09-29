@@ -1108,6 +1108,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         ('arm', 64): 'arm64',
         ('mips', 32): 'mips',
         ('mipsel', 32): 'mipsel',
+        ('riscv64', 64): 'riscv64',
     }.get((self.c.TARGET_ARCH, self.c.TARGET_BITS))
     if gn_cpu:
       gn_args.append('target_cpu="%s"' % gn_cpu)
