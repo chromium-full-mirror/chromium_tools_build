@@ -28,20 +28,20 @@ Please examine logs to figure out what happened.
 class BadShards:
 
   def __init__(self):
-    self.missing = []
-    self.incomplete = []
+    self.missing = set()
+    self.incomplete = set()
 
   def add_incomplete(self, shard):
-    self.incomplete.append(shard)
+    self.incomplete.add(shard)
 
   def add_missing(self, shard):
-    self.missing.append(shard)
+    self.missing.add(shard)
 
   def not_empty(self):
     return self.missing or self.incomplete
 
   def as_str(self):
-    return ', '.join(map(str, sorted(self.missing + self.incomplete)))
+    return ', '.join(map(str, sorted(self.missing | self.incomplete)))
 
   def missing_count(self):
     return len(self.missing)
@@ -112,17 +112,30 @@ class TaskCollector:
     aggregated_results = AggregatedResults(options.slow_tests_cutoff)
     bad_shards = BadShards()
     for index, result in enumerate(shards):
-      if result is not None:
-        if int(result.get('exit_code', 0)):
-          # When receiving a sigterm, the test runner terminates gracefully
-          # with json output, but has a non-zero return code.
-          bad_shards.add_incomplete(index)
-        json_data = self.load_shard_json(
-            output_dir, result['task_id'], 'output.json')
-        if json_data:
-          aggregated_results.append(json_data)
-          continue
-      bad_shards.add_missing(index)
+      if result is None:
+        # Bot died, or anything that aborts the task ungracefully.
+        bad_shards.add_missing(index)
+        continue
+      exit_code = result.get('exit_code')
+      if exit_code is None:
+        # Unclear if this can happen. Bot returnes a result, but doesn't
+        # populate the exit code, which would be an internal infra failure.
+        bad_shards.add_missing(index)
+        continue
+      exit_code = int(exit_code)
+      if exit_code > 1:
+        # When receiving a sigterm, the test runner terminates gracefully
+        # with json output, but has a return code > 1.
+        bad_shards.add_incomplete(index)
+      json_data = self.load_shard_json(
+          output_dir, result['task_id'], 'output.json')
+      if json_data:
+        # The happy case. We have results, also after sigterm.
+        aggregated_results.append(json_data)
+      else:
+        # Unclear if this can happen. When the test-runner returns, it should
+        # also add the json output.
+        bad_shards.add_incomplete(index)
 
     # If some shards are missing, make it known. Continue parsing anyway. Step
     # should be red anyway, since swarming.py return non-zero exit code in that
@@ -133,17 +146,6 @@ class TaskCollector:
       as_str = bad_shards.as_str()
       self.emit_warning('some shards did not complete: %s' % as_str,
                    MISSING_SHARDS_MSG % as_str)
-
-    # Handle the case when all shards fail. Return minimalistic dict that has
-    # all fields that a calling recipe expects to avoid recipe-level
-    # exceptions.
-    if bad_shards.missing_count() == len(shards):
-      return {
-          'slowest_tests': [],
-          'results': [],
-          'tags': sorted(tags),
-          'test_total': 0
-      }
 
     return aggregated_results.as_json(tags)
 

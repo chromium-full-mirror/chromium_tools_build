@@ -14,20 +14,20 @@ class BadShardsTestCase(unittest.TestCase):
 
   def test_initiate_bad_shards(self):
     bad_shards = collect_v8_task.BadShards()
-    self.assertEqual(bad_shards.missing, [])
-    self.assertEqual(bad_shards.incomplete, [])
+    self.assertEqual(bad_shards.missing, set())
+    self.assertEqual(bad_shards.incomplete, set())
 
   def test_add_incomplete_shard(self):
     bad_shards = collect_v8_task.BadShards()
     bad_shards.add_incomplete('example')
-    self.assertEqual(bad_shards.missing, [])
-    self.assertEqual(bad_shards.incomplete, ['example'])
+    self.assertEqual(bad_shards.missing, set())
+    self.assertEqual(bad_shards.incomplete, set(['example']))
 
   def test_add_missing_shard(self):
     bad_shards = collect_v8_task.BadShards()
     bad_shards.add_missing('example')
-    self.assertEqual(bad_shards.missing, ['example'])
-    self.assertEqual(bad_shards.incomplete, [])
+    self.assertEqual(bad_shards.missing, set(['example']))
+    self.assertEqual(bad_shards.incomplete, set())
 
   def test_check_bad_shards_not_empty(self):
     bad_shards = collect_v8_task.BadShards()
@@ -151,6 +151,7 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
     shard_results = task_collector.merge_shard_results(
         output_dir='/', shards=None, options=None)
     self.assertIsNone(shard_results)
+    self.assertEqual(task_collector.warnings, [])
 
   def test_merge_shard_output(self):
     self.setUpPyfakefs(allow_root_user=True)
@@ -164,71 +165,106 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
     loaded_shard = task_collector.load_shard_json(
         output_dir='/', task_id='123', file_name='example_shard.json')
     self.assertEqual(loaded_shard, {"result": "example result"})
+    self.assertEqual(task_collector.warnings, [])
 
   def test_merge_shard_output_exception(self):
     task_collector = collect_v8_task.TaskCollector()
     loaded_shard = task_collector.load_shard_json(
         output_dir='/', task_id='123', file_name='example_shard.json')
     self.assertIsNone(loaded_shard)
+    self.assertEqual(task_collector.warnings, [])
 
-  def test_merge_shard_results_when_all_shards_fail(self):
+  def create_json_file(self, name, content):
+    self.fs.create_file(name)
+    with open(name, 'w') as f:
+      json.dump(content, f)
+
+  def setup_shard_output(self, output1, output2):
+    self.setUpPyfakefs(allow_root_user=True)
+    self.create_json_file('/1/output.json', output1)
+    self.create_json_file('/2/output.json', output2)
+
+  def create_options(self):
     Options = collections.namedtuple('options', ['slow_tests_cutoff'])
-    example_options = Options(slow_tests_cutoff=10)
-    example_shards = [{
-        'task_id': 'a',
-        'exit_code': 0
+    return Options(slow_tests_cutoff=10)
+
+  def test_merge_shard_results_success(self):
+    shards = [{
+        'task_id': '1',
+        'exit_code': 1,
     }, {
-        'task_id': 'b',
-        'exit_code': 1
+        'task_id': '2',
+        'exit_code': 0,
     }]
+    self.setup_shard_output(
+        {
+            'slowest_tests': [{'name': 'foo', 'duration': 0.1}],
+            'results': ['flake'],
+            'test_total': 1,
+        },
+        {
+            'slowest_tests': [{'name': 'bar', 'duration': 2.4}],
+            'results': [],
+            'test_total': 1},
+        )
     task_collector = collect_v8_task.TaskCollector()
     merged_shard_result = task_collector.merge_shard_results(
-        output_dir='/', shards=example_shards, options=example_options)
+        output_dir='/', shards=shards, options=self.create_options())
+    self.assertEqual(
+        merged_shard_result, {
+            'slowest_tests': [
+                {'name': 'bar', 'duration': 2.4},
+                {'name': 'foo', 'duration': 0.1},
+            ],
+            'results': ['flake'],
+            'tags': [],
+            'test_total': 2,
+        })
+    self.assertEqual(task_collector.warnings, [])
+
+  def test_merge_shard_results_one_missing(self):
+    shards = [{'task_id': '1', 'exit_code': 0}, None]
+    self.setup_shard_output(
+        {'slowest_tests': [], 'results': [], 'test_total': 5},
+        {})
+    task_collector = collect_v8_task.TaskCollector()
+    merged_shard_result = task_collector.merge_shard_results(
+        output_dir='/', shards=shards, options=self.create_options())
     self.assertEqual(
         merged_shard_result, {
             'slowest_tests': [],
             'results': [],
             'tags': ['UNRELIABLE_RESULTS'],
-            'test_total': 0
+            'test_total': 5,
         })
+    self.assertEqual(
+        task_collector.warnings[0][0],
+        'some shards did not complete: 1')
 
-  def test_merge_test_results(self):
-    example_shards = [{
-        'task_id': 'a',
-        'exit_code': 0
+  def test_merge_shard_results_all_incomplete(self):
+    shards = [{
+        'task_id': '1',
+        'exit_code': 2,
     }, {
-        'task_id': 'b',
-        'exit_code': 1
+        'task_id': '2',
+        'exit_code': 2,
     }]
-    example_merged_test_output = {
-        'slowest_tests': [],
-        'results': [],
-        'tags': ['UNRELIABLE_RESULTS'],
-        'test_total': 0
-    }
-
-    self.setUpPyfakefs(allow_root_user=True)
-    self.fs.create_file('/merged_output.json')
-
-    with open('/merged_output.json', 'w') as f:
-      json.dump(example_merged_test_output, f)
-
-    Options = collections.namedtuple(
-        'options', ['merged_test_output', 'slow_tests_cutoff'])
-    example_options = Options(
-        merged_test_output='/merged_output.json', slow_tests_cutoff=10)
+    self.setup_shard_output(
+        {'slowest_tests': [], 'results': [], 'test_total': 3},
+        {'slowest_tests': [], 'results': [], 'test_total': 4})
     task_collector = collect_v8_task.TaskCollector()
-    task_collector.merge_test_results(
-        output_dir='/', shards=example_shards, options=example_options)
-
-    with open(example_options.merged_test_output, 'r') as f:
-      self.assertEqual(
-          json.load(f), {
-              'slowest_tests': [],
-              'results': [],
-              'tags': ['UNRELIABLE_RESULTS'],
-              'test_total': 0
-          })
+    merged_shard_result = task_collector.merge_shard_results(
+        output_dir='/', shards=shards, options=self.create_options())
+    self.assertEqual(
+        merged_shard_result, {
+            'slowest_tests': [],
+            'results': [],
+            'tags': ['UNRELIABLE_RESULTS'],
+            'test_total': 7,
+        })
+    self.assertEqual(
+        task_collector.warnings[0][0],
+        'some shards did not complete: 0, 1')
 
 
 if __name__ == '__main__':
