@@ -141,6 +141,7 @@ class DevToolsTests(ABC):
 class UnitTests(DevToolsTests):
 
   def trigger(self):
+    shuffle = ['--shuffle'] if self.api.devtools.is_shuffled_run() else []
     with self.api.step.nest(f'Trigger {self.step_name}'):
       self.tasks = self.api.devtools.trigger_test_swarming_tasks(
           step_name=self.step_name,
@@ -153,7 +154,7 @@ class UnitTests(DevToolsTests):
               '--coverage',
               '--swarming-output-file',
               '${ISOLATED_OUTDIR}',
-          ]],
+          ] + shuffle],
       )
 
   def process_results(self):
