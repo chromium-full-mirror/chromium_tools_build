@@ -542,7 +542,9 @@
       "enable-platform",
       "platform1",
       "--description",
-      "testing"
+      "testing",
+      "--sheriff-rotation",
+      "sheriff-rotation"
     ],
     "cwd": "[CACHE]/builder/project",
     "luci_context": {
@@ -568,7 +570,9 @@
       "enable-platform",
       "platform2",
       "--description",
-      "testing"
+      "testing",
+      "--sheriff-rotation",
+      "sheriff-rotation"
     ],
     "cwd": "[CACHE]/builder/project",
     "luci_context": {

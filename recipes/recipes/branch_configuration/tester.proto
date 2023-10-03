@@ -6,7 +6,7 @@ syntax = "proto3";
 package recipes.build.branch_configuration.tester;
 
 message BranchConfig {
-  // Next ID: 4
+  // Next ID: 5
 
   reserved 2;
   reserved "branch_types";
@@ -22,6 +22,9 @@ message BranchConfig {
   // The platforms must be strings that can be present in the platforms dict of
   // the project's settings.json.
   repeated string platforms = 3;
+
+  // A sheriff_rotation to apply to the platforms being enabled.
+  string sheriff_rotation = 4;
 }
 
 message InputProperties {

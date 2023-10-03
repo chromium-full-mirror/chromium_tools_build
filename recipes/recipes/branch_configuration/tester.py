@@ -135,6 +135,12 @@ def RunSteps(api, properties):
     branch_script = repo_path.join(properties.branch_script)
     for branch_config in properties.branch_configs:
       with api.step.nest(branch_config.name):
+        sheriff_rotation_args = []
+        if branch_config.sheriff_rotation:
+          sheriff_rotation_args = [
+              '--sheriff-rotation',
+              branch_config.sheriff_rotation,
+          ]
         for p in branch_config.platforms:
           api.step(f'enable {p}', [
               branch_script,
@@ -142,6 +148,7 @@ def RunSteps(api, properties):
               p,
               '--description',
               'testing',
+              *sheriff_rotation_args,
           ])
 
         with api.step.nest('verify'):
@@ -185,6 +192,7 @@ def GenTests(api):
                   tester_pb.BranchConfig(
                       name='branch-config3',
                       platforms=['platform1', 'platform2'],
+                      sheriff_rotation='sheriff-rotation',
                   ),
               ],
               starlark_entry_points=[
@@ -217,12 +225,28 @@ def GenTests(api):
       api.post_check(post_process.StepCommandContains,
                      'branch-config2.enable platform2',
                      ['platform2', '--description', 'testing']),
-      api.post_check(post_process.StepCommandContains,
-                     'branch-config3.enable platform1',
-                     ['platform1', '--description', 'testing']),
-      api.post_check(post_process.StepCommandContains,
-                     'branch-config3.enable platform2',
-                     ['platform2', '--description', 'testing']),
+      api.post_check(
+          post_process.StepCommandContains,
+          'branch-config3.enable platform1',
+          [
+              'platform1',
+              '--description',
+              'testing',
+              '--sheriff-rotation',
+              'sheriff-rotation',
+          ],
+      ),
+      api.post_check(
+          post_process.StepCommandContains,
+          'branch-config3.enable platform2',
+          [
+              'platform2',
+              '--description',
+              'testing',
+              '--sheriff-rotation',
+              'sheriff-rotation',
+          ],
+      ),
   )
 
   yield api.test(
