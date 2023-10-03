@@ -17,13 +17,13 @@ provides no guarantees about the effect of the generated configuration
 files, only that they can be generated.
 
 To run this, the repo against which the recipe is run must have a script
-that can be used to change the branch type of the configuration and
-scripts that can be used to verify that the configuration "works". It is
-not necessarily feasible to ensure that the configuration has the
-desired effects, but at a minimum the starlark scripts can be executed
-to verify that the configuration can be generated for the different
-branch types with the change under test. See tester.proto for details on
-the scripts.
+that can be used to change what platforms are enabled for the
+configuration and scripts that can be used to verify that the
+configuration "works". It is not necessarily feasible to ensure that the
+configuration has the desired effects, but at a minimum the starlark
+scripts can be executed to verify that the configuration can be
+generated for the different platforms with the change under test. See
+tester.proto for details on the scripts.
 """
 
 from recipe_engine import post_process
@@ -77,15 +77,11 @@ def _validate_properties(properties):
       else:
         config_map.setdefault(config.name, []).append(i)
 
-      if not config.branch_types and not config.platforms:
-        errors.append(
-            f'branch_configs[{i}] sets neither branch_types nor platforms')
-      elif config.branch_types and config.platforms:
-        errors.append(
-            f'branch_configs[{i}] sets both branch_types and platforms')
+      if not config.platforms:
+        errors.append(f'branch_configs[{i}].platforms is empty')
       else:
-        validate_repeated_field('branch_configs[{}].branch_types'.format(i),
-                                config.branch_types)
+        validate_repeated_field(f'branch_configs[{i}].platforms',
+                                config.platforms)
 
     for config, indices in config_map.items():
       if len(indices) > 1:
@@ -139,20 +135,14 @@ def RunSteps(api, properties):
     branch_script = repo_path.join(properties.branch_script)
     for branch_config in properties.branch_configs:
       with api.step.nest(branch_config.name):
-        if branch_config.platforms:
-          for p in branch_config.platforms:
-            api.step(f'enable {p}', [
-                branch_script,
-                'enable-platform',
-                p,
-                '--description',
-                'testing',
-            ])
-        else:
-          set_type_cmd = [branch_script, 'set-type']
-          for t in branch_config.branch_types:
-            set_type_cmd.extend(['--type', t])
-          api.step('set branch type', set_type_cmd, infra_step=True)
+        for p in branch_config.platforms:
+          api.step(f'enable {p}', [
+              branch_script,
+              'enable-platform',
+              p,
+              '--description',
+              'testing',
+          ])
 
         with api.step.nest('verify'):
           try:
@@ -236,61 +226,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'basic-branch-types',
-      api.buildbucket.try_build(),
-      api.properties(
-          tester_pb.InputProperties(
-              branch_script='branch-script',
-              branch_configs=[
-                  tester_pb.BranchConfig(
-                      name='branch-config1',
-                      branch_types=['branch-type1'],
-                  ),
-                  tester_pb.BranchConfig(
-                      name='branch-config2',
-                      branch_types=['branch-type2'],
-                  ),
-                  tester_pb.BranchConfig(
-                      name='branch-config3',
-                      branch_types=['branch-type1', 'branch-type2'],
-                  ),
-              ],
-              starlark_entry_points=[
-                  'entry-point1.star',
-                  'entry-point2.star',
-              ],
-          )),
-      api.post_check(
-          post_process.MustRun,
-          'branch-config1.set branch type',
-          'branch-config1.verify.lucicfg generate entry-point1.star',
-          'branch-config1.verify.lucicfg validate entry-point1.star',
-          'branch-config1.verify.lucicfg generate entry-point2.star',
-          'branch-config1.verify.lucicfg validate entry-point2.star',
-          'branch-config2.set branch type',
-          'branch-config2.verify.lucicfg generate entry-point1.star',
-          'branch-config2.verify.lucicfg validate entry-point1.star',
-          'branch-config2.verify.lucicfg generate entry-point2.star',
-          'branch-config2.verify.lucicfg validate entry-point2.star',
-          'branch-config3.set branch type',
-          'branch-config3.verify.lucicfg generate entry-point1.star',
-          'branch-config3.verify.lucicfg validate entry-point1.star',
-          'branch-config3.verify.lucicfg generate entry-point2.star',
-          'branch-config3.verify.lucicfg validate entry-point2.star',
-      ),
-      api.post_check(post_process.StepCommandContains,
-                     'branch-config1.set branch type',
-                     ['--type', 'branch-type1']),
-      api.post_check(post_process.StepCommandContains,
-                     'branch-config2.set branch type',
-                     ['--type', 'branch-type2']),
-      api.post_check(post_process.StepCommandContains,
-                     'branch-config3.set branch type',
-                     ['--type', 'branch-type1', '--type', 'branch-type2']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'failed enable platform step',
       api.buildbucket.try_build(),
       api.properties(
@@ -314,29 +249,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'failed set branch type step',
-      api.buildbucket.try_build(),
-      api.properties(
-          tester_pb.InputProperties(
-              branch_script='branch-script',
-              branch_configs=[
-                  tester_pb.BranchConfig(
-                      name='bad-branch-config',
-                      branch_types=['bad-branch-type'],
-                  ),
-              ],
-              starlark_entry_points=[
-                  'entry-point1.star',
-                  'entry-point2.star',
-              ],
-          )),
-      api.step_data('bad-branch-config.set branch type', retcode=1),
-      api.post_check(post_process.StepException, 'bad-branch-config'),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'failed verification step',
       api.buildbucket.try_build(),
       api.properties(
@@ -345,15 +257,15 @@ def GenTests(api):
               branch_configs=[
                   tester_pb.BranchConfig(
                       name='branch-config1',
-                      branch_types=['branch-type1'],
+                      platforms=['platform1'],
                   ),
                   tester_pb.BranchConfig(
                       name='branch-config2',
-                      branch_types=['branch-type2'],
+                      platforms=['platform2'],
                   ),
                   tester_pb.BranchConfig(
                       name='branch-config3',
-                      branch_types=['branch-type3'],
+                      platforms=['platform3'],
                   ),
               ],
               starlark_entry_points=[
@@ -414,10 +326,6 @@ def GenTests(api):
               branch_script='branch-script',
               branch_configs=[
                   tester_pb.BranchConfig(),
-                  tester_pb.BranchConfig(
-                      branch_types=['foo'],
-                      platforms=['bar'],
-                  ),
                   tester_pb.BranchConfig(name='branch-config'),
                   tester_pb.BranchConfig(name='branch-config'),
               ],
@@ -429,10 +337,9 @@ def GenTests(api):
           )),
       invalid_properties(
           r'\bbranch_configs\[0\].name is empty\b',
-          r'\bbranch_configs\[0\] sets neither branch_types nor platforms\b',
-          r'\bbranch_configs\[1\] sets both branch_types and platforms\b',
+          r'\bbranch_configs\[0\].platforms is empty\b',
           (r"\bmultiple configs named 'branch-config' "
-           r'in branch_configs: \[2, 3\]'),
+           r'in branch_configs: \[1, 2\]'),
           r'\bstarlark_entry_points\[0\] is empty\b',
           (r"\bmultiple occurrences of 'entry-point.star' "
            r'in starlark_entry_points: \[1, 2\]'),

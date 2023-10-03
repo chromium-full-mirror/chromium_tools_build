@@ -8,22 +8,14 @@ package recipes.build.branch_configuration.tester;
 message BranchConfig {
   // Next ID: 4
 
+  reserved 2;
+  reserved "branch_types";
+
   // Required, the name to identify the configuration.
   //
   // The name is arbitrary and is only used for display and human
   // identification.
   string name = 1;
-
-  // Exactly one of branch_types or platforms must be set
-
-  // Required, the branch types to set for the configuration.
-  //
-  // The branch types must be strings that can be passed as values for the
-  // --type flag to script identified by branch_script in InputProperties.
-  //
-  // DEPRECATED: the project should be updated to use platform based selectors
-  // and switch to using the platforms field.
-  repeated string branch_types = 2;
 
   // Required, the platforms to set for the configuration.
   //
