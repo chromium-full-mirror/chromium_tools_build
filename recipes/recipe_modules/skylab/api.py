@@ -177,8 +177,10 @@ class SkylabApi(recipe_api.RecipeApi):
             test_args.append('test_args_b64=%s' %
                              _base64_encode_str(' '.join(t.spec.test_args)))
 
+          test_retries = '2'
           if t.spec.test_level_retries != None:
-            test_args.append('retries=%s' % str(int(t.spec.test_level_retries)))
+            test_retries = t.spec.test_level_retries
+          test_args.append('retries=%s' % test_retries)
 
           if t.exe_rel_path:
             test_args.append('exe_rel_path=%s' % t.exe_rel_path)
