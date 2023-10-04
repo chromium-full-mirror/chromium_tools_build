@@ -194,7 +194,52 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile with ninja"
+    "name": "compile default targets with ninja"
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "--root=[CACHE]/builder/dawn",
+      "gen",
+      "//out/1e0b0b1b8eec08913eba5ef230bc9a55b751e345",
+      "--args=is_debug=false is_clang=false is_component_build=false dawn_use_swiftshader=false use_libfuzzer=true use_asan=false tint_build_spv_reader=true tint_build_spv_writer=true tint_build_wgsl_reader=true tint_build_wgsl_writer=true tint_build_msl_writer=true tint_build_hlsl_writer=true"
+    ],
+    "cwd": "[CACHE]/builder/dawn",
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gn gen (2)"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/dawn/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/builder/dawn/out/1e0b0b1b8eec08913eba5ef230bc9a55b751e345",
+      "fuzzers"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "compile fuzzer targets with ninja"
   },
   {
     "cmd": [
@@ -218,7 +263,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gn gen (2)"
+    "name": "gn gen (3)"
   },
   {
     "cmd": [
@@ -239,7 +284,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile with ninja (2)"
+    "name": "compile component build with Swiftshader with ninja"
   },
   {
     "cmd": [
