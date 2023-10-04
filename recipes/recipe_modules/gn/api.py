@@ -194,13 +194,13 @@ class GnApi(recipe_api.RecipeApi):
       step_name: Optional recipe step name to give to the "gn desc" command.
       kwargs: Other arguments passed to the underlying python step.
     Returns:
-      The set of dependencies found.
+      The list of dependencies found.
     """
     cmd = ['desc', build_dir, label_or_pattern, what_to_show]
 
     step_result = self._gn_cmd(step_name, cmd, log_name='desc', **kwargs)
     output = step_result.stdout
-    return set(output.splitlines())
+    return list(output.splitlines())
 
   def ls(self, build_dir, inputs, output_type=None, output_format='label',
          step_name='list gn targets'):

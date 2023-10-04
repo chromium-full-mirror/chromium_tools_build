@@ -346,6 +346,40 @@ def copy_path(api, path_name):
     api.file.copytree('copying directory:' + str(src), src, dest)
 
 
+def extract_paths_to_copy(list_of_runtime_deps, set_of_gn_targets):
+  """Get the subset of runtime dependencies for the specified targets.
+
+  The list of runtime dependencies has the following format:
+  some compiler warning
+  some compiler warning2
+  Target target1
+  runtime deps
+    ./path/to/dependency1
+    ../../path/to/dependency2
+  Target target2
+  runtime deps
+    ./path/to/dependency3
+    ../../path/to/dependency4
+  """
+  result = set()
+  size = len(list_of_runtime_deps)
+  i = 0
+
+  while i < size:
+    target = list_of_runtime_deps[i]
+    i += 1
+    if target.startswith(
+        'Target ') and target[len('Target '):] in set_of_gn_targets:
+      while (i < size and not list_of_runtime_deps[i].startswith('Target ')):
+        # lines corresponding to runtime_dependencies start with spaces.
+        dependency = list_of_runtime_deps[i].strip()
+        # Add runtime dependencies that are not already under
+        # {build_dir}/ to the set of paths to copy.
+        if dependency.startswith('../../'):
+          result.add(dependency)
+        i += 1
+  return result
+
 # How many elements to return per batch by `batched()`.
 #
 # Picked by checking how many arguments was finally too much for the Windows
@@ -521,18 +555,14 @@ def RunSteps(api):
       paths_to_copy = set()
       with api.step.nest(
           'generate runtime dependencies to copy') as step_result:
-        for target in gn_targets:
-          # run gn desc out_dir target_name runtime_deps
-          results = api.gn.desc(
-              api.chromium.output_dir,
-              target,
-              'runtime_deps',
-              step_name='get runtime dependencies of ' + target)
-          for result in results:
-            # Add runtime dependencies that are not already under
-            #  {build_dir}/ to the set of paths to copy.
-            if result.startswith("../.."):
-              paths_to_copy.add(result)
+        set_of_gn_targets = set(gn_targets)
+        list_of_runtime_deps = api.gn.desc(
+            api.chromium.output_dir,
+            "*",
+            'runtime_deps',
+            step_name='get runtime dependencies with pattern *')
+        paths_to_copy = extract_paths_to_copy(list_of_runtime_deps,
+                                              set_of_gn_targets)
         paths_to_copy = sorted(paths_to_copy)
         step_result.logs['runtime_dependencies_to_copy'] = paths_to_copy
 
@@ -564,12 +594,28 @@ def GenTests(api):
       # this will lead to us having ../../path2 and ../../path4 as runtime dependencies to copy
       if not (("V8" in test.name) or ("Win" in test.name) or
               ("iOS" in test.name)):
+        step_output = ('some warning1\n\n'
+                       'some warning2\n'
+                       'Target target1\n'
+                       'runtime_deps\n'
+                       '  ../../path14\n'
+                       '  ./path15\n\n\n'
+                       'Target target2\n'
+                       'runtime_deps\n'
+                       '  ../../path1\n'
+                       '  ../../path2\n'
+                       'Target target3\n'
+                       'runtime_deps\n'
+                       '  ./path3\n'
+                       '  ../../path4\n'
+                       'Target target5\n'
+                       'runtime_deps\n'
+                       '  ./path16\n'
+                       '  ../../path17\n')
+
         test += api.step_data(
-            'generate runtime dependencies to copy.get runtime dependencies of target2',
-            stdout=api.raw_io.output_text('../../path1\n../../path2\n'))
-        test += api.step_data(
-            'generate runtime dependencies to copy.get runtime dependencies of target3',
-            stdout=api.raw_io.output_text('./path3\n../../path4\n'))
+            'generate runtime dependencies to copy.get runtime dependencies with pattern *',
+            stdout=api.raw_io.output_text(step_output))
         # ../../path1, ../../path2 and ../../path4 need to be copied.
         test += api.post_process(LogEquals,
                                  'generate runtime dependencies to copy',
