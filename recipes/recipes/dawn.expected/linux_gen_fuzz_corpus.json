@@ -486,7 +486,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile dawn tests with ninja"
+    "name": "compile with ninja"
   },
   {
     "cmd": [],
