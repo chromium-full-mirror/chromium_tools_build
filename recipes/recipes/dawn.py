@@ -63,7 +63,7 @@ def _checkout_steps(api):
 # Yields a function `build` which compiles the targets specified by *args and
 # returns a tuple of the file paths where those targets' executables should be located.
 @contextmanager
-def _gn_build(flavor, api, **kwargs):
+def _gn_build(api, **kwargs):
   use_remoteexec = (kwargs['is_clang'] is True or
                     kwargs['is_clang'] is None) and api.reclient.instance
   gn_args = []
@@ -123,12 +123,11 @@ def _gn_build(flavor, api, **kwargs):
   def build(*targets):
     ninja_cmd = base_ninja_cmd.copy()
     ninja_cmd.extend(targets)
-    desc = 'compile {} with ninja'.format(flavor)
     if use_remoteexec:
-      with api.reclient.process(desc, ''):
-        api.step(desc, ninja_cmd)
+      with api.reclient.process('compile with ninja', ''):
+        api.step('compile with ninja', ninja_cmd)
     else:
-      api.step(desc, ninja_cmd)
+      api.step('compile with ninja', ninja_cmd)
 
     return tuple(build_path.join(t) for t in targets)
 
@@ -140,7 +139,7 @@ def _generate_fuzz_corpus(api, **kwargs):
       'is_component_build': True,
       'dawn_use_swiftshader': True,
   })
-  with _gn_build('dawn tests', api, **kwargs) as build:
+  with _gn_build(api, **kwargs) as build:
     (dawn_unittests, dawn_end2end_tests) = build('dawn_unittests',
                                                  'dawn_end2end_tests')
   # Collect the traces in temporary directories.
@@ -202,7 +201,6 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
 
     with api.osx_sdk('mac'):
       with _gn_build(
-          'default targets',
           api,
           target_cpu=target_cpu,
           is_debug=debug,
@@ -214,24 +212,10 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
         (_, dawn_unittests, tint_unittests) = build('default', 'dawn_unittests',
                                                     'tint_unittests')
 
-      with _gn_build(
-          'fuzzer targets',
-          api,
-          target_cpu=target_cpu,
-          is_debug=debug,
-          is_clang=clang,
-          is_component_build=False,
-          dawn_use_swiftshader=False,
-          use_libfuzzer=True,
-          use_asan=api.platform.is_win,  # Required only on windows
-      ) as build:
-        build('fuzzers')
-
       # Component build and run dawn_end2end_tests with SwiftShader
       # When using SwiftShader a component build should be used.
       # See anglebug.com/4396.
       with _gn_build(
-          'component build with Swiftshader',
           api,
           target_cpu=target_cpu,
           is_debug=debug,
