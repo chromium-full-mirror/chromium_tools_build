@@ -351,17 +351,24 @@ def RunSteps(api):
   if builder_config.chromium_config == 'android':
     target = 'chrome_public_apk'
 
-  # Clean builds.
-  raw_result = _clean_builds(api, target)
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
+  # Env variables for racing feature.
+  # https://crsrc.org/d/reclient_helper.py;l=220;drc=1077fbe08a1c03ef7f7fa8eb925edd18688357ae
+  env = {
+      'RBE_local_resource_fraction': '0.2',
+      'RBE_racing_bias': '0.95',
+  }
+  with api.context(env=env):
+    # Clean builds.
+    raw_result = _clean_builds(api, target)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
 
-  # Incremental build with 1-day of changes. a.k.a morning build.
-  raw_result = _incremental_build_with_one_day_changes(api, target)
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
+    # Incremental build with 1-day of changes. a.k.a morning build.
+    raw_result = _incremental_build_with_one_day_changes(api, target)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
 
-  return _incremental_builds_with_patch(api, target)
+    return _incremental_builds_with_patch(api, target)
 
 
 def GenTests(api):
