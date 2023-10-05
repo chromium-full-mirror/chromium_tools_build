@@ -47,9 +47,9 @@ def _get_binaries_with_coverage_data(profdata_path, llvm_cov_path, binaries,
     except subprocess.CalledProcessError as e:
       # On Unix-like platforms, llvm-cov reports 'No coverage data found',
       # but on Windows it reports 'Could not load coverage information'.
-      if e.returncode == 1 and (
-          'No coverage data found' in e.output or
-          'Could not load coverage information' in e.output):
+      if e.returncode == 1 and ('no coverage data found' in e.output.lower() or
+                                'could not load coverage information'
+                                in e.output.lower()):
         logging.warn('%s does not have coverage data, and will be excluded '
                      'from exporting coverage metadata' % binary)
         continue
