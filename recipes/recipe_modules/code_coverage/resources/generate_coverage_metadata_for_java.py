@@ -591,6 +591,7 @@ def main():
     device_cmd += ['--xml', temp_device_xml]
     host_cmd += ['--xml', temp_host_xml]
 
+    logging.info('Generating XML reports.')
     cmd_output = subprocess.check_output(device_cmd, text=True)
     logging.info('JaCoCo device XML report generated: %r', cmd_output)
     cmd_output = subprocess.check_output(host_cmd, text=True)
