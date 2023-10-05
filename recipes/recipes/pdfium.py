@@ -239,9 +239,7 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
       'pdf_is_standalone=true',
   ]
   if enable_reclient:
-    args.extend([
-        'use_remoteexec=true',
-    ])
+    args.append('use_remoteexec=true')
   if api.platform.is_win and not memory_tool:
     args.append('symbol_level=1')
   if api.platform.is_win:
@@ -258,7 +256,7 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
     assert not clang
 
   if memory_tool == 'asan':
-    args.append('is_asan=true')
+    args.extend(['is_asan=true', 'use_asan_unowned_ptr=true'])
     if api.platform.is_win:
       # ASAN requires Clang. Until Clang is default on Windows for certain,
       # bots should set it explicitly.
@@ -268,7 +266,7 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
       args.append('is_lsan=true')
   elif memory_tool == 'msan':
     assert not api.platform.is_win
-    args.extend(['is_msan=true'])
+    args.append('is_msan=true')
   elif memory_tool == 'ubsan':
     assert not api.platform.is_win
     args.extend(['is_ubsan_security=true', 'is_ubsan_no_recover=true'])
