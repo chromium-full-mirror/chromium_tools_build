@@ -144,5 +144,7 @@ PLATFORM_TO_TARGET_NAME_PATTERN_MAP[
 
 BINARY_RELATIVE_PATHS_JSON_FILE_NAME = 'binary_relative_paths_for_clang_code_coverage.json'
 
+# Keep in sync with android build code so that local java test coverage is
+# included: https://bit.ly/3ZwBV7e
 JAVA_COVERAGE_DIR = 'java_coverage'
 JS_COVERAGE_DIR = 'js_coverage'
