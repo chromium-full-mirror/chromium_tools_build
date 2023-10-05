@@ -532,11 +532,6 @@ def main():
       'Either component_mapping (for full-repo coverage) or diff_mapping '
       '(for per-cl coverage) must be specified.')
 
-  coverage_files = get_files_with_suffix(params.coverage_dir, '.exec')
-  if not coverage_files:
-    raise Exception('No coverage file found under %s' % params.coverage_dir)
-  logging.info('Found coverage files: %s', str(coverage_files))
-
   class_files = []
   source_dirs = []
   sources_json_files = get_files_with_suffix(params.sources_json_dir,
@@ -561,6 +556,11 @@ def main():
   if not class_files:
     logging.info('Skip processing data as no source file was affected in CL')
     return
+
+  coverage_files = get_files_with_suffix(params.coverage_dir, '.exec')
+  if not coverage_files:
+    raise Exception('No coverage file found under %s' % params.coverage_dir)
+  logging.info('Found coverage files: %s', str(coverage_files))
 
   try:
     cmd = [
