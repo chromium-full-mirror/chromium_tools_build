@@ -1495,8 +1495,10 @@ class SwarmingApi(recipe_api.RecipeApi):
           self._shards_durations.append(shard['duration'])
 
       duration = None
-      if (shard and not shard.get('internal_failure') and
-          shard.get('completed_ts') and shard.get('started_ts')):
+      has_internal_failure = shard and (shard.get('internal_failure') or
+                                        shard.get('state') == 'BOT_DIED')
+      if (shard and not has_internal_failure and shard.get('completed_ts') and
+          shard.get('started_ts')):
         # Display text for shard duration to reflect runtime + overhead
         delta = _parse_time(shard['completed_ts']) - _parse_time(
             shard['started_ts'])
@@ -1524,7 +1526,7 @@ class SwarmingApi(recipe_api.RecipeApi):
             (index, 'Details unknown (missing shard results)'))
         failed_shards.append(index)
         has_valid_results = False
-      elif shard.get('internal_failure'):
+      elif has_internal_failure:
         display_text = (
           'shard #%d had an internal swarming failure' % index)
         # Unfortunately, src/ tests can trigger swarming internal failures.
