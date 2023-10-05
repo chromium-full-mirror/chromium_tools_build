@@ -20,11 +20,11 @@ import threading
 import time
 import zipfile
 
-
 _WIN_LINK_FUNC = None
 try:
   if sys.platform.startswith('win'):
     import ctypes
+
     # There's 4 possibilities on Windows for links:
     # 1. Symbolic file links;
     # 2. Symbolic directory links;
@@ -563,7 +563,17 @@ def MakeZip(
     possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
     for possible_7zip_location in possible_7zip_locations:
       if os.path.exists(possible_7zip_location):
-        windows_zip_cmd = [possible_7zip_location, 'a', '-y', '-mx1']
+        windows_zip_cmd = [
+            possible_7zip_location,
+            'a',  # Add files to archive
+            '-tzip',  # Set type of archive to ZIP
+            '-y',  # Assume "Yes" to all queries (overwrite without prompt)
+            '-mx1',  # Set compression level to 1 (fastest)
+            '-uz0',  # Do not update an archive if all files are already up-to-date
+            '-bt',  # Show execution time statistics
+            '-bb0',  # Set output log level to 0 (no information printed to console)
+            '-mmt=on'  # Use multithreading
+        ]
         break
 
   # On Windows we use the python zip module; on Linux and Mac, we use the zip
