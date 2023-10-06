@@ -449,7 +449,7 @@
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/refs/heads/main"
+      "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/f921bd05e68b03740c450e565e0e6173e546193170b2dd404ddb6f153e9b5bf3"
     ],
     "infra_step": true,
     "luci_context": {
@@ -474,7 +474,7 @@
       "cipd",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/refs/heads/main",
+      "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/f921bd05e68b03740c450e565e0e6173e546193170b2dd404ddb6f153e9b5bf3",
       "-ensure-file",
       "infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py refs/heads/main",
       "-max-threads",
@@ -514,7 +514,7 @@
   {
     "cmd": [
       "vpython3",
-      "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/refs/heads/main/recipe_engine/recipes.py",
+      "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/f921bd05e68b03740c450e565e0e6173e546193170b2dd404ddb6f153e9b5bf3/recipe_engine/recipes.py",
       "--package",
       "[CACHE]/builder/baz/infra/config/recipes.cfg",
       "analyze",
@@ -559,7 +559,7 @@
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin"
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
     ],
     "infra_step": true,
     "luci_context": {
@@ -584,7 +584,7 @@
       "cipd",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/swarming_module_pin",
+      "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227",
       "-ensure-file",
       "infra/tools/luci/swarming/${platform} swarming_module_pin",
       "-max-threads",

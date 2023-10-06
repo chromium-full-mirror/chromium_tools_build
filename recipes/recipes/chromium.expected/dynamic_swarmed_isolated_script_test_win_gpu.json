@@ -720,7 +720,7 @@
       "ensure-directory",
       "--mode",
       "0777",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin"
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
     ],
     "cwd": "[CACHE]\\builder",
     "env": {
@@ -749,7 +749,7 @@
       "cipd.bat",
       "ensure",
       "-root",
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227",
       "-ensure-file",
       "infra/tools/luci/swarming/${platform} swarming_module_pin",
       "-max-threads",
@@ -792,7 +792,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin\\swarming",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227\\swarming",
       "spawn-tasks",
       "-server",
       "https://example.swarmingserver.appspot.com",
@@ -958,7 +958,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin\\swarming",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227\\swarming",
       "spawn-tasks",
       "-server",
       "https://example.swarmingserver.appspot.com",
@@ -1124,7 +1124,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin\\swarming",
+      "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227\\swarming",
       "spawn-tasks",
       "-server",
       "https://example.swarmingserver.appspot.com",
@@ -1848,7 +1848,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin"
+        "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
     "luci_context": {
@@ -1957,7 +1957,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin"
+        "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
     "luci_context": {
@@ -2066,7 +2066,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\swarming_module_pin"
+        "[START_DIR]\\cipd_tool\\infra\\tools\\luci\\swarming\\90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
       ]
     },
     "luci_context": {
