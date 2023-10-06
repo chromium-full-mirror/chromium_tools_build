@@ -125,7 +125,7 @@
       "gen",
       "[START_DIR]/crashpad/out/Release",
       "--check",
-      "--args=target_os=\"linux\" target_cpu=\"x64\" is_debug=false clang_path=\"//third_party/linux/clang/linux-amd64\" target_sysroot=\"//third_party/linux/sysroot\" link_libstdcpp_statically = true"
+      "--args=target_os=\"linux\" target_cpu=\"x64\" is_debug=false clang_path=\"//third_party/linux/clang/linux-amd64\" target_sysroot=\"//third_party/linux/sysroot\""
     ],
     "cwd": "[START_DIR]/crashpad",
     "luci_context": {

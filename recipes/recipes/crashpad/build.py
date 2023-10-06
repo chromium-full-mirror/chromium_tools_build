@@ -134,11 +134,6 @@ def RunSteps(api, config, target_os, target_cpu):
       # gclient runhooks.
       args += ' clang_path="//third_party/linux/clang/linux-amd64"'
       args += ' target_sysroot="//third_party/linux/sysroot"'
-
-      # The 14.04 systems do not include a compatible libstdc++ that can deal
-      # with -std=c++14, so force static linkage of libstdc++ from the
-      # sysroot.
-      args += ' link_libstdcpp_statically = true'
     with api.context(cwd=api.path['checkout']):
       with sdk(target_os):
         api.step('generate build files',
