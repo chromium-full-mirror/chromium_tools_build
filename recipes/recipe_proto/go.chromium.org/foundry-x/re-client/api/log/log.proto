@@ -1,29 +1,60 @@
 syntax = "proto3";
 
-package proxy;
+package log;
 
 import "google/protobuf/timestamp.proto";
+import "go.chromium.org/foundry-x/re-client/api/stat/stat.proto";
+
+
+// Properties describing the determinism status of a file/directory for a single action.
+enum DeterminismStatus {
+  // Action is deterministic.
+  DETERMINISTIC = 0;
+  // Action is non-deterministic.
+  NON_DETERMINISTIC = 1;
+  // Determinism of action is unknown.
+  UNKNOWN = 2;
+  // Action is non-deterministic only on RBE.
+  REMOTE_NON_DETERMINISTIC = 3;
+}
 
 message Verification {
   message Mismatch {
     // The output path.
     string path = 1;
 
-    // Determines if the action inherently non-deterministic.
-    bool non_deterministic = 4;
+    // WARNING: Deprecated. Use remote_digests instead.
+    // The digest given by remote execution (or cache), if exists.
+    string remote_digest = 2 [deprecated=true];
 
-    // Lists the various output digests we got from multiple remote-execution
-    // retries.
+    // WARNING: Deprecated. Use local_digests instead.
+    // The digest produced locally, if exists.
+    string local_digest = 3 [deprecated=true];
+
+    // WARNING: Deprecated. Use determinism instead.
+    // Determines if the action inherently non-deterministic.
+    bool non_deterministic = 4 [deprecated=true];
+
+    // A deduped list of output digests we got from remote-execution reruns.
     repeated string remote_digests = 5;
 
     // Action digest that produced the mismatching remote digests.
     string action_digest = 6;
 
-    // Lists the various output digests we got from multiple local reruns
+    // A deduped list of output digests we got from local reruns.
     repeated string local_digests = 7;
 
     // If true, the mismatch is considered expected/known thus can be ignored.
     bool ignored = 8;
+
+    // Indicates whether the action is inherently deterministic or not.
+    DeterminismStatus determinism = 9;
+
+    // A deduped list of exit codes we got from remote-execution reruns.
+    repeated int32 remote_exit_codes = 10;
+
+    // A deduped list of exit codes we got from local reruns.
+    repeated int32 local_exit_codes = 11;
   }
 
   // Any SHA mismatches in the action.
@@ -48,6 +79,8 @@ message ProxyInfo {
   map<string, Metric> metrics = 2;
   // Flag values from environment variables and command-line args.
   map<string, string> flags = 3;
+  // Resource usage stats during the lifetime of reproxy.
+  repeated stat.Stat stats= 4;
 }
 
 // Generic message to hold data relevant to a specific metric.

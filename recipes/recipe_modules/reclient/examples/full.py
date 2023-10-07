@@ -6,7 +6,7 @@ from recipe_engine import post_process
 
 from PB.recipe_modules.recipe_engine.led.properties import InputProperties
 
-import PB.go.chromium.org.foundry_x.re_client.api.proxy.log as log_pb
+import PB.go.chromium.org.foundry_x.re_client.api.log.log as log_pb
 import PB.go.chromium.org.foundry_x.re_client.api.stats.stats as stats_pb
 
 DEPS = [
