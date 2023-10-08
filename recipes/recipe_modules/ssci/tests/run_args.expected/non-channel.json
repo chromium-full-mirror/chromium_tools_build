@@ -879,9 +879,7 @@
       "-product-version",
       "111.111.111.11",
       "-platform",
-      "linux",
-      "-arch",
-      "intel64",
+      "linux_intel64",
       "-full-spdx"
     ],
     "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/ssci/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",

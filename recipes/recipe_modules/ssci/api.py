@@ -32,6 +32,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.minimal_spdx = props.minimal_spdx or False
     self.generated_sbom_artifacts = {}
     self.execution_id = ""
+    self.build_platform = None
 
     # Used to store CIPD package information for each of the tools used
     self.bqupload = CIPDPkg(
@@ -175,8 +176,10 @@ class SsciAPI(recipe_api.RecipeApi):
                                     data_file, filename, sbom_folder)
 
       # Combines the recipe name with the DepBot target as the product name.
+      final_artifact_name = self._make_filename_from_target(
+          entry_point_name, filename_postfix, file_extension="")
       recipe_name = self.m.properties["recipe"].split("/")[-1]
-      product = f'{recipe_name}.{self.execution_id}.{entry_point_name}'
+      product = f'{recipe_name}.{self.execution_id}.{final_artifact_name}'
       p_version = self._get_product_version(chrome_version)
 
       spdx_file = self.m.path.mkdtemp().join("spdx-out.json")
@@ -193,9 +196,8 @@ class SsciAPI(recipe_api.RecipeApi):
                 self.partybot.resolved_version, "-ssci-version",
                 self.ssci_tool.resolved_version, "-output-file", spdx_out,
                 "-chromium-src", src_dir, "-product", product,
-                "-product-version", p_version, "-platform",
-                self.m.platform.name, "-arch",
-                f"{self.m.platform.arch}{self.m.platform.bits}", minimal_config
+                "-product-version", p_version, "-platform", self.build_platform,
+                minimal_config
             ],
             step_test_data=(lambda: self.m.json.test_api.output(
                 data=[{
@@ -213,10 +215,8 @@ class SsciAPI(recipe_api.RecipeApi):
         self.m.gsutil.upload(
             spdx_file, sbom_bucket, full_path, name=f"upload {filename} SBOM")
 
-        final_apk_name = self._make_filename_from_target(
-            entry_point_name, filename_postfix, file_extension="")
         self.generated_sbom_artifacts.update({
-            final_apk_name: {
+            final_artifact_name: {
                 'digest': spdx_digest,
                 'file': f'gs://{sbom_bucket}/{full_path}'
             }
@@ -231,6 +231,7 @@ class SsciAPI(recipe_api.RecipeApi):
       sbom_filename_postfix=None,
       targets=None,
       chrome_version=None,
+      platform=None,
   ):
 
     # ensure this dict is reset between calls to the module
@@ -240,6 +241,10 @@ class SsciAPI(recipe_api.RecipeApi):
 
     # prefer targets supplied in properties.
     targets = self.targets or targets
+
+    if platform is None:
+      platform = f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+    self.build_platform = platform
 
     with self.m.step.nest('SSCI collection'):
       self.execution_id = f"luci-{self.m.buildbucket.build.id}"
