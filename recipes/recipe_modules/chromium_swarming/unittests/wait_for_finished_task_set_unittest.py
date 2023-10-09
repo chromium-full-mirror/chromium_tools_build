@@ -20,13 +20,13 @@ import wait_for_finished_task_set
 class TasksToCollectTest(unittest.TestCase):
   def test_swarming_url(self):
     tasks = wait_for_finished_task_set.TasksToCollect([[]])
-    self.assertEquals(tasks.swarming_query_url([]), 'tasks/get_states?')
+    self.assertEquals(tasks.swarming_prpc_json([]), '{"task_id": []}')
     # Directly assign to the attribute to bypass the property calculation.
     # Add an unsorted array to make sure the url itself gets sorted.
     tasks = wait_for_finished_task_set.TasksToCollect([['b', 'a', 'c']])
     self.assertEquals(
-        tasks.swarming_query_url(['a', 'b', 'c']),
-        'tasks/get_states?task_id=a&task_id=b&task_id=c')
+        tasks.swarming_prpc_json(['a', 'b', 'c']),
+        '{"task_id": ["a", "b", "c"]}')
 
   def test_empty(self):
     tasks = wait_for_finished_task_set.TasksToCollect([[]])
@@ -137,7 +137,7 @@ class WaitForFinishedTaskSetTest(unittest.TestCase):
       retcode, out_json = wait_for_finished_task_set.real_main(
           wait_for_finished_task_set.TasksToCollect([
               ['a', 'b'],
-          ]), 3, 'swarming-py-path', 'https://swarming-server', None)
+          ]), 3, 'https://swarming-server', None)
       self.assertEquals(retcode, 0)
       self.assertEquals(out_json, {
           'attempts': 3,
@@ -170,7 +170,7 @@ class WaitForFinishedTaskSetTest(unittest.TestCase):
       tasks.process_result.side_effect = side_effect
 
       retcode, out_json = wait_for_finished_task_set.real_main(
-          tasks, 0, 'swarming-py-path', 'https://swarming-server', None)
+          tasks, 0, 'https://swarming-server', None)
       self.assertEquals(retcode, 0)
       self.assertEquals(out_json, {
           'attempts': 9,

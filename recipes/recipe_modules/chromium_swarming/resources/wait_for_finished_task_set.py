@@ -64,10 +64,9 @@ class TasksToCollect:
         for idx in range(0, len(tasks), TASK_BATCH_SIZE)
     ]
 
-  def swarming_query_url(self, task_batch):
-    """The swarming URL needed to collect task states."""
-    return 'tasks/get_states?' + '&'.join(
-        'task_id=%s' % task for task in task_batch)
+  def swarming_prpc_json(self, task_batch):
+    """The swarming prpc json needed to collect task states."""
+    return json.dumps({"task_id": task_batch})
 
   def process_result(self, result, num_tasks):
     """Handles the result of getting swarming task task_sets."""
@@ -105,8 +104,7 @@ def main(argv):
 
   tasks = TasksToCollect.read_from_file(args.input_json)
 
-  retcode, output_json = real_main(tasks, args.attempts, args.swarming_py_path,
-                                   args.swarming_server)
+  retcode, output_json = real_main(tasks, args.attempts, args.swarming_server)
 
   if output_json:
     with open(args.output_json, 'w') as f:
@@ -115,49 +113,45 @@ def main(argv):
   return retcode
 
 
-def real_main(tasks, attempts, swarming_py_path, swarming_server):
-  fd, tmpfile = tempfile.mkstemp()
-  os.close(fd)
+def real_main(tasks, attempts, swarming_server):
 
-  try:
-    while True:
-      for task_batch in tasks.task_batches:
-        url = tasks.swarming_query_url(task_batch)
+  while True:
+    for task_batch in tasks.task_batches:
+      tasks_json = tasks.swarming_prpc_json(task_batch)
+      if swarming_server.startswith("https://"):
+        swarming_server = swarming_server[8:]
+      cmd = [
+          'prpc', 'call', swarming_server, 'swarming.v2.Tasks.ListTaskStates'
+      ]
 
-        cmd = [
-            'vpython3', swarming_py_path, 'query', '-S', swarming_server,
-            '--json=%s' % tmpfile
-        ]
+      logging.info('prpc cmd: %s, stdin: %s', ' '.join(cmd), tasks_json)
+      p = subprocess.Popen(
+          cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+      out, err = p.communicate(tasks_json)
+      if err:
+        logging.warning('prpc call cmd had error: %s', err)
+        return 1, None
+      if p.returncode != 0:
+        logging.warning('prpc call cmd had non-zero return code: %s',
+                        p.returncode)
+        return 1, None
 
-        cmd.append(url)
+      tasks.process_result(json.loads(out), len(task_batch))
 
-        logging.info('get_states cmd: %s', ' '.join(cmd))
-        get_states_result = subprocess.call(cmd)
-        if get_states_result != 0:
-          logging.warning('get_states cmd had non-zero return code: %s',
-                          get_states_result)
-          return 1, None
+    if tasks.finished_task_sets:
+      break
 
-        with open(tmpfile) as f:
-          tasks.process_result(json.load(f), len(task_batch))
-
-      if tasks.finished_task_sets:
-        break
-
-      # Do exponential backoff.
-      attempts += 1
-      time_to_sleep_sec = 2 ** attempts
-      # Cap the sleep time at 15 seconds. Waiting longer than that could start
-      # to impact the actual cycle time of the builder; if we wait for 16
-      # minutes, and (potentially) the final task finished one minute into that
-      # sleep, we'd waste 15 minutes of time just sitting there. Ideally this
-      # would be interrupt driven.
-      time_to_sleep_sec = min(time_to_sleep_sec, 15)
-      logging.info('sleeping for %d seconds' % time_to_sleep_sec)
-      time.sleep(time_to_sleep_sec)
-  finally:
-    if os.path.exists(tmpfile):
-      os.unlink(tmpfile)
+    # Do exponential backoff.
+    attempts += 1
+    time_to_sleep_sec = 2**attempts
+    # Cap the sleep time at 15 seconds. Waiting longer than that could start
+    # to impact the actual cycle time of the builder; if we wait for 16
+    # minutes, and (potentially) the final task finished one minute into that
+    # sleep, we'd waste 15 minutes of time just sitting there. Ideally this
+    # would be interrupt driven.
+    time_to_sleep_sec = min(time_to_sleep_sec, 15)
+    logging.info('sleeping for %d seconds' % time_to_sleep_sec)
+    time.sleep(time_to_sleep_sec)
 
   return 0, {
       'sets': tasks.finished_task_sets,
