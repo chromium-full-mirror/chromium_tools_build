@@ -317,16 +317,19 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
           UnitTests(api, cas_digest, builder_config, 'Unit Tests'),
           InteractionsTests(api, cas_digest, builder_config,
                             'Interactions Tests'),
-          E2ETests(api, cas_digest, builder_config, 'E2E Tests'),
       ]
+
+      if not api.devtools.is_debug(builder_config):
+        tests += [E2ETests(api, cas_digest, builder_config, 'E2E Tests')]
 
       with api.step.nest('Trigger Tests'):
         for t in tests:
           t.trigger()
           t.include_invocations()
 
-      with api.step.nest('Linting'):
-        run_lint_check(api)
+      if not api.devtools.is_debug(builder_config):
+        with api.step.nest('Linting'):
+          run_lint_check(api)
 
       all_results = sum((t.process_results() for t in tests), Results())
 
