@@ -180,7 +180,7 @@ def RunSteps(api, properties):
   gclient_config = api.gclient.make_config('chromium_no_telemetry_dependencies')
   target_os = 'linux'
   host_os = 'linux'
-  if platform in ('android', 'webview'):
+  if platform in ('android', 'webview', 'cronet'):
     target_os = 'android'
   elif platform in ('chromeos', 'lacros'):
     target_os = 'chromeos'
