@@ -270,6 +270,7 @@ def RunSteps(api):
     api.chromium.runhooks()
 
   try:
+    api.reclient.cache_silo = api.buildbucket.builder_name + " build1"
     raw_result = _compile(api, config_name, recipe_config, 1)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
@@ -279,6 +280,7 @@ def RunSteps(api):
 
     _clean_output_dirs(api, out_dirs)
 
+    api.reclient.cache_silo = api.buildbucket.builder_name + " build2"
     raw_result = _compile(api, config_name, recipe_config, 2)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result

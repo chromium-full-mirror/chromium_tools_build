@@ -54,6 +54,11 @@ def RunSteps(api):
   api.reclient.reclient_dir = None
   api.assertions.assertEqual(api.reclient.reclient_dir,
                              api.path['checkout'].join('buildtools'))
+  # Verify that cache silo can be overridden.
+  tmp = api.reclient.cache_silo
+  api.reclient.cache_silo = "foobar"
+  api.assertions.assertEqual(api.reclient.cache_silo, "foobar")
+  api.reclient.cache_silo = tmp
 
   ninja_command = ['ninja', '-C', 'out/Release']
   deps_cache_by_step = api.properties.get('deps_cache_by_step', False)

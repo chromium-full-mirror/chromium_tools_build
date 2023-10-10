@@ -188,6 +188,10 @@ class ReclientApi(recipe_api.RecipeApi):
   def cache_silo(self):
     return self._cache_silo
 
+  @cache_silo.setter
+  def cache_silo(self, val):
+    self._cache_silo = val
+
   @property
   def reclient_dir(self):
     if self._reclient_dir:
