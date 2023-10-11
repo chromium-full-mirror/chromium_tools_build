@@ -398,7 +398,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "[CACHE]/builder/v8/tools/run-tests.py",
       "--progress=verbose",
@@ -504,7 +504,7 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
       "[CACHE]/builder/v8/tools/run-tests.py",
       "--progress=verbose",

@@ -341,7 +341,7 @@ class V8Test(BaseTest):
     with self.api.context(cwd=self.api.path['checkout'], env=env):
       self.api.step(
         test['name'] + self.test_step_config.step_name_suffix,
-        ['python3', '-u', script] + full_args,
+        ['vpython3', '-u', script] + full_args,
         step_test_data=self.api.v8_tests.test_api.output_json,
         **kwargs
       )
