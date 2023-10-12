@@ -5,8 +5,11 @@
 from recipe_engine import post_process
 
 DEPS = [
-  'depot_tools/gclient',
-  'recipe_engine/properties',
+    # chromium_android is needed here so that certain android configs can be
+    # applied.
+    'chromium_android',
+    'depot_tools/gclient',
+    'recipe_engine/properties',
 ]
 
 TEST_CONFIGS = [
