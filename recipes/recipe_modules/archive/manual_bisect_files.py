@@ -74,7 +74,6 @@ CHROME_REQUIRED_FILES = {
         'libGLESv2.dll',
         'locales',
         'locales/*',
-        'nacl_irt_x86_64.nexe',
         'PepperFlash',
         'PepperFlash/*',
         'resources.pak',
