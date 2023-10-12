@@ -9,8 +9,6 @@ DEPS = [
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
     'depot_tools/gclient',
-    'depot_tools/osx_sdk',
-    'depot_tools/windows_sdk',
     'goma',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
@@ -59,31 +57,14 @@ class FileInfo:
     self.is_dir = is_dir
 
 
-@contextmanager
-def PlatformSDK(api):
-  sdk = None
-  if api.platform.is_win:
-    sdk = api.windows_sdk()
-  elif api.platform.is_mac:
-    sdk = api.osx_sdk('mac')
-
-  if sdk is None:
-    yield
-  else:
-    with sdk:
-      yield
-
-
 def CheckoutSteps(api):
-  checkout_env = {'FORCE_MAC_TOOLCHAIN': '1'} if api.platform.is_mac else {}
-  with api.context(env=checkout_env):
-    api.gclient.set_config('nacl')
-    result = api.bot_update.ensure_checkout()
+  api.gclient.set_config('nacl')
+  result = api.bot_update.ensure_checkout()
 
-    # HACK(iannucci): bot_update.ensure_checkout should return an actual
-    # meaningful object with actual meaningful semantics.
-    got_revision = result.presentation.properties['got_revision']
-    api.gclient.runhooks()
+  # HACK(iannucci): bot_update.ensure_checkout should return an actual
+  # meaningful object with actual meaningful semantics.
+  got_revision = result.presentation.properties['got_revision']
+  api.gclient.runhooks()
   return got_revision
 
 
@@ -121,12 +102,11 @@ def AnnotatedStepsSteps(api, got_revision, checkout_path,
   try:
     with api.context(cwd=checkout_path, env=env):
       with api.depot_tools.on_path():
-        with PlatformSDK(api):
-          cmd = [
-              'vpython3', '-u',
-              checkout_path.join('buildbot', 'buildbot_selector.py')
-          ]
-          api.legacy_annotation('annotated steps', cmd)
+        cmd = [
+            'vpython3', '-u',
+            checkout_path.join('buildbot', 'buildbot_selector.py')
+        ]
+        api.legacy_annotation('annotated steps', cmd)
     exit_status = 0
   except api.step.StepFailure as e:
     exit_status = e.retcode
@@ -243,32 +223,6 @@ def RunSteps(api):
 def GenTests(api):
   git_repo = (
       'https://chromium.googlesource.com/native_client/src/native_client.git')
-
-  yield api.test(
-      'win',
-      api.platform('win', 64),
-      api.builder_group.for_current('client.nacl'),
-      api.buildbucket.ci_build(
-          builder='win7-64-glibc-dbg',
-          build_number=1234,
-          git_repo=git_repo,
-          revision='a' * 40,
-      ),
-      api.properties(slavetype='BuilderTester'),
-  )
-
-  yield api.test(
-      'mac',
-      api.platform('mac', 64),
-      api.builder_group.for_current('client.nacl'),
-      api.buildbucket.ci_build(
-          builder='mac-newlib-dbg-asan',
-          build_number=1234,
-          git_repo=git_repo,
-          revision='a' * 40,
-      ),
-      api.properties(slavetype='BuilderTester'),
-  )
 
   triggering_builder_name = 'linux_64-newlib-arm_qemu-pnacl-dbg'
   yield api.test(
