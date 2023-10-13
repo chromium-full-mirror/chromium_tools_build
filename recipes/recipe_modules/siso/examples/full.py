@@ -16,6 +16,7 @@ def RunSteps(api):
   if api.siso.enabled:
     api.path.mock_add_paths(
         api.path.join('out', 'Release', 'siso_metrics.json'))
+    api.siso.check_version()
     api.siso.run_ninja(
         ninja_command=api.properties.get('build_command'),
         ninja_env=env,
@@ -32,12 +33,14 @@ def GenTests(api):
       'basic',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(),
+      api.post_process(post_process.DropExpectation),
   )
   yield api.test(
       'siso_args',
       api.properties(
           build_command=['ninja', '-C', 'out/Release'], siso_args=['-foo']),
       api.siso.properties(),
+      api.post_process(post_process.DropExpectation),
   )
   yield api.test(
       'reapi_address',
@@ -61,6 +64,7 @@ def GenTests(api):
       'experiments',
       api.properties(build_command=['ninja', '-C', 'out/Release'],),
       api.siso.properties(experiments=['no-file-access-trace']),
+      api.post_process(post_process.DropExpectation),
   )
   yield api.test(
       'cloud_profiler',
@@ -100,4 +104,5 @@ def GenTests(api):
       'ninja_no_C',
       api.properties(build_command=['ninja']),
       api.siso.properties(),
+      api.post_process(post_process.DropExpectation),
   )

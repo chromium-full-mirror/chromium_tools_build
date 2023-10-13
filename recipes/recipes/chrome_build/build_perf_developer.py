@@ -338,7 +338,7 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
-  api.step('check siso version', [api.siso.siso_path, 'version'])
+  api.siso.check_version()
 
   # Build target: chrome or chrome_public_apk
   target = 'chrome'

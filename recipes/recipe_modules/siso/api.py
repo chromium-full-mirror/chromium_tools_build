@@ -156,6 +156,10 @@ class SisoApi(recipe_api.RecipeApi):
 
     return "."
 
+  def check_version(self):
+    """Print Siso version info"""
+    self.m.step('check siso version', [self.siso_path, 'version'])
+
   @property
   def _cache_dir(self):
     return self.m.path['cache'].join('builder', 'siso')
