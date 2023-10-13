@@ -255,6 +255,31 @@ def GenTests(api):
   )
 
   yield api.test(
+      'swarming_with_release_blocker_configured',
+      ci_build(
+          test_spec={
+              'test': 'base_unittests',
+              'test_target': '//base:base_unittests',
+              'release_blocker': {
+                  'bug_component': 'foo>hoo',
+              },
+              'swarming': {
+                  'can_use_on_swarming_builders': True,
+                  'dimension_sets': [{
+                      'os': 'Linux',
+                      'foo': None,
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', '', failures=['Test1']),
+      api.post_process(post_process.StepTextContains, 'base_unittests',
+                       ['Release Blocker Failure', 'Owner: foo>hoo']),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
       'swarming_with_legacy_optional_dimensions',
       ci_build(
           test_spec={

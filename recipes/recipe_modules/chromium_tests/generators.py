@@ -75,6 +75,11 @@ class Generator:
           waterfall_buildername=builder)
       if description := raw_test_spec.get('description'):
         test_spec = attr.evolve(test_spec, description=description)
+      if raw_test_spec.get('release_blocker'):
+        test_spec = attr.evolve(
+            test_spec,
+            release_blocker=steps.ReleaseBlocker.create(
+                **raw_test_spec['release_blocker']))
       test_spec = self._handle_resultdb(raw_test_spec, test_spec)
       test_spec = self._handle_experimental(raw_test_spec, test_spec)
       test_spec = self._handle_ci_only(raw_test_spec, test_spec)
