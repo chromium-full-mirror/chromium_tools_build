@@ -766,7 +766,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
                 suffix,
                 sort_by_shard=False,
                 retry_failed_shards=False,
-                retry_invalid_shards=False):
+                retry_invalid_shards=False,
+                pre_retry_shards_callback=None):
     """Runs a list of test suites and returns the failed ones.
 
     If retry_[failed|invalid]_shards is true, this method retries shards that
@@ -784,6 +785,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
                            tests, typically used with retry_invalid_shards.
       retry_invalid_shards: If true, attempts to retry shards of swarming tests
                             without valid results.
+      pre_retry_shards_callback: Callback function to be called before
+        triggering retry shards.
     Returns:
       A tuple of (list of test suites with invalid results,
                   list of test suites which failed including invalid results)
@@ -827,6 +830,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     if not swarming_test_suites:
       return invalid_test_suites, failed_and_invalid_suites
 
+    if pre_retry_shards_callback:
+      pre_retry_shards_callback(swarming_test_suites)
+
     retry_suffix = 'retry shards'
     if suffix:
       retry_suffix += ' ' + suffix
@@ -855,13 +861,16 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
   def run_tests_with_patch(self,
                            test_suites,
-                           retry_failed_shards=False):
+                           retry_failed_shards=False,
+                           pre_retry_shards_callback=None):
     """Runs tests and returns failures.
 
     Args:
       test_suites - iterable of objects implementing the steps.Test interface.
       retry_failed_shards: If true, attempts to retry failed shards of swarming
                            tests.
+      pre_retry_shards_callback: Callback function to be called before
+        triggering retry shards.
 
     Returns: A tuple (invalid_test_suites, all_failing_test_suites).
       invalid_test_suites: Test suites that do not have valid test results.
@@ -876,7 +885,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
         'with patch',
         sort_by_shard=True,
         retry_failed_shards=retry_failed_shards,
-        retry_invalid_shards=retry_failed_shards)
+        retry_invalid_shards=retry_failed_shards,
+        pre_retry_shards_callback=pre_retry_shards_callback,
+    )
 
   # TODO(crbug/1314194): Refactor ignored_failures and ignored_flakes to take
   # into account for ignored ToT failures exonerated by luci analysis.
