@@ -138,8 +138,8 @@ def update_gn(api):
     toggle_path = api.path['checkout'].join("gni", "release_branch_toggle.gni")
     build_gn_content = api.file.read_text('Read release_branch_toggle.gni',
             toggle_path)
-    MAIN_LINE = 'is_on_release_branch = false'
-    BRANCH_LINE = 'is_on_release_branch = true'
+    MAIN_LINE = 'v8_is_on_release_branch = false'
+    BRANCH_LINE = 'v8_is_on_release_branch = true'
     build_gn_content = build_gn_content.replace(MAIN_LINE, BRANCH_LINE)
 
     api.file.write_text(
