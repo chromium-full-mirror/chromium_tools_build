@@ -22,6 +22,8 @@ from recipe_engine.engine_types import FrozenDict, thaw
 from RECIPE_MODULES.build import chromium_tests
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build import proto_validation
+from RECIPE_MODULES.build.chromium_tests import (targets_config as
+                                                 targets_config_module)
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
@@ -167,8 +169,8 @@ def _verify_targets_specs(api, checkout_root: Path, repo_path: Path,
 
 def _compare_targets_configs(
     api,
-    pyl_config: chromium_tests.targets_config.TargetsConfig,
-    starlark_config: chromium_tests.targets_config.TargetsConfig,
+    pyl_config: targets_config_module.TargetsConfig,
+    starlark_config: targets_config_module.TargetsConfig,
 ) -> Optional[Sequence[str]]:
 
   def default_json_conversion(obj: object) -> object:
@@ -180,7 +182,7 @@ def _compare_targets_configs(
 
       # We really only care about the targets since the same builder config is
       # passed to both TargetsConfigs, so just return those
-      if isinstance(obj, chromium_tests.targets_config.TargetsConfig):
+      if isinstance(obj, targets_config_module.TargetsConfig):
         return {
             str(builder_id): targets
             for builder_id, targets in d['_targets_by_builder_id'].items()
@@ -209,8 +211,7 @@ def _compare_targets_configs(
     raise TypeError(f'{obj!r} is not JSON serializable')  # pragma: no cover
 
   def convert_to_json(
-      targets_config: chromium_tests.targets_config.TargetsConfig,
-  ) -> Sequence[str]:
+      targets_config: targets_config_module.TargetsConfig) -> Sequence[str]:
     return api.json.dumps(
         targets_config,
         indent=2,
