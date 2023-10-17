@@ -670,9 +670,6 @@
       "project.dataset.table",
       "[CLEANUP]/tmp_tmp_2/third_party.json"
     ],
-    "env": {
-      "GODEBUG": "http2debug=1"
-    },
     "luci_context": {
       "realm": {
         "name": "myproject:mybucket"
@@ -743,9 +740,6 @@
       "project.dataset.table",
       "out/Release/artifacts.json"
     ],
-    "env": {
-      "GODEBUG": "http2debug=1"
-    },
     "luci_context": {
       "realm": {
         "name": "myproject:mybucket"
@@ -809,9 +803,6 @@
       "project.dataset.table",
       "out/Release/libs.json"
     ],
-    "env": {
-      "GODEBUG": "http2debug=1"
-    },
     "luci_context": {
       "realm": {
         "name": "myproject:mybucket"

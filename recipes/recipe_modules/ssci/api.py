@@ -84,9 +84,8 @@ class SsciAPI(recipe_api.RecipeApi):
     """
     step_name = f"upload {data_name} to BigQuery"
     try:
-      with self.m.context(env={'GODEBUG': "http2debug=1"}):
-        self.m.step(step_name, [self.bqupload.tool_path, "-json-list=true"] +
-                    bq_args + [file_to_upload])
+      self.m.step(step_name, [self.bqupload.tool_path, "-json-list=true"] +
+                  bq_args + [file_to_upload])
     except self.m.step.StepFailure:
       pass
 
