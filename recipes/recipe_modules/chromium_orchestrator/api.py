@@ -266,16 +266,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     _, local_tests_raw_result = self.process_sub_build(
         build_to_process, is_swarming_phase=False, with_patch=True)
 
-    def cancel_without_patch_build(wo_build_id):
-      self.m.buildbucket.cancel_build(
-          wo_build_id,
-          ('Canceling because the parent builder does not need to retry '
-           'shards without patch.'),
-      )
-
     if not failing_test_suites:
-      if self.without_patch_build and trigger_without_patch_compile_early:
-        cancel_without_patch_build(self.without_patch_build.id)
       self.m.chromium_swarming.report_stats()
       # There could be exonerated failed tests from FindIt flakes
       self.m.chromium_tests.summarize_test_failures(tests)
@@ -314,8 +305,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         builder_config, affected_files,
         self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir)):
-      if self.without_patch_build and trigger_without_patch_compile_early:
-        cancel_without_patch_build(self.without_patch_build.id)
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
 
       summary_markdown = self.m.chromium_tests.format_unrecoverable_failures(

@@ -904,7 +904,6 @@ def GenTests(api):
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
-      api.post_process(post_process.MustRun, 'buildbucket.cancel'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1025,7 +1024,6 @@ def GenTests(api):
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
-      api.post_process(post_process.MustRun, 'buildbucket.cancel'),
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
       api.expect_status('FAILURE'),
@@ -1590,7 +1588,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.MustRun, 'buildbucket.cancel'),
       api.post_process(post_process.DropExpectation),
   )
 
