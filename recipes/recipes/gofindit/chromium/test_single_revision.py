@@ -137,6 +137,7 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
       if not run_all:
         test_filter = test_names_by_test_suite[test.canonical_name]
         test_options = attr.evolve(test_options, test_filter=test_filter)
+        test.spec = attr.evolve(test.spec, shards=1)
       test.test_options = test_options
 
       resultdb = test.spec.resultdb
@@ -180,11 +181,26 @@ def GenTests(api):
     _default_spec = target_builder_group, {
         target_builder: {
             'gtest_tests': [{
-                'test': 'fake-gtest'
+                'test': 'fake-gtest',
+                'swarming': {
+                    'dimension_sets': [{
+                        'os': 'Mac',
+                    }],
+                }
             }, {
-                'test': 'fake-gtest-2'
+                'test': 'fake-gtest-2',
+                'swarming': {
+                    'dimension_sets': [{
+                        'os': 'Mac',
+                    }],
+                }
             }, {
-                'test': 'fake-gtest-3'
+                'test': 'fake-gtest-3',
+                'swarming': {
+                    'dimension_sets': [{
+                        'os': 'Mac',
+                    }],
+                }
             }],
             'scripts': [{
                 'name': 'fake-script-test',
@@ -256,12 +272,12 @@ def GenTests(api):
                         ('fake-gtest-2', 'gtest-test-2')]),
       api.post_process(MustRun, 'bot_update'),
       api.post_process(MustRun, 'compile'),
-      api.post_process(MustRun, 'fake-gtest (bisection)'),
-      api.post_process(MustRun, 'fake-gtest-2 (bisection)'),
+      api.post_process(MustRun, 'fake-gtest (bisection) on Mac'),
+      api.post_process(MustRun, 'fake-gtest-2 (bisection) on Mac'),
       api.post_process(MustRun, 'send_test_results_to_luci_bisection'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
                        "input", ['"run_succeeded": true']),
-      api.post_process(DoesNotRun, 'fake-gtest-3 (bisection)'),
+      api.post_process(DoesNotRun, 'fake-gtest-3 (bisection) on Mac'),
       api.post_process(DoesNotRun, 'fake-script-test (bisection)'),
       api.post_process(DropExpectation),
   )
@@ -277,7 +293,7 @@ def GenTests(api):
       api.post_process(MustRun, 'bot_update'),
       api.post_process(MustRun, 'clobber'),
       api.post_process(MustRun, 'compile'),
-      api.post_process(MustRun, 'fake-gtest (bisection)'),
+      api.post_process(MustRun, 'fake-gtest (bisection) on Mac'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
                        "input", ['"run_succeeded": true']),
       api.post_process(DropExpectation),
