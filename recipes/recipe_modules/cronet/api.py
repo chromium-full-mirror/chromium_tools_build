@@ -38,11 +38,9 @@ class CronetApi(recipe_api.RecipeApi):
   def build(self,
             builder_id=None,
             targets=None,
-            use_goma=True,
-            use_reclient=False):
+            use_goma=False,
+            use_reclient=True):
     builder_id = builder_id or self.m.chromium.get_builder_id()
-    if use_goma:
-      self.m.chromium.ensure_goma()
     self.m.chromium.runhooks()
     if self.m.chromium.c.project_generator.tool == 'gn':  # pragma: no cover
       assert (self.m.chromium.c.HOST_PLATFORM == 'linux' and
@@ -50,13 +48,10 @@ class CronetApi(recipe_api.RecipeApi):
       gn_path = self.m.path['checkout'].join('buildtools', 'linux64', 'gn')
       if not self.m.path.exists(gn_path):
         gn_path = self.m.path['checkout'].join('third_party', 'gn', 'gn')
-      self.m.chromium.run_gn(
-          use_goma=use_goma, use_reclient=use_reclient, gn_path=gn_path)
+      self.m.chromium.run_gn(use_reclient=use_reclient, gn_path=gn_path)
     elif self.m.chromium.c.project_generator.tool == 'mb':
-      self.m.chromium.mb_gen(
-          builder_id, use_goma=use_goma, use_reclient=use_reclient)
-    return self.m.chromium.compile(
-        targets=targets, use_goma_module=use_goma, use_reclient=use_reclient)
+      self.m.chromium.mb_gen(builder_id, use_reclient=use_reclient)
+    return self.m.chromium.compile(targets=targets, use_reclient=use_reclient)
 
   def get_version(self):
     version = self.m.chromium.get_version()
@@ -103,8 +98,7 @@ class CronetApi(recipe_api.RecipeApi):
 
   def run_perf_tests(self,
                      perf_builder_name_alias,
-                     use_goma=True,
-                     use_reclient=False):
+                     use_reclient=True):
     # TODO(crbug.com/1324274): Revive, or bury the perf test bot for good
     raise NotImplementedError(
         "The perf bot is broken. See crbug.com/1324274 for details.")

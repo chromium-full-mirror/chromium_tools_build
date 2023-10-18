@@ -24,7 +24,7 @@ BUILDERS = freeze({
             'REPO_URL': 'https://chromium.googlesource.com/chromium/src.git',
             'REPO_NAME': 'src',
         },
-        'use_goma': False,
+        'use_reclient': False,
     },
 })
 
@@ -34,14 +34,13 @@ def RunSteps(api):
   recipe_config = builder_config['recipe_config']
   kwargs = builder_config.get('kwargs', {})
 
-  use_goma = builder_config.get('use_goma', False)
   use_reclient = builder_config.get('use_reclient', True)
 
   api.cronet.init_and_sync(
       recipe_config, kwargs,
       chromium_apply_config=builder_config.get('chromium_apply_config'))
 
-  raw_result = api.cronet.build(use_goma=use_goma, use_reclient=use_reclient)
+  raw_result = api.cronet.build(use_reclient=use_reclient)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 

@@ -11,35 +11,36 @@ DEPS = [
     'cronet',
     'depot_tools/bot_update',
     'recipe_engine/buildbucket',
-    'recipe_engine/runtime',
     'recipe_engine/properties',
+    'recipe_engine/runtime',
+    'reclient',
 ]
 
 BUILDERS = freeze({
-  'local_test': {
-    'recipe_config': 'main_builder',
-    'upload_package': True,
-    'kwargs': {
-      'BUILD_CONFIG': 'Debug',
+    'local_test': {
+        'recipe_config': 'main_builder',
+        'upload_package': True,
+        'kwargs': {
+            'BUILD_CONFIG': 'Debug',
+        },
+        'use_reclient': False,
     },
-    'use_goma': False,
-  },
-  'gn_test': {
-    'recipe_config': 'main_builder',
-    'upload_package': True,
-    'kwargs': {
-      'BUILD_CONFIG': 'Debug',
+    'gn_test': {
+        'recipe_config': 'main_builder',
+        'upload_package': True,
+        'kwargs': {
+            'BUILD_CONFIG': 'Debug',
+        },
+        'chromium_apply_config': ['gn'],
     },
-    'chromium_apply_config': ['gn'],
-  },
-  'mb_test': {
-    'recipe_config': 'main_builder',
-    'upload_package': True,
-    'kwargs': {
-      'BUILD_CONFIG': 'Release',
+    'mb_test': {
+        'recipe_config': 'main_builder',
+        'upload_package': True,
+        'kwargs': {
+            'BUILD_CONFIG': 'Release',
+        },
+        'chromium_apply_config': ['mb'],
     },
-    'chromium_apply_config': ['mb'],
-  },
 })
 
 
@@ -54,8 +55,8 @@ def RunSteps(api):
                        chromium_apply_config=chromium_apply_config)
   cronet.generate_changelist()
 
-  use_goma = builder_config.get('use_goma', True)
-  raw_result = cronet.build(use_goma=use_goma)
+  use_reclient = builder_config.get('use_reclient', True)
+  raw_result = cronet.build(use_reclient=use_reclient)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -70,6 +71,7 @@ def GenTests(api):
         test_name += '_experimental'
       yield api.test(
           test_name,
+          api.reclient.properties(),
           api.chromium.ci_build(
               builder_group='fake-group',
               builder=builder,
@@ -80,6 +82,7 @@ def GenTests(api):
   # Do these proerties actually ever get set anymore?
   yield api.test(
       'optional_properties',
+      api.reclient.properties(),
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='local_test',
@@ -93,6 +96,7 @@ def GenTests(api):
 
   yield api.test(
       'compile_failure',
+      api.reclient.properties(),
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='local_test',
