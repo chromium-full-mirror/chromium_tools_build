@@ -27,8 +27,7 @@ def RunSteps(api):
     api.tricium_clang_tidy.lint_source_files(
         output_dir=cache_dir.join('out'),
         file_paths=[cache_dir.join('src', 'path/to/some/cc/file.cpp')],
-        is_windows=api.properties['is_windows'],
-        use_reclient=api.properties['use_reclient'])
+        is_windows=api.properties['is_windows'])
 
 
 def _get_tricium_comments(steps):
@@ -69,9 +68,8 @@ def GenTests(api):
   def with_patch(affected_files,
                  auto_exist_files=True,
                  clang_tidy_exists=True,
-                 is_windows=False,
-                 use_reclient=False):
-    test_data = api.properties(is_windows=is_windows, use_reclient=use_reclient)
+                 is_windows=False):
+    test_data = api.properties(is_windows=is_windows)
 
     existing_files = []
     if auto_exist_files:
@@ -89,6 +87,7 @@ def GenTests(api):
   yield api.test(
       'no_files',
       with_patch(affected_files=[]),
+      api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
       api.post_process(post_process.DropExpectation),
   )
@@ -96,6 +95,7 @@ def GenTests(api):
   yield api.test(
       'no_analysis_non_cpp',
       with_patch(affected_files=['some/cc/file.txt']),
+      api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
       api.post_process(post_process.DropExpectation),
   )
@@ -104,6 +104,7 @@ def GenTests(api):
       'removed_file',
       with_patch(
           affected_files=['path/to/some/cc/file.cpp'], auto_exist_files=False),
+      api.reclient.properties(),
       api.post_process(post_process.DoesNotRun, 'clang-tidy'),
       api.post_process(_tricium_has_no_messages),
       api.post_process(post_process.DropExpectation),
@@ -112,6 +113,7 @@ def GenTests(api):
   yield api.test(
       'analyze_cpp_timed_out_files',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data('clang-tidy.generate-warnings.read tidy output',
                     api.file.read_json({'timed_out_src_files': ['oh/no.cpp']})),
       api.post_process(post_process.StepWarning,
@@ -125,6 +127,7 @@ def GenTests(api):
   yield api.test(
       'analyze_cpp_failed_files',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({'failed_src_files': ['path/to/some/cc/file.cpp']
@@ -137,6 +140,7 @@ def GenTests(api):
   yield api.test(
       'analyze_cpp_failed_tidy_files',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json(
@@ -149,6 +153,7 @@ def GenTests(api):
   yield api.test(
       'analyze_cpp',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -182,30 +187,6 @@ def GenTests(api):
   yield api.test(
       'analyze_cpp_windows',
       with_patch(affected_files=['path/to/some/cc/file.cpp'], is_windows=True),
-      api.step_data(
-          'clang-tidy.generate-warnings.read tidy output',
-          api.file.read_json({
-              'diagnostics': [{
-                  'file_path': 'path\\to\\some\\cc/file.cpp',
-                  'line_number': 2,
-                  'diag_name': 'super-cool-diag',
-                  'message': 'hello, world 1',
-                  'replacements': [],
-                  'expansion_locs': [],
-              },]
-          })),
-      api.post_process(post_process.StepSuccess,
-                       'clang-tidy.generate-warnings'),
-      api.post_process(
-          _tricium_has_message, 'hello, world 1 (https://clang.llvm.org/'
-          'extra/clang-tidy/checks/super/cool-diag.html)'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'analyze_cpp_reclient',
-      with_patch(
-          affected_files=['path/to/some/cc/file.cpp'], use_reclient=True),
       api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
@@ -230,6 +211,7 @@ def GenTests(api):
   yield api.test(
       'only_warnings_and_errors_are_silenced',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -262,6 +244,7 @@ def GenTests(api):
   yield api.test(
       'append_complaint_on_failure',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -289,6 +272,7 @@ def GenTests(api):
   yield api.test(
       'prefer_complaints_about_build_failures_over_tidy_ones',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -317,6 +301,7 @@ def GenTests(api):
   yield api.test(
       'append_complaint_on_tidy_failure',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -344,6 +329,7 @@ def GenTests(api):
   yield api.test(
       'diagnostic_suggestions',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({
@@ -413,6 +399,7 @@ def GenTests(api):
     yield api.test(
         'expansion_%d' % num_expansions,
         with_patch(affected_files=['path/to/some/cc/file.cpp']),
+        api.reclient.properties(),
         api.step_data('clang-tidy.generate-warnings.read tidy output',
                       api.file.read_json({'diagnostics': diags})),
         api.post_process(post_process.StepSuccess,
@@ -433,6 +420,7 @@ def GenTests(api):
   yield api.test(
       'diagnostic_use_after_move',
       with_patch(affected_files=['path/to/some/cc/file.cpp']),
+      api.reclient.properties(),
       api.step_data(
           'clang-tidy.generate-warnings.read tidy output',
           api.file.read_json({

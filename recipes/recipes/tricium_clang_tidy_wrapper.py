@@ -125,8 +125,6 @@ def RunSteps(api):
       # `gn gen` can take up to a minute, and the script we call out to
       # already does that for us, so set up a minimal build dir.
       gn_args_str = api.chromium.mb_lookup(me)
-      gn_args = api.gn.parse_gn_args(gn_args_str)
-      use_reclient = gn_args.get('use_remoteexec') == 'true'
 
       api.file.ensure_directory('ensure out dir', api.chromium.output_dir)
       api.file.write_text('write args.gn',
@@ -134,8 +132,7 @@ def RunSteps(api):
 
       api.tricium_clang_tidy.lint_source_files(api.chromium.output_dir,
                                                affected,
-                                               api.platform.name == 'win',
-                                               use_reclient)
+                                               api.platform.name == 'win')
 
 
 def GenTests(api):

@@ -161,8 +161,7 @@ class TriciumClangTidyApi(RecipeApi):
   def lint_source_files(self,
                         output_dir,
                         file_paths,
-                        is_windows=False,
-                        use_reclient=False):
+                        is_windows=False):
     """Runs clang-tidy on provided source files in file_paths, then writes
     warnings to Tricium.
 
@@ -189,7 +188,7 @@ class TriciumClangTidyApi(RecipeApi):
     with self.m.step.nest('clang-tidy'):
       with self.m.step.nest('generate-warnings'):
         per_file_comments = self._generate_clang_tidy_comments(
-            output_dir, affected, is_windows, use_reclient)
+            output_dir, affected, is_windows)
 
       for file_path, comments in per_file_comments.items():
         for category, message, line_number, suggestions in comments:
@@ -204,8 +203,7 @@ class TriciumClangTidyApi(RecipeApi):
 
     self.m.tricium.write_comments()
 
-  def _generate_clang_tidy_comments(self, output_dir, file_paths, is_windows,
-                                    use_reclient):
+  def _generate_clang_tidy_comments(self, output_dir, file_paths, is_windows):
     clang_tidy_location = self.m.context.cwd.join(*_clang_tidy_path)
     per_file_comments = collections.defaultdict(_SourceFileComments)
 
@@ -218,8 +216,7 @@ class TriciumClangTidyApi(RecipeApi):
         '--findings_file=%s' % warnings_file,
         '--clang_tidy_binary=%s' % clang_tidy_location,
         '--base_path=%s' % self.m.context.cwd,
-        '--ninja_jobs=%s' %
-        (self.m.reclient.jobs if use_reclient else self.m.goma.jobs),
+        '--ninja_jobs=%s' % self.m.reclient.jobs,
         '--verbose',
     ]
 
@@ -246,12 +243,8 @@ class TriciumClangTidyApi(RecipeApi):
     ninja_dir = self.m.path['checkout'].join('third_party', 'ninja')
     ninja_path = {'PATH': [ninja_dir]}
     with self.m.context(env_suffixes=ninja_path):
-      if use_reclient:
-        self._build_with_reclient('tricium_clang_tidy_script.py',
-                                  tricium_clang_tidy_command)
-      else:
-        self._build_with_goma('tricium_clang_tidy_script.py',
-                              tricium_clang_tidy_command)
+      self._build_with_reclient('tricium_clang_tidy_script.py',
+                                tricium_clang_tidy_command)
 
     # Please see tricium_clang_tidy_script.py for full docs on what this
     # contains.
@@ -325,18 +318,3 @@ class TriciumClangTidyApi(RecipeApi):
     with self.m.reclient.process(step_name, ninja_command) as p:
       step_result = self.m.step(step_name, cmd)
       p.build_exit_status = step_result.retcode
-
-  def _build_with_goma(self, step_name, cmd):
-    self.m.goma.ensure_goma()
-    self.m.goma.start()
-
-    build_exit_status = 0
-    try:
-      step_result = self.m.step(step_name, cmd)
-      build_exit_status = step_result.retcode
-    except:  # pragma: no cover
-      build_exit_status = -1
-      raise
-    finally:
-      self.m.goma.stop(
-          ninja_log_compiler='goma', build_exit_status=build_exit_status)
