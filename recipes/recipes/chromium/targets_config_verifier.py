@@ -226,8 +226,8 @@ def _compare_targets_configs(
       difflib.unified_diff(
           pyl_config_json,
           starlark_config_json,
-          fromfile='recipe builder config',
-          tofile='src-side builder config',
+          fromfile='pyl targets config',
+          tofile='starlark targets config',
           n=max(len(pyl_config_json), len(starlark_config_json)),
       ))
 
