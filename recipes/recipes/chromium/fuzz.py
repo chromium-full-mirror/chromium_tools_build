@@ -432,6 +432,10 @@ def RunSteps(api):
       all_fuzzers = all_fuzzers & ios_fuzzers
     no_clusterfuzz = gn_refs(api, 'calculate no_clusterfuzz',
                              '//testing/libfuzzer:no_clusterfuzz')
+    # If we're collecting coverage, we also want to know the coverage
+    # of the main Chromium binary, so let's build that too.
+    if bot_config.collect_fuzz_coverage:
+      all_fuzzers.add("chrome")
     targets = sorted(all_fuzzers - no_clusterfuzz)
 
     api.step.active_result.presentation.logs['all_fuzzers'] = sorted(
