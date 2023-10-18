@@ -115,11 +115,6 @@ class SkylabApi(recipe_api.RecipeApi):
           if t.spec.cros_model:
             cmd.extend(['-model', t.spec.cros_model])
 
-          if t.spec.secondary_cros_board:
-            cmd.extend(['-secondary-boards', t.spec.secondary_cros_board])
-            if t.spec.secondary_cros_img:
-              cmd.extend(['-secondary-images', t.spec.secondary_cros_img])
-
           if t.spec.bucket:
             cmd.extend(['-bucket', t.spec.bucket])
 
@@ -142,6 +137,23 @@ class SkylabApi(recipe_api.RecipeApi):
             cmd.extend(['-image', lkgm_cros_img])
           else:
             cmd.extend(['-image', t.spec.cros_img])
+
+          if t.spec.secondary_cros_board:
+            cmd.extend(['-secondary-boards', t.spec.secondary_cros_board])
+            if t.spec.secondary_cros_img:
+              boards = t.spec.secondary_cros_board.split(',')
+              imgs = t.spec.secondary_cros_img.split(',')
+              if len(boards) != len(imgs):
+                raise recipe_api.StepFailure('Length of secondary_cros_img'
+                                             ' must match secondary_cros_board')
+              updated_imgs = imgs.copy()
+              for i, img in enumerate(imgs):
+                if img == 'use_lkgm':
+                  assert 'chromiumos' not in t.spec.bucket, 'use_lkgm is not supported for public builders'
+                  updated_imgs[i] = self.get_lkgm_version(
+                      boards[i], str(self.m.chromium_checkout.src_dir))
+
+              cmd.extend(['-secondary-images', ','.join(updated_imgs)])
 
           cmd.extend(['-timeout-mins', str(int(t.spec.timeout_sec / 60))])
 
@@ -218,7 +230,7 @@ class SkylabApi(recipe_api.RecipeApi):
             cmd.extend(['-lacros-path', t.lacros_gcs_path])
 
             if t.spec.secondary_cros_board:
-              num_boards = len(t.spec.secondary_cros_board.split(","))
+              num_boards = len(t.spec.secondary_cros_board.split(','))
               # By default, browser files are sent to all secondary DUTs unless
               # users explicitly override through should_provision_browser_files.
               should_provision_browser_files = [True] * num_boards

@@ -101,12 +101,6 @@ REQUESTS = [
         dut_pool='cross_device_multi_cb',
         tast_expr_file='tast_expr_file.filter'),
     gen_skylab_test(
-        'm88_nearby_multi_dut',
-        secondary_cros_board='eve',
-        secondary_cros_img='eve-release/R88-13545.0.0',
-        tast_expr=LACROS_TAST_EXPR,
-        autotest_name='tast.nearby-share'),
-    gen_skylab_test(
         'telemetry_test_args',
         tast_expr=None,
         benchmark='speedometer2',
@@ -128,16 +122,30 @@ REQUESTS = [
         bucket='chromiumos-image-archive',
         extra_browser_args=GPU_EXTRA_BROWSWER_ARGS,
     ),
+]
+
+MULTI_DUT_REQUESTS = [
     gen_skylab_test(
-        'm111_multi_dut_skip_secondary_lacros_paths',
+        'multi_dut',
+        secondary_cros_board='eve',
+        secondary_cros_img='eve-release/R88-13545.0.0',
+        tast_expr=LACROS_TAST_EXPR,
+        autotest_name='tast.nearby-share'),
+    gen_skylab_test(
+        'multi_dut_skip_secondary_lacros_paths',
         secondary_cros_board='pixel6',
         should_provision_browser_files=[False],
     ),
     gen_skylab_test(
-        'm111_multi_dut_partial_skip_secondary_lacros_paths',
+        'multi_dut_partial_skip_secondary_lacros_paths',
         secondary_cros_board='atlas,pixel6,octopus',
         secondary_cros_img='atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
         should_provision_browser_files=[True, False, True],
+    ),
+    gen_skylab_test(
+        'multi_dut_secondary_cros_img_use_lkgm',
+        secondary_cros_board='atlas,pixel6,octopus',
+        secondary_cros_img='use_lkgm,,use_lkgm',
     ),
 ]
 
@@ -227,18 +235,18 @@ def GenTests(api):
       api.post_process(post_process.StepFailure, 'schedule skylab tests'),
       api.post_process(
           post_process.MustRun,
-          'schedule skylab tests.{0}.schedule'.format(REQUESTS[5].name)),
+          'schedule skylab tests.{0}.schedule'.format(REQUESTS[4].name)),
       api.post_process(
           post_process.MustRun,
-          'schedule skylab tests.{0}.schedule (1)'.format(REQUESTS[5].name)),
+          'schedule skylab tests.{0}.schedule (1)'.format(REQUESTS[4].name)),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[5].name + '.schedule',
-          [test_args_for_shard(REQUESTS[5].name, 0)]),
+          'schedule skylab tests.' + REQUESTS[4].name + '.schedule',
+          [test_args_for_shard(REQUESTS[4].name, 0)]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[5].name + '.schedule (1)',
-          [test_args_for_shard(REQUESTS[5].name, 1)]),
+          'schedule skylab tests.' + REQUESTS[4].name + '.schedule (1)',
+          [test_args_for_shard(REQUESTS[4].name, 1)]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -247,63 +255,85 @@ def GenTests(api):
       api.properties(requests=REQUESTS),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[6].name + '.schedule',
+          'schedule skylab tests.' + REQUESTS[5].name + '.schedule',
           'chromium_Graphics'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'multi_dut',
-      api.properties(requests=REQUESTS),
-      api.step_data(
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule', retcode=1),
-      api.post_process(post_process.StepFailure, 'schedule skylab tests'),
+      api.properties(requests=MULTI_DUT_REQUESTS[0:1]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[3].name + '.schedule', [
-              'run', 'test', '-json', '-board', 'eve', '-secondary-boards',
-              'eve', '-secondary-images', 'eve-release/R88-13545.0.0', '-pool',
+          'schedule skylab tests.' + MULTI_DUT_REQUESTS[0].name + '.schedule', [
+              'run', 'test', '-json', '-board', 'eve', '-pool',
               'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
-              '-timeout-mins', '60', '-qs-account', 'lacros', '-lacros-path',
-              'gs://fake_bucket/fake_test', '-secondary-lacros-paths',
-              'gs://fake_bucket/fake_test'
+              '-secondary-boards', 'eve', '-secondary-images',
+              'eve-release/R88-13545.0.0', '-timeout-mins', '60', '-qs-account',
+              'lacros', '-lacros-path', 'gs://fake_bucket/fake_test',
+              '-secondary-lacros-paths', 'gs://fake_bucket/fake_test'
           ]),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'multi_dut_skip_provision_browser_files',
-      api.properties(requests=REQUESTS),
-      api.step_data(
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule', retcode=1),
-      api.post_process(post_process.StepFailure, 'schedule skylab tests'),
+      api.properties(requests=MULTI_DUT_REQUESTS[1:2]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[7].name + '.schedule', [
-              'run', 'test', '-json', '-board', 'eve', '-secondary-boards',
-              'pixel6', '-pool', 'DUT_POOL_QUOTA', '-image',
-              'eve-release/R88-13545.0.0', '-timeout-mins', '60', '-qs-account',
-              'lacros', '-lacros-path', 'gs://fake_bucket/fake_test'
+          'schedule skylab tests.' + MULTI_DUT_REQUESTS[1].name + '.schedule', [
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-secondary-boards', 'pixel6', '-timeout-mins', '60',
+              '-qs-account', 'lacros', '-lacros-path',
+              'gs://fake_bucket/fake_test'
           ]),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'multi_dut_partial_skip_provision_browser_files',
-      api.properties(requests=REQUESTS),
-      api.step_data(
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule', retcode=1),
-      api.post_process(post_process.StepFailure, 'schedule skylab tests'),
+      api.properties(requests=MULTI_DUT_REQUESTS[2:3]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[8].name + '.schedule', [
-              'run', 'test', '-json', '-board', 'eve', '-secondary-boards',
-              'atlas,pixel6,octopus', '-secondary-images',
+          'schedule skylab tests.' + MULTI_DUT_REQUESTS[2].name + '.schedule', [
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-secondary-boards', 'atlas,pixel6,octopus', '-secondary-images',
               'atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
-              '-pool', 'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
               '-timeout-mins', '60', '-qs-account', 'lacros', '-lacros-path',
               'gs://fake_bucket/fake_test', '-secondary-lacros-paths',
               'gs://fake_bucket/fake_test,,gs://fake_bucket/fake_test'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'multi_dut_secondary_cros_img_use_lkgm',
+      api.properties(requests=MULTI_DUT_REQUESTS[3:4]),
+      api.step_data(
+          'schedule skylab tests.' + MULTI_DUT_REQUESTS[3].name +
+          '.call build API',
+          api.json.output({
+              "chromeosLkgm": "15580.0.0",
+              "configName": "atlas-release",
+              "fullVersion": "R118-15580.0.0"
+          })),
+      api.step_data(
+          'schedule skylab tests.' + MULTI_DUT_REQUESTS[3].name +
+          '.call build API (2)',
+          api.json.output({
+              "chromeosLkgm": "15580.0.0",
+              "configName": "octopus-release",
+              "fullVersion": "R118-15580.0.0"
+          })),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab tests.' + MULTI_DUT_REQUESTS[3].name + '.schedule', [
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-secondary-boards', 'atlas,pixel6,octopus', '-secondary-images',
+              'atlas-release/R118-15580.0.0,,octopus-release/R118-15580.0.0'
           ]),
       api.post_process(post_process.DropExpectation),
   )
