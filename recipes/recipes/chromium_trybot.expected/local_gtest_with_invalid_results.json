@@ -2814,6 +2814,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "record unsuccessful test suites",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@failed_test_targets@[\"base_unittests\"]@@@"
+    ]
+  },
+  {
     "failure": {
       "failure": {},
       "humanReason": "1 Test Suite(s) failed.\n\n**base_unittests** failed because of:\n\n- Test.One"

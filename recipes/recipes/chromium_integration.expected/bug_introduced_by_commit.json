@@ -4574,6 +4574,13 @@
   },
   {
     "cmd": [],
+    "name": "record unsuccessful test suites",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@failed_test_targets@[\"blink_web_tests\"]@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "Test statistics",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>Stats<br/>Total shards: 3<br/>Total deduped shards: 0<br/><br/>Total runtime: 1m 35s<br/>Total saved runtime from deduping: 0s<br/>@@@",

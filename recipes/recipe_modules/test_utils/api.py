@@ -1076,6 +1076,12 @@ class TestUtilsApi(recipe_api.RecipeApi):
     """
     return GTestResultsOutputPlaceholder(self, add_json_log, leak_to=leak_to)
 
+  def record_unsuccessful_suites(self, tests):
+    step_result = self.m.step.empty('record unsuccessful test suites')
+    step_result.presentation.properties['failed_test_targets'] = [
+        test.target_name for test in tests
+    ]
+
 
 class TestGroup:
   """Abstract class defines the shared interface for tests.

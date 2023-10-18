@@ -857,6 +857,9 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
       api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
+      api.post_process(post_process.MustRun, 'record unsuccessful test suites'),
+      api.post_process(post_process.PropertyEquals, 'failed_test_targets',
+                       ['browser_tests']),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -898,6 +901,9 @@ def GenTests(api):
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
+      api.post_process(post_process.DoesNotRun,
+                       'record unsuccessful test suites'),
+      api.post_process(post_process.PropertiesDoNotContain, 'failed_suites'),
       api.post_process(post_process.DropExpectation),
   )
 

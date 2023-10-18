@@ -143,6 +143,7 @@ def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
       retry_failed_shards=retry_failed_shards,
       retry_invalid_shards=retry_invalid_shards)
   if failed_tests:
+    api.test_utils.record_unsuccessful_suites(failed_tests)
     raise api.step.StepFailure(
         'failed: %s' % ' '.join(t.name for t in failed_tests))
 
@@ -539,5 +540,7 @@ def GenTests(api):
       # the allowed failure rate.
       api.post_process(post_process.SummaryMarkdown,
                        'failed: base_unittests_2'),
+      api.post_process(post_process.PropertyEquals, 'failed_test_targets',
+                       ['base_unittests_2']),
       api.post_process(post_process.DropExpectation),
   )

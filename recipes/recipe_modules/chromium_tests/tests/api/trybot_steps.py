@@ -408,6 +408,9 @@ def GenTests(api):
       # A test that exits with FAILURE in 'with patch' then NOTRUN in
       # 'without patch' should fail the build.
       api.expect_status('FAILURE'),
+      api.post_process(post_process.MustRun, 'record unsuccessful test suites'),
+      api.post_process(post_process.PropertyEquals, 'failed_test_targets',
+                       ['base_unittests']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -472,6 +475,9 @@ def GenTests(api):
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.MustRun, 'record unsuccessful test suites'),
+      api.post_process(post_process.PropertyEquals, 'failed_test_targets',
+                       ['base_unittests']),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -1357,6 +1357,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       is_tot_fail = self.m.test_utils.summarize_test_with_patch_deapplied(t)
       if not is_tot_fail:
         culpable_failures.append(t)
+    if culpable_failures:
+      self.m.test_utils.record_unsuccessful_suites(culpable_failures)
     return culpable_failures
 
   def _run_tests_with_retries(self, builder_id, task, deapply_changes):
