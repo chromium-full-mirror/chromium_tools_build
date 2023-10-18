@@ -15,9 +15,15 @@ from recipe_engine import engine_types
 from recipe_engine.config_types import Path
 
 from RECIPE_MODULES.build import chromium_swarming
+from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
 
 TargetsSpec = Mapping[str, object]
 _RawTestSpec = Mapping[str, object]
+
+
+@attrs()
+class PrecommitDetails:
+  footers = attrib(mapping[str, sequence[str]], default={})
 
 
 class Generator:
@@ -28,6 +34,7 @@ class Generator:
       got_revisions: Mapping[str, str],
       checkout_path: Path,
       isolated_tests_only: bool = False,
+      precommit_details: Optional[PrecommitDetails] = None,
       scripts_compile_targets_fn: Optional[Callable[[], Iterable[str]]] = None,
   ):
     """
@@ -39,6 +46,9 @@ class Generator:
         For chromium builders this is usually cache/builder/src, but for
         other builders, like angle, this is cache/builder/angle.
       isolated_tests_only: Whether to only yield isolated tests.
+      precommit_details: Details used for the pre-commit-specific
+        behavior when generating tests. If None, then the generation
+        will use the non-pre-commit behavior.
       scripts_compile_targets_fn: A function that can be called to get
         the compile targets required for script tests.
     """
@@ -46,6 +56,7 @@ class Generator:
     self._got_revisions = got_revisions
     self._checkout_path = checkout_path
     self._isolated_tests_only = isolated_tests_only
+    self._precommit_details = precommit_details
     self._scripts_compile_targets_fn = (
         scripts_compile_targets_fn or (lambda: []))
 
@@ -188,7 +199,7 @@ class Generator:
     """
 
     args = list(raw_test_spec.get('args', []))
-    if self._chromium_tests_api.m.tryserver.is_tryserver:
+    if self._precommit_details:
       args.extend(raw_test_spec.get('precommit_args', []))
     else:
       args.extend(raw_test_spec.get('non_precommit_args', []))
@@ -196,11 +207,10 @@ class Generator:
     # Perform substitution of known variables.
     build = self._chromium_tests_api.m.buildbucket.build
     cl = (build.input.gerrit_changes or [None])[0]
-    if self._chromium_tests_api.m.tryserver.is_tryserver:
+    if self._precommit_details:
       footer_values = [
-          val.lower()
-          for val in self._chromium_tests_api.m.tryserver.get_footer(
-              'Use-Permissive-Angle-Pixel-Comparison')
+          val.lower() for val in self._precommit_details.footers.get(
+              'Use-Permissive-Angle-Pixel-Comparison', [])
       ]
       use_permissive_angle_pixel_comparison = 'true' in footer_values
     else:

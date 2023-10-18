@@ -202,23 +202,31 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     for c in builder_config.android_apply_config:
       self.m.chromium_android.apply_config(c)
 
+  _COMPUTE_PRECOMMIT_DETAILS = object()
+
   def create_targets_config(self,
                             builder_config,
                             got_revisions,
                             checkout_path,
                             targets_spec_dir=None,
+                            precommit_details=_COMPUTE_PRECOMMIT_DETAILS,
                             isolated_tests_only=False):
     """
     Args:
       builder_config (BuilderConfig): config for the current builder
       got_revisions (dict): revisions checked out for src and other deps.
         Usually stored in the bot_update step presentation properties.
-      isolated_tests_only (bool): only include targets for isolated tests
       checkout_path: path to checked out repo that contains test specs. For
         chromium builders this is usually cache/builder/src, but for other
         builders, like angle, this is cache/builder/angle.
       targets_spec_dir: Path to directory containing targets specs. If
         this is None, chromium.c.targets_spec_dir will be used.
+      precommit_details: Details used for the pre-commit-specific
+        behavior when generating tests. If None, then the generation
+        will use the non-pre-commit behavior. By default, the
+        pre-commit-specific behavior will be used if there is a CL for
+        the build, with the footers being taken from the CL description.
+      isolated_tests_only (bool): only include targets for isolated tests
 
     Returns: TargetsConfig for current builder
     """
@@ -243,9 +251,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     for group, spec_file in sorted(builder_config.targets_spec_files.items()):
       targets_specs_by_builder_by_group[group] = self.read_targets_spec(
           spec_file, targets_spec_dir=targets_spec_dir)
+    if precommit_details is self._COMPUTE_PRECOMMIT_DETAILS:
+      precommit_details = None
+      if self.m.tryserver.is_tryserver:
+        precommit_details = generators.PrecommitDetails(
+            footers=self.m.tryserver.get_footers())
 
     generator = generators.Generator(self, got_revisions, checkout_path,
-                                     isolated_tests_only,
+                                     isolated_tests_only, precommit_details,
                                      scripts_compile_targets_fn)
 
     targets_by_builder_id = {}

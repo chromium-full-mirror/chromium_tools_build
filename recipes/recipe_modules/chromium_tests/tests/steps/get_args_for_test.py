@@ -27,9 +27,17 @@ def RunSteps(api):
   single_spec = api.properties.get('single_spec')
   test_spec = single_spec if single_spec else {}
 
-  generator = generators.Generator(api.chromium_tests,
-                                   update_step.presentation.properties,
-                                   api.path['checkout'])
+  precommit_details = None
+  if api.tryserver.is_tryserver:
+    precommit_details = generators.PrecommitDetails(
+        footers=api.tryserver.get_footers())
+
+  generator = generators.Generator(
+      api.chromium_tests,
+      update_step.presentation.properties,
+      api.path['checkout'],
+      precommit_details=precommit_details,
+  )
   test_args = generator._get_args_for_test(test_spec)
   if 'expected_args' in api.properties:
     # For some reason, we get expected_args as a tuple instead of a list

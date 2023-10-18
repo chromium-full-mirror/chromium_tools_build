@@ -5,13 +5,14 @@
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests import generators
 
 DEPS = [
     'chromium',
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'depot_tools/tryserver',
     'recipe_engine/assertions',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -80,6 +81,8 @@ def RunSteps(api, isolated_tests_only, expected_tests, targets_spec_dir):
       },
       api.chromium_checkout.src_dir,
       targets_spec_dir=targets_spec_dir,
+      precommit_details=(generators.PrecommitDetails()
+                         if api.tryserver.is_tryserver else None),
       isolated_tests_only=isolated_tests_only)
   tests = []
   for t in targets_config.all_tests:
