@@ -106,12 +106,21 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         self.m.buildbucket.set_output_gitiles_commit(
             comp_build.output.gitiles_commit)
 
-      # crbug.com/1271287#c22
-      # Wait for compilator task overhead to complete
-      self.m.swarming.collect(
-          name=COMPILATOR_SWARMING_TASK_COLLECT_STEP,
-          tasks=[comp_build.infra.swarming.task_id],
-          timeout="4m")
+      # When the without_patch_build was triggered early in the build
+      # (during the retry shards step) but no longer needed by the
+      # orchestrator, we don't need to wait around for it to finish.
+      # By this point the without_patch_build has already been cancelled through
+      # buildbucket.cancel() and the compilator swarming task will finish
+      # shutting down on its own time.
+      if not self.without_patch_build or (
+          self.without_patch_build.id !=
+          self.current_compilator_buildbucket_id):
+        # crbug.com/1271287#c22
+        # Wait for compilator task overhead to complete
+        self.m.swarming.collect(
+            name=COMPILATOR_SWARMING_TASK_COLLECT_STEP,
+            tasks=[comp_build.infra.swarming.task_id],
+            timeout="4m")
 
     return raw_result
 
@@ -226,6 +235,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       trigger_without_patch_compile_early = True
 
     def trigger_without_patch_compile_callback(swarming_test_suites):
+      if self.m.chromium_tests.should_skip_without_patch(
+          builder_config, affected_files,
+          self.m.chromium_checkout.src_dir.join(
+              comp_output.src_side_test_spec_dir)):
+        return
+
       # Trigger another compilator build with the targets needed
       compilator_properties['swarming_targets'] = list(
           set(t.target_name for t in swarming_test_suites))
@@ -234,9 +249,16 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         compilator_properties['deps_revision_overrides'] = (
             dict(comp_output.override_deps))
 
+      # With can_outlive_parent=True, this means that when the orchestrator
+      # is cancelled or infra failed, the triggered compilator won't
+      # automatically get cancelled. This is so that orchestrator builds
+      # don't have to wait up to 4m waiting for the compilator swarming task
+      # to finish cleanly.
       self.without_patch_build = self._trigger_compilator(
-          'trigger compilator (without patch)', compilator_properties,
-          gitiles_commit)
+          'trigger compilator (without patch)',
+          compilator_properties,
+          gitiles_commit,
+          can_outlive_parent=True)
 
     if trigger_without_patch_compile_early:
       pre_retry_shards_callback = trigger_without_patch_compile_callback
@@ -266,7 +288,16 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     _, local_tests_raw_result = self.process_sub_build(
         build_to_process, is_swarming_phase=False, with_patch=True)
 
+    def cancel_without_patch_build(wo_build_id):
+      self.m.buildbucket.cancel_build(
+          wo_build_id,
+          ('Canceling because the parent builder does not need to retry '
+           'shards without patch.'),
+      )
+
     if not failing_test_suites:
+      if self.without_patch_build and trigger_without_patch_compile_early:
+        cancel_without_patch_build(self.without_patch_build.id)
       self.m.chromium_swarming.report_stats()
       # There could be exonerated failed tests from FindIt flakes
       self.m.chromium_tests.summarize_test_failures(tests)
@@ -305,6 +336,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         builder_config, affected_files,
         self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir)):
+      if self.without_patch_build and trigger_without_patch_compile_early:
+        cancel_without_patch_build(self.without_patch_build.id)
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
 
       summary_markdown = self.m.chromium_tests.format_unrecoverable_failures(
@@ -405,8 +438,11 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium.apply_config('trybot_flavor')
     return builder_id, builder_config
 
-  def _trigger_compilator(self, step_name, compilator_properties,
-                          gitiles_commit):
+  def _trigger_compilator(self,
+                          step_name,
+                          compilator_properties,
+                          gitiles_commit,
+                          can_outlive_parent=None):
     if self.m.led.launched_by_led:
       build = self._trigger_compilator_led_build(step_name,
                                                  compilator_properties)
@@ -421,6 +457,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
               'hide-in-gerrit': 'pointless',
               'skip-rety-in-gerrit': 'pointless',
           }),
+          can_outlive_parent=can_outlive_parent,
       )
 
       build = self.m.buildbucket.schedule([request], step_name=step_name)[0]

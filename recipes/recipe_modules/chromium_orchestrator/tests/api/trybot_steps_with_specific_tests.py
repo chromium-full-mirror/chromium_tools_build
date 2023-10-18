@@ -40,20 +40,20 @@ def RunSteps(api):
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
-  def _ctbc_properties():
+  def _ctbc_properties(**kwargs):
     return ctbc_api.properties(
-        ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-            builder_group='fake-group',
-            builder='fake-builder',
-        ).with_mirrored_tester(
-            builder_group='fake-group',
-            builder='fake-tester',
-        ).assemble())
+        ctbc_api.properties_assembler_for_try_builder(
+            **kwargs).with_mirrored_builder(
+                builder_group='fake-group',
+                builder='fake-builder',
+            ).with_mirrored_tester(
+                builder_group='fake-group',
+                builder='fake-tester',
+            ).assemble())
 
-  def default_properties():
-    return sum(
-        [_ctbc_properties(), api.cv(run_mode='FULL_RUN')],
-        api.empty_test_data())
+  def default_properties(**kwargs):
+    return sum([_ctbc_properties(**kwargs),
+                api.cv(run_mode='FULL_RUN')], api.empty_test_data())
 
   yield api.test(
       'test_failures_prevent_cq_retry',
@@ -127,7 +127,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      default_properties(retry_without_patch=False),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -147,10 +147,11 @@ def GenTests(api):
           'browser_tests', 'with patch', failures=['test_case1']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'retry shards with patch', failures=['test_case1']),
-      api.post_process(post_process.DoesNotRun, '.*without patch.*'),
+      api.post_process(post_process.DoesNotRun,
+                       'trigger compilator (without patch)'),
       api.post_process(post_process.PropertiesDoNotContain, 'do_not_retry'),
       api.post_process(post_process.DropExpectation),
-      api.expect_status('INFRA_FAILURE'),
+      api.expect_status('FAILURE'),
   )
 
   # TODO(erikchen): Fix this behavior + test once parallel recipe steps has been
