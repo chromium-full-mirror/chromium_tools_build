@@ -244,7 +244,7 @@ message BuilderConfig {
   //
   // If set, this will be used in preference to the targets_spec_dir field
   // on the chromium config. The path should be relative to the root of the
-  // repo and use forward slashes.
+  // checkout (e.g. src/infra/config/...) and use forward slashes.
   string targets_spec_directory = 10;
 
   // Whether the builder should skip running tests and just compile
