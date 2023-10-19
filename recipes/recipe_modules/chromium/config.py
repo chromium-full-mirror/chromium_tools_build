@@ -341,9 +341,6 @@ def goma(c):
   else:  # pragma: no cover
     raise BadConf('goma config doesn\'t understand %s' % c.compile_py.compiler)
 
-  if c.TARGET_PLATFORM == 'win' and c.compile_py.compiler != 'goma-clang':
-    fastbuild(c)
-
 
 @config_ctx()
 def dcheck(c, invert=False):
