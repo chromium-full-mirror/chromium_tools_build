@@ -22,7 +22,7 @@ from recipe_engine.engine_types import FrozenDict, thaw
 from RECIPE_MODULES.build import chromium_tests
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build import proto_validation
-from RECIPE_MODULES.build.chromium_tests import (targets_config as
+from RECIPE_MODULES.build.chromium_tests import (generators, targets_config as
                                                  targets_config_module)
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -63,7 +63,7 @@ def _targets_spec_file_re(builder_config_directory: str) -> re.Pattern:
     path to the directory that contains configs for a single builder
     (not just the targets spec files).
   """
-  return re.compile(f'^({re.escape(builder_config_directory)}/[^/]+/[^/]+)'
+  return re.compile(f'^({re.escape(builder_config_directory)}/([^/]+)/[^/]+)'
                     r'/targets/[^/]+\.json')
 
 
@@ -89,16 +89,20 @@ def RunSteps(api, properties):
     with api.context(cwd=repo_path):
       affected_files = set(api.tryserver.get_files_affected_by_patch(''))
 
-  affected_builder_dirs = set()
+  bucket_by_affected_builder_dirs = {}
   targets_spec_file_re = _targets_spec_file_re(
       properties.builder_config_directory)
   for f in affected_files:
     if match := targets_spec_file_re.match(f):
-      affected_builder_dirs.add(match.group(1))
+      bucket_by_affected_builder_dirs[match.group(1)] = match.group(2)
 
   failures = []
-  for builder_dir in affected_builder_dirs:
-    if not _verify_targets_specs(api, checkout_root, repo_path, builder_dir):
+  for builder_dir, bucket in bucket_by_affected_builder_dirs.items():
+    precommit_details = (
+        generators.PrecommitDetails()
+        if bucket in properties.precommit_buckets else None)
+    if not _verify_targets_specs(api, checkout_root, repo_path, builder_dir,
+                                 precommit_details):
       failures.append(builder_dir)
   if failures:
     return _result(
@@ -107,8 +111,13 @@ def RunSteps(api, properties):
         header='verification failed for the following builder directories:')
 
 
-def _verify_targets_specs(api, checkout_root: Path, repo_path: Path,
-                          builder_dir: str) -> bool:
+def _verify_targets_specs(
+    api,
+    checkout_root: Path,
+    repo_path: Path,
+    builder_dir: str,
+    precommit_details: Optional[generators.PrecommitDetails],
+) -> bool:
   with api.step.nest(f'verify {builder_dir}') as presentation:
 
     def success(message: Optional[str] = None) -> bool:
@@ -151,6 +160,7 @@ def _verify_targets_specs(api, checkout_root: Path, repo_path: Path,
             got_revisions={},
             checkout_path=repo_path,
             targets_spec_dir=targets_spec_dir,
+            precommit_details=precommit_details,
         )
 
     pyl_config = get_targets_config('get pyl targets config',
@@ -260,6 +270,8 @@ def GenTests(api):
       bucket: str,
       builder: str,
       builder_group: str,
+      try_bucket: Optional[str] = None,
+      try_builder: Optional[str] = None,
       with_ctbc_property: bool = True,
       with_targets_spec_directory: bool = True,
       starlark_targets_spec: Optional[object] = None,
@@ -268,10 +280,24 @@ def GenTests(api):
     """Set necessary step test data for calling verify_builder_configs.
 
     Args:
-      * bucket - The bucket of the builder to verify targets spec for
-      * builder - The builder to verify targets spec for
+      * bucket - The bucket of the builder to verify targets spec for or
+        the bucket of the mirrored builder if try_bucket and try_builder
+        are set.
+      * builder - The builder to verify targets spec for or the mirrored
+        builder if try_bucket and try_builder are set.
       * builder_group - The group of the builder to verify targets spec
-        for
+        for or the group of the mirrored builder if try_bucket and
+        try_builder are set.
+      * try_bucket - The bucket of the try builder to verify targets
+        spec for. Must be set iff try_builder is set.
+      * try_builder - The try builder to verify targets spec for. Must
+        be set iff try_builder is set.
+      * with_ctbc_property - Whether or not the
+        $build/chromium_tests_builder_config_property should be set for
+        the builder.
+      * with_targets_spec_directory - Whether or not the
+        targets_spec_directory field should be set in the
+        $build/chromium_tests_builder_config property.
       * starlark_targets_spec - The targets spec generated from starlark
       * testing_buildbot_targets_spec - The targets spec generated from
         //testing/buildbot
@@ -279,9 +305,13 @@ def GenTests(api):
     t = api.buildbucket.try_build()
     t += api.properties(
         targets_config_verifier_pb.InputProperties(
-            builder_config_directory=builder_config_dir))
+            builder_config_directory=builder_config_dir,
+            precommit_buckets=[try_bucket] if try_bucket is not None else []))
 
-    builder_dir = f'{builder_config_dir}/{bucket}/{builder}'
+    assert (try_bucket is None) == (try_builder is None), (
+        'try_bucket and try_builder must both be set or both be unset')
+
+    builder_dir = f'{builder_config_dir}/{try_bucket or bucket}/{try_builder or builder}'
     t += api.tryserver.get_files_affected_by_patch(
         [f'{builder_dir}/targets/{builder_group}.json'],
         step_name=(
@@ -290,16 +320,29 @@ def GenTests(api):
     verify_step = f'verify {builder_dir}'
 
     if with_ctbc_property:
-      ctbc_prop = ctbc_api.properties_assembler_for_ci_builder(
-          bucket=bucket,
-          builder=builder,
-          builder_group=builder_group,
-          builder_spec=ctbc.BuilderSpec.create(
-              gclient_config='chromium',
-              chromium_config='chromium',
-              chromium_apply_config=['mb'],
-          ),
-      )
+      if try_bucket:
+        ctbc_prop = ctbc_api.properties_assembler_for_try_builder(
+        ).with_mirrored_builder(
+            bucket=bucket,
+            builder=builder,
+            builder_group=builder_group,
+            builder_spec=ctbc.BuilderSpec.create(
+                gclient_config='chromium',
+                chromium_config='chromium',
+                chromium_apply_config=['mb'],
+            ),
+        )
+      else:
+        ctbc_prop = ctbc_api.properties_assembler_for_ci_builder(
+            bucket=bucket,
+            builder=builder,
+            builder_group=builder_group,
+            builder_spec=ctbc.BuilderSpec.create(
+                gclient_config='chromium',
+                chromium_config='chromium',
+                chromium_apply_config=['mb'],
+            ),
+        )
       if with_targets_spec_directory:
         ctbc_prop = ctbc_prop.with_targets_spec_directory(
             f'{builder_dir}/targets')
@@ -423,6 +466,58 @@ def GenTests(api):
       api.post_process(
           post_process.Filter(
               'verify builder-config-dir/fake-bucket/fake-builder')),
+  )
+
+  yield api.test(
+      'mismatch-tests-non-precommit',
+      test_data(
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+          starlark_targets_spec={
+              'gtest_tests': [{
+                  'test': 'foo-test',
+              }],
+          },
+          testing_buildbot_targets_spec={
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'non_precommit_args': ['foo'],
+              }],
+          },
+      ),
+      api.expect_status('FAILURE'),
+      # Keep just the verify step so that we can see when the diff changes
+      api.post_process(
+          post_process.Filter(
+              'verify builder-config-dir/fake-bucket/fake-builder')),
+  )
+
+  yield api.test(
+      'mismatch-tests-precommit',
+      test_data(
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+          try_bucket='fake-try-bucket',
+          try_builder='fake-try-builder',
+          starlark_targets_spec={
+              'gtest_tests': [{
+                  'test': 'foo-test',
+              }],
+          },
+          testing_buildbot_targets_spec={
+              'gtest_tests': [{
+                  'test': 'foo-test',
+                  'precommit_args': ['foo'],
+              }],
+          },
+      ),
+      api.expect_status('FAILURE'),
+      # Keep just the verify step so that we can see when the diff changes
+      api.post_process(
+          post_process.Filter(
+              'verify builder-config-dir/fake-try-bucket/fake-try-builder')),
   )
 
   yield api.test(

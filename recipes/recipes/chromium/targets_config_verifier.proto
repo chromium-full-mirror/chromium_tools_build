@@ -18,4 +18,13 @@ message InputProperties {
   // the relative path to the properties file from the builder config directory
   // must be <bucket>/<builder>/properties.json.
   string builder_config_directory = 1;
+
+  // Buckets where the targets config should be created for precommit
+  //
+  // The bucket for a targets config will be computed based on the path to the
+  // test files (see the description of builder_config_directory). For a builder
+  // with a bucket in precommit_buckets, the targets config will be generated
+  // using the pre-commit-specific behavior (e.g. generated test specs will
+  // include precommit_args instead of non_precommit_args).
+  repeated string precommit_buckets = 2;
 }
