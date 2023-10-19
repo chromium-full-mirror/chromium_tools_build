@@ -6,7 +6,7 @@
       "--root=[CACHE]\\builder\\v8",
       "gen",
       "//out/build",
-      "--args=symbol_level=2 dcheck_always_on=false is_debug=false target_cpu=\"x64\""
+      "--args=dcheck_always_on=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]\\builder\\v8",
     "env": {

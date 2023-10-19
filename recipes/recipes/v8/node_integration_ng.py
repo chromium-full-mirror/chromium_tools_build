@@ -70,7 +70,6 @@ def run_with_retry(api, step_name, step_fun):
 
 def RunSteps(api, is_debug, triggers, v8_tot):
   use_remoteexec = api.v8.use_remoteexec
-  use_goma = not use_remoteexec
   with api.step.nest('initialization'):
     if is_debug:
       build_config = 'Debug'
@@ -96,15 +95,12 @@ def RunSteps(api, is_debug, triggers, v8_tot):
       assert update_step.json.output['did_run']
 
     api.chromium.runhooks()
-    if use_goma:
-      api.chromium.ensure_goma()
 
   with api.step.nest('build'):
     depot_tools_path = api.path['checkout'].join('third_party', 'depot_tools')
     with api.context(env_prefixes={'PATH': [depot_tools_path]}):
-      api.chromium.run_gn(use_goma=use_goma, use_reclient=use_remoteexec)
-      raw_result = api.chromium.compile(
-          use_goma_module=use_goma, use_reclient=use_remoteexec)
+      api.chromium.run_gn(use_reclient=use_remoteexec)
+      raw_result = api.chromium.compile(use_reclient=use_remoteexec)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
