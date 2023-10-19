@@ -554,38 +554,35 @@ def MakeZip(
   previous_file = '%s_old.zip' % archive_dir
   MoveFile(output_file, previous_file)
 
-  zip_cmd = None
-
   # If we have 7z, use that as it's much faster. See http://crbug.com/418702.
   # Some bots have 7zip; others don't, so we use the version in the Chromium
   # source tree - see https://crbug.com/1459770
-  possible_7zip_locations = []
-  if lzma_sdk_bin is not None:
-    possible_7zip_locations.append(
-        os.path.join(lzma_sdk_bin, '7za.exe' if IsWindows() else '7za')
-    )
+  windows_zip_cmd = None
   if IsWindows():
+    possible_7zip_locations = []
+    if lzma_sdk_bin is not None:
+      possible_7zip_locations = [os.path.join(lzma_sdk_bin, '7za.exe')]
     possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
-  for possible_7zip_location in possible_7zip_locations:
-    if os.path.exists(possible_7zip_location):
-      zip_cmd = [
-          possible_7zip_location,
-          'a',  # Add files to archive
-          '-tzip',  # Set type of archive to ZIP
-          '-y',  # Assume "Yes" to all queries (overwrite without prompt)
-          '-mx1',  # Set compression level to 1 (fastest)
-          '-uz0',  # Do not update an archive if all files are already up-to-date
-          '-bt',  # Show execution time statistics
-          '-bb0',  # Set output log level to 0 (no information printed to console)
-          '-mmt=on'  # Use multithreading
-      ]
-      break
+    for possible_7zip_location in possible_7zip_locations:
+      if os.path.exists(possible_7zip_location):
+        windows_zip_cmd = [
+            possible_7zip_location,
+            'a',  # Add files to archive
+            '-tzip',  # Set type of archive to ZIP
+            '-y',  # Assume "Yes" to all queries (overwrite without prompt)
+            '-mx1',  # Set compression level to 1 (fastest)
+            '-uz0',  # Do not update an archive if all files are already up-to-date
+            '-bt',  # Show execution time statistics
+            '-bb0',  # Set output log level to 0 (no information printed to console)
+            '-mmt=on'  # Use multithreading
+        ]
+        break
 
   # On Windows we use the python zip module; on Linux and Mac, we use the zip
   # command as it will handle links and file bits (executable).  Which is much
   # easier then trying to do that with ZipInfo options.
   start_time = time.time()
-  if IsWindows() and not zip_cmd:
+  if IsWindows() and not windows_zip_cmd:
     print('Creating %s' % output_file)
 
     def _Addfiles(to_zip_file, dirname, files_to_add):
@@ -619,8 +616,10 @@ def MakeZip(
       if saved_dir:
         os.chdir(saved_dir)
   else:
-    if not zip_cmd:
+    if IsMac() or IsLinux():
       zip_cmd = ['zip', '-yr1']
+    else:
+      zip_cmd = windows_zip_cmd
     saved_dir = os.getcwd()
     if no_root_dir:
       os.chdir(archive_dir)
