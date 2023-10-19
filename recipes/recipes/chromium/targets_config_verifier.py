@@ -115,7 +115,8 @@ def RunSteps(api, properties):
   if not starlark_config_by_builder_dir:
     return None
 
-  api.bot_update.deapply_patch(update_result)
+  with api.context(cwd=checkout_root):
+    api.bot_update.deapply_patch(update_result)
 
   failures = []
   for builder_dir, starlark_config in starlark_config_by_builder_dir.items():
