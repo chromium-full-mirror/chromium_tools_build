@@ -41,10 +41,16 @@
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::archive]\\resources\\zip_archive.py",
+      "--output-dir",
       "[CLEANUP]\\chrome_staging",
+      "--archive-name",
       "chrome-asan-win32-release-refs_heads_B1-123456",
+      "--json-file-list",
       "[\"chrome\", \"icu.dat\", \"lib\", \"file.obj\"]",
+      "--file-relative-dir",
       "[START_DIR]\\src\\out\\Release",
+      "--no-root-dir",
+      "--lzma-sdk-dir",
       "None\\third_party\\lzma_sdk\\bin\\win64"
     ],
     "infra_step": true,

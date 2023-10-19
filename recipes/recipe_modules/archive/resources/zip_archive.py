@@ -7,6 +7,7 @@
 """Wrapper to the legacy zip function, which stages files in a directory.
 """
 
+import argparse
 import json
 import os
 import stat
@@ -24,18 +25,48 @@ sys.path.insert(
 from common import chromium_utils
 
 def main(argv):
-  with open(argv[3], 'r') as f:
+  parser = argparse.ArgumentParser(description='Archive zipper tool.')
+  parser.add_argument(
+      '-o',
+      '--output-dir',
+      required=True,
+      help='Absolute path to the directory in which the archive is to be '
+      'created.')
+  parser.add_argument(
+      '-a', '--archive-name', required=True, help='The archive name.')
+  parser.add_argument(
+      '-j',
+      '--json-file-list',
+      required=True,
+      help='A json file listing the files that must be added to the archive.')
+  parser.add_argument(
+      '-f',
+      '--file-relative-dir',
+      required=True,
+      help='Absolute path to the directory containing the files '
+      'and subdirectories in the file_list.')
+  parser.add_argument(
+      '--no-root-dir',
+      default=False,
+      action='store_true',
+      help='Whether the archive should not contain root directory.')
+  parser.add_argument(
+      '-lz',
+      '--lzma-sdk-dir',
+      default=None,
+      help='Path to the bin directory of the lzma SDK which '
+      'contains the 7z executable.')
+  args = parser.parse_args()
+
+  with open(args.json_file_list, 'r') as f:
     zip_file_list = json.load(f)
-  if len(argv) > 5:
-    lzma_sdk_bin = argv[5]
-  else:
-    lzma_sdk_bin = None
   (zip_dir, zip_file) = chromium_utils.MakeZip(
-      argv[1],
-      argv[2],
-      zip_file_list,
-      argv[4],
-      lzma_sdk_bin=lzma_sdk_bin,
+      output_dir=args.output_dir,
+      archive_name=args.archive_name,
+      file_list=zip_file_list,
+      file_relative_dir=args.file_relative_dir,
+      no_root_dir=args.no_root_dir,
+      lzma_sdk_bin=args.lzma_sdk_dir,
       raise_error=True)
   chromium_utils.RemoveDirectory(zip_dir)
   if not os.path.exists(zip_file):

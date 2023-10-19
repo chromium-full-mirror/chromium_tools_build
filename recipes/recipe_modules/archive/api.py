@@ -351,12 +351,13 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     cmd = [
         'python3',
-        self.resource('zip_archive.py'),
-        staging_dir,
-        zip_file_base_name,
-        self.m.json.input(zip_file_list),
-        build_dir,
-    ] + lzma_sdk_args
+        self.resource('zip_archive.py'), '--output-dir', staging_dir,
+        '--archive-name', zip_file_base_name, '--json-file-list',
+        self.m.json.input(zip_file_list), '--file-relative-dir', build_dir,
+        '--no-root-dir'
+    ]
+    if len(lzma_sdk_args) > 0:
+      cmd.extend(['--lzma-sdk-dir'] + lzma_sdk_args)
     self.m.step('zipping', cmd, infra_step=True, **kwargs)
 
     zip_file = staging_dir.join(zip_file_name)

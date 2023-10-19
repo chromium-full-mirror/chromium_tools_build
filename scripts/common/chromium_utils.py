@@ -446,6 +446,7 @@ def MakeZip(
     file_relative_dir,
     raise_error=True,
     remove_archive_directory=True,
+    no_root_dir=False,
     strip_files=None,
     lzma_sdk_bin=None
 ):
@@ -462,7 +463,7 @@ def MakeZip(
   Args:
     output_dir: Absolute path to the directory in which the archive is to
       be created.
-    archive_dir: Subdirectory of output_dir holding files to be added to
+    archive_name: Subdirectory of output_dir holding files to be added to
       the new zipfile.
     file_list: List of paths to files or subdirectories, relative to the
       file_relative_dir.
@@ -472,6 +473,7 @@ def MakeZip(
       the list is not found.
     remove_archive_directory: Whether to remove the archive staging directory
       before copying files over to it.
+    no_root_dir: Do not add a common root directory for the whole archive.
     strip_files: List of executable files to strip symbols when zipping. The
       option currently does not work in Windows.
     lzma_sdk_bin: Optional path to the bin directory of the lzma SDK which
@@ -602,17 +604,31 @@ def MakeZip(
 
     zip_file = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED,
                                allowZip64=True)
+    saved_dir = None
     try:
-      for root, _, files in os.walk(archive_dir):
+      if no_root_dir:
+        saved_dir = os.getcwd()
+        os.chdir(archive_dir)
+        walk_path = '.'
+      else:
+        walk_path = archive_dir
+      for root, _, files in os.walk(walk_path):
         _Addfiles(zip_file, root, files)
     finally:
       zip_file.close()
+      if saved_dir:
+        os.chdir(saved_dir)
   else:
     if not zip_cmd:
       zip_cmd = ['zip', '-yr1']
     saved_dir = os.getcwd()
-    os.chdir(os.path.dirname(archive_dir))
-    command = zip_cmd + [output_file, os.path.basename(archive_dir)]
+    if no_root_dir:
+      os.chdir(archive_dir)
+      archive_path = "."
+    else:
+      os.chdir(os.path.dirname(archive_dir))
+      archive_path = os.path.basename(archive_dir)
+    command = zip_cmd + [output_file, archive_path]
     result = RunCommand(command)
     os.chdir(saved_dir)
     if result and raise_error:

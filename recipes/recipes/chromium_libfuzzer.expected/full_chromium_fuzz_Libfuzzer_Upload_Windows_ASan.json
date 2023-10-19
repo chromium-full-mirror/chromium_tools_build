@@ -1935,10 +1935,15 @@
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::archive]\\resources\\zip_archive.py",
+      "--output-dir",
       "[CLEANUP]\\chrome_staging",
+      "--archive-name",
       "libfuzzer-win32-release_x64-170242",
+      "--json-file-list",
       "[\"file1\", \"file2\"]",
-      "[CACHE]\\builder\\src\\out\\Release_x64"
+      "--file-relative-dir",
+      "[CACHE]\\builder\\src\\out\\Release_x64",
+      "--no-root-dir"
     ],
     "infra_step": true,
     "luci_context": {
