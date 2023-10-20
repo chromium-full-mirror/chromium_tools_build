@@ -66,8 +66,6 @@ class SisoApi(recipe_api.RecipeApi):
         '--enable_cloud_logging',
         '--project',
         self._props.project,
-        '--deps_log',
-        self.deps_log,
     ]
     if self._props.reapi_address:
       cmd.extend([
@@ -117,6 +115,7 @@ class SisoApi(recipe_api.RecipeApi):
           'siso_output',
           'siso_trace.json',
           '.siso_config',
+          '.siso_deps'
           '.siso_filegroups',
           '.siso_fs_state',
       ]:
@@ -159,14 +158,6 @@ class SisoApi(recipe_api.RecipeApi):
   def check_version(self):
     """Print Siso version info"""
     self.m.step('check siso version', [self.siso_path, 'version'])
-
-  @property
-  def _cache_dir(self):
-    return self.m.path['cache'].join('builder', 'siso')
-
-  @property
-  def deps_log(self):
-    return self._cache_dir.join('deps_log')
 
   @property
   def siso_path(self):

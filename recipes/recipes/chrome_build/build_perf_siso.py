@@ -38,8 +38,8 @@ def _get_builder_id(api):
 
 def _run_builds(api, target, phase, step_name_suffix=None):
   # First build without remote cache.
-  api.chromium_build_perf.remove_deps_cache()
-  api.chromium_build_perf.recreate_build_dir(phase=phase)
+  api.chromium_build_perf.recreate_build_dir(
+      phase=phase, remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_siso(
       target, with_remote_cache=False, step_name_suffix=step_name_suffix)
   if raw_result and raw_result.status != common_pb.SUCCESS:

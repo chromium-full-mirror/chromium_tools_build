@@ -65,21 +65,31 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
           use_reclient=True,
           siso_args=siso_args)
 
-  def recreate_build_dir(self, phase=None, build_dir=None):
+  def recreate_build_dir(self,
+                         phase=None,
+                         build_dir=None,
+                         remove_deps_cache=False):
     """Remove and create a build dir."""
     if not build_dir:
       build_dir = self.m.chromium.output_dir
+    # Preserve .siso_deps.
+    siso_deps_path = self.m.path.join(build_dir, '.siso_deps')
+    tmp_siso_deps_path = None
+    if self.m.path.exists(siso_deps_path) and not remove_deps_cache:
+      tmp_siso_deps_path = self.m.path.join(self.m.path.mkdtemp(), '.siso_deps')
+      self.m.file.move('preserve %s' % siso_deps_path, siso_deps_path,
+                       tmp_siso_deps_path)
     self.m.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
     builder_id = chromium.BuilderId.create_for_group(
         self.m.builder_group.for_current, self.m.buildbucket.builder_name)
     self.m.chromium.mb_gen(
         builder_id, recursive_lookup=True, phase=phase, build_dir=build_dir)
-
-  def remove_deps_cache(self):
-    """Remove deps cache."""
-    self.m.file.rmtree('rmtree %s' % self.m.reclient.deps_cache_path,
-                       self.m.reclient.deps_cache_path)
-    self.m.file.rmtree('rmtree %s' % self.m.siso.deps_log, self.m.siso.deps_log)
+    if tmp_siso_deps_path:
+      self.m.file.move('restore %s' % siso_deps_path, tmp_siso_deps_path,
+                       siso_deps_path)
+    if remove_deps_cache:
+      self.m.file.rmtree('rmtree %s' % self.m.reclient.deps_cache_path,
+                         self.m.reclient.deps_cache_path)
 
   def checkout(self, revision):
     """Check out to a specified revision."""

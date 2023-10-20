@@ -14,6 +14,8 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'recipe_engine/buildbucket',
+    'recipe_engine/file',
+    'recipe_engine/path',
     'reclient',
     'siso',
 ]
@@ -32,9 +34,12 @@ def RunSteps(api):
   api.chromium_build_perf.build_with_siso('all', with_remote_cache=False)
   api.chromium_build_perf.build_with_ninja(
       'all', with_remote_cache=False, step_name_suffix=' suffix')
+  api.file.write_raw('write .siso_deps',
+                     api.path.join(api.chromium.output_dir, '.siso_deps'),
+                     'siso deps')
   api.chromium_build_perf.recreate_build_dir()
   api.chromium_build_perf.recreate_build_dir(build_dir='foo')
-  api.chromium_build_perf.remove_deps_cache()
+  api.chromium_build_perf.recreate_build_dir(remove_deps_cache=True)
   api.chromium_build_perf.checkout('abcd')
 
 
