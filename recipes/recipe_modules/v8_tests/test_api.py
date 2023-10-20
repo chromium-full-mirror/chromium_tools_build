@@ -20,12 +20,14 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
             'flags': ['-f'],
             'command': 'd8 -f mjsunit/Cool.Test',
             'duration': 61.0028,
+            'variant': 'default',
         },
         {
             'name': 'mjsunit/Cool.Test2',
             'flags': ['-f', '-g'],
             'command': 'd8 -f mjsunit/Cool.Test2',
             'duration': 0.1012,
+            'variant': 'default',
         },
     ]
 
@@ -49,6 +51,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
         'command': 'd8 -f mjsunit/slow',
         'duration': 123.0,
         'marked_slow': False,
+        'variant': 'stress',
       }]
     if not has_failures:
       return self.m.json.output({

@@ -222,7 +222,9 @@ class V8TestsApi(recipe_api.RecipeApi):
       f'Test: {test["name"]}',
       f'Flags: {" ".join(test["flags"])}',
       f'Command: {test["command"]}',
+      f'Variant: {test["variant"]}',
       f'{format_key}: {format_value}',
+      '',
     ]
 
   @staticmethod
@@ -240,7 +242,7 @@ class V8TestsApi(recipe_api.RecipeApi):
     return lines
 
   def _update_durations(self, output, presentation):
-    presentation.logs['durations'] = V8TestsApi.format_top_tests(
+    presentation.logs['slowest tests'] = V8TestsApi.format_top_tests(
         output['slowest_tests'],
         V8TestsApi.format_duration,
         'Duration',
