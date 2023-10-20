@@ -55,14 +55,14 @@ class AggregatedResultsTestCase(unittest.TestCase):
     self.assertEqual(aggregated_results.slowest_tests, [])
     self.assertEqual(aggregated_results.results, [])
     self.assertEqual(aggregated_results.test_total, 0)
-    self.assertEqual(aggregated_results.slow_tests_cutoff, 10)
+    self.assertEqual(aggregated_results.top_tests_cutoff, 10)
 
   def test_append_json_data(self):
     aggregated_results = collect_v8_task.AggregatedResults(10)
     self.assertEqual(aggregated_results.slowest_tests, [])
     self.assertEqual(aggregated_results.results, [])
     self.assertEqual(aggregated_results.test_total, 0)
-    self.assertEqual(aggregated_results.slow_tests_cutoff, 10)
+    self.assertEqual(aggregated_results.top_tests_cutoff, 10)
     aggregated_results.append({
         'slowest_tests': 'x',
         'results': 'y',
@@ -71,7 +71,7 @@ class AggregatedResultsTestCase(unittest.TestCase):
     self.assertEqual(aggregated_results.slowest_tests, ['x'])
     self.assertEqual(aggregated_results.results, ['y'])
     self.assertEqual(aggregated_results.test_total, 1)
-    self.assertEqual(aggregated_results.slow_tests_cutoff, 10)
+    self.assertEqual(aggregated_results.top_tests_cutoff, 10)
 
   def test_return_aggregated_tests_as_json(self):
     aggregated_results = collect_v8_task.AggregatedResults(10)
@@ -95,6 +95,8 @@ class AggregatedResultsTestCase(unittest.TestCase):
     })
     self.assertEqual(
         aggregated_results.as_json(['tag 1', 'tag 3', 'tag 2']), {
+            'max_rss_tests': [],
+            'max_vms_tests': [],
             'slowest_tests': [{
                 'duration': 30,
                 'name': 'b'
@@ -185,8 +187,8 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
     self.create_json_file('/2/output.json', output2)
 
   def create_options(self):
-    Options = collections.namedtuple('options', ['slow_tests_cutoff'])
-    return Options(slow_tests_cutoff=10)
+    Options = collections.namedtuple('options', ['top_tests_cutoff'])
+    return Options(top_tests_cutoff=10)
 
   def test_merge_shard_results_success(self):
     shards = [{
@@ -198,11 +200,15 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
     }]
     self.setup_shard_output(
         {
+            'max_rss_tests': [{'name': 'foo', 'max_rss': 42}],
+            'max_vms_tests': [{'name': 'foo', 'max_vms': 17}],
             'slowest_tests': [{'name': 'foo', 'duration': 0.1}],
             'results': ['flake'],
             'test_total': 1,
         },
         {
+            'max_rss_tests': [{'name': 'bar', 'max_rss': 17}],
+            'max_vms_tests': [{'name': 'bar', 'max_vms': 42}],
             'slowest_tests': [{'name': 'bar', 'duration': 2.4}],
             'results': [],
             'test_total': 1},
@@ -212,6 +218,14 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
         output_dir='/', shards=shards, options=self.create_options())
     self.assertEqual(
         merged_shard_result, {
+            'max_rss_tests': [
+                {'name': 'foo', 'max_rss': 42},
+                {'name': 'bar', 'max_rss': 17},
+            ],
+            'max_vms_tests': [
+                {'name': 'bar', 'max_vms': 42},
+                {'name': 'foo', 'max_vms': 17},
+            ],
             'slowest_tests': [
                 {'name': 'bar', 'duration': 2.4},
                 {'name': 'foo', 'duration': 0.1},
@@ -232,6 +246,8 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
         output_dir='/', shards=shards, options=self.create_options())
     self.assertEqual(
         merged_shard_result, {
+            'max_rss_tests': [],
+            'max_vms_tests': [],
             'slowest_tests': [],
             'results': [],
             'tags': ['UNRELIABLE_RESULTS'],
@@ -257,6 +273,8 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
         output_dir='/', shards=shards, options=self.create_options())
     self.assertEqual(
         merged_shard_result, {
+            'max_rss_tests': [],
+            'max_vms_tests': [],
             'slowest_tests': [],
             'results': [],
             'tags': ['UNRELIABLE_RESULTS'],

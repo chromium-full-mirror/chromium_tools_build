@@ -49,23 +49,30 @@ class BadShards:
 
 class AggregatedResults:
 
-  def __init__(self, slow_tests_cutoff):
+  def __init__(self, top_tests_cutoff):
+    self.max_rss_tests = []
+    self.max_vms_tests = []
     self.slowest_tests = []
     self.results = []
     self.test_total = 0
-    self.slow_tests_cutoff = slow_tests_cutoff
+    self.top_tests_cutoff = top_tests_cutoff
 
   def append(self, json_data):
     assert isinstance(json_data, dict)
     self.slowest_tests.extend(json_data['slowest_tests'])
+    self.max_rss_tests.extend(json_data.get('max_rss_tests', []))
+    self.max_vms_tests.extend(json_data.get('max_vms_tests', []))
     self.results.extend(json_data['results'])
     self.test_total += json_data['test_total']
 
   def as_json(self, tags):
-    sorted_tests = sorted(
-        self.slowest_tests, key=lambda t: t['duration'], reverse=True)
+    def sorted_tests(test_list, key):
+      result = sorted(test_list, key=lambda t: t[key], reverse=True)
+      return result[:self.top_tests_cutoff]
     return {
-        'slowest_tests': sorted_tests[:self.slow_tests_cutoff],
+        'max_rss_tests': sorted_tests(self.max_rss_tests, 'max_rss'),
+        'max_vms_tests': sorted_tests(self.max_vms_tests, 'max_vms'),
+        'slowest_tests': sorted_tests(self.slowest_tests, 'duration'),
         'results': self.results,
         'tags': sorted(tags),
         'test_total': self.test_total,
@@ -109,7 +116,7 @@ class TaskCollector:
     # Merge all JSON files together.
 
     tags = set()
-    aggregated_results = AggregatedResults(options.slow_tests_cutoff)
+    aggregated_results = AggregatedResults(options.top_tests_cutoff)
     bad_shards = BadShards()
     for index, result in enumerate(shards):
       if result is None:
@@ -214,7 +221,7 @@ class TaskCollector:
     parser.add_option('--temp-root-dir', default=tempfile.gettempdir())
     parser.add_option('--merged-test-output')
     parser.add_option('--warnings-json')
-    parser.add_option('--slow-tests-cutoff', type="int", default=100)
+    parser.add_option('--top-tests-cutoff', type="int", default=100)
     parser.add_option('--coverage-dir')
     parser.add_option('--sancov-merger')
     options, extra_args = parser.parse_args(shim_args)
