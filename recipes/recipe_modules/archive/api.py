@@ -249,11 +249,20 @@ class ArchiveApi(recipe_api.RecipeApi):
     self.m.file.ensure_directory('create staging_dir', staging_dir)
 
     lzma_sdk_args = []
-    if self.m.platform.is_win and self.m.path.exists(self.m.path['checkout']):
+    can_fetch_7zip = self.m.platform.is_mac or (self.m.platform.is_linux and
+                                                self.m.platform.arch == "intel"
+                                                and self.m.platform.bits == 64)
+    if self.m.path.exists(self.m.path['checkout']) and self.m.platform.is_win:
       lzma_sdk_args = [
           self.m.path['checkout'].join('third_party', 'lzma_sdk', 'bin',
                                        'win64')
       ]
+    elif can_fetch_7zip:
+      cipd_pkg = 'infra/3pp/tools/7z/${platform}'
+      lzma_sdk_args = [
+          os.path.dirname(str(self.m.cipd.ensure_tool(cipd_pkg, 'latest')))
+      ]
+
     llvm_tools_to_copy = ['llvm-symbolizer', 'sancov']
     llvm_bin_dir = self.m.path['checkout'].join('third_party', 'llvm-build',
                                                 'Release+Asserts', 'bin')
