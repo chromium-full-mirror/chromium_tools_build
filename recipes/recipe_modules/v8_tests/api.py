@@ -211,35 +211,41 @@ class V8TestsApi(recipe_api.RecipeApi):
     return test_group.test_results
 
   @staticmethod
-  def format_duration(duration_in_seconds):
-    duration = datetime.timedelta(seconds=duration_in_seconds)
+  def format_duration(test):
+    duration = datetime.timedelta(seconds=test['duration'])
     time = (datetime.datetime.min + duration).time()
     return time.strftime('%M:%S:') + '%03i' % int(time.microsecond / 1000)
 
-  def _duration_results_text(self, test):
+  @staticmethod
+  def formatted_test_details(test, format_key, format_value):
     return [
-      'Test: %s' % test['name'],
-      'Flags: %s' % ' '.join(test['flags']),
-      'Command: %s' % test['command'],
-      'Duration: %s' % V8TestsApi.format_duration(test['duration']),
+      f'Test: {test["name"]}',
+      f'Flags: {" ".join(test["flags"])}',
+      f'Command: {test["command"]}',
+      f'{format_key}: {format_value}',
     ]
 
-  def _update_durations(self, output, presentation):
-    # Slowest tests duration summary.
+  @staticmethod
+  def format_top_tests(test_list, format_fun, format_key, status_key):
     lines = []
-    for test in output['slowest_tests']:
-      suffix = ''
-      if test.get('marked_slow') is False:
-        suffix = ' *'
-      lines.append(
-          '%s %s%s' % (V8TestsApi.format_duration(test['duration']),
-                       test['name'], suffix))
+    for test in test_list:
+      suffix = ' *' if test.get(status_key) is False else ''
+      lines.append(f'{format_fun(test)} {test["name"]}{suffix}')
 
-    # Slowest tests duration details.
+    # Execution details.
     lines.extend(['', 'Details:', ''])
-    for test in output['slowest_tests']:
-      lines.extend(self._duration_results_text(test))
-    presentation.logs['durations'] = lines
+    for test in test_list:
+      lines.extend(V8TestsApi.formatted_test_details(
+          test, format_key, format_fun(test)))
+    return lines
+
+  def _update_durations(self, output, presentation):
+    presentation.logs['durations'] = V8TestsApi.format_top_tests(
+        output['slowest_tests'],
+        V8TestsApi.format_duration,
+        'Duration',
+        'marked_slow',
+    )
 
   def ui_test_label(self, full_test_name):
     # Use test base name as UI label (without suite and directory names).

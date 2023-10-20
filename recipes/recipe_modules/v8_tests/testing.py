@@ -1211,8 +1211,7 @@ class Failure:
       lines.append('Result: %s' % result['result'])
       if result.get('expected'):
         lines.append('Expected outcomes: %s' % ", ".join(result['expected']))
-      lines.append(
-          'Duration: %s' % self.api.v8_tests.format_duration(result['duration']))
+      lines.append('Duration: %s' % self.api.v8_tests.format_duration(result))
       lines.append('')
       if result.get('crash_type'):
         lines.append('Crash Type:')
