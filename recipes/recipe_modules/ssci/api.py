@@ -98,6 +98,25 @@ class SsciAPI(recipe_api.RecipeApi):
           cloud_file_path,
           name=f"upload {data_name} to GCS")
 
+  def _handle_renaming(self, entry_point, to_rename):
+    """
+    Some artifacts are renamed during builds and we need to pass this
+    rename through to the SBOM generation step so that the SPDX document
+    name aligns with the final build names. Without doing this, the SBOMs
+    are unlikely to be correctly surfaced during a search in SCILo.
+
+    If provided, to_rename should be a key, value pair which specifies
+    how artifacts should be renamed. eg.
+      {"SystemWebViewGoogle": "AndroidWebview"}
+    turns `SystemWebViewGoogle.apk` into `AndroidWebview.apk`.
+    """
+    artifact_name = entry_point.replace("//", "")
+    filename, _ = os.path.splitext(artifact_name)
+
+    if to_rename and filename in to_rename:
+      artifact_name = artifact_name.replace(filename, to_rename[filename])
+    return artifact_name
+
   def _make_filename_from_target(self,
                                  artifact_name,
                                  artifact_postfix,
@@ -146,11 +165,12 @@ class SsciAPI(recipe_api.RecipeApi):
 
   def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
                              filename_postfix, chrome_version, minimal_config,
-                             third_party_out):
+                             third_party_out, to_rename):
+
     library_file = target.get("libraries_file_path")
     artifact_file = target.get("artifacts_file_path")
     entry_point = target.get("entry_point")
-    entry_point_name = entry_point.replace("//", "")
+    entry_point_name = self._handle_renaming(entry_point, to_rename)
 
     # These columns are added to collected depbot data before the data is
     # uploaded to BigQuery
@@ -161,7 +181,14 @@ class SsciAPI(recipe_api.RecipeApi):
         'target="{}"'.format(target.get("target"))
     ]
 
-    with self.m.step.nest('target specific steps for %s' % entry_point):
+    # If the original entry point name was modified by the renaming step,
+    # show both for context so it's clear what happened and what artifacts
+    # relate to what.
+    display_name = entry_point
+    if entry_point not in entry_point_name:
+      display_name = f"{entry_point_name} ({entry_point})"
+
+    with self.m.step.nest('target specific steps for %s' % display_name):
 
       for data_name, bq_table, data_file in [
           ("artifacts", self.bq_art_table, artifact_file),
@@ -232,6 +259,7 @@ class SsciAPI(recipe_api.RecipeApi):
       targets=None,
       chrome_version=None,
       platform=None,
+      to_rename=None,
   ):
 
     # ensure this dict is reset between calls to the module
@@ -314,7 +342,7 @@ class SsciAPI(recipe_api.RecipeApi):
             self.m.futures.spawn(self._target_specific_steps, target, src_dir,
                                  sbom_bucket, sbom_folder,
                                  sbom_filename_postfix, chrome_version,
-                                 minimal_config, third_party_out))
+                                 minimal_config, third_party_out, to_rename))
       for fut in self.m.futures.iwait(futures):
         fut.result()
 
