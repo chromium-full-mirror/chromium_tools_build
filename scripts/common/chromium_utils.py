@@ -573,13 +573,16 @@ def MakeZip(
           'a',  # Add files to archive
           '-tzip',  # Set type of archive to ZIP
           '-y',  # Assume "Yes" to all queries (overwrite without prompt)
-          '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
           '-mx1',  # Set compression level to 1 (fastest)
           '-uz0',  # Do not update an archive if all files are already up-to-date
           '-bt',  # Show execution time statistics
           '-bb0',  # Set output log level to 0 (no information printed to console)
           '-mmt=on'  # Use multithreading
       ]
+      if not IsWindows():
+        zip_cmd += [
+            '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
+        ]
       break
 
   # On Windows we use the python zip module; on Linux and Mac, we use the zip
