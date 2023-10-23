@@ -511,6 +511,7 @@
     "env": {
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "RBE_automatic_auth": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac_skia",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac_skia",
       "RBE_deps_cache_max_mb": "256",
@@ -590,6 +591,7 @@
     "env": {
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "RBE_automatic_auth": "false",
       "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac_skia",
       "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac_skia",
       "RBE_deps_cache_max_mb": "256",

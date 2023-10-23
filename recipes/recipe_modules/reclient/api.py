@@ -478,6 +478,7 @@ class ReclientApi(recipe_api.RecipeApi):
         'RBE_server_address': self.server_address,
         'RBE_fast_log_collection': 'true',
         'RBE_use_application_default_credentials': 'false',
+        'RBE_automatic_auth': 'false',
         'RBE_use_gce_credentials': 'true',
         'RBE_fail_early_min_action_count': 4000,
         'RBE_fail_early_min_fallback_ratio': 0.5,
