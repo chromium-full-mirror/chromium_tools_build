@@ -96,7 +96,7 @@ class LedCompilatorHandler(CompilatorHandler):
     led_builder_id = f'{project}/{bucket}/{compilator_name}'
     with self.api.step.nest(self._add_suffix('trigger compilator')):
       led_job = self.api.led('get-builder', led_builder_id)
-      led_job = self.api.led.inject_input_recipes(led_job)
+      led_job = led_job.with_injected_input_recipes()
       if revision:
         led_job = led_job.then('edit', '-p', f'revision="{revision}"')
 
