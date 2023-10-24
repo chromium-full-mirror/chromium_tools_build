@@ -226,6 +226,8 @@ class SkylabApi(recipe_api.RecipeApi):
           # if t.telemetry_shard_index is not None:
           #   test_args.append('test_shard_index=%s' % t.telemetry_shard_index)
 
+          autotest_secondary_lacros_paths = ''
+
           if t.lacros_gcs_path:
             cmd.extend(['-lacros-path', t.lacros_gcs_path])
 
@@ -247,6 +249,12 @@ class SkylabApi(recipe_api.RecipeApi):
                     for p in should_provision_browser_files
                 ]
                 secondary_lacros_paths = ','.join(secondary_lacros_paths_list)
+                autotest_secondary_lacros_paths_list = [
+                    os.path.join(t.lacros_gcs_path, 'lacros_compressed.squash')
+                    if p else '' for p in should_provision_browser_files
+                ]
+                autotest_secondary_lacros_paths = ','.join(
+                    autotest_secondary_lacros_paths_list)
                 cmd.extend(['-secondary-lacros-paths', secondary_lacros_paths])
 
             if t.spec.bucket and 'chromium' in t.spec.bucket:
@@ -262,6 +270,9 @@ class SkylabApi(recipe_api.RecipeApi):
             lacros_gcs_path = os.path.join(t.lacros_gcs_path,
                                            'lacros_compressed.squash')
             shard_test_args.append('lacros_gcs_path={}'.format(lacros_gcs_path))
+            if autotest_secondary_lacros_paths:
+              shard_test_args.append('secondary_lacros_gcs_path={}'.format(
+                  autotest_secondary_lacros_paths))
 
             shard_cmd.extend(['-test-args', ' '.join(shard_test_args)])
             shard_cmd.append('-exit-early')

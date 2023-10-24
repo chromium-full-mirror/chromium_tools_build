@@ -140,6 +140,7 @@ MULTI_DUT_REQUESTS = [
         'multi_dut_partial_skip_secondary_lacros_paths',
         secondary_cros_board='atlas,pixel6,octopus',
         secondary_cros_img='atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
+        tast_expr=LACROS_TAST_EXPR,
         should_provision_browser_files=[True, False, True],
     ),
     gen_skylab_test(
@@ -193,6 +194,27 @@ def GenTests(api):
             b64_encode(json.dumps(gen_skylab_rdb(name))),
             b64_encode(LACROS_TAST_EXPR), test_level_retries, max_run_sec,
             shard, shard_count, 'gs://fake_bucket/fake_test/lacros_compressed.squash')
+
+  def test_args(name,
+                test_level_retries=0,
+                shard=0,
+                shard_count=1,
+                lacros_gcs_path="",
+                secondary_lacros_gcs_path=""):
+    args = []
+    args.append('resultdb_settings={}'.format(
+        b64_encode(json.dumps(gen_skylab_rdb(name)))))
+    args.append('tast_expr_b64={}'.format(b64_encode(LACROS_TAST_EXPR)))
+    args.append('retries={}'.format(test_level_retries))
+    args.append('exe_rel_path=out/Release/chrome')
+    args.append('shard_index={}'.format(shard))
+    args.append('total_shards={}'.format(shard_count))
+    if lacros_gcs_path:
+      args.append('lacros_gcs_path={}'.format(lacros_gcs_path))
+    if secondary_lacros_gcs_path:
+      args.append(
+          'secondary_lacros_gcs_path={}'.format(secondary_lacros_gcs_path))
+    return ' '.join(args)
 
   yield api.test(
       'basic',
@@ -303,7 +325,13 @@ def GenTests(api):
               'atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
               '-timeout-mins', '60', '-qs-account', 'lacros', '-lacros-path',
               'gs://fake_bucket/fake_test', '-secondary-lacros-paths',
-              'gs://fake_bucket/fake_test,,gs://fake_bucket/fake_test'
+              'gs://fake_bucket/fake_test,,gs://fake_bucket/fake_test',
+              '-test-args',
+              test_args(
+                  MULTI_DUT_REQUESTS[2].name,
+                  lacros_gcs_path='gs://fake_bucket/fake_test/lacros_compressed.squash',
+                  secondary_lacros_gcs_path='gs://fake_bucket/fake_test/lacros_compressed.squash,,gs://fake_bucket/fake_test/lacros_compressed.squash'
+              )
           ]),
       api.post_process(post_process.DropExpectation),
   )
