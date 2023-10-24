@@ -271,8 +271,11 @@ def GenTests(api):
                   }],
               },
           }),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'base_unittests', '', failures=['Test1']),
+      api.override_step_data(
+          'base_unittests',
+          api.chromium_swarming.canned_summary_output(
+              None, failure=True, retcode=1),
+      ),
       api.post_process(post_process.StepTextContains, 'base_unittests',
                        ['Release Blocker Failure', 'Owner: foo>hoo']),
       api.post_process(post_process.DropExpectation),
