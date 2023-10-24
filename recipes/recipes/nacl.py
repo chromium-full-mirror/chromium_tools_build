@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from contextlib import contextmanager
+from recipe_engine.post_process import DropExpectation, MustRun
 
 DEPS = [
     'builder_group',
@@ -10,6 +11,7 @@ DEPS = [
     'depot_tools/depot_tools',
     'depot_tools/gclient',
     'goma',
+    'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
     'recipe_engine/context',
@@ -68,36 +70,7 @@ def CheckoutSteps(api):
   return got_revision
 
 
-def AnnotatedStepsSteps(api, got_revision, checkout_path,
-                        compiled_sources_path):
-  # Default environment; required by all builders.
-  env = {
-      'BETWEEN_BUILDERS': str(compiled_sources_path),
-      'BOT_TYPE': 'builder_bot',
-      'BUILDBOT_MASTERNAME': api.builder_group.for_current,
-      'BUILDBOT_BUILDERNAME': api.buildbucket.builder_name,
-      'BUILDBOT_REVISION': api.buildbucket.gitiles_commit.id,
-      'BUILDBOT_BUILDNUMBER': api.buildbucket.build.number,
-      'BUILDBOT_GOT_REVISION': got_revision,
-      'BUILDBOT_SLAVE_TYPE': api.properties['slavetype'],
-      'PYTHONPATH': str(api.repo_resource('scripts')),
-  }
-  goma_dir = None
-  # HACK(yyanagisawa): won't set up goma client on 32bit OSes.
-  if api.platform.bits == 64:
-    goma_dir = api.goma.ensure_goma()
-  if goma_dir:
-    # HACK(yyanagisawa): make GOMA_TMP_DIR owned by build runner.
-    # Since a temporary directory environment is set in annotated steps
-    # below, we need to set GOMA_TMP_DIR to make goma client know
-    # which temporary directory they must use.
-    goma_tmp_dir = api.path.join(api.path['tmp_base'], 'goma')
-    env.update({
-        'GOMA_DIR': goma_dir,
-        'GOMA_TMP_DIR': goma_tmp_dir,
-        'NOCONTROL_GOMA': '1',
-    })
-    api.goma.start(env=env)
+def ExecBuildSteps(api, checkout_path, env, use_goma):
   exit_status = -1
   try:
     with api.context(cwd=checkout_path, env=env):
@@ -112,8 +85,49 @@ def AnnotatedStepsSteps(api, got_revision, checkout_path,
     exit_status = e.retcode
     raise e
   finally:
-    if goma_dir:
+    if use_goma:
       api.goma.stop(build_exit_status=exit_status)
+
+
+def AnnotatedStepsSteps(api, got_revision, checkout_path,
+                        compiled_sources_path):
+  use_reclient = api.reclient.instance
+  # Default environment; required by all builders.
+  env = {
+      'BETWEEN_BUILDERS': str(compiled_sources_path),
+      'BOT_TYPE': 'builder_bot',
+      'BUILDBOT_MASTERNAME': api.builder_group.for_current,
+      'BUILDBOT_BUILDERNAME': api.buildbucket.builder_name,
+      'BUILDBOT_REVISION': api.buildbucket.gitiles_commit.id,
+      'BUILDBOT_BUILDNUMBER': api.buildbucket.build.number,
+      'BUILDBOT_GOT_REVISION': got_revision,
+      'BUILDBOT_SLAVE_TYPE': api.properties['slavetype'],
+      'PYTHONPATH': str(api.repo_resource('scripts')),
+  }
+  goma_dir = None
+  # HACK(yyanagisawa): won't set up goma client on 32bit OSes.
+  if api.platform.bits == 64 and not use_reclient:
+    goma_dir = api.goma.ensure_goma()
+  if goma_dir and not use_reclient:
+    # HACK(yyanagisawa): make GOMA_TMP_DIR owned by build runner.
+    # Since a temporary directory environment is set in annotated steps
+    # below, we need to set GOMA_TMP_DIR to make goma client know
+    # which temporary directory they must use.
+    goma_tmp_dir = api.path.join(api.path['tmp_base'], 'goma')
+    env.update({
+        'GOMA_DIR': goma_dir,
+        'GOMA_TMP_DIR': goma_tmp_dir,
+        'NOCONTROL_GOMA': '1',
+    })
+    api.goma.start(env=env)
+  elif use_reclient:
+    env.update({'USE_RECLIENT': '1'})
+
+  if use_reclient:
+    with api.reclient.process('compile', '', False):
+      ExecBuildSteps(api, checkout_path, env, goma_dir)
+  else:
+    ExecBuildSteps(api, checkout_path, env, goma_dir)
 
 
 def UploadFilesToCAS(api, files):
@@ -314,4 +328,23 @@ def GenTests(api):
       api.override_step_data(swarming_collection_step_name,
                              api.swarming.collect([died_result])),
       api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
+      'reclient_linux',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.nacl'),
+      api.buildbucket.ci_build(
+          builder='nacl-precise_64-newlib-x86_64-pnacl',
+          git_repo=git_repo,
+          revision='a' * 40,
+          build_number=1234,
+      ),
+      api.properties(slavetype='BuilderTester'),
+      api.properties(
+          **{'$build/reclient': {
+              'instance': 'fake-reclient-instance',
+          }},),
+      api.post_process(MustRun, 'preprocess for reclient'),
+      api.post_process(DropExpectation),
   )
