@@ -125,10 +125,10 @@ def GenTests(api):
               'test': 'base_unittests',
               'test_target': '//base:base_unittests',
               'swarming': {
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Linux',
                       'foo': None,
-                  }],
+                  },
                   'optional_dimensions': {
                       '60': {
                           'bar': 'baz',
@@ -212,10 +212,10 @@ def GenTests(api):
               'allowed_failure_percentage': 30,
               'swarming': {
                   'can_use_on_swarming_builders': True,
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Linux',
                       'foo': None,
-                  }],
+                  },
               },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -241,10 +241,10 @@ def GenTests(api):
               'allowed_failure_percentage': 30,
               'swarming': {
                   'can_use_on_swarming_builders': True,
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Linux',
                       'foo': None,
-                  }],
+                  },
               },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -265,10 +265,10 @@ def GenTests(api):
               },
               'swarming': {
                   'can_use_on_swarming_builders': True,
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Linux',
                       'foo': None,
-                  }],
+                  },
               },
           }),
       api.override_step_data(
@@ -289,10 +289,10 @@ def GenTests(api):
               'test': 'base_unittests',
               'test_target': '//base:base_unittests',
               'swarming': {
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Linux',
                       'foo': None,
-                  },],
+                  },
                   'optional_dimensions': {
                       '60': [{
                           'bar': 'baz',
@@ -359,9 +359,9 @@ def GenTests(api):
           test_spec={
               'test': 'base_unittests',
               'swarming': {
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Linux',
-                  }],
+                  },
                   'cipd_packages': [{
                       'location': '{$HOME}/logdog',
                       'cipd_package': 'infra/logdog/linux-386',
@@ -378,9 +378,9 @@ def GenTests(api):
           test_spec={
               'test': 'base_unittests',
               'swarming': {
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Linux',
-                  },],
+                  },
                   'named_caches': [{
                       'name': 'cache_name',
                       'path': '.path/to/named/cache',
@@ -394,30 +394,6 @@ def GenTests(api):
                                    '.path/to/named/cache'),
       ),
       api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'swarming_with_dimensions_and_dimension_sets',
-      ci_build(
-          test_spec={
-              'test': 'base_unittests',
-              'swarming': {
-                  'dimension_sets': [{
-                      'os': 'Linux',
-                  },],
-                  'dimensions': {
-                      'os': 'Linux',
-                  },
-                  'named_caches': [{
-                      'name': 'cache_name',
-                      'path': '.path/to/named/cache',
-                  },]
-              },
-          }),
-      test_spec_format_error(
-          'specifies both "dimension_sets" and "dimensions"'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
   )
 
   yield api.test(

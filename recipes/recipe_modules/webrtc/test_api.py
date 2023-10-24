@@ -149,9 +149,9 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
                   'gtest_tests': [{
                       'test': test_target,
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': target_os,
-                          }],
+                          },
                       }
                   }]
               }

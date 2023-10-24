@@ -342,26 +342,8 @@ class Generator:
         yield test_spec
       return
 
-    # TODO crbug.com/1466328 Support for the dimension_sets field should be
-    # removed once both of the following are true:
-    # * It is after 2023, Oct 15 (crrev.com/c/4781549 will have been present for
-    #   2 months, which is the window for pinpoint)
-    # * M108, M109 and M112 have been either turned down or had the necessary
-    #   changes cherry-picked for generating dimensions instead of dimension sets
-    if 'dimension_sets' in swarming_spec and 'dimensions' in swarming_spec:
-      self._chromium_tests_api.m.step.empty(
-          'test spec format error',
-          status=self._chromium_tests_api.m.step.FAILURE,
-          log_name='details',
-          log_text=textwrap.wrap(
-              textwrap.dedent(f"""\
-                      The test target "{name}" specifies both "dimension_sets"
-                      and "dimensions" in its swarming value.
-                      """)))
-    swarming_dimension_sets = (
-        swarming_spec.get('dimension_sets') or
-        [swarming_spec.get('dimensions', {})])
-    swarming_optional_dimensions = self._normalize_optional_dimensions(
+    kwargs['dimensions'] = swarming_spec.get('dimensions', {})
+    kwargs['optional_dimensions'] = self._normalize_optional_dimensions(
         swarming_spec.get('optional_dimensions'))
     kwargs['expiration'] = swarming_spec.get('expiration')
     kwargs['containment_type'] = swarming_spec.get('containment_type')
@@ -436,13 +418,7 @@ class Generator:
       kwargs['trigger_script'] = chromium_swarming.TriggerScript.create(
           **trigger_script)
 
-    for dimensions in swarming_dimension_sets:
-      kwargs['dimensions'] = dimensions
-
-      # Also, add in optional dimensions.
-      kwargs['optional_dimensions'] = swarming_optional_dimensions
-
-      yield swarming_delegate(raw_test_spec, **kwargs)
+    yield swarming_delegate(raw_test_spec, **kwargs)
 
   def _generate_gtest_test_spec(
       self,

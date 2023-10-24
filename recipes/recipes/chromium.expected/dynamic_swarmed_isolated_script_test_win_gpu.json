@@ -609,22 +609,32 @@
       "@@@STEP_LOG_LINE@json.output@    \"isolated_scripts\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"isolate_name\": \"telemetry_gpu_unittests\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests nvidia\",@@@",
       "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"dimension_sets\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@            {@@@",
-      "@@@STEP_LOG_LINE@json.output@              \"gpu\": \"10de:104a\",@@@",
-      "@@@STEP_LOG_LINE@json.output@              \"os\": \"Windows\"@@@",
-      "@@@STEP_LOG_LINE@json.output@            },@@@",
-      "@@@STEP_LOG_LINE@json.output@            {@@@",
-      "@@@STEP_LOG_LINE@json.output@              \"gpu\": \"1002:6779\",@@@",
-      "@@@STEP_LOG_LINE@json.output@              \"os\": \"Windows\"@@@",
-      "@@@STEP_LOG_LINE@json.output@            },@@@",
-      "@@@STEP_LOG_LINE@json.output@            {@@@",
-      "@@@STEP_LOG_LINE@json.output@              \"gpu\": \"15ad:0405\",@@@",
-      "@@@STEP_LOG_LINE@json.output@              \"os\": \"Windows\"@@@",
-      "@@@STEP_LOG_LINE@json.output@            }@@@",
-      "@@@STEP_LOG_LINE@json.output@          ]@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"gpu\": \"10de:104a\",@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"os\": \"Windows\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          }@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"isolate_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests amd\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"gpu\": \"1002:6779\",@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"os\": \"Windows\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          }@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"isolate_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests vmware\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"gpu\": \"15ad:0405\",@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"os\": \"Windows\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          }@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    ]@@@",
@@ -797,7 +807,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"telemetry_gpu_unittests on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:telemetry_gpu_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:chromium.ci:fake-tester\", \"stepname:telemetry_gpu_unittests on NVIDIA GPU on Windows\", \"test_id_prefix:\", \"test_suite:telemetry_gpu_unittests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:104a\", \"-var\", \"os:Windows\", \"-var\", \"test_suite:telemetry_gpu_unittests\", \"-tag\", \"step_name:telemetry_gpu_unittests on NVIDIA GPU on Windows\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter.exe\", \"json\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:104a\"}, {\"key\": \"os\", \"value\": \"Windows\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:telemetry_gpu_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:chromium.ci:fake-tester\", \"stepname:telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows\", \"test_id_prefix:\", \"test_suite:telemetry_gpu_unittests nvidia\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:10de:104a\", \"-var\", \"os:Windows\", \"-var\", \"test_suite:telemetry_gpu_unittests nvidia\", \"-tag\", \"step_name:telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter.exe\", \"json\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"10de:104a\"}, {\"key\": \"os\", \"value\": \"Windows\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -818,14 +828,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] telemetry_gpu_unittests on NVIDIA GPU on Windows",
+    "name": "test_pre_run.[trigger] telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -840,7 +850,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"telemetry_gpu_unittests on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"chromium:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -861,9 +871,9 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:CI\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:fake-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:telemetry_gpu_unittests on NVIDIA GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"test_suite:telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"test_suite:telemetry_gpu_unittests nvidia\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_builder_group:fake-group\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:fake-tester\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
@@ -888,9 +898,9 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"os:Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_suite:telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_suite:telemetry_gpu_unittests nvidia\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:telemetry_gpu_unittests on NVIDIA GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:win\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
@@ -953,7 +963,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: telemetry_gpu_unittests on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
+      "@@@STEP_LINK@task UI: telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows/Windows/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=0@@@"
     ]
   },
   {
@@ -963,7 +973,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"telemetry_gpu_unittests on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:telemetry_gpu_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:chromium.ci:fake-tester\", \"stepname:telemetry_gpu_unittests on AMD GPU on Windows\", \"test_id_prefix:\", \"test_suite:telemetry_gpu_unittests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:1002:6779\", \"-var\", \"os:Windows\", \"-var\", \"test_suite:telemetry_gpu_unittests\", \"-tag\", \"step_name:telemetry_gpu_unittests on AMD GPU on Windows\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter.exe\", \"json\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"1002:6779\"}, {\"key\": \"os\", \"value\": \"Windows\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"telemetry_gpu_unittests amd on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:telemetry_gpu_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:chromium.ci:fake-tester\", \"stepname:telemetry_gpu_unittests amd on AMD GPU on Windows\", \"test_id_prefix:\", \"test_suite:telemetry_gpu_unittests amd\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:1002:6779\", \"-var\", \"os:Windows\", \"-var\", \"test_suite:telemetry_gpu_unittests amd\", \"-tag\", \"step_name:telemetry_gpu_unittests amd on AMD GPU on Windows\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter.exe\", \"json\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"1002:6779\"}, {\"key\": \"os\", \"value\": \"Windows\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -984,14 +994,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] telemetry_gpu_unittests on AMD GPU on Windows",
+    "name": "test_pre_run.[trigger] telemetry_gpu_unittests amd on AMD GPU on Windows",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests amd on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"1\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1006,7 +1016,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"telemetry_gpu_unittests on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"telemetry_gpu_unittests amd on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"chromium:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1027,9 +1037,9 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:CI\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:fake-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:telemetry_gpu_unittests on AMD GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:telemetry_gpu_unittests amd on AMD GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"test_suite:telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"test_suite:telemetry_gpu_unittests amd\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_builder_group:fake-group\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:fake-tester\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
@@ -1054,9 +1064,9 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"os:Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_suite:telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_suite:telemetry_gpu_unittests amd\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:telemetry_gpu_unittests on AMD GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:telemetry_gpu_unittests amd on AMD GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:win\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
@@ -1119,7 +1129,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: telemetry_gpu_unittests on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=1@@@"
+      "@@@STEP_LINK@task UI: telemetry_gpu_unittests amd on AMD GPU on Windows/Windows/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=1@@@"
     ]
   },
   {
@@ -1129,7 +1139,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"telemetry_gpu_unittests on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:telemetry_gpu_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:chromium.ci:fake-tester\", \"stepname:telemetry_gpu_unittests on (15ad) GPU on Windows\", \"test_id_prefix:\", \"test_suite:telemetry_gpu_unittests\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:15ad:0405\", \"-var\", \"os:Windows\", \"-var\", \"test_suite:telemetry_gpu_unittests\", \"-tag\", \"step_name:telemetry_gpu_unittests on (15ad) GPU on Windows\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter.exe\", \"json\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"15ad:0405\"}, {\"key\": \"os\", \"value\": \"Windows\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"telemetry_gpu_unittests vmware on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\", \"priority\": \"25\", \"realm\": \"chromium:ci\", \"resultdb\": {\"enable\": true}, \"service_account\": \"\", \"tags\": [\"botname:fake-bot-id\", \"bucket:ci\", \"build_is_experimental:false\", \"builder_group:fake-group\", \"buildername:fake-tester\", \"buildnumber:571\", \"data:eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size\", \"name:telemetry_gpu_unittests\", \"ninja_target:\", \"project:chromium\", \"purpose:CI\", \"purpose:post-commit\", \"spec_name:chromium.ci:fake-tester\", \"stepname:telemetry_gpu_unittests vmware on (15ad) GPU on Windows\", \"test_id_prefix:\", \"test_suite:telemetry_gpu_unittests vmware\", \"waterfall_builder_group:fake-group\", \"waterfall_buildername:fake-tester\"], \"task_slices\": [{\"expiration_secs\": \"3600\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"eeeeeeeeeeeeeeeeeeeeeeeeeeeeee\", \"size_bytes\": \"size\"}}, \"command\": [\"rdb\", \"stream\", \"-var\", \"builder:fake-tester\", \"-var\", \"gpu:15ad:0405\", \"-var\", \"os:Windows\", \"-var\", \"test_suite:telemetry_gpu_unittests vmware\", \"-tag\", \"step_name:telemetry_gpu_unittests vmware on (15ad) GPU on Windows\", \"-tag\", \"target_platform:win\", \"-coerce-negative-duration\", \"-location-tags-file\", \"../../testing/location_tags.json\", \"-exonerate-unexpected-pass\", \"-inherit-sources\", \"-baseline-id\", \"ci:fake-tester\", \"--\", \"result_adapter.exe\", \"json\", \"-result-file\", \"${ISOLATED_OUTDIR}/output.json\", \"-artifact-directory\", \"${ISOLATED_OUTDIR}\", \"--\", \"--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json\", \"--isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"x86-64\"}, {\"key\": \"gpu\", \"value\": \"15ad:0405\"}, {\"key\": \"os\", \"value\": \"Windows\"}, {\"key\": \"pool\", \"value\": \"chromium.tests\"}], \"env\": [{\"key\": \"ISOLATED_OUTDIR\", \"value\": \"${ISOLATED_OUTDIR}\"}], \"env_prefixes\": [], \"execution_timeout_secs\": \"3600\", \"grace_period_secs\": \"30\", \"idempotent\": true, \"io_timeout_secs\": \"1200\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1150,14 +1160,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test_pre_run.[trigger] telemetry_gpu_unittests on (15ad) GPU on Windows",
+    "name": "test_pre_run.[trigger] telemetry_gpu_unittests vmware on (15ad) GPU on Windows",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"request\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests vmware on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"2\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_result\": {@@@",
@@ -1172,7 +1182,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@json.input@    {@@@",
-      "@@@STEP_LOG_LINE@json.input@      \"name\": \"telemetry_gpu_unittests on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\",@@@",
+      "@@@STEP_LOG_LINE@json.input@      \"name\": \"telemetry_gpu_unittests vmware on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"priority\": \"25\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"realm\": \"chromium:ci\",@@@",
       "@@@STEP_LOG_LINE@json.input@      \"resultdb\": {@@@",
@@ -1193,9 +1203,9 @@
       "@@@STEP_LOG_LINE@json.input@        \"purpose:CI\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"purpose:post-commit\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"spec_name:chromium.ci:fake-tester\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"stepname:telemetry_gpu_unittests on (15ad) GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"stepname:telemetry_gpu_unittests vmware on (15ad) GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"test_id_prefix:\",@@@",
-      "@@@STEP_LOG_LINE@json.input@        \"test_suite:telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@        \"test_suite:telemetry_gpu_unittests vmware\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_builder_group:fake-group\",@@@",
       "@@@STEP_LOG_LINE@json.input@        \"waterfall_buildername:fake-tester\"@@@",
       "@@@STEP_LOG_LINE@json.input@      ],@@@",
@@ -1220,9 +1230,9 @@
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"os:Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-var\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"test_suite:telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"test_suite:telemetry_gpu_unittests vmware\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
-      "@@@STEP_LOG_LINE@json.input@              \"step_name:telemetry_gpu_unittests on (15ad) GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@json.input@              \"step_name:telemetry_gpu_unittests vmware on (15ad) GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-tag\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"target_platform:win\",@@@",
       "@@@STEP_LOG_LINE@json.input@              \"-coerce-negative-duration\",@@@",
@@ -1285,7 +1295,7 @@
       "@@@STEP_LOG_LINE@json.input@  ]@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@",
-      "@@@STEP_LINK@task UI: telemetry_gpu_unittests on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=2@@@"
+      "@@@STEP_LINK@task UI: telemetry_gpu_unittests vmware on (15ad) GPU on Windows/Windows/eeeeeeeeee/fake-tester/571@https://example.swarmingserver.appspot.com/task?id=2@@@"
     ]
   },
   {
@@ -1617,7 +1627,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.telemetry_gpu_unittests on NVIDIA GPU on Windows stats",
+    "name": "collect tasks.telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows stats",
     "stdin": "{\"invocations\": [\"invocations/0\"]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -1660,7 +1670,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.telemetry_gpu_unittests on NVIDIA GPU on Windows results",
+    "name": "collect tasks.telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -1690,7 +1700,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.telemetry_gpu_unittests on AMD GPU on Windows stats",
+    "name": "collect tasks.telemetry_gpu_unittests amd on AMD GPU on Windows stats",
     "stdin": "{\"invocations\": [\"invocations/1\"]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -1733,7 +1743,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.telemetry_gpu_unittests on AMD GPU on Windows results",
+    "name": "collect tasks.telemetry_gpu_unittests amd on AMD GPU on Windows results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -1763,7 +1773,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.telemetry_gpu_unittests on (15ad) GPU on Windows stats",
+    "name": "collect tasks.telemetry_gpu_unittests vmware on (15ad) GPU on Windows stats",
     "stdin": "{\"invocations\": [\"invocations/2\"]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -1806,7 +1816,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "collect tasks.telemetry_gpu_unittests on (15ad) GPU on Windows results",
+    "name": "collect tasks.telemetry_gpu_unittests vmware on (15ad) GPU on Windows results",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
@@ -1863,7 +1873,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "telemetry_gpu_unittests on NVIDIA GPU on Windows",
+    "name": "telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Windows'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -1900,14 +1910,14 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"telemetry_gpu_unittests nvidia\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"cpu\": \"x86-64\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"gpu\": \"10de:104a\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"telemetry_gpu_unittests on NVIDIA GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"telemetry_gpu_unittests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
@@ -1972,7 +1982,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "telemetry_gpu_unittests on AMD GPU on Windows",
+    "name": "telemetry_gpu_unittests amd on AMD GPU on Windows",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Windows'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -2009,14 +2019,14 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"telemetry_gpu_unittests amd\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"cpu\": \"x86-64\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"gpu\": \"1002:6779\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"telemetry_gpu_unittests on AMD GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"telemetry_gpu_unittests amd on AMD GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"telemetry_gpu_unittests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
@@ -2081,7 +2091,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "telemetry_gpu_unittests on (15ad) GPU on Windows",
+    "name": "telemetry_gpu_unittests vmware on (15ad) GPU on Windows",
     "~followup_annotations": [
       "@@@STEP_TEXT@Run on OS: 'Windows'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -2118,14 +2128,14 @@
       "@@@STEP_LOG_LINE@chromium_swarming.summary@}@@@",
       "@@@STEP_LOG_END@chromium_swarming.summary@@@",
       "@@@STEP_LOG_LINE@step_metadata@{@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"canonical_step_name\": \"telemetry_gpu_unittests vmware\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"dimensions\": {@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"cpu\": \"x86-64\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"gpu\": \"15ad:0405\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"os\": \"Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@    \"pool\": \"chromium.tests\"@@@",
       "@@@STEP_LOG_LINE@step_metadata@  },@@@",
-      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"telemetry_gpu_unittests on (15ad) GPU on Windows\",@@@",
+      "@@@STEP_LOG_LINE@step_metadata@  \"full_step_name\": \"telemetry_gpu_unittests vmware on (15ad) GPU on Windows\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"isolate_target_name\": \"telemetry_gpu_unittests\",@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"patched\": false,@@@",
       "@@@STEP_LOG_LINE@step_metadata@  \"swarm_task_ids\": [@@@",
@@ -2143,12 +2153,12 @@
     "cmd": [],
     "name": "$debug - all results",
     "~followup_annotations": [
-      "@@@STEP_TEXT@3.28 KB@@@",
+      "@@@STEP_TEXT@3.29 KB@@@",
       "@@@STEP_LOG_LINE@serialized results@{@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"all_suites\": [@@@",
       "@@@STEP_LOG_LINE@serialized results@    {@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"invalid\": \"False\",@@@",
-      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"telemetry_gpu_unittests nvidia\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"test_id_prefix\": \"\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 0,@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_failing_tests\": [],@@@",
@@ -2158,7 +2168,7 @@
       "@@@STEP_LOG_LINE@serialized results@    },@@@",
       "@@@STEP_LOG_LINE@serialized results@    {@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"invalid\": \"False\",@@@",
-      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"telemetry_gpu_unittests amd\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"test_id_prefix\": \"\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 0,@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_failing_tests\": [],@@@",
@@ -2168,7 +2178,7 @@
       "@@@STEP_LOG_LINE@serialized results@    },@@@",
       "@@@STEP_LOG_LINE@serialized results@    {@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"invalid\": \"False\",@@@",
-      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@serialized results@      \"suite_name\": \"telemetry_gpu_unittests vmware\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"test_id_prefix\": \"\",@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"total_tests_ran\": 0,@@@",
       "@@@STEP_LOG_LINE@serialized results@      \"unexpected_failing_tests\": [],@@@",
@@ -2180,17 +2190,17 @@
       "@@@STEP_LOG_LINE@serialized results@  \"unexpected_failing_suites\": []@@@",
       "@@@STEP_LOG_LINE@serialized results@}@@@",
       "@@@STEP_LOG_END@serialized results@@@",
-      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 3.28 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 3.29 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests: 1.01 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests nvidia: 1.02 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 0.00 B@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests: 1.01 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests amd: 1.01 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 0.00 B@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests: 1.01 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests vmware: 1.02 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 0@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 0.00 B@@@",
       "@@@STEP_LOG_END@memory usage@@@"

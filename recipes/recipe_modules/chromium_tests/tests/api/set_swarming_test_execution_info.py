@@ -346,13 +346,13 @@ def GenTests(api):
                           'test_location_base': '//test/location',
                       },
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'id': 'botid',
                               'device_type': 'phone',
                               'device_os': 'android',
                               'gpu': 'nv',
                               'os': 'Linux',
-                          }],
+                          },
                       },
                       'test_id_prefix': 'ninja://:fake_test/',
                   }],
@@ -421,9 +421,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'name': fake_test,
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Ubuntu-16.04',
-                          }],
+                          },
                       },
                       'test_id_prefix': 'ninja://:fake_test/',
                   }],

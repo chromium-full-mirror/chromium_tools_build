@@ -332,9 +332,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'base_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Mac',
-                          }],
+                          },
                       }
                   }],
               },
@@ -414,9 +414,9 @@ def GenTests(api):
                       'isolate_profile_data': True,
                       'test': 'base_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          }],
+                          },
                       }
                   }],
               },
@@ -463,9 +463,9 @@ def GenTests(api):
                       'isolate_profile_data': True,
                       'test': 'performance_test_suite',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          }],
+                          },
                       }
                   }],
               },
@@ -584,9 +584,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'args': ['--sample-argument'],
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          }],
+                          },
                       },
                       'test': 'base_unittests',
                   },],
@@ -945,9 +945,9 @@ def GenTests(api):
                   'isolated_scripts': [{
                       'name': fake_test,
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          }],
+                          },
                       }
                   }],
               }

@@ -86,9 +86,9 @@ def GenTests(api):
               "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                        "Air 2 14.4"),
               "swarming": {
-                  "dimension_sets": [{
+                  "dimensions": {
                       "os": "Mac-11"
-                  }],
+                  },
                   "shards": 2,
               },
               "test_id_prefix": ("ninja://ios/chrome/test/earl_grey2:"

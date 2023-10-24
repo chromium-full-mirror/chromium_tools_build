@@ -182,9 +182,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -211,9 +211,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -242,9 +242,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -286,9 +286,9 @@ def GenTests(api):
                           '--build-revision=\"${got_revision}\"',
                       ],
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -313,9 +313,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -343,9 +343,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'gl_tests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                           'expiration': 7200,
                           'hard_timeout': 1800,
                       },
@@ -374,9 +374,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'base_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -401,9 +401,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'gl_tests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -429,9 +429,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'gl_tests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -895,9 +895,9 @@ def GenTests(api):
                             'enable': True
                         },
                         'swarming': {
-                            'dimension_sets': [{
+                            'dimensions': {
                                 'os': 'Linux',
-                            },],
+                            },
                         },
                         'results_handler': 'layout tests',
                     },],
@@ -974,27 +974,27 @@ def GenTests(api):
                       {
                           'name': '10_gtest',
                           'swarming': {
-                              'dimension_sets': [{
+                              'dimensions': {
                                   'os': 'Linux',
-                              },],
+                              },
                               'shards': 10,
                           },
                       },
                       {
                           'name': '1_gtest',
                           'swarming': {
-                              'dimension_sets': [{
+                              'dimensions': {
                                   'os': 'Linux',
-                              },],
+                              },
                               'shards': 1,
                           },
                       },
                       {
                           'name': '5_gtest',
                           'swarming': {
-                              'dimension_sets': [{
+                              'dimensions': {
                                   'os': 'Linux',
-                              },],
+                              },
                               'shards': 5,
                           },
                       },
@@ -1003,27 +1003,27 @@ def GenTests(api):
                       {
                           'name': '3_isolated_tests',
                           'swarming': {
-                              'dimension_sets': [{
+                              'dimensions': {
                                   'os': 'Linux',
-                              },],
+                              },
                               'shards': 3,
                           },
                       },
                       {
                           'name': '2_isolated_tests',
                           'swarming': {
-                              'dimension_sets': [{
+                              'dimensions': {
                                   'os': 'Linux',
-                              },],
+                              },
                               'shards': 2,
                           },
                       },
                       {
                           'name': '6_isolated_tests',
                           'swarming': {
-                              'dimension_sets': [{
+                              'dimensions': {
                                   'os': 'Linux',
-                              },],
+                              },
                               'shards': 6,
                           },
                       },

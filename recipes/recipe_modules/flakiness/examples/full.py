@@ -255,9 +255,9 @@ def GenTests(api):
                           "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                    "Air 2 14.4"),
                           "swarming": {
-                              "dimension_sets": [{
+                              "dimensions": {
                                   "os": "Mac-11"
-                              }],
+                              },
                               "shards": 2,
                           },
                           "test_id_prefix":
@@ -270,9 +270,9 @@ def GenTests(api):
                           "name": ("ios_chrome_web_eg2tests_module_iPad "
                                    "Air 2 14.4"),
                           "swarming": {
-                              "dimension_sets": [{
+                              "dimensions": {
                                   "os": "Mac-11"
-                              }],
+                              },
                               "shards": 1,
                           },
                           "test_id_prefix":
@@ -664,9 +664,9 @@ def GenTests(api):
                       "name": ("ios_chrome_web_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "dimension_sets": [{
+                          "dimensions": {
                               "os": "Mac-11"
-                          }],
+                          },
                           "shards": 1,
                       },
                       "test_id_prefix": ("ninja://ios/chrome/test/earl_grey2:"
@@ -775,9 +775,9 @@ def GenTests(api):
                       "isolate_name": "base_unittests",
                       "name": "base_unittests",
                       "swarming": {
-                          "dimension_sets": [{
+                          "dimensions": {
                               "os": "Mac-11"
-                          }],
+                          },
                       },
                       "test_id_prefix": "ninja://base:base_unittests/",
                   },],
@@ -845,9 +845,9 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "dimension_sets": [{
+                          "dimensions": {
                               "os": "Mac-11"
-                          }],
+                          },
                       },
                       "test_id_prefix":
                           ("ninja://ios/chrome/test/earl_grey2:"
@@ -925,9 +925,9 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "dimension_sets": [{
+                          "dimensions": {
                               "os": "Mac-11"
-                          }],
+                          },
                       },
                       "test_id_prefix":
                           ("ninja://ios/chrome/test/earl_grey2:"
@@ -1004,9 +1004,9 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "dimension_sets": [{
+                          "dimensions": {
                               "os": "Mac-11"
-                          }],
+                          },
                       },
                       "experiment_percentage":
                           100,
@@ -1098,9 +1098,9 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "dimension_sets": [{
+                          "dimensions": {
                               "os": "Mac-11"
-                          }],
+                          },
                           "shards": 2,
                       },
                       "test_id_prefix":
@@ -1178,9 +1178,9 @@ def GenTests(api):
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
                       "swarming": {
-                          "dimension_sets": [{
+                          "dimensions": {
                               "os": "Mac-11"
-                          }],
+                          },
                           "shards": 2,
                       },
                       "test_id_prefix":

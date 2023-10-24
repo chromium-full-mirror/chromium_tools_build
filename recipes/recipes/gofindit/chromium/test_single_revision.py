@@ -183,23 +183,23 @@ def GenTests(api):
             'gtest_tests': [{
                 'test': 'fake-gtest',
                 'swarming': {
-                    'dimension_sets': [{
+                    'dimensions': {
                         'os': 'Mac',
-                    }],
+                    },
                 }
             }, {
                 'test': 'fake-gtest-2',
                 'swarming': {
-                    'dimension_sets': [{
+                    'dimensions': {
                         'os': 'Mac',
-                    }],
+                    },
                 }
             }, {
                 'test': 'fake-gtest-3',
                 'swarming': {
-                    'dimension_sets': [{
+                    'dimensions': {
                         'os': 'Mac',
-                    }],
+                    },
                 }
             }],
             'scripts': [{

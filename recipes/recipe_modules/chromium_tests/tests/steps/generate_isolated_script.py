@@ -213,43 +213,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'swarming_dimension_sets',
-      ci_build(
-          test_spec={
-              'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
-              'swarming': {
-                  'dimension_sets': [{
-                      'os': 'Linux',
-                      'foo': None,
-                  }],
-                  'optional_dimensions': {
-                      '60': {
-                          'bar': 'baz',
-                      },
-                  },
-              },
-          }),
-      api.post_process(
-          api.swarming.check_triggered_request,
-          'test_pre_run.[trigger] base_unittests',
-          lambda check, req: check(
-              all(('os', 'Linux') in slice.dimensions.items()
-                  for slice in req)),
-          lambda check, req: check(not any('foo' in slice.dimensions
-                                           for slice in req)),
-          lambda check, req: check(('bar', 'baz') in req[0].dimensions.items()),
-          lambda check, req: check(not any('bar' in slice.dimensions
-                                           for slice in req[1:])),
-      ),
-      api.post_process(post_process.StepCommandContains, 'base_unittests', [
-          'swarming',
-          'collect',
-      ]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'swarming_dimensions',
       ci_build(
           test_spec={
@@ -287,34 +250,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'swarming_with_dimensions_and_dimension_sets',
-      ci_build(
-          test_spec={
-              'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
-              'swarming': {
-                  'dimension_sets': [{
-                      'os': 'Linux',
-                      'foo': None,
-                  }],
-                  'dimensions': {
-                      'os': 'Linux',
-                  },
-                  'optional_dimensions': {
-                      '60': {
-                          'bar': 'baz',
-                      },
-                  },
-              },
-          }),
-      test_spec_format_error(
-          'specifies both "dimension_sets" and "dimensions"'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'swarming_dimension_sets_with_legacy_optional_dimensions',
+      'swarming_legacy_optional_dimensions',
       ci_build(
           test_spec={
               'name': 'base_unittests',
@@ -425,10 +361,10 @@ def GenTests(api):
               'isolate_name': 'webkit_tests',
               'results_handler': 'layout tests',
               'swarming': {
-                  'dimension_sets': [{
+                  'dimensions': {
                       'os': 'Mac',
                       'gpu': '8086:blah',
-                  }],
+                  },
               },
           }),
       api.post_process(post_process.StepSuccess,

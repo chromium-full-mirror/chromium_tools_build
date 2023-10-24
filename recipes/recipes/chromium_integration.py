@@ -57,9 +57,9 @@ def GenTests(api):
                             'isolate_name': 'blink_web_tests',
                             'name': 'blink_web_tests',
                             'swarming': {
-                                'dimension_sets': [{
+                                'dimensions': {
                                     'os': 'Linux',
-                                },],
+                                },
                             },
                             'results_handler': 'layout tests',
                         },],

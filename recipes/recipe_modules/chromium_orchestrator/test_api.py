@@ -50,9 +50,9 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     gtest_tests = [{
         'name': test,
         'swarming': {
-            'dimension_sets': [{
+            'dimensions': {
                 'os': 'Linux',
-            }],
+            },
             'shards': shards,
         },
         'isolate_profile_data': True,

@@ -104,9 +104,9 @@ def GenTests(api):
                           'enable': True
                       },
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       }
                   },],
               },
@@ -144,25 +144,19 @@ def GenTests(api):
                       {
                           'test': 'base_unittests',
                           'swarming': {
-                              'dimension_sets': [
-                                  {
-                                      'gpu':
-                                          '10de:104a',  # NVIDIA GeForce GT 610
-                                      'os': 'Linux',
-                                  },
-                              ],
+                              'dimensions': {
+                                  'gpu': '10de:104a',  # NVIDIA GeForce GT 610
+                                  'os': 'Linux',
+                              },
                           },
                       },
                       {
                           'test': 'browser_tests',
                           'swarming': {
-                              'dimension_sets': [
-                                  {
-                                      'gpu':
-                                          '10de:104a',  # NVIDIA GeForce GT 610
-                                      'os': 'Linux',
-                                  },
-                              ],
+                              'dimensions': {
+                                  'gpu': '10de:104a',  # NVIDIA GeForce GT 610
+                                  'os': 'Linux',
+                              },
                           },
                       },
                   ],
@@ -200,21 +194,25 @@ def GenTests(api):
               'fake-tester': {
                   'gtest_tests': [
                       {
+                          'name': 'gl_tests intel',
                           'test': 'gl_tests',
                           'swarming': {
-                              'dimension_sets': [
-                                  {
-                                      'gpu': '8086:0a2e',  # Intel Iris
-                                      'hidpi': '0',
-                                      'os': 'Mac-10.10',
-                                  },
-                                  {
-                                      'gpu':
-                                          '10de:0fe9',  # NVIDIA GeForce GT750M
-                                      'hidpi': '1',
-                                      'os': 'Mac-10.13',
-                                  },
-                              ],
+                              'dimensions': {
+                                  'gpu': '8086:0a2e',  # Intel Iris
+                                  'hidpi': '0',
+                                  'os': 'Mac-10.10',
+                              },
+                          },
+                      },
+                      {
+                          'name': 'gl_tests nvidia',
+                          'test': 'gl_tests',
+                          'swarming': {
+                              'dimensions': {
+                                  'gpu': '10de:0fe9',  # NVIDIA GeForce GT750M
+                                  'hidpi': '1',
+                                  'os': 'Mac-10.13',
+                              },
                           },
                       },
                   ],
@@ -245,9 +243,9 @@ def GenTests(api):
                       'override_compile_targets':
                           ['tab_capture_end2end_tests_run'],
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -499,9 +497,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -529,9 +527,9 @@ def GenTests(api):
                       'name':
                           'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                       'override_compile_targets':
                           ['telemetry_gpu_unittests_run', 'a'],
@@ -566,9 +564,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -603,9 +601,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                           'shards': 2,
                       },
                   },],
@@ -639,9 +637,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                           'shards': 2,
                       },
                   },],
@@ -678,9 +676,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                           'shards': 2,
                       },
                   },],
@@ -714,9 +712,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                           'shards': 2,
                       },
                   },],
@@ -758,13 +756,10 @@ def GenTests(api):
                           'isolate_name': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests',
                           'swarming': {
-                              'dimension_sets': [
-                                  {
-                                      'gpu':
-                                          '10de:104a',  # NVIDIA GeForce GT 610
-                                      'os': 'Linux',
-                                  },
-                              ],
+                              'dimensions': {
+                                  'gpu': '10de:104a',  # NVIDIA GeForce GT 610
+                                  'os': 'Linux',
+                              },
                           },
                       },
                   ],
@@ -798,21 +793,24 @@ def GenTests(api):
                   'isolated_scripts': [
                       {
                           'isolate_name': 'telemetry_gpu_unittests',
-                          'name': 'telemetry_gpu_unittests',
+                          'name': 'telemetry_gpu_unittests intel',
                           'swarming': {
-                              'dimension_sets': [
-                                  {
-                                      'gpu': '8086:0a2e',  # Intel Iris
-                                      'hidpi': '0',
-                                      'os': 'Mac-10.10',
-                                  },
-                                  {
-                                      'gpu':
-                                          '10de:0fe9',  # NVIDIA GeForce GT750M
-                                      'hidpi': '1',
-                                      'os': 'Mac-10.13',
-                                  },
-                              ],
+                              'dimensions': {
+                                  'gpu': '8086:0a2e',  # Intel Iris
+                                  'hidpi': '0',
+                                  'os': 'Mac-10.10',
+                              },
+                          },
+                      },
+                      {
+                          'isolate_name': 'telemetry_gpu_unittests',
+                          'name': 'telemetry_gpu_unittests nvidia',
+                          'swarming': {
+                              'dimensions': {
+                                  'gpu': '10de:0fe9',  # NVIDIA GeForce GT750M
+                                  'hidpi': '1',
+                                  'os': 'Mac-10.13',
+                              },
                           },
                       },
                   ],
@@ -846,25 +844,35 @@ def GenTests(api):
                   'isolated_scripts': [
                       {
                           'isolate_name': 'telemetry_gpu_unittests',
-                          'name': 'telemetry_gpu_unittests',
+                          'name': 'telemetry_gpu_unittests nvidia',
                           'swarming': {
-                              'dimension_sets': [
-                                  {
-                                      # NVIDIA GeForce GT 610
-                                      'gpu': '10de:104a',
-                                      'os': 'Windows',
-                                  },
-                                  {
-                                      # AMD Radeon HD 6450
-                                      'gpu': '1002:6779',
-                                      'os': 'Windows',
-                                  },
-                                  {
-                                      # VMWare SVGA II Adapter
-                                      'gpu': '15ad:0405',
-                                      'os': 'Windows',
-                                  },
-                              ],
+                              'dimensions': {
+                                  # NVIDIA GeForce GT 610
+                                  'gpu': '10de:104a',
+                                  'os': 'Windows',
+                              },
+                          },
+                      },
+                      {
+                          'isolate_name': 'telemetry_gpu_unittests',
+                          'name': 'telemetry_gpu_unittests amd',
+                          'swarming': {
+                              'dimensions': {
+                                  # AMD Radeon HD 6450
+                                  'gpu': '1002:6779',
+                                  'os': 'Windows',
+                              },
+                          },
+                      },
+                      {
+                          'isolate_name': 'telemetry_gpu_unittests',
+                          'name': 'telemetry_gpu_unittests vmware',
+                          'swarming': {
+                              'dimensions': {
+                                  # VMWare SVGA II Adapter
+                                  'gpu': '15ad:0405',
+                                  'os': 'Windows',
+                              },
                           },
                       },
                   ],
@@ -898,9 +906,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Windows',
-                          },],
+                          },
                       },
                   },],
               },
@@ -933,9 +941,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -971,9 +979,9 @@ def GenTests(api):
                       'isolate_name': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -1212,9 +1220,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'browser_tests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                       'merge': {
                           'script': '//fake_merge_script.py',
@@ -1250,9 +1258,9 @@ def GenTests(api):
                   'gtest_tests': [{
                       'test': 'browser_tests',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                       'merge': {
                           'script': 'fake_merge_script.py',
@@ -1292,9 +1300,9 @@ def GenTests(api):
                           'script': '//fake_merge_script.py',
                       },
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -1331,9 +1339,9 @@ def GenTests(api):
                           'script': 'bad_fake_merge_script.py',
                       },
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -1374,9 +1382,9 @@ def GenTests(api):
                           ],
                       },
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
@@ -1411,9 +1419,9 @@ def GenTests(api):
                       'name': 'fake_test',
                       'results_handler': 'fake',
                       'swarming': {
-                          'dimension_sets': [{
+                          'dimensions': {
                               'os': 'Linux',
-                          },],
+                          },
                       },
                   },],
               },
