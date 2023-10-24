@@ -2,30 +2,12 @@
   {
     "cmd": [
       "vpython3",
-      "RECIPE_REPO[build]/recipes/upload_goma_logs.py",
-      "--upload-compiler-proxy-info",
-      "--log-url-json-file",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
       "/path/to/tmp/json",
-      "--gsutil-py-path",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "--bqupload-path",
-      "[CACHE]/goma/bqupload/bqupload",
-      "--json-status",
-      "[TMP_BASE]/goma_jsonstatus.json",
-      "--build-exit-status",
-      "1",
-      "--goma-stats-file",
-      "[TMP_BASE]/goma_stats",
-      "--goma-counterz-file",
-      "[TMP_BASE]/goma_counterz",
-      "--goma-crash-report-id-file",
-      "[TMP_BASE]/crash_report_id",
-      "--build-id",
-      "8945511751514863184",
-      "--builder-id-json",
-      "{\"bucket\": \"ci\", \"builder\": \"linux\", \"project\": \"emscripten-releases\"}",
-      "--buildbot-buildername",
-      "linux"
+      "rmtree",
+      "[CLEANUP]/reclient_log_tmp_1"
     ],
     "env": {
       "BUILDBOT_BUCKET": "ci",
@@ -33,7 +15,7 @@
       "BUILDBOT_BUILDNUMBER": "42",
       "BUILDBOT_MASTERNAME": "emscripten-releases",
       "BUILDBOT_REVISION": "2d72510e447ab60a9728aeea2362d8be2cbd7789",
-      "GOMA_DIR": "[CACHE]/goma/client"
+      "USE_RECLIENT": "1"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -43,6 +25,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "emscripten-releases:ci"
@@ -55,15 +38,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess_for_goma.upload_log",
-    "timeout": 300,
+    "name": "postprocess for reclient.cleanup reclient log dir",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"compiler_proxy_log\": \"https://chromium-build-stats.appspot.com/compiler_proxy_log/2017/03/30/build11-m1/compiler_proxy.exe.BUILD11-M1.chrome-bot.log.INFO.20170329-222936.4420.gz\"@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@compiler_proxy_log@https://chromium-build-stats.appspot.com/compiler_proxy_log/2017/03/30/build11-m1/compiler_proxy.exe.BUILD11-M1.chrome-bot.log.INFO.20170329-222936.4420.gz@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   }
 ]

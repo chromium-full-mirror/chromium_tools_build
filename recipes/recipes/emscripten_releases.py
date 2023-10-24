@@ -9,7 +9,6 @@ DEPS = [
     'depot_tools/depot_tools',
     'depot_tools/gclient',
     'depot_tools/osx_sdk',
-    'goma',
     'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
@@ -51,21 +50,11 @@ step_test_data = {
 }
 
 
-def ExecBuildSteps(api, build_steps, sync_dir, dir_flags, stop_goma=True):
-  try:
-    for step in build_steps:
-      script = sync_dir.join(step['command'][0])
-      args = step['command'][1:]
-      api.step(step['name'], ['vpython3', script] + dir_flags + args)
-  except api.step.StepFailure as e:
-    # If any of these builds fail, testing won't be meaningful.
-    exit_status = e.retcode
-    raise
-  else:
-    exit_status = 0
-  finally:
-    if stop_goma:
-      api.goma.stop(build_exit_status=exit_status)
+def ExecBuildSteps(api, build_steps, sync_dir, dir_flags):
+  for step in build_steps:
+    script = sync_dir.join(step['command'][0])
+    args = step['command'][1:]
+    api.step(step['name'], ['vpython3', script] + dir_flags + args)
 
 
 def RunSteps(api):
@@ -77,14 +66,9 @@ def RunSteps(api):
       'BUILDBOT_BUILDNUMBER': api.buildbucket.build.number,
       'BUILDBOT_BUCKET': api.buildbucket.build.builder.bucket,
   }
-  use_reclient = api.reclient.instance
-  if use_reclient:
-    env.update({'USE_RECLIENT': '1'})
-    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
-  else:
-    goma_dir = api.goma.ensure_goma()
-    env.update({'GOMA_DIR': goma_dir})
-    api.goma.start()
+
+  env.update({'USE_RECLIENT': '1'})
+  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
   cache_dir = api.path['cache'].join('builder')
   sync_dir = cache_dir.join('emscripten-releases')
@@ -116,10 +100,7 @@ def RunSteps(api):
     # Depot tools on path is for gsutil.py.
     with api.depot_tools.on_path(), api.context(env=env):
       build_steps = bot_steps[builder]['build_steps']
-      if use_reclient:
-        with api.reclient.process('compile', '', False):
-          ExecBuildSteps(api, build_steps, sync_dir, dir_flags, False)
-      else:
+      with api.reclient.process('compile', '', False):
         ExecBuildSteps(api, build_steps, sync_dir, dir_flags)
 
       with api.step.defer_results():
@@ -136,7 +117,7 @@ def GenTests(api):
         project='emscripten-releases',
         builder='linux',
         build_number=42,
-    )
+    ) + api.reclient.properties()
 
   yield api.test(
       'linux',
@@ -144,21 +125,11 @@ def GenTests(api):
   )
 
   yield api.test(
-      'reclient_linux',
-      api.properties(
-          **{'$build/reclient': {
-              'instance': 'fake-reclient-instance',
-          }},),
-      build(),
-      api.post_process(MustRun, 'preprocess for reclient'),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
       'linux_buildfail',
       build(),
       api.step_data('Build Wabt', retcode=1),
-      api.post_process(Filter('postprocess_for_goma.upload_log')),
+      api.post_process(
+          Filter('postprocess for reclient.cleanup reclient log dir')),
       api.expect_status('FAILURE'),
   )
 
