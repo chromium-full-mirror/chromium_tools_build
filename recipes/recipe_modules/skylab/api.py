@@ -264,6 +264,7 @@ class SkylabApi(recipe_api.RecipeApi):
             shard_test_args.append('lacros_gcs_path={}'.format(lacros_gcs_path))
 
             shard_cmd.extend(['-test-args', ' '.join(shard_test_args)])
+            shard_cmd.append('-exit-early')
             shard_cmd.append(t.spec.autotest_name)
 
             shard_link_name = (
