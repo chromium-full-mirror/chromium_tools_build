@@ -65,7 +65,7 @@ def RunSteps(api):
 def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
-  def _ctbc_properties(**kwargs):
+  def ctbc_properties(**kwargs):
     return ctbc_api.properties(
         ctbc_api.properties_assembler_for_try_builder(
             **kwargs).with_mirrored_builder(
@@ -75,10 +75,6 @@ def GenTests(api):
                 builder_group='fake-group',
                 builder='fake-tester',
             ).assemble())
-
-  def default_properties(**kwargs):
-    return sum([_ctbc_properties(**kwargs),
-                api.cv(run_mode='FULL_RUN')], api.empty_test_data())
 
   def get_try_build(builder='fake-orchestrator'):
     return api.chromium.try_build(
@@ -92,7 +88,7 @@ def GenTests(api):
   yield api.test(
       'basic',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -136,64 +132,13 @@ def GenTests(api):
   )
 
   yield api.test(
-      'recipe_exits_early_for_roller_with_experiment',
-      default_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-          experiments=['chromium.compile_only_for_non_rollers'],
-          tags=api.buildbucket.tags(
-              cq_cl_owner=('chromium-internal-autoroll'
-                           '@skia-corp.google.com.iam.gserviceaccount.com'),
-              cq_attempt_key='fake-cq-attempt-key',
-          ),
-      ),
-      api.post_process(post_process.DoesNotRun,
-                       'trigger compilator (with patch)'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'recipe_only_compiles_with_experiment',
-      default_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-          experiments=['chromium.compile_only_for_non_rollers'],
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-      ),
-      api.chromium_orchestrator.override_compilator_build_proto_fetch(),
-      api.chromium_orchestrator.override_schedule_compilator_build(),
-      api.chromium_orchestrator.override_compilator_steps(),
-      api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
-      api.post_process(post_process.DoesNotRun, 'browser_tests (with patch)'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'basic_branch',
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -221,7 +166,7 @@ def GenTests(api):
 
   yield api.test(
       'non_src_CL',
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -254,7 +199,7 @@ def GenTests(api):
   yield api.test(
       'without_patch_compilator',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -285,7 +230,7 @@ def GenTests(api):
 
   yield api.test(
       'without_patch_compilator_non_src_CL',
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -328,7 +273,7 @@ def GenTests(api):
 
   yield api.test(
       'without_patch_compilator_non_src_CL_trigger_compile_wo_patch_early',
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -373,7 +318,7 @@ def GenTests(api):
   yield api.test(
       'coverage_not_enabled',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -398,7 +343,7 @@ def GenTests(api):
   yield api.test(
       'clang_coverage_not_enabled',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -432,7 +377,6 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      api.cv(run_mode='FULL_RUN'),
       api.post_process(post_process.DoesNotRun,
                        'trigger compilator (with patch)'),
       api.expect_status('INFRA_FAILURE'),
@@ -446,7 +390,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -472,7 +416,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -507,7 +451,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -524,7 +468,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -549,7 +493,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -576,7 +520,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -602,7 +546,7 @@ def GenTests(api):
   yield api.test(
       'non_swarmed_isolated_test',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -656,7 +600,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -681,7 +625,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -716,7 +660,7 @@ def GenTests(api):
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
           experiments=['chromium.pre_retry_shards_without_patch_compile'],
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -754,7 +698,7 @@ def GenTests(api):
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
           experiments=['chromium.pre_retry_shards_without_patch_compile'],
       ),
-      default_properties(retry_without_patch=False),
+      ctbc_properties(retry_without_patch=False),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -788,7 +732,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -831,7 +775,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -871,7 +815,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -915,7 +859,7 @@ def GenTests(api):
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
           experiments=['chromium.pre_retry_shards_without_patch_compile'],
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -960,7 +904,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -996,7 +940,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1039,7 +983,7 @@ def GenTests(api):
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
           experiments=['chromium.pre_retry_shards_without_patch_compile'],
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1086,7 +1030,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1132,7 +1076,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1177,7 +1121,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1212,7 +1156,7 @@ def GenTests(api):
   yield api.test(
       'code_coverage_trybot_with_patch',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1245,7 +1189,7 @@ def GenTests(api):
   yield api.test(
       'code_coverage_trybot_retry_shards_with_patch',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1290,7 +1234,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1337,7 +1281,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1388,7 +1332,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1426,7 +1370,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1457,7 +1401,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1509,7 +1453,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1540,7 +1484,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1564,7 +1508,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1603,7 +1547,7 @@ def GenTests(api):
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
           experiments=['chromium.pre_retry_shards_without_patch_compile'],
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1648,7 +1592,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1674,7 +1618,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1717,7 +1661,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
       ),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1796,7 +1740,7 @@ def GenTests(api):
   yield api.test(
       'new_flaky_test',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1843,7 +1787,7 @@ def GenTests(api):
   yield api.test(
       'flaky_swarming_and_local_test_failure',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':
@@ -1899,7 +1843,7 @@ def GenTests(api):
   yield api.test(
       'no_flaky_tests',
       get_try_build(),
-      default_properties(),
+      ctbc_properties(),
       api.properties(
           **{
               '$build/chromium_orchestrator':

@@ -18,7 +18,6 @@ DEPS = [
     'chromium_tests_builder_config',
     'code_coverage',
     'depot_tools/tryserver',
-    'recipe_engine/cv',
     'recipe_engine/file',
     'recipe_engine/led',
     'recipe_engine/json',
@@ -97,7 +96,6 @@ def GenTests(api):
             experiments=['other_experiment_name'],
         ),
         ctbc_properties(),
-        api.cv(run_mode='FULL_RUN'),
         api.chromium_bootstrap.properties(exe=exe),
         api.code_coverage(use_clang_coverage=True),
         api.properties(

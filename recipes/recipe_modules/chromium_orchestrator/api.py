@@ -79,16 +79,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
               'using led swarming tasks is not supported for this recipe,'
               ' please pass the -real-build flag to led get-* and led launch'))
 
-    if self.m.cv.active:
-      # Temporary experiment where only non-roller CLs will be able to compile
-      # on a set of experimental compilator bots
-      roller_email_suffix = 'gserviceaccount.com'
-      is_roller_cl = any(
-          roller_email_suffix in owner for owner in self.m.cv.cl_owners)
-      if is_roller_cl and ('chromium.compile_only_for_non_rollers'
-                           in self.m.buildbucket.build.input.experiments):
-        return
-
     raw_result = self.test_patch()
 
     # If the orchestrator build is canceled or infra failed, the exception
@@ -169,10 +159,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # SUCCESS means that there's no swarming tests to trigger
     if maybe_raw_result != None:
       return maybe_raw_result
-
-    if ('chromium.compile_only_for_non_rollers'
-        in self.m.buildbucket.build.input.experiments):
-      return
 
     self.m.chromium_checkout.checkout_dir = self.m.path['cleanup']
 
