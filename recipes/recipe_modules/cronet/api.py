@@ -38,7 +38,6 @@ class CronetApi(recipe_api.RecipeApi):
   def build(self,
             builder_id=None,
             targets=None,
-            use_goma=False,
             use_reclient=True):
     builder_id = builder_id or self.m.chromium.get_builder_id()
     self.m.chromium.runhooks()
