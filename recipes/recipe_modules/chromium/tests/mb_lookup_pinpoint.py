@@ -24,23 +24,21 @@ def RunSteps(api):
       chromium.BuilderId.create_for_group('chromium.perf.pinpoint',
                                           'linux-perf'),
       recursive=api.properties.get('recursive', False),
-      use_goma=api.properties.get('use_goma', True),
-      use_reclient=api.properties.get('use_reclient', False))
+      use_goma=False,
+      use_reclient=True)
   expected_gn_args = api.properties.get('expected_gn_args')
   api.assertions.assertEqual(gn_args, expected_gn_args)
 
 
 def GenTests(api):
   gn_args = '\n'.join((
-      'goma_dir = "/b/build/slave/cache/goma_client"',
       'target_cpu = "x86"',
       'target_sysroot = "//build/linux"',
-      'use_goma = true',
+      'use_remoteexec = true',
   ))
   expected_step_text = [
-      '<br/>'.join(('target_cpu = "x86"', 'use_goma = true')), '<br/>'.join(
-          ('goma_dir = "/b/build/slave/cache/goma_client"',
-           'target_sysroot = "//build/linux"'))
+      '<br/>'.join(('target_cpu = "x86"', 'use_remoteexec = true')),
+      'target_sysroot = "//build/linux"',
   ]
 
   yield api.test(
