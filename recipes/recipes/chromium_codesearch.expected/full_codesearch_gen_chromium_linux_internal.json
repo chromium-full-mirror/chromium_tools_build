@@ -1552,7 +1552,7 @@
       "vpython3",
       "RECIPE_MODULE[infra::codesearch]/resources/sync_generated_files.py",
       "--copy",
-      "[CACHE]/builder/src/out/linux-Debug/gen;linux-Debug/gen",
+      "[CACHE]/builder/src/out/linux-Debug;linux-Debug",
       "--message",
       "Generated files from \"codesearch-gen-chromium-linux-internal\" build 8945511751514863184, revision f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--dest-branch",

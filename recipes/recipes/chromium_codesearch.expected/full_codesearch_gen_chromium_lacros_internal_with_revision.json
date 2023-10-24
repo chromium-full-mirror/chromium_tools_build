@@ -1552,7 +1552,7 @@
       "vpython3",
       "RECIPE_MODULE[infra::codesearch]/resources/sync_generated_files.py",
       "--copy",
-      "[CACHE]/builder/src/out/lacros-Debug/gen;lacros-Debug/gen",
+      "[CACHE]/builder/src/out/lacros-Debug;lacros-Debug",
       "--message",
       "Generated files from \"codesearch-gen-chromium-lacros-internal\" build 8945511751514863184, revision aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "--dest-branch",

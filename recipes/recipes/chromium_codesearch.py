@@ -318,8 +318,8 @@ def RunSteps(api, properties):
   # into this checkout. This may fail due to other builders pushing to the
   # remote repo at the same time, so we retry this 3 times before giving up.
   copy_config = {
-      api.path['checkout'].join('out', gen_repo_out_dir, 'gen'):
-          api.path.join(gen_repo_out_dir, 'gen')
+      api.path['checkout'].join('out', gen_repo_out_dir):
+          api.path.join(gen_repo_out_dir)
   }
   _RunStepWithRetry(
       api, lambda: api.codesearch.checkout_generated_files_repo_and_sync(

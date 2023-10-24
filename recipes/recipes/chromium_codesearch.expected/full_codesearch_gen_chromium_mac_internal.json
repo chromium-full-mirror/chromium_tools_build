@@ -1606,7 +1606,7 @@
       "vpython3",
       "RECIPE_MODULE[infra::codesearch]/resources/sync_generated_files.py",
       "--copy",
-      "[CACHE]/builder/src/out/mac-Debug/gen;mac-Debug/gen",
+      "[CACHE]/builder/src/out/mac-Debug;mac-Debug",
       "--message",
       "Generated files from \"codesearch-gen-chromium-mac-internal\" build 8945511751514863184, revision f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--dest-branch",

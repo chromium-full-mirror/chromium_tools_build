@@ -1551,7 +1551,7 @@
       "vpython3",
       "RECIPE_MODULE[infra::codesearch]/resources/sync_generated_files.py",
       "--copy",
-      "[CACHE]/builder/src/out/webview-Debug/gen;webview-Debug/gen",
+      "[CACHE]/builder/src/out/webview-Debug;webview-Debug",
       "--message",
       "Generated files from \"codesearch-gen-chromium-webview-internal\" build 8945511751514863184, revision aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "--dest-branch",

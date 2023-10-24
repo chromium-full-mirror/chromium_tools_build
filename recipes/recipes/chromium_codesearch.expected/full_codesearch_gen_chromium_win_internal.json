@@ -1578,7 +1578,7 @@
       "vpython3",
       "RECIPE_MODULE[infra::codesearch]/resources/sync_generated_files.py",
       "--copy",
-      "[CACHE]/builder/src/out/win-Debug/gen;win-Debug/gen",
+      "[CACHE]/builder/src/out/win-Debug;win-Debug",
       "--message",
       "Generated files from \"codesearch-gen-chromium-win-internal\" build 8945511751514863184, revision f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
       "--dest-branch",
