@@ -343,7 +343,6 @@ class ReclientApi(recipe_api.RecipeApi):
       ninja_command: Command used for build.
                      (e.g. ['ninja', '-C', 'out/Release'])
     """
-    assert self.instance, 'reclient is not configured'
     self._reclient_log_dir = self.m.path.mkdtemp('reclient_log')
     deps_cache_path = self.deps_cache_path
     if (deps_cache_by_step):
