@@ -1164,7 +1164,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                  mb_config_path=None,
                  chromium_config=None,
                  phase=None,
-                 use_goma=True,
+                 use_goma=False,
                  android_version_code=None,
                  android_version_name=None,
                  additional_args=None,
