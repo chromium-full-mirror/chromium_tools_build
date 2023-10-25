@@ -13,13 +13,15 @@ from . import testing
 class V8TestApi(recipe_test_api.RecipeTestApi):
 
   @staticmethod
-  def SLOWEST_TESTS():
+  def TOP_TESTS():
     return [
         {
             'name': 'mjsunit/Cool.Test',
             'flags': ['-f'],
             'command': 'd8 -f mjsunit/Cool.Test',
             'duration': 61.0028,
+            'max_rss': 2254857831,
+            'max_vms': 12254857831,
             'variant': 'default',
         },
         {
@@ -27,6 +29,8 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
             'flags': ['-f', '-g'],
             'command': 'd8 -f mjsunit/Cool.Test2',
             'duration': 0.1012,
+            'max_rss': 2254857830,
+            'max_vms': 12254857830,
             'variant': 'default',
         },
     ]
@@ -36,7 +40,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
                   flakes=False,
                   unmarked_slow_test=False,
                   empty_run=False):
-    slowest_tests = V8TestApi.SLOWEST_TESTS()
+    top_tests = V8TestApi.TOP_TESTS()
     if empty_run:
       return self.m.json.output({
           'results': [],
@@ -45,18 +49,23 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
           'test_total': 0,
       })
     if unmarked_slow_test:
-      slowest_tests += [{
+      top_tests += [{
         'name': 'mjsunit/slow',
         'flags': [],
         'command': 'd8 -f mjsunit/slow',
         'duration': 123.0,
+        'max_rss': 12254857830,
+        'max_vms': 17,
         'marked_slow': False,
+        'marked_heavy': False,
         'variant': 'stress',
       }]
     if not has_failures:
       return self.m.json.output({
           'results': [],
-          'slowest_tests': slowest_tests,
+          'max_rss_tests': top_tests,
+          'max_vms_tests': top_tests,
+          'slowest_tests': top_tests,
           'tags': [],
           'test_total': 1,
       })
@@ -126,7 +135,9 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
                   'exit_code': 1,
               },
           ],
-          'slowest_tests': slowest_tests,
+          'max_rss_tests': top_tests,
+          'max_vms_tests': top_tests,
+          'slowest_tests': top_tests,
           'tags': [],
           'test_total': 4,
       })
@@ -187,7 +198,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
 
     return self.m.json.output({
         'results': results,
-        'slowest_tests': slowest_tests,
+        'slowest_tests': top_tests,
         'tags': [],
         'test_total': 10,
     })
@@ -211,7 +222,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
             'target_name': 'd8',
             'exit_code': 1,
         },],
-        'slowest_tests': V8TestApi.SLOWEST_TESTS(),
+        'slowest_tests': V8TestApi.TOP_TESTS(),
         'tags': [],
         'test_total': 1,
     })
@@ -269,7 +280,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
                 'framework_name': framework_name,
             },
         ],
-        'slowest_tests': V8TestApi.SLOWEST_TESTS(),
+        'slowest_tests': V8TestApi.TOP_TESTS(),
         'tags': [],
         'test_total': 2,
     })
@@ -277,7 +288,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
   def infra_failure(self):
     return self.m.json.output({
         'results': [],
-        'slowest_tests': V8TestApi.SLOWEST_TESTS(),
+        'slowest_tests': V8TestApi.TOP_TESTS(),
         'tags': ['UNRELIABLE_RESULTS'],
         'test_total': 1,
     }) + self.m.json.output([['Collect warning', '']], name='warnings')
@@ -325,7 +336,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
                 'exit_code': 1,
             },
         ],
-        'slowest_tests': V8TestApi.SLOWEST_TESTS(),
+        'slowest_tests': V8TestApi.TOP_TESTS(),
         'tags': [],
         'test_total': 2,
     })

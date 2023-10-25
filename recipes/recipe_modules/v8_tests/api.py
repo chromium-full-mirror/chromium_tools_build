@@ -5,7 +5,6 @@
 import argparse
 from collections import defaultdict
 import contextlib
-import datetime
 import random
 import re
 
@@ -14,6 +13,7 @@ from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
 from .builders import TestSpec
 from . import builders as v8_builders
+from . import formatting
 from . import testing
 
 
@@ -210,43 +210,34 @@ class V8TestsApi(recipe_api.RecipeApi):
     self.test_duration_sec = self.m.time.time() - start_time_sec
     return test_group.test_results
 
-  @staticmethod
-  def format_duration(test):
-    duration = datetime.timedelta(seconds=test['duration'])
-    time = (datetime.datetime.min + duration).time()
-    return time.strftime('%M:%S:') + '%03i' % int(time.microsecond / 1000)
-
-  @staticmethod
-  def formatted_test_details(test, format_key, format_value):
-    return [
-      f'Test: {test["name"]}',
-      f'Flags: {" ".join(test["flags"])}',
-      f'Command: {test["command"]}',
-      f'Variant: {test["variant"]}',
-      f'{format_key}: {format_value}',
-      '',
-    ]
-
-  @staticmethod
-  def format_top_tests(test_list, format_fun, format_key, status_key):
-    lines = []
-    for test in test_list:
-      suffix = ' *' if test.get(status_key) is False else ''
-      lines.append(f'{format_fun(test)} {test["name"]}{suffix}')
-
-    # Execution details.
-    lines.extend(['', 'Details:', ''])
-    for test in test_list:
-      lines.extend(V8TestsApi.formatted_test_details(
-          test, format_key, format_fun(test)))
-    return lines
-
-  def _update_durations(self, output, presentation):
-    presentation.logs['slowest tests'] = V8TestsApi.format_top_tests(
+  def update_slowest(self, output, presentation):
+    presentation.logs['slowest tests'] = formatting.top_tests(
         output['slowest_tests'],
-        V8TestsApi.format_duration,
+        formatting.duration,
         'Duration',
         'marked_slow',
+    )
+
+  def update_max_rss(self, output, presentation):
+    if (not output.get('max_rss_tests') or
+        not output['max_rss_tests'][0].get('max_rss')):
+      return
+    presentation.logs['largest tests (rss)'] = formatting.top_tests(
+        output['max_rss_tests'],
+        formatting.rss,
+        'Maximum RSS',
+        'marked_heavy',
+    )
+
+  def update_max_vms(self, output, presentation):
+    if (not output.get('max_vms_tests') or
+        not output['max_vms_tests'][0].get('max_vms')):
+      return
+    presentation.logs['largest tests (vms)'] = formatting.top_tests(
+        output['max_vms_tests'],
+        formatting.vms,
+        'Maximum VMS',
+        'marked_heavy',
     )
 
   def ui_test_label(self, full_test_name):

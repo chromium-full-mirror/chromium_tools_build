@@ -11,6 +11,8 @@ from requests.models import PreparedRequest
 from RECIPE_MODULES.build import chromium_swarming
 from recipe_engine.engine_types import freeze
 
+from . import formatting
+
 MONORAIL_SEARCH_BUGS_TEMPLATE = 'https://bugs.chromium.org/p/v8/issues/list'
 
 MONORAIL_FILE_BUG_DESCRIPTION = '''
@@ -357,7 +359,9 @@ class V8Test(BaseTest):
       step_result.presentation.logs['test filter'] = self.applied_test_filter
 
     assert isinstance(json_output, dict)
-    self.api.v8_tests._update_durations(json_output, step_result.presentation)
+    self.api.v8_tests.update_slowest(json_output, step_result.presentation)
+    self.api.v8_tests.update_max_rss(json_output, step_result.presentation)
+    self.api.v8_tests.update_max_vms(json_output, step_result.presentation)
     failure_factory = Failure.factory_func(self)
     failure_log, failures, flake_log, flakes = (
         self.api.v8_tests._get_failure_logs(json_output, failure_factory))
@@ -1211,7 +1215,7 @@ class Failure:
       lines.append('Result: %s' % result['result'])
       if result.get('expected'):
         lines.append('Expected outcomes: %s' % ", ".join(result['expected']))
-      lines.append('Duration: %s' % self.api.v8_tests.format_duration(result))
+      lines.append('Duration: %s' % formatting.duration(result))
       lines.append('')
       if result.get('crash_type'):
         lines.append('Crash Type:')
