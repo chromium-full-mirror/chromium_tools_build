@@ -411,8 +411,6 @@ def RunSteps(api):
   builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
   checkout_results = api.chromium_checkout.ensure_checkout(bot_config)
 
-  use_reclient = bool(api.reclient.instance)
-
   api.chromium.ensure_toolchains()
   api.chromium.runhooks()
   api.chromium.mb_gen(builder_id)
@@ -491,9 +489,7 @@ def RunSteps(api):
     raw_result = None
     for target_batch in batched(targets):
       raw_result = api.chromium.compile(
-          targets=target_batch,
-          use_goma_module=not use_reclient,
-          use_reclient=use_reclient)
+          targets=target_batch, use_goma_module=False, use_reclient=True)
 
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
@@ -690,36 +686,6 @@ def GenTests(api):
           stdout=api.raw_io.output_text('\n'.join(
               ['//foo/bar:target1', '//foo/bar:target2',
                '//foo/bar:target3']))),
-      api.step_data(
-          'calculate no_clusterfuzz',
-          stdout=api.raw_io.output_text('//foo/bar:target1')),
-      api.filter.analyze_output(
-          status='Found dependency',
-          test_targets=[],
-          compile_targets=['//foo/bar:target2'],
-      ),
-      api.step_data(
-          'list gn targets', stdout=api.raw_io.output_text('target2')),
-  )
-  gn_args_reclient = '\n'.join((
-      'goma_dir = "/b/build/slave/cache/goma_client"',
-      'target_cpu = "x86"',
-      'use_remoteexec = true',
-  ))
-
-  yield api.test(
-      'basic_linux_tryjob_with_compile_using_reclient',
-      api.chromium.try_build(
-          builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel'),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('\n'.join(
-              ['//foo/bar:target1', '//foo/bar:target2',
-               '//foo/bar:target3']))),
-      api.reclient.properties(instance='rbe-chromium-untrusted'),
-      api.step_data(
-          'lookup GN args', stdout=api.raw_io.output_text(gn_args_reclient)),
       api.step_data(
           'calculate no_clusterfuzz',
           stdout=api.raw_io.output_text('//foo/bar:target1')),
