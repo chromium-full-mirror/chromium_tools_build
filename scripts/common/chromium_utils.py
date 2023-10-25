@@ -16,6 +16,7 @@ import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import zipfile
@@ -439,6 +440,93 @@ def _CopyFileToDir(src_path, dest_dir, dest_fn=None, link_ok=False):
     shutil.copy2(src_path, os.path.join(dest_dir, src_file))
 
 
+def _GetZipCommand(
+    lzma_sdk_bin, archive_name, path=None, file_list=None, no_copy_mode=False
+):
+  """Generates the zip command depending on the current platform.
+
+  Args:
+    lzma_sdk_bin: Optional path to the bin directory of the lzma SDK which
+      contains the 7z executable.
+    archive_name:
+    path:
+    file_list:
+
+  Returns:
+    A list representing the command to run.
+
+    If no command line tool is found, returns None.
+  """
+
+  def _FileListToTempFile(file_list, prefix_path=None, glob_dir_content=False):
+    tmpfile = tempfile.NamedTemporaryFile(mode='w+t')
+    for file in file_list:
+      path = file
+      if prefix_path is not None:
+        path = os.path.join(prefix_path, path)
+      if glob_dir_content and not os.path.islink(file) and os.path.isdir(file):
+        path = os.path.join(path, '*')
+      if os.path.islink(file):
+        path = path.rstrip('/')
+      tmpfile.write(str(path) + '\n')
+    tmpfile.flush()
+    return tmpfile
+
+  # 7z doesn't handle symbolic links to directories correctly with the allow
+  # list method and the `-snl` option (it essentially tries to copy the dir,
+  # even though we requested not to copy symbolic links contents).
+  if not no_copy_mode:
+    # If we have 7z, use that as it's much faster. See http://crbug.com/418702.
+    # Some bots have 7zip; others don't, so we use the version in the Chromium
+    # source tree - see https://crbug.com/1459770
+    possible_7zip_locations = []
+    if lzma_sdk_bin is not None:
+      possible_7zip_locations.append(
+          os.path.join(lzma_sdk_bin, '7za.exe' if IsWindows() else '7za')
+      )
+    if IsWindows():
+      possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
+    for possible_7zip_location in possible_7zip_locations:
+      if os.path.exists(possible_7zip_location):
+        cmd = [
+            possible_7zip_location,
+            'a',  # Add files to archive
+            '-tzip',  # Set type of archive to ZIP
+            '-y',  # Assume "Yes" to all queries (overwrite without prompt)
+            '-mx1',  # Set compression level to 1 (fastest)
+            '-uz0',  # Do not update an archive if all files are already up-to-date
+            '-bt',  # Show execution time statistics
+            '-bb0',  # Set output log level to 0 (no information printed to console)
+            '-mmt=on',
+        ]
+        if not IsWindows():
+          cmd += [
+              '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
+          ]
+        cmd += [archive_name, path]
+        return (cmd, None)
+
+  if IsWindows():
+    return (None, None)
+
+  cmd = [
+      'zip',
+      '-yr1',
+      archive_name,
+  ]
+  tmpfile = None
+
+  if no_copy_mode:
+    assert path is None or path == '.'
+    tmpfile = _FileListToTempFile(
+        file_list, prefix_path=path, glob_dir_content=True
+    )
+    cmd += ['.', f'-i@{tmpfile.name}']
+  else:
+    cmd += [path]
+  return (cmd, tmpfile)
+
+
 def MakeZip(
     output_dir,
     archive_name,
@@ -512,38 +600,44 @@ def MakeZip(
           'Now, os.path.exists(%s): %s' %
           (archive_dir, os.path.exists(archive_dir))
       )
+
+  # Unfortunately, due to special handling of symbolic and hard links,
+  # no_copy_mode cannot be enabled on windows.
+  no_copy_mode = no_root_dir and (len(strip_files) == 0) and not IsWindows()
+
   MaybeMakeDirectory(archive_dir)
-  for needed_file in file_list:
-    needed_file = needed_file.rstrip()
-    print('Copying: %s' % needed_file)
-    # These paths are relative to the file_relative_dir.  We need to copy
-    # them over maintaining the relative directories, where applicable.
-    src_path = os.path.join(file_relative_dir, needed_file)
-    dst_path = os.path.join(archive_dir, needed_file)
-    dirname, basename = os.path.split(needed_file)
-    dest_dir = os.path.join(archive_dir, dirname)
-    if dest_dir != archive_dir:
-      MaybeMakeDirectory(dest_dir)
-    try:
-      if os.path.islink(src_path):
-        # Need to re-create symlink at dst_path to preserve build structure.
-        # Otherwise, shutil.copytree copies whole dir (crbug.com/693624#c35)
-        # or shutil.copy2 copies file contents (crbug.com/825553#c13).
-        os.symlink(os.readlink(src_path), dst_path)
-      else:
-        if os.path.isdir(src_path):
-          if _WIN_LINK_FUNC:
-            _WIN_LINK_FUNC(src_path, dst_path)
-          else:
-            shutil.copytree(src_path, dst_path, symlinks=True)
+  if not no_copy_mode:
+    for needed_file in file_list:
+      needed_file = needed_file.rstrip()
+      print('Copying: %s' % needed_file)
+      # These paths are relative to the file_relative_dir.  We need to copy
+      # them over maintaining the relative directories, where applicable.
+      src_path = os.path.join(file_relative_dir, needed_file)
+      dst_path = os.path.join(archive_dir, needed_file)
+      dirname, basename = os.path.split(needed_file)
+      dest_dir = os.path.join(archive_dir, dirname)
+      if dest_dir != archive_dir:
+        MaybeMakeDirectory(dest_dir)
+      try:
+        if os.path.islink(src_path):
+          # Need to re-create symlink at dst_path to preserve build structure.
+          # Otherwise, shutil.copytree copies whole dir (crbug.com/693624#c35)
+          # or shutil.copy2 copies file contents (crbug.com/825553#c13).
+          os.symlink(os.readlink(src_path), dst_path)
         else:
-          _CopyFileToDir(src_path, dest_dir, basename, link_ok=True)
-          if not IsWindows() and basename in strip_files:
-            cmd = ['strip', dst_path]
-            RunCommand(cmd)
-    except PathNotFound:
-      if raise_error:
-        raise
+          if os.path.isdir(src_path):
+            if _WIN_LINK_FUNC:
+              _WIN_LINK_FUNC(src_path, dst_path)
+            else:
+              shutil.copytree(src_path, dst_path, symlinks=True)
+          else:
+            _CopyFileToDir(src_path, dest_dir, basename, link_ok=True)
+            if not IsWindows() and basename in strip_files:
+              cmd = ['strip', dst_path]
+              RunCommand(cmd)
+      except PathNotFound:
+        if raise_error:
+          raise
   end_time = time.time()
   print(
       'Took %f seconds to create archive directory.' % (end_time - start_time)
@@ -555,35 +649,15 @@ def MakeZip(
   MoveFile(output_file, previous_file)
 
   zip_cmd = None
-
-  # If we have 7z, use that as it's much faster. See http://crbug.com/418702.
-  # Some bots have 7zip; others don't, so we use the version in the Chromium
-  # source tree - see https://crbug.com/1459770
-  possible_7zip_locations = []
-  if lzma_sdk_bin is not None:
-    possible_7zip_locations.append(
-        os.path.join(lzma_sdk_bin, '7za.exe' if IsWindows() else '7za')
-    )
-  if IsWindows():
-    possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
-  for possible_7zip_location in possible_7zip_locations:
-    if os.path.exists(possible_7zip_location):
-      zip_cmd = [
-          possible_7zip_location,
-          'a',  # Add files to archive
-          '-tzip',  # Set type of archive to ZIP
-          '-y',  # Assume "Yes" to all queries (overwrite without prompt)
-          '-mx1',  # Set compression level to 1 (fastest)
-          '-uz0',  # Do not update an archive if all files are already up-to-date
-          '-bt',  # Show execution time statistics
-          '-bb0',  # Set output log level to 0 (no information printed to console)
-          '-mmt=on'  # Use multithreading
-      ]
-      if not IsWindows():
-        zip_cmd += [
-            '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
-        ]
-      break
+  tmpfile = None
+  archive_path = "." if no_root_dir else os.path.basename(archive_dir)
+  (zip_cmd, tmpfile) = _GetZipCommand(
+      lzma_sdk_bin=lzma_sdk_bin,
+      archive_name=output_file,
+      path=archive_path,
+      no_copy_mode=no_copy_mode,
+      file_list=file_list
+  )
 
   # On Windows we use the python zip module; on Linux and Mac, we use the zip
   # command as it will handle links and file bits (executable).  Which is much
@@ -623,21 +697,20 @@ def MakeZip(
       if saved_dir:
         os.chdir(saved_dir)
   else:
-    if not zip_cmd:
-      zip_cmd = ['zip', '-yr1']
+    assert zip_cmd is not None
     saved_dir = os.getcwd()
-    if no_root_dir:
+    if no_copy_mode:
+      os.chdir(file_relative_dir)
+    elif no_root_dir:
       os.chdir(archive_dir)
-      archive_path = "."
     else:
       os.chdir(os.path.dirname(archive_dir))
-      archive_path = os.path.basename(archive_dir)
-    command = zip_cmd + [output_file, archive_path]
-    result = RunCommand(command)
+    result = RunCommand(zip_cmd)
     os.chdir(saved_dir)
+    if tmpfile is not None:
+      tmpfile.close()
     if result and raise_error:
-      raise ExternalError('zip failed: %s => %s' %
-                          (str(command), result))
+      raise ExternalError('zip failed: %s => %s' % (str(zip_cmd), result))
   end_time = time.time()
   print('Took %f seconds to create zip.' % (end_time - start_time))
   return (archive_dir, output_file)
