@@ -100,7 +100,8 @@ class Chromium3ppApi(recipe_api.RecipeApi):
         staged_diff_result = self._get_git_diff('Analyze', staged_only=True)
       file_paths = staged_diff_result.stdout.splitlines()
       for file_path in file_paths:
-        file_dirs = file_path.split(self.m.path.sep)
+        # `git diff` always returns posix style separators ('/'):
+        file_dirs = file_path.split('/')
         if '3pp' in file_dirs:
           index = file_dirs.index('3pp')
           package_paths_to_build.add(self.m.path.sep.join(file_dirs[:index]))
