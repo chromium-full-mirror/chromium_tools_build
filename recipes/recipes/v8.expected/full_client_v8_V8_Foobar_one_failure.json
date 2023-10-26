@@ -252,7 +252,7 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[TMP_BASE]/mb_config.pyl",
+      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/v8",
@@ -290,7 +290,7 @@
       "-b",
       "V8 Foobar",
       "--config-file",
-      "[TMP_BASE]/mb_config.pyl",
+      "[CACHE]/builder/v8/infra/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
@@ -323,6 +323,7 @@
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@bot_default@@@",
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@test262@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -797,6 +798,7 @@
       "@@@STEP_LOG_LINE@test-name@Variant: default@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",
       "@@@STEP_LOG_LINE@test-name@GN arguments:@@@",
+      "@@@STEP_LOG_LINE@test-name@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@test-name@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",
       "@@@STEP_LOG_LINE@test-name@Trigger flake bisect on command line:@@@",

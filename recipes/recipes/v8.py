@@ -841,14 +841,13 @@ def GenTests(api):
     )
   )
 
-  # Test using custom_deps, gclient_vars and mb_config_path property.
+  # Test using custom_deps and gclient_vars property.
   yield (api.v8.test(
       'client.v8',
       'V8 Foobar - builder',
       'custom_properties',
       custom_deps={'v8/foo': 'bar'},
-      gclient_vars={'download_gcmole': 'True'},
-      mb_config_path='somewhere/else/mb_config.pyl') + api.v8.check_in_param(
+      gclient_vars={'download_gcmole': 'True'}) + api.v8.check_in_param(
           'initialization.bot_update', '--spec-path', '\'custom_vars\': '
           '{\'download_gcmole\': \'True\'') +
          api.v8.check_in_param('initialization.bot_update', '--spec-path',

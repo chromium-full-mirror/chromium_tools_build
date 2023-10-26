@@ -22,16 +22,6 @@ VERSION_FILE_TMPL = """
 #define V8_PATCH_LEVEL %d
 """
 
-MB_CONFIG_GOMA_EXAMPLE = """
-{
-  'mixins': {
-    'goma': {
-      'gn_args': 'use_goma=true',
-    },
-  },
-}
-"""
-
 
 def _sanitize_nonalpha(text):
   return ''.join(c if c.isalnum() else '_' for c in text)
@@ -106,9 +96,6 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       'num_files': 3615,
       'top100_avg_deps': 1.3,
     })
-
-  def example_goma_mb_config(self):
-    return MB_CONFIG_GOMA_EXAMPLE
 
   def example_test_roots(self, *roots):
     """Simulates dynamically optained test-root directories."""
@@ -253,7 +240,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       test += self.m.properties(
           parent_got_revision='deafbeef' * 5,
           parent_got_revision_cp='refs/heads/main@{#20123}',
-          parent_gn_args=['use_goma = true', 'also_interesting = "absolutely"'],
+          parent_gn_args=['also_interesting = "absolutely"'],
           parent_build='https://someinfrasite.com/build/123',
       )
       test += self.m.scheduler(triggers=[
@@ -311,14 +298,6 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
           ),
           experiments=experiments,
       )
-
-    # Check correct path is used for MB before the step is filtered out below.
-    if 'mb_config_path' in kwargs:
-      mb_config_path = kwargs['mb_config_path']
-      test += self.post_process(
-          StepCommandContains,
-          'build.read MB config',
-          [f'[CACHE]/builder/v8/{mb_config_path}'])
 
     # Skip some reclient and swarming related steps in expectations.
     test += self.hide_infra_steps()

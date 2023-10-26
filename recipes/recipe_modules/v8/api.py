@@ -639,12 +639,6 @@ class V8Api(recipe_api.RecipeApi):
       if self.m.v8_tests.isolated_tests:
         self.upload_isolated_json()
 
-  def _filtered_gn_args(self, gn_args):
-    return [
-      l for l in gn_args.splitlines()
-      if not l.startswith('goma_dir')
-    ]
-
   @property
   def target_bits(self):
     """Returns target bits (as int) inferred from V8's build artifacts."""
@@ -711,41 +705,6 @@ class V8Api(recipe_api.RecipeApi):
     point.update(point_defaults)
     self.m.perf_dashboard.add_point([point], halt_on_failure=True)
 
-  # TODO(b:238274944): Remove this method after all builders have switched
-  # to reclient and the corresponding mb_config.pyl change has reached
-  # extended stable. Estimated after M110.
-  def reclient_mb_override(self, mb_config_path):
-    """Temporary override of mb_config.pyl until reclient migration is
-    complete.
-
-    This replaces goma=true gn args in mb_config.pyl for the current run
-    and overrides with reclient settings. This allows to switch MB-based
-    settings for goma/reclient via a module property in $build/v8 called
-    "use_remoteexec".
-
-    This can be removed once the main mb_conig.pyl file was updated and the
-    changes made it to all active release branches.
-    """
-    if not self.use_remoteexec:
-      return mb_config_path
-
-    mb_config_data = self.m.file.read_text(
-        'read MB config',
-        mb_config_path,
-        test_data=self.test_api.example_goma_mb_config(),
-    )
-
-    mb_config_data = mb_config_data.replace(
-        'use_goma=true', 'use_goma=false use_remoteexec=true')
-
-    new_mb_config_path = self.m.path['tmp_base'].join('mb_config.pyl')
-    self.m.file.write_text(
-        'tweak MB config',
-        new_mb_config_path,
-        mb_config_data,
-    )
-    return new_mb_config_path
-
   def compile(
       self, test_spec=None, mb_config_path=None,
       out_dir=None, **kwargs):
@@ -791,7 +750,6 @@ class V8Api(recipe_api.RecipeApi):
         mb_config_path = (
             mb_config_path or
             self.m.path['checkout'].join(*mb_config_rel_path.split('/')))
-        mb_config_path = self.reclient_mb_override(mb_config_path)
 
         gn_args = self.m.chromium.mb_gen(
             self.m.chromium.get_builder_id(),
@@ -801,9 +759,7 @@ class V8Api(recipe_api.RecipeApi):
             gn_args_location=self.m.gn.LOGS,
             use_goma=False)
 
-        # Update the gn args, which are printed to the user on test failures
-        # for easier build reproduction.
-        self.m.v8_tests.gn_args = self._filtered_gn_args(gn_args)
+        self.m.v8_tests.gn_args = gn_args.splitlines()
 
         # Create logs surfacing GN arguments. This information is critical to
         # developers for reproducing failures locally.

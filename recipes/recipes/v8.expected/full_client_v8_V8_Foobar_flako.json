@@ -11,7 +11,6 @@
       "@@@STEP_LOG_LINE@test-name@Shard: 1:2@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",
       "@@@STEP_LOG_LINE@test-name@GN arguments:@@@",
-      "@@@STEP_LOG_LINE@test-name@use_goma = true@@@",
       "@@@STEP_LOG_LINE@test-name@also_interesting = \"absolutely\"@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",
       "@@@STEP_LOG_LINE@test-name@Trigger flake bisect on command line:@@@",
