@@ -125,3 +125,13 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        "SSCI collection.SBOM's generated"),
       api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'no-targets-found',
+      api.buildbucket.ci_build(
+          project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.override_step_data('SSCI collection.run depbot',
+                             api.json.output(name="summary", data={})),
+      api.post_process(post_process.StepFailure,
+                       "SSCI collection.SBOM's generated"),
+  )

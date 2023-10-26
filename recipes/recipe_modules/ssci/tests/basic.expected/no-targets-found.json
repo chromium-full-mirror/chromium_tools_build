@@ -1,0 +1,1132 @@
+[
+  {
+    "cmd": [],
+    "name": "SSCI collection",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection.install infra_internal/tools/security/depbot",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra_internal/tools/security/depbot.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "-ensure-file",
+      "infra_internal/tools/security/depbot/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra_internal/tools/security/depbot.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/tools/security/depbot/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "describe",
+      "infra_internal/tools/security/depbot/${platform}",
+      "-version",
+      "latest",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.cipd describe infra_internal/tools/security/depbot/${platform}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"package\": \"infra_internal/tools/security/depbot/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"refs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"buildbot_build:some.waterfall/builder/1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_repository:https://chromium.googlesource.com/some/repo\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_revision:397a2597cdc237f3026e6143b683be4b9ab60540\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection.install infra/tools/bqupload",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra/tools/bqupload.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "-ensure-file",
+      "infra/tools/bqupload/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra/tools/bqupload.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "describe",
+      "infra/tools/bqupload/${platform}",
+      "-version",
+      "latest",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.cipd describe infra/tools/bqupload/${platform}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"refs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"buildbot_build:some.waterfall/builder/1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_repository:https://chromium.googlesource.com/some/repo\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_revision:397a2597cdc237f3026e6143b683be4b9ab60540\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection.install infra_internal/tools/partybot",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra_internal/tools/partybot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra_internal/tools/partybot.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra_internal/tools/partybot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "-ensure-file",
+      "infra_internal/tools/partybot latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra_internal/tools/partybot.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/tools/partybot\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "describe",
+      "infra_internal/tools/partybot",
+      "-version",
+      "latest",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.cipd describe infra_internal/tools/partybot",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"package\": \"infra_internal/tools/partybot\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"refs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"buildbot_build:some.waterfall/builder/1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_repository:https://chromium.googlesource.com/some/repo\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_revision:397a2597cdc237f3026e6143b683be4b9ab60540\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection.install infra_internal/tools/ssci",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0777",
+      "[START_DIR]/cipd_tool/infra_internal/tools/ssci/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra_internal/tools/ssci.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra_internal/tools/ssci/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "-ensure-file",
+      "infra_internal/tools/ssci latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.install infra_internal/tools/ssci.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/tools/ssci\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "describe",
+      "infra_internal/tools/ssci",
+      "-version",
+      "latest",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.cipd describe infra_internal/tools/ssci",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"package\": \"infra_internal/tools/ssci\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"refs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"modified_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"ref\": \"latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"tags\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"buildbot_build:some.waterfall/builder/1234\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_repository:https://chromium.googlesource.com/some/repo\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574210,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"tag\": \"git_revision:397a2597cdc237f3026e6143b683be4b9ab60540\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/depbot",
+      "--chromium-src-dir",
+      "None",
+      "--log-level",
+      "debug",
+      "--gn-path",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "--build-dir",
+      "out/Release",
+      "--json-output-dir",
+      "[CLEANUP]/tmp_tmp_1",
+      "--json-summary-file",
+      "/path/to/tmp/json",
+      "--target",
+      "//example:example"
+    ],
+    "cost": {
+      "cpu": 2000,
+      "disk": 0,
+      "memory": 4000,
+      "net": 0
+    },
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.run depbot",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@{}@@@",
+      "@@@STEP_LOG_END@json.output[summary]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "--vpython-spec=.vpython3",
+      "-m",
+      "partybot",
+      "",
+      "--file",
+      "[CLEANUP]/tmp_tmp_2/third_party.json",
+      "--os",
+      "mybuilder"
+    ],
+    "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/partybot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.run partybot to collect 3P deps",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "-json-list=true",
+      "-column",
+      "execution_id=\"luci-8945511751514863184\"",
+      "ssci-dev.depbot.third_party",
+      "[CLEANUP]/tmp_tmp_2/third_party.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.upload third party dependencies to BigQuery",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/tmp_tmp_2/third_party.json",
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataStable.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection.gsutil upload third party dependencies to GCS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataStable.json@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection.SBOM's generated",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@no targets found@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection (2)"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/depbot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/depbot",
+      "--chromium-src-dir",
+      "None",
+      "--log-level",
+      "debug",
+      "--gn-path",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "--build-dir",
+      "out/Release",
+      "--json-output-dir",
+      "[CLEANUP]/tmp_tmp_3",
+      "--json-summary-file",
+      "/path/to/tmp/json",
+      "--target",
+      "Example.apk"
+    ],
+    "cost": {
+      "cpu": 2000,
+      "disk": 0,
+      "memory": 4000,
+      "net": 0
+    },
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).run depbot",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@{@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@  \"targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@    {@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"artifacts_file_path\": \"out/Release/artifacts.json\",@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"entry_point\": \"Example.apk\",@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"libraries_file_path\": \"out/Release/libs.json\",@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@      \"target\": \"//example:example\"@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@    }@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@}@@@",
+      "@@@STEP_LOG_END@json.output[summary]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "--vpython-spec=.vpython3",
+      "-m",
+      "partybot",
+      "",
+      "--file",
+      "[CLEANUP]/tmp_tmp_4/third_party.json",
+      "--os",
+      "mybuilder"
+    ],
+    "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/partybot/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).run partybot to collect 3P deps",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "-json-list=true",
+      "-column",
+      "execution_id=\"luci-8945511751514863184\"",
+      "ssci-dev.depbot.third_party",
+      "[CLEANUP]/tmp_tmp_4/third_party.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).upload third party dependencies to BigQuery",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/tmp_tmp_4/third_party.json",
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataCanary.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).gsutil upload third party dependencies to GCS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ThirdPartyDataCanary.json@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection (2).target specific steps for Example.apk",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "-json-list=true",
+      "-column",
+      "builder=\"myproject/mybucket/mybuilder\"",
+      "-column",
+      "execution_id=\"luci-8945511751514863184\"",
+      "-column",
+      "entry_point=\"Example.apk\"",
+      "-column",
+      "target=\"//example:example\"",
+      "ssci-dev.depbot.artifacts",
+      "out/Release/artifacts.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.upload artifacts to BigQuery",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/Release/artifacts.json",
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.artifacts.apk.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload artifacts to GCS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.artifacts.apk.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "-json-list=true",
+      "-column",
+      "builder=\"myproject/mybucket/mybuilder\"",
+      "-column",
+      "execution_id=\"luci-8945511751514863184\"",
+      "-column",
+      "entry_point=\"Example.apk\"",
+      "-column",
+      "target=\"//example:example\"",
+      "ssci-dev.depbot.libraries",
+      "out/Release/libs.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.upload libraries to BigQuery",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "out/Release/libs.json",
+      "gs://chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.libraries.apk.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload libraries to GCS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-sbom/os/version/luci-8945511751514863184/ExampleCanary.libraries.apk.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "--vpython-spec=.vpython3",
+      "-m",
+      "ssci",
+      "spdx",
+      "-libraries",
+      "out/Release/libs.json",
+      "-artifacts",
+      "out/Release/artifacts.json",
+      "-thirdparty",
+      "[CLEANUP]/tmp_tmp_4/third_party.json",
+      "-depbot-version",
+      "vresolved-instance_id-of-latest----------",
+      "-partybot-version",
+      "vresolved-instance_id-of-latest----------",
+      "-ssci-version",
+      "vresolved-instance_id-of-latest----------",
+      "-output-file",
+      "[CLEANUP]/tmp_tmp_5/spdx-out.json",
+      "-chromium-src",
+      "None",
+      "-product",
+      "basic.luci-8945511751514863184.ExampleCanary.apk",
+      "-product-version",
+      "2d7251",
+      "-platform",
+      "linux_intel64",
+      "-full-spdx"
+    ],
+    "cwd": "[START_DIR]/cipd_tool/infra_internal/tools/ssci/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.run ssci tool to generate Example.apk SPDX sbom",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.ExampleCanary.apk] (read error)@JSON file was missing or unreadable:@@@",
+      "@@@STEP_LOG_LINE@json.output[basic.luci-8945511751514863184.ExampleCanary.apk] (read error)@  [CLEANUP]/tmp_tmp_5/spdx-out.json@@@",
+      "@@@STEP_LOG_END@json.output[basic.luci-8945511751514863184.ExampleCanary.apk] (read error)@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "file_hash",
+      "[CLEANUP]/tmp_tmp_5/spdx-out.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.Compute file hash",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@Hash calculated: testhash@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/tmp_tmp_5/spdx-out.json",
+      "gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "myproject:mybucket"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "SSCI collection (2).target specific steps for Example.apk.gsutil upload ExampleCanary.apk.spdx.json SBOM",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "SSCI collection (2).SBOM's generated",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@ExampleCanary.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json'}@@@",
+      "@@@STEP_LOG_END@ssci_generated_artifacts@@@"
+    ]
+  },
+  {
+    "name": "$result"
+  }
+]

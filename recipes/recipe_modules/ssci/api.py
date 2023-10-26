@@ -335,19 +335,24 @@ class SsciAPI(recipe_api.RecipeApi):
         minimal_config = "-minimal-spdx"
 
       futures = []
+      if depbot_execution_summary.get("targets") is not None:
+        # Handle target specific steps.
+        for target in depbot_execution_summary.get("targets"):
+          futures.append(
+              self.m.futures.spawn(self._target_specific_steps, target, src_dir,
+                                   sbom_bucket, sbom_folder,
+                                   sbom_filename_postfix, chrome_version,
+                                   minimal_config, third_party_out, to_rename))
+        for fut in self.m.futures.iwait(futures):
+          fut.result()
 
-      # Handle target specific steps.
-      for target in depbot_execution_summary.get("targets"):
-        futures.append(
-            self.m.futures.spawn(self._target_specific_steps, target, src_dir,
-                                 sbom_bucket, sbom_folder,
-                                 sbom_filename_postfix, chrome_version,
-                                 minimal_config, third_party_out, to_rename))
-      for fut in self.m.futures.iwait(futures):
-        fut.result()
+      info_step = self.m.step.empty("SBOM's generated")
+      if depbot_execution_summary.get("targets") is None:
+        info_step.presentation.status = self.m.step.FAILURE
+        info_step.presentation.step_text = 'no targets found'
+        return self.generated_sbom_artifacts
 
       # set generated in output properties
-      info_step = self.m.step.empty("SBOM's generated")
       info_step.presentation.logs['ssci_generated_artifacts'] = [
           f"{k}:{v}" for k, v in self.generated_sbom_artifacts.items()
       ]
