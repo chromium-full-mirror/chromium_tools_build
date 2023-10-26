@@ -17,7 +17,6 @@ DEPS = [
     'chromium_tests_builder_config',
     'findit',
     'gofindit',
-    'goma',
     'recipe_engine/step',
     'recipe_engine/properties',
 ]
@@ -39,10 +38,6 @@ def RunSteps(api, properties):
     bot_update_step, build_config = api.chromium_tests.prepare_checkout(
         builder_config, set_output_commit=False)
     api.chromium_swarming.configure_swarming('chromium', precommit=False)
-
-    # Since these builders run on different platforms, and require different Goma
-    # settings depending on the platform, set the Goma ATS flag based on the OS.
-    api.goma.configure_enable_ats()
 
     compile_targets = tuple(properties.compile_targets)
     if not compile_targets:
@@ -77,13 +72,6 @@ def _configure_builder(api, target_builder, should_clobber):
   builder_config = api.findit.get_builder_config(target_builder_id)
   api.chromium_tests.configure_build(builder_config)
 
-  # If there is a problem with goma, rather than default to compiling locally
-  # only, fail. This is important because findit relies on fast compile for
-  # timely production of actionable changes, and local compilation alone is
-  # unlikely to help findit find a culprit in time for automatic revert.
-  # Better to fail the analysis and let the sheriffs try to find a culprit
-  # manually.
-  api.chromium.apply_config('goma_failfast')
   if should_clobber:
     api.chromium.c.clobber_before_runhooks = True
 
