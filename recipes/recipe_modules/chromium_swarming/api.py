@@ -69,8 +69,13 @@ def _parse_time(value):
   """Converts serialized time from the API to datetime.datetime."""
   # When microseconds are 0, the '.123456' suffix is elided. This means the
   # serialized format is not consistent, which confuses the hell out of python.
-  # TODO(maruel): Remove third format once we enforce version >=0.8.2.
-  for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S'):
+  # New swarming cli tool emits %Z offsetted dates.
+  # See https://protobuf.dev/programming-guides/proto3/#json
+  # TODO(jonahhooper) Replace with datetime.fromisoformat when recipe_engine
+  # supports python 3.11. See
+  # https://chromium-review.googlesource.com/c/infra/luci/recipes-py/+/4973538
+  for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S',
+              '%Y-%m-%dT%H:%M:%S.%f%z'):
     try:
       return datetime.datetime.strptime(value, fmt)
     except ValueError:  # pragma: no cover
