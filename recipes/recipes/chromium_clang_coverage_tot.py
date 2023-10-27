@@ -74,7 +74,6 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   api.bot_update.ensure_checkout()
 
   api.chromium.ensure_toolchains()
-  api.chromium.ensure_goma()
 
   api.chromium.runhooks()
   clang_revision_file = api.path['checkout'].join(
@@ -83,7 +82,7 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
       'Read clang revision', clang_revision_file, test_data='332838-1')
   api.step.active_result.presentation.step_text = revision
 
-  api.chromium.mb_gen(builder_id, use_goma=True)
+  api.chromium.mb_gen(builder_id)
 
   coverage_script = 'coverage.py'
   coverage_script_path = api.path['checkout'].join('tools', 'code_coverage',
