@@ -22,7 +22,6 @@ DEPS = [
     'filter',
     'flakiness',
     'gn',
-    'goma',
     'infra/zip',
     'isolate',
     'perf_dashboard',

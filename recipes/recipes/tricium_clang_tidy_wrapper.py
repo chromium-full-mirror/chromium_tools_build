@@ -12,7 +12,6 @@ DEPS = [
     'chromium',
     'chromium_checkout',
     'gn',
-    'goma',
     'depot_tools/depot_tools',
     'depot_tools/gclient',
     'depot_tools/gerrit',

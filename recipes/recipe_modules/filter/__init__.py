@@ -6,7 +6,6 @@ DEPS = [
   'chromium',
   'depot_tools/git',
   'depot_tools/tryserver',
-  'goma',
   'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/json',
