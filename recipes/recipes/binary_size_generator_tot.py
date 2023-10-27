@@ -46,8 +46,6 @@ def RunSteps(api):
 
     api.chromium.runhooks(name='runhooks')
 
-    api.chromium.ensure_goma()
-
     raw_result = api.chromium_tests.run_mb_and_compile(
         api.chromium.get_builder_id(),
         api.binary_size.compile_targets,

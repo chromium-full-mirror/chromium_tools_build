@@ -227,7 +227,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
             }
         return
 
-      self.m.chromium.ensure_goma()
       staging_dir = self.m.path.mkdtemp('binary-size-trybot')
 
       # expectations_without_patch_json is never set when using cached reference
