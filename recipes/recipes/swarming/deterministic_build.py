@@ -134,7 +134,7 @@ def MoveBuildDirectory(api, src_dir, dst_dir):
   api.step('Move %s to %s' % (src_dir, dst_dir), cmd)
 
 
-def ConfigureChromiumBuilder(api, recipe_config, use_reclient):
+def ConfigureChromiumBuilder(api, recipe_config):
   api.chromium.set_config(recipe_config['chromium_config'],
                           **recipe_config.get('chromium_config_kwargs',
                                               {'BUILD_CONFIG': 'Release'}))
@@ -149,8 +149,7 @@ def ConfigureChromiumBuilder(api, recipe_config, use_reclient):
         recipe_config.get('android_config'),
         **recipe_config.get('chromium_config_kwargs', {}))
 
-  if use_reclient:
-    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
   # Checkout chromium.
   api.bot_update.ensure_checkout()
@@ -167,9 +166,8 @@ def RunSteps(api):
   solution_path = api.path['cache'].join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
-  use_reclient = bool(api.reclient.instance)
   with api.context(cwd=solution_path):
-    ConfigureChromiumBuilder(api, recipe_config, use_reclient)
+    ConfigureChromiumBuilder(api, recipe_config)
 
   # The default setup by this recipe is to do a clobber build in one directory,
   # move it elsewhere, then do another clobber build in the original directory,
@@ -196,15 +194,13 @@ def RunSteps(api):
 
   targets = recipe_config['targets']
 
-  api.chromium.ensure_goma()
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
-  # Whether do first build in local or use goma.
+  # Whether do first build in local or use reclient.
   compare_local = recipe_config.get('compare_local', False)
 
-  use_goma = not use_reclient
-  remote_phase = 'goma' if use_goma else 'reclient'
+  remote_phase = 'reclient'
 
   # Do a first build and move the build artifact to the temp directory.
   builder_id = chromium.BuilderId.create_for_group(
@@ -214,10 +210,7 @@ def RunSteps(api):
       builder_id, phase='local' if compare_local else None)
 
   raw_result = api.chromium.compile(
-      targets,
-      name='First build',
-      use_goma_module=use_goma and not compare_local,
-      use_reclient=use_reclient and not compare_local)
+      targets, name='First build', use_reclient=not compare_local)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -241,11 +234,7 @@ def RunSteps(api):
       build_dir=build_dir,
       phase=remote_phase if compare_local else None)
   raw_result = api.chromium.compile(
-      targets,
-      name='Second build',
-      use_goma_module=use_goma,
-      use_reclient=use_reclient,
-      target=target)
+      targets, name='Second build', use_reclient=True, target=target)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -278,14 +267,6 @@ def GenTests(api):
         api.platform(DETERMINISTIC_BUILDERS[buildername]['platform'], 64),
         api.properties(
             buildername=buildername, buildnumber=571, configuration='Release'),
-    )
-    yield api.test(
-        test_name + '_reclient',
-        api.chromium.ci_build(builder_group=builder_group, builder=buildername),
-        api.platform(DETERMINISTIC_BUILDERS[buildername]['platform'], 64),
-        api.properties(
-            buildername=buildername, buildnumber=571, configuration='Release'),
-        api.reclient.properties(),
     )
     yield api.test(
         test_name + '_fail',
