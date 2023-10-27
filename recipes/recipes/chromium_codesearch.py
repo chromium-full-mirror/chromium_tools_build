@@ -221,8 +221,6 @@ def RunSteps(api, properties):
       TARGET_PLATFORM=target_os,
       HOST_PLATFORM=host_os)
 
-  api.chromium.ensure_goma()
-
   if target_os == 'ios':
     api.chromium.ensure_toolchains()
 
@@ -290,7 +288,6 @@ def RunSteps(api, properties):
     raw_result = api.chromium.compile(
         targets,
         name='compile%s' % name_suffix,
-        use_goma_module=not use_reclient,
         use_reclient=use_reclient,
         out_dir='out',
         target=gen_repo_out_dir)
@@ -413,20 +410,6 @@ def GenTests(api):
           api.properties(
               root_solution_revision='a' * 40,
               root_solution_revision_timestamp=1531887759),
-      )
-
-      yield api.test(
-          'full_%s_reclient' % (_sanitize_nonalpha(buildername)),
-          props(platform, internal),
-          api.chromium.generic_build(builder=buildername),
-          api.step_data(
-              'lookup GN args',
-              stdout=api.raw_io.output_text('use_remoteexec = true')),
-          api.step_data('generate gn target list',
-                        api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
-          api.post_process(post_process.DoesNotRun, 'preprocess for goma'),
-          api.post_process(post_process.MustRun, 'preprocess for reclient'),
-          api.post_process(post_process.DropExpectation),
       )
 
   yield api.test(

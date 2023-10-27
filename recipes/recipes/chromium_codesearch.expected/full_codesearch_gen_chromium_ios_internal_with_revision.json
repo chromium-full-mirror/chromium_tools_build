@@ -230,94 +230,6 @@
   },
   {
     "cmd": [],
-    "name": "ensure_goma"
-  },
-  {
-    "cmd": [
-      "cipd",
-      "ensure",
-      "-root",
-      "[CACHE]/goma/client",
-      "-ensure-file",
-      "infra_internal/goma/client/${platform} release",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure_goma.ensure_installed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-release---------\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/goma/client/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "cipd",
-      "ensure",
-      "-root",
-      "[CACHE]/goma/bqupload",
-      "-ensure-file",
-      "infra/tools/bqupload/${platform} bqupload_pin",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "ensure_goma.ensure_installed (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-bqupload_pin----\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "ensure xcode",
     "~followup_annotations": [
       "@@@STEP_TEXT@Ensuring Xcode version 123 in [CACHE]/xcode_ios_123.app@@@"
@@ -595,6 +507,100 @@
     "name": "delete old generated files"
   },
   {
+    "cmd": [],
+    "name": "ensure_goma"
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/goma/client",
+      "-ensure-file",
+      "infra_internal/goma/client/${platform} release",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure_goma.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-release---------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra_internal/goma/client/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/goma/bqupload",
+      "-ensure-file",
+      "infra/tools/bqupload/${platform} bqupload_pin",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure_goma.ensure_installed (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-bqupload_pin----\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
     "cmd": [
       "python3",
       "-u",
@@ -839,122 +845,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "preprocess_for_goma"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0777",
-      "[CACHE]/goma/data/codesearch_gen_chromium_ios_internal"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess_for_goma.goma cache directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "restart"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_ALLOWED_NETWORK_ERROR_DURATION": "1800",
-      "GOMA_CACHE_DIR": "[CACHE]/goma/data/codesearch_gen_chromium_ios_internal",
-      "GOMA_DEPS_CACHE_FILE": "goma_deps_cache",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess_for_goma.start_goma",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
-      "start",
-      "--cloudtail-path",
-      "cloudtail",
-      "--pid-file",
-      "[TMP_BASE]/cloudtail.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess_for_goma.start cloudtail",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
     "cmd": [
       "vpython3",
       "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
@@ -962,20 +852,16 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/ios-Debug",
       "-k",
-      "0",
-      "-j",
-      "80"
+      "0"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
       "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
       "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
@@ -1001,8 +887,6 @@
       "[CACHE]/builder/src/out/ios-Debug",
       "-k",
       "0",
-      "-j",
-      "80",
       "-d",
       "explain",
       "-n"
@@ -1010,7 +894,6 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false",
       "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
       "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
       "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
@@ -1030,194 +913,19 @@
     "name": "compile confirm no-op"
   },
   {
-    "cmd": [],
-    "name": "postprocess_for_goma"
-  },
-  {
-    "cmd": [
-      "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "jsonstatus",
-      "[TMP_BASE]/goma_jsonstatus.json"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess_for_goma.goma_jsonstatus",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"notice\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"infra_status\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"num_user_error\": 0,@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"ping_status_code\": 200@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "stat"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess_for_goma.goma_stat",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "[CACHE]/goma/client/goma_ctl.py",
-      "stop"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMACTL_CRASH_REPORT_ID_FILE": "[TMP_BASE]/crash_report_id",
-      "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
-      "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
-      "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "error",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess_for_goma.stop_goma",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/goma_canceller.py",
-      "[CACHE]/goma/client/goma_ctl.py"
-    ],
-    "cost": {
-      "cpu": 0,
-      "disk": 0,
-      "memory": 0,
-      "net": 0
-    },
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "start goma canceller"
-  },
-  {
     "cmd": [
       "vpython3",
       "RECIPE_REPO[build]/recipes/upload_goma_logs.py",
-      "--upload-compiler-proxy-info",
-      "--log-url-json-file",
-      "/path/to/tmp/json",
       "--gsutil-py-path",
       "RECIPE_REPO[depot_tools]/gsutil.py",
-      "--bqupload-path",
-      "[CACHE]/goma/bqupload/bqupload",
-      "--json-status",
-      "[TMP_BASE]/goma_jsonstatus.json",
       "--ninja-log-outdir",
       "[CACHE]/builder/src/out/ios-Debug",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/src/out/ios-Debug\", \"-k\", \"0\", \"-j\", 80]",
+      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/src/out/ios-Debug\", \"-k\", \"0\"]",
       "--build-exit-status",
       "0",
-      "--build-step-name",
-      "compile",
       "--ninja-log-compiler",
-      "goma-clang",
-      "--goma-stats-file",
-      "[TMP_BASE]/goma_stats",
-      "--goma-counterz-file",
-      "[TMP_BASE]/goma_counterz",
-      "--goma-crash-report-id-file",
-      "[TMP_BASE]/crash_report_id",
-      "--build-id",
-      "8945511751514863184",
-      "--builder-id-json",
-      "{\"bucket\": \"ci\", \"builder\": \"codesearch-gen-chromium-ios-internal\", \"project\": \"chromium\"}",
-      "--buildbot-buildername",
-      "codesearch-gen-chromium-ios-internal"
+      "goma-clang"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1238,51 +946,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "postprocess_for_goma.upload_log",
-    "timeout": 300,
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"compiler_proxy_log\": \"https://chromium-build-stats.appspot.com/compiler_proxy_log/2017/03/30/build11-m1/compiler_proxy.exe.BUILD11-M1.chrome-bot.log.INFO.20170329-222936.4420.gz\",@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"ninja_log\": \"https://chromium-build-stats.appspot.com/ninja_log/2017/03/30/build11-m1/ninja_log.build11-m1.chrome-bot.20170329-224321.9976.gz\"@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@compiler_proxy_log@https://chromium-build-stats.appspot.com/compiler_proxy_log/2017/03/30/build11-m1/compiler_proxy.exe.BUILD11-M1.chrome-bot.log.INFO.20170329-222936.4420.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2017/03/30/build11-m1/ninja_log.build11-m1.chrome-bot.20170329-224321.9976.gz@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::goma]/resources/cloudtail.py",
-      "stop",
-      "--killed-pid-file",
-      "[TMP_BASE]/cloudtail.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "KYTHE_CORPUS": "chromium.googlesource.com/chromium/src",
-      "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
-      "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess_for_goma.stop cloudtail",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
+    "name": "upload_ninja_log"
   },
   {
     "cmd": [
