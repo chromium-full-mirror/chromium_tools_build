@@ -81,9 +81,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           config_path=Single(Path),
           args=Set(str),
           isolate_map_paths=List(Path),
-          # TODO(crbug.com/1060857): Remove this once swarming task templates
-          # support command prefixes.
-          use_luci_auth=Single(bool, empty_val=False, required=False),
       ),
       # build_dir is the full path to the "out" directory. Actual
       # gn/ninja/compile artifacts are located in
@@ -240,12 +237,6 @@ def gn(c):
 @config_ctx()
 def mb(c):
   c.project_generator.tool = 'mb'
-  c.project_generator.use_luci_auth = True
-
-
-@config_ctx()
-def mb_no_luci_auth(c):
-  c.project_generator.use_luci_auth = False
 
 
 @config_ctx(group='builder')

@@ -288,9 +288,7 @@ class V8Api(recipe_api.RecipeApi):
     if not self.m.properties.get('parent_buildername'):
       # Builders and builder_testers both build and need the following set of
       # default chromium configs:
-      default['chromium_apply_config'] = [
-          'default_compiler', 'mb', 'mb_no_luci_auth'
-      ]
+      default['chromium_apply_config'] = ['default_compiler', 'mb']
     return (builders or {}).get(self.m.buildbucket.builder_name, default)
 
   def update_bot_config(self, bot_config, binary_size_tracking,

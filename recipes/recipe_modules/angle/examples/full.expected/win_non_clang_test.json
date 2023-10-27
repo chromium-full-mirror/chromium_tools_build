@@ -261,7 +261,6 @@
       "win-msvc-builder",
       "--config-file",
       "[CACHE]\\builder\\angle\\infra\\specs\\angle_mb_config.pyl",
-      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[CACHE]\\builder\\angle",
@@ -297,7 +296,6 @@
       "win-msvc-builder",
       "--config-file",
       "[CACHE]\\builder\\angle\\infra\\specs\\angle_mb_config.pyl",
-      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",
