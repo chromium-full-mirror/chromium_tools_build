@@ -656,6 +656,7 @@
       "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--goma-dir",
       "[CACHE]\\goma\\client",
+      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[CACHE]\\builder\\src",
@@ -694,6 +695,7 @@
       "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--goma-dir",
       "[CACHE]\\goma\\client",
+      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "//out/Release_x64"

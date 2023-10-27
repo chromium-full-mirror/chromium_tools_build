@@ -394,6 +394,7 @@
       "[CACHE]/builder/angle/infra/specs/angle_mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/angle",
@@ -432,6 +433,7 @@
       "[CACHE]/builder/angle/infra/specs/angle_mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "--isolate-map-file",

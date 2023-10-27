@@ -534,6 +534,7 @@
       "[CACHE]/goma/client",
       "--android-version-code=3",
       "--android-version-name=example",
+      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -574,6 +575,7 @@
       "[CACHE]/goma/client",
       "--android-version-code=3",
       "--android-version-name=example",
+      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "//out/Release"

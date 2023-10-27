@@ -431,6 +431,7 @@
       "[START_DIR]/src/tools/mb/mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[START_DIR]/src",
@@ -470,6 +471,7 @@
       "[START_DIR]/src/tools/mb/mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "//out/Release"
