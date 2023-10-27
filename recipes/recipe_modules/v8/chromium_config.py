@@ -63,7 +63,7 @@ def slow_dchecks(c):
   c.gn_args.append('v8_enable_slow_dchecks=true')
 
 
-@CONFIG_CTX(includes=['ninja', 'gn', 'clang', 'goma'])
+@CONFIG_CTX(includes=['ninja', 'gn', 'clang'])
 def node_ci(c):
   c.use_gyp_env = False
   if c.HOST_PLATFORM != 'win':

@@ -292,7 +292,7 @@
       "--build-exit-status",
       "0",
       "--ninja-log-compiler",
-      "goma-clang"
+      "clang"
     ],
     "cwd": "[CACHE]/builder/node-ci",
     "env": {
