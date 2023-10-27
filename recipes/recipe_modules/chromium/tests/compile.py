@@ -30,12 +30,10 @@ def RunSteps(api, use_goma):
       api.properties.get('chromium_config', 'chromium_clang'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
-  api.chromium.apply_config('goma_hermetic_fallback')
 
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
-  api.chromium.c.compile_py.goma_max_active_fail_fallback_tasks = 1
   api.chromium.ensure_goma()
   return api.chromium.compile(
       targets=api.properties.get('targets'), use_goma_module=use_goma)
@@ -140,14 +138,6 @@ def GenTests(api):
   yield api.test(
       'goma_canary',
       api.properties(chromium_apply_config=['goma_canary']),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'goma_client_candidate',
-      api.properties(chromium_apply_config=['goma_client_candidate']),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
       api.post_process(post_process.DropExpectation),

@@ -39,10 +39,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  yield from_config('goma_canary')
-
-  yield from_config('goma_latest_client')
-
   yield from_config('goma_use_local')
 
   yield from_config('reclient_deps_cache_by_step')

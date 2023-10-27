@@ -46,9 +46,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           show_ninja_stats=Single(bool, empty_val=False, required=False),
           goma_hermetic=Single(str, required=False),
           goma_failfast=Single(bool, empty_val=False, required=False),
-          goma_max_active_fail_fallback_tasks=Single(
-              int, empty_val=None, required=False),
-          goma_enable_cache_silo=Single(bool, empty_val=False, required=False),
           prune_venv=Single(bool, empty_val=False, required=False),
           reclient_deps_cache_by_step=Single(
               bool, empty_val=False, required=False),
@@ -262,35 +259,11 @@ def goma_failfast(c):
 
 
 @config_ctx()
-def goma_enable_cache_silo(c):
-  # If enabled, the builder name will be used as the RBE cache silo key.
-  c.compile_py.goma_enable_cache_silo = True
-
-
-@config_ctx()
 def goma_canary(c):
   c.compile_py.goma_client_type = 'candidate'
   c.compile_py.goma_hermetic = 'error'
   c.compile_py.goma_failfast = True
   c.compile_py.show_ninja_stats = True
-
-
-@config_ctx()
-def goma_latest_client(c):
-  c.compile_py.goma_client_type = 'latest'
-  c.compile_py.goma_hermetic = 'error'
-  c.compile_py.goma_failfast = True
-  c.compile_py.show_ninja_stats = True
-
-
-@config_ctx()
-def goma_client_candidate(c):
-  c.compile_py.goma_client_type = 'candidate'
-
-
-@config_ctx()
-def goma_hermetic_fallback(c):
-  c.compile_py.goma_hermetic = 'fallback'
 
 
 @config_ctx()

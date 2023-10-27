@@ -494,8 +494,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       # However, it is disabled on mac because GOMA_USE_LOCAL=false makes mac
       # builders hangs. Please see crbug.com/1056935.
       ninja_env['GOMA_USE_LOCAL'] = 'false'
-    if self.c.compile_py.goma_enable_cache_silo or self._goma_cache_silo:
-      ninja_env['RBE_cache_silo'] = self.m.buildbucket.builder_name
+
     build_exit_status = -1
     try:
       ninja_result = self._run_ninja(ninja_command, name, ninja_env, **kwargs)
@@ -710,9 +709,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       if self.c.compile_py.goma_hermetic:
         goma_env['GOMA_HERMETIC'] = self.c.compile_py.goma_hermetic
 
-      if self.c.compile_py.goma_max_active_fail_fallback_tasks:
-        goma_env['GOMA_MAX_ACTIVE_FAIL_FALLBACK_TASKS'] = (
-            self.c.compile_py.goma_max_active_fail_fallback_tasks)
       if (self.m.tryserver.is_tryserver or self.c.compile_py.goma_failfast):
         # We rely on goma to meet cycle time goals on the tryserver. It's better
         # to fail early.

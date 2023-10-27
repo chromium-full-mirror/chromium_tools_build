@@ -13,20 +13,11 @@ SPEC = {}
     'chromium',
     'official',
     'mb',
-    'goma_hermetic_fallback',
 ])
 def chromium_perf(c):
   # Bisects may build using old toolchains, so goma_hermetic_fallback is
   # required. See https://codereview.chromium.org/1015633002
   c.clobber_before_runhooks = False
-
-  # HACK(shinyak): In perf builder, goma often fails with 'reached max
-  # number of active fail fallbacks'. In fail fast mode, we cannot make the
-  # number infinite currently.
-  #
-  # After the goma side fix, this env should be removed.
-  # See http://crbug.com/606987
-  c.compile_py.goma_max_active_fail_fallback_tasks = 1024
 
 
 def _common_kwargs(execution_mode, config_name, platform, target_bits):

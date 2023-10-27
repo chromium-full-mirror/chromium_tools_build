@@ -911,8 +911,7 @@
       "GOMA_DUMP_COUNTERZ_FILE": "[TMP_BASE]/goma_counterz",
       "GOMA_DUMP_STATS_FILE": "[TMP_BASE]/goma_stats",
       "GOMA_ENABLE_COUNTERZ": "true",
-      "GOMA_HERMETIC": "fallback",
-      "GOMA_MAX_ACTIVE_FAIL_FALLBACK_TASKS": "1024",
+      "GOMA_HERMETIC": "error",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
     },
     "infra_step": true,

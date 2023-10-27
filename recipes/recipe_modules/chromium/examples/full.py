@@ -180,24 +180,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'goma_module_with_cache_silo',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(use_goma_module=True, configs=['goma_enable_cache_silo']),
-      api.post_check(lambda check, steps: check(steps['compile'].env[
-          'RBE_cache_silo'] == 'fake-builder')),
-      api.post_process(post_process.DropExpectation))
-
-  yield api.test(
       'basic_out_dir_goma_module_build_failure',
       api.chromium.ci_build(
           builder_group='fake-group',
@@ -427,30 +409,4 @@ def GenTests(api):
               ),
           ).assemble()),
       api.properties(out_dir='/tmp'),
-  )
-
-  yield api.test(
-      'basic_out_dir_with_goma_cache_silo',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          **{
-              'use_goma_module': True,
-              'out_dir': '/tmp',
-              '$build/chromium': {
-                  'goma_cache_silo': True,
-              },
-          }),
-      api.post_check(lambda check, steps: check(steps['compile'].env[
-          'RBE_cache_silo'] == 'fake-builder')),
-      api.post_process(post_process.DropExpectation),
   )
