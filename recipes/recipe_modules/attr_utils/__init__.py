@@ -78,7 +78,7 @@ The following additional utilities are provided:
   with `attrs`.
 """
 
-import collections
+import collections.abc
 import sys
 
 import attr
@@ -468,7 +468,7 @@ def attrs(slots=True, **kwargs):
   return inner
 
 
-class FieldMapping(collections.Mapping):
+class FieldMapping(collections.abc.Mapping):
   """Mixin to give attrs-types dict-like access.
 
   An attrs-type that inherits from this mixin can be treated like a

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
+import collections.abc
 
 from . import builder_spec as builder_spec_module
 
@@ -12,7 +12,7 @@ from RECIPE_MODULES.build.chromium import BuilderId
 
 
 @attrs()
-class BuilderDatabase(collections.Mapping):
+class BuilderDatabase(collections.abc.Mapping):
   """A database that provides information for multiple groups.
 
   BuilderDatabase provides access to the information contained in GroupSpec
@@ -66,7 +66,7 @@ class BuilderDatabase(collections.Mapping):
 
 
 @attrs()
-class BuilderGraph(collections.Mapping):
+class BuilderGraph(collections.abc.Mapping):
   """A graph of the parent-child relationship between builders.
 
   BuilderGraph provides a mapping interface where a BuilderId key can be

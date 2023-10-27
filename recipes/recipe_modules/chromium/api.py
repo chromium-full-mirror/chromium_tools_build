@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import collections
+import collections.abc
 import contextlib
 import functools
 import textwrap
@@ -830,7 +831,7 @@ class ChromiumApi(recipe_api.RecipeApi):
               **kwargs):
     """Return a runtest.py invocation."""
     args = args or []
-    assert isinstance(args, collections.Sequence), repr(args)
+    assert isinstance(args, collections.abc.Sequence), repr(args)
 
     t_name, ext = self.m.path.splitext(self.m.path.basename(test))
     if not python_mode and self.m.platform.is_win and ext == '':

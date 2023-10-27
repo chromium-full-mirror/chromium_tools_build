@@ -712,6 +712,10 @@ class FlakinessApi(recipe_api.RecipeApi):
       # This is effectively trim_new_tests() minus the logging specific to
       # using TestDefinition object.
       if len(new_test_tuples) > self._max_test_targets:
+        # random.sample can only be used correctly with Sequence types - set is
+        # not a Sequence.
+        if isinstance(new_test_tuples, set):
+          new_test_tuples = sorted(new_test_tuples)
         new_test_tuples = random.sample(new_test_tuples, self._max_test_targets)
         self.m.step.empty(
             'randomly sampling {} tests'.format(self._max_test_targets),

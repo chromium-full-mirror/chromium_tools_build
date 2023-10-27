@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
+import collections.abc
 import string
 import textwrap
 from typing import Callable, Iterable, Mapping, Optional
@@ -285,7 +285,7 @@ class Generator:
 
     normalized = {}
     for expiration, dimensions_sequence in optional_dimensions.items():
-      if isinstance(dimensions_sequence, collections.Mapping):
+      if isinstance(dimensions_sequence, collections.abc.Mapping):
         dimensions = dimensions_sequence
       else:
         # TODO(https://crbug.com/1148971): Convert source side specs to use single

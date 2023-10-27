@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
+import collections.abc
 
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, enum, mapping,
                                              sequence)
@@ -146,7 +146,7 @@ class TrySpec:
 
 
 @attrs()
-class TryDatabase(collections.Mapping):
+class TryDatabase(collections.abc.Mapping):
   """A database that provides information for multiple try groups.
 
   TryDatabase provides access to the information contained in TryGroupSpec

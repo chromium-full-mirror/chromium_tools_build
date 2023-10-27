@@ -91,7 +91,7 @@ def RunSteps(api):
   with api.assertions.assertRaises(ValueError) as caught:
     EnumTest(value=4)
   message = "'value' must be in (1, 2, 3) (got 4)"
-  api.assertions.assertEqual(str(caught.exception), message)
+  api.assertions.assertEqual(caught.exception.args[0], message)
 
   # test successful validation
   x = EnumTest(value=1)
