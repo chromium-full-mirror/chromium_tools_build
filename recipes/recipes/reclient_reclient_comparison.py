@@ -224,7 +224,6 @@ def _compile(api, config_name, recipe_config, build_number):
   return api.chromium.compile(
       recipe_config['targets'],
       name=f'Build {build_number}',
-      use_goma_module=False,
       use_reclient=True,
       target=target)
 
