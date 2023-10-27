@@ -13,6 +13,7 @@ DEPS = [
   'recipe_engine/properties',
   'recipe_engine/runtime',
   'recipe_engine/step',
+  'recipe_engine/url',
   'repo',
 ]
 
@@ -119,9 +120,14 @@ def clobber(api):
   if 'clobber' in api.properties:
     api.file.rmtree('clobber', api.context.cwd.join('out'))
 
-def ensure_qemu(api):
-  api.cipd.ensure_tool(
-      'fuchsia/third_party/qemu/${platform}', 'latest')
+# Calls api.cipd.ensure_tool, then modifies the path returned by the call to
+# join the subdir.
+def ensure_tool(api, package, version, subdir=""):
+  dirname = api.path.split(api.cipd.ensure_tool(
+    package=package,
+    version=version,
+  ))[0]
+  return api.path.abs_to_path(api.path.abspath(dirname.join(subdir)))
 
 def setup_host_x86(api,
                    debug,
@@ -283,6 +289,34 @@ def setup_target(api,
   # dependencies are installed, in case of chroot-based testing.
   chroot_dir='/data/local/art-test-chroot'
 
+  qemu_path = ensure_tool(
+    api=api,
+    package='fuchsia/third_party/qemu/${platform}',
+    version='integration',
+    subdir='bin',
+  )
+
+  openssh_path = ensure_tool(
+    api=api,
+    package='fuchsia/third_party/openssh-portable/${platform}',
+    version='latest',
+    subdir='bin',
+  )
+
+  sevenz_path = ensure_tool(
+    api=api,
+    package='infra/3pp/tools/7z/${platform}',
+    version='latest',
+  )
+
+  # This 7z package has a 7zz binary instead of a 7z binary, so this symlinks
+  # from 7z to 7zz. This dependency is required for buildbot-vm.sh
+  api.file.symlink(
+    'symlink 7z to 7zz',
+    api.path.join(sevenz_path, '7zz'),
+    api.path.join(sevenz_path, '7z')
+  )
+
   env = {
       'TARGET_BUILD_VARIANT':
           'eng',
@@ -302,8 +336,14 @@ def setup_target(api,
           str(
               build_top_dir.join('prebuilts', 'jdk', 'jdk17', 'linux-x86',
                                  'bin')) + api.path.pathsep +
-          # Add adb in the path.
+          # Add adb to the path.
           str(build_top_dir.join('prebuilts', 'runtime')) + api.path.pathsep +
+          # Add 7z to the path.
+          str(sevenz_path) + api.path.pathsep +
+          # Add openssh-portable to the path.
+          str(openssh_path) + api.path.pathsep +
+          # Add qemu to the path.
+          str(qemu_path) + api.path.pathsep +
           '%(PATH)s',
       'ART_TEST_RUN_TEST_2ND_ARCH':
           'false',
@@ -351,8 +391,6 @@ def setup_target(api,
 
   checkout(api,manifest_branch)
   clobber(api)
-  if on_virtual_machine:
-    ensure_qemu(api)
 
   gtest_env = env.copy()
   gtest_env.update({ 'ART_TEST_NO_SYNC': 'true' })
@@ -368,7 +406,6 @@ def setup_target(api,
           str(build_top_dir.join('prebuilts', 'runtime')) + api.path.pathsep +
           '%(PATH)s'
   })
-
   with api.context(env=env):
     api.step(
         'build target',
@@ -379,12 +416,20 @@ def setup_target(api,
 
   if on_virtual_machine:
     with api.context(env=env):
-      api.step('create the virtual machine',
-               [art_tools.join('buildbot-vm.sh'), 'create'])
-      api.step('boot the virtual machine',
-               [art_tools.join('buildbot-vm.sh'), 'boot'])
-      api.step('copy ssh keys over to the virtual machine',
-               [art_tools.join('buildbot-vm.sh'), 'setup-ssh'])
+      api.step(
+        'create the virtual machine',
+        [ art_tools.join('buildbot-vm.sh'), 'create' ]
+      )
+
+      api.step(
+        'enable key authentication on virtual machine',
+        [ art_tools.join('buildbot-vm.sh'), 'install-keys' ]
+      )
+
+      api.step(
+        'boot the virtual machine',
+        [ art_tools.join('buildbot-vm.sh'), 'boot' ]
+      )
 
   with api.step.defer_results():
     with api.context(env=test_env):
@@ -398,6 +443,9 @@ def setup_target(api,
       api.step('sync target', [art_tools.join('buildbot-sync.sh')])
 
     def test_logging(api, test_name):
+      # adb doesn't know about the VM and will hang.
+      if on_virtual_machine:
+        return
       with api.context(env=test_env):
         api.step(test_name + ': adb logcat',
                  ['adb', 'logcat', '-d', '-v', 'threadtime'])
