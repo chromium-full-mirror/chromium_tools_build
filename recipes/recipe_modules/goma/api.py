@@ -171,10 +171,10 @@ class GomaApi(recipe_api.RecipeApi):
     to set the ATS flag on a per-build basis.
     """
     # Set ATS if connecting to Goma RBE from a client OS that supports ATS.
-    if (self._goma_server_host in ('staging-goma.chromium.org',
-                                   'goma.chromium.org') and
+    if (self._goma_server_host
+        in ('staging-goma.chromium.org', 'goma.chromium.org') and
         self._goma_rpc_extra_params in ('?tot', '?staging', '?prod') and
-        (self.m.platform.is_linux or self.m.platform.is_win)):
+        self.m.platform.is_linux):
       self._enable_ats = True
     step_msg = 'goma.configure_enable_ats: %s %s %s' % (
         self._goma_server_host, self._goma_rpc_extra_params, self._enable_ats)
@@ -361,7 +361,8 @@ class GomaApi(recipe_api.RecipeApi):
 
       self._goma_ctl_env['GOMA_DUMP_COUNTERZ_FILE'] = self.counterz_path
       self._goma_ctl_env['GOMA_ENABLE_COUNTERZ'] = 'true'
-      if self._enable_ats:
+      if self._enable_ats and self.m.platform.is_linux:
+        # Enable ATS only on Linux at this point.
         self._goma_ctl_env['GOMA_ARBITRARY_TOOLCHAIN_SUPPORT'] = 'true'
       if self._goma_server_host:
         self._goma_ctl_env['GOMA_SERVER_HOST'] = self._goma_server_host
