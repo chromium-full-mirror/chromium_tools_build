@@ -11,11 +11,6 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 def libyuv(c):
   _libyuv_common(c)
 
-  # Workaround to avoid getting goma-clang change since we can no longer use
-  # the 'chromium' config above (see libyuv:677).
-  if c.compile_py.compiler == 'clang':
-    c.compile_py.compiler = 'goma-clang'
-
   c.runtests.memory_tests_runner = c.CHECKOUT_PATH.join(
       'tools_libyuv', 'valgrind', 'libyuv_tests',
       platform_ext={'win': '.bat', 'mac': '.sh', 'linux': '.sh'})
