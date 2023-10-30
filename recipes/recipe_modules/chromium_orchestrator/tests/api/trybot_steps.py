@@ -1440,7 +1440,7 @@ def GenTests(api):
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
-      api.post_process(post_process.DoesNotRun,
+      api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),

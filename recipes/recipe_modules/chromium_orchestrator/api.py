@@ -70,6 +70,9 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # build. This needs to be defined here so that the
     # trigger_without_patch_compile_callback function can assign the variable.
     self.without_patch_build = None
+    # Without patch build was triggered early, before the retry shards
+    # are triggered.
+    self.triggered_without_patch_build_early = False
 
   def trybot_steps(self):
     if self.m.led.launched_by_led and not self.m.led.led_build:
@@ -102,9 +105,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       # By this point the without_patch_build has already been cancelled through
       # buildbucket.cancel() and the compilator swarming task will finish
       # shutting down on its own time.
-      if not self.without_patch_build or (
-          self.without_patch_build.id !=
-          self.current_compilator_buildbucket_id):
+      if not self.triggered_without_patch_build_early:
         # crbug.com/1271287#c22
         # Wait for compilator task overhead to complete
         self.m.swarming.collect(
@@ -245,6 +246,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           compilator_properties,
           gitiles_commit,
           can_outlive_parent=True)
+      self.triggered_without_patch_build_early = True
 
     if trigger_without_patch_compile_early:
       pre_retry_shards_callback = trigger_without_patch_compile_callback
