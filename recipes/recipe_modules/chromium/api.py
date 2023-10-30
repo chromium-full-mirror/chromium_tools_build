@@ -1225,6 +1225,10 @@ class ChromiumApi(recipe_api.RecipeApi):
       args += ['--android-version-code=%s' % android_version_code]
     if android_version_name:
       args += ['--android-version-name=%s' % android_version_name]
+    # TODO(crbug.com/1060857): Remove this once swarming task templates
+    # support command prefixes.
+    if self.c.project_generator.use_luci_auth:
+      args += ['--luci-auth']
 
     combined_args = args + (additional_args or [])
 

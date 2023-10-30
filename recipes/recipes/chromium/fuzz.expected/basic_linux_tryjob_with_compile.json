@@ -521,6 +521,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -559,6 +560,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "//out/Release"
@@ -734,6 +736,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "-v",
       "//out/Release",
       "{\"additional_compile_targets\": [\"//foo/bar:target2\", \"//foo/bar:target3\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
@@ -798,6 +801,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -839,6 +843,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--goma-dir",
       "[CACHE]/goma/client",
+      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "//out/Release"

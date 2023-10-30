@@ -170,3 +170,14 @@ def GenTests(api):
         """).strip()),
       api.post_process(post_process.DropExpectation),
   )
+
+  def _StepCommandNotContains(check, step_odict, step, arg):
+    check(arg not in step_odict[step].cmd)
+
+  yield api.test(
+      'mb_no_luci_auth',
+      api.properties(chromium_apply_config=['mb', 'mb_no_luci_auth']),
+      api.post_process(_StepCommandNotContains, 'generate_build_files',
+                       '--luci-auth'),
+      api.post_process(post_process.DropExpectation),
+  )
