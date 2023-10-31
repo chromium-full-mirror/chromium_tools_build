@@ -236,7 +236,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         in self.m.buildbucket.build.input.experiments):
       trigger_without_patch_compile_early = True
 
-    def trigger_without_patch_compile_callback(swarming_test_suites):
+    def trigger_without_patch_compile_callback(test_suites):
       if self.m.chromium_tests.should_skip_without_patch(
           builder_config, affected_files,
           self.m.chromium_checkout.src_dir.join(
@@ -244,8 +244,13 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         return
 
       # Trigger another compilator build with the targets needed
+      # TODO(kimstephanie): Remove swarming_targets once swarming_targets is
+      # no longer in the compilator proto
       compilator_properties['swarming_targets'] = list(
-          set(t.target_name for t in swarming_test_suites))
+          set(t.target_name for t in test_suites))
+
+      compilator_properties['test_targets'] = list(
+          set(t.target_name for t in test_suites))
 
       if comp_output.override_deps != None:
         compilator_properties['deps_revision_overrides'] = (
@@ -366,6 +371,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     else:
       # Trigger another compilator build with the targets needed
       compilator_properties['swarming_targets'] = list(
+          set(t.target_name for t in failing_test_suites))
+      compilator_properties['test_targets'] = list(
           set(t.target_name for t in failing_test_suites))
 
       if comp_output.override_deps != None:

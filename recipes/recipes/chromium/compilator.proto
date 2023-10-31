@@ -23,6 +23,14 @@ message InputProperties {
   // without a patch.
   repeated string swarming_targets = 2;
 
+  // Next ID: 2
+  // When this field is absent, the Compilator will compile (with patch) all
+  // targets affected by the patch.
+  // When this field is populated, the Compilator will compile these targets
+  // without a patch.
+  // This could be both or either swarming or skylab tests
+  repeated string test_targets = 6;
+
   // Sets which revision to check out for the dependency
   // Maps dependency repo's path name (like 'src/v8') to revision
   // This is required for other non-src projects running a builder using
