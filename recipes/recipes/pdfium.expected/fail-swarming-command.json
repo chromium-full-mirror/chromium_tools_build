@@ -2384,26 +2384,9 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "corpus tests (oneshot rendering enabled)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
-      "@@@STEP_LOG_END@stdout@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "corpus tests (reverse byte order)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@stdout@hello world!@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
     "failure": {
       "failure": {},
-      "humanReason": "2 out of 13 aggregated steps failed: Step('corpus tests (javascript disabled)') (retcode: 0), Step('corpus tests (oneshot rendering enabled)') (retcode: 0)"
+      "humanReason": "Step('corpus tests (javascript disabled)') (retcode: 0)"
     },
     "name": "$result"
   }

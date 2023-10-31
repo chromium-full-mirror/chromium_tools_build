@@ -2452,7 +2452,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 out of 49 aggregated steps failed: Step('device pre-run cleanup') (retcode: 1)"
+      "humanReason": "Step('device pre-run cleanup') (retcode: 1)"
     },
     "name": "$result"
   }

@@ -454,7 +454,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 out of 6 aggregated steps failed: Step('postprocess_for_goma.stop_goma') (retcode: 1)"
+      "humanReason": "Step('postprocess_for_goma.stop_goma') (retcode: 1)"
     },
     "name": "$result"
   }

@@ -159,17 +159,21 @@ class LibyuvApi(recipe_api.RecipeApi):
   def runtests(self):
     """Add a suite of test steps."""
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
-      with self.m.step.defer_results():
+      with self.m.defer.context(collect_step_name=None) as defer:
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
-          self.m.chromium_android.common_tests_setup_steps()
-          self.m.chromium_android.run_test_suite('libyuv_unittest')
-          self.m.chromium_android.shutdown_device_monitor()
-          self.m.chromium_android.logcat_dump()
-          self.m.chromium_android.stack_tool_steps(force_latest_version=True)
+          defer(self.m.chromium_android.common_tests_setup_steps)
+          defer(self.m.chromium_android.run_test_suite, 'libyuv_unittest')
+          defer(self.m.chromium_android.shutdown_device_monitor)
+          defer(self.m.chromium_android.logcat_dump)
+          defer(self.m.chromium_android.stack_tool_steps,
+                force_latest_version=True)
         else:
           # Ignoring --no-sandbox because libyuv uses absl/flags which
           # raises an error when flags are unknown to the binary.
           # This is fine, since these tests are not sandbox aware, it is
           # just self.m.chromium.runtest that adds the flag.
-          self.m.chromium.runtest(
-              'libyuv_unittest', args=['--undefok=no-sandbox'])
+          defer(
+              self.m.chromium.runtest,
+              'libyuv_unittest',
+              args=['--undefok=no-sandbox'],
+          )

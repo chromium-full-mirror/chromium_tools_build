@@ -12,6 +12,7 @@ DEPS = [
     'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
+    'recipe_engine/defer',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',
@@ -103,11 +104,11 @@ def RunSteps(api):
       with api.reclient.process('compile', '', False):
         ExecBuildSteps(api, build_steps, sync_dir, dir_flags)
 
-      with api.step.defer_results():
+      with api.defer.context(collect_step_name=None) as defer:
         for step in bot_steps[builder]['test_steps']:
           script = sync_dir.join(step['command'][0])
           args = step['command'][1:]
-          api.step(step['name'], ['vpython3', script] + dir_flags + args)
+          defer(api.step, step['name'], ['vpython3', script] + dir_flags + args)
 
 
 def GenTests(api):

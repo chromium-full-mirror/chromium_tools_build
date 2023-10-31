@@ -19,6 +19,7 @@ DEPS = [
     'recipe_engine/cas',
     'recipe_engine/cipd',
     'recipe_engine/context',
+    'recipe_engine/defer',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',
@@ -591,7 +592,7 @@ class _Swarming:
     task_results = self.api.swarming.collect(
         'collect tasks', [request.task for request in requests_by_id.values()],
         eager=True)
-    for result in task_results.get_result():
+    for result in task_results:
       request = requests_by_id[result.id]
       assert request
 
@@ -829,13 +830,13 @@ class _TestRunner:
         self.swarming.trigger_tasks()
 
       # Defer individual failures until the end of this block.
-      with self.api.step.defer_results():
+      with self.api.defer.context(collect_step_name=None) as defer:
         collecting = bool(self.swarming)
         while self.local_requests or collecting:
           if self.local_requests:
             with self.api.context(cwd=self._local_root_dir, env=self.env):
               for request in self.local_requests:
-                self.api.step(request.step_name, request.command)
+                defer(self.api.step, request.step_name, request.command)
             self.local_requests.clear()
 
           if collecting:

@@ -8,6 +8,7 @@ DEPS = [
   'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/cipd',
+  'recipe_engine/defer',
   'recipe_engine/file',
   'recipe_engine/path',
   'recipe_engine/properties',
@@ -216,35 +217,40 @@ def setup_host_x86(api,
     api.step('build',
              [art_tools.join('buildbot-build.sh'), '--host', '--installclean'])
 
-    with api.step.defer_results():
-      api.step('test gtest', [
+    with api.defer.context(collect_step_name=None) as defer:
+      defer(api.step, 'test gtest', [
           'build/soong/soong_ui.bash', '--make-mode',
           'test-art-host-gtest%d' % bitness
       ])
 
-      api.step('test optimizing', testrunner_cmd + ['--optimizing'])
+      defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
 
-      api.step('test debuggable', testrunner_cmd + ['--jit', '--debuggable'])
+      defer(api.step, 'test debuggable',
+            testrunner_cmd + ['--jit', '--debuggable'])
 
       # Use a lower `-j` number for interpreter, some tests take a long time
       # to run on it.
-      api.step(
+      defer(
+          api.step,
           'test interpreter', testrunner_cmd +
           ['-j%d' % (HOST_TEST_INTERPRETER_MAKE_JOBS), '--interpreter'])
 
-      api.step('test baseline', testrunner_cmd + ['--baseline'])
+      defer(api.step, 'test baseline', testrunner_cmd + ['--baseline'])
 
-      api.step('test jit', testrunner_cmd + ['--jit'])
+      defer(api.step, 'test jit', testrunner_cmd + ['--jit'])
 
       if cdex_level != "none":
-        api.step(
+        defer(
+            api.step,
             'test cdex-redefine-stress-optimizing', testrunner_cmd +
             ['--optimizing', '--redefine-stress', '--debuggable'])
-        api.step(
+        defer(
+            api.step,
             'test cdex-redefine-stress-jit',
             testrunner_cmd + ['--jit', '--redefine-stress', '--debuggable'])
 
-      api.step('test speed-profile', testrunner_cmd + ['--speed-profile'])
+      defer(api.step, 'test speed-profile',
+            testrunner_cmd + ['--speed-profile'])
 
       libcore_command = [art_tools.join('run-libcore-tests.sh'),
                          '--mode=host',
@@ -254,7 +260,7 @@ def setup_host_x86(api,
       if gcstress:
         libcore_command += ['--gcstress']
 
-      api.step('test libcore', libcore_command)
+      defer(api.step, 'test libcore', libcore_command)
 
       libjdwp_run = art_tools.join('run-libjdwp-tests.sh')
       libjdwp_common_command = [libjdwp_run,
@@ -265,12 +271,12 @@ def setup_host_x86(api,
       if gcstress:
         libjdwp_common_command += ['--vm-arg', '-Xgc:gcstress']
 
-      api.step('test libjdwp jit', libjdwp_common_command)
+      defer(api.step, 'test libjdwp jit', libjdwp_common_command)
 
       # Disable interpreter jdwp runs with gcstress, they time out.
       if not gcstress:
-        api.step(
-            'test libjdwp interpreter', libjdwp_common_command + ['--no-jit'])
+        defer(api.step, 'test libjdwp interpreter',
+              libjdwp_common_command + ['--no-jit'])
 
 def setup_target(api,
                  device,
@@ -431,31 +437,31 @@ def setup_target(api,
         [ art_tools.join('buildbot-vm.sh'), 'boot' ]
       )
 
-  with api.step.defer_results():
+  with api.defer.context(collect_step_name=None) as defer:
     with api.context(env=test_env):
-      api.step('device pre-run cleanup',
-               [art_tools.join('buildbot-cleanup-device.sh')])
+      defer(api.step, 'device pre-run cleanup',
+            [art_tools.join('buildbot-cleanup-device.sh')])
 
-      api.step('setup device',
-               [art_tools.join('buildbot-setup-device.sh'), '--verbose'])
+      defer(api.step, 'setup device',
+            [art_tools.join('buildbot-setup-device.sh'), '--verbose'])
 
     with api.context(env=env):
-      api.step('sync target', [art_tools.join('buildbot-sync.sh')])
+      defer(api.step, 'sync target', [art_tools.join('buildbot-sync.sh')])
 
     def test_logging(api, test_name):
       # adb doesn't know about the VM and will hang.
       if on_virtual_machine:
         return
       with api.context(env=test_env):
-        api.step(test_name + ': adb logcat',
-                 ['adb', 'logcat', '-d', '-v', 'threadtime'])
-        api.step(test_name + ': crashes',
-                 [art_tools.join('buildbot-symbolize-crashes.sh')])
-        api.step(test_name + ': adb clear log', ['adb', 'logcat', '-c'])
+        defer(api.step, test_name + ': adb logcat',
+              ['adb', 'logcat', '-d', '-v', 'threadtime'])
+        defer(api.step, test_name + ': crashes',
+              [art_tools.join('buildbot-symbolize-crashes.sh')])
+        defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
 
     with api.context(env=gtest_env):
-      api.step('test gtest', [art_tools.join('run-gtests.sh')])
+      defer(api.step, 'test gtest', [art_tools.join('run-gtests.sh')])
     test_logging(api, 'test gtest')
 
     # Common options passed to testrunner.py.
@@ -472,35 +478,36 @@ def setup_target(api,
       testrunner_cmd += ['--gcstress']
 
     with api.context(env=test_env):
-      api.step('test optimizing', testrunner_cmd + ['--optimizing'])
+      defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
     test_logging(api, 'test optimizing')
 
     with api.context(env=test_env):
       # We pass --optimizing for interpreter debuggable to run AOT checker tests
       # compiled debuggable.
-      api.step('test debuggable',
-               testrunner_cmd + ['--optimizing', '--debuggable'])
+      defer(api.step, 'test debuggable',
+            testrunner_cmd + ['--optimizing', '--debuggable'])
     test_logging(api, 'test debuggable')
 
     with api.context(env=test_env):
-      api.step('test jit debuggable',
-               testrunner_cmd + ['--jit', '--debuggable'])
+      defer(api.step, 'test jit debuggable',
+            testrunner_cmd + ['--jit', '--debuggable'])
     test_logging(api, 'test jit debuggable')
 
     with api.context(env=test_env):
-      api.step('test interpreter', testrunner_cmd + ['--interpreter'])
+      defer(api.step, 'test interpreter', testrunner_cmd + ['--interpreter'])
     test_logging(api, 'test interpreter')
 
     with api.context(env=test_env):
-      api.step('test baseline', testrunner_cmd + ['--baseline'])
+      defer(api.step, 'test baseline', testrunner_cmd + ['--baseline'])
     test_logging(api, 'test baseline')
 
     with api.context(env=test_env):
-      api.step('test jit', testrunner_cmd + ['--jit'])
+      defer(api.step, 'test jit', testrunner_cmd + ['--jit'])
     test_logging(api, 'test jit')
 
     with api.context(env=test_env):
-      api.step('test speed-profile', testrunner_cmd + ['--speed-profile'])
+      defer(api.step, 'test speed-profile',
+            testrunner_cmd + ['--speed-profile'])
     test_logging(api, 'test speed-profile')
 
     libcore_command = [art_tools.join('run-libcore-tests.sh'),
@@ -518,7 +525,7 @@ def setup_target(api,
     # Disable libcore runs with gcstress and debug, they time out.
     if not (gcstress and debug):
       with api.context(env=test_env):
-        api.step('test libcore', libcore_command)
+        defer(api.step, 'test libcore', libcore_command)
       test_logging(api, 'test libcore')
 
     libjdwp_command = [art_tools.join('run-libjdwp-tests.sh'),
@@ -532,26 +539,27 @@ def setup_target(api,
     # Disable jit libjdwp runs with gcstress and debug, they time out.
     if not (gcstress and debug):
       with api.context(env=test_env):
-        api.step('test libjdwp jit', libjdwp_command)
+        defer(api.step, 'test libjdwp jit', libjdwp_command)
       test_logging(api, 'test libjdwp jit')
 
     # Disable interpreter libjdwp runs with gcstress, they time out.
     if not gcstress:
       with api.context(env=test_env):
-        api.step('test libjdwp interpreter', libjdwp_command + ['--no-jit'])
+        defer(api.step, 'test libjdwp interpreter',
+              libjdwp_command + ['--no-jit'])
       test_logging(api, 'test libjdwp interpreter')
 
     with api.context(env=test_env):
-      api.step('tear down device',
-               [art_tools.join('buildbot-teardown-device.sh')])
+      defer(api.step, 'tear down device',
+            [art_tools.join('buildbot-teardown-device.sh')])
 
-      api.step('device post-run cleanup',
-               [art_tools.join('buildbot-cleanup-device.sh')])
+      defer(api.step, 'device post-run cleanup',
+            [art_tools.join('buildbot-cleanup-device.sh')])
 
     if on_virtual_machine:
       with api.context(env=env):
-        api.step('shut down virtual machine',
-                 [art_tools.join('buildbot-vm.sh'), 'quit'])
+        defer(api.step, 'shut down virtual machine',
+              [art_tools.join('buildbot-vm.sh'), 'quit'])
 
 def GenTests(api):
   yield api.test(

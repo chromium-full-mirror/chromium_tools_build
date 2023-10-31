@@ -278,48 +278,6 @@
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[START_DIR]/boringssl/util/go_tests.txt",
-      "/path/to/tmp/"
-    ],
-    "env": {
-      "GOCACHE": "[CACHE]/gocache",
-      "GOFLAGS": "-mod=readonly",
-      "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "boringssl:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "read go tests",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@go_tests.txt@./util/ar@@@",
-      "@@@STEP_LOG_LINE@go_tests.txt@./util/fipstools/delocate@@@",
-      "@@@STEP_LOG_END@go_tests.txt@@@"
-    ]
-  },
-  {
-    "cmd": [
       "go",
       "run",
       "[START_DIR]/boringssl/util/check_filenames.go"
@@ -351,6 +309,49 @@
     "name": "check filenames",
     "~followup_annotations": [
       "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[START_DIR]/boringssl/util/go_tests.txt",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[START_DIR]/boringssl",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read go tests",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@go_tests.txt@./util/ar@@@",
+      "@@@STEP_LOG_LINE@go_tests.txt@./util/fipstools/delocate@@@",
+      "@@@STEP_LOG_END@go_tests.txt@@@"
     ]
   },
   {
@@ -454,7 +455,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 out of 4 aggregated steps failed: Step('check filenames') (retcode: 1)"
+      "humanReason": "Step('check filenames') (retcode: 1)"
     },
     "name": "$result"
   }

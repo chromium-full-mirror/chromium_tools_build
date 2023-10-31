@@ -1825,7 +1825,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 out of 15 aggregated steps failed: Step('pixel tests (xfa disabled)') (retcode: 1)"
+      "humanReason": "Step('pixel tests (xfa disabled)') (retcode: 1)"
     },
     "name": "$result"
   }

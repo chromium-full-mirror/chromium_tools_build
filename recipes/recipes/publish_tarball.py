@@ -19,6 +19,7 @@ DEPS = [
     'depot_tools/gsutil',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
+    'recipe_engine/defer',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/scheduler',
@@ -455,9 +456,10 @@ def publish_tarball(api):
   finally:
     api.file.rmtree('rmtree temp dir', temp_dir)
 
-  with api.step.defer_results():
+  with api.defer.context(collect_step_name=None) as defer:
     if not published_full_tarball(version, ls_result):
-      export_tarball(
+      defer(
+          export_tarball,
           api,
           # Verbose output helps avoid a buildbot timeout when no output
           # is produced for a long time.
@@ -471,14 +473,16 @@ def publish_tarball(api):
           'full')
 
       # Trigger a tarball build now that the full tarball has been uploaded.
-      api.scheduler.emit_trigger(
+      defer(
+          api.scheduler.emit_trigger,
           api.scheduler.BuildbucketTrigger(properties={'version': version}),
           project='infra',
           jobs=['Build From Tarball'],
       )
 
     if not published_test_tarball(version, ls_result):
-      export_tarball(
+      defer(
+          export_tarball,
           api,
           # Verbose output helps avoid a buildbot timeout when no output
           # is produced for a long time.
@@ -492,10 +496,10 @@ def publish_tarball(api):
           'testdata')
 
     if not published_lite_tarball(version, ls_result):
-      export_lite_tarball(api, version)
+      defer(export_lite_tarball, api, version)
 
     if not published_nacl_tarball(version, ls_result):
-      export_nacl_tarball(api, version)
+      defer(export_nacl_tarball, api, version)
 
 
 def RunSteps(api):

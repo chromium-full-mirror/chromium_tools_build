@@ -411,15 +411,17 @@ class GomaApi(recipe_api.RecipeApi):
         # change the exception state in this frame
         def cleanup():
           try:
-            with self.m.step.defer_results(), self.m.context(infra_steps=True):
-              self._run_jsonstatus()
+            with self.m.defer.context(collect_step_name=None) as defer:
+              with self.m.context(infra_steps=True):
+                defer(self._run_jsonstatus)
 
-              with self.m.context(env=self._goma_ctl_env):
-                self.m.step(
-                    name='stop_goma (start failure)',
-                    cmd=['python3', self.goma_ctl, 'stop'],
-                    **kwargs)
-              self._upload_logs(name='upload_goma_start_failed_logs')
+                with self.m.context(env=self._goma_ctl_env):
+                  defer(
+                      self.m.step,
+                      name='stop_goma (start failure)',
+                      cmd=['python3', self.goma_ctl, 'stop'],
+                      **kwargs)
+                defer(self._upload_logs, name='upload_goma_start_failed_logs')
           except self.m.step.StepFailure:
             # Don't allow the exception to propagate so that the outer frame can
             # re-raise its exception
@@ -456,28 +458,31 @@ class GomaApi(recipe_api.RecipeApi):
 
     with self.m.step.nest('postprocess_for_goma') as nested_result:
       try:
-        with self.m.step.defer_results():
-          self._run_jsonstatus()
+        with self.m.defer.context(collect_step_name=None) as defer:
+          defer(self._run_jsonstatus)
 
           with self.m.context(env=self._goma_ctl_env):
-            self.m.step(
+            defer(
+                self.m.step,
                 name='goma_stat',
                 cmd=['python3', self.goma_ctl, 'stat'],
                 **kwargs)
-            self.m.step(
+            defer(
+                self.m.step,
                 name='stop_goma',
                 cmd=['python3', self.goma_ctl, 'stop'],
                 **kwargs)
             self.m.futures.wait([self._goma_canceller])
 
-          self._upload_logs(
+          defer(
+              self._upload_logs,
               ninja_log_outdir=ninja_log_outdir,
               ninja_log_compiler=ninja_log_compiler,
               ninja_log_command=ninja_log_command,
               build_exit_status=build_exit_status,
               build_step_name=build_step_name)
           if self._cloudtail_running:
-            self._stop_cloudtail()
+            defer(self._stop_cloudtail)
 
         self._goma_started = False
         self._goma_ctl_env = {}

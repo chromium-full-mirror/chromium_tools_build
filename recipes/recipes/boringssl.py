@@ -13,6 +13,7 @@ DEPS = [
     'presentation_utils',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
+    'recipe_engine/defer',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',
@@ -279,20 +280,14 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
           ['-D%s=%s' % (k, v) for (k, v) in sorted(cmake_args.items())] + [src])
     api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir])
 
-    # Determine the list of Go tests to run. This must be done outside of
-    # defer_results to be able to read the result.
-    go_tests_str = api.file.read_text('read go tests',
-                                      src.join('util', 'go_tests.txt'))
-    go_tests = [t for t in go_tests_str.split('\n') if t]
-
-    with api.step.defer_results():
+    with api.defer.context(collect_step_name=None) as defer:
       # The default Linux build may not depend on the C++ runtime. This is easy
       # to check when building shared libraries.
       #
       # TODO(davidben): Remove the 'linux_shared' check when
       # check_imported_libraries is set in the config instead.
       if check_imported_libraries or config.buildername == 'linux_shared':
-        api.step('check imported libraries', [
+        defer(api.step, 'check imported libraries', [
             'go', 'run',
             src.join('util', 'check_imported_libraries.go'),
             build_dir.join('crypto', 'libcrypto.so'),
@@ -300,19 +295,24 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
         ])
 
       if check_stack:
-        api.step('check stack', [
+        defer(api.step, 'check stack', [
             'go', 'run',
             src.join('util', 'check_stack.go'),
             build_dir.join('tool', 'bssl')
         ])
 
       with api.context(cwd=src):
-        api.step(
+        defer(
+            api.step,
             'check filenames',
             ['go', 'run', src.join('util', 'check_filenames.go')])
 
       with api.context(cwd=src):
-        api.step('go tests', ['go', 'test', '-v'] + go_tests)
+        # Determine the list of Go tests to run.
+        go_tests_str = api.file.read_text('read go tests',
+                                          src.join('util', 'go_tests.txt'))
+        go_tests = [t for t in go_tests_str.split('\n') if t]
+        defer(api.step, 'go tests', ['go', 'test', '-v'] + go_tests)
 
       env = config.get_target_env(bot_utils, api.platform)
 
@@ -323,7 +323,7 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
           if config.sde:
             all_tests_args += ['-sde', '-sde-path', sde_path]
           if config.android:
-            api.step('unit tests', [
+            defer(api.step, 'unit tests', [
                 'go',
                 'run',
                 api.path.join('util', 'run_android_tests.go'),
@@ -337,7 +337,8 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
                 ' '.join(all_tests_args),
             ])
           else:
-            api.step(
+            defer(
+                api.step,
                 'unit tests', msvc_prefix + [
                     'go',
                     'run',
@@ -357,7 +358,7 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
         runner_args += config.runner_args
         if config.android:
           with api.context(cwd=src, env=env):
-            api.step('ssl tests', [
+            defer(api.step, 'ssl tests', [
                 'go',
                 'run',
                 api.path.join('util', 'run_android_tests.go'),
@@ -372,7 +373,8 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
             ])
         else:
           with api.context(cwd=runner_dir, env=env):
-            api.step('ssl tests', msvc_prefix + ['go', 'test'] + runner_args)
+            defer(api.step, 'ssl tests',
+                  msvc_prefix + ['go', 'test'] + runner_args)
 
 
 def _CIBuild(api, builder):

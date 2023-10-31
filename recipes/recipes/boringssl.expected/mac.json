@@ -381,6 +381,38 @@
   },
   {
     "cmd": [
+      "go",
+      "run",
+      "[START_DIR]/boringssl/util/check_filenames.go"
+    ],
+    "cwd": "[START_DIR]/boringssl",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[START_DIR]/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "check filenames"
+  },
+  {
+    "cmd": [
       "vpython3",
       "-u",
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
@@ -390,6 +422,7 @@
       "[START_DIR]/boringssl/util/go_tests.txt",
       "/path/to/tmp/"
     ],
+    "cwd": "[START_DIR]/boringssl",
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
@@ -420,38 +453,6 @@
       "@@@STEP_LOG_LINE@go_tests.txt@./util/fipstools/delocate@@@",
       "@@@STEP_LOG_END@go_tests.txt@@@"
     ]
-  },
-  {
-    "cmd": [
-      "go",
-      "run",
-      "[START_DIR]/boringssl/util/check_filenames.go"
-    ],
-    "cwd": "[START_DIR]/boringssl",
-    "env": {
-      "GOCACHE": "[CACHE]/gocache",
-      "GOFLAGS": "-mod=readonly",
-      "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "boringssl:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "check filenames"
   },
   {
     "cmd": [

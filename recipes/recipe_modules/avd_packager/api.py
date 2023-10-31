@@ -40,7 +40,7 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     avd_script_path = chromium_src.join('tools', 'android', 'avd', 'avd.py')
 
     with self.m.context(cwd=chromium_src):
-      with self.m.step.defer_results():
+      with self.m.defer.context(collect_step_name=None) as defer:
         for avd_config in self._avd_configs:
           avd_config_path = chromium_src.join(avd_config)
 
@@ -50,23 +50,23 @@ class AvdPackagerApi(recipe_api.RecipeApi):
               '--snapshot', '--cipd-json-output',
               self.m.json.output()
           ]
-          create_result = self.m.step('avd create %s' % avd_config,
-                                      ['vpython3', '-u'] + create_commands)
-          if create_result.is_ok:
-            create_result = create_result.get_result()
+          create_result = defer(self.m.step, 'avd create %s' % avd_config,
+                                ['vpython3', '-u'] + create_commands)
+          if create_result.is_ok():
+            create_result = create_result.result()
             if create_result.json.output:
               cipd_result = create_result.json.output.get('result', {})
               if 'package' in cipd_result and 'instance_id' in cipd_result:
                 self.m.cipd.add_instance_link(create_result)
                 # Add buildbucket id to the CIPD instance.
                 tags = {'buildbucket_id': str(self.m.buildbucket.build.id)}
-                self.m.cipd.set_tag(cipd_result['package'],
-                                    cipd_result['instance_id'], tags)
+                defer(self.m.cipd.set_tag, cipd_result['package'],
+                      cipd_result['instance_id'], tags)
 
           # Call "uninstall" to free disk space.
           uninstall_commands = [
               avd_script_path, 'uninstall', '-v', '--avd-config',
               avd_config_path
           ]
-          self.m.step('avd uninstall %s' % avd_config,
-                      ['vpython3', '-u'] + uninstall_commands)
+          defer(self.m.step, 'avd uninstall %s' % avd_config,
+                ['vpython3', '-u'] + uninstall_commands)

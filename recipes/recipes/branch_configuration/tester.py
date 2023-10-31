@@ -42,6 +42,7 @@ DEPS = [
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
+    'recipe_engine/defer',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
@@ -153,11 +154,11 @@ def RunSteps(api, properties):
 
         with api.step.nest('verify'):
           try:
-            with api.step.defer_results():
+            with api.defer.context(collect_step_name=None) as defer:
               for entry_point in properties.starlark_entry_points:
                 for subcommand in ('generate', 'validate'):
                   cmd = ['lucicfg', subcommand, entry_point]
-                  api.step(' '.join(cmd), cmd)
+                  defer(api.step, ' '.join(cmd), cmd)
           except api.step.StepFailure:
             bad_branch_configs.append(branch_config.name)
 

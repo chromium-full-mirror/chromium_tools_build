@@ -190,7 +190,7 @@ class InteractionsTests(DevToolsTests):
     if self.api.tryserver.is_tryserver:
       with self.api.step.nest(f'{self.step_name} shards results') \
         as presentation:
-        self.api.chromium_swarming.collect_task(self.tasks[0]).get_result()
+        self.api.chromium_swarming.collect_task(self.tasks[0])
       if presentation.status != self.api.step.SUCCESS:
         if presentation.status == self.api.step.EXCEPTION:
           return Results(infra_failures=[f'Infra Failure in {self.step_name}'])
@@ -345,10 +345,9 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
 
 def run_script(api, step_name, script, args=None):
-  with api.step.defer_results():
-    sc_path = api.path['checkout'].join('scripts', 'test', script)
-    args = ["vpython3", "-u", sc_path] + (args or [])
-    api.step(step_name, args)
+  sc_path = api.path['checkout'].join('scripts', 'test', script)
+  args = ["vpython3", "-u", sc_path] + (args or [])
+  api.step(step_name, args)
 
 
 def run_unit_tests(api, builder_config):

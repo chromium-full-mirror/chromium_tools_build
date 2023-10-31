@@ -2460,7 +2460,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 out of 13 aggregated steps failed: Step('unittests') (retcode: 1)"
+      "humanReason": "Step('unittests') (retcode: 1)"
     },
     "name": "$result"
   }

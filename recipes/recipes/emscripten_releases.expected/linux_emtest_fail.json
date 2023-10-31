@@ -45,7 +45,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 out of 2 aggregated steps failed: Step('Emscripten testsuite (upstream)') (retcode: 1)"
+      "humanReason": "Step('Emscripten testsuite (upstream)') (retcode: 1)"
     },
     "name": "$result"
   }

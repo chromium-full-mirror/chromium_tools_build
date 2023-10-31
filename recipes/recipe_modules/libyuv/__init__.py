@@ -10,6 +10,7 @@ DEPS = [
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
+    'recipe_engine/defer',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/platform',

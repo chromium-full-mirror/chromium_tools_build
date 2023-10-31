@@ -55,14 +55,13 @@ def RunSteps(api, properties):
           api.step('fetch configs', fetch_cmd, infra_step=True)
 
           with api.step.nest('verify'):
-            with api.step.defer_results():
-              for cfg in p.cfg_file:
-                cfg = repo_path.join(cfg)
-                # Mock the cfg files as existing for the purposes of testing.
-                if api.properties.get('mock_cfgs', False):
-                  api.path.mock_add_paths(cfg)
-                if not api.path.exists(cfg):
-                  bad_reclient_configs.append(p.name + ": " + str(cfg))
+            for cfg in p.cfg_file:
+              cfg = repo_path.join(cfg)
+              # Mock the cfg files as existing for the purposes of testing.
+              if api.properties.get('mock_cfgs', False):
+                api.path.mock_add_paths(cfg)
+              if not api.path.exists(cfg):
+                bad_reclient_configs.append(p.name + ": " + str(cfg))
         except api.step.StepFailure:
           bad_reclient_configs.append(p.name + ": failure during config fetch")
 

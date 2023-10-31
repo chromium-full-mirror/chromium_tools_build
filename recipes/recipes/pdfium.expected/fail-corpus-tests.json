@@ -1693,7 +1693,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "1 out of 12 aggregated steps failed: Step('corpus tests') (retcode: 1)"
+      "humanReason": "Step('corpus tests') (retcode: 1)"
     },
     "name": "$result"
   }
