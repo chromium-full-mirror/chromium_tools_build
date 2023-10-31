@@ -1328,7 +1328,8 @@ class ChromiumApi(recipe_api.RecipeApi):
                 android_version_code=None,
                 android_version_name=None,
                 gn_args_location=None,
-                gn_args_max_text_lines=None):
+                gn_args_max_text_lines=None,
+                raise_on_failure=False):
     """Lookup the GN args for the build.
 
     Args:
@@ -1353,9 +1354,14 @@ class ChromiumApi(recipe_api.RecipeApi):
         gn.TEXT or gn.LOGS, respectively.
       gn_args_max_text_lines: The maximum number of lines of GN args to display
         in the step_text when using the default behavior for displaying GN args.
+      raise_on_failure: Whether to raise StepFailure when mb lookup command
+        fails.
 
     Returns:
       The content of the args.gn file.
+
+    Raises:
+      StepFailure when raise_on_failure is set and mb lookup command fails.
     """
     name = name or 'lookup GN args'
     additional_args = ['--recursive' if recursive else '--quiet']
@@ -1403,6 +1409,9 @@ class ChromiumApi(recipe_api.RecipeApi):
             stdout=self.m.raw_io.output_text(),
             step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
                 lookup_test_data))
+
+    if raise_on_failure:
+      self.m.step.raise_on_failure(result)
 
     gn_args = result.stdout
     if gn_args is not None:

@@ -23,7 +23,8 @@ def RunSteps(api):
       chromium.BuilderId.create_for_group('test-group', 'test-builder'),
       recursive=api.properties.get('recursive', False),
       use_goma=False,
-      use_reclient=True)
+      use_reclient=True,
+      raise_on_failure=True)
   expected_gn_args = api.properties.get('expected_gn_args')
   api.assertions.assertEqual(gn_args, expected_gn_args)
 
@@ -71,4 +72,14 @@ def GenTests(api):
       api.post_process(post_process.StepTextContains, 'lookup GN args',
                        expected_step_text),
       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'raise_on_failure',
+      api.properties(expected_gn_args=gn_args),
+      api.step_data('lookup GN args', retcode=1, STATUS='FAILURE'),
+      api.post_process(post_process.StepCommandContains, 'lookup GN args',
+                       ['--quiet']),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
