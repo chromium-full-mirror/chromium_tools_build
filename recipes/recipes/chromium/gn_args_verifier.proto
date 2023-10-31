@@ -1,0 +1,26 @@
+// Copyright 2023 The LUCI Authors. All rights reserved.
+// Use of this source code is governed under the Apache License, Version 2.0
+// that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.chromium.gn_args_verifier;
+
+// Next ID: 3
+message InputProperties {
+
+  // Required, the directory where the per-builder config files are located
+  //
+  // The path is relative to the root of the repo. For each builder, the
+  // relative path to the GN args file from the builder config directory must
+  // be <bucket>/<builder>/gn-args.json. And the location of the GN args file
+  // should be recorded in gn_args_locations.json file in builder config
+  // directory.
+  string builder_config_directory = 1;
+
+  // Required, a list of file paths to the mb config file that contains the GN
+  // args before migrated to starlark definition.
+  //
+  // The path is relative to the root of the checkout directory.
+  repeated string mb_config_paths = 2;
+}
