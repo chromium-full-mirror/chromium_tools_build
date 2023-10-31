@@ -831,7 +831,7 @@
     },
     "name": "hello_world on Mac-10.13",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br/>Test command:<br/><code>--foo 42</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

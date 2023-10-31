@@ -1875,7 +1875,7 @@
     },
     "name": "telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/><code>--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1984,7 +1984,7 @@
     },
     "name": "telemetry_gpu_unittests amd on AMD GPU on Windows",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/><code>--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2093,7 +2093,7 @@
     },
     "name": "telemetry_gpu_unittests vmware on (15ad) GPU on Windows",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/><code>--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

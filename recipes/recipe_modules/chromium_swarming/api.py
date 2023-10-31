@@ -62,6 +62,15 @@ def _text_for_task(task):
   elif dimensions.get('os'):
     lines.append('Run on OS: %r' % dimensions['os'])
 
+  cmd = ' '.join(task.base_command + task.extra_args)
+  if len(cmd) <= 1000:
+    lines.append('Test command:')
+    lines.append(
+        '<code>' + ' '.join(task.base_command + task.extra_args) + '</code>')
+  else:
+    lines.append('Test command too long to list. See "shard #0" link below '
+                 'for the full invocation.')
+  lines.append('')
   return '<br/>'.join(lines)
 
 
@@ -1780,6 +1789,7 @@ class SwarmingTask:
     """
     self._server = server
     self._trigger_output = None
+    self.base_command = request[0].command
     self.build_properties = build_properties
     self.builder_info = builder_info
     self.collect_step = collect_step

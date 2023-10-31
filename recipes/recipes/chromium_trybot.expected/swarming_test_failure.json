@@ -2326,7 +2326,7 @@
     },
     "name": "gl_tests (with patch)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/>Test command:<br/><code>--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -2949,7 +2949,7 @@
     },
     "name": "gl_tests (retry shards with patch)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/>Test command:<br/><code>--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",

@@ -19,7 +19,8 @@ def RunSteps(api):
       name=api.properties.get('task_name', 'sample_task'),
       cas_input_root=cas_input_root,
       optional_dimensions=opt_dims,
-      env_prefixes={'FOO': ['some/path']})
+      env_prefixes={'FOO': ['some/path']},
+      extra_args=list(api.properties.get('extra_args', [])))
   if api.properties.get('wait_for_capacity'):
     task.wait_for_capacity = True
 
@@ -122,4 +123,14 @@ def GenTests(api):
                      ['Missing or invalid summary']),
       api.post_process(post_process.DropExpectation),
       api.expect_status('INFRA_FAILURE'),
+  )
+
+
+  yield api.test(
+      'many_args',
+      api.properties(
+          extra_args=['--an-extra-arg-%d' % i for i in range(100)]),
+      api.post_process(post_process.StepTextContains,
+                       'sample_task', ['Test command too long to list']),
+      api.post_process(post_process.DropExpectation),
   )

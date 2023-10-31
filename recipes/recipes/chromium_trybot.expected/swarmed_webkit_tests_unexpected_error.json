@@ -2325,7 +2325,7 @@
     },
     "name": "blink_web_tests (with patch)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/>Test command:<br/><code>--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s<br/>deterministic failures [caused step to fail]:<br/>Test.One<br/>@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2986,7 +2986,7 @@
     },
     "name": "blink_web_tests (retry shards with patch)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Linux'<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Linux'<br/>Test command:<br/><code>--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

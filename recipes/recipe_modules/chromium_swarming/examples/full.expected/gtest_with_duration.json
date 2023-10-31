@@ -813,7 +813,7 @@
     },
     "name": "hello_world on Windows-10",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows-10'@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/><code>--foo 42</code><br/>@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
