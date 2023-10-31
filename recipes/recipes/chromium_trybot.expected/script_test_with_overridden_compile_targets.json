@@ -1741,6 +1741,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "record test suite statuses",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"script_test\": \"Success\"}@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]

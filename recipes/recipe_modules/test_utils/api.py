@@ -980,9 +980,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
       suggests that the error is due to an issue with top of tree, and should
       not cause the CL to fail.
     """
-    valid_results, ignored_failures = (
-        test_suite.without_patch_failures_to_ignore())
-    if not valid_results:
+    valid, new_failures = test_suite.deterministic_without_patch_failures()
+    if not valid:
       result = self.m.step.empty(
           '%s (test results summary)' % test_suite.name,
           step_text=('\n%s (without patch) did not produce valid results. '
@@ -992,26 +991,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
       self.m.tryserver.set_test_failure_tryjob_result()
       return False
 
-    valid_results, failures = test_suite.with_patch_failures_including_retry()
-    assert valid_results, (
-        "If there were no valid results, then there was no "
-        "point in running 'without patch'. This is a recipe bug.")
-
-    # The FAILURE and NOTRUN test statuses are both considered deterministic
-    # failures. But some suites can have trouble during later phases, causing
-    # some tests that exited with FAILURE in the 'with patch' phase to exit
-    # with NOTRUN in the 'without patch' phase. So when a 'without patch' test
-    # fails with a different status, don't ignore it.
-    if ignored_failures:
-      with_patch_notruns = test_suite.notrun_failures('with patch')
-      without_patch_notruns = test_suite.notrun_failures('without patch')
-      for ignored_failure in ignored_failures.copy():
-        if ((ignored_failure in with_patch_notruns) !=
-            (ignored_failure in without_patch_notruns)):
-          ignored_failures.remove(ignored_failure)
-
-    new_failures = failures - ignored_failures
-
+    _, ignored_failures = test_suite.without_patch_failures_to_ignore()
     return self._summarize_new_and_ignored_failures(
         test_suite, new_failures, ignored_failures,
         test_suite.known_luci_analysis_flaky_failures, self.NEW_FAILURES_TEXT,
@@ -1076,11 +1056,12 @@ class TestUtilsApi(recipe_api.RecipeApi):
     """
     return GTestResultsOutputPlaceholder(self, add_json_log, leak_to=leak_to)
 
-  def record_unsuccessful_suites(self, tests):
-    step_result = self.m.step.empty('record unsuccessful test suites')
-    step_result.presentation.properties['failed_test_targets'] = [
-        test.target_name for test in tests
-    ]
+  def record_suite_statuses(self, test_suites, suffix):
+    step_result = self.m.step.empty('record test suite statuses')
+    step_result.presentation.properties['test_target_status'] = {}
+    for test_suite in test_suites:
+      step_result.presentation.properties['test_target_status'][
+          test_suite.target_name] = test_suite.get_status(suffix)
 
 
 class TestGroup:

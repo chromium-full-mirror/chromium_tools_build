@@ -1890,6 +1890,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "record test suite statuses",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"angle_end2end_tests\": \"Success\"}@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]

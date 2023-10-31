@@ -951,6 +951,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "record test suite statuses",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"test_script_with_broken_tests\": \"Failure\"}@@@"
+    ]
+  },
+  {
     "failure": {
       "failure": {},
       "humanReason": "1 Test Suite(s) failed.\n\n**test_script_with_broken_tests** failed because of:\n\n- FailSuite.Test1\n\n- FlakySuite.TestA"

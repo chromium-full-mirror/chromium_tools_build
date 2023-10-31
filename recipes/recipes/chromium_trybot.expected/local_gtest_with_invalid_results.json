@@ -2815,9 +2815,9 @@
   },
   {
     "cmd": [],
-    "name": "record unsuccessful test suites",
+    "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@failed_test_targets@[\"base_unittests\"]@@@"
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"base_unittests\": \"Failure\"}@@@"
     ]
   },
   {

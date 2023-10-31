@@ -305,6 +305,95 @@ def GenTests(api):
   )
 
   yield api.test(
+      'failed_test_on_tester',
+      api.platform('linux', 64),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          parent_buildername='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_tester(
+              builder_group='fake-group',
+              builder='fake-tester',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket='fake-gs-bucket',
+              ),
+          ).with_parent(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarm_hashes={
+          'base_unittests': '[dummy hash for base_unittests/size]'
+      }),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      }
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', '', failures=['Test.One']),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.MustRun, 'record test suite statuses'),
+      api.post_process(post_process.PropertyEquals, 'test_target_status',
+                       {'base_unittests': 'Failure'}),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'success_test_on_tester',
+      api.platform('linux', 64),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          parent_buildername='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_tester(
+              builder_group='fake-group',
+              builder='fake-tester',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket='fake-gs-bucket',
+              ),
+          ).with_parent(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarm_hashes={
+          'base_unittests': '[dummy hash for base_unittests/size]'
+      }),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      }
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', '', successes=['Test.One']),
+      api.post_process(post_process.MustRun, 'record test suite statuses'),
+      api.post_process(post_process.PropertyEquals, 'test_target_status',
+                       {'base_unittests': 'Success'}),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'mac-thin-tester',
       api.platform('linux', 64),
       api.chromium.ci_build(builder_group='fake-group', builder='fake-tester'),

@@ -1058,6 +1058,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "record test suite statuses",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"telemetry_gpu_unittests\": \"Failure\"}@@@"
+    ]
+  },
+  {
     "failure": {
       "failure": {},
       "humanReason": "1 Test Suite(s) failed.\n\n**telemetry_gpu_unittests** failed because of:\n\n- Test.One"

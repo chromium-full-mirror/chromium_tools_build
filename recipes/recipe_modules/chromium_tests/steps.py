@@ -48,7 +48,8 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
 
-from RECIPE_MODULES.build import chromium_swarming, test_utils
+from RECIPE_MODULES.build import chromium_swarming
+from RECIPE_MODULES.build.test_utils import util
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, command_args, enum,
                                              mapping, sequence)
 
@@ -73,6 +74,10 @@ ALLOWED_RESULT_HANDLER_NAMES = ('default', 'layout tests', 'fake')
 RDB_INVOCATION_NAME_RE = re.compile(r'rdb-stream: included "(\S+)" in "\S+"')
 
 INCLUDE_CI_FOOTER = 'Include-Ci-Only-Tests'
+
+INVALID_SUITE_STATUS = 'Invalid'
+FAILURE_SUITE_STATUS = 'Failure'
+SUCCESS_SUITE_STATUS = 'Success'
 
 
 def _merge_arg(args, flag, value):
@@ -474,14 +479,14 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def get_rdb_results(self, suffix: str) -> test_utils.RDBResults:
+  def get_rdb_results(self, suffix: str) -> util.RDBPerSuiteResults:
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
   def update_rdb_results(
       self,
       suffix: str,
-      results: test_utils.RDBResults,
+      results: util.RDBPerSuiteResults,
   ) -> None:
     raise NotImplementedError()  # pragma: no cover
 
@@ -615,6 +620,66 @@ class AbstractTest(abc.ABC):
           break
 
     return (True, ignored_failures)
+
+  def get_status(self, suffix: str) -> str:
+    """Returns the status of the test for the given suffix
+
+    Determines whether the test suite has succeeded, failed, or has invalid
+    results for the provided suffix, checking exonerations for without
+    patch and retrying shards
+
+    Args:
+      suffix: String suffix representing the phase of the build used to
+      determine which phases can be used to exonerate the suite. Expected to
+      be 'with patch' to allow 'without patch' to exonerate
+
+    Returns: A string designating the suite's current status
+    """
+    if suffix == 'with patch':
+      valid, test_failures = self.with_patch_failures_including_retry()
+      if not valid:
+        return INVALID_SUITE_STATUS
+      if not test_failures:
+        return SUCCESS_SUITE_STATUS
+      # Check if the without patch exonerates this suite
+      valid, without_patch_failures = self.deterministic_without_patch_failures(
+      )
+      if valid and not without_patch_failures:
+        return SUCCESS_SUITE_STATUS
+      return FAILURE_SUITE_STATUS
+    valid, test_failures = self.failures_including_retry(suffix)
+    if not valid:
+      return INVALID_SUITE_STATUS
+    if test_failures:
+      return FAILURE_SUITE_STATUS
+    return SUCCESS_SUITE_STATUS
+
+  def deterministic_without_patch_failures(
+      self) -> Tuple[bool, Optional[AbstractSet[str]]]:
+    # Check if the suite succeeded in without patch
+    valid_results, ignored_failures = self.without_patch_failures_to_ignore()
+    if not valid_results:
+      return False, None
+
+    valid_results, test_failures = self.with_patch_failures_including_retry()
+    assert valid_results, (
+        "If there were no valid results, then there was no "
+        "point in running 'without patch'. This is a recipe bug.")
+
+    # The FAILURE and NOTRUN test statuses are both considered deterministic
+    # failures. But some suites can have trouble during later phases, causing
+    # some tests that exited with FAILURE in the 'with patch' phase to exit
+    # with NOTRUN in the 'without patch' phase. So when a 'without patch' test
+    # fails with a different status, don't ignore it.
+    if ignored_failures:
+      with_patch_notruns = self.notrun_failures('with patch')
+      without_patch_notruns = self.notrun_failures('without patch')
+      for ignored_failure in ignored_failures.copy():
+        if ((ignored_failure in with_patch_notruns) !=
+            (ignored_failure in without_patch_notruns)):
+          ignored_failures.remove(ignored_failure)
+    # Remove the tests that failed wo patch
+    return True, test_failures - ignored_failures
 
 
 @attrs()
@@ -837,13 +902,13 @@ class Test(AbstractTest):
     """Returns the chromium_tests RecipeApi object associated with the test."""
     return self._chromium_tests_api
 
-  def get_rdb_results(self, suffix: str) -> test_utils.RDBResults:
+  def get_rdb_results(self, suffix: str) -> util.RDBPerSuiteResults:
     return self._rdb_results.get(suffix)
 
   def update_rdb_results(
       self,
       suffix: str,
-      results: test_utils.RDBResults,
+      results: util.RDBPerSuiteResults,
   ) -> None:
     self._rdb_results[suffix] = results
 
@@ -1432,13 +1497,13 @@ class ExperimentalTest(TestWrapper):
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
     return super().get_invocation_names(self._experimental_suffix(suffix))
 
-  def get_rdb_results(self, suffix: str) -> test_utils.RDBResults:
+  def get_rdb_results(self, suffix: str) -> util.RDBPerSuiteResults:
     return super().get_rdb_results(self._experimental_suffix(suffix))
 
   def update_rdb_results(
       self,
       suffix: str,
-      results: test_utils.RDBResults,
+      results: util.RDBPerSuiteResults,
   ) -> None:
     return super().update_rdb_results(
         self._experimental_suffix(suffix), results)

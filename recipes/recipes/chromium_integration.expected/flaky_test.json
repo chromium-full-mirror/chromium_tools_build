@@ -3124,6 +3124,13 @@
   },
   {
     "cmd": [],
+    "name": "record test suite statuses",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"blink_web_tests\": \"Success\"}@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "Test statistics",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>Stats<br/>Total shards: 2<br/>Total deduped shards: 0<br/><br/>Total runtime: 1m 3s<br/>Total saved runtime from deduping: 0s<br/>@@@",

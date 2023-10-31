@@ -4406,9 +4406,9 @@
   },
   {
     "cmd": [],
-    "name": "record unsuccessful test suites",
+    "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@failed_test_targets@[\"telemetry_gpu_unittests\"]@@@"
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"telemetry_gpu_unittests\": \"Failure\"}@@@"
     ]
   },
   {

@@ -1088,6 +1088,13 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "record test suite statuses",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@test_target_status@{\"aura_unittests\": \"Success\", \"browser_tests\": \"Success\"}@@@"
+    ]
+  },
+  {
     "name": "$result"
   }
 ]
