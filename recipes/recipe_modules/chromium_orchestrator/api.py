@@ -65,6 +65,11 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # If a without patch compilator build is triggered, this will be updated
     # to the without patch compilator build's ID
     self.current_compilator_buildbucket_id = None
+    # By default the compilators are canceled automatially when the parent
+    # orchestrator is canceled. For other experimental situations, this
+    # automatic cancelation is disabled and `can_outlive_parent` is set to
+    # True when the compilator is triggered.
+    self.disable_auto_compilator_cancels = False
 
     # Build proto to be assigned when triggering a without patch compilator
     # build. This needs to be defined here so that the
@@ -105,13 +110,15 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       # By this point the without_patch_build has already been cancelled through
       # buildbucket.cancel() and the compilator swarming task will finish
       # shutting down on its own time.
-      if not self.triggered_without_patch_build_early:
-        # crbug.com/1271287#c22
-        # Wait for compilator task overhead to complete
-        self.m.swarming.collect(
-            name=COMPILATOR_SWARMING_TASK_COLLECT_STEP,
-            tasks=[comp_build.infra.swarming.task_id],
-            timeout="4m")
+      if (self.triggered_without_patch_build_early or
+          self.disable_auto_compilator_cancels):
+        return raw_result
+      # crbug.com/1271287#c22
+      # Wait for compilator task overhead to complete
+      self.m.swarming.collect(
+          name=COMPILATOR_SWARMING_TASK_COLLECT_STEP,
+          tasks=[comp_build.infra.swarming.task_id],
+          timeout="4m")
 
     return raw_result
 
@@ -140,12 +147,20 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     }
 
     gitiles_commit = None
+    # When this enabled, triggered compilators will not be automatically
+    # canceled when the parent orchestrators are canceled.
+    self.disable_auto_compilator_cancels = (
+        'chromium.compilator_can_outlive_parent'
+        in self.m.buildbucket.build.input.experiments)
 
     # Pass in any input props
     compilator_properties.update(self.m.cq.props_for_child_build)
     self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)
-    build = self._trigger_compilator('trigger compilator (with patch)',
-                                     compilator_properties, gitiles_commit)
+    build = self._trigger_compilator(
+        'trigger compilator (with patch)',
+        compilator_properties,
+        gitiles_commit,
+        can_outlive_parent=self.disable_auto_compilator_cancels)
 
     # Now that we've finished the Orchestrator's bot_update and analyze,
     # let's check on the triggered compilator and display its steps (until
@@ -284,7 +299,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       )
 
     if not failing_test_suites:
-      if self.without_patch_build and trigger_without_patch_compile_early:
+      if (self.without_patch_build and trigger_without_patch_compile_early and
+          not self.disable_auto_compilator_cancels):
         cancel_without_patch_build(self.without_patch_build.id)
       self.m.chromium_swarming.report_stats()
       # There could be exonerated failed tests from FindIt flakes
@@ -324,7 +340,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         builder_config, affected_files,
         self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir)):
-      if self.without_patch_build and trigger_without_patch_compile_early:
+      if (self.without_patch_build and trigger_without_patch_compile_early and
+          not self.disable_auto_compilator_cancels):
         cancel_without_patch_build(self.without_patch_build.id)
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
 
@@ -356,8 +373,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             dict(comp_output.override_deps))
 
       self.without_patch_build = self._trigger_compilator(
-          'trigger compilator (without patch)', compilator_properties,
-          gitiles_commit)
+          'trigger compilator (without patch)',
+          compilator_properties,
+          gitiles_commit,
+          can_outlive_parent=self.disable_auto_compilator_cancels)
 
     # Display steps of triggered (without patch) compilator until it outputs
     # swarming trigger props for the tests to retrigger without patch
@@ -430,7 +449,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
                           step_name,
                           compilator_properties,
                           gitiles_commit,
-                          can_outlive_parent=None):
+                          can_outlive_parent=False):
     if self.m.led.launched_by_led:
       build = self._trigger_compilator_led_build(step_name,
                                                  compilator_properties)
