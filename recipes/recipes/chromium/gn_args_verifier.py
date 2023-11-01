@@ -108,19 +108,25 @@ def RunSteps(api, properties):
           builder_group_by_gn_args_file_path[file_path],
           file_path.split('/')[1])
       file_path_by_builder_id[builder_id] = file_path
+      mb_step_name = f'mb lookup - {str(builder_id)}'
       if 'phases' in gn_args_json:
         phased_gn_args = {}
         for phase in gn_args_json['phases']:
-          phased_gn_args[phase] = _mb_lookup(
-              api,
+          phased_gn_args[phase] = api.chromium.mb_lookup(
               builder_id,
-              mb_config_path,
-              phase,
-          )
+              name=f'{mb_step_name}, phase: {phase}',
+              mb_config_path=mb_config_path,
+              phase=phase,
+              use_goma=False,
+              raise_on_failure=True)
         gn_args_by_builder_id[builder_id] = phased_gn_args
       else:
-        gn_args_by_builder_id[builder_id] = _mb_lookup(api, builder_id,
-                                                       mb_config_path)
+        gn_args_by_builder_id[builder_id] = api.chromium.mb_lookup(
+            builder_id,
+            name=mb_step_name,
+            mb_config_path=mb_config_path,
+            use_goma=False,
+            raise_on_failure=True)
 
   with api.context(cwd=checkout_root):
     api.bot_update.deapply_patch(update_result)
@@ -139,19 +145,31 @@ def RunSteps(api, properties):
       if isinstance(post_patch_args, dict):
         for phase, phase_args in post_patch_args.items():
           with api.step.nest(f'phase: {phase}') as phase_presentation:
-            pre_patch_args = _mb_lookup(
-                api,
-                builder_id,
-                mb_config_path,
-                phase,
-            )
+            try:
+              pre_patch_args = api.chromium.mb_lookup(
+                  builder_id,
+                  mb_config_path=mb_config_path,
+                  phase=phase,
+                  use_goma=False,
+                  raise_on_failure=True)
+            except api.step.StepFailure:
+              success = False
+              continue
             if not _verify_gn_args(api, pre_patch_args, phase_args,
                                    phase_presentation):
               success = False
       else:
-        pre_patch_args = _mb_lookup(api, builder_id, mb_config_path)
-        success = _verify_gn_args(api, pre_patch_args, post_patch_args,
-                                  presentation)
+        try:
+          pre_patch_args = api.chromium.mb_lookup(
+              builder_id,
+              mb_config_path=mb_config_path,
+              use_goma=False,
+              raise_on_failure=True)
+        except api.step.StepFailure:
+          success = False
+        if success:
+          success = _verify_gn_args(api, pre_patch_args, post_patch_args,
+                                    presentation)
       if not success:
         failures.append(str(builder_id))
 
@@ -160,26 +178,6 @@ def RunSteps(api, properties):
         status=common_pb.FAILURE,
         elements=list(failures),
         header='verification failed for the following builders:')
-
-
-def _mb_lookup(api,
-               builder_id: BuilderId,
-               mb_config_path: Path,
-               phase: Optional[str] = None) -> str:
-  step_name = f'mb lookup - {str(builder_id)}'
-  if phase:
-    step_name += f', phase: {phase}'
-  try:
-    gn_args = api.chromium.mb_lookup(
-        builder_id,
-        name=step_name,
-        mb_config_path=mb_config_path,
-        phase=phase,
-        use_goma=False,
-        raise_on_failure=True)
-  except api.step.StepFailure:
-    return ''
-  return gn_args
 
 
 def _verify_gn_args(api, pre_patch_args: str, post_patch_args: str,
@@ -260,10 +258,13 @@ def GenTests(api):
     # Whether the builder has already been migrated to Starlark GN args
     migrated = attrib(bool, default=False)
 
-    # Whether the mb_lookup step will fail for the builder
+    # Whether the mb_lookup step will fail while patch applied
+    mb_lookup_failure_with_patch = attrib(bool, default=False)
+
+    # Whether the mb_lookup step will fail without patch
     mb_lookup_failure = attrib(bool, default=False)
 
-    # The name of the phase for which the mb_lookup step will fail
+    # The phase for which the mb_lookup step will fail without patch
     mb_lookup_phase_failure = attrib(str, default='')
 
   def gn_args_test_data(
@@ -307,16 +308,29 @@ def GenTests(api):
           api.file.read_json(sl_gn_args))
       if 'phases' in sl_gn_args:
         for phase, phase_args in sl_gn_args['phases'].items():
+          step_name = (
+              f'process data from patch.mb lookup - {group}:{builder}, phase: {phase}'
+          )
+          if builder_data.mb_lookup_failure_with_patch:
+            test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
+            break
+
           test_steps += api.step_data(
-              'process data from patch.'
-              f'mb lookup - {group}:{builder}, phase: {phase}',
+              step_name,
               stdout=api.raw_io.output_text(
                   dict_to_gn_args_str(phase_args['gn_args'])))
       else:
-        test_steps += api.step_data(
-            f'process data from patch.mb lookup - {group}:{builder}',
-            stdout=api.raw_io.output_text(
-                dict_to_gn_args_str(sl_gn_args['gn_args'])))
+        step_name = f'process data from patch.mb lookup - {group}:{builder}'
+        if builder_data.mb_lookup_failure_with_patch:
+          test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
+        else:
+          test_steps += api.step_data(
+              step_name,
+              stdout=api.raw_io.output_text(
+                  dict_to_gn_args_str(sl_gn_args['gn_args'])))
+
+      if builder_data.mb_lookup_failure_with_patch:
+        break
 
       # Setup mb config GN args test data
       if builder_data.migrated:
@@ -332,7 +346,7 @@ def GenTests(api):
         if 'phases' in mb_gn_args:
           for phase, phase_args in mb_gn_args['phases'].items():
             step_name = (
-                f'verify {bucket}/{builder}/gn-args.json.phase: {phase}.mb lookup - {group}:{builder}, phase: {phase}'
+                f'verify {bucket}/{builder}/gn-args.json.phase: {phase}.lookup GN args'
             )
             if phase == builder_data.mb_lookup_phase_failure:
               test_steps += api.step_data(
@@ -343,9 +357,7 @@ def GenTests(api):
                   stdout=api.raw_io.output_text(
                       dict_to_gn_args_str(phase_args['gn_args'])))
         else:
-          step_name = (
-              f'verify {bucket}/{builder}/gn-args.json.mb lookup - {group}:{builder}'
-          )
+          step_name = (f'verify {bucket}/{builder}/gn-args.json.lookup GN args')
           if builder_data.mb_lookup_failure:
             test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
           else:
@@ -511,7 +523,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'mb_lookup_error',
+      'mb_lookup_failure_without_patch',
       common_test_data(api),
       gn_args_test_data(api, [
           BuilderDataEntry(
@@ -561,6 +573,63 @@ def GenTests(api):
                        'verify bucket1/builder1/gn-args.json'),
       api.post_process(post_process.StepFailure,
                        'verify bucket2/builder2/gn-args.json.phase: phase2'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'mb_lookup_failure_with_patch_non_phased',
+      common_test_data(api),
+      gn_args_test_data(api, [
+          BuilderDataEntry(
+              group='group1',
+              bucket='bucket1',
+              builder='builder1',
+              mb_lookup_failure_with_patch=True),
+      ]),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'mb_lookup_failure_with_patch_phased',
+      common_test_data(api),
+      gn_args_test_data(api, [
+          BuilderDataEntry(
+              group='group2',
+              bucket='bucket2',
+              builder='builder2',
+              mb_lookup_failure_with_patch=True,
+              sl_gn_args={
+                  'phases': {
+                      'phase1': {
+                          'gn_args': {
+                              'is_phase1': True,
+                          }
+                      },
+                      'phase2': {
+                          'gn_args': {
+                              'is_phase2': True,
+                          }
+                      }
+                  }
+              },
+              mb_gn_args={
+                  'phases': {
+                      'phase1': {
+                          'gn_args': {
+                              'is_phase1': True,
+                          }
+                      },
+                      'phase2': {
+                          'gn_args': {
+                              'is_phase2': True,
+                          }
+                      }
+                  }
+              },
+          ),
+      ]),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
