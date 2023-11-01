@@ -31,6 +31,8 @@ TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
 # Processing 10% of 1w-worth test durations takes 7h on a 32-core bot.
 TEST_DURATION_DATA_PERCENTAGE = 1
 
+LOGGED_REJECTIONS = 100
+
 _CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
 
 
@@ -106,6 +108,7 @@ def _analyze_builder_suite(api, builder, test_suite, rejections_dir,
           f'-durations={durations_dir}',
           f'-builder={builder}',
           f'-testSuite={test_suite}',
+          f'-log-furthest={LOGGED_REJECTIONS}',
       ],
       stdout=api.raw_io.output_text())
   match = re.search(r'(\d+\.\d+)%\s*\|\s*<?(\d+\.\d+)%', step_result.stdout)
@@ -251,6 +254,9 @@ Rejection:
           post_process.SummaryMarkdown,
           'Analysis Summary (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
       ),
+      api.post_process(post_process.StepCommandContains,
+                       'analyze suite_fails_to_complete on mac',
+                       ['-log-furthest=100']),
       api.post_process(post_process.StepCommandContains, 'fetch rejections',
                        ['-from=2012-04-15', '-to=2012-05-13']),
       api.post_process(post_process.StepCommandContains, 'fetch rejections (2)',
