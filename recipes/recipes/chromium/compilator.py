@@ -68,10 +68,10 @@ def compilator_steps(api, properties):
 
     api.chromium_tests.report_builders(orch_builder_config)
 
-    # swarming_targets implies that this compilator build must be compiled
-    # without a patch so that the orchestrator can retry these swarming tests
+    # test_targets implies that this compilator build must be compiled
+    # without a patch so that the orchestrator can retry these tests
     # without patch
-    if properties.swarming_targets:
+    if properties.test_targets:
       api.chromium_tests.configure_build(
           orch_builder_config,
       )
@@ -90,7 +90,7 @@ def compilator_steps(api, properties):
         api.code_coverage.src_dir = api.chromium_checkout.src_dir
         api.code_coverage.instrument([])
 
-      # properties.swarming_targets should only be targets required for
+      # properties.test_targets should only be targets required for
       # isolated swarming tests, but a non-isolated swarming test could,
       # although rare, have a target_name that is also used by an isolated
       # swarming test. Checking for t.uses_isolate makes sure that we don't
@@ -98,7 +98,7 @@ def compilator_steps(api, properties):
       # build.
       test_suites = [
           t for t in targets_config.all_tests
-          if t.target_name in properties.swarming_targets and t.uses_isolate
+          if t.target_name in properties.test_targets and t.uses_isolate
       ]
       raw_result, execution_info = (
           api.chromium_tests.build_and_isolate_failing_tests(
@@ -134,9 +134,9 @@ def compilator_steps(api, properties):
 
     if any(t.uses_isolate for t in test_suites):
       affected_files_to_archive = []
-      # If properties.swarming_targets exist, it means this build is doing a
+      # If properties.test_targets exist, it means this build is doing a
       # "without patch" so there's no affected files to archive
-      if (not properties.swarming_targets and
+      if (not properties.test_targets and
           not api.code_coverage.skipping_coverage):
         deleted_files = get_deleted_files(api, task.affected_files)
         affected_files_to_archive = [
@@ -674,7 +674,7 @@ def GenTests(api):
               orchestrator=InputProperties.Orchestrator(
                   builder_name='fake-orchestrator',
                   builder_group='fake-try-group'),
-              swarming_targets=['browser_tests'])),
+              test_targets=['browser_tests'])),
       override_test_spec(),
       api.post_process(post_process.StepTextContains, 'report builders', [
           "running tester 'fake-tester' on group 'fake-group' against "
