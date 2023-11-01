@@ -37,7 +37,7 @@ from RECIPE_MODULES.recipe_engine.swarming.api import (TaskRequest,
 from RECIPE_MODULES.recipe_engine.swarming.state import TaskState
 from recipe_engine import post_process
 from recipe_engine.config import Set
-from recipe_engine.recipe_api import Property, composite_step
+from recipe_engine.recipe_api import Property
 
 PROPERTIES = {
     'clang': Property(default=False, kind=bool),
@@ -509,7 +509,6 @@ class _Swarming:
                                                    checkout_path,
                                                    *archive_paths)
 
-  @composite_step
   def request_task(self, test_request, *, env):
     assert test_request.step_name not in self.requests, (
         f'Duplicate request for "{test_request.step_name}"')
@@ -548,7 +547,6 @@ class _Swarming:
     )
     self.requests[request.name] = request
 
-  @composite_step
   def trigger_tasks(self):
     # Gather untriggered task requests.
     task_requests = [
@@ -612,7 +610,6 @@ class _Swarming:
     assert forward_progress
     return True, expired_test_requests
 
-  @composite_step
   def _report_task_result(self, result):
     if result.state != TaskState.COMPLETED:
       result.analyze()

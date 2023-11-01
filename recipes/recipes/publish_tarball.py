@@ -93,7 +93,6 @@ def published_all_tarballs(version, ls_result):
           published_nacl_tarball(version, ls_result))
 
 
-@recipe_api.composite_step
 def export_tarball(api, args, source, destination, step_name_suffix):
   try:
     temp_dir = api.path.mkdtemp('export_tarball')
@@ -140,7 +139,6 @@ def copytree_checkout(api):
     api.file.rmtree('rmtree temp dir', temp_dir)
 
 
-@recipe_api.composite_step
 def export_lite_tarball(api, version):
   # Make destructive file operations on the copy of the checkout.
   with copytree_checkout(api) as dest_dir:
@@ -215,7 +213,6 @@ def export_lite_tarball(api, version):
         'lite')
 
 
-@recipe_api.composite_step
 def export_nacl_tarball(api, version):
   # Make destructive file operations on the copy of the checkout.
   with copytree_checkout(api) as dest_dir:
@@ -245,7 +242,6 @@ def export_nacl_tarball(api, version):
         'nacl')
 
 
-@recipe_api.composite_step
 def fetch_pgo_profiles(api):
   cmd = [
       'python3',

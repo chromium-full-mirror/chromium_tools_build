@@ -1451,7 +1451,6 @@ class ExperimentalTest(TestWrapper):
       pass
 
   #override
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     try:
       return super().run(self._experimental_suffix(suffix), info_messages)
@@ -1633,7 +1632,6 @@ class ScriptTest(LocalTest):  # pylint: disable=W0232
         for s in self.spec.all_compile_targets[self.spec.script]
     ]
 
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     run_args = []
 
@@ -1747,7 +1745,6 @@ class LocalGTestTest(LocalTest):
   def compile_targets(self) -> Iterable[str]:
     return self.spec.override_compile_targets or [self.spec.target_name]
 
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
@@ -2392,7 +2389,6 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self.api.m.chromium_swarming.trigger_task(
         self._tasks[suffix], resultdb=resultdb)
 
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     """Waits for launched test to finish and collects the results."""
     step_result, _ = (
@@ -2548,7 +2544,6 @@ class LocalIsolatedScriptTest(LocalTest):
 
   # TODO(nednguyen, kbr): figure out what to do with Android.
   # (crbug.com/533480)
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
@@ -2745,7 +2740,6 @@ class AndroidJunitTest(LocalTest):
             add_output_log=True, name='stderr'),
         resultdb=self._prep_local_rdb())
 
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     assert self.api.m.chromium.c.TARGET_PLATFORM == 'android'
 
@@ -2887,7 +2881,6 @@ class MockTest(AbstractSwarmingTest, Test):
     if self.runs_on_swarming:
       self._tasks_by_suffix[suffix] = MockTask(self.shards)
 
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     with self._mock_exit_codes():
       step_result = self.api.m.step(self.step_name(suffix), None)
@@ -3126,7 +3119,6 @@ class SkylabTest(AbstractSkylabTest, Test):
             'Test had failed runs. '
             'Check "Test Results" tab for the deterministic results.')
 
-  @recipe_api.composite_step
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
