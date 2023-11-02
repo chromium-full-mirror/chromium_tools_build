@@ -40,6 +40,7 @@ DENYLISTED_VERSIONS = [
     # from a rust-lang/rust GitHub fork, but the commit was force-pushed on
     # 2023-10-26 and the "download rustc sources" step was broken until
     # https://crrev.com/c/4983487, which is part of 120.0.6098.0.
+    '120.0.6087.2',
     '120.0.6089.1',
     '120.0.6089.2',
     '120.0.6089.3',
