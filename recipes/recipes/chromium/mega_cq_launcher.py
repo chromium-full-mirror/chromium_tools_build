@@ -83,47 +83,47 @@ def RunSteps(api):
     api.step('no sleep needed', None)
 
   def _run_bot(b):
-    # Increase the default priority + timeout + expiration since we expect
-    # mega CQ builds to take longer.
-    per_build_expiration_s = 12 * 60 * 60
-    per_build_timeout_s = 6 * 60 * 60
+    with api.step.nest('trigger ' + b):
+      # Increase the default priority + timeout + expiration since we expect
+      # mega CQ builds to take longer.
+      per_build_expiration_s = 12 * 60 * 60
+      per_build_timeout_s = 6 * 60 * 60
 
-    def _make_req():
-      req = api.buildbucket.schedule_request(
-          b,
-          project=project,
-          bucket=bucket,
-          priority=api.buildbucket.build.infra.swarming.priority + 10,
-          tags=api.buildbucket.tags(mega_cq_build='1'))
-      req.scheduling_timeout.FromSeconds(per_build_expiration_s)
-      req.execution_timeout.FromSeconds(per_build_timeout_s)
-      return req
+      def _make_req():
+        req = api.buildbucket.schedule_request(
+            b,
+            project=project,
+            bucket=bucket,
+            priority=api.buildbucket.build.infra.swarming.priority + 10,
+            tags=api.buildbucket.tags(mega_cq_build='1'))
+        req.scheduling_timeout.FromSeconds(per_build_expiration_s)
+        req.execution_timeout.FromSeconds(per_build_timeout_s)
+        return req
 
-    for i in range(1, 4):  # At most 2 retries per builder.
-      # Buildbucket de-dupes when using the exact same request object. So need
-      # to create a new one each time.
-      req = _make_req()
-      build = api.buildbucket.schedule([req],
-                                       step_name='trigger %s (attempt %d)' %
-                                       (b, i))[0]
-      api.cv.record_triggered_builds(build)
-      result = api.buildbucket.collect_build(
-          build.id,
-          step_name='collect %s (attempt %d)' % (b, i),
-          # Mark the step as resource-free so it uncaps the amount of parallel
-          # collects that can run. The step has minimal machine impact, so this
-          # should be fine.
-          cost=ResourceCost.zero(),
-          timeout=per_build_expiration_s + per_build_timeout_s)
-      if result.status == common_pb.SUCCESS:
-        return result
-    return result
+      for i in range(1, 4):  # At most 2 retries per builder.
+        # Buildbucket de-dupes when using the exact same request object. So need
+        # to create a new one each time.
+        req = _make_req()
+        build = api.buildbucket.schedule([req],
+                                         step_name='trigger (attempt %d)' %
+                                         i)[0]
+        api.cv.record_triggered_builds(build)
+        result = api.buildbucket.collect_build(
+            build.id,
+            step_name='collect (attempt %d)' % i,
+            # Mark the step as resource-free so it uncaps the amount of parallel
+            # collects that can run. The step has minimal machine impact, so this
+            # should be fine.
+            cost=ResourceCost.zero(),
+            timeout=per_build_expiration_s + per_build_timeout_s)
+        if result.status == common_pb.SUCCESS:
+          return result
+      return result
 
 
   workers = []
-  with api.step.nest('trigger all builds'):
-    for b in trybots:
-      workers.append(api.futures.spawn_immediate(_run_bot, b))
+  for b in trybots:
+    workers.append(api.futures.spawn_immediate(_run_bot, b))
   api.futures.wait(workers)
   final_build_results = []
   for w in workers:
@@ -211,26 +211,26 @@ def GenTests(api):
                   'id': 100
               }
           }]),
-          step_name='trigger all builds.trigger flaky_bot (attempt 1)',
+          step_name='trigger flaky_bot.trigger (attempt 1)',
       ),
       api.buildbucket.simulated_collect_output(
           [
               api.buildbucket.ci_build_message(build_id=100, status='FAILURE'),
           ],
-          step_name='trigger all builds.collect flaky_bot (attempt 1)'),
+          step_name='trigger flaky_bot.collect (attempt 1)'),
       api.buildbucket.simulated_schedule_output(
           BatchResponse(responses=[{
               'schedule_build': {
                   'id': 101
               }
           }]),
-          step_name='trigger all builds.trigger flaky_bot (attempt 2)',
+          step_name='trigger flaky_bot.trigger (attempt 2)',
       ),
       api.buildbucket.simulated_collect_output(
           [
               api.buildbucket.ci_build_message(build_id=101, status='SUCCESS'),
           ],
-          step_name='trigger all builds.collect flaky_bot (attempt 2)'),
+          step_name='trigger flaky_bot.collect (attempt 2)'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -249,39 +249,39 @@ def GenTests(api):
                   'id': 100
               }
           }]),
-          step_name='trigger all builds.trigger red_bot (attempt 1)',
+          step_name='trigger red_bot.trigger (attempt 1)',
       ),
       api.buildbucket.simulated_collect_output(
           [
               api.buildbucket.ci_build_message(build_id=100, status='FAILURE'),
           ],
-          step_name='trigger all builds.collect red_bot (attempt 1)'),
+          step_name='trigger red_bot.collect (attempt 1)'),
       api.buildbucket.simulated_schedule_output(
           BatchResponse(responses=[{
               'schedule_build': {
                   'id': 101
               }
           }]),
-          step_name='trigger all builds.trigger red_bot (attempt 2)',
+          step_name='trigger red_bot.trigger (attempt 2)',
       ),
       api.buildbucket.simulated_collect_output(
           [
               api.buildbucket.ci_build_message(build_id=101, status='FAILURE'),
           ],
-          step_name='trigger all builds.collect red_bot (attempt 2)'),
+          step_name='trigger red_bot.collect (attempt 2)'),
       api.buildbucket.simulated_schedule_output(
           BatchResponse(responses=[{
               'schedule_build': {
                   'id': 102
               }
           }]),
-          step_name='trigger all builds.trigger red_bot (attempt 3)',
+          step_name='trigger red_bot.trigger (attempt 3)',
       ),
       api.buildbucket.simulated_collect_output(
           [
               api.buildbucket.ci_build_message(build_id=102, status='FAILURE'),
           ],
-          step_name='trigger all builds.collect red_bot (attempt 3)'),
+          step_name='trigger red_bot.collect (attempt 3)'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
