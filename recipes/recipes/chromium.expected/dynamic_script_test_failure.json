@@ -920,7 +920,7 @@
     "cmd": [],
     "name": "$debug - all results",
     "~followup_annotations": [
-      "@@@STEP_TEXT@2.48 KB@@@",
+      "@@@STEP_TEXT@2.49 KB@@@",
       "@@@STEP_LOG_LINE@serialized results@{@@@",
       "@@@STEP_LOG_LINE@serialized results@  \"all_suites\": [@@@",
       "@@@STEP_LOG_LINE@serialized results@    {@@@",
@@ -942,9 +942,9 @@
       "@@@STEP_LOG_LINE@serialized results@  ]@@@",
       "@@@STEP_LOG_LINE@serialized results@}@@@",
       "@@@STEP_LOG_END@serialized results@@@",
-      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 2.48 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 2.49 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for test_script_with_broken_tests: 2.20 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for test_script_with_broken_tests: 2.21 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 2@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 1.13 KB@@@",
       "@@@STEP_LOG_END@memory usage@@@"

@@ -2370,6 +2370,7 @@
       "    test_runner.run_tests()",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 840, in run_tests",
       "    collecting, expired_requests = self.swarming.collect_tasks()",
+      "                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 610, in collect_tasks",
       "    assert forward_progress",
       "AssertionError()"

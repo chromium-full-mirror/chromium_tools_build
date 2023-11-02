@@ -1425,7 +1425,7 @@
       "@@@STEP_LOG_END@serialized results@@@",
       "@@@STEP_LOG_LINE@memory usage@Size of this RDBResults: 1.88 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@@@@",
-      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests: 1.59 KB@@@",
+      "@@@STEP_LOG_LINE@memory usage@\tSize of RDBPerSuiteResults for telemetry_gpu_unittests: 1.60 KB@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tNumber of RDBPerIndividualTestResults entries: 1@@@",
       "@@@STEP_LOG_LINE@memory usage@\t\tSize of all RDBPerIndividualTestResults entries: 546.00 B@@@",
       "@@@STEP_LOG_END@memory usage@@@"

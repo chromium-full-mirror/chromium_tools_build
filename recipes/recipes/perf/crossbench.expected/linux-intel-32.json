@@ -109,6 +109,7 @@
       "Traceback (most recent call last):",
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 24, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api)",
+      "                                          ^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 98, in download_chrome",
       "    raise NotImplementedError('Unsupported platform: %s' % (key,))",
       "NotImplementedError('Unsupported platform: ('linux', 'intel', 32)')"
