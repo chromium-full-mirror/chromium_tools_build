@@ -696,6 +696,11 @@ class ArchiveApi(recipe_api.RecipeApi):
       build_number = str(self.m.buildbucket.build.number)
       input_str = input_str.replace(build_number_placeholder, build_number)
 
+    milestone_placeholder = '{%milestone%}'
+    if milestone_placeholder in input_str:
+      input_str = input_str.replace(milestone_placeholder,
+                                    self.m.chromium.get_version()['MAJOR'])
+
     if custom_vars:
       for placeholder, key in re.findall('({%(.*?)%})', input_str):
         if key in custom_vars:
