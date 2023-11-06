@@ -210,7 +210,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                             checkout_path,
                             targets_spec_dir=None,
                             precommit_details=_COMPUTE_PRECOMMIT_DETAILS,
-                            isolated_tests_only=False):
+                            remote_tests_only=False):
     """
     Args:
       builder_config (BuilderConfig): config for the current builder
@@ -226,7 +226,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         will use the non-pre-commit behavior. By default, the
         pre-commit-specific behavior will be used if there is a CL for
         the build, with the footers being taken from the CL description.
-      isolated_tests_only (bool): only include targets for isolated tests
+      remote_tests_only (bool): only include targets for remote tests
 
     Returns: TargetsConfig for current builder
     """
@@ -258,7 +258,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             footers=self.m.tryserver.get_footers())
 
     generator = generators.Generator(self, got_revisions, checkout_path,
-                                     isolated_tests_only, precommit_details,
+                                     remote_tests_only, precommit_details,
                                      scripts_compile_targets_fn)
 
     targets_by_builder_id = {}

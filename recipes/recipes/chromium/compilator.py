@@ -91,14 +91,11 @@ def compilator_steps(api, properties):
         api.code_coverage.instrument([])
 
       # properties.test_targets should only be targets required for
-      # isolated swarming tests, but a non-isolated swarming test could,
-      # although rare, have a target_name that is also used by an isolated
-      # swarming test. Checking for t.uses_isolate makes sure that we don't
-      # include those non-isolated tests and end up running them too in this
-      # build.
+      # isolated swarming tests or skylab tests
       test_suites = [
           t for t in targets_config.all_tests
-          if t.target_name in properties.test_targets and t.uses_isolate
+          if t.target_name in properties.test_targets and
+          (t.runs_on_swarming or t.is_skylabtest)
       ]
       raw_result, execution_info = (
           api.chromium_tests.build_and_isolate_failing_tests(
@@ -132,7 +129,7 @@ def compilator_steps(api, properties):
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    if any(t.uses_isolate for t in test_suites):
+    if any(t.runs_on_swarming or t.is_skylabtest for t in test_suites):
       affected_files_to_archive = []
       # If properties.test_targets exist, it means this build is doing a
       # "without patch" so there's no affected files to archive
@@ -149,25 +146,39 @@ def compilator_steps(api, properties):
         ]
       archive_src_side_deps(api, affected_files_to_archive)
 
-      # Isolate the tests first so the Orchestrator can trigger them asap
-      trigger_properties = execution_info.ensure_command_lines_archived(
-          api.chromium_tests).as_trigger_prop()
+      if any(t.runs_on_swarming for t in test_suites):
+        # Isolate the tests first so the Orchestrator can trigger them asap
+        trigger_properties = execution_info.ensure_command_lines_archived(
+            api.chromium_tests).as_trigger_prop()
 
-      properties_step = api.step('swarming trigger properties', [])
-      properties_step.presentation.properties[
-          'swarming_trigger_properties'] = trigger_properties
-      properties_step.presentation.logs[
-          'swarming_trigger_properties'] = api.m.json.dumps(
-              trigger_properties, indent=2)
+        properties_step = api.step('swarming trigger properties', [])
+        properties_step.presentation.properties[
+            'swarming_trigger_properties'] = trigger_properties
+        properties_step.presentation.logs[
+            'swarming_trigger_properties'] = api.m.json.dumps(
+                trigger_properties, indent=2)
 
-    non_isolated_tests = [t for t in test_suites if not t.uses_isolate]
-    if non_isolated_tests:
+      if any(t.is_skylabtest for t in test_suites):
+        skylab_tests = [t for t in test_suites if t.is_skylabtest]
+        skylab_trigger_properties = (
+            api.chromium_tests._get_skylab_trigger_properties(skylab_tests))
+        properties_step = api.step('skylab trigger properties', [])
+        properties_step.presentation.properties[
+            'skylab_trigger_properties'] = skylab_trigger_properties
+        properties_step.presentation.logs[
+            'skylab_trigger_properties'] = api.m.json.dumps(
+                skylab_trigger_properties, indent=2)
+
+    local_tests = [
+        t for t in test_suites if not t.runs_on_swarming and not t.is_skylabtest
+    ]
+    if local_tests:
       test_runner = api.chromium_tests.create_test_runner(
-          non_isolated_tests,
+          local_tests,
           suffix='with patch',
       )
       with api.chromium_tests.wrap_chromium_tests(orch_builder_config,
-                                                  non_isolated_tests):
+                                                  local_tests):
         raw_result = test_runner()
         if raw_result and raw_result.status != common_pb.SUCCESS:
           return raw_result
@@ -175,7 +186,7 @@ def compilator_steps(api, properties):
       # check for new flaky tests on successful run w/ patch
       if api.flakiness.check_for_flakiness:
         new_tests = api.flakiness.find_tests_for_flakiness(
-            non_isolated_tests, affected_files=task.affected_files)
+            local_tests, affected_files=task.affected_files)
         if new_tests:
           return api.chromium_tests.run_tests_for_flakiness(
               orch_builder_config, new_tests)
@@ -312,16 +323,25 @@ def GenTests(api):
                     'name': 'browser_tests',
                     'swarming': {},
                 }],
+                'isolated_scripts': [{
+                    'isolate_name': 'angle_unittests',
+                    'name': 'angle_unittests',
+                    'swarming': {},
+                }, {
+                    'isolate_name': 'angle_unittests_no_swarm',
+                    'name': 'angle_unittests_no_swarm',
+                }],
             },
         })
 
   ctbc_api = api.chromium_tests_builder_config
 
-  def ctbc_properties():
+  def ctbc_properties(builder_spec=None):
     return ctbc_api.properties(
         ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
             builder_group='fake-group',
             builder='fake-builder',
+            builder_spec=builder_spec,
         ).with_mirrored_tester(
             builder_group='fake-group',
             builder='fake-tester',
@@ -357,6 +377,162 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun, 'isolate tests (with patch)'),
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
+      api.post_process(post_process.DoesNotRun, 'skylab trigger properties'),
+      api.post_process(post_process.MustRun,
+                       'check_static_initializers (with patch)'),
+      api.post_process(post_process.MustRun,
+                       'angle_unittests_no_swarm (with patch)'),
+      api.post_process(post_process.DoesNotRun, 'angle_unittests (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  SKYLAB_ISOLATE_TEXT = """
+    {'variables': {'command': ['bin/run_lacros_smoke_tast_tests',
+                            '--logs-dir=${ISOLATED_OUTDIR}'],
+                'files': ['../../.vpython',
+                          'bin/run_vaapi_unittest',
+                          'resources.pak',
+                          'resources.pak.info',
+                          './chrome',
+                          '../../testing/buildbot/filters',
+                          'gen/third_party',
+                          '../../testing/buildbot/filters',
+                          'bin/lacros_fyi_tast_tests.filter'
+                            ]}}
+  """
+
+  yield api.test(
+      'skylab_and_swarmed_tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+      ),
+      api.platform.name('linux'),
+      api.path.exists(
+          api.path['cache'].join(
+              'builder/src/out/Release/lacros_all_tast_tests.isolate'),
+          api.path['start_dir'].join('squashfs', 'squashfs-tools',
+                                     'mksquashfs'),
+      ),
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+              skylab_gs_bucket='chrome-test-builds',
+          ),),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'))),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'scripts': [{
+                      "isolate_profile_data": True,
+                      "name": "check_static_initializers",
+                      "script": "check_static_initializers.py",
+                      "test_id_prefix": "ninja://check_static_initializers/"
+                  }],
+              },
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {},
+                  }],
+                  'skylab_tests': [{
+                      'name': 'lacros_all_tast_tests',
+                      'cros_board': 'volteer',
+                  }],
+              },
+          }),
+      api.step_data(
+          'prepare skylab tests.collect runtime deps for '
+          'lacros_all_tast_tests.read isolate file',
+          api.file.read_text(SKYLAB_ISOLATE_TEXT)),
+      api.post_process(post_process.StepTextContains, 'report builders', [
+          "running tester 'fake-tester' on group 'fake-group' against "
+          "builder 'fake-builder' on group 'fake-group'"
+      ]),
+      api.post_process(post_process.StepCommandContains, 'bot_update',
+                       ['--patch_ref']),
+      api.post_process(post_process.MustRun, 'compile (with patch)'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'compile (with patch)',
+          [ORCHESTRATOR_ALL_TARGET_NAME],
+      ),
+      api.post_process(post_process.MustRun, 'isolate tests (with patch)'),
+      api.post_process(post_process.MustRun, 'prepare skylab tests'),
+      api.post_process(post_process.MustRun, 'swarming trigger properties'),
+      api.post_process(post_process.MustRun, 'skylab trigger properties'),
+      api.post_process(post_process.MustRun,
+                       'check_static_initializers (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'only_skylab_tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+      ),
+      api.path.exists(
+          api.path['cache'].join(
+              'builder/src/out/Release/lacros_all_tast_tests.isolate'),
+          api.path['start_dir'].join('squashfs', 'squashfs-tools',
+                                     'mksquashfs'),
+      ),
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+              skylab_gs_bucket='chrome-test-builds',
+          ),),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'))),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'scripts': [{
+                      "isolate_profile_data": True,
+                      "name": "check_static_initializers",
+                      "script": "check_static_initializers.py",
+                      "test_id_prefix": "ninja://check_static_initializers/"
+                  }],
+              },
+              'fake-tester': {
+                  'skylab_tests': [{
+                      'name': 'lacros_all_tast_tests',
+                      'cros_board': 'volteer',
+                  }],
+              },
+          }),
+      api.step_data(
+          'prepare skylab tests.collect runtime deps for '
+          'lacros_all_tast_tests.read isolate file',
+          api.file.read_text(SKYLAB_ISOLATE_TEXT)),
+      api.post_process(post_process.StepTextContains, 'report builders', [
+          "running tester 'fake-tester' on group 'fake-group' against "
+          "builder 'fake-builder' on group 'fake-group'"
+      ]),
+      api.post_process(post_process.StepCommandContains, 'bot_update',
+                       ['--patch_ref']),
+      api.post_process(post_process.MustRun, 'compile (with patch)'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'compile (with patch)',
+          [ORCHESTRATOR_ALL_TARGET_NAME],
+      ),
+      api.post_process(post_process.DoesNotRun, 'isolate tests (with patch)'),
+      api.post_process(post_process.MustRun, 'prepare skylab tests'),
+      api.post_process(post_process.DoesNotRun, 'swarming trigger properties'),
+      api.post_process(post_process.MustRun, 'skylab trigger properties'),
       api.post_process(post_process.MustRun,
                        'check_static_initializers (with patch)'),
       api.post_process(post_process.DropExpectation),
@@ -685,6 +861,75 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'compile (without patch)'),
       api.post_process(post_process.MustRun, 'isolate tests (without patch)'),
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
+      api.post_process(post_process.DoesNotRun, 'compile (with patch)'),
+      api.post_process(post_process.DoesNotRun, 'isolate tests (with patch)'),
+      api.post_process(post_process.DoesNotRun,
+                       'check_static_initializers (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'without_patch_skylab_tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+      ),
+      api.platform.name('linux'),
+      api.path.exists(
+          api.path['cache'].join(
+              'builder/src/out/Release/lacros_all_tast_tests.isolate'),
+          api.path['start_dir'].join('squashfs', 'squashfs-tools',
+                                     'mksquashfs'),
+      ),
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+              skylab_gs_bucket='chrome-test-builds',
+          ),),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'),
+              test_targets=['browser_tests', 'lacros_all_tast_tests'])),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'scripts': [{
+                      "isolate_profile_data": True,
+                      "name": "check_static_initializers",
+                      "script": "check_static_initializers.py",
+                      "test_id_prefix": "ninja://check_static_initializers/"
+                  }],
+              },
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {},
+                  }],
+                  'skylab_tests': [{
+                      'name': 'lacros_all_tast_tests',
+                      'cros_board': 'volteer',
+                  }],
+              },
+          }),
+      api.step_data(
+          'prepare skylab tests.collect runtime deps for '
+          'lacros_all_tast_tests.read isolate file',
+          api.file.read_text(SKYLAB_ISOLATE_TEXT)),
+      api.post_process(post_process.StepTextContains, 'report builders', [
+          "running tester 'fake-tester' on group 'fake-group' against "
+          "builder 'fake-builder' on group 'fake-group'"
+      ]),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'bot_update (without patch)', ['--patch_ref']),
+      api.post_process(post_process.MustRun, 'compile (without patch)'),
+      api.post_process(post_process.MustRun, 'isolate tests (without patch)'),
+      api.post_process(post_process.MustRun, 'prepare skylab tests'),
+      api.post_process(post_process.MustRun, 'swarming trigger properties'),
+      api.post_process(post_process.MustRun, 'skylab trigger properties'),
       api.post_process(post_process.DoesNotRun, 'compile (with patch)'),
       api.post_process(post_process.DoesNotRun, 'isolate tests (with patch)'),
       api.post_process(post_process.DoesNotRun,

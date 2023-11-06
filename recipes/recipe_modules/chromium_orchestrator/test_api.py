@@ -24,6 +24,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                          builder,
                          tester=None,
                          tests=None,
+                         skylab_tests=None,
                          shards=1,
                          step_suffix=None):
     """Override spec for the builder(s) mirrored by an orchestrator.
@@ -60,6 +61,13 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     tester_dict = targets_spec.setdefault(tester or builder, {})
     tester_dict['gtest_tests'] = gtest_tests
 
+    if skylab_tests:
+      skylab_tests = [{
+          'name': t,
+          'cros_board': 'volteer',
+      } for t in skylab_tests]
+      tester_dict['skylab_tests'] = skylab_tests
+
     return self.m.chromium_tests.read_targets_spec(
         builder_group, targets_spec, step_suffix=step_suffix)
 
@@ -81,6 +89,19 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
             swarm_hashes,
     }
 
+  def get_fake_skylab_trigger_properties(self, tests):
+    return {
+        t: {
+            'exe_rel_path':
+                'out/Release/chrome',
+            'lacros_gcs_path':
+                ('gs://chromium-ci-skylab/8766310705120332289_with_patch/{}'
+                ).format(t),
+            'tast_expr_file':
+                'out/Release/bin/{}.filter'.format(t),
+        } for t in tests
+    }
+
   def get_compilator_output_props(self,
                                   comp_build_id=1234,
                                   empty_props=False,
@@ -89,14 +110,14 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                   tests=None,
                                   include_override_deps=False,
                                   affected_files=None,
-                                  skipping_coverage=None):
+                                  skipping_coverage=None,
+                                  include_swarming_props=True,
+                                  include_skylab_props=False):
     tests = tests or ['browser_tests']
     output_json_obj = {}
     if is_swarming_phase:
       if not empty_props:
         output_json_obj = {
-            'swarming_trigger_properties':
-                self.get_fake_swarming_trigger_properties(tests),
             'got_angle_revision':
                 '18c36f8aa629231795c82831a2cf80e8f77f989a',
             'got_revision':
@@ -121,6 +142,13 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
           output_json_obj['override_deps'] = {
               'src/v8': '79aec72034961c94e53dfd6d27bc818b502fa41f',
           }
+        if include_swarming_props:
+          output_json_obj['swarming_trigger_properties'] = (
+              self.get_fake_swarming_trigger_properties(tests))
+        if include_skylab_props:
+          output_json_obj['skylab_trigger_properties'] = (
+              self.get_fake_skylab_trigger_properties(['lacros_all_tast_tests'
+                                                      ]))
 
         if with_patch:
           if not affected_files:
@@ -151,7 +179,9 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                 include_override_deps=False,
                                 affected_files=None,
                                 skipping_coverage=None,
-                                empty_gitiles_commit=False):
+                                empty_gitiles_commit=False,
+                                include_swarming_props=True,
+                                include_skylab_props=False):
     output_json_obj = self.get_compilator_output_props(
         comp_build_id=comp_build_id,
         empty_props=empty_props,
@@ -160,7 +190,10 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         tests=tests,
         include_override_deps=include_override_deps,
         affected_files=affected_files,
-        skipping_coverage=skipping_coverage)
+        skipping_coverage=skipping_coverage,
+        include_swarming_props=include_swarming_props,
+        include_skylab_props=include_skylab_props,
+    )
 
     sub_build = build_pb2.Build(
         id=54321,

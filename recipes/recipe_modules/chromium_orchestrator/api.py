@@ -30,6 +30,7 @@ class CompilatorOutputProps:
 
   Attributes:
     swarming_props: Dict containing swarming information to trigger tests
+    skylab_props: Dict containing skylab information to trigger skylab tests
     got_revisions: Dict containing revisions checked out for src and other deps
     override_deps: Dict containing deps to override for without patch runs, if
       any. This is only populated for CLs where the patch root is different
@@ -42,7 +43,8 @@ class CompilatorOutputProps:
       determines this by checking the len of affected eligible files.
   """
 
-  swarming_props = attrib(mapping[str, ...])
+  swarming_props = attrib(mapping[str, ...], default=None)
+  skylab_props = attrib(mapping[str, ...], default=None)
   override_deps = attrib(mapping[str, str], default=None)
   got_revisions = attrib(mapping[str, str])
   affected_files = attrib(sequence[str], default=None)
@@ -191,16 +193,20 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         self.m.chromium_checkout.src_dir,
         targets_spec_dir=self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir),
-        isolated_tests_only=True)
-    self.check_for_non_swarmed_isolated_tests(targets_config.all_tests)
+        remote_tests_only=True)
     # This is used to set build properties on swarming tasks
     self.m.chromium.set_build_properties(comp_output.got_revisions)
 
-    # Now let's get all the tests ready with the swarming trigger info
+    # Now let's get all the tests ready with the swarming/skylab trigger info
     # outputed by the compilator
-    tests = self.process_swarming_props(comp_output.swarming_props,
-                                        builder_config, targets_config)
-
+    tests = []
+    if comp_output.swarming_props:
+      tests = self.process_swarming_props(comp_output.swarming_props,
+                                          builder_config, targets_config)
+    # Add any skylab tests
+    if comp_output.skylab_props:
+      tests.extend(
+          self.process_skylab_props(comp_output.skylab_props, targets_config))
     self.m.chromium_tests.configure_swarming(
         self.m.tryserver.is_tryserver, builder_group=builder_id.group)
 
@@ -244,11 +250,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         return
 
       # Trigger another compilator build with the targets needed
-      # TODO(kimstephanie): Remove swarming_targets once swarming_targets is
-      # no longer in the compilator proto
-      compilator_properties['swarming_targets'] = list(
-          set(t.target_name for t in test_suites))
-
       compilator_properties['test_targets'] = list(
           set(t.target_name for t in test_suites))
 
@@ -370,8 +371,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       assert self.without_patch_build is not None
     else:
       # Trigger another compilator build with the targets needed
-      compilator_properties['swarming_targets'] = list(
-          set(t.target_name for t in failing_test_suites))
       compilator_properties['test_targets'] = list(
           set(t.target_name for t in failing_test_suites))
 
@@ -398,8 +397,15 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
       return maybe_raw_result
 
-    self.process_swarming_props(
-        comp_output.swarming_props, builder_config, targets_config, tests=tests)
+    if comp_output.swarming_props:
+      self.process_swarming_props(
+          comp_output.swarming_props,
+          builder_config,
+          targets_config,
+          tests=tests)
+    if comp_output.skylab_props:
+      self.process_skylab_props(
+          comp_output.skylab_props, targets_config, tests=tests)
 
     # Trigger and wait for the (without patch) tests!
     with self.m.chromium_tests.wrap_chromium_tests(builder_config,
@@ -579,6 +585,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         raise self.m.step.InfraFailure('sub_build missing from step') from e
       return sub_build
 
+  # TODO(crbug/1298113): Update is_swarming_phase to a more agnostic name
+  # that encompasses skylab tests too
   def process_sub_build(self, sub_build, is_swarming_phase, with_patch):
     """Processes the sub_build's status and output properties
 
@@ -617,16 +625,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           raise_on_failure=False)
 
     swarming_prop_key = 'swarming_trigger_properties'
-    if is_swarming_phase and swarming_prop_key in sub_build.output.properties:
+    skylab_prop_key = 'skylab_trigger_properties'
+    if is_swarming_phase and (swarming_prop_key in sub_build.output.properties
+                              or
+                              skylab_prop_key in sub_build.output.properties):
       output_props = MessageToDict(sub_build.output.properties)
-
       got_revisions = {k: v for k, v in output_props.items() if 'got_' in k}
-
-      affected_files = None
-      if 'affected_files' in output_props:
-        affected_files = self.m.chromium_checkout.format_affected_file_paths(
-            output_props['affected_files']['first_100'])
-
       # TODO (kimstephanie): Replace src_side_.* with
       # output_props.get() in a separate CL
       src_side_deps_digest = None
@@ -635,8 +639,14 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         src_side_deps_digest = output_props['src_side_deps_digest']
         src_side_test_spec_dir = output_props['src_side_test_spec_dir']
 
+      affected_files = None
+      if 'affected_files' in output_props:
+        affected_files = self.m.chromium_checkout.format_affected_file_paths(
+            output_props['affected_files']['first_100'])
+
       comp_output = CompilatorOutputProps(
-          swarming_props=output_props[swarming_prop_key],
+          swarming_props=output_props.get(swarming_prop_key),
+          skylab_props=output_props.get(skylab_prop_key),
           override_deps=output_props.get('override_deps'),
           got_revisions=got_revisions,
           affected_files=affected_files,
@@ -648,8 +658,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     if not with_patch and sub_build.status == common_pb.SUCCESS:
       raise self.m.step.InfraFailure(
-          'Missing swarming_trigger_properties from without patch '
-          'compilator')
+          'Missing swarming_trigger_properties and skylab_trigger_properties '
+          'from without patch compilator')
 
     # Could be a "No analyze required" success, compilator compile failure,
     # compilator local tests failure, or some other infra failure
@@ -696,6 +706,25 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         swarming_command_lines_cwd=swarming_cwd)
     return tests
 
+  def process_skylab_props(
+      self,
+      skylab_props,
+      targets_config,
+      tests=None,
+  ):
+    if not tests:
+      tests = [
+          t for t in targets_config.all_tests
+          if t.is_skylabtest and t.target_name in skylab_props.keys()
+      ]
+
+    for t in tests:
+      target_properties = skylab_props[t.target_name]
+      t.exe_rel_path = target_properties.get("exe_rel_path", '')
+      t.lacros_gcs_path = target_properties.get("lacros_gcs_path", '')
+      t.tast_expr_file = target_properties.get("tast_expr_file", '')
+    return tests
+
   def handle_failed_with_patch_tests(self, tests, failing_test_suites):
     """Summarizes test stats, flakiness, and test failures
 
@@ -706,9 +735,3 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium_swarming.report_stats()
     self.m.chromium_tests.summarize_test_failures(tests)
     self.m.chromium_tests.handle_invalid_test_suites(failing_test_suites)
-
-  def check_for_non_swarmed_isolated_tests(self, tests):
-    for t in tests:
-      if t.uses_isolate and not t.runs_on_swarming:
-        raise self.m.step.StepFailure(
-            '{} is an isolated test but is not swarmed.'.format(t.target_name))

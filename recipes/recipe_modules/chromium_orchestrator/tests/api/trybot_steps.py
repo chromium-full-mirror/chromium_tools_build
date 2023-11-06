@@ -50,6 +50,7 @@ DEPS = [
     'recipe_engine/runtime',
     'recipe_engine/step',
     'recipe_engine/swarming',
+    'skylab',
     'test_utils',
 ]
 
@@ -230,6 +231,53 @@ def GenTests(api):
   )
 
   yield api.test(
+      'basic_with_skylab',
+      get_try_build(),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_compilator_build_proto_fetch(),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(
+          include_swarming_props=False,
+          include_skylab_props=True,
+      ),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_swarming_phase=False),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+          skylab_tests=['lacros_all_tast_tests'],
+      ),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build',
+          1,
+          runner_builds=[[(901, common_pb.SUCCESS), (902, common_pb.SUCCESS),
+                          (903, common_pb.SUCCESS)]]),
+      api.override_step_data(
+          'lacros_all_tast_tests results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'lacros_all_tast_tests', passing_tests=['Test.Two']))),
+      api.post_process(post_process.MustRun, 'set_output_gitiles_commit'),
+      api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
+      api.post_process(post_process.MustRun,
+                       ('test_pre_run (with patch).schedule skylab tests.'
+                        'lacros_all_tast_tests')),
+      api.post_process(post_process.MustRun,
+                       COMPILATOR_SWARMING_TASK_COLLECT_STEP),
+      api.post_process(post_process.MustRun, 'download src-side deps'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'without_patch_compilator',
       get_try_build(),
       ctbc_properties(),
@@ -295,6 +343,68 @@ def GenTests(api):
           'browser_tests', 'without patch', failures=['Test.One']),
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'without_patch_compilator_skylab',
+      get_try_build(),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(
+          include_swarming_props=False,
+          include_skylab_props=True,
+      ),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_swarming_phase=False),
+      api.chromium_orchestrator.override_compilator_steps(
+          include_swarming_props=False,
+          include_skylab_props=True,
+          with_patch=False,
+      ),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+          skylab_tests=['lacros_all_tast_tests'],
+      ),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build',
+          1,
+          runner_builds=[[(901, common_pb.SUCCESS), (902, common_pb.SUCCESS),
+                          (903, common_pb.SUCCESS)]]),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build (2)',
+          1,
+          runner_builds=[[(901, common_pb.SUCCESS), (902, common_pb.SUCCESS),
+                          (903, common_pb.SUCCESS)]]),
+      api.override_step_data(
+          'lacros_all_tast_tests results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'lacros_all_tast_tests', failing_tests=['Test.Two']))),
+      api.override_step_data(
+          'lacros_all_tast_tests results (2)',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'lacros_all_tast_tests', failing_tests=['Test.Two']))),
+      api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
+      api.post_process(post_process.MustRun,
+                       'trigger compilator (without patch)'),
+      api.post_process(post_process.MustRun,
+                       ('test_pre_run (with patch).schedule skylab tests.'
+                        'lacros_all_tast_tests')),
+      api.post_process(post_process.MustRun,
+                       ('test_pre_run (without patch).schedule skylab tests.'
+                        'lacros_all_tast_tests')),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -610,56 +720,6 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.expect_status('CANCELED'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'non_swarmed_isolated_test',
-      get_try_build(),
-      ctbc_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.code_coverage(use_clang_coverage=True),
-      api.chromium_orchestrator.override_schedule_compilator_build(),
-      api.chromium_orchestrator.override_compilator_steps(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group',
-          {
-              'fake-builder': {
-                  'scripts': [{
-                      "isolate_profile_data": True,
-                      "name": "check_static_initializers",
-                      "script": "check_static_initializers.py",
-                  }],
-              },
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {},
-                      'isolate_profile_data': True,
-                  },],
-                  'isolated_scripts': [{
-                      'isolate_name': 'angle_unittests',
-                      'name': 'angle_unittests',
-                      'swarming': {},
-                  }, {
-                      'isolate_name': 'angle_unittests_no_swarm',
-                      'name': 'angle_unittests_no_swarm',
-                  }],
-              },
-          },
-      ),
-      api.expect_status('FAILURE'),
-      api.post_process(
-          post_process.ResultReason,
-          'angle_unittests_no_swarm is an isolated test but is not swarmed.',
-      ),
       api.post_process(post_process.DropExpectation),
   )
 

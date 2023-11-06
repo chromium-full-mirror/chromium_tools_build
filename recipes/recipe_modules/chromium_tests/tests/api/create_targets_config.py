@@ -19,7 +19,7 @@ DEPS = [
 ]
 
 PROPERTIES = {
-    'isolated_tests_only': Property(default=False),
+    'remote_tests_only': Property(default=False),
     'expected_tests': Property(default=[]),
     'targets_spec_dir': Property(default=None),
 }
@@ -65,7 +65,7 @@ FAKE_TARGETS_SPEC = {
 }
 
 
-def RunSteps(api, isolated_tests_only, expected_tests, targets_spec_dir):
+def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   targets_config = api.chromium_tests.create_targets_config(
@@ -83,7 +83,7 @@ def RunSteps(api, isolated_tests_only, expected_tests, targets_spec_dir):
       targets_spec_dir=targets_spec_dir,
       precommit_details=(generators.PrecommitDetails()
                          if api.tryserver.is_tryserver else None),
-      isolated_tests_only=isolated_tests_only)
+      remote_tests_only=remote_tests_only)
   tests = []
   for t in targets_config.all_tests:
     tests.append(t.name)
@@ -117,7 +117,7 @@ def GenTests(api):
       'basic',
       ctbc_properties(),
       api.properties(
-          isolated_tests_only=False,
+          remote_tests_only=False,
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
               'browser_tests_no_swarm', 'android_webview_junit_tests',
@@ -141,7 +141,7 @@ def GenTests(api):
       'builder-config-with-targets-spec-directory',
       ctbc_properties('builder-config/targets'),
       api.properties(
-          isolated_tests_only=False,
+          remote_tests_only=False,
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
               'browser_tests_no_swarm', 'android_webview_junit_tests',
@@ -165,7 +165,7 @@ def GenTests(api):
       'targets_spec_dir',
       ctbc_properties(),
       api.properties(
-          isolated_tests_only=False,
+          remote_tests_only=False,
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
               'browser_tests_no_swarm', 'android_webview_junit_tests',
@@ -187,13 +187,11 @@ def GenTests(api):
   )
 
   yield api.test(
-      'isolated_tests_only',
+      'remote_tests_only',
       ctbc_properties(),
       api.properties(
-          isolated_tests_only=True,
-          expected_tests=[
-              'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests'
-          ],
+          remote_tests_only=True,
+          expected_tests=['angle_unittests', 'browser_tests', 'basic_EVE_TOT'],
       ),
       fake_targets_spec(),
       api.chromium.try_build(

@@ -33,7 +33,7 @@ class Generator:
       chromium_tests_api,
       got_revisions: Mapping[str, str],
       checkout_path: Path,
-      isolated_tests_only: bool = False,
+      remote_tests_only: bool = False,
       precommit_details: Optional[PrecommitDetails] = None,
       scripts_compile_targets_fn: Optional[Callable[[], Iterable[str]]] = None,
   ):
@@ -45,7 +45,7 @@ class Generator:
       checkout_path: Path to checked out repo that contains test specs.
         For chromium builders this is usually cache/builder/src, but for
         other builders, like angle, this is cache/builder/angle.
-      isolated_tests_only: Whether to only yield isolated tests.
+      remote_tests_only: Whether to only yield remote tests.
       precommit_details: Details used for the pre-commit-specific
         behavior when generating tests. If None, then the generation
         will use the non-pre-commit behavior.
@@ -55,7 +55,7 @@ class Generator:
     self._chromium_tests_api = chromium_tests_api
     self._got_revisions = got_revisions
     self._checkout_path = checkout_path
-    self._isolated_tests_only = isolated_tests_only
+    self._remote_tests_only = remote_tests_only
     self._precommit_details = precommit_details
     self._scripts_compile_targets_fn = (
         scripts_compile_targets_fn or (lambda: []))
@@ -450,7 +450,7 @@ class Generator:
       return steps.SwarmingGTestTestSpec.create(**kwargs)
 
     def gtest_local_delegate(raw_test_spec, **kwargs):
-      if self._isolated_tests_only:
+      if self._remote_tests_only:
         return
       kwargs.update(gtest_delegate_common(raw_test_spec))
       kwargs['use_xvfb'] = raw_test_spec.get('use_xvfb', True)
@@ -463,7 +463,7 @@ class Generator:
       self,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
-    if self._isolated_tests_only:
+    if self._remote_tests_only:
       return []
 
     kwargs = {}
@@ -478,7 +478,7 @@ class Generator:
       self,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
-    if self._isolated_tests_only:
+    if self._remote_tests_only:
       return []
 
 
@@ -535,6 +535,8 @@ class Generator:
       return steps.SwarmingIsolatedScriptTestSpec.create(**kwargs)
 
     def isolated_script_local_delegate(raw_test_spec, **kwargs):
+      if self._remote_tests_only:
+        return
       kwargs.update(isolated_script_delegate_common(raw_test_spec, **kwargs))
       return steps.LocalIsolatedScriptTestSpec.create(**kwargs)
 
@@ -546,9 +548,6 @@ class Generator:
       self,
       raw_test_spec: _RawTestSpec,
   ) -> Iterable[steps.TestSpec]:
-    if self._isolated_tests_only:
-      return []
-
     kwargs_to_forward = set(
         k for k in attr.fields_dict(steps.SkylabTestSpec)
         if not k in ['test_args', 'resultdb'])
