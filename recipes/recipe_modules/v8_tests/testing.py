@@ -341,12 +341,18 @@ class V8Test(BaseTest):
     ]
     script = self.api.path['checkout'].join('tools', 'run-tests.py')
     with self.api.context(cwd=self.api.path['checkout'], env=env):
-      self.api.step(
-        test['name'] + self.test_step_config.step_name_suffix,
-        ['vpython3', '-u', script] + full_args,
-        step_test_data=self.api.v8_tests.test_api.output_json,
-        **kwargs
-      )
+      try:
+        self.api.step(
+          test['name'] + self.test_step_config.step_name_suffix,
+          ['vpython3', '-u', script] + full_args,
+          step_test_data=self.api.v8_tests.test_api.output_json,
+          **kwargs
+        )
+      except self.api.step.StepFailure as e:
+        if e.retcode != 1:
+          # Return code == 1: Normal test failures that are also listed in the
+          # json output and handled in post_run.
+          raise
     return self.post_run(test)
 
   def post_run(self, test):

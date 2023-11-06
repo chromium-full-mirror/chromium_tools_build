@@ -4,7 +4,8 @@
 
 import json
 
-from recipe_engine.post_process import DropExpectation, LogContains
+from recipe_engine.post_process import (
+    DropExpectation, LogContains, StepFailure)
 
 DEPS = [
     'recipe_engine/buildbucket',
@@ -17,6 +18,7 @@ DEPS = [
 
 def RunSteps(api):
   api.v8_tests.set_config('v8')
+  api.v8_tests.enable_swarming = api.properties.get('enable_swarming', True)
   api.v8_tests.set_up_swarming()
   api.v8_tests.read_cl_footer_flags()
   api.v8_tests.load_static_test_configs()
@@ -68,4 +70,23 @@ def GenTests(api):
           '"resultdb"',
       ]),
       api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'local_test_failure',
+      api.buildbucket.try_build(),
+      api.properties(enable_swarming=False, **parent_test_spec),
+      api.step_data('Check', retcode=1),
+      api.post_process(StepFailure, 'Check'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'local_other_failure',
+      api.buildbucket.try_build(),
+      api.properties(enable_swarming=False, **parent_test_spec),
+      api.step_data('Check', retcode=2),
+      api.post_process(StepFailure, 'Check'),
+      api.post_process(DropExpectation),
+      status='FAILURE',
   )
