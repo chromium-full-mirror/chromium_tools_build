@@ -10,7 +10,6 @@ DEPS = [
     'depot_tools/bot_update',
     'depot_tools/depot_tools',
     'depot_tools/gclient',
-    'goma',
     'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
@@ -70,23 +69,14 @@ def CheckoutSteps(api):
   return got_revision
 
 
-def ExecBuildSteps(api, checkout_path, env, use_goma):
-  exit_status = -1
-  try:
-    with api.context(cwd=checkout_path, env=env):
-      with api.depot_tools.on_path():
-        cmd = [
-            'vpython3', '-u',
-            checkout_path.join('buildbot', 'buildbot_selector.py')
-        ]
-        api.legacy_annotation('annotated steps', cmd)
-    exit_status = 0
-  except api.step.StepFailure as e:
-    exit_status = e.retcode
-    raise e
-  finally:
-    if use_goma:
-      api.goma.stop(build_exit_status=exit_status)
+def ExecBuildSteps(api, checkout_path, env):
+  with api.context(cwd=checkout_path, env=env):
+    with api.depot_tools.on_path():
+      cmd = [
+          'vpython3', '-u',
+          checkout_path.join('buildbot', 'buildbot_selector.py')
+      ]
+      api.legacy_annotation('annotated steps', cmd)
 
 
 def AnnotatedStepsSteps(api, got_revision, checkout_path,
@@ -104,30 +94,12 @@ def AnnotatedStepsSteps(api, got_revision, checkout_path,
       'BUILDBOT_SLAVE_TYPE': api.properties['slavetype'],
       'PYTHONPATH': str(api.repo_resource('scripts')),
   }
-  goma_dir = None
-  # HACK(yyanagisawa): won't set up goma client on 32bit OSes.
-  if api.platform.bits == 64 and not use_reclient:
-    goma_dir = api.goma.ensure_goma()
-  if goma_dir and not use_reclient:
-    # HACK(yyanagisawa): make GOMA_TMP_DIR owned by build runner.
-    # Since a temporary directory environment is set in annotated steps
-    # below, we need to set GOMA_TMP_DIR to make goma client know
-    # which temporary directory they must use.
-    goma_tmp_dir = api.path.join(api.path['tmp_base'], 'goma')
-    env.update({
-        'GOMA_DIR': goma_dir,
-        'GOMA_TMP_DIR': goma_tmp_dir,
-        'NOCONTROL_GOMA': '1',
-    })
-    api.goma.start(env=env)
-  elif use_reclient:
-    env.update({'USE_RECLIENT': '1'})
-
   if use_reclient:
+    env.update({'USE_RECLIENT': '1'})
     with api.reclient.process('compile', '', False):
-      ExecBuildSteps(api, checkout_path, env, goma_dir)
+      ExecBuildSteps(api, checkout_path, env)
   else:
-    ExecBuildSteps(api, checkout_path, env, goma_dir)
+    ExecBuildSteps(api, checkout_path, env)
 
 
 def UploadFilesToCAS(api, files):
