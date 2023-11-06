@@ -448,12 +448,15 @@ def _GetZipCommand(
   Args:
     lzma_sdk_bin: Optional path to the bin directory of the lzma SDK which
       contains the 7z executable.
-    archive_name:
-    path:
-    file_list:
+    archive_name: The name of the archive to be created.
+    path: The relative path to the files to be archived.
+    file_list: The list of files/directories to be archived.
+    no_copy_mode: Whether we should copy the files to be archived. This mode
+      will generate a temporary file.
 
   Returns:
-    A list representing the command to run.
+    A tuple with a list representing the command to be run and a potential
+    temporary file used in the no_copy_mode.
 
     If no command line tool is found, returns None.
   """
@@ -472,39 +475,47 @@ def _GetZipCommand(
     tmpfile.flush()
     return tmpfile
 
-  # 7z doesn't handle symbolic links to directories correctly with the allow
-  # list method and the `-snl` option (it essentially tries to copy the dir,
-  # even though we requested not to copy symbolic links contents).
-  if not no_copy_mode:
-    # If we have 7z, use that as it's much faster. See http://crbug.com/418702.
-    # Some bots have 7zip; others don't, so we use the version in the Chromium
-    # source tree - see https://crbug.com/1459770
-    possible_7zip_locations = []
-    if lzma_sdk_bin is not None:
-      possible_7zip_locations.append(
-          os.path.join(lzma_sdk_bin, '7za.exe' if IsWindows() else '7za')
-      )
-    if IsWindows():
-      possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
-    for possible_7zip_location in possible_7zip_locations:
-      if os.path.exists(possible_7zip_location):
-        cmd = [
-            possible_7zip_location,
-            'a',  # Add files to archive
-            '-tzip',  # Set type of archive to ZIP
-            '-y',  # Assume "Yes" to all queries (overwrite without prompt)
-            '-mx1',  # Set compression level to 1 (fastest)
-            '-uz0',  # Do not update an archive if all files are already up-to-date
-            '-bt',  # Show execution time statistics
-            '-bb0',  # Set output log level to 0 (no information printed to console)
-            '-mmt=on',
+  # If we have 7z, use that as it's much faster. See http://crbug.com/418702.
+  # Some bots have 7zip; others don't, so we use the version in the Chromium
+  # source tree - see https://crbug.com/1459770
+  possible_7zip_locations = []
+  if lzma_sdk_bin is not None:
+    possible_7zip_locations.append(
+        os.path.join(lzma_sdk_bin, '7za.exe' if IsWindows() else '7za')
+    )
+  if IsWindows():
+    possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
+  for possible_7zip_location in possible_7zip_locations:
+    if os.path.exists(possible_7zip_location):
+      cmd = [
+          possible_7zip_location,
+          'a',  # Add files to archive
+          '-tzip',  # Set type of archive to ZIP
+          '-y',  # Assume "Yes" to all queries (overwrite without prompt)
+          '-mx1',  # Set compression level to 1 (fastest)
+          '-uz0',  # Do not update an archive if all files are already up-to-date
+          '-bt',  # Show execution time statistics
+          '-bb0',  # Set output log level to 0 (no information printed to console)
+          '-mmt=on',
+      ]
+      if not IsWindows():
+        cmd += [
+            '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
         ]
-        if not IsWindows():
-          cmd += [
-              '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
-          ]
+
+      tmpfile = None
+      if no_copy_mode:
+        assert path is None or path == '.'
+        tmpfile = _FileListToTempFile(
+            file_list=file_list,
+            prefix_path=None if path == "." else path,
+            glob_dir_content=False
+        )
+        cmd += ['-spf', f'-i@{tmpfile.name}', archive_name]
+      else:
         cmd += [archive_name, path]
-        return (cmd, None)
+
+      return (cmd, tmpfile)
 
   if IsWindows():
     return (None, None)
@@ -519,7 +530,9 @@ def _GetZipCommand(
   if no_copy_mode:
     assert path is None or path == '.'
     tmpfile = _FileListToTempFile(
-        file_list, prefix_path=path, glob_dir_content=True
+        file_list,
+        prefix_path=None if path == "." else path,
+        glob_dir_content=True
     )
     cmd += ['.', f'-i@{tmpfile.name}']
   else:
