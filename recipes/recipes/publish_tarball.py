@@ -66,6 +66,19 @@ DENYLISTED_VERSIONS = [
     '120.0.6097.1',
 ]
 
+# NaCl support was removed from the Linux builds in
+# https://crrev.com/c/4938760, which switched to only checking out the
+# NaCl repository on ChromeOS.
+# Even though the CL got reverted, it was relanded shortly afterward
+# so we can stick to the first time it landed as the version to stop
+# shipping NaCl packages.
+FIRST_RELEASE_WITHOUT_NACL = '121.0.6110.0'
+
+
+def version_ships_nacl(version):
+  return [int(x) for x in version.split('.')
+         ] < [int(x) for x in FIRST_RELEASE_WITHOUT_NACL.split('.')]
+
 
 def gsutil_upload(api, source, bucket, dest, args):
   api.gsutil.upload(source, bucket, dest, args, name=str('upload ' + dest))
@@ -88,10 +101,12 @@ def published_nacl_tarball(version, ls_result):
 
 
 def published_all_tarballs(version, ls_result):
-  return (published_full_tarball(version, ls_result) and
-          published_lite_tarball(version, ls_result) and
-          published_test_tarball(version, ls_result) and
-          published_nacl_tarball(version, ls_result))
+  checks = [
+      published_full_tarball, published_lite_tarball, published_test_tarball
+  ]
+  if version_ships_nacl(version):
+    checks.append(published_nacl_tarball)
+  return all((check(version, ls_result) for check in checks))
 
 
 def export_tarball(api, args, source, destination, step_name_suffix):
@@ -495,7 +510,8 @@ def publish_tarball(api):
     if not published_lite_tarball(version, ls_result):
       defer(export_lite_tarball, api, version)
 
-    if not published_nacl_tarball(version, ls_result):
+    if version_ships_nacl(version) and not published_nacl_tarball(
+        version, ls_result):
       defer(export_nacl_tarball, api, version)
 
 
@@ -511,7 +527,16 @@ def RunSteps(api):
 def GenTests(api):
   yield (
       api.test('basic') + api.buildbucket.generic_build() +
-      api.properties(version='117.0.5917.0') + api.platform('linux', 64) +
+      api.properties(version='121.0.6110.0') + api.platform('linux', 64) +
+      api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
+      api.step_data(
+          'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
+      api.path.exists(api.path['checkout'].join('third_party', 'node',
+                                                'node_modules.tar.gz.sha1')))
+
+  yield (
+      api.test('basic-with-nacl') + api.buildbucket.generic_build() +
+      api.properties(version='117.0.5884.0') + api.platform('linux', 64) +
       api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
