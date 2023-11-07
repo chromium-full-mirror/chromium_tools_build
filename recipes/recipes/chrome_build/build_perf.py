@@ -25,8 +25,14 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/step',
     'reclient',
 ]
+
+
+def _raise_raw_result_on_failure(api, raw_result):
+  if raw_result.status != common_pb.SUCCESS:
+    raise api.step.StepFailure(raw_result.summary_markdown)
 
 
 def _compile_with_and_without_remote_cache(api, target):
@@ -34,13 +40,13 @@ def _compile_with_and_without_remote_cache(api, target):
   api.chromium_build_perf.recreate_build_dir(remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_ninja(
       target, with_remote_cache=False)
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
+  _raise_raw_result_on_failure(api, raw_result)
 
   # Second build with remote cache produced by the previous build.
   api.chromium_build_perf.recreate_build_dir()
-  return api.chromium_build_perf.build_with_ninja(
+  raw_result = api.chromium_build_perf.build_with_ninja(
       target, with_remote_cache=True)
+  _raise_raw_result_on_failure(api, raw_result)
 
 
 def RunSteps(api):
@@ -64,11 +70,7 @@ def RunSteps(api):
     api.chromium.runhooks()
 
   # Build target: all
-  return _compile_with_and_without_remote_cache(api, 'all')
-
-
-def _sanitize_nonalpha(text):
-  return ''.join(c if c.isalnum() else '_' for c in text)
+  _compile_with_and_without_remote_cache(api, 'all')
 
 
 def GenTests(api):
@@ -93,9 +95,6 @@ def GenTests(api):
               **builder).assemble()),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache'),
-      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -113,9 +112,6 @@ def GenTests(api):
               **builder).assemble()),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache'),
-      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -133,28 +129,22 @@ def GenTests(api):
               **builder).assemble()),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache'),
-      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
       api.post_process(post_process.DropExpectation),
   )
 
-  for step in [
-      'Build all without remote cache', 'Build all with remote cache',
-  ]:
-    yield api.test(
-        '%s_compile_fail' % (_sanitize_nonalpha(step)),
-        api.chromium.ci_build(**builder),
-        ctbc_api.properties(
-            ctbc_api.properties_assembler_for_ci_builder(
-                builder_spec=ctbc.BuilderSpec.create(
-                    gclient_config='chromium',
-                    chromium_config='chromium',
-                    build_gs_bucket=None,
-                ),
-                **builder).assemble()),
-        api.reclient.properties(),
-        api.step_data(step, retcode=1),
-        api.expect_status('FAILURE'),
-        api.post_process(post_process.DropExpectation),
-    )
+  yield api.test(
+      'build_failure',
+      api.chromium.ci_build(**builder),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket=None,
+              ),
+              **builder).assemble()),
+      api.reclient.properties(),
+      api.step_data('Build all without remote cache', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )

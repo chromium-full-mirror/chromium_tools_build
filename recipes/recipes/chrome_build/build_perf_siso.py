@@ -30,11 +30,15 @@ DEPS = [
 ]
 
 
+def _raise_raw_result_on_failure(api, raw_result):
+  if raw_result.status != common_pb.SUCCESS:
+    raise api.step.StepFailure(raw_result.summary_markdown)
+
+
 def _get_builder_id(api):
   buildername = api.buildbucket.builder_name
   return chromium.BuilderId.create_for_group(api.builder_group.for_current,
                                              buildername)
-
 
 def _run_builds(api, target, phase, step_name_suffix=None):
   # First build without remote cache.
@@ -42,8 +46,7 @@ def _run_builds(api, target, phase, step_name_suffix=None):
       phase=phase, remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_siso(
       target, with_remote_cache=False, step_name_suffix=step_name_suffix)
-  if raw_result and raw_result.status != common_pb.SUCCESS:
-    return raw_result
+  _raise_raw_result_on_failure(api, raw_result)
 
   # Warm-up the remote cache when not using reproxy, because otherwise
   # C++ actions will not get cache hits due to their deps changing
@@ -55,8 +58,9 @@ def _run_builds(api, target, phase, step_name_suffix=None):
 
   # Second build with remote cache produced by the previous build.
   api.chromium_build_perf.recreate_build_dir(phase=phase)
-  return api.chromium_build_perf.build_with_siso(
+  raw_result = api.chromium_build_perf.build_with_siso(
       target, with_remote_cache=True, step_name_suffix=step_name_suffix)
+  _raise_raw_result_on_failure(api, raw_result)
 
 
 def RunSteps(api):
@@ -79,16 +83,8 @@ def RunSteps(api):
   api.step('check siso version', [api.siso.siso_path, 'version'])
 
   # Build target: all
-  raw_result = _run_builds(api, 'all', phase='builtin')
-  if raw_result and raw_result.status != common_pb.SUCCESS:
-    return raw_result
-
-  return _run_builds(
-      api, 'all', phase='reproxy', step_name_suffix=' with reproxy')
-
-
-def _sanitize_nonalpha(text):
-  return ''.join(c if c.isalnum() else '_' for c in text)
+  _run_builds(api, 'all', phase='builtin')
+  _run_builds(api, 'all', phase='reproxy', step_name_suffix=' with reproxy')
 
 
 def GenTests(api):
@@ -114,13 +110,6 @@ def GenTests(api):
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache'),
-      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache with reproxy'),
-      api.post_process(post_process.StepSuccess,
-                       'Build all with remote cache with reproxy'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -139,13 +128,6 @@ def GenTests(api):
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache'),
-      api.post_process(post_process.StepSuccess, 'Build all with remote cache'),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache with reproxy'),
-      api.post_process(post_process.StepSuccess,
-                       'Build all with remote cache with reproxy'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -164,34 +146,23 @@ def GenTests(api):
       api.siso.properties(),
       api.reclient.properties(),
       api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.StepSuccess,
-                       'Build all without remote cache with reproxy'),
-      api.post_process(post_process.StepSuccess,
-                       'Build all with remote cache with reproxy'),
       api.post_process(post_process.DropExpectation),
   )
 
-  for with_remote_cache in [True, False]:
-    for with_reproxy in [True, False]:
-      step = 'Build all %s remote cache' % ('with'
-                                            if with_remote_cache else 'without')
-      if with_reproxy:
-        step += ' with reproxy'
-
-      yield api.test(
-          '%s_fail' % (_sanitize_nonalpha(step)),
-          api.chromium.ci_build(**builder),
-          ctbc_api.properties(
-              ctbc_api.properties_assembler_for_ci_builder(
-                  builder_spec=ctbc.BuilderSpec.create(
-                      gclient_config='chromium',
-                      chromium_config='chromium',
-                      build_gs_bucket=None,
-                  ),
-                  **builder).assemble()),
-          api.siso.properties(),
-          api.reclient.properties(),
-          api.step_data(step, retcode=1),
-          api.expect_status('FAILURE'),
-          api.post_process(post_process.DropExpectation),
-      )
+  yield api.test(
+      'build_failure',
+      api.chromium.ci_build(**builder),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket=None,
+              ),
+              **builder).assemble()),
+      api.siso.properties(),
+      api.reclient.properties(),
+      api.step_data('Build all without remote cache', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
