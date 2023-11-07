@@ -756,8 +756,7 @@ class V8Api(recipe_api.RecipeApi):
             mb_config_path=mb_config_path,
             isolated_targets=isolate_targets,
             build_dir=build_dir,
-            gn_args_location=self.m.gn.LOGS,
-            use_goma=False)
+            gn_args_location=self.m.gn.LOGS)
 
         self.m.v8_tests.gn_args = gn_args.splitlines()
 
