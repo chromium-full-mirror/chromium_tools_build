@@ -82,13 +82,24 @@ def RunSteps(api, properties):
 
       if compile_result and compile_result.status != common_pb.SUCCESS:
         return compile_result.status
+
       # Run tests.
+      # If we have < 10 tests to runs, trigger fast runs, which
+      # gives the swarming task a higher priority.
+      # Perhaps it worths it to check for only tests that actually exist,
+      # but we are not doing it now, given that we rarely run more than
+      # 10 tests, and most tests should exist anyway.
+      if not properties.run_all and len(properties.tests_to_run) < 10:
+        api.step.empty('adjust_fast_run_priority')
+        api.chromium_swarming.default_priority -= 1
+
+      suffix = 'bisection'
       with api.chromium_tests.wrap_chromium_tests(
           builder_config, tests=step_tests):
-        api.test_utils.run_tests_once(step_tests, 'bisection')
+        api.test_utils.run_tests_once(step_tests, suffix)
 
       test_results = fetch_test_results(api, properties.tests_to_run,
-                                        step_tests)
+                                        step_tests, suffix)
       run_succeeded = True
   finally:
     api.gofindit.send_test_results_to_luci_bisection(
@@ -96,7 +107,7 @@ def RunSteps(api, properties):
         properties.bisection_host)
 
 
-def fetch_test_results(api, tests_to_run, step_tests):
+def fetch_test_results(api, tests_to_run, step_tests, suffix):
   test_ids_by_test_suite = dict()
   for test_to_run in tests_to_run:
     test_ids = test_ids_by_test_suite.setdefault(test_to_run.test_suite_name,
@@ -106,7 +117,7 @@ def fetch_test_results(api, tests_to_run, step_tests):
   for test in step_tests:
     test_ids = test_ids_by_test_suite[test.canonical_name]
     res = api.resultdb.query_test_results(
-        invocations=test.get_invocation_names('bisection'),
+        invocations=test.get_invocation_names(suffix),
         test_id_regexp="({})".format("|".join(
             [re.escape(id) for id in test_ids])),
         field_mask_paths=['test_id', 'variant_hash', 'expected', 'status'],
@@ -246,7 +257,8 @@ def GenTests(api):
                              tests_to_run,
                              target_builder_group='fake-group',
                              target_builder='fake-builder',
-                             should_clobber=False):
+                             should_clobber=False,
+                             run_all=False):
     """Set up input properties to test this recipe.
 
     Attributes:
@@ -261,6 +273,7 @@ def GenTests(api):
     props_proto.target_builder.group = target_builder_group
     props_proto.target_builder.builder = target_builder
     props_proto.should_clobber = should_clobber
+    props_proto.run_all = run_all
     return sum([api.properties(props_proto)], api.empty_test_data())
 
   yield api.test(
@@ -271,6 +284,7 @@ def GenTests(api):
           tests_to_run=[('fake-gtest', 'gtest-test'),
                         ('fake-gtest-2', 'gtest-test-2')]),
       api.post_process(MustRun, 'bot_update'),
+      api.post_process(MustRun, 'adjust_fast_run_priority'),
       api.post_process(MustRun, 'compile'),
       api.post_process(MustRun, 'fake-gtest (bisection) on Mac'),
       api.post_process(MustRun, 'fake-gtest-2 (bisection) on Mac'),
@@ -279,6 +293,51 @@ def GenTests(api):
                        "input", ['"run_succeeded": true']),
       api.post_process(DoesNotRun, 'fake-gtest-3 (bisection) on Mac'),
       api.post_process(DoesNotRun, 'fake-script-test (bisection)'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'run_more_than_9_tests',
+      setup(api, query_resultdb=True),
+      setup_input_properties(
+          api,
+          tests_to_run=[('fake-gtest', 'gtest-test'),
+                        ('fake-gtest-2', 'gtest-test-2'),
+                        ('fake-gtest-3-1', 'gtest-test-3'),
+                        ('fake-gtest-3-2', 'gtest-test-3'),
+                        ('fake-gtest-3-3', 'gtest-test-3'),
+                        ('fake-gtest-3-4', 'gtest-test-3'),
+                        ('fake-gtest-3-5', 'gtest-test-3'),
+                        ('fake-gtest-3-6', 'gtest-test-3'),
+                        ('fake-gtest-3-7', 'gtest-test-3'),
+                        ('fake-gtest-3-8', 'gtest-test-3')]),
+      api.post_process(MustRun, 'bot_update'),
+      api.post_process(MustRun, 'compile'),
+      api.post_process(MustRun, 'fake-gtest (bisection) on Mac'),
+      api.post_process(MustRun, 'fake-gtest-2 (bisection) on Mac'),
+      api.post_process(MustRun, 'send_test_results_to_luci_bisection'),
+      api.post_process(LogContains, "send_test_results_to_luci_bisection",
+                       "input", ['"run_succeeded": true']),
+      api.post_process(DoesNotRun, 'adjust_fast_run_priority'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'full_run',
+      setup(api, query_resultdb=True),
+      setup_input_properties(
+          api,
+          tests_to_run=[('fake-gtest', 'gtest-test'),
+                        ('fake-gtest-2', 'gtest-test-2')],
+          run_all=True),
+      api.post_process(MustRun, 'bot_update'),
+      api.post_process(MustRun, 'compile'),
+      api.post_process(MustRun, 'fake-gtest (bisection) on Mac'),
+      api.post_process(MustRun, 'fake-gtest-2 (bisection) on Mac'),
+      api.post_process(MustRun, 'send_test_results_to_luci_bisection'),
+      api.post_process(LogContains, "send_test_results_to_luci_bisection",
+                       "input", ['"run_succeeded": true']),
+      api.post_process(DoesNotRun, 'adjust_fast_run_priority'),
       api.post_process(DropExpectation),
   )
 
