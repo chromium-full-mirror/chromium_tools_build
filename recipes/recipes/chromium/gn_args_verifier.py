@@ -182,12 +182,15 @@ def RunSteps(api, properties):
 
 def _verify_gn_args(api, pre_patch_args: str, post_patch_args: str,
                     presentation: StepPresentation) -> bool:
+  pre_patch_args_lines = pre_patch_args.splitlines()
+  post_patch_args_lines = post_patch_args.splitlines()
   diff = list(
       difflib.unified_diff(
-          pre_patch_args.splitlines(),
-          post_patch_args.splitlines(),
+          pre_patch_args_lines,
+          post_patch_args_lines,
           fromfile='mb config GN args',
           tofile='Starlark GN args',
+          n=max(len(pre_patch_args_lines), len(post_patch_args_lines)),
       ))
 
   if diff:
