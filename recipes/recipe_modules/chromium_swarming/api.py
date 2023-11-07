@@ -63,10 +63,20 @@ def _text_for_task(task):
     lines.append('Run on OS: %r' % dimensions['os'])
 
   cmd = ' '.join(task.base_command + task.extra_args)
+  # The `luci-auth context` bit is used for a small subset of tests that need
+  # to make authenticated GS calls. Were a dev to run the test command locally,
+  # it'd likely be unneeded since:
+  # - They're probably not running a test that makes GS calls.
+  # - They probably have latent GS creds locally that gsutil will use.
+  # TODO(crbug.com/1498156): Remove this once swarming sets up BOTO itself.
+  # "disable=no-member" since pylint doesn't recongize this is running under
+  # a newer version of python that has removeprefix().
+  # TODO(crbug.com/1500415): Remove the "no-member" pylint disable.
+  cmd = cmd.removeprefix('luci-auth context -- ')  # pylint: disable=no-member
+  cmd = cmd.removeprefix('luci-auth.exe context -- ')  # pylint: disable=no-member
   if len(cmd) <= 1000:
     lines.append('Test command:')
-    lines.append(
-        '<code>' + ' '.join(task.base_command + task.extra_args) + '</code>')
+    lines.append('<code>' + cmd + '</code>')
   else:
     lines.append('Test command too long to list. See "shard #0" link below '
                  'for the full invocation.')
