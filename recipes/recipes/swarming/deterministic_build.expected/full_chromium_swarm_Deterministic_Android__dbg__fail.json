@@ -300,6 +300,81 @@
     "name": "gclient runhooks"
   },
   {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools/mb/mb.py",
+      "lookup",
+      "-m",
+      "chromium.swarm",
+      "-b",
+      "Deterministic Android (dbg)",
+      "--config-file",
+      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "--quiet"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "lookup GN args",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/src/tools/mb/mb.py",
+      "gen",
+      "-m",
+      "chromium.swarm",
+      "-b",
+      "Deterministic Android (dbg)",
+      "--config-file",
+      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
+      "--json-output",
+      "/path/to/tmp/json",
+      "//out/Debug"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "env": {
+      "CHROME_HEADLESS": "1",
+      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "generate_build_files",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
+      "@@@STEP_LOG_END@json.output[failure_summary]@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "ensure_goma"
   },
@@ -391,87 +466,6 @@
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "[CACHE]/builder/src/tools/mb/mb.py",
-      "lookup",
-      "-m",
-      "chromium.swarm",
-      "-b",
-      "Deterministic Android (dbg)",
-      "--config-file",
-      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
-      "--quiet"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "lookup GN args",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_goma = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "[CACHE]/builder/src/tools/mb/mb.py",
-      "gen",
-      "-m",
-      "chromium.swarm",
-      "-b",
-      "Deterministic Android (dbg)",
-      "--config-file",
-      "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
-      "--json-output",
-      "/path/to/tmp/json",
-      "//out/Debug"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false",
-      "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "generate_build_files",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
-      "@@@STEP_LOG_END@json.output[failure_summary]@@@"
     ]
   },
   {
@@ -1795,7 +1789,6 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
     },
     "luci_context": {
@@ -1812,7 +1805,7 @@
     },
     "name": "lookup GN args (2)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_goma = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
     ]
   },
   {
@@ -1836,7 +1829,6 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>"
     },
     "luci_context": {

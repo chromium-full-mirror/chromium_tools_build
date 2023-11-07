@@ -269,6 +269,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -318,6 +319,7 @@
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -574,7 +576,8 @@
       "@@@STEP_LOG_LINE@compilator_properties@{@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  \"gn_args\": [@@@",
       "@@@STEP_LOG_LINE@compilator_properties@    \"goma_dir = \\\"/b/build/slave/cache/goma_client\\\"\",@@@",
-      "@@@STEP_LOG_LINE@compilator_properties@    \"target_cpu = \\\"x86\\\"\"@@@",
+      "@@@STEP_LOG_LINE@compilator_properties@    \"target_cpu = \\\"x86\\\"\",@@@",
+      "@@@STEP_LOG_LINE@compilator_properties@    \"use_remoteexec = true\"@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  ],@@@",
       "@@@STEP_LOG_LINE@compilator_properties@  \"parent_test_spec\": {@@@",
       "@@@STEP_LOG_LINE@compilator_properties@    \"swarming_dimensions\": {},@@@",
@@ -596,7 +599,7 @@
       "@@@STEP_LOG_LINE@compilator_properties@  }@@@",
       "@@@STEP_LOG_LINE@compilator_properties@}@@@",
       "@@@STEP_LOG_END@compilator_properties@@@",
-      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"gn_args\": [\"goma_dir = \\\"/b/build/slave/cache/goma_client\\\"\", \"target_cpu = \\\"x86\\\"\"], \"parent_test_spec\": {\"swarming_dimensions\": {}, \"swarming_task_attrs\": {}, \"tests\": [[\"v8testing\", 1, null, \"\", [], {}, {}]]}, \"swarm_hashes\": {\"bot_default\": \"[dummy hash for bot_default/dummy size]\"}}@@@"
+      "@@@SET_BUILD_PROPERTY@compilator_properties@{\"gn_args\": [\"goma_dir = \\\"/b/build/slave/cache/goma_client\\\"\", \"target_cpu = \\\"x86\\\"\", \"use_remoteexec = true\"], \"parent_test_spec\": {\"swarming_dimensions\": {}, \"swarming_task_attrs\": {}, \"tests\": [[\"v8testing\", 1, null, \"\", [], {}, {}]]}, \"swarm_hashes\": {\"bot_default\": \"[dummy hash for bot_default/dummy size]\"}}@@@"
     ]
   },
   {

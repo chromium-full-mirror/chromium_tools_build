@@ -275,6 +275,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -325,6 +326,7 @@
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -800,6 +802,7 @@
       "@@@STEP_LOG_LINE@fast@GN arguments:@@@",
       "@@@STEP_LOG_LINE@fast@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@fast@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@fast@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@fast@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/fast\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -834,6 +837,7 @@
       "@@@STEP_LOG_LINE@slow@GN arguments:@@@",
       "@@@STEP_LOG_LINE@slow@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@slow@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@slow@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@slow@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/slow\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -1186,6 +1190,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -1236,6 +1241,7 @@
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -1842,6 +1848,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -1892,6 +1899,7 @@
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -2293,6 +2301,7 @@
       "@@@STEP_LOG_LINE@fast@GN arguments:@@@",
       "@@@STEP_LOG_LINE@fast@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@fast@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@fast@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@fast@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/fast\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -2327,6 +2336,7 @@
       "@@@STEP_LOG_LINE@slow@GN arguments:@@@",
       "@@@STEP_LOG_LINE@slow@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@slow@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@slow@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@Trigger flake bisect on command line:@@@",
       "@@@STEP_LOG_LINE@slow@bb add v8/try.triggered/v8_flako -p 'bisect_builder_group=\"client.v8\"' -p 'bisect_buildername=\"V8 Foobar\"' -p 'revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"' -p 'swarming_dimensions=[\"cpu:x86-64\", \"pool:chromium.tests\", \"os:Ubuntu-16.04\"]' -p 'isolated_name=\"bot_default\"' -p 'test_name=\"suite-name/dir/slow\"' -p 'timeout_sec=60' -p 'total_timeout_sec=120' -p 'variant=\"default\"' -p 'extra_args=[]'@@@",
@@ -2524,6 +2534,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
@@ -2574,6 +2585,7 @@
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
       "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
