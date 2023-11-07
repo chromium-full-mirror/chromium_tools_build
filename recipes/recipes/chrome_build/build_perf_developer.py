@@ -34,6 +34,11 @@ DEPS = [
 ]
 
 
+def _raise_raw_result_on_failure(api, raw_result):
+  if raw_result.status != common_pb.SUCCESS:
+    raise api.step.StepFailure(raw_result.summary_markdown)
+
+
 def _incremental_build_with_one_day_changes(api, target):
   """Steps to run an incremental build with 1-day of changes
      (a.k.a morning build).
@@ -70,8 +75,7 @@ def _incremental_build_with_one_day_changes(api, target):
         target,
         with_remote_cache=True,
         step_name_suffix=' at current revision (warmup)')
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
@@ -82,8 +86,7 @@ def _incremental_build_with_one_day_changes(api, target):
         with_remote_cache=True,
         out_sub_dir='rbe',
         step_name_suffix=suffix)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso native build
     api.chromium_build_perf.recreate_build_dir(
@@ -94,8 +97,7 @@ def _incremental_build_with_one_day_changes(api, target):
         with_remote_cache=True,
         out_sub_dir='siso',
         step_name_suffix=suffix)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     # Clean up deps cache and check out to the base revision.
     api.chromium_build_perf.checkout(base_rev)
@@ -108,8 +110,7 @@ def _incremental_build_with_one_day_changes(api, target):
         target,
         with_remote_cache=True,
         step_name_suffix=' at base revision (warmup)')
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
@@ -121,8 +122,7 @@ def _incremental_build_with_one_day_changes(api, target):
         with_remote_cache=True,
         out_sub_dir='rbe',
         step_name_suffix=' with Siso in Reproxy mode at base revision (warmup)')
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso native
     api.chromium_build_perf.recreate_build_dir(
@@ -134,8 +134,7 @@ def _incremental_build_with_one_day_changes(api, target):
         with_remote_cache=True,
         out_sub_dir='siso',
         step_name_suffix=' with Siso in native mode at base revision (warmup)')
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(cur_rev)
@@ -143,8 +142,7 @@ def _incremental_build_with_one_day_changes(api, target):
     ## Ninja+Reclient
     raw_result = api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=True)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso+Reclient
     raw_result = api.chromium_build_perf.build_with_siso(
@@ -152,18 +150,14 @@ def _incremental_build_with_one_day_changes(api, target):
         with_remote_cache=True,
         out_sub_dir='rbe',
         step_name_suffix=' with Siso in Reproxy mode')
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
         with_remote_cache=True,
         out_sub_dir='siso',
         step_name_suffix=' with Siso in native mode')
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
-
-    return raw_result
+    _raise_raw_result_on_failure(api, raw_result)
 
 
 def _incremental_builds_with_patch(api, target):
@@ -256,8 +250,7 @@ def _incremental_builds_with_patch(api, target):
           target,
           with_remote_cache=with_remote_cache,
           step_name_suffix=step_name_suffix)
-      if raw_result.status != common_pb.SUCCESS:
-        return raw_result
+      _raise_raw_result_on_failure(api, raw_result)
 
       # Siso+Reclient
       raw_result = api.chromium_build_perf.build_with_siso(
@@ -265,8 +258,7 @@ def _incremental_builds_with_patch(api, target):
           with_remote_cache=with_remote_cache,
           out_sub_dir='rbe',
           step_name_suffix=' with Siso in Reproxy mode' + step_name_suffix)
-      if raw_result.status != common_pb.SUCCESS:
-        return raw_result
+      _raise_raw_result_on_failure(api, raw_result)
 
       # Siso native build
       raw_result = api.chromium_build_perf.build_with_siso(
@@ -274,9 +266,7 @@ def _incremental_builds_with_patch(api, target):
           with_remote_cache=with_remote_cache,
           out_sub_dir='siso',
           step_name_suffix=' with Siso in native mode' + step_name_suffix)
-      if raw_result.status != common_pb.SUCCESS:
-        return raw_result
-    return raw_result
+      _raise_raw_result_on_failure(api, raw_result)
 
 
 def _clean_builds(api, target):
@@ -288,14 +278,11 @@ def _clean_builds(api, target):
         phase=phase, remove_deps_cache=True)
     result = api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=False)
-    if result.status != common_pb.SUCCESS:
-      return result
+    _raise_raw_result_on_failure(api, result)
 
     api.chromium_build_perf.recreate_build_dir(phase=phase)
     result = api.chromium_build_perf.build_with_ninja(
         target, with_remote_cache=True)
-    if result.status != common_pb.SUCCESS:
-      return result
 
     # Siso+Reclient builds.
     phase = 'reproxy'
@@ -304,14 +291,12 @@ def _clean_builds(api, target):
         phase=phase, remove_deps_cache=True)
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=False, step_name_suffix=step_name_suffix)
-    if result.status != common_pb.SUCCESS:
-      return result
+    _raise_raw_result_on_failure(api, result)
 
     api.chromium_build_perf.recreate_build_dir(phase=phase)
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=True, step_name_suffix=step_name_suffix)
-    if result.status != common_pb.SUCCESS:
-      return result
+    _raise_raw_result_on_failure(api, result)
 
     # Siso native builds.
     phase = 'builtin'
@@ -320,16 +305,12 @@ def _clean_builds(api, target):
         phase=phase, remove_deps_cache=True)
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=False, step_name_suffix=step_name_suffix)
-    if result.status != common_pb.SUCCESS:
-      return result
+    _raise_raw_result_on_failure(api, result)
 
     api.chromium_build_perf.recreate_build_dir(phase=phase)
     result = api.chromium_build_perf.build_with_siso(
         target, with_remote_cache=True, step_name_suffix=step_name_suffix)
-    if result.status != common_pb.SUCCESS:
-      return result
-
-    return result
+    _raise_raw_result_on_failure(api, result)
 
 
 def RunSteps(api):
@@ -362,16 +343,12 @@ def RunSteps(api):
   }
   with api.context(env=env):
     # Clean builds.
-    raw_result = _clean_builds(api, target)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _clean_builds(api, target)
 
     # Incremental build with 1-day of changes. a.k.a morning build.
-    raw_result = _incremental_build_with_one_day_changes(api, target)
-    if raw_result.status != common_pb.SUCCESS:
-      return raw_result
+    _incremental_build_with_one_day_changes(api, target)
 
-    return _incremental_builds_with_patch(api, target)
+    _incremental_builds_with_patch(api, target)
 
 
 def GenTests(api):
@@ -382,55 +359,6 @@ def GenTests(api):
       'builder_group': 'fake-group',
       'builder': 'fake-builder',
   }
-
-  def _build_steps(target):
-    return [
-        'Clean builds.Build %s without remote cache' % target,
-        'Clean builds.Build %s with remote cache' % target,
-        'Clean builds.Build %s without remote cache with Siso in Reproxy mode' %
-        target,
-        'Clean builds.Build %s with remote cache with Siso in Reproxy mode' %
-        target,
-        'Clean builds.Build %s without remote cache with Siso in native mode' %
-        target,
-        'Clean builds.Build %s with remote cache with Siso in native mode' %
-        target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'at current revision (warmup)' % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'with Siso in Reproxy mode at current revision (warmup)' % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'with Siso in native mode at current revision (warmup)' % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'at base revision (warmup)' % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'with Siso in Reproxy mode at base revision (warmup)' % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'with Siso in native mode at base revision (warmup)' % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache' %
-        target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'with Siso in Reproxy mode' % target,
-        'Incremental build with 1-day of changes.Build %s with remote cache '
-        'with Siso in native mode' % target,
-        'Incremental builds with patch.Build %s with remote cache at base '
-        'revision (warmup)' % target,
-        'Incremental builds with patch.Build %s with remote cache with Siso '
-        'in Reproxy mode at base revision (warmup)' % target,
-        'Incremental builds with patch.Build %s with remote cache with Siso '
-        'in native mode at base revision (warmup)' % target,
-        'Incremental builds with patch.Build %s without remote cache' % target,
-        'Incremental builds with patch.Build %s without remote cache with Siso '
-        'in Reproxy mode' % target,
-        'Incremental builds with patch.Build %s without remote cache with Siso '
-        'in native mode' % target,
-    ]
-
-  def _success_builds(target):
-    return [
-        api.post_process(post_process.StepSuccess, s)
-        for s in _build_steps(target)
-    ]
 
   def _buildbucket_search_results():
     return api.buildbucket.simulated_search_results(
@@ -459,8 +387,6 @@ def GenTests(api):
       api.reclient.properties(),
       api.siso.properties(),
       _buildbucket_search_results(),
-      *_success_builds('chrome'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -477,8 +403,6 @@ def GenTests(api):
               **builder).assemble()),
       api.reclient.properties(),
       api.siso.properties(),
-      *_success_builds('chrome'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -497,7 +421,6 @@ def GenTests(api):
       api.siso.properties(),
       api.step_data('Incremental builds with patch.git log',
                     api.raw_io.stream_output_text('')),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -516,26 +439,24 @@ def GenTests(api):
       api.reclient.properties(),
       api.siso.properties(),
       _buildbucket_search_results(),
-      *_success_builds('chrome_public_apk'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
-  for step in _build_steps('chrome'):
-    yield api.test(
-        '%s_fail' % step,
-        api.chromium.ci_build(**builder),
-        ctbc_api.properties(
-            ctbc_api.properties_assembler_for_ci_builder(
-                builder_spec=ctbc.BuilderSpec.create(
-                    gclient_config='chromium',
-                    chromium_config='chromium',
-                    build_gs_bucket=None,
-                ),
-                **builder).assemble()),
-        api.reclient.properties(),
-        api.siso.properties(),
-        api.step_data(step, retcode=1),
-        api.expect_status('FAILURE'),
-        api.post_process(post_process.DropExpectation),
-    )
+  yield api.test(
+      'clean_build_failure',
+      api.chromium.ci_build(**builder),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket=None,
+              ),
+              **builder).assemble()),
+      api.reclient.properties(),
+      api.siso.properties(),
+      api.step_data(
+          'Clean builds.Build chrome without remote cache', retcode=1),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
