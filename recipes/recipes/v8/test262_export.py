@@ -11,6 +11,7 @@ contain exportable changes and merges these pull requests.
 DEPS = [
     'depot_tools/gclient',
     'infra/cloudkms',
+    'recipe_engine/context',
     'recipe_engine/path',
     'recipe_engine/step',
     'v8',
@@ -23,9 +24,9 @@ KMS_CRYPTO_KEY = (
 
 
 def RunSteps(api):
-  api.gclient.set_config('chromium')
-  api.gclient.apply_config('v8_tot')
-  api.v8.checkout(ignore_input_commit=True, set_output_commit=False)
+  configure(api)
+
+  api.v8.checkout()
 
   creds = api.path['cleanup'].join(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
@@ -34,23 +35,29 @@ def RunSteps(api):
       creds,
   )
 
-  chromium_path = api.path['checkout']
+  checkout_root = api.path['cache'].join('builder')
+  chromium_path = checkout_root.join('src')
   blink_tools_path = chromium_path.join('third_party', 'blink', 'tools')
 
-  v8_path = chromium_path.join('v8')
+  v8_path = checkout_root.join('v8')
+
   script = v8_path.join('test', 'test262', 'tools', 'export.py')
 
+  with api.context(cwd=v8_path):
+    args = [
+        '--credentials-json',
+        creds,
+        '--surface-failures-to-gerrit',
+        '--blink-tools-path',
+        blink_tools_path,
+    ]
+    api.v8.vpython('Export V8 commits to Test262', script, args)
 
-  args = [
-      '--credentials-json',
-      creds,
-      '--surface-failures-to-gerrit',
-      '--blink-tools-path',
-      blink_tools_path,
-      # TODO: Remove this once we have a stable config.
-      #'--config-path', api.repo_resource('recipes', 'recipes', 'assets', 'v8configs.json'),
-  ]
-  api.v8.vpython('Export V8 commits to Test262', script, args)
+def configure(api):
+  api.gclient.set_config('chromium')
+  api.gclient.apply_config('v8_bare')
+  # TODO: Remove this in finalized version. This is just for testing.
+  #api.gclient.c.revisions['v8'] = "49cd7d838c98245268b12d2c75538faa3e402ac0"
 
 
 def GenTests(api):
