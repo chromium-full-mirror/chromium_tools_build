@@ -27,3 +27,12 @@ rules {
         }
     }
 }
+
+# crbug/1497905, b/298688400
+rules {
+    output_file_path_rule_spec {
+        path_pattern {
+            expression: "^\.\.\/\.\.\/tools\/clang\/crashreports$"
+        }
+    }
+}
