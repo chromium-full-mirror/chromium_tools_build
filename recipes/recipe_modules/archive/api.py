@@ -622,7 +622,40 @@ class ArchiveApi(recipe_api.RecipeApi):
         status=self.m.step.FAILURE,
         step_text='Can not find channel for milestone: %s' % milestone)
 
+  def _evaluate_condition(self, condition):
+    """Evaluates a condition from the following `when` placeholder. See
+    _replace_placeholders.
+
+    Returns:
+      A boolean value to indicate the evaluated result of the condition.
+    """
+    if condition == 'is_canary':
+      return self.get_channel_name() == 'canary'
+    self.m.step.empty(
+        'Unknown condition',
+        status=self.m.step.FAILURE,
+        step_text=condition + ' can not be evaluated')
+
   def _replace_placeholders(self, update_properties, custom_vars, input_str):
+    # Evaluate the condition placeholder formatting like:
+    # {% text when condition %}.
+    # The text can contain other placeholders as well; the condition is
+    # evaluated via _evaluate_condition function.
+    # If the condition is evaluated to True, the entire placeholder will be
+    # replaced into the text, otherwise it will be replaced into an empty
+    # string.
+    # The condition is currently used by Fuchsia archive to attach a ref when
+    # the builder is running on canary. E.g.
+    # {% m{%milestone}_fuchsia_ready when is_canary %}.
+    for placeholder, value, condition in re.findall(
+        '({%\s(.*?)\swhen\s(.*?)\s%})', input_str):
+      if self._evaluate_condition(condition):
+        input_str = input_str.replace(
+            placeholder,
+            self._replace_placeholders(update_properties, custom_vars, value))
+      else:
+        input_str = input_str.replace(placeholder, '')
+
     position_placeholder = '{%position%}'
     if position_placeholder in input_str:
       commit_position = self._get_commit_position(update_properties, None)
@@ -1249,6 +1282,23 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     return uploads
 
+  def _replace_placeholders_in_list(self, update_properties, custom_vars,
+                                    values):
+    ret = []
+    for value in values:
+      value = self._replace_placeholders(update_properties, custom_vars, value)
+      if value:
+        ret.append(value)
+    return ret
+
+  def _replace_placeholders_in_dict(self, update_properties, custom_vars,
+                                    values):
+    ret = dict(values)
+    for key in ret:
+      ret[key] = self._replace_placeholders(update_properties, custom_vars,
+                                            ret[key])
+    return {k: v for k, v in ret.items() if v}
+
   def cipd_archive(self, build_dir, update_properties, custom_vars,
                    cipd_archive_data, report_artifacts=False):
     """Archives packages to CIPD.
@@ -1263,20 +1313,13 @@ class ArchiveApi(recipe_api.RecipeApi):
       cipd_archive_data: An instance of archive/properties.proto:
                          InputProperties.cipd_archive_datas.
     """
-    refs = []
-    for ref in cipd_archive_data.refs:
-      refs.append(
-          self._replace_placeholders(update_properties, custom_vars, ref))
-
-    tags = dict(cipd_archive_data.tags)
-    for key in tags:
-      tags[key] = self._replace_placeholders(update_properties, custom_vars,
-                                             tags[key])
-
-    pkg_vars = dict(cipd_archive_data.pkg_vars)
-    for key in pkg_vars:
-      pkg_vars[key] = self._replace_placeholders(update_properties, custom_vars,
-                                                 pkg_vars[key])
+    refs = self._replace_placeholders_in_list(update_properties, custom_vars,
+                                              cipd_archive_data.refs)
+    tags = self._replace_placeholders_in_dict(update_properties, custom_vars,
+                                              cipd_archive_data.tags)
+    pkg_vars = self._replace_placeholders_in_dict(update_properties,
+                                                  custom_vars,
+                                                  cipd_archive_data.pkg_vars)
 
     compression_level = None
     if cipd_archive_data.HasField('compression'):

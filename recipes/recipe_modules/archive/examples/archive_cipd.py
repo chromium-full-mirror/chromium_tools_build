@@ -325,3 +325,130 @@ def GenTests(api):
           ]),
       api.post_process(post_process.DropExpectation),
   )
+
+  input_properties = properties.InputProperties()
+  cipd_archive_data = _cipd_archive_data()
+  cipd_archive_data.refs.extend(
+      ['{% m{%milestone%}_fuchsia_ready when is_canary %}'])
+  cipd_archive_data.tags[
+      'canary-milestone'] = '{% {%milestone%} when is_canary %}'
+  input_properties.cipd_archive_datas.extend([cipd_archive_data])
+  yield api.test(
+      'is_canary_true',
+      api.chromium.generic_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_config_kwargs={
+                      'TARGET_ARCH': 'arm',
+                      'TARGET_BITS': 64,
+                      'TARGET_PLATFORM': 'fuchsia',
+                  },
+              ),
+          ).assemble()),
+      api.properties(
+          cipd_archive=True,
+          update_properties={},
+          custom_vars={
+              'chrome_version': '1.2.3.4',
+          },
+          **{'$build/archive': input_properties}),
+      api.chromium.override_version(
+          major=91, step_name='Generic Archiving Steps.get version'),
+      api.post_process(post_process.MustRun,
+                       "Generic Archiving Steps.create foo"),
+      api.post_process(
+          post_process.StepCommandContains,
+          "Generic Archiving Steps.create foo", [
+              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
+              '-hash-algo', 'sha256', '-ref', 'canary', '-ref',
+              'm91_fuchsia_ready', '-tag', 'canary-milestone:91', '-tag',
+              'version:1.2.3.4', '-pkg-var', 'targetarch:arm64',
+              '-compression-level', '8', '-json-output', '/path/to/tmp/json'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  # Use the same input_properties as the previous test.
+  yield api.test(
+      'is_canary_false',
+      api.chromium.generic_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_config_kwargs={
+                      'TARGET_ARCH': 'arm',
+                      'TARGET_BITS': 64,
+                      'TARGET_PLATFORM': 'fuchsia',
+                  },
+              ),
+          ).assemble()),
+      api.properties(
+          cipd_archive=True,
+          update_properties={},
+          custom_vars={
+              'chrome_version': '1.2.3.4',
+          },
+          **{'$build/archive': input_properties}),
+      api.chromium.override_version(
+          major=90, step_name='Generic Archiving Steps.get version'),
+      api.post_process(post_process.MustRun,
+                       "Generic Archiving Steps.create foo"),
+      api.post_process(
+          post_process.StepCommandContains,
+          "Generic Archiving Steps.create foo", [
+              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
+              '-hash-algo', 'sha256', '-ref', 'beta', '-tag', 'version:1.2.3.4',
+              '-pkg-var', 'targetarch:arm64', '-compression-level', '8',
+              '-json-output', '/path/to/tmp/json'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  cipd_archive_data = _cipd_archive_data()
+  cipd_archive_data.refs.extend(
+      ['{% m{%milestone%}_fuchsia_ready when unknown condition %}'])
+  input_properties.cipd_archive_datas.extend([cipd_archive_data])
+  yield api.test(
+      'unknown_condition',
+      api.chromium.generic_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_config_kwargs={
+                      'TARGET_ARCH': 'arm',
+                      'TARGET_BITS': 64,
+                      'TARGET_PLATFORM': 'fuchsia',
+                  },
+              ),
+          ).assemble()),
+      api.properties(
+          cipd_archive=True,
+          update_properties={},
+          custom_vars={
+              'chrome_version': '1.2.3.4',
+          },
+          **{'$build/archive': input_properties}),
+      api.chromium.override_version(
+          major=91, step_name='Generic Archiving Steps.get version'),
+      api.post_process(post_process.StepFailure,
+                       "Generic Archiving Steps.Unknown condition"),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
