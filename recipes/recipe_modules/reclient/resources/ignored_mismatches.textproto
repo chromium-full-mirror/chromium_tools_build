@@ -32,7 +32,7 @@ rules {
 rules {
     output_file_path_rule_spec {
         path_pattern {
-            expression: "^\.\.\/\.\.\/tools\/clang\/crashreports$"
+            expression: "^\\.\\./\\.\\./tools/clang/crashreports$"
         }
     }
 }
