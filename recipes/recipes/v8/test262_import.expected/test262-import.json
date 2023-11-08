@@ -239,6 +239,14 @@
       "test262_import"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "name": "git branch",
     "~followup_annotations": [
@@ -252,6 +260,14 @@
       "test262_import"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "name": "git new-branch",
     "~followup_annotations": [
@@ -270,6 +286,14 @@
       "--phase=PREBUILD"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "name": "Import Test262 changes into V8."
   },
   {
@@ -284,6 +308,14 @@
       "--phase=POSTBUILD"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "name": "Import Test262 changes into V8. (2)"
   },
   {
@@ -301,6 +333,14 @@
       "[test262] Roll test262"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "name": "Upload import CL.git commit",
     "~followup_annotations": [
@@ -318,6 +358,14 @@
       "--send-mail"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "name": "Upload import CL.git cl",
     "~followup_annotations": [
@@ -332,6 +380,14 @@
       "issue"
     ],
     "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "infra_step": true,
     "name": "Upload import CL.cl_issue",
     "~followup_annotations": [

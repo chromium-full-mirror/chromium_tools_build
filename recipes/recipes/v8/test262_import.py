@@ -51,7 +51,7 @@ def RunSteps(api):
 
   script = v8_path.join('test', 'test262', 'tools', 'import.py')
 
-  with api.context(cwd=v8_path):
+  with api.context(cwd=v8_path), api.depot_tools.on_path():
     api.v8.git_output('branch', '-D', 'test262_import', ok_ret='any')
     api.v8.git_output('new-branch', 'test262_import')
 
