@@ -10,6 +10,15 @@ message SdkCipdPackage {
   string sdk_package_name = 1;
   // Path to the yaml file relative to chromium/src.
   string cipd_yaml = 2;
+  // Release channel to check. Default to STABLE if not present.
+  optional SdkChannel sdk_channel = 3;
+}
+
+enum SdkChannel {
+  STABLE = 0;  // default value
+  BETA = 1;
+  DEV = 2;
+  CANARY = 3;
 }
 
 message InputProperties {

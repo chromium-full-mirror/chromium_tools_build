@@ -46,34 +46,43 @@ def RunSteps(api, properties):
         status=common_pb.INFRA_FAILURE,
         summary_markdown=summary_markdown)
 
-  with api.step.nest('package versions'):
-    list_cmd = [
-        sdk_manager,
-        '--list',
-        '--verbose',
-    ]
-    # The sdkmanager script requires a JDK newer than 1.8, and on the bot the
-    # default JDK is 1.8, so we use the one bundled in Chromium (1.17).
-    with api.context(env={'JAVA_HOME': str(jdk_path)}):
-      list_output = api.step(
-          'list', list_cmd, stdout=api.raw_io.output_text()).stdout
+  sdk_channels = set()
+  for package in properties.packages:
+    sdk_channels.add(package.sdk_channel)
 
-    parse_result = api.step('parse', [
-        'python3',
-        api.resource('parse_sdkmanager_list.py'),
-        '--raw-input',
-        api.raw_io.input_text(list_output),
-        '--json-output',
-        api.json.output(),
-    ])
-    if not parse_result.json.output:
-      return result_pb.RawResult(
-          status=common_pb.INFRA_FAILURE,
-          summary_markdown='Unable to parse sdkmanager output.')
-    packages_by_name = {
-        p['name']: p
-        for p in parse_result.json.output.get('available', [])
-    }
+  packages_by_name = {}
+  for sdk_channel in sdk_channels:
+    step_name = 'package versions in %s channel' % (
+        sdk_packager.SdkChannel.Name(sdk_channel))
+    with api.step.nest(step_name):
+      list_cmd = [
+          sdk_manager,
+          '--list',
+          '--verbose',
+          '--channel=%d' % sdk_channel
+      ]
+      # The sdkmanager script requires a JDK newer than 1.8, and on the bot the
+      # default JDK is 1.8, so we use the one bundled in Chromium (1.17).
+      with api.context(env={'JAVA_HOME': str(jdk_path)}):
+        list_output = api.step(
+            'list', list_cmd, stdout=api.raw_io.output_text()).stdout
+
+      parse_result = api.step('parse', [
+          'python3',
+          api.resource('parse_sdkmanager_list.py'),
+          '--raw-input',
+          api.raw_io.input_text(list_output),
+          '--json-output',
+          api.json.output(),
+      ])
+      if not parse_result.json.output:
+        return result_pb.RawResult(
+            status=common_pb.INFRA_FAILURE,
+            summary_markdown='Unable to parse sdkmanager output.')
+      packages_by_name[sdk_channel] = {
+          p['name']: p
+          for p in parse_result.json.output.get('available', [])
+      }
 
   for package in properties.packages:
     cipd_yaml = api.path['checkout'].join(package.cipd_yaml)
@@ -86,10 +95,14 @@ def RunSteps(api, properties):
           status=common_pb.INFRA_FAILURE,
           summary_markdown=summary_markdown)
 
-    with api.step.nest(package.sdk_package_name):
+    sdk_channel_name = sdk_packager.SdkChannel.Name(package.sdk_channel)
+    step_name = '%s in %s channel' % (package.sdk_package_name,
+                                      sdk_channel_name)
+    with api.step.nest(step_name):
       install_cmd = [
           sdk_manager,
           '--install',
+          '--channel=%d' % package.sdk_channel,
           package.sdk_package_name,
       ]
       with api.context(env={'JAVA_HOME': str(jdk_path)}):
@@ -99,8 +112,9 @@ def RunSteps(api, properties):
             # Accept the license agreement, if necessary.
             stdin=api.raw_io.input_text('y'))
       tags = {}
-      package_version = (
-          packages_by_name.get(package.sdk_package_name, {}).get('version'))
+      tags['channel'] = sdk_channel_name
+      package_version = packages_by_name[package.sdk_channel].get(
+          package.sdk_package_name, {}).get('version')
       if package_version:
         tags['version'] = package_version
       api.cipd.create_from_yaml(cipd_yaml, tags=tags, refs=['latest'])
@@ -113,31 +127,59 @@ def GenTests(api):
               {
                   'sdk_package_name': 'emulator',
                   'cipd_yaml': 'third_party/android_sdk/public/emulator.yaml',
+              },
+              {
+                  'sdk_package_name': 'emulator',
+                  'cipd_yaml': 'third_party/android_sdk/public/emulator.yaml',
+                  'sdk_channel': 'BETA',
               }
           ])
   )
 
   def package_version_steps():
-    return (api.override_step_data(
-        'package versions.list',
-        stdout=api.raw_io.output_text(
-            textwrap.dedent('''\
-                Available Packages:
-                -------------------
-                emulator
-                    Description: Android Emulator
-                    Version:     29.0.11
-                '''))) + api.override_step_data(
-                'package versions.parse',
-                api.json.output({
-                    'available': [{
-                        'name': 'emulator',
-                        'description': 'Android Emulator',
-                        'version': '29.0.11',
-                        'installed location': None,
-                    },],
-                    'installed': [],
-                })))
+    return (
+        api.override_step_data(
+            'package versions in STABLE channel.list',
+            stdout=api.raw_io.output_text(
+                textwrap.dedent('''\
+                    Available Packages:
+                    -------------------
+                    emulator
+                        Description: Android Emulator
+                        Version:     29.0.11
+                    '''))) +
+        api.override_step_data(
+            'package versions in STABLE channel.parse',
+            api.json.output({
+                'available': [{
+                    'name': 'emulator',
+                    'description': 'Android Emulator',
+                    'version': '29.0.11',
+                    'installed location': None,
+                },],
+                'installed': [],
+            })) +
+        api.override_step_data(
+            'package versions in BETA channel.list',
+            stdout=api.raw_io.output_text(
+                textwrap.dedent('''\
+                    Available Packages:
+                    -------------------
+                    emulator
+                        Description: Android Emulator
+                        Version:     31.0.15
+                    '''))) +
+        api.override_step_data(
+            'package versions in BETA channel.parse',
+            api.json.output({
+                'available': [{
+                    'name': 'emulator',
+                    'description': 'Android Emulator',
+                    'version': '31.0.15',
+                    'installed location': None,
+                },],
+                'installed': [],
+            })))
 
   yield api.test(
       'basic',
@@ -153,8 +195,14 @@ def GenTests(api):
           api.path['checkout'].join('third_party', 'android_sdk', 'public',
                                     'emulator.yaml')),
       package_version_steps(),
-      api.post_process(post_process.MustRun, 'emulator.install'),
-      api.post_process(post_process.MustRun, 'emulator.create emulator.yaml'),
+      api.post_process(post_process.MustRun,
+                       'emulator in STABLE channel.install'),
+      api.post_process(post_process.MustRun,
+                       'emulator in STABLE channel.create emulator.yaml'),
+      api.post_process(post_process.MustRun,
+                       'emulator in BETA channel.install'),
+      api.post_process(post_process.MustRun,
+                       'emulator in BETA channel.create emulator.yaml'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -180,7 +228,7 @@ def GenTests(api):
                                                 'public', 'cmdline-tools',
                                                 'latest', 'bin', 'sdkmanager')),
       api.override_step_data(
-          'package versions.list',
+          'package versions in STABLE channel.list',
           stdout=api.raw_io.output_text(
               textwrap.dedent('''\
               [UNPARSEABLE]
