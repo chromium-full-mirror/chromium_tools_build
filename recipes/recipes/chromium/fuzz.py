@@ -452,10 +452,6 @@ def RunSteps(api):
       if not targets:
         return
 
-      # Run MB one more time since filter calls above wipes out the specified
-      # goma dir.
-      api.chromium.mb_gen(builder_id, gn_args_location=api.gn.LOGS)
-
     # Up until now we work in terms of GN labels so that we can use
     # api.filter.analyze above in the trybot case. We now convert the GN labels
     # to ninja targets and pass them into compile.
@@ -488,8 +484,7 @@ def RunSteps(api):
     # fuzzers for ClusterFuzz instead of dynamically generating it like this.
     raw_result = None
     for target_batch in batched(targets):
-      raw_result = api.chromium.compile(
-          targets=target_batch, use_goma_module=False, use_reclient=True)
+      raw_result = api.chromium.compile(targets=target_batch, use_reclient=True)
 
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
