@@ -22,7 +22,6 @@ def RunSteps(api):
   gn_args = api.chromium.mb_lookup(
       chromium.BuilderId.create_for_group('test-group', 'test-builder'),
       recursive=api.properties.get('recursive', False),
-      use_goma=False,
       use_reclient=True,
       raise_on_failure=True)
   expected_gn_args = api.properties.get('expected_gn_args')

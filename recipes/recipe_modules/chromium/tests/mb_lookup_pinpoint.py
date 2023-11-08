@@ -24,7 +24,6 @@ def RunSteps(api):
       chromium.BuilderId.create_for_group('chromium.perf.pinpoint',
                                           'linux-perf'),
       recursive=api.properties.get('recursive', False),
-      use_goma=False,
       use_reclient=True)
   expected_gn_args = api.properties.get('expected_gn_args')
   api.assertions.assertEqual(gn_args, expected_gn_args)

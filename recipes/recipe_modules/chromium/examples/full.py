@@ -227,7 +227,6 @@ def GenTests(api):
           ).assemble()),
       api.properties(
           out_dir='/tmp',
-          use_goma_module=False,
       ),
       api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),

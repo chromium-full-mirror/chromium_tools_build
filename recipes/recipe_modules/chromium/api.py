@@ -1308,8 +1308,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           mb_config_path=mb_config_path,
           chromium_config=chromium_config,
           phase=phase,
-          # Ignore no remote execution for analysis.
-          use_goma=False,
           additional_args=mb_args,
           step_test_data=step_test_data,
           **kwargs)
