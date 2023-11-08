@@ -60,7 +60,6 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
           name=step_name,
           timeout=timeout,
           target=out_sub_dir,  # target is a sub directory name at compile().
-          use_goma_module=False,
           # always enable reclient even if it's not used.
           use_reclient=True,
           siso_args=siso_args)
