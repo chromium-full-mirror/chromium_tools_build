@@ -1135,6 +1135,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
               build_dir=self.m.chromium.output_dir,
               chrome_version=self._get_chrome_version())
 
+      if ('chromium.enable_cleandead'
+          in self.m.buildbucket.build.input.experiments):
+        self.m.chromium.cleandead()
+
       return self.m.chromium.compile(
           compile_targets,
           name='compile%s' % name_suffix,

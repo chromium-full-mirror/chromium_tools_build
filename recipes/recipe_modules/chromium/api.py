@@ -623,6 +623,27 @@ class ChromiumApi(recipe_api.RecipeApi):
     yield
     self.m.file.remove('remove compile guard' + suffix, guard_path)
 
+  def cleandead(self, out_dir=None, target=None):
+    """Removes the no longer needed output files from the build directory.
+
+    Args:
+      out_dir: Output directory for the compile.
+      target: Custom config name to use in the output directory (defaults to
+        "Release" or "Debug").
+    """
+    ninja_env = self.get_env()
+    ninja_env.update(self.m.context.env)
+
+    if out_dir is None:
+      out_dir = 'out'
+    target_output_dir = self.m.path.join(self.m.path['checkout'], out_dir,
+                                         target or self.c.build_config_fs)
+    target_output_dir = self.m.path.abspath(target_output_dir)
+
+    command = [str(self.ninja_path), '-C', target_output_dir, '-t', 'cleandead']
+    with self.m.context(env=ninja_env):
+      self.m.step(name='ninja -t cleandead', cmd=command)
+
   # TODO(tikuta): Remove use_goma_module.
   # Decrease the number of ways configuring with or without goma.
   @_with_chromium_layout
