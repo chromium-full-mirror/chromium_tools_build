@@ -150,7 +150,9 @@ def RunSteps(api, properties):
                   phase=phase,
                   raise_on_failure=True)
             except api.step.StepFailure:
-              success = False
+              phase_presentation.status = api.step.SUCCESS
+              phase_presentation.step_text = (
+                  '\ncould not load GN args from mb config, skip.')
               continue
             if not _verify_gn_args(api, pre_patch_args, phase_args,
                                    phase_presentation):
@@ -162,10 +164,13 @@ def RunSteps(api, properties):
               mb_config_path=mb_config_path,
               raise_on_failure=True)
         except api.step.StepFailure:
-          success = False
-        if success:
-          success = _verify_gn_args(api, pre_patch_args, post_patch_args,
-                                    presentation)
+          presentation.status = api.step.SUCCESS
+          presentation.step_text = (
+              '\ncould not load GN args from mb config, skip.')
+          continue
+
+        success = _verify_gn_args(api, pre_patch_args, post_patch_args,
+                                  presentation)
       if not success:
         failures.append(str(builder_id))
 
@@ -568,12 +573,18 @@ def GenTests(api):
               },
               mb_lookup_phase_failure='phase2'),
       ]),
-      api.post_process(post_process.StepFailure,
+      api.post_process(post_process.StepSuccess,
                        'verify bucket1/builder1/gn-args.json'),
-      api.post_process(post_process.StepFailure,
+      api.post_process(post_process.StepTextEquals,
+                       'verify bucket1/builder1/gn-args.json',
+                       '<br/>could not load GN args from mb config, skip.'),
+      api.post_process(post_process.StepSuccess,
                        'verify bucket2/builder2/gn-args.json.phase: phase2'),
+      api.post_process(post_process.StepTextEquals,
+                       'verify bucket2/builder2/gn-args.json.phase: phase2',
+                       '<br/>could not load GN args from mb config, skip.'),
       api.post_process(post_process.DropExpectation),
-      status='FAILURE',
+      status='SUCCESS',
   )
 
   yield api.test(
