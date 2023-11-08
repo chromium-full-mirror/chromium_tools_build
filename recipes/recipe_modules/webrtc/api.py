@@ -187,7 +187,6 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     return self.m.chromium.mb_gen(
         builder_id,
-        use_goma=False,
         use_reclient=True,
         phase=phase,
         mb_path=self.m.path['checkout'].join('tools_webrtc', 'mb'),
