@@ -117,7 +117,6 @@ def RunSteps(api, properties):
               name=f'{mb_step_name}, phase: {phase}',
               mb_config_path=mb_config_path,
               phase=phase,
-              use_goma=False,
               raise_on_failure=True)
         gn_args_by_builder_id[builder_id] = phased_gn_args
       else:
@@ -125,7 +124,6 @@ def RunSteps(api, properties):
             builder_id,
             name=mb_step_name,
             mb_config_path=mb_config_path,
-            use_goma=False,
             raise_on_failure=True)
 
   with api.context(cwd=checkout_root):
@@ -150,7 +148,6 @@ def RunSteps(api, properties):
                   builder_id,
                   mb_config_path=mb_config_path,
                   phase=phase,
-                  use_goma=False,
                   raise_on_failure=True)
             except api.step.StepFailure:
               success = False
@@ -163,7 +160,6 @@ def RunSteps(api, properties):
           pre_patch_args = api.chromium.mb_lookup(
               builder_id,
               mb_config_path=mb_config_path,
-              use_goma=False,
               raise_on_failure=True)
         except api.step.StepFailure:
           success = False
