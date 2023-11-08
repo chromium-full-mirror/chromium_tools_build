@@ -1058,10 +1058,10 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
   def record_suite_statuses(self, test_suites, suffix):
     step_result = self.m.step.empty('record test suite statuses')
-    step_result.presentation.properties['test_target_status'] = {}
+    step_result.presentation.properties['test_status'] = {}
     for test_suite in test_suites:
-      step_result.presentation.properties['test_target_status'][
-          test_suite.target_name] = test_suite.get_status(suffix)
+      step_result.presentation.properties['test_status'][
+          test_suite.name] = test_suite.get_status(suffix)
 
 
 class TestGroup:

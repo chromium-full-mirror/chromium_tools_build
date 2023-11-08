@@ -506,7 +506,7 @@ def GenTests(api):
 
   def CheckTestTargetStatus(check, step_odict, test_target, expected):
     target_status = post_process.GetBuildProperties(step_odict).get(
-        'test_target_status', '').get(test_target, '')
+        'test_status', '').get(test_target, '')
     check(target_status == expected)
 
   yield api.test(

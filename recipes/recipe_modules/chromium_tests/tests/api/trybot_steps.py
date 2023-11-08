@@ -409,7 +409,7 @@ def GenTests(api):
       # 'without patch' should fail the build.
       api.expect_status('FAILURE'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(post_process.PropertyEquals, 'test_target_status',
+      api.post_process(post_process.PropertyEquals, 'test_status',
                        {'base_unittests': 'Failure'}),
       api.post_process(post_process.DropExpectation),
   )
@@ -476,7 +476,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'base_unittests (without patch)'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(post_process.PropertyEquals, 'test_target_status',
+      api.post_process(post_process.PropertyEquals, 'test_status',
                        {'base_unittests': 'Failure'}),
       api.post_process(post_process.DropExpectation),
   )

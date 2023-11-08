@@ -344,7 +344,7 @@ def GenTests(api):
           'base_unittests', '', failures=['Test.One']),
       api.expect_status('FAILURE'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(post_process.PropertyEquals, 'test_target_status',
+      api.post_process(post_process.PropertyEquals, 'test_status',
                        {'base_unittests': 'Failure'}),
       api.post_process(post_process.DropExpectation),
   )
@@ -388,7 +388,7 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', '', successes=['Test.One']),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(post_process.PropertyEquals, 'test_target_status',
+      api.post_process(post_process.PropertyEquals, 'test_status',
                        {'base_unittests': 'Success'}),
       api.post_process(post_process.DropExpectation),
   )

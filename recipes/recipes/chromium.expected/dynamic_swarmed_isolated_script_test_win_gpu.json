@@ -2224,7 +2224,7 @@
     "cmd": [],
     "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@test_target_status@{\"telemetry_gpu_unittests\": \"Success\"}@@@"
+      "@@@SET_BUILD_PROPERTY@test_status@{\"telemetry_gpu_unittests amd on AMD GPU on Windows\": \"Success\", \"telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows\": \"Success\", \"telemetry_gpu_unittests vmware on (15ad) GPU on Windows\": \"Success\"}@@@"
     ]
   },
   {

@@ -897,9 +897,9 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  def CheckTestTargetStatus(check, step_odict, test_target, expected):
+  def CheckTestStatus(check, step_odict, test_target, expected):
     target_status = post_process.GetBuildProperties(step_odict).get(
-        'test_target_status', '').get(test_target, '')
+        'test_status', '').get(test_target, '')
     check(target_status == expected)
   # without patch passes so failure is due to CL
   yield api.test(
@@ -936,7 +936,7 @@ def GenTests(api):
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
       api.post_process(post_process.MustRun, 'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(CheckTestTargetStatus, 'browser_tests', 'Failure'),
+      api.post_process(CheckTestStatus, 'browser_tests', 'Failure'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -979,7 +979,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
-      api.post_process(CheckTestTargetStatus, 'browser_tests', 'Success'),
+      api.post_process(CheckTestStatus, 'browser_tests', 'Success'),
       api.post_process(post_process.DropExpectation),
   )
 

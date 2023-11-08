@@ -954,7 +954,7 @@
     "cmd": [],
     "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@test_target_status@{\"test_script_with_broken_tests\": \"Failure\"}@@@"
+      "@@@SET_BUILD_PROPERTY@test_status@{\"test_script_with_broken_tests\": \"Failure\"}@@@"
     ]
   },
   {

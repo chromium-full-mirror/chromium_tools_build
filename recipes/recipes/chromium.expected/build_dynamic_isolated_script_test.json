@@ -1752,7 +1752,7 @@
     "cmd": [],
     "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@test_target_status@{\"telemetry_gpu_unittests\": \"Success\"}@@@"
+      "@@@SET_BUILD_PROPERTY@test_status@{\"telemetry_gpu_unittests\": \"Success\"}@@@"
     ]
   },
   {

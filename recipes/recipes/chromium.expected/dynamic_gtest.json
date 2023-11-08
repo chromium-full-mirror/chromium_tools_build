@@ -1226,7 +1226,7 @@
     "cmd": [],
     "name": "record test suite statuses",
     "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@test_target_status@{\"base_unittests\": \"Success\", \"browser_tests\": \"Success\", \"content_unittests\": \"Success\"}@@@"
+      "@@@SET_BUILD_PROPERTY@test_status@{\"base_unittests\": \"Success\", \"browser_tests\": \"Success\", \"renamed_content_unittests\": \"Success\"}@@@"
     ]
   },
   {
