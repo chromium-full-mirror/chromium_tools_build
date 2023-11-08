@@ -474,36 +474,6 @@ def GenTests(api):
       api.expect_status('FAILURE'),
   )
 
-  yield api.test(
-      'compile_failure_infra',
-      api.platform('linux', 64),
-      api.chromium.try_build(
-          builder_group='fake-try-group', builder='fake-try-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec('fake-group', {
-          'fake-builder': {
-              'gtest_tests': [{
-                  'test': 'base_unittests',
-              }],
-          },
-      }),
-      api.override_step_data('compile (with patch)', retcode=1),
-      api.step_data(
-          'postprocess_for_goma.goma_jsonstatus',
-          api.json.output(data={
-              'notice': [{
-                  'infra_status': {
-                      'ping_status_code': 408,
-                  },
-              },],
-          })),
-      api.expect_status('INFRA_FAILURE'),
-  )
-
   for step, status in (
       ('bot_update', 'INFRA_FAILURE'),
       ('gclient runhooks (with patch)', 'FAILURE'),
