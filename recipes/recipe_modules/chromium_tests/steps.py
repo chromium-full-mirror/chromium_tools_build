@@ -3149,14 +3149,14 @@ class SkylabTest(AbstractSkylabTest, Test):
       # infra failure on one shard and did not upload results
       # to RDB. So iterate all shards and raise a failure
       # if any shard is not green.
-      shard_runners = list(self.test_runner_builds.values())
-      shard_runners.sort(key=lambda b: b[0].create_time.seconds)
       shard_steps = []
-      for shard_index, shard_attempt_runners in enumerate(shard_runners):
+      # Iterate shard's result with ctp_build_ids, where the CTP build
+      # ID is appended following the shard order.
+      for shard_index, ctp_build in enumerate(self.ctp_build_ids):
         with self.api.m.step.nest(
             'shard: #%d' % shard_index, status='last') as shard_step:
           self._process_attempts(
-              shard_attempt_runners,
+              self.test_runner_builds[ctp_build],
               shard_step,
               bb_url,
               shard_index=shard_index)
