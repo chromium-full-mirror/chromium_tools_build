@@ -301,18 +301,8 @@ class SkylabApi(recipe_api.RecipeApi):
 
     return build_ids_by_tags
 
-  def wait_on_suites(self, ctp_builds_by_tag, timeout_seconds):
-    """Wait for the CTP builds to complete and return their test runner builds.
-
-    Args:
-      ctp_builds_by_tag: A dict of CTP build IDs (a list), keyed by request tag.
-      timeout_seconds: How long to wait for results before
-        giving up.
-
-    Returns:
-      A dict of request tag to dict of CTP build (the shard request) to list of
-        test_runner attempts
-    """
+  def _try_wait_ctp_builds(self, ctp_builds_by_tag, timeout_seconds):
+    """Helper to wait for the given CTP builds to finish."""
     with self.m.step.nest('collect skylab results'):
       # collect_builds() may hit timeout, but it does not mean
       # all tests are aborted. Some tests may still have exported
@@ -326,30 +316,56 @@ class SkylabApi(recipe_api.RecipeApi):
             all_build_ids, timeout=timeout_seconds)
       except self.m.step.StepFailure:
         pass
-    # TODO(crbug.com/1245438): Remove below once the test runner's invocation
-    # is included into its parent build's invocation.
-    with self.m.step.nest('find test runner build'):
-      test_runners_by_tag = {}
-      for test_suite, shard_ctp_build_ids in ctp_builds_by_tag.items():
-        # For each shard's CTP build, get any attempts (runner builds)
-        for shard_ctp_build_id in shard_ctp_build_ids:
-          builds = self.m.buildbucket.search(
-              builds_service_pb2.BuildPredicate(
-                  builder=builder_common_pb2.BuilderID(
-                      project='chromeos',
-                      bucket='test_runner',
-                      builder='test_runner',
-                  ),
-                  tags=[
-                      common_pb2.StringPair(
-                          key='parent_buildbucket_id',
-                          value=str(shard_ctp_build_id))
-                  ],
-                  include_experimental=self.m.runtime.is_experimental))
-          if test_suite not in test_runners_by_tag:
-            test_runners_by_tag[test_suite] = {}
-          test_runners_by_tag[test_suite][shard_ctp_build_id] = builds
 
+  def _fetch_test_runner(self, ctp_build_id):
+    """Helper to fetch test runner builds kicked of by given CTP build
+
+    Args:
+      ctp_build_id: (int64) A CTP's Buildbucket ID.
+
+    Returns:
+      A list of ChromeOS test runner builds in `build_pb2.Build`.
+    """
+    # For each shard's CTP build, get any attempts (runner builds)
+    return self.m.buildbucket.search(
+        builds_service_pb2.BuildPredicate(
+            builder=builder_common_pb2.BuilderID(
+                project='chromeos',
+                bucket='test_runner',
+                builder='test_runner',
+            ),
+            tags=[
+                common_pb2.StringPair(
+                    key='parent_buildbucket_id', value=str(ctp_build_id))
+            ],
+            include_experimental=self.m.runtime.is_experimental))
+
+  def wait_on_suites(self, ctp_builds_by_tag, timeout_seconds):
+    """Wait for the CTP builds to complete and return their test runner builds.
+
+    Args:
+      ctp_builds_by_tag: A dict of CTP build IDs (a list), keyed by request tag.
+      timeout_seconds: How long to wait for results before
+        giving up.
+
+    Returns:
+      A dict of request tag to dict of CTP build (the shard request) to list of
+        test_runner attempts
+    """
+    test_runners_by_tag = {}
+    cur = ctp_builds_by_tag.copy()
+    while cur:
+      self._try_wait_ctp_builds(cur, timeout_seconds)
+      prev = cur
+      cur = defaultdict(lambda: [])
+      with self.m.step.nest('find test runner build'):
+        while prev:
+          # Pop the request tag and its list of shard CTP build ID.
+          t, shard_builds = prev.popitem()
+          # For each shard CTP build, fetch its test runner builds.
+          test_runners_by_tag[t] = {
+              b: self._fetch_test_runner(b) for b in shard_builds
+          }
     return test_runners_by_tag
 
   def gen_rdb_config(self, test):
