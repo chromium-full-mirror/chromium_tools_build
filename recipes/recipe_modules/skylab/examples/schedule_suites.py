@@ -52,7 +52,7 @@ def gen_skylab_rdb(suite):
 
 
 SKYLAB_TEST_SPEC_TEMPLATE = dict(
-    autotest_name='lacros.tast',
+    autotest_name='tast.lacros',
     cros_board='eve',
     cros_model='',
     tast_expr=None,
@@ -95,12 +95,17 @@ REQUESTS = [
         public_builder='ctp-public-builder',
         public_builder_bucket='public-bucket'),
     gen_skylab_test(
-        'm88_gtest_test_args', tast_expr=None, test_args=LACROS_GTEST_ARGS),
+        'm88_gtest_test_args',
+        tast_expr=None,
+        test_args=LACROS_GTEST_ARGS,
+        autotest_name='chromium',
+    ),
     gen_skylab_test(
         'm88_nearby_dut_pool',
         tast_expr=LACROS_TAST_EXPR,
         dut_pool='cross_device_multi_cb',
-        tast_expr_file='tast_expr_file.filter'),
+        tast_expr_file='tast_expr_file.filter',
+        autotest_name='tast.nearby-share'),
     gen_skylab_test(
         'telemetry_test_args',
         tast_expr=None,
@@ -108,7 +113,8 @@ REQUESTS = [
         story_filter='Speedometer2',
         results_label='12345',
         test_shard_map_filename='per_map.json',
-        telemetry_shard_index=0),
+        telemetry_shard_index=0,
+        autotest_name='chromium_Telemetry'),
     gen_skylab_test(
         'sharded_tast_req',
         tast_expr=LACROS_TAST_EXPR,
@@ -136,6 +142,7 @@ MULTI_DUT_REQUESTS = [
         'multi_dut_skip_secondary_lacros_paths',
         secondary_cros_board='pixel6',
         should_provision_browser_files=[False],
+        autotest_name='tast.nearby-share',
     ),
     gen_skylab_test(
         'multi_dut_partial_skip_secondary_lacros_paths',
@@ -143,11 +150,13 @@ MULTI_DUT_REQUESTS = [
         secondary_cros_img='atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
         tast_expr=LACROS_TAST_EXPR,
         should_provision_browser_files=[True, False, True],
+        autotest_name='tast.nearby-share',
     ),
     gen_skylab_test(
         'multi_dut_secondary_cros_img_use_lkgm',
         secondary_cros_board='atlas,pixel6,octopus',
         secondary_cros_img='use_lkgm,,use_lkgm',
+        autotest_name='tast.nearby-share',
     ),
 ]
 
@@ -331,8 +340,7 @@ def GenTests(api):
               'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
               '-secondary-boards', 'eve', '-secondary-images',
               'eve-release/R88-13545.0.0', '-timeout-mins', '60', '-qs-account',
-              'lacros', '-lacros-path', 'gs://fake_bucket/fake_test',
-              '-secondary-lacros-paths', 'gs://fake_bucket/fake_test'
+              'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -346,8 +354,7 @@ def GenTests(api):
               'run', 'test', '-json', '-board', 'eve', '-pool',
               'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
               '-secondary-boards', 'pixel6', '-timeout-mins', '60',
-              '-qs-account', 'lacros', '-lacros-path',
-              'gs://fake_bucket/fake_test'
+              '-qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -362,10 +369,7 @@ def GenTests(api):
               'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
               '-secondary-boards', 'atlas,pixel6,octopus', '-secondary-images',
               'atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
-              '-timeout-mins', '60', '-qs-account', 'lacros', '-lacros-path',
-              'gs://fake_bucket/fake_test', '-secondary-lacros-paths',
-              'gs://fake_bucket/fake_test,,gs://fake_bucket/fake_test',
-              '-test-args',
+              '-timeout-mins', '60', '-qs-account', 'lacros', '-test-args',
               test_args(
                   MULTI_DUT_REQUESTS[2].name,
                   lacros_gcs_path='gs://fake_bucket/fake_test/lacros_compressed.squash',

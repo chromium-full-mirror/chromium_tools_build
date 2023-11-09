@@ -227,6 +227,13 @@ def GenTests(api):
                   'basic_EVE_TOT',
                   failing_tests=['Test.Two'],
                   flaky_failing_tests=['Test.One']))),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
+              '-lacros-path',
+              'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/'
+              f'{TAST_TARGET}'
+          ]),
       api.post_process(post_process.StepFailure,
                        'basic_EVE_TOT.shard: #0.attempt: #1'),
       api.post_process(post_process.StepException,
@@ -333,16 +340,15 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'compile',
                        [GTEST_TARGET]),
       api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              '-lacros-path',
-              'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/%s'
-              % GTEST_TARGET
-          ]),
-      api.post_process(
           _check_test_args,
           'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
           'exe_rel_path=out/Release/bin/run_%s' % GTEST_TARGET),
+      api.post_process(
+          _check_test_args,
+          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
+          'lacros_gcs_path=gs://chrome-test-builds/lacros/'
+          f'8945511751514863184_with_patch/{GTEST_TARGET}/'
+          'lacros_compressed.squash'),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
       api.post_process(
           post_process.ResultReason,

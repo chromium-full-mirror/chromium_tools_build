@@ -234,37 +234,33 @@ class SkylabApi(recipe_api.RecipeApi):
 
           autotest_secondary_lacros_paths = ''
 
-          if t.lacros_gcs_path:
+          # TODO(b/305311640): Remove TLS provision once the lacros version
+          # skews have all moved to 'tast.chrome-from-gcs'.
+          if t.lacros_gcs_path and t.spec.autotest_name == 'tast.lacros':
             cmd.extend(['-lacros-path', t.lacros_gcs_path])
 
-            if t.spec.secondary_cros_board:
-              num_boards = len(t.spec.secondary_cros_board.split(','))
-              # By default, browser files are sent to all secondary DUTs unless
-              # users explicitly override through should_provision_browser_files.
-              should_provision_browser_files = [True] * num_boards
-              if t.spec.should_provision_browser_files:
-                if len(t.spec.should_provision_browser_files) != num_boards:
-                  raise recipe_api.StepFailure(
-                      'Length of should_provision_browser_files'
-                      ' must match secondary_cros_board')
-                should_provision_browser_files = t.spec.should_provision_browser_files
+          if t.spec.secondary_cros_board:
+            num_boards = len(t.spec.secondary_cros_board.split(','))
+            # By default, browser files are sent to all secondary DUTs unless
+            # users explicitly override through should_provision_browser_files.
+            should_provision_browser_files = [True] * num_boards
+            if t.spec.should_provision_browser_files:
+              if len(t.spec.should_provision_browser_files) != num_boards:
+                raise recipe_api.StepFailure(
+                    'Length of should_provision_browser_files'
+                    ' must match secondary_cros_board')
+              should_provision_browser_files = t.spec.should_provision_browser_files
 
-              if any(should_provision_browser_files):
-                secondary_lacros_paths_list = [
-                    t.lacros_gcs_path if p else ''
-                    for p in should_provision_browser_files
-                ]
-                secondary_lacros_paths = ','.join(secondary_lacros_paths_list)
-                autotest_secondary_lacros_paths_list = [
-                    os.path.join(t.lacros_gcs_path, 'lacros_compressed.squash')
-                    if p else '' for p in should_provision_browser_files
-                ]
-                autotest_secondary_lacros_paths = ','.join(
-                    autotest_secondary_lacros_paths_list)
-                cmd.extend(['-secondary-lacros-paths', secondary_lacros_paths])
+            if any(should_provision_browser_files):
+              autotest_secondary_lacros_paths_list = [
+                  os.path.join(t.lacros_gcs_path, 'lacros_compressed.squash')
+                  if p else '' for p in should_provision_browser_files
+              ]
+              autotest_secondary_lacros_paths = ','.join(
+                  autotest_secondary_lacros_paths_list)
 
-            if t.spec.bucket and 'chromium' in t.spec.bucket:
-              test_args.append('run_private_tests=False')
+          if t.spec.bucket and 'chromium' in t.spec.bucket:
+            test_args.append('run_private_tests=False')
 
           for shard in range(t.spec.shards):
             # Create a request for each shard
