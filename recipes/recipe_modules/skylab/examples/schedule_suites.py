@@ -13,6 +13,7 @@ DEPS = [
 import base64
 import copy
 import json
+import re
 
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
@@ -159,7 +160,18 @@ LKGM_REQUESTS = [
         cros_img='',
         retries=3,
         bucket='chromeos-image-archive',
-    ),
+        public_builder='ctp-public-builder',
+        public_builder_bucket='public-bucket'),
+]
+
+PUBLIC_LKGM_REQUESTS = [
+    gen_skylab_test(
+        'm88_tast_with_retry_lkgm',
+        tast_expr=LACROS_TAST_EXPR,
+        use_lkgm=True,
+        cros_img='',
+        retries=3,
+        bucket='chromiumos-image-archive')
 ]
 
 PROPERTIES = {
@@ -172,6 +184,33 @@ def RunSteps(api, requests):
   api.skylab.wait_on_suites(build_ids, timeout_seconds=3600)
 
 def GenTests(api):
+
+  def check_use_external_config(check: post_process.Filter, step_odict: dict,
+                                step: str, value: bool):
+    """Check that a step's command contained expected use_external_config value
+
+    Examine the --input-json flag value and check if `use_external_config` value
+    is set as expected.
+
+    Args:
+    * check: Passed by the recipe test framework.
+    * step_odict: Passed by the recipe test framework.
+    * step: The name of the step to check the command of.
+    * value: The expected value of `use_external_config`.
+    """
+
+    INPUT_JSON_FLAG_NAME = '--input-json'
+    step_cmd = step_odict[step].cmd
+    flag_name_position = None
+    for i in range(len(step_cmd)):
+      if step_cmd[i] == INPUT_JSON_FLAG_NAME:
+        flag_name_position = i
+        break
+    check(f'command line for step {step} contained {INPUT_JSON_FLAG_NAME}',
+          flag_name_position is not None)
+    input_json = json.loads(step_cmd[flag_name_position + 1])
+    check(f'input JSON for step {step} has use_external_config={value}',
+          input_json['use_external_config'] == value)
 
   def b64_encode(s):
     return base64.b64encode(s.encode('utf-8')).decode('ascii')
@@ -369,6 +408,10 @@ def GenTests(api):
   yield api.test(
       'lkgm',
       api.properties(requests=LKGM_REQUESTS),
+      api.post_process(
+          check_use_external_config,
+          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
+          False),
       api.step_data(
           'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
           api.json.output({
@@ -380,9 +423,37 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab tests.' + LKGM_REQUESTS[0].name + '.schedule', [
               'run', 'test', '-json', '-board', 'eve', '-bucket',
-              'chromeos-image-archive', '-pool', 'DUT_POOL_QUOTA', '-image',
-              'eve-release/R118-15580.0.0', '-timeout-mins', '60',
-              '-qs-account', 'lacros', '-max-retries', '3'
+              'chromeos-image-archive', '-public-builder', 'ctp-public-builder',
+              '-public-builder-bucket', 'public-bucket', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R118-15580.0.0',
+              '-timeout-mins', '60', '-qs-account', 'lacros', '-max-retries',
+              '3'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'lkgm-public',
+      api.properties(requests=PUBLIC_LKGM_REQUESTS),
+      api.post_process(
+          check_use_external_config,
+          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
+          True),
+      api.step_data(
+          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
+          api.json.output({
+              "chromeosLkgm": "15581.0.0",
+              "configName": "eve-public",
+              "fullVersion": "R118-15580.0.0"
+          })),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab tests.' + PUBLIC_LKGM_REQUESTS[0].name + '.schedule',
+          [
+              'run', 'test', '-json', '-board', 'eve', '-bucket',
+              'chromiumos-image-archive', '-pool', 'DUT_POOL_QUOTA', '-image',
+              'eve-public/R118-15580.0.0', '-timeout-mins', '60', '-qs-account',
+              'lacros', '-max-retries', '3'
           ]),
       api.post_process(post_process.DropExpectation),
   )

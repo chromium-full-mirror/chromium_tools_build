@@ -38,10 +38,10 @@ def _base64_encode_str(s):
 class SkylabApi(recipe_api.RecipeApi):
   """Module for issuing commands to Skylab"""
 
-  def get_lkgm_version(self, board: str, chrome_src: str) -> str:
+  def get_lkgm_version(self, board: str, chrome_src: str,
+                       use_external_config: bool) -> str:
     """Get LKGM or older latest version of ChromeOS available for the board.
 
-    This API call requires the read access of ChromeOS release images.
     The LKGM version is determined based on //chromeos/CHROMEOS_LKGM file
     in the chrome checkout.
     The returned version is usually the LKGM, but if the image for the board
@@ -51,6 +51,10 @@ class SkylabApi(recipe_api.RecipeApi):
     Args:
     * board: The build target board with which tests are run.
     * chrome_src: The location of the chrome checkout.
+    * use_external_config: Use the external (=chromiumos) configuration.
+    *     When this is False, the internal configuration is used and
+    *     the API call requires the read access of ChromeOS release images.
+
 
     Returns:
       The fully specified image name. e.g. "octopus-release/R89-13609".
@@ -67,7 +71,8 @@ class SkylabApi(recipe_api.RecipeApi):
                 "name": board,
             },
             "chrome_src": chrome_src,
-            "fallback_versions": 20
+            "fallback_versions": 20,
+            "use_external_config": use_external_config
         }),
         '--output-json',
         self.m.json.output(),
@@ -128,10 +133,10 @@ class SkylabApi(recipe_api.RecipeApi):
 
           if t.spec.use_lkgm:
             assert not t.spec.cros_img, 'cros_img should be empty when use_lkgm is True'
-            # get_lkgm_version requires the read access of ChromeOS release images.
-            assert 'chromiumos' not in t.spec.bucket, 'use_lkgm is not supported for public builders'
+            is_public = t.spec.bucket.startswith('chromiumos-')
             lkgm_cros_img = self.get_lkgm_version(
-                t.spec.cros_board, str(self.m.chromium_checkout.src_dir))
+                t.spec.cros_board, str(self.m.chromium_checkout.src_dir),
+                is_public)
             assert lkgm_cros_img, 'chromite build_api command not found'
 
             cmd.extend(['-image', lkgm_cros_img])
@@ -149,9 +154,10 @@ class SkylabApi(recipe_api.RecipeApi):
               updated_imgs = imgs.copy()
               for i, img in enumerate(imgs):
                 if img == 'use_lkgm':
-                  assert 'chromiumos' not in t.spec.bucket, 'use_lkgm is not supported for public builders'
+                  is_public = t.spec.bucket.startswith('chromiumos-')
                   updated_imgs[i] = self.get_lkgm_version(
-                      boards[i], str(self.m.chromium_checkout.src_dir))
+                      boards[i], str(self.m.chromium_checkout.src_dir),
+                      is_public)
 
               cmd.extend(['-secondary-images', ','.join(updated_imgs)])
 
