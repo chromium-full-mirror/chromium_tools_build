@@ -35,4 +35,4 @@ def recipes_py(*args):
 
 recipes_py('test', 'run')
 
-recipes_py('lint', *('-w' + m for m in MODULE_ALLOWLIST))
+recipes_py('lint', *('-a' + m for m in MODULE_ALLOWLIST))
