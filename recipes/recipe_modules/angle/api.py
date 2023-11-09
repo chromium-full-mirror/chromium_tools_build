@@ -82,32 +82,27 @@ class ANGLEApi(recipe_api.RecipeApi):
     cmd = [
         'vpython3',
         'src/tests/capture_replay_tests.py',
-        '--goma-dir=%s' % self.m.goma.goma_dir,
         '--log',
         'debug',
         '--gtest_filter=%s' % gtest_filter,
         '--out-dir=%s' % checkout.join('out', 'CaptureReplayTest'),
+        '--use-reclient',
     ]
     if self.m.platform.is_linux:
       cmd += ['--xvfb']
     self.m.step(step_name, cmd)
 
   def _trace_tests(self):
-    self.m.goma.ensure_goma()
     checkout = self.m.path['checkout']
     with self.m.context(cwd=checkout):
-      self.m.goma.start()
-      try:
-        self._run_trace_tests(checkout, '*/ES2_Vulkan_SwiftShader',
-                              'GLES 2.0 trace tests')
-        self._run_trace_tests(checkout, '*/ES3_Vulkan_SwiftShader',
-                              'GLES 3.0 trace tests')
-        self._run_trace_tests(checkout, '*/ES3_1_Vulkan_SwiftShader',
-                              'GLES 3.1 trace tests')
-        self._run_trace_tests(checkout, '*/ES1_Vulkan_SwiftShader',
-                              'GLES 1.0 trace tests')
-      finally:
-        self.m.goma.stop(0)
+      self._run_trace_tests(checkout, '*/ES2_Vulkan_SwiftShader',
+                            'GLES 2.0 trace tests')
+      self._run_trace_tests(checkout, '*/ES3_Vulkan_SwiftShader',
+                            'GLES 3.0 trace tests')
+      self._run_trace_tests(checkout, '*/ES3_1_Vulkan_SwiftShader',
+                            'GLES 3.1 trace tests')
+      self._run_trace_tests(checkout, '*/ES1_Vulkan_SwiftShader',
+                            'GLES 1.0 trace tests')
 
   def steps(self):
     toolchain = self.m.properties.get('toolchain', 'clang')

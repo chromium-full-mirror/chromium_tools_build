@@ -19,7 +19,6 @@ DEPS = [
     'depot_tools/tryserver',
     'flakiness',
     'gn',
-    'goma',
     'isolate',
     'presentation_utils',
     'recipe_engine/buildbucket',
