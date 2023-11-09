@@ -194,10 +194,6 @@ def GenTests(api):
                           (903, common_pb2.SUCCESS)]]),
       api.post_process(post_process.StepCommandContains, 'compile', ['chrome']),
       api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
-          ["-max-retries", "3"]),
-      api.post_process(
           post_process.LogContains,
           ('prepare skylab tests.upload skylab runtime deps for %s.'
            'Generic Archiving Steps.Write file list to copy') % TAST_TARGET,

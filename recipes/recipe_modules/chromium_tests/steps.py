@@ -2931,11 +2931,8 @@ class SkylabTestSpec(TestSpec):
   dut_pool = attrib(str, default='')
   # The number of shards used to run the test.
   shards = attrib(int, default=1)
-  # Enable retry for all Skylab tests by default. We see around 10% of tests
-  # failed due to lab issues. Set retry into test requests, so that failed
-  # tests could get rerun from OS infra side. We only bridged our CI builders
-  # to Skylab now, so we do not expect a lot of failures from our artifact.
-  # Revisit this when we integrate CQ to Skylab.
+  # TODO(crbug.com/1494063): Implement the retry at browser side for
+  # CrOS infra failures.
   retries = attrib(int, default=3)
   # Only applies to Tast tests.
   # When set to non zero, failed test will be immediatelly retried.

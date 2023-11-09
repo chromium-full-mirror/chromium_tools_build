@@ -168,9 +168,6 @@ class SkylabApi(recipe_api.RecipeApi):
               if 'fyi' in self.m.buildbucket.builder_name else QS_ACCOUNT_PROD
           ])
 
-          if t.spec.retries:
-            cmd.extend(['-max-retries', str(int(t.spec.retries))])
-
           resultdb = self.gen_rdb_config(t)
           assert resultdb and resultdb.enable, ('Skylab tests should '
                                                 'have resultdb enabled.')

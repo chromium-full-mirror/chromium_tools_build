@@ -274,8 +274,7 @@ def GenTests(api):
               '-bucket', 'a_different_chromium_bucket', '-public-builder',
               'ctp-public-builder', '-public-builder-bucket', 'public-bucket',
               '-pool', 'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
-              '-timeout-mins', '60', '-qs-account', 'lacros', '-max-retries',
-              '3'
+              '-timeout-mins', '60', '-qs-account', 'lacros'
           ]),
       api.skylab.mock_wait_on_suites('find test runner build', len(REQUESTS)),
       api.post_process(post_process.DropExpectation),
@@ -430,8 +429,7 @@ def GenTests(api):
               'chromeos-image-archive', '-public-builder', 'ctp-public-builder',
               '-public-builder-bucket', 'public-bucket', '-pool',
               'DUT_POOL_QUOTA', '-image', 'eve-release/R118-15580.0.0',
-              '-timeout-mins', '60', '-qs-account', 'lacros', '-max-retries',
-              '3'
+              '-timeout-mins', '60', '-qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -457,7 +455,7 @@ def GenTests(api):
               'run', 'test', '-json', '-board', 'eve', '-bucket',
               'chromiumos-image-archive', '-pool', 'DUT_POOL_QUOTA', '-image',
               'eve-public/R118-15580.0.0', '-timeout-mins', '60', '-qs-account',
-              'lacros', '-max-retries', '3'
+              'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
