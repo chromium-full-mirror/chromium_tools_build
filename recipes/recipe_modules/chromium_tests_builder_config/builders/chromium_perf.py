@@ -15,8 +15,6 @@ SPEC = {}
     'mb',
 ])
 def chromium_perf(c):
-  # Bisects may build using old toolchains, so goma_hermetic_fallback is
-  # required. See https://codereview.chromium.org/1015633002
   c.clobber_before_runhooks = False
 
 
