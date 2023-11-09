@@ -230,7 +230,6 @@ def _incremental_builds_with_patch(api, target):
         remove_deps_cache=True)
 
     # Run a build at each revision.
-    raw_result = None
     for i, rev in enumerate(revs):
       api.chromium_build_perf.checkout(rev)
 
@@ -335,9 +334,11 @@ def RunSteps(api):
   if builder_config.chromium_config == 'android':
     target = 'chrome_public_apk'
 
-  # Env variables for racing feature.
+  # Enable Reclient racing feature.
+  # The parameters should be same with the ones in reclent_helper.py.
   # https://crsrc.org/d/reclient_helper.py;l=220;drc=1077fbe08a1c03ef7f7fa8eb925edd18688357ae
   env = {
+      'RBE_exec_strategy': 'racing',
       'RBE_local_resource_fraction': '0.2',
       'RBE_racing_bias': '0.95',
   }
