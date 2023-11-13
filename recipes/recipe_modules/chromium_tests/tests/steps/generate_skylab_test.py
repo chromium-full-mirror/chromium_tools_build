@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
+    BatchResponse)
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
@@ -81,7 +84,7 @@ def GenTests(api):
                   ci_only_tests=True,
                   tester='',
                   shards=1,
-                  retries=3):
+                  retries=0):
     builders = {
         builder_group: {
             builder:
@@ -183,9 +186,7 @@ def GenTests(api):
   yield api.test(
       'basic for tast',
       boilerplate(
-          'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
-          retries=3),
+          'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
       api.skylab.mock_wait_on_suites(
           'find test runner build',
           1,
@@ -259,8 +260,7 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds',
           tast_expr='("group:mainline" && "dep:lacros")',
-          shards=2,
-          retries=1),
+          shards=2),
       api.skylab.mock_wait_on_suites(
           'find test runner build',
           2,
@@ -283,8 +283,7 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds',
           tast_expr='("group:mainline" && "dep:lacros")',
-          shards=3,
-          retries=1),
+          shards=3),
       api.skylab.mock_wait_on_suites(
           'find test runner build',
           3,
@@ -300,6 +299,73 @@ def GenTests(api):
       api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #1'),
       api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #2'),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'some shards had exited by infra failure and retry',
+      boilerplate(
+          'chrome-test-builds',
+          tast_expr='("group:mainline" && "dep:lacros")',
+          shards=3,
+          retries=1),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build',
+          3,
+          runner_builds=[[(901, common_pb2.SUCCESS)],
+                         [(902, common_pb2.FAILURE)],
+                         [(903, common_pb2.INFRA_FAILURE)]]),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT',
+                  passing_tests=['Test.One', 'Test.Three'],
+                  failing_tests=['Test.Two']))),
+      api.buildbucket.simulated_schedule_output(
+          BatchResponse(responses=[{
+              'schedule_build': build_pb2.Build(id=999901)
+          }]), 'find test runner build.buildbucket.schedule'),
+      # Only retry the infra failed test runner build 903 and pass.
+      api.skylab.mock_wait_on_suites(
+          'find test runner build (2)',
+          1,
+          runner_builds=[[(904, common_pb2.SUCCESS)]]),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
+      api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #1'),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #2'),
+      api.post_process(post_process.LogContains,
+                       'find test runner build.buildbucket.schedule', 'request',
+                       ['\"templateBuildId\"', '\"889902\"']),
+      api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'retry infra failure and hit limit',
+      boilerplate(
+          'chrome-test-builds',
+          tast_expr='("group:mainline" && "dep:lacros")',
+          shards=1,
+          retries=1),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build',
+          1,
+          runner_builds=[[(901, common_pb2.INFRA_FAILURE)]]),
+      api.buildbucket.simulated_schedule_output(
+          BatchResponse(responses=[{
+              'schedule_build': build_pb2.Build(id=999901)
+          }]), 'find test runner build.buildbucket.schedule'),
+      api.skylab.mock_wait_on_suites(
+          'find test runner build (2)',
+          1,
+          runner_builds=[[(904, common_pb2.INFRA_FAILURE)]]),
+      api.post_process(post_process.LogContains,
+                       'find test runner build.buildbucket.schedule', 'request',
+                       ['\"templateBuildId\"', '\"889900\"']),
+      api.post_process(post_process.DoesNotRun, 'find test runner build (3)'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

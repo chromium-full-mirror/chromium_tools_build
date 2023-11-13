@@ -190,7 +190,8 @@ PROPERTIES = {
 
 def RunSteps(api, requests):
   build_ids = api.skylab.schedule_suites(requests)
-  api.skylab.wait_on_suites(build_ids, timeout_seconds=3600)
+  api.skylab.wait_on_suites(build_ids, requests, timeout_seconds=3600)
+
 
 def GenTests(api):
 

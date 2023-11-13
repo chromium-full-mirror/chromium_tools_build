@@ -2931,9 +2931,9 @@ class SkylabTestSpec(TestSpec):
   dut_pool = attrib(str, default='')
   # The number of shards used to run the test.
   shards = attrib(int, default=1)
-  # TODO(crbug.com/1494063): Implement the retry at browser side for
-  # CrOS infra failures.
-  retries = attrib(int, default=3)
+  # The max attempt to retry infra failures from test runner builds of
+  # CrOS infra. This retry is implemented at the browser side.
+  retries = attrib(int, default=1)
   # Only applies to Tast tests.
   # When set to non zero, failed test will be immediatelly retried.
   test_level_retries = attrib(int, default=0)

@@ -340,20 +340,40 @@ class SkylabApi(recipe_api.RecipeApi):
             ],
             include_experimental=self.m.runtime.is_experimental))
 
-  def wait_on_suites(self, ctp_builds_by_tag, timeout_seconds):
+  def _retry_ctp(self, build_id):
+    """Helper to retry the failed CrOS test build.
+
+    Args:
+      build_id: (int64) A Buildbucket ID to retry.
+
+    Returns:
+      int64, the Buildbucket ID for the retried build.
+    """
+    builds = self.m.buildbucket.schedule(
+        [builds_service_pb2.ScheduleBuildRequest(template_build_id=build_id)])
+    return builds[0].id
+
+  def wait_on_suites(self, ctp_builds_by_tag, test_suites, timeout_seconds):
     """Wait for the CTP builds to complete and return their test runner builds.
 
     Args:
-      ctp_builds_by_tag: A dict of CTP build IDs (a list), keyed by request tag.
-      timeout_seconds: How long to wait for results before
-        giving up.
+    * ctp_builds_by_tag: A dict of CTP build IDs (a list), keyed by request
+        tag.
+    * test_suites: Iterable of objects implementing the steps.Test interface.
+    * timeout_seconds: How long to wait for results before giving up.
 
     Returns:
-      A dict of request tag to dict of CTP build (the shard request) to list of
-        test_runner attempts
+    * A dict of request tag to dict of CTP build (the shard request) to list of
+        test_runner attempts.
+    * A list of the CTP build ID in int64, in the order of shards.
     """
-    test_runners_by_tag = {}
+    test_runners_by_tag = defaultdict(lambda: {})
+    build_by_shard = {}
+    for t, builds in ctp_builds_by_tag.items():
+      build_by_shard.update(dict({b: x for x, b in enumerate(builds)}))
     cur = ctp_builds_by_tag.copy()
+    attempt = 0
+    max_retries_by_suite = {t.name: t.spec.retries for t in test_suites}
     while cur:
       self._try_wait_ctp_builds(cur, timeout_seconds)
       prev = cur
@@ -362,11 +382,31 @@ class SkylabApi(recipe_api.RecipeApi):
         while prev:
           # Pop the request tag and its list of shard CTP build ID.
           t, shard_builds = prev.popitem()
-          # For each shard CTP build, fetch its test runner builds.
-          test_runners_by_tag[t] = {
-              b: self._fetch_test_runner(b) for b in shard_builds
-          }
-    return test_runners_by_tag
+          for idx, b in enumerate(shard_builds):
+            test_runner_builds = self._fetch_test_runner(b)
+            # Retry for infra issues that should not be caused by tests
+            # regressions. Specifically for below scenarios:
+            # - no test runner builds found
+            # - test runner has infra failures
+            if attempt < max_retries_by_suite[t] and (
+                not test_runner_builds or
+                # Requests from browser builders do not enable retry for CTP,
+                # so we expect only one test runner build found. But we can not
+                # control it. Thus only kick off retry if all of test runners
+                # failed due to infra.
+                all(runner.status == common_pb2.INFRA_FAILURE
+                    for runner in test_runner_builds)):
+              retry_build = self._retry_ctp(b)
+              build_by_shard[retry_build] = idx
+              cur[t].append(retry_build)
+              continue
+            test_runners_by_tag[t].update({b: test_runner_builds})
+      attempt += 1
+    ctp_builds_with_retry = {}
+    for t, test_runner_builds in test_runners_by_tag.items():
+      ctp_builds_with_retry[t] = sorted(
+          test_runner_builds.keys(), key=lambda x: build_by_shard[x])
+    return test_runners_by_tag, ctp_builds_with_retry
 
   def gen_rdb_config(self, test):
     """Generate the resultDB config for SkylabTest.
