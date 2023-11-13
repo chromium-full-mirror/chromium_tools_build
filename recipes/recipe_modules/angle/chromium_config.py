@@ -26,7 +26,7 @@ def angle_base(c):
     c.env.FORCE_MAC_TOOLCHAIN = 1
 
 
-@CONFIG_CTX(includes=['angle_base', 'clang', 'goma'])
+@CONFIG_CTX(includes=['angle_base', 'clang'])
 def angle_clang(c):
   pass
 
