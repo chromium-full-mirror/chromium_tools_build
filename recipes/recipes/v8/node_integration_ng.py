@@ -69,7 +69,6 @@ def run_with_retry(api, step_name, step_fun):
 
 
 def RunSteps(api, is_debug, triggers, v8_tot):
-  use_remoteexec = api.v8.use_remoteexec
   with api.step.nest('initialization'):
     if is_debug:
       build_config = 'Debug'
@@ -81,6 +80,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     # Set up dependent modules.
     api.chromium.set_config(chromium_config, BUILD_CONFIG=build_config)
     api.gclient.set_config('node_ci')
+    api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
     revision = api.buildbucket.gitiles_commit.id or 'HEAD'
     if v8_tot:
       api.gclient.c.revisions['node-ci'] = 'HEAD'
@@ -99,8 +99,8 @@ def RunSteps(api, is_debug, triggers, v8_tot):
   with api.step.nest('build'):
     depot_tools_path = api.path['checkout'].join('third_party', 'depot_tools')
     with api.context(env_prefixes={'PATH': [depot_tools_path]}):
-      api.chromium.run_gn(use_reclient=use_remoteexec)
-      raw_result = api.chromium.compile(use_reclient=use_remoteexec)
+      api.chromium.run_gn(use_reclient=True)
+      raw_result = api.chromium.compile(use_reclient=True)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
