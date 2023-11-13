@@ -210,6 +210,13 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium_tests.configure_swarming(
         self.m.tryserver.is_tryserver, builder_group=builder_id.group)
 
+    # Find any test suites that have passed in a previous patchset to skip
+    skip_tests_active = ('chromium.skip_successful_tests'
+                         in self.m.buildbucket.build.input.experiments)
+    test_names_to_skip = self.m.chromium_tests.find_suites_to_skip()
+    if skip_tests_active and test_names_to_skip:
+      tests = [test for test in tests if test.name not in test_names_to_skip]
+
     # crbug/1346781
     # src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata is needed
     # when running code_coverage merge scripts

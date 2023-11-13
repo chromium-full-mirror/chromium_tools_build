@@ -983,6 +983,56 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  def _create_previous_build(test_statuses=None):
+    reusable_build = build_pb2.Build(
+        id=1234,
+        status='SUCCESS',
+        create_time=timestamp_pb2.Timestamp(seconds=1598338800),
+        output=build_pb2.Build.Output())
+    reusable_build.output.properties[
+        'test_status'] = test_statuses if test_statuses else {}
+    return reusable_build
+
+  yield api.test(
+      'skips_successful_tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          revision='d3advegg13',
+          tags=api.buildbucket.tags(
+              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
+          experiments=['chromium.skip_successful_tests']),
+      api.cq(run_mode='FULL_RUN'),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.code_coverage(use_clang_coverage=True),
+      api.chromium_orchestrator.override_compilator_build_proto_fetch(),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_swarming_phase=False),
+      api.chromium_orchestrator.override_test_spec(
+          tests=['browser_tests', 'unit_tests'],
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.buildbucket.simulated_search_results(
+          [_create_previous_build({'unit_tests': 'Success'})],
+          step_name='check previous builds for skippable test suites.find equivalent patchset builds'
+      ),
+      api.post_process(post_process.DoesNotRun, 'unit_tests (with patch)'),
+      api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
       'retry_shards_invalid_trigger_compile_wo_patch_early',
       api.chromium.try_build(

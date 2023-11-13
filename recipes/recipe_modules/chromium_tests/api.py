@@ -11,11 +11,14 @@ import traceback
 from typing import Iterable
 from urllib.parse import urlencode
 
+from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api, step_data
 
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.build.archive import properties as arch_prop
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.buildbucket.proto \
+  import builds_service as builds_service_pb2
 
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -2629,3 +2632,49 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if inv_name.startswith('invocations/'):
       inv_name = inv_name[12:]
     return url + inv_name + '/test-results?' + urlencode({'q': test_name})
+
+  def find_suites_to_skip(self):
+    """Returns a set of tests that has passed in the same patchset."""
+    if not self.m.cq.active or not any(
+        tag.key == 'cq_equivalent_cl_group_key'
+        for tag in self.m.buildbucket.build.tags):
+      return set()
+
+    with self.m.step.nest(
+        'check previous builds for skippable test suites') as presentation:
+      equivalent_key = self.m.cq.equivalent_cl_group_key
+      bucket = self.m.buildbucket.build.builder.bucket
+      predicate = builds_service_pb2.BuildPredicate(
+          builder=self.m.buildbucket.build.builder,
+          tags=self.m.buildbucket.tags(
+              cq_equivalent_cl_group_key=str(equivalent_key)),
+          create_time=common_pb.TimeRange(
+              start_time=timestamp_pb2.Timestamp(
+                  # Look back 1 day
+                  seconds=self.m.buildbucket.build.create_time.ToSeconds() -
+                  60 * 60 * 24)),
+      )
+      if bucket.endswith('.shadow'):
+        predicate.builder.bucket = bucket[:-len('.shadow')]
+
+      builds = self.m.buildbucket.search(
+          predicate, step_name='find equivalent patchset builds')
+
+      # Only skip tests that have explicitly passed
+      all_successful_suites = [
+          set(test
+              for test, status in
+              build.output.properties['test_status'].items()
+              if status == 'Success')
+          for build in builds
+          if 'test_status' in build.output.properties
+      ]
+      if all_successful_suites:
+        tests_to_skip = set.union(*all_successful_suites)
+        presentation.step_text = (
+            'Skippable tests were found \n ' +
+            'The following tests are skippable because they have passed in ' +
+            'the last 24 hours with the same equivelant patchset: \n'
+        ) + '\n'.join(tests_to_skip)
+        return tests_to_skip
+    return set()
