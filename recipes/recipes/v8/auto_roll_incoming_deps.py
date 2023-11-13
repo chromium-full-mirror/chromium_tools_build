@@ -743,6 +743,12 @@ class SriptedRollsFactory:
                 'Puppeteer Replay',
                 'scripts/deps/roll_front_end_third_party.py',
                 ['@puppeteer/replay', 'puppeteer-replay', 'lib']),
+        'browser-protocol':
+            SriptedRollsFactory.SupportedScript(
+                'Browser Protocol', 'scripts/deps/roll_deps.py', [
+                    '--ref', 'working-tree', '{{CHROMIUM_DIR}}',
+                    '{{DEVTOOLS_DIR}}'
+                ]),
         # Add more scripts here
     }
 
@@ -767,10 +773,18 @@ class ScriptedRollHandler(RollHandler):
     return self.script.title
 
   def apply_changes(self):
+    args = [self.resolve_arg(a) for a in self.script.args]
     self.api.step(f'Run {self.name()} script', [
-        'python3', '-u', self.api.path['checkout'].join(
-            *self.script.exe.split('/')), *self.script.args
+        'python3', '-u',
+        self.api.path['checkout'].join(*self.script.exe.split('/')), *args
     ])
+
+  def resolve_arg(self, arg):
+    if arg == '{{CHROMIUM_DIR}}':
+      return self.api.path['cache'].join('builder', 'src')
+    if arg == '{{DEVTOOLS_DIR}}':
+      return self.api.path['checkout']
+    return arg
 
   def get_subject(self):
     return f'Roll {self.key}'
@@ -893,11 +907,11 @@ remote:"""
           'buildtools-mapped': 'buildtools',
       },
       'dependency_version_sources': {
-        'mock-skip-chromium-roll': 'tip_of_tree',
+          'mock-skip-chromium-roll': 'tip_of_tree',
       },
       'show_commit_log': True,
       'roll_chromium_pin': True,
-      'scripted_rolls': ['puppeteer-core'],
+      'scripted_rolls': ['puppeteer-core', 'browser-protocol'],
       'bugs': 'none',
   }
 
