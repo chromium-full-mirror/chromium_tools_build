@@ -104,9 +104,13 @@ def RunSteps(api):
         # Buildbucket de-dupes when using the exact same request object. So need
         # to create a new one each time.
         req = _make_req()
-        build = api.buildbucket.schedule([req],
-                                         step_name='trigger (attempt %d)' %
-                                         i)[0]
+        build = api.buildbucket.schedule(
+            [req],
+            step_name='trigger (attempt %d)' % i,
+            # Merging all sub-builds' test results into a single invocation is
+            # too much for RDB. So don't bother. Gerrit should still show all
+            # results in the checks tab.
+            include_sub_invs=False)[0]
         api.cv.record_triggered_builds(build)
         result = api.buildbucket.collect_build(
             build.id,
