@@ -2679,5 +2679,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             'The following tests are skippable because they have passed in ' +
             'the last 24 hours with the same equivelant patchset: \n'
         ) + '\n'.join(tests_to_skip)
+        presentation.properties['skippable_tests'] = list(tests_to_skip)
         return tests_to_skip
     return set()
