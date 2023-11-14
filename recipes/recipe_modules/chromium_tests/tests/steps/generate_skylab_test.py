@@ -295,11 +295,12 @@ def GenTests(api):
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'basic_EVE_TOT', passing_tests=['Test.One', 'Test.Two']))),
+      api.post_process(post_process.StepException, 'find test runner build'),
       api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
       api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #1'),
       api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #2'),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
-      api.expect_status('FAILURE'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -366,7 +367,7 @@ def GenTests(api):
                        'find test runner build.buildbucket.schedule', 'request',
                        ['\"templateBuildId\"', '\"889900\"']),
       api.post_process(post_process.DoesNotRun, 'find test runner build (3)'),
-      api.expect_status('FAILURE'),
+      api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -423,8 +424,17 @@ def GenTests(api):
   yield api.test(
       'test from fyi builder',
       boilerplate('chrome-test-builds', builder='lacros-amd64-generic-fyi'),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.One']))),
+      api.post_process(
+          post_process.StepCommandContains,
+          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
+          ['-qs-account', 'lacros_fyi']),
       api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -446,10 +456,12 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
       api.post_process(post_process.StepException, 'basic_EVE_TOT'),
-      api.post_process(post_process.ResultReason,
-                       '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** failed.'),
+      api.post_process(
+          post_process.ResultReason,
+          '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
+          'did not complete, likely due to an infra bug.'),
       api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -459,7 +471,7 @@ def GenTests(api):
           post_process.StepTextContains, 'basic_EVE_TOT',
           ['Test was not scheduled because of absent lacros_gcs_path.']),
       api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
@@ -552,6 +564,12 @@ def GenTests(api):
           'chrome-test-builds', tast_expr='dummy_tast', is_ci_build=False),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.One']))),
       api.post_process(
           post_process.MustRun,
           'basic_EVE_TOT (with patch)',
@@ -561,7 +579,6 @@ def GenTests(api):
                        [('This test is being run due to the'
                          ' Include-Ci-Only-Tests gerrit footer')]),
       api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
   )
 
   yield api.test(
@@ -603,7 +620,9 @@ def GenTests(api):
                   'basic_EVE_TOT',
                   failing_tests=['Test.One'],
                   skipped_tests=['Test.One']))),
+      # Retry without patch.
       api.post_process(post_process.MustRun, 'test_pre_run (without patch)'),
+      api.skylab.mock_wait_on_suites('find test runner build (2)', 1),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )

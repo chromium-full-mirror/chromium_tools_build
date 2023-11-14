@@ -3037,6 +3037,17 @@ class SkylabTest(AbstractSkylabTest, Test):
   def test_runner_builds(self, value: Iterable[Dict]) -> None:
     self._test_runner_builds = value
 
+  def did_complete(self, suffix) -> bool:
+    # ctp_build_ids and test_runner_builds must not be empty, otherwise
+    # the build should raise errors in earlier step.
+    assert self.test_runner_builds and self.ctp_build_ids, (
+        'Skylab test did not schedule, likely due to an infra bug.')
+    for builds in self.test_runner_builds.values():
+      if not builds or all(
+          b.status == common_pb2.INFRA_FAILURE for b in builds):
+        return False
+    return True
+
   @property
   def exe_rel_path(self) -> str:
     return self._exe_rel_path

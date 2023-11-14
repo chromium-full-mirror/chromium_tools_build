@@ -378,7 +378,7 @@ class SkylabApi(recipe_api.RecipeApi):
       self._try_wait_ctp_builds(cur, timeout_seconds)
       prev = cur
       cur = defaultdict(lambda: [])
-      with self.m.step.nest('find test runner build'):
+      with self.m.step.nest('find test runner build') as step:
         while prev:
           # Pop the request tag and its list of shard CTP build ID.
           t, shard_builds = prev.popitem()
@@ -388,18 +388,19 @@ class SkylabApi(recipe_api.RecipeApi):
             # regressions. Specifically for below scenarios:
             # - no test runner builds found
             # - test runner has infra failures
-            if attempt < max_retries_by_suite[t] and (
-                not test_runner_builds or
-                # Requests from browser builders do not enable retry for CTP,
-                # so we expect only one test runner build found. But we can not
-                # control it. Thus only kick off retry if all of test runners
-                # failed due to infra.
-                all(runner.status == common_pb2.INFRA_FAILURE
-                    for runner in test_runner_builds)):
-              retry_build = self._retry_ctp(b)
-              build_by_shard[retry_build] = idx
-              cur[t].append(retry_build)
-              continue
+            # Requests from browser builders do not enable retry for CTP,
+            # so we expect only one test runner build found. But we can not
+            # control it. Thus only kick off retry if all of test runners
+            # failed due to infra.
+            if not test_runner_builds or all(
+                runner.status == common_pb2.INFRA_FAILURE
+                for runner in test_runner_builds):
+              step.presentation.status = self.m.step.EXCEPTION
+              if attempt < max_retries_by_suite[t]:
+                retry_build = self._retry_ctp(b)
+                build_by_shard[retry_build] = idx
+                cur[t].append(retry_build)
+                continue
             test_runners_by_tag[t].update({b: test_runner_builds})
       attempt += 1
     ctp_builds_with_retry = {}
