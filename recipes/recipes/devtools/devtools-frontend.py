@@ -52,6 +52,9 @@ PROPERTIES = {
             kind=bool,
             help='Should the builder clean up the out/ folder before building',
             default=False),
+    'coverage':
+        Property(
+            kind=bool, help='Should the runner have coverage', default=True),
     'parallel':
         Property(
             kind=bool,
@@ -92,13 +95,14 @@ class Results():
 
 class DevToolsTests(ABC):
 
-  def __init__(self, api, cas_digest, builder_config, step_name):
+  def __init__(self, api, cas_digest, builder_config, coverage, step_name):
     self.api = api
     self.cas_digest = cas_digest
     self.builder_config = builder_config
     self.step_name = step_name
     self.output_dir = self.api.path.mkdtemp()
     self.tasks = []
+    self.coverage = coverage
 
   def collect(self):
     """
@@ -143,25 +147,28 @@ class UnitTests(DevToolsTests):
   def trigger(self):
     shuffle = ['--shuffle'] if self.api.devtools.is_shuffled_run() else []
     with self.api.step.nest(f'Trigger {self.step_name}'):
+      command = [
+          self.api.path.join('scripts', 'test', 'run_unittests.py'),
+          '--target=' + self.builder_config,
+          '--swarming-output-file',
+          '${ISOLATED_OUTDIR}',
+      ]
+      if self.coverage:
+        command.append('--coverage')
       self.tasks = self.api.devtools.trigger_test_swarming_tasks(
           step_name=self.step_name,
           cas_digest=self.cas_digest,
           task_output_dir=self.output_dir,
           rdb_wrapped=True,
-          commands=[[
-              self.api.path.join('scripts', 'test', 'run_unittests.py'),
-              '--target=' + self.builder_config,
-              '--coverage',
-              '--swarming-output-file',
-              '${ISOLATED_OUTDIR}',
-          ] + shuffle],
+          commands=[command + shuffle],
       )
 
   def process_results(self):
     with self.api.step.nest(self.step_name):
       result = self.collect()
       if not result.infra_failures:
-        self.copy_coverage_data()
+        if self.coverage:
+          self.copy_coverage_data()
       return result
 
   def copy_coverage_data(self):
@@ -181,10 +188,11 @@ class InteractionsTests(DevToolsTests):
                api,
                cas_digest,
                builder_config,
+               coverage,
                step_name,
                bucket='devtools-frontend-screenshots'):
     self.bucket = bucket
-    super().__init__(api, cas_digest, builder_config, step_name)
+    super().__init__(api, cas_digest, builder_config, coverage, step_name)
 
   def collect(self):
     if self.api.tryserver.is_tryserver:
@@ -201,6 +209,19 @@ class InteractionsTests(DevToolsTests):
 
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):
+      command = [
+          self.api.path.join('third_party', 'node', 'node.py'),
+          "--output",
+          self.api.path.join('scripts', 'test', 'run_test_suite.js'),
+          "--test-suite-path=gen/test/interactions",
+          "--test-suite-source-dir=test/interactions",
+          "--test-server-type='component-docs'",
+          "--target=" + self.builder_config,
+          '--swarming-output-file',
+          '${ISOLATED_OUTDIR}',
+      ]
+      if self.coverage:
+        command.append('--coverage')
       self.tasks = self.api.devtools.trigger_test_swarming_tasks(
           step_name=self.step_name,
           cas_digest=self.cas_digest,
@@ -215,18 +236,7 @@ class InteractionsTests(DevToolsTests):
                   self.api.path.join('${ISOLATED_OUTDIR}',
                                      'interactions_failure_screenshots.html'),
           },
-          commands=[[
-              self.api.path.join('third_party', 'node', 'node.py'),
-              "--output",
-              self.api.path.join('scripts', 'test', 'run_test_suite.js'),
-              "--test-suite-path=gen/test/interactions",
-              "--test-suite-source-dir=test/interactions",
-              "--test-server-type='component-docs'",
-              "--target=" + self.builder_config,
-              "--coverage",
-              '--swarming-output-file',
-              '${ISOLATED_OUTDIR}',
-          ]],
+          commands=[command],
       )
 
   def process_results(self):
@@ -234,7 +244,8 @@ class InteractionsTests(DevToolsTests):
       with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
         result = self.collect()
         if not result.infra_failures:
-          self.copy_coverage_data()
+          if self.coverage:
+            self.copy_coverage_data()
           self.copy_golden_snapshots()
       return result
 
@@ -288,7 +299,7 @@ class E2ETests(DevToolsTests):
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber, parallel):
+             clobber, coverage, parallel):
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
   api.devtools.update()
@@ -301,9 +312,11 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       return compilation_result
 
     if not parallel:
-      run_unit_tests(api, builder_config)
-      run_interactions(api, builder_config)
-      publish_coverage_points(api)
+      run_unit_tests(api, builder_config, coverage)
+      run_interactions(api, builder_config, coverage)
+
+      if coverage:
+        publish_coverage_points(api)
 
       if api.devtools.is_debug(builder_config):
         return
@@ -314,13 +327,15 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     else:
       cas_digest = api.devtools.archive_to_cas()
       tests = [
-          UnitTests(api, cas_digest, builder_config, 'Unit Tests'),
-          InteractionsTests(api, cas_digest, builder_config,
+          UnitTests(api, cas_digest, builder_config, coverage, 'Unit Tests'),
+          InteractionsTests(api, cas_digest, builder_config, coverage,
                             'Interactions Tests'),
       ]
 
       if not api.devtools.is_debug(builder_config):
-        tests += [E2ETests(api, cas_digest, builder_config, 'E2E Tests')]
+        tests += [
+            E2ETests(api, cas_digest, builder_config, coverage, 'E2E Tests')
+        ]
 
       with api.step.nest('Trigger Tests'):
         for t in tests:
@@ -333,8 +348,9 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
       all_results = sum((t.process_results() for t in tests), Results())
 
-      with api.step.nest('Coverage'):
-        publish_coverage_points(api)
+      if coverage:
+        with api.step.nest('Coverage'):
+          publish_coverage_points(api)
 
       all_results.raise_on_failure()
 
@@ -350,11 +366,14 @@ def run_script(api, step_name, script, args=None):
   api.step(step_name, args)
 
 
-def run_unit_tests(api, builder_config):
-  run_script(api, 'Unit Tests', 'run_unittests.py', [
-      '--target=' +  builder_config,
-      '--coverage',
-    ])
+def run_unit_tests(api, builder_config, coverage):
+  args = [
+      '--target=' + builder_config,
+  ]
+  if coverage:
+    args.append('--coverage')
+  run_script(api, 'Unit Tests', 'run_unittests.py', args)
+
 
 def lint_script_exists(api, name):
   script_file = api.path['checkout'].join('scripts', 'test', name)
@@ -369,19 +388,20 @@ def run_lint_check(api):
                                'run_lint_check_css.js')
 
 
-def run_interactions(api, builder_config):
+def run_interactions(api, builder_config, coverage):
   bucket = 'devtools-frontend-screenshots'
   with api.devtools.collect_screenshots_on_trybot(bucket):
+    args = [
+        "--test-suite-path=gen/test/interactions",
+        "--test-suite-source-dir=test/interactions",
+        "--test-server-type='component-docs'", "--target=" + builder_config
+    ]
+    if coverage:
+      args.append('--coverage')
     api.devtools.rdb_node_script(
         'Interactions',
         'run_test_suite.js',
-        [
-            "--test-suite-path=gen/test/interactions",
-            "--test-suite-source-dir=test/interactions",
-            "--test-server-type='component-docs'",
-            "--target=" + builder_config,
-            "--coverage"
-        ],
+        args,
     )
 
 
@@ -534,6 +554,15 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(devtools_skip_typecheck=True),
+      api.post_process(post_process.Filter('gn')),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'skip coverage',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='linux'),
+      api.properties(coverage=False),
       api.post_process(post_process.Filter('gn')),
       status='SUCCESS',
   )
