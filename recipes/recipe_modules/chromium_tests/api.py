@@ -2659,6 +2659,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       builds = self.m.buildbucket.search(
           predicate, step_name='find equivalent patchset builds')
+      builds = [
+          build for build in builds if build.id != self.m.buildbucket.build.id
+      ]
 
       # Only skip tests that have explicitly passed
       all_successful_suites = [
