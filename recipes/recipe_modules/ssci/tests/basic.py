@@ -37,7 +37,9 @@ def RunSteps(api):
               'digest':
                   'testhash',
               'file':
-                  'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json'
+                  'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json',
+              'filename':
+                  'ExampleCanary.apk'
           }
       })
 
