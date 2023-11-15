@@ -107,12 +107,24 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/engine.py\", in run_steps",
+      "    raw_result = recipe_obj.run_steps(api, engine)",
+      "                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/recipe_deps.py\", in run_steps",
+      "    recipe_result = invoke_with_properties(",
+      "                    ^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in invoke_with_properties",
+      "    return _invoke_with_properties(callable_obj, all_props, environ, prop_defs,",
+      "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
+      "    return callable_obj(*props, **additional_args)",
+      "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 24, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api)",
       "                                          ^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 98, in download_chrome",
       "    raise NotImplementedError('Unsupported platform: %s' % (key,))",
-      "NotImplementedError('Unsupported platform: ('win', 'intel', 64)')"
+      "NotImplementedError: Unsupported platform: ('win', 'intel', 64)"
     ]
   },
   {
