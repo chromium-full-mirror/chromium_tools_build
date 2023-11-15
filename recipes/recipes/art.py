@@ -152,6 +152,8 @@ def setup_host_x86(api,
           'eng',
       'TARGET_BUILD_TYPE':
           'release',
+      'TARGET_RELEASE':
+          'trunk_staging',
       'LANG':
           'en_US.UTF-8',
       'SOONG_ALLOW_MISSING_DEPENDENCIES':

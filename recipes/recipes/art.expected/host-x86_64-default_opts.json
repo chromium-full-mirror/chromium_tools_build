@@ -104,7 +104,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -143,7 +144,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -184,7 +186,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -226,7 +229,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -268,7 +272,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -309,7 +314,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -350,7 +356,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -391,7 +398,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -430,7 +438,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -469,7 +478,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
@@ -509,7 +519,8 @@
       "TARGET_BUILD_TYPE": "release",
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8"
+      "TARGET_PRODUCT": "armv8",
+      "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
       "realm": {
