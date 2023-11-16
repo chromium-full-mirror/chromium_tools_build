@@ -56,7 +56,7 @@ def RunSteps(api):
         'PATH': [api.path['checkout'].join('tools', 'golang', 'bin')]
     }):
       api.step('Roll WebGPU CTS', [
-          api.path['checkout'].join('tools', 'run'), 'cts', 'roll',
+          api.path['checkout'].join('tools', 'run'), 'cts', 'roll', '-verbose',
           '-parent-swarming-run-id', api.swarming.task_id, '-send-to-gardener'
       ])
 
