@@ -423,9 +423,15 @@ class GomaApi(recipe_api.RecipeApi):
                       **kwargs)
                 defer(self._upload_logs, name='upload_goma_start_failed_logs')
           except self.m.step.StepFailure:
-            # Don't allow the exception to propagate so that the outer frame can
-            # re-raise its exception
+            # Don't allow StepFailures to propagate so that the outer frame can
+            # re-raise its original exception.
             pass
+          except ExceptionGroup as exc:  # pragma: no cover
+            # Don't allow StepFailures to propagate so that the outer frame can
+            # re-raise its original exception. Reraise other failures.
+            _, other_failures = exc.split(self.m.step.StepFailure)
+            if other_failures:
+              raise other_failures from exc
 
         cleanup()
         raise
@@ -488,6 +494,10 @@ class GomaApi(recipe_api.RecipeApi):
         self._goma_ctl_env = {}
       except self.m.step.StepFailure:
         nested_result.presentation.status = self.m.step.EXCEPTION
+        raise
+      except ExceptionGroup as exc:  # pragma: no cover
+        if exc.subgroup(self.m.step.StepFailure):
+          nested_result.presentation.status = self.m.step.EXCEPTION
         raise
 
   def _upload_logs(self,

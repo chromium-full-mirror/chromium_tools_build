@@ -159,8 +159,16 @@ def RunSteps(api, properties):
                 for subcommand in ('generate', 'validate'):
                   cmd = ['lucicfg', subcommand, entry_point]
                   defer(api.step, ' '.join(cmd), cmd)
-          except api.step.StepFailure:
+          # If there are StepFailures, add the branch to bad_branch_configs.
+          # Reraise or ignore all other failures here.
+          except api.step.StepFailure as exc:
             bad_branch_configs.append(branch_config.name)
+          except ExceptionGroup as exc:  # pragma: no cover
+            step_failures, other_failures = exc.split(api.step.StepFailure)
+            if step_failures:
+              bad_branch_configs.append(branch_config.name)
+            if other_failures:
+              raise other_failures from exc
 
         with api.step.nest('restore'):
           api.git('restore', '.', infra_step=True)
