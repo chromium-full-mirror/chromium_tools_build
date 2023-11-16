@@ -161,13 +161,11 @@ def RunSteps(api, properties):
                   defer(api.step, ' '.join(cmd), cmd)
           # If there are StepFailures, add the branch to bad_branch_configs.
           # Reraise or ignore all other failures here.
-          except api.step.StepFailure as exc:
-            bad_branch_configs.append(branch_config.name)
-          except ExceptionGroup as exc:  # pragma: no cover
+          except ExceptionGroup as exc:
             step_failures, other_failures = exc.split(api.step.StepFailure)
             if step_failures:
               bad_branch_configs.append(branch_config.name)
-            if other_failures:
+            if other_failures:  # pragma: no cover
               raise other_failures from exc
 
         with api.step.nest('restore'):
