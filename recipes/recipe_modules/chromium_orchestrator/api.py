@@ -587,6 +587,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     except self.m.step.StepFailure as e:
       ret = self.m.step.active_result
       ret.presentation.links['compilator build: ' + str(build.id)] = build_url
+      # The step_text will inherit the markdown of the sub_build, including
+      # raw html tags. But we also mirror it in this build's summary, so no
+      # need to display it twice.
+      ret.presentation.step_text = None
       sub_build = ret.step.sub_build
       if not sub_build:
         raise self.m.step.InfraFailure('sub_build missing from step') from e
