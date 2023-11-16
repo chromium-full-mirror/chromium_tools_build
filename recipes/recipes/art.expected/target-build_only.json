@@ -367,6 +367,7 @@
       "TARGET_BUILD_UNBUNDLED": "true",
       "TARGET_BUILD_VARIANT": "eng",
       "TARGET_PRODUCT": "arm_krait",
+      "TARGET_RELEASE": "trunk_staging",
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {

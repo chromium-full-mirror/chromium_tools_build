@@ -330,6 +330,8 @@ def setup_target(api,
           'eng',
       'TARGET_BUILD_TYPE':
           'release',
+      'TARGET_RELEASE':
+          'trunk_staging',
       'LANG':
           'en_US.UTF-8',
       'SOONG_ALLOW_MISSING_DEPENDENCIES':
@@ -351,8 +353,7 @@ def setup_target(api,
           # Add openssh-portable to the path.
           str(openssh_path) + api.path.pathsep +
           # Add qemu to the path.
-          str(qemu_path) + api.path.pathsep +
-          '%(PATH)s',
+          str(qemu_path) + api.path.pathsep + '%(PATH)s',
       'ART_TEST_RUN_TEST_2ND_ARCH':
           'false',
       'USE_DEX2OAT_DEBUG':
