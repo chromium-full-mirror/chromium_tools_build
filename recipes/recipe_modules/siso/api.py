@@ -66,6 +66,8 @@ class SisoApi(recipe_api.RecipeApi):
         '--enable_cloud_logging',
         '--project',
         self._props.project,
+        '--job_id',
+        self.m.buildbucket.build.id,
     ]
     if self._props.reapi_address:
       cmd.extend([

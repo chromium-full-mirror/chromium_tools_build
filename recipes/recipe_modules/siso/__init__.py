@@ -5,6 +5,7 @@
 from PB.recipe_modules.build.siso import properties
 
 DEPS = [
+    'recipe_engine/buildbucket',
     'recipe_engine/cas',
     'recipe_engine/cipd',
     'recipe_engine/context',
