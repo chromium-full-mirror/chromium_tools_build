@@ -11,6 +11,9 @@ from PB.go.chromium.org.luci.buildbucket.proto.common import (
     GerritChange, StringPair,
 )
 from PB.go.chromium.org.luci.buildbucket.proto.step import Step
+from PB.go.chromium.org.luci.cv.api.v0 import run as run_pb
+from PB.go.chromium.org.luci.cv.api.v0 import service_runs as service_runs_pb
+from PB.go.chromium.org.luci.cv.api.v0 import tryjob as tryjob_pb
 from PB.recipe_engine.result import RawResult
 
 from recipe_engine.recipe_api import Property
@@ -18,19 +21,22 @@ from recipe_engine.post_process import (DropExpectation, StepSuccess,
                                         StepFailure)
 
 
+
 DEPS = [
     'depot_tools/depot_tools',
     'depot_tools/gerrit',
     'depot_tools/git',
     'depot_tools/gsutil',
-
     'recipe_engine/buildbucket',
+    'recipe_engine/change_verifier',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'recipe_engine/proto',
     'recipe_engine/raw_io',
+    'recipe_engine/resultdb',
     'recipe_engine/step',
 ]
 
@@ -151,6 +157,7 @@ def find_recovery_fn(name):
       'mark_as_reported': mark_as_reported,
       'try_update_screenshots': try_update_screenshots,
       'apply_screenshot_patches': apply_screenshot_patches,
+      'test262_update_status_file': test262_update_status_file,
   }[name]
 
 
@@ -161,6 +168,44 @@ def tag_cl(api, roller, cl, tag_name, step_name):
               body={"add": [tag_name]},
               accept_statuses=[200, 201],
               name=step_name)
+
+
+CV_RUN_STATUS_FAILED = 66
+TRYJOB_STATUS_FAILED_PERMANENTLY = 3
+
+
+def find_unexpected_results_in_last_cv_attempt(api, roller, cl, test_regex):
+  search_project = roller['project'].split('/')[1]
+  search_cl = (roller['review-host'], cl['_number'])
+  cv_runs = api.change_verifier.search_runs(search_project, search_cl)
+
+  if not cv_runs:
+    api.step.empty('No CV runs found')
+    return
+  last_cv_run = cv_runs[0]
+  if last_cv_run.mode not in ['FULL_RUN', 'DRY_RUN']:
+    api.step.empty(f'Last CV run mode is unsupported: {last_cv_run.mode}.')
+    return
+  if last_cv_run.status != CV_RUN_STATUS_FAILED:
+    api.step.empty('Last CV run did not fail (yet?).')
+    return
+  if last_cv_run.cls[0].patchset != last_patch(cl)['_number']:
+    api.step.empty('Last CV run was not for the latest patchset.')
+    return
+  api.step.empty('Last CV run failed.')
+  buid_ids = [
+      tryjob.result.buildbucket.id
+      for tryjob in last_cv_run.tryjobs
+      if tryjob.result.status == TRYJOB_STATUS_FAILED_PERMANENTLY
+  ]
+  results = api.resultdb.query(
+      inv_ids=[f'build-{id}' for id in buid_ids],
+      variants_with_unexpected_results=True,
+      test_regex=test_regex,
+  )
+  if not results:
+    api.step.empty('No unexpected results found.')
+  return results
 
 
 #Generic recovery functions {
@@ -328,6 +373,73 @@ def git_output(api, *args, **kwargs):
 
 #} Devtools screenshots recovery functions
 
+
+# { Test262 import recovery functions
+def test262_update_status_file(api, roller, cl):
+  unexpected_results = find_unexpected_results_in_last_cv_attempt(
+      api,
+      roller,
+      cl,
+      test_regex='//test262/.*',
+  )
+  if not unexpected_results:
+    mark_as_reported(api, roller, cl)
+    return
+
+  new_status_lines = collect_new_test_exceptions(api, roller, cl,
+                                                 unexpected_results)
+
+  work_dir = api.path.mkdtemp()
+  with api.context(cwd=work_dir):
+    prepare_local_checkout(api, cl)
+    update_test262_status_file(api, work_dir, new_status_lines)
+    git_output(api, 'commit', '-am', 'status file patch')
+    git_output(api, 'cl', 'upload', '-f', '--bypass-hooks', '--cq-dry-run')
+    tag_cl(api, roller, cl, 'test262_status_file_patched',
+           'Mark CL as patched with new test262 status file')
+    just_fail(
+        api,
+        roller,
+        cl,
+        title='CL needs review',
+        message='Please review status file patch!')
+
+
+def collect_new_test_exceptions(api, roller, cl, unexpected_results):
+  test_names = []
+  for inv in unexpected_results.values():
+    for result in inv.test_results:
+      test_names.append(test_name_in_status_file(result.test_id))
+
+  api.step.empty(f'Found {len(test_names)} tests failing')
+
+  return (['####', '# Roll-watcher patch', '[ALWAYS, {'] +
+          [f"  '{test_name}': [FAIL]," for test_name in test_names] +
+          ['}],', '# End roll-watcher patch', '####'])
+
+
+def test_name_in_status_file(testId):
+  return testId.split('//')[1].split('test262/')[1]
+
+
+def update_test262_status_file(api, work_dir, new_status_lines):
+  test262_status_path = work_dir.join('test', 'test262', 'test262.status')
+  status_file_lines = api.file.read_text('Read test262 status file',
+                                         test262_status_path).splitlines()
+  status_lines_before_eof = status_file_lines[:-2]
+  eof_status_lines = status_file_lines[-2:]
+  assert eof_status_lines == [']', ''], ('Unexpected status file eof.'
+      f' {eof_status_lines}')
+  api.file.write_text(
+      'Write test262 status file',
+      test262_status_path,
+      '\n'.join(status_lines_before_eof + new_status_lines + eof_status_lines),
+  )
+
+
+# } Test262 import recovery functions
+
+
 def GenTests(api):
   default_roller = {
           'name' : 'roller',
@@ -339,16 +451,26 @@ def GenTests(api):
   screenshot_roller = {
       'name': 'experiment',
       'subject': 'Break something',
-      "review-host": "chrome-internal-review.googlesource.com",
-      "project": "devtools/devtools-internal",
-      "account": "liviurau@google.com",
-      "criteria": ["-hashtag:screenshots_applied"],
-      "failure_recovery": ["try_update_screenshots"],
-      "screenshot_builders": ["devtools_screenshot_linux_rel"],
-      "screenshot_builders_triggered_tag": "screenshot_builders_triggered",
-      "screenshots_applied_tag": "screenshots_applied",
-      "screenshots_unavailable_tag": "screenshots_unavailable",
-      "allowed_failure_steps": "Interactions",
+      'review-host': 'chrome-internal-review.googlesource.com',
+      'project': 'devtools/devtools-internal',
+      'account': 'liviurau@google.com',
+      'criteria': ['-hashtag:screenshots_applied'],
+      'failure_recovery': ['try_update_screenshots'],
+      'screenshot_builders': ['devtools_screenshot_linux_rel'],
+      'screenshot_builders_triggered_tag': 'screenshot_builders_triggered',
+      'screenshots_applied_tag': 'screenshots_applied',
+      'screenshots_unavailable_tag': 'screenshots_unavailable',
+      'allowed_failure_steps': 'Interactions',
+  }
+
+  test262_importer = {
+      'name': 'test262',
+      'subject': '[test262] Roll test262',
+      'review-host': 'chromium-review.googlesource.com',
+      'project': 'v8/v8',
+      'account': 'liviurau@google.com',
+      'criteria': ['-hashtag:test262_status_file_patched'],
+      'failure_recovery': ['test262_update_status_file'],
   }
 
 
@@ -378,9 +500,10 @@ def GenTests(api):
         'hashtags': []
     }
     cl_data.update(**kwargs)
-    return api.override_step_data("Roller: '{}'."
-            'gerrit Find open CLs'.format(roller['name']),
-            api.json.output([cl_data]))
+    return api.override_step_data(
+        "Roller: '{}'."
+        "gerrit Find open CLs".format(roller['name']),
+        api.json.output([cl_data]))
 
 
   def find_fake_builds(roller, *builds):
@@ -398,21 +521,66 @@ def GenTests(api):
             tags=[exp_tag], steps=steps)
 
 
+  def find_fake_cv(roller, runs=None):
+    return api.step_data(
+        f"Roller: '{roller['name']}'.Checking CL 123."
+        "luci-change-verifier.SearchRuns.request page 1",
+        stdout=api.proto.output(service_runs_pb.SearchRunsResponse(runs=runs)))
+
+  def fake_cv_runs(mode="FULL_RUN",
+                   status=CV_RUN_STATUS_FAILED,
+                   cls=None,
+                   tryjobs=None):
+    return [
+        run_pb.Run(
+            id='projects/prj/runs/1',
+            mode=mode,
+            status=status,
+            cls=cls,
+            tryjobs=tryjobs,
+        )
+    ]
+
+  def fake_cv_cls(patchset=1):
+    return [run_pb.GerritChange(change=123, patchset=patchset)]
+
+  def fake_cv_tryjobs():
+    return [
+        tryjob_pb.Tryjob(
+            result=tryjob_pb.Tryjob.Result(
+                status=TRYJOB_STATUS_FAILED_PERMANENTLY,
+                buildbucket=tryjob_pb.Tryjob.Result.Buildbucket(id=1234,),
+            ),)
+    ]
+
+  def find_fake_unexpected_results(roller, raw_results=None):
+    return api.override_step_data(
+        f"Roller: '{roller['name']}'"
+        ".Checking CL 123.rdb query",
+        stdout=api.raw_io.output_text(raw_results),
+    )
+
+  def fake_test262_status_file():
+    return api.override_step_data("Roller: 'test262'.Checking CL 123."
+        "Read test262 status file",
+        api.file.read_text('\n[\n...\n\n]\n\n'),
+    )
+
   yield api.test(
-      "no-cls",
+      'no-cls',
       roller(default_roller),
       status='SUCCESS',
   )
 
   yield api.test(
-      "roller-with-stale-cls",
+      'roller-with-stale-cls',
       roller(default_roller),
       find_fake_cls(default_roller),
       status='SUCCESS',
   )
 
   yield api.test(
-      "roll-failing-in-cq-default",
+      'roll-failing-in-cq-default',
       roller(default_roller),
       find_fake_cls(default_roller),
       find_fake_builds(
@@ -424,11 +592,11 @@ def GenTests(api):
   )
 
   yield api.test(
-      "roll-failing-in-cq-just-pass",
+      'roll-failing-in-cq-just-pass',
       roller(
           default_roller,
-          criteria=["hashtags:sometag"],
-          failure_recovery=["just_pass"]),
+          criteria=['hashtags:sometag'],
+          failure_recovery=['just_pass']),
       find_fake_cls(default_roller),
       find_fake_builds(
           default_roller,
@@ -438,7 +606,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      "sc-trigger-builders",
+      'sc-trigger-builders',
       roller(screenshot_roller),
       find_fake_cls(screenshot_roller),
       find_fake_builds(
@@ -450,7 +618,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      "sc-no-trigger-builders-in-progress",
+      'sc-no-trigger-builders-in-progress',
       roller(screenshot_roller),
       find_fake_cls(screenshot_roller),
       find_fake_builds(
@@ -460,13 +628,13 @@ def GenTests(api):
       ),
       api.post_process(
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
-          "Builders still in progress..."),
+          'Builders still in progress...'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
 
   yield api.test(
-      "sc-no-trigger-wrong-step",
+      'sc-no-trigger-wrong-step',
       roller(screenshot_roller),
       find_fake_cls(screenshot_roller),
       find_fake_builds(
@@ -476,61 +644,61 @@ def GenTests(api):
       ),
       api.post_process(
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
-          "Some failures do not refer to screenshots..."),
+          'Some failures do not refer to screenshots...'),
       api.post_process(
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
-          "gerrit Tag CL for no screenshots patch available"),
+          'gerrit Tag CL for no screenshots patch available'),
       api.post_process(DropExpectation),
       status='FAILURE',
   )
 
   yield api.test(
-      "sc-update-screenshots",
+      'sc-update-screenshots',
       roller(screenshot_roller),
       find_fake_cls(
-          screenshot_roller, hashtags=["screenshot_builders_triggered"]),
+          screenshot_roller, hashtags=['screenshot_builders_triggered']),
       find_fake_builds(
           screenshot_roller,
           build(1, FAILURE),
-          build(2, SUCCESS, builder_name="devtools_screenshot_linux_rel"),
+          build(2, SUCCESS, builder_name='devtools_screenshot_linux_rel'),
       ),
       api.override_step_data(
           "Roller: 'experiment'.Checking CL 123.Apply screenshot patches."
-          "Apply screenshot patch from devtools_screenshot_linux_rel."
-          "read patch for linux",
+          'Apply screenshot patch from devtools_screenshot_linux_rel.'
+          'read patch for linux',
           api.file.read_text('patch contents'),
       ),
       status='FAILURE',
   )
 
   yield api.test(
-      "sc-no-screenshot-builders",
+      'sc-no-screenshot-builders',
       roller(screenshot_roller),
       find_fake_cls(
-          screenshot_roller, hashtags=["screenshot_builders_triggered"]),
+          screenshot_roller, hashtags=['screenshot_builders_triggered']),
       find_fake_builds(
           screenshot_roller,
           build(1, FAILURE),
       ),
       api.post_process(
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
-          "Apply screenshot patches.No screenshot builds found"),
+          'Apply screenshot patches.No screenshot builds found'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
 
   yield api.test(
-      "sc-no-screenshot-patches",
+      'sc-no-screenshot-patches',
       roller(screenshot_roller),
       find_fake_cls(
-          screenshot_roller, hashtags=["screenshot_builders_triggered"]),
+          screenshot_roller, hashtags=['screenshot_builders_triggered']),
       find_fake_builds(
           screenshot_roller, build(1, FAILURE),
-          build(2, SUCCESS, builder_name="devtools_screenshot_linux_rel")),
+          build(2, SUCCESS, builder_name='devtools_screenshot_linux_rel')),
       api.post_process(
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
-          "Apply screenshot patches.Apply screenshot patch from "
-          "devtools_screenshot_linux_rel.Empty patch"),
+          'Apply screenshot patches.Apply screenshot patch from '
+          'devtools_screenshot_linux_rel.Empty patch'),
       api.post_process(
           StepFailure, "Roller: 'experiment'.Checking CL 123."
           "Apply screenshot patches.Roller 'experiment' failed"),
@@ -539,36 +707,128 @@ def GenTests(api):
   )
 
   yield api.test(
-      "sc-no-update-builders-in-progress",
+      'sc-no-update-builders-in-progress',
       roller(screenshot_roller),
       find_fake_cls(
-          screenshot_roller, hashtags=["screenshot_builders_triggered"]),
+          screenshot_roller, hashtags=['screenshot_builders_triggered']),
       find_fake_builds(
           screenshot_roller, build(1, FAILURE),
           build(
               2,
               STARTED,
               experimental=True,
-              builder_name="devtools_screenshot_linux_rel")),
+              builder_name='devtools_screenshot_linux_rel')),
       api.post_process(
           StepSuccess, "Roller: 'experiment'.Checking CL 123."
-          "Apply screenshot patches.Builders still in progress..."),
+          'Apply screenshot patches.Builders still in progress...'),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
 
   yield api.test(
-      "sc-no-update-builders-failed",
+      'sc-no-update-builders-failed',
       roller(screenshot_roller),
       find_fake_cls(
-          screenshot_roller, hashtags=["screenshot_builders_triggered"]),
+          screenshot_roller, hashtags=['screenshot_builders_triggered']),
       find_fake_builds(
           screenshot_roller, build(1, FAILURE),
-          build(2, FAILURE, builder_name="devtools_screenshot_linux_rel")),
+          build(2, FAILURE, builder_name='devtools_screenshot_linux_rel')),
       api.post_process(
           StepFailure, "Roller: 'experiment'.Checking CL 123."
-          "Apply screenshot patches."
+          'Apply screenshot patches.'
           "Roller 'experiment' failed"),
       api.post_process(DropExpectation),
       status='FAILURE',
+  )
+
+  yield api.test(
+      'test262_failure_recovery',
+      roller(test262_importer),
+      find_fake_cls(test262_importer),
+      find_fake_builds(test262_importer, build(1, FAILURE),
+                       build(2, FAILURE, builder_name='some_v8_builder')),
+      find_fake_cv(test262_importer,
+                   fake_cv_runs(cls=fake_cv_cls(), tryjobs=fake_cv_tryjobs())),
+      find_fake_unexpected_results(
+          test262_importer,
+          raw_results='{"invocationId": "1", "testResult": {"testId": "//test262/sometest1//default"}}\n'
+          '{"invocationId": "1", "testResult": {"testId": "//test262/sometest2//default"}}'
+      ),
+      fake_test262_status_file(),
+      api.post_process(StepFailure, "Roller: 'test262'."
+                       "Checking CL 123.CL needs review"),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'test262_no_failures',
+      roller(test262_importer),
+      find_fake_cls(test262_importer),
+      find_fake_builds(test262_importer, build(1, FAILURE),
+                       build(2, FAILURE, builder_name='some_v8_builder')),
+      find_fake_cv(test262_importer,
+                   fake_cv_runs(cls=fake_cv_cls(), tryjobs=fake_cv_tryjobs())),
+      find_fake_unexpected_results(test262_importer),
+      api.post_process(
+          StepSuccess,
+          "Roller: 'test262'.Checking CL 123.No unexpected results found."),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'test262_wrong_patchset',
+      roller(test262_importer),
+      find_fake_cls(test262_importer),
+      find_fake_builds(test262_importer, build(1, FAILURE),
+                       build(2, FAILURE, builder_name='some_v8_builder')),
+      find_fake_cv(test262_importer, fake_cv_runs(cls=fake_cv_cls(patchset=2))),
+      api.post_process(
+          StepSuccess,
+          "Roller: 'test262'.Checking CL 123.Last CV run was not for the latest patchset."
+      ),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'test262_wrong_status',
+      roller(test262_importer),
+      find_fake_cls(test262_importer),
+      find_fake_builds(test262_importer, build(1, FAILURE),
+                       build(2, FAILURE, builder_name='some_v8_builder')),
+      find_fake_cv(test262_importer, fake_cv_runs(status=-1)),
+      api.post_process(
+          StepSuccess,
+          "Roller: 'test262'.Checking CL 123.Last CV run did not fail (yet?)."),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'test262_wrong_mode',
+      roller(test262_importer),
+      find_fake_cls(test262_importer),
+      find_fake_builds(test262_importer, build(1, FAILURE),
+                       build(2, FAILURE, builder_name='some_v8_builder')),
+      find_fake_cv(test262_importer, fake_cv_runs(mode="UNSUPORTED")),
+      api.post_process(
+          StepSuccess,
+          "Roller: 'test262'.Checking CL 123.Last CV run mode is unsupported: UNSUPORTED."
+      ),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'test262_no_cv_runs',
+      roller(test262_importer),
+      find_fake_cls(test262_importer),
+      find_fake_builds(test262_importer, build(1, FAILURE),
+                       build(2, FAILURE, builder_name='some_v8_builder')),
+      find_fake_cv(test262_importer),
+      api.post_process(StepSuccess,
+                       "Roller: 'test262'.Checking CL 123.No CV runs found"),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
   )

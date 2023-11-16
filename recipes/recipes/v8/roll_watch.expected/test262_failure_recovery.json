@@ -1,0 +1,492 @@
+[
+  {
+    "cmd": [],
+    "name": "Roller: 'test262'",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--verbose",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--limit",
+      "20",
+      "-p",
+      "project=v8/v8",
+      "-p",
+      "owner=liviurau@google.com",
+      "-p",
+      "status=open",
+      "-p",
+      "-hashtag=rw_reported",
+      "-p",
+      "-hashtag=test262_status_file_patched",
+      "-o",
+      "LABELS",
+      "-o",
+      "CURRENT_REVISION",
+      "-o",
+      "DOWNLOAD_COMMANDS"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.gerrit Find open CLs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": 123,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"hashtags\": [],@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"project1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"last\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": 1,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"fetch\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"http\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"ref\": \"$ref\",@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"url\": \"$git-url\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          }@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"[test262] Roll test262\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'test262'.Checking CL 123",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@project1/+/123@https://chromium-review.googlesource.com/c/project1/+/123@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "ls",
+      "-host",
+      "cr-buildbucket.appspot.com",
+      "-json",
+      "-nopage",
+      "-n",
+      "100",
+      "-fields",
+      "tags.*,steps.*",
+      "-predicate",
+      "{\"gerritChanges\": [{\"change\": \"123\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"1\", \"project\": \"v8/v8\"}], \"includeExperimental\": true}"
+    ],
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.buildbucket.search",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"builder\": {}, \"id\": \"1\", \"status\": \"FAILURE\", \"tags\": [{\"key\": \"cq_experimental\", \"value\": \"false\"}]}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"builder\": {\"builder\": \"some_v8_builder\"}, \"id\": \"2\", \"status\": \"FAILURE\", \"tags\": [{\"key\": \"cq_experimental\", \"value\": \"false\"}]}@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'test262'.Checking CL 123.luci-change-verifier.SearchRuns",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "prpc",
+      "call",
+      "-format=json",
+      "luci-change-verifier.appspot.com",
+      "cv.v0.Runs.SearchRuns"
+    ],
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.luci-change-verifier.SearchRuns.request page 1",
+    "stdin": "{\n  \"predicate\": {\n    \"gerrit_changes\": [\n      {\n        \"change\": \"123\",\n        \"host\": \"chromium-review.googlesource.com\"\n      }\n    ],\n    \"project\": \"v8\"\n  }\n}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@proto.output@{@@@",
+      "@@@STEP_LOG_LINE@proto.output@  \"runs\": [@@@",
+      "@@@STEP_LOG_LINE@proto.output@    {@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"cls\": [@@@",
+      "@@@STEP_LOG_LINE@proto.output@        {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"change\": \"123\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"patchset\": 1@@@",
+      "@@@STEP_LOG_LINE@proto.output@        }@@@",
+      "@@@STEP_LOG_LINE@proto.output@      ],@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"id\": \"projects/prj/runs/1\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"mode\": \"FULL_RUN\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"status\": \"FAILED\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"tryjobs\": [@@@",
+      "@@@STEP_LOG_LINE@proto.output@        {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"result\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"id\": \"1234\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@            },@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"status\": \"FAILED_PERMANENTLY\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        }@@@",
+      "@@@STEP_LOG_LINE@proto.output@      ]@@@",
+      "@@@STEP_LOG_LINE@proto.output@    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@  ]@@@",
+      "@@@STEP_LOG_LINE@proto.output@}@@@",
+      "@@@STEP_LOG_END@proto.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'test262'.Checking CL 123.Last CV run failed.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "query",
+      "-json",
+      "-n",
+      "1000",
+      "-u",
+      "-test",
+      "//test262/.*",
+      "build-1234"
+    ],
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.rdb query",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"1\", \"testResult\": {\"testId\": \"//test262/sometest1//default\"}}@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@{\"invocationId\": \"1\", \"testResult\": {\"testId\": \"//test262/sometest2//default\"}}@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'test262'.Checking CL 123.Found 2 tests failing",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'test262'.Checking CL 123.Prepare local checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clone",
+      "$git-url",
+      "."
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.Prepare local checkout.git clone",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "fetch",
+      "$git-url",
+      "$ref"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.Prepare local checkout.git fetch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-b",
+      "work-branch",
+      "FETCH_HEAD"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.Prepare local checkout.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "cl",
+      "issue",
+      "123"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.Prepare local checkout.git cl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_1/test/test262/test262.status",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.Read test262 status file",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@test262.status@@@@",
+      "@@@STEP_LOG_LINE@test262.status@[@@@",
+      "@@@STEP_LOG_LINE@test262.status@...@@@",
+      "@@@STEP_LOG_LINE@test262.status@@@@",
+      "@@@STEP_LOG_LINE@test262.status@]@@@",
+      "@@@STEP_LOG_LINE@test262.status@@@@",
+      "@@@STEP_LOG_END@test262.status@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "\n[\n...\n\n####\n# Roll-watcher patch\n[ALWAYS, {\n  'sometest1': [FAIL],\n  'sometest2': [FAIL],\n}],\n# End roll-watcher patch\n####\n]\n",
+      "[CLEANUP]/tmp_tmp_1/test/test262/test262.status"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.Write test262 status file",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@test262.status@@@@",
+      "@@@STEP_LOG_LINE@test262.status@[@@@",
+      "@@@STEP_LOG_LINE@test262.status@...@@@",
+      "@@@STEP_LOG_LINE@test262.status@@@@",
+      "@@@STEP_LOG_LINE@test262.status@####@@@",
+      "@@@STEP_LOG_LINE@test262.status@# Roll-watcher patch@@@",
+      "@@@STEP_LOG_LINE@test262.status@[ALWAYS, {@@@",
+      "@@@STEP_LOG_LINE@test262.status@  'sometest1': [FAIL],@@@",
+      "@@@STEP_LOG_LINE@test262.status@  'sometest2': [FAIL],@@@",
+      "@@@STEP_LOG_LINE@test262.status@}],@@@",
+      "@@@STEP_LOG_LINE@test262.status@# End roll-watcher patch@@@",
+      "@@@STEP_LOG_LINE@test262.status@####@@@",
+      "@@@STEP_LOG_LINE@test262.status@]@@@",
+      "@@@STEP_LOG_END@test262.status@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "commit",
+      "-am",
+      "status file patch"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.git commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "cl",
+      "upload",
+      "-f",
+      "--bypass-hooks",
+      "--cq-dry-run"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.git cl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "rawapi",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--path",
+      "/changes/123/hashtags",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--method",
+      "POST",
+      "--body",
+      "{\"add\": [\"test262_status_file_patched\"]}",
+      "--accept_status",
+      "200,201"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'test262'.Checking CL 123.gerrit Mark CL as patched with new test262 status file",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'test262'.Checking CL 123.CL needs review",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_TEXT@Please review status file patch!@@@",
+      "@@@STEP_LINK@project1/+/123@https://chromium-review.googlesource.com/c/project1/+/123@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "failure": {
+      "failure": {},
+      "humanReason": ""
+    },
+    "name": "$result"
+  }
+]
