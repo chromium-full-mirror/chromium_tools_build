@@ -85,7 +85,16 @@ class DevToolsAPI(recipe_api.RecipeApi):
         mac='Mac-13',
         win='Windows-10-19045',
     )
-    return {'os': os_names[self.m.platform.name], 'pool': 'chromium.tests'}
+    cpu_dimensions = dict(
+        arm='arm64',
+        intel='x86-64',
+    )
+
+    return {
+        'cpu': cpu_dimensions[self.m.platform.arch],
+        'os': os_names[self.m.platform.name],
+        'pool': 'chromium.tests',
+    }
 
   def archive_to_cas(self):
     return self.m.cas.archive('archive', self.m.path['checkout'])

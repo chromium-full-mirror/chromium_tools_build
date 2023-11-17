@@ -10,6 +10,7 @@ DEPS = [
     'chromium_swarming',
     'devtools',
     'recipe_engine/buildbucket',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/resultdb',
@@ -31,7 +32,8 @@ def RunSteps(api, builder_config, clobber, parallel):
 
   with api.devtools.depot_on_path():
     api.devtools.clean_out_dir(builder_config, clobber)
-
+    api.step.empty('{os} {cpu}'.format(
+        **api.devtools.get_dimensions_for_platform()))
     if not parallel:
       api.devtools.run_e2e(builder_config)
       with api.devtools.collect_screenshots_on_trybot('dummy-bucket'):
@@ -143,6 +145,15 @@ def GenTests(api):
       api.properties(clobber=True),
       try_build(),
       api.post_process(post_process.MustRun, 'clean outdir'),
+      api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'mac arm64',
+      try_build(),
+      api.platform('mac', 64, 'arm'),
+      api.post_process(post_process.MustRun, 'Mac-13 arm64'),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
   )

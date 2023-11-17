@@ -207,6 +207,10 @@
     "name": "gclient runhooks"
   },
   {
+    "cmd": [],
+    "name": "Ubuntu-22.04 x86-64"
+  },
+  {
     "cmd": [
       "rdb",
       "stream",
