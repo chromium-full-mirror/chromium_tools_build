@@ -805,7 +805,7 @@ class FlakinessApi(recipe_api.RecipeApi):
       step_name: (str) Step name for the test.
       variant_hash: (str) Variant hash for the test,
       stats: (dict) A dictionary with (test_id, variant_hash) as keys and
-        (test name, list of suites with failures,
+        (test name, list of suites step names with failures,
         count of unexpected unpassed runs, count of all runs) as values.
     """
     test_name = test.test_name
@@ -813,7 +813,7 @@ class FlakinessApi(recipe_api.RecipeApi):
     key = (test.test_id, variant_hash)
     total = test.total_test_count()
     unexpected_unpassed = test.unexpected_unpassed_count()
-    # Value fields are: (test name, list of suites with failures,
+    # Value fields are: (test name, list of suite step names with failures,
     # count of unexpected unpassed runs, count of all runs)
     info = stats.get(key, ('', [], 0, 0))
     if unexpected_unpassed > 0:
@@ -959,6 +959,8 @@ class FlakinessApi(recipe_api.RecipeApi):
     flaky_experimental_test_stats = {}
     # A list of test step names without results (invalid).
     empty_result_steps = []
+    invalid_suites = []
+    flaky_suites = set()
     for suffix, test_objects in suffix_suites.items():
       for t in test_objects:
         flaky_test_stats = (
@@ -967,11 +969,16 @@ class FlakinessApi(recipe_api.RecipeApi):
         rdb_results = t.get_rdb_results(suffix)
         step_name = '%s (%s)' % (t.name, suffix)
         if not rdb_results.all_tests:
+          invalid_suites.append(t)
           empty_result_steps.append(step_name)
           continue
         for test in rdb_results.all_tests:
+          if test.unexpected_unpassed_count() > 0:
+            flaky_suites.add(t)
           self._add_test_to_stats(test, step_name, rdb_results.variant_hash,
                                   flaky_test_stats)
+
+    self._record_suite_flakiness(list(flaky_suites), invalid_suites)
 
     if empty_result_steps:
       summary_lines = [
@@ -989,3 +996,10 @@ class FlakinessApi(recipe_api.RecipeApi):
           summary_markdown=summary_markdown, status=common_pb2.FAILURE)
 
     return None
+
+  def _record_suite_flakiness(self, flaky_tests, invalid_suites):
+    step_result = self.m.step.empty('record suite flakiness')
+    step_result.presentation.properties['flake_endorser_rejections'] = {
+        'flaky_suites': [test.name for test in flaky_tests],
+        'invalid_suites': [test.name for test in invalid_suites],
+    }

@@ -820,6 +820,11 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  def CheckRecordedFlakyTest(check, step_odict, test):
+    flaky_suites = post_process.GetBuildProperties(step_odict).get(
+        'flake_endorser_rejections', {}).get('flaky_suites', '')
+    check(test in flaky_suites)
+
   yield api.test(
       'basic_ios_test_flaky',
       api.chromium_tests_builder_config.try_build(
@@ -895,10 +900,17 @@ def GenTests(api):
               'test new tests for flakiness.'
               'collect tasks (check flakiness shard #0).'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results')),
+      api.post_process(CheckRecordedFlakyTest,
+                       'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4'),
       api.post_check(post_process.MustRun, 'calculate flake rates'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
+
+  def CheckRecordedInvalidTest(check, step_odict, test):
+    flaky_suites = post_process.GetBuildProperties(step_odict).get(
+        'flake_endorser_rejections', {}).get('invalid_suites', '')
+    check(test in flaky_suites)
 
   yield api.test(
       'basic_ios_test_invalid',
@@ -975,6 +987,8 @@ def GenTests(api):
           'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 '
           '(check flakiness shard #0) steps in '
           "test new tests for flakiness didn't produce test results."),
+      api.post_process(CheckRecordedInvalidTest,
+                       'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -1056,6 +1070,8 @@ def GenTests(api):
               'test new tests for flakiness.'
               'collect tasks (check flakiness shard #0).'
               'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results')),
+      api.post_process(CheckRecordedFlakyTest,
+                       'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4'),
       api.post_process(post_process.DropExpectation),
   )
 
