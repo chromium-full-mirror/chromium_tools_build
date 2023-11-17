@@ -2663,22 +2663,41 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           build for build in builds if build.id != self.m.buildbucket.build.id
       ]
 
+      def successful_tests_from_build(build):
+        build_props = build.output.properties
+        successful_suites = set()
+        for test_name, test_status in build_props['test_status'].items():
+          if test_status != 'Success':
+            continue
+          # Tests can still fail if they were rejected by flake endorser in which
+          # case we cannot skip them
+          if 'flake_endorser_rejections' in build_props:
+            if 'flaky_suites' in build_props[
+                'flake_endorser_rejections'] and test_name in build_props[
+                    'flake_endorser_rejections']['flaky_suites']:
+              continue
+            if 'invalid_suites' in build_props[
+                'flake_endorser_rejections'] and test_name in build_props[
+                    'flake_endorser_rejections']['invalid_suites']:
+              continue
+          successful_suites.add(test_name)
+        return successful_suites
+
       # Only skip tests that have explicitly passed
       all_successful_suites = [
-          set(test
-              for test, status in
-              build.output.properties['test_status'].items()
-              if status == 'Success')
+          successful_tests_from_build(build)
           for build in builds
           if 'test_status' in build.output.properties
       ]
       if all_successful_suites:
         tests_to_skip = set.union(*all_successful_suites)
-        presentation.step_text = (
-            'Skippable tests were found \n ' +
-            'The following tests are skippable because they have passed in ' +
-            'the last 24 hours with the same equivelant patchset: \n'
-        ) + '\n'.join(tests_to_skip)
-        presentation.properties['skippable_tests'] = list(tests_to_skip)
-        return tests_to_skip
+        # Flakiness can cause an empty set
+        if tests_to_skip:
+          presentation.step_text = (
+              'Skippable tests were found \n ' +
+              'The following tests are skippable because they have passed in ' +
+              'the last 24 hours with the same equivelant patchset: \n'
+          ) + '\n'.join(tests_to_skip)
+          presentation.properties['skippable_tests'] = list(tests_to_skip)
+          return tests_to_skip
     return set()

@@ -33,7 +33,9 @@ def RunSteps(api, expected):
 
 def GenTests(api):
 
-  def _create_previous_build(test_statuses=None):
+  def _create_previous_build(test_statuses=None,
+                             flake_endorser_flakes=None,
+                             flake_endorser_invalids=None):
     reusable_build = build_pb2.Build(
         id=1234,
         status='SUCCESS',
@@ -41,6 +43,14 @@ def GenTests(api):
         output=build_pb2.Build.Output())
     reusable_build.output.properties[
         'test_status'] = test_statuses if test_statuses else {}
+    if flake_endorser_flakes or flake_endorser_invalids:
+      reusable_build.output.properties['flake_endorser_rejections'] = {}
+      if flake_endorser_flakes:
+        reusable_build.output.properties['flake_endorser_rejections'][
+            'flaky_suites'] = flake_endorser_flakes
+      if flake_endorser_invalids:
+        reusable_build.output.properties['flake_endorser_rejections'][
+            'invalid_suites'] = flake_endorser_invalids
     return reusable_build
 
   yield api.test(
@@ -139,5 +149,42 @@ def GenTests(api):
       api.post_process(post_process.StepTextContains,
                        'check previous builds for skippable test suites',
                        ['testA']),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'runs_flake_endorser_flakes',
+      api.buildbucket.try_build(tags=[
+          common_pb2.StringPair(key='cq_equivalent_cl_group_key', value='111')
+      ]),
+      api.cq(run_mode='FULL_RUN'),
+      api.properties(expected=set()),
+      api.buildbucket.simulated_search_results(
+          [
+              _create_previous_build({'testA': 'Success'},
+                                     flake_endorser_flakes=['testA']),
+          ],
+          step_name='check previous builds for skippable test suites.find equivalent patchset builds'
+      ),
+      # Ensure no "skippable test" text is printed
+      api.post_process(post_process.StepTextEquals,
+                       'check previous builds for skippable test suites', ''),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'runs_flake_endorser_invalids',
+      api.buildbucket.try_build(tags=[
+          common_pb2.StringPair(key='cq_equivalent_cl_group_key', value='111')
+      ]),
+      api.cq(run_mode='FULL_RUN'),
+      api.properties(expected=set()),
+      api.buildbucket.simulated_search_results(
+          [
+              _create_previous_build({'testA': 'Success'},
+                                     flake_endorser_invalids=['testA']),
+          ],
+          step_name='check previous builds for skippable test suites.find equivalent patchset builds'
+      ),
+      api.post_process(post_process.StepTextEquals,
+                       'check previous builds for skippable test suites', ''),
       api.post_process(post_process.DropExpectation),
   )
