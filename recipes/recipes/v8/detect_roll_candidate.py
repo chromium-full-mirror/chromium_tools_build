@@ -67,6 +67,11 @@ def get_v8_tag(api, revision):
 def get_next_v8_revision(api, last_v8_revision):
   """Choose the next newest viable V8 revision to roll.
 
+  We override with the last if the algorithm determined that a new
+  version isn't ready yet. If, e.g., a new patched version is in the
+  works, but not ready, this ensures that we won't roll to anything
+  else in the meantime.
+
   Args:
     last_v8_revision: The previously rolled revision.
   """
@@ -83,7 +88,7 @@ def get_next_v8_revision(api, last_v8_revision):
     ).split('\n')
     revision, reason = choose_revision_to_roll(ref_lines, last_version)
     parent.presentation.step_text = reason
-    return revision
+    return revision or last_v8_revision
 
 
 def RunSteps(api):
@@ -95,8 +100,6 @@ def RunSteps(api):
                    env={'DEPOT_TOOLS_UPDATE': '0'},
                    env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)
-    if not next_v8_revision:
-      return
 
     api.git(
         'fetch', 'https://chromium.googlesource.com/v8/v8',
@@ -156,7 +159,10 @@ def GenTests(api):
           StepTextEquals,
           'Choose revision',
           'found no newer revision than: 11.7.11'),
-      api.post_process(DoesNotRun, 'git push'),
+      api.post_process(
+          StepCommandContains,
+          'git push',
+          ['+deadbeef:refs/heads/roll']),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )
