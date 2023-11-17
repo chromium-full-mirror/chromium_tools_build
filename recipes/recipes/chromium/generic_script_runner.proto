@@ -1,0 +1,21 @@
+// Copyright 2023 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package recipes.build.chromium.generic_script_runner;
+
+message InputProperties {
+  repeated ScriptInvocation scripts = 1;
+}
+
+message ScriptInvocation {
+  // The step name the builder will use for this particular invocation.
+  string step_name = 1;
+
+  // chromium/src-relative path to the script to run.
+  string script = 2;
+
+  // Arguments to pass to the script.
+  repeated string args = 3;
+}
