@@ -117,7 +117,7 @@ class SisoApi(recipe_api.RecipeApi):
           'siso_output',
           'siso_trace.json',
           '.siso_config',
-          '.siso_deps'
+          '.siso_deps',
           '.siso_filegroups',
           '.siso_fs_state',
       ]:
