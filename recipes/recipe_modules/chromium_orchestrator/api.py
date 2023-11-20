@@ -168,10 +168,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # let's check on the triggered compilator and display its steps (until
     # it outputs the swarming trigger props).
     build_to_process = self.launch_compilator_watcher(
-        build, is_compile_phase=True, with_patch=True)
+        build, is_swarming_phase=True, with_patch=True)
 
     comp_output, maybe_raw_result = self.process_sub_build(
-        build_to_process, is_compile_phase=True, with_patch=True)
+        build_to_process, is_swarming_phase=True, with_patch=True)
 
     # Can be either SUCCESS or FAILURE/INFRA_FAILURE result
     # SUCCESS means that there's no swarming tests to trigger
@@ -298,11 +298,11 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # scripts/tests. The sub_build will only display steps relevant to those
     # local scripts/tests.
     local_tests_sub_build = self.launch_compilator_watcher(
-        build, is_compile_phase=False, with_patch=True)
+        build, is_swarming_phase=False, with_patch=True)
     build_to_process = local_tests_sub_build
 
     _, local_tests_raw_result = self.process_sub_build(
-        build_to_process, is_compile_phase=False, with_patch=True)
+        build_to_process, is_swarming_phase=False, with_patch=True)
 
     def cancel_without_patch_build(wo_build_id):
       self.m.buildbucket.cancel_build(
@@ -394,10 +394,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # Display steps of triggered (without patch) compilator until it outputs
     # swarming trigger props for the tests to retrigger without patch
     wo_build_to_process = self.launch_compilator_watcher(
-        self.without_patch_build, is_compile_phase=True, with_patch=False)
+        self.without_patch_build, is_swarming_phase=True, with_patch=False)
 
     comp_output, maybe_raw_result = self.process_sub_build(
-        wo_build_to_process, is_compile_phase=True, with_patch=False)
+        wo_build_to_process, is_swarming_phase=True, with_patch=False)
 
     # FAILURE/INFRA_FAILURE result
     if maybe_raw_result != None:
@@ -540,13 +540,13 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
       return self.m.buildbucket.get(led_result.launch_result.build_id)
 
-  def launch_compilator_watcher(self, build, is_compile_phase, with_patch):
+  def launch_compilator_watcher(self, build, is_swarming_phase, with_patch):
     """Launches a sub_build displaying a subset of the Compilator's steps
 
     Args:
       build (Build): buildbucket Build of triggered Compilator
-      is_compile_phase (bool): whether the Orchestrator is currently waiting
-        for remote test props or not
+      is_swarming_phase (bool): whether the Orchestrator is currently waiting
+        for swarming props or not
       with_patch (bool): whether the Orchestrator is currently using a patch or
         not
 
@@ -570,13 +570,10 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         '-compilator-id',
         build.id,
     ]
-    outputted_trigger_tag = 'chromium.outputted_trigger_properties'
-    if is_compile_phase:
+    if is_swarming_phase:
       cmd.append('-get-swarming-trigger-props')
-      cmd.extend(['-end-step-tag', outputted_trigger_tag])
     else:
       cmd.append('-get-local-tests')
-      cmd.extend(['-start-step-tag', outputted_trigger_tag])
 
     if with_patch:
       name = 'compilator steps (with patch)'
@@ -599,13 +596,15 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         raise self.m.step.InfraFailure('sub_build missing from step') from e
       return sub_build
 
-  def process_sub_build(self, sub_build, is_compile_phase, with_patch):
+  # TODO(crbug/1298113): Update is_swarming_phase to a more agnostic name
+  # that encompasses skylab tests too
+  def process_sub_build(self, sub_build, is_swarming_phase, with_patch):
     """Processes the sub_build's status and output properties
 
     Args:
       sub_build (Build): completed sub_build that displayed Compilator steps
-      is_compile_phase (bool): whether the Orchestrator is currently waiting
-        for remote test props or not
+      is_swarming_phase (bool): whether the Orchestrator is currently waiting
+        for swarming props or not
       with_patch (bool): whether the Orchestrator is currently using a patch or
         not
 
@@ -638,8 +637,9 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     swarming_prop_key = 'swarming_trigger_properties'
     skylab_prop_key = 'skylab_trigger_properties'
-    if is_compile_phase and (swarming_prop_key in sub_build.output.properties or
-                             skylab_prop_key in sub_build.output.properties):
+    if is_swarming_phase and (swarming_prop_key in sub_build.output.properties
+                              or
+                              skylab_prop_key in sub_build.output.properties):
       output_props = MessageToDict(sub_build.output.properties)
       got_revisions = {k: v for k, v in output_props.items() if 'got_' in k}
       # TODO (kimstephanie): Replace src_side_.* with
