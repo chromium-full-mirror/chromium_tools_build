@@ -136,7 +136,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
       api.post_process(
           post_process.StepCommandContains,
@@ -179,7 +179,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_led_get_builder(),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
       api.post_process(
           post_process.DoesNotRun,
@@ -208,7 +208,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
@@ -256,7 +256,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           affected_files=['src/testing/buildbot/fake-group.json']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_summary=("1 Test Suite(s) failed.\n\n"
                              "**headless_python_unittests** failed."),
           sub_build_status=common_pb.FAILURE,

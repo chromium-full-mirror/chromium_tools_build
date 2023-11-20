@@ -103,7 +103,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
@@ -157,7 +157,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
@@ -189,7 +189,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
@@ -219,7 +219,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
@@ -249,7 +249,7 @@ def GenTests(api):
           include_skylab_props=True,
       ),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
@@ -296,7 +296,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False),
+          with_patch=True, is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
@@ -333,7 +333,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False),
+          with_patch=True, is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
@@ -364,7 +364,7 @@ def GenTests(api):
           include_skylab_props=True,
       ),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(
           include_swarming_props=False,
           include_skylab_props=True,
@@ -432,7 +432,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           include_override_deps=True),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False, include_override_deps=True),
+          with_patch=True, is_compile_phase=False, include_override_deps=True),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
@@ -476,7 +476,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           include_override_deps=True),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False, include_override_deps=True),
+          with_patch=True, is_compile_phase=False, include_override_deps=True),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
@@ -514,7 +514,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False),
+          with_patch=True, is_compile_phase=False),
       api.post_process(post_process.DoesNotRun,
                        'run tools/clang/scripts/update.py'),
       api.post_process(post_process.DropExpectation),
@@ -542,7 +542,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
       api.post_process(post_process.DoesNotRun,
@@ -605,7 +605,7 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
@@ -773,7 +773,7 @@ def GenTests(api):
           'browser_tests', 'with patch', failures=['Test.One']),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.DoesNotRun,
                        'trigger compilator (without patch)'),
       api.post_process(post_process.MustRun,
@@ -808,7 +808,7 @@ def GenTests(api):
           'browser_tests', 'with patch', failures=['Test.One']),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
       api.post_process(post_process.MustRun,
@@ -846,7 +846,7 @@ def GenTests(api):
           'browser_tests', 'with patch', failures=['Test.One']),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.DoesNotRun,
                        'trigger compilator (without patch)'),
       api.post_process(post_process.MustRun,
@@ -879,7 +879,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
@@ -926,7 +926,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False),
+          with_patch=True, is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'content_unittests', 'with patch', failures=['Test.One']),
@@ -973,7 +973,7 @@ def GenTests(api):
               api.test_utils.canned_gtest_output(passing=True), failure=False)),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun,
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
@@ -1017,7 +1017,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           tests=['browser_tests', 'unit_tests'],
           builder_group='fake-group',
@@ -1066,7 +1066,7 @@ def GenTests(api):
               api.test_utils.canned_gtest_output(passing=True), failure=False)),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
       api.post_process(post_process.MustRun,
@@ -1115,7 +1115,7 @@ def GenTests(api):
               api.test_utils.canned_gtest_output(passing=True), failure=False)),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
       api.post_process(post_process.MustRun,
@@ -1155,7 +1155,7 @@ def GenTests(api):
           'browser_tests', 'retry shards with patch', failures=['Test.One']),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.post_process(post_process.MustRun,
                        'browser_tests (retry shards with patch)'),
@@ -1197,7 +1197,7 @@ def GenTests(api):
               failure=True)),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun,
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
@@ -1240,7 +1240,7 @@ def GenTests(api):
               failure=True)),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun,
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.MustRun,
@@ -1278,7 +1278,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           affected_files=['src/testing/buildbot/fake-group.json']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_summary=("1 Test Suite(s) failed.\n\n"
                              "**headless_python_unittests** failed."),
           sub_build_status=common_pb.FAILURE,
@@ -1324,7 +1324,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_summary=("1 Test Suite(s) failed.\n\n"
                              "**headless_python_unittests** failed."),
           sub_build_status=common_pb.FAILURE,
@@ -1370,7 +1370,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           skipping_coverage=True),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'downloading cas digest all_test_binaries'),
@@ -1404,7 +1404,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.MustRun,
                        'downloading cas digest all_test_binaries'),
@@ -1437,7 +1437,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.override_step_data(
           'browser_tests (with patch)',
           api.chromium_swarming.canned_summary_output(
@@ -1483,7 +1483,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -1529,7 +1529,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_summary=("1 Test Suite(s) failed.\n\n"
                              "**headless_python_unittests** failed."),
           sub_build_status=common_pb.FAILURE,
@@ -1579,7 +1579,7 @@ def GenTests(api):
       ),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False),
+          with_patch=True, is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(
           with_patch=False, empty_props=True),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -1659,7 +1659,7 @@ def GenTests(api):
           tester='fake-tester',
       ),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False),
+          with_patch=True, is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
           with_patch=False,
@@ -1758,7 +1758,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_status=common_pb.FAILURE,
           sub_build_summary=("1 Test Suite(s) failed.\n\n"
                              "**headless_python_unittests** failed.")),
@@ -1797,7 +1797,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_schedule_compilator_build(),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_status=common_pb.FAILURE,
           sub_build_summary=("1 Test Suite(s) failed.\n\n"
                              "**headless_python_unittests** failed.")),
@@ -1835,7 +1835,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
           sub_build_status=common_pb.CANCELED,
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_summary='Canceled'),
       api.chromium_orchestrator.override_compilator_steps(),
       api.expect_status('INFRA_FAILURE'),
@@ -1909,7 +1909,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['browser_tests', 'content_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_swarming_phase=False),
+          with_patch=True, is_compile_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.step_data('read command lines',
                     api.file.read_json(fake_command_lines)),
@@ -1985,7 +1985,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           affected_files=['src/chrome/test.cc', 'src/components/file2.cc']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
@@ -2041,7 +2041,7 @@ def GenTests(api):
           tests=['browser_tests', 'content_unittests'],
           affected_files=['src/chrome/test.cc', 'src/components/file2.cc']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False,
+          is_compile_phase=False,
           sub_build_status=common_pb.FAILURE,
           sub_build_summary=("1 Test Suite(s) failed.\n\n"
                              "**headless_python_unittests** failed.")),
@@ -2096,7 +2096,7 @@ def GenTests(api):
           tests=['browser_tests', 'content_unittests'],
           affected_files=['src/chrome/test.cc', 'src/components/file2.cc']),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.resultdb.query(
           current_patchset_invocations,
           ('collect tasks (with patch).browser_tests results'),

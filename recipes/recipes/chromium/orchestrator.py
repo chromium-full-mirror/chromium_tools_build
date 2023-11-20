@@ -61,7 +61,7 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
@@ -111,7 +111,7 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_swarming_phase=False),
+          is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
           builder='fake-builder',
