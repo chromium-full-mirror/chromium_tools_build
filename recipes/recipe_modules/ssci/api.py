@@ -215,7 +215,7 @@ class SsciAPI(recipe_api.RecipeApi):
       # The vPython metadata files are found in the parent directory.
       with self.m.context(cwd=self.m.path.dirname(self.ssci_tool.tool_path)):
         self.m.step(
-            f'run ssci tool to generate {entry_point} SPDX sbom', [
+            f'run ssci tool to generate {display_name} SPDX sbom', [
                 "vpython3", "--vpython-spec=.vpython3", "-m", "ssci", "spdx",
                 "-libraries", library_file, "-artifacts", artifact_file,
                 "-thirdparty", third_party_out, "-depbot-version",
