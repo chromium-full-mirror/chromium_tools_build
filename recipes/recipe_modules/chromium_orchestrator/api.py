@@ -289,7 +289,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
               pre_retry_shards_callback=pre_retry_shards_callback,
           ))
 
-      if (self.m.code_coverage.using_coverage and
+      if (tests and self.m.code_coverage.using_coverage and
           not comp_output.skipping_coverage):
         all_test_binaries_future.result()
         self.m.code_coverage.process_coverage_data(tests)
