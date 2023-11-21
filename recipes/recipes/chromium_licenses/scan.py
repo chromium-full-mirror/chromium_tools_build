@@ -52,29 +52,34 @@ def RunSteps(api):
     api.bot_update.ensure_checkout(with_tags=False)
     api.gclient.runhooks()
 
-    # Run the licenses tool.
-    with api.step.nest('scan for license errors'):
-      license_tool = api.path.join(chrome_dir, 'src', 'tools', 'licenses',
-                                   'licenses.py')
-      step_result = api.step(
-          'run licenses tool', [license_tool, 'scan'],
-          stdout=api.raw_io.output_text(),
-          ok_ret=(0, 1))
+    # Run the licenses tool from the src directory so the special cases
+    # can apply correctly.
+    chrome_src = api.path['cache'].join('builder', 'chrome', 'src')
+    api.file.ensure_directory('chrome src dir', chrome_src)
 
-      output = step_result.stdout.splitlines()
-      step_result.presentation.logs['stdout'] = output
+    with api.context(cwd=chrome_src, env=env):
+      with api.step.nest('scan for license errors'):
+        license_tool = api.path.join(chrome_src, 'tools', 'licenses',
+                                     'licenses.py')
+        step_result = api.step(
+            'run licenses tool', [license_tool, 'scan'],
+            stdout=api.raw_io.output_text(),
+            ok_ret=(0, 1))
 
-      # Process the script output for license errors.
-      license_error_count = 0
-      for line in output:
-        if re.match(r'^.*: .*$', line):
-          license_error_count += 1
-      status = api.step.FAILURE if license_error_count else api.step.SUCCESS
-      api.step.empty(
-          'summary of results',
-          status=status,
-          step_text=f'{license_error_count} license errors found',
-      )
+        output = step_result.stdout.splitlines()
+        step_result.presentation.logs['stdout'] = output
+
+        # Process the script output for license errors.
+        license_error_count = 0
+        for line in output:
+          if re.match(r'^.*: .*$', line):
+            license_error_count += 1
+        status = api.step.FAILURE if license_error_count else api.step.SUCCESS
+        api.step.empty(
+            'summary of results',
+            status=status,
+            step_text=f'{license_error_count} license errors found',
+        )
 
 
 def GenTests(api):
