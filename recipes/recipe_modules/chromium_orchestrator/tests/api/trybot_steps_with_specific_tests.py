@@ -73,7 +73,7 @@ def GenTests(api):
           tester='fake-tester'),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['test_case1']),
@@ -106,7 +106,7 @@ def GenTests(api):
           tester='fake-tester'),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['test_case1']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -138,7 +138,7 @@ def GenTests(api):
           tester='fake-tester'),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          is_compile_phase=False),
+          is_swarming_phase=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['test_case1']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -175,7 +175,7 @@ def GenTests(api):
           tester='fake-tester'),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['test_case1']),
@@ -211,7 +211,7 @@ def GenTests(api):
           tester='fake-tester'),
       api.chromium_orchestrator.override_compilator_steps(),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_orchestrator.override_compilator_steps(with_patch=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', 'with patch', failures=['test_case1']),
@@ -323,7 +323,7 @@ def GenTests(api):
             shards=2),
         api.chromium_orchestrator.override_compilator_steps(),
         api.chromium_orchestrator.override_compilator_steps(
-            with_patch=True, is_compile_phase=False),
+            with_patch=True, is_swarming_phase=False),
         maybe_override_without_patch_compilator(failure_type),
         # Override 'with patch' collect step output. We override it manually
         # here rather than using gen_swarming_and_rdb_results() since we need
@@ -397,7 +397,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['base_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.luci_analysis.query_failure_rate_results([
@@ -444,7 +444,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['base_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_orchestrator.override_compilator_steps(
           with_patch=False, tests=['base_unittests']),
       api.properties(**{
@@ -499,7 +499,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['base_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.properties(**{
           '$build/test_utils': {
               'should_exonerate_flaky_failures': True,
@@ -563,7 +563,7 @@ def GenTests(api):
       api.chromium_orchestrator.override_compilator_steps(
           tests=['base_unittests']),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_orchestrator.override_compilator_steps(
           with_patch=False, tests=['base_unittests']),
       api.properties(**{
@@ -651,7 +651,7 @@ def GenTests(api):
           tests=tests),
       api.chromium_orchestrator.override_compilator_steps(tests=tests),
       api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False),
+          with_patch=True, is_swarming_phase=False),
       api.chromium_orchestrator.override_compilator_steps(
           with_patch=False, tests=tests),
       api.properties(**{

@@ -169,10 +169,6 @@ def compilator_steps(api, properties):
             'skylab_trigger_properties'] = api.m.json.dumps(
                 skylab_trigger_properties, indent=2)
 
-      post_step = api.step('post output trigger properties', [])
-      post_step.presentation.tags['chromium.outputted_trigger_properties'] = (
-          'outputted swarming and/or skylab trigger properties')
-
     local_tests = [
         t for t in test_suites if not t.runs_on_swarming and not t.is_skylabtest
     ]
@@ -382,10 +378,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'isolate tests (with patch)'),
       api.post_process(post_process.MustRun, 'swarming trigger properties'),
       api.post_process(post_process.DoesNotRun, 'skylab trigger properties'),
-      api.post_check(lambda check, steps: check(
-          steps['post output trigger properties'].tags[
-              u'chromium.outputted_trigger_properties'] ==
-          ('outputted swarming and/or skylab trigger properties'))),
       api.post_process(post_process.MustRun,
                        'check_static_initializers (with patch)'),
       api.post_process(post_process.MustRun,
