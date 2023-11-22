@@ -355,7 +355,12 @@
       "upload",
       "-f",
       "--bypass-hooks",
-      "--send-mail"
+      "--send-mail",
+      "-b",
+      "v8:7834",
+      "-d",
+      "--hashtag",
+      "noexport=true"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {

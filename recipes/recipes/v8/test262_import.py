@@ -29,6 +29,7 @@ CREDS_NAME = 'test262-import-export'
 KMS_CRYPTO_KEY = (
     'projects/v8-infra/locations/global/keyRings/%s/cryptoKeys/default' %
     CREDS_NAME)
+V8_TEST262_ROLLS_META_BUG = 'v8:7834'
 
 
 def RunSteps(api):
@@ -92,7 +93,9 @@ def run_import_script(api, creds, blink_tools_path, script, extra_args):
 def upload_import_cl(api):
   with api.step.nest('Upload import CL') as parent_step:
     api.v8.git_output('commit', '-am', '[test262] Roll test262')
-    api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail')
+    api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
+                      '-b', V8_TEST262_ROLLS_META_BUG, '-d', '--hashtag',
+                      'noexport=true')
     issue = api.v8.git_output('cl', 'issue', name='cl_issue')
     issue_url = re.search('\((.*)\)', issue).group(1)
     parent_step.presentation.links[issue_url] = issue_url
