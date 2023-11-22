@@ -82,26 +82,9 @@ def set_to_string(test_set):
 def apply_android_test_filter(test, test_filter, repeat_count):
   # Android junit need the spec's additional_args updated with the
   # repeat and filter clauses.
-
-  # TODO: (crbug/1311721) - parameterized tests have a [0], [1] suffix
-  # appended to indicate the parameter, but it won't map to a test in
-  # these filters, so we escape them with backslashes for now such that
-  # they don't fail.
-  # ie/ org.chromium.suite.SomeTest#testMethod[0] ->
-  #     org.chromium.suite.SomeTest#testMethod\[0\]
-  updated_filter = []
-  for test_name in test_filter:
-    if re.match('.*\[\d+\]$', test_name):
-      left = (
-          test_name[:test_name.rindex('[')] + "\\" +
-          test_name[test_name.rindex('['):])
-      full = left[:left.rindex(']')] + "\\" + "]"
-      updated_filter.append(full)
-    else:
-      updated_filter.append(test_name)
   additional_args = list([
       '--gtest_repeat=%s' % str(repeat_count),
-      '--gtest_filter=%s' % str(':'.join(updated_filter)),
+      '--gtest_filter=%s' % str(':'.join(test_filter)),
       '--shards=1',
   ])
   test.spec = attr.evolve(test.spec, additional_args=additional_args)

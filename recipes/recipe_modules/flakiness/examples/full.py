@@ -434,7 +434,7 @@ def GenTests(api):
           ('test new tests for flakiness.chrome_junit_tests '
            '(check flakiness shard #0)'),
           ('--gtest_filter=org.chromium.chrome.browser.safety_check.'
-           'SafetyCheckMediatorTest#testUpdatesCheckUpdated\\[0\\]')),
+           'SafetyCheckMediatorTest#testUpdatesCheckUpdated[0]')),
       api.resultdb.query(
           inv_bundle=junit_invocations,
           step_name=('test new tests for flakiness.'

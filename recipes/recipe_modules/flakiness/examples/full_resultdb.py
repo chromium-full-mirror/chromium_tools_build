@@ -571,7 +571,7 @@ def GenTests(api):
           ('test new tests for flakiness.chrome_junit_tests '
            '(check flakiness shard #0)'),
           ('--gtest_filter=org.chromium.chrome.browser.safety_check.'
-           'SafetyCheckMediatorTest#testUpdatesCheckUpdated\\[0\\]')),
+           'SafetyCheckMediatorTest#testUpdatesCheckUpdated[0]')),
       api.post_process(post_process.DropExpectation),
   )
 
