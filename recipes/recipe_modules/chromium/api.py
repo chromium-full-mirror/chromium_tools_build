@@ -620,8 +620,11 @@ class ChromiumApi(recipe_api.RecipeApi):
                                  self.m.chromium.output_dir)
     self.m.file.write_text('create compile guard' + suffix, guard_path,
                            _CR_COMPILE_GUARD_CONTENTS)
-    yield
-    self.m.file.remove('remove compile guard' + suffix, guard_path)
+    try:
+      yield
+    finally:
+      if not self.m.runtime.in_global_shutdown:
+        self.m.file.remove('remove compile guard' + suffix, guard_path)
 
   def cleandead(self, out_dir=None, target=None):
     """Removes the no longer needed output files from the build directory.
