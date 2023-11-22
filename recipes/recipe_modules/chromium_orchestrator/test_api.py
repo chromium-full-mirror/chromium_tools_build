@@ -105,7 +105,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
   def get_compilator_output_props(self,
                                   comp_build_id=1234,
                                   empty_props=False,
-                                  is_swarming_phase=True,
+                                  is_compile_phase=True,
                                   with_patch=True,
                                   tests=None,
                                   include_override_deps=False,
@@ -115,7 +115,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                   include_skylab_props=False):
     tests = tests or ['browser_tests']
     output_json_obj = {}
-    if is_swarming_phase:
+    if is_compile_phase:
       if not empty_props:
         output_json_obj = {
             'got_angle_revision':
@@ -173,7 +173,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
                                 sub_build_status=common_pb.SUCCESS,
                                 sub_build_summary='',
                                 empty_props=False,
-                                is_swarming_phase=True,
+                                is_compile_phase=True,
                                 with_patch=True,
                                 tests=None,
                                 include_override_deps=False,
@@ -185,7 +185,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     output_json_obj = self.get_compilator_output_props(
         comp_build_id=comp_build_id,
         empty_props=empty_props,
-        is_swarming_phase=is_swarming_phase,
+        is_compile_phase=is_compile_phase,
         with_patch=with_patch,
         tests=tests,
         include_override_deps=include_override_deps,
@@ -213,7 +213,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
       name = 'compilator steps (with patch)'
     else:
       name = 'compilator steps (without patch)'
-    if not is_swarming_phase:
+    if not is_compile_phase:
       name += ' (2)'
     return self.step_data(
         name,
