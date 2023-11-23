@@ -316,7 +316,7 @@
         "RECIPE_REPO[depot_tools]"
       ]
     },
-    "name": "Import Test262 changes into V8. (2)"
+    "name": "Update Test262 status file."
   },
   {
     "cmd": [],
@@ -330,7 +330,11 @@
       "git",
       "commit",
       "-am",
-      "[test262] Roll test262"
+      "[test262] Roll test262",
+      "-m",
+      "range 1..3",
+      "-m",
+      "no-export: true"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {

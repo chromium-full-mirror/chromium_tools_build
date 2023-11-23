@@ -57,20 +57,24 @@ def RunSteps(api):
     api.v8.git_output('new-branch', 'test262_import')
 
     run_import_script(api, creds, blink_tools_path, script,
+        step_name='Import Test262 changes into V8.',
         extra_args=['--phase=PREBUILD'])
 
     # TODO(liviurau): #1 Maybe compile, run tests and collect failures in the
     # recipe. Alternatively, implement a resolution strategy in roll_watcher.
 
-    run_import_script(api, creds, blink_tools_path, script,
+    output_lines = run_import_script(api, creds, blink_tools_path, script,
+        step_name='Update Test262 status file.',
         extra_args=[
           '--phase=POSTBUILD',
           # TODO(liviurau): #2 Pass the failures collected at #1 to the script.
           # '--test262-failure-file', failure_file,
         ]
     )
+    assert output_lines, 'Step should have outputted at least one line.'
+    import_range = output_lines[-1]
 
-    upload_import_cl(api)
+    upload_import_cl(api, import_range)
 
 
 def configure(api):
@@ -80,19 +84,23 @@ def configure(api):
   #api.gclient.c.revisions['v8'] = "49cd7d838c98245268b12d2c75538faa3e402ac0"
 
 
-def run_import_script(api, creds, blink_tools_path, script, extra_args):
+def run_import_script(api, creds, blink_tools_path, script, step_name, extra_args):
   args = [
       '--credentials-json',
       creds,
       '--blink-tools-path',
       blink_tools_path,
   ] + extra_args
-  api.v8.vpython('Import Test262 changes into V8.', script, args)
+  return api.v8.vpython(step_name, script, args,
+      stdout=api.raw_io.output_text()).stdout.splitlines()
 
 
-def upload_import_cl(api):
+def upload_import_cl(api, import_range):
   with api.step.nest('Upload import CL') as parent_step:
-    api.v8.git_output('commit', '-am', '[test262] Roll test262')
+    api.v8.git_output('commit', '-am', '[test262] Roll test262',
+                      '-m', import_range,
+                      '-m', 'no-export: true',)
+
     api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
                       '-b', V8_TEST262_ROLLS_META_BUG, '-d', '--hashtag',
                       'noexport=true')
@@ -104,6 +112,10 @@ def upload_import_cl(api):
 def GenTests(api):
   yield (
         api.test('test262-import') +
+        api.override_step_data(
+           'Update Test262 status file.',
+           api.raw_io.stream_output_text('range 1..3'),
+        ) +
         api.override_step_data(
                 'Upload import CL.cl_issue',
                 api.raw_io.stream_output_text(
