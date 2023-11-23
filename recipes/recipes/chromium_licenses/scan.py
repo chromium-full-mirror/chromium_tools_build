@@ -35,6 +35,10 @@ def RunSteps(api):
   soln.name = 'src'
   soln.url = CHROMIUM_REPO_URL
   soln.revision = 'origin/main'
+  soln.custom_vars = {
+      'checkout_android': True,
+      'checkout_fuchsia_no_hooks': True
+  }
   api.gclient.c = gclient_config
 
   env = {}
