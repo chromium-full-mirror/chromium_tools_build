@@ -278,6 +278,28 @@
     "cmd": [
       "vpython3",
       "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "-r",
+      "test/test262/data"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "gclient get test262 revsion"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
       "[CACHE]/builder/v8/test/test262/tools/import.py",
       "--credentials-json",
       "[CLEANUP]/test262-import-export.json",
@@ -305,7 +327,9 @@
       "[CLEANUP]/test262-import-export.json",
       "--blink-tools-path",
       "[CACHE]/builder/src/third_party/blink/tools",
-      "--phase=POSTBUILD"
+      "--phase=POSTBUILD",
+      "--v8-test262-last-revision",
+      "345"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {

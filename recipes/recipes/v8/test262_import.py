@@ -55,6 +55,11 @@ def RunSteps(api):
   with api.context(cwd=v8_path), api.depot_tools.on_path():
     api.v8.git_output('branch', '-D', 'test262_import', ok_ret='any')
     api.v8.git_output('new-branch', 'test262_import')
+    last_test262_revision = api.gclient(
+      'get test262 revsion',
+      ['getdep', '-r', 'test/test262/data'],
+      stdout=api.raw_io.output_text(),
+    ).stdout.strip()
 
     run_import_script(api, creds, blink_tools_path, script,
         step_name='Import Test262 changes into V8.',
@@ -67,6 +72,8 @@ def RunSteps(api):
         step_name='Update Test262 status file.',
         extra_args=[
           '--phase=POSTBUILD',
+          '--v8-test262-last-revision',
+          last_test262_revision,
           # TODO(liviurau): #2 Pass the failures collected at #1 to the script.
           # '--test262-failure-file', failure_file,
         ]
@@ -115,6 +122,10 @@ def GenTests(api):
         api.override_step_data(
            'Update Test262 status file.',
            api.raw_io.stream_output_text('range 1..3'),
+        ) +
+        api.override_step_data(
+           'gclient get test262 revsion',
+           api.raw_io.stream_output_text('345'),
         ) +
         api.override_step_data(
                 'Upload import CL.cl_issue',
