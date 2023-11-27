@@ -46,7 +46,7 @@ def RunSteps(api, per_suffix_valid, per_suffix_failures, expected_status,
     results = util.RDBPerSuiteResults.create(test_invocations, 'test_name',
                                              'prefix', 1)
     test.update_rdb_results(failed_suffix, results)
-  api.assertions.assertEqual(test.get_status(suffix), expected_status)
+  api.assertions.assertEqual(test.get_status(suffix, api), expected_status)
 
 
 def GenTests(api):

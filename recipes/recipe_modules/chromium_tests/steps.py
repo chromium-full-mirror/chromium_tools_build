@@ -536,9 +536,12 @@ class AbstractTest(abc.ABC):
     """Whether to check flakiness for new tests in try jobs."""
     raise NotImplementedError()  # pragma: no cover
 
+  # TODO(crbug/1420094): Remove api arg once we no longer need the extra step
+  # logging
   def failures_including_retry(
       self,
       suffix: str,
+      api,
   ) -> Tuple[bool, Optional[AbstractSet[str]]]:
     """Returns test failures after retries.
 
@@ -566,6 +569,11 @@ class AbstractTest(abc.ABC):
       retry_shards_failures = self.deterministic_failures(retry_suffix)
 
     if original_run_valid and retry_shards_valid:
+      # TODO(crbug/1420094): Temporarily emit steps to track how often this
+      # occurs. Delete when no longer needed.
+      if not set(retry_shards_failures).issubset(set(failures)):
+        api.m.step('new failures in retry step for suite {}'.format(self.name),
+                   [])
       # TODO(martiniss): Maybe change this behavior? This allows for failures
       # in 'retry shards with patch' which might not be reported to devs, which
       # may confuse them.
@@ -583,8 +591,8 @@ class AbstractTest(abc.ABC):
     return False, None
 
   def with_patch_failures_including_retry(
-      self) -> Tuple[bool, Optional[AbstractSet[str]]]:
-    return self.failures_including_retry('with patch')
+      self, api) -> Tuple[bool, Optional[AbstractSet[str]]]:
+    return self.failures_including_retry('with patch', api)
 
   # TODO(crbug.com/1040596): Remove this method and update callers to use
   # |deterministic_failures('with patch')| once the bug is fixed.
@@ -592,8 +600,8 @@ class AbstractTest(abc.ABC):
   # Currently, the sematics of this method is only a subset of
   # |deterministic_failures('with patch')| due to that it's missing tests that
   # failed "with patch", but passed in "retry shards with patch".
-  def has_failures_to_summarize(self) -> bool:
-    _, failures = self.failures_including_retry('with patch')
+  def has_failures_to_summarize(self, api) -> bool:
+    _, failures = self.failures_including_retry('with patch', api)
     return bool(failures or self.known_luci_analysis_flaky_failures)
 
   def without_patch_failures_to_ignore(self) -> Tuple[bool, AbstractSet[str]]:
@@ -621,7 +629,7 @@ class AbstractTest(abc.ABC):
 
     return (True, ignored_failures)
 
-  def get_status(self, suffix: str) -> str:
+  def get_status(self, suffix: str, api) -> str:
     """Returns the status of the test for the given suffix
 
     Determines whether the test suite has succeeded, failed, or has invalid
@@ -636,18 +644,18 @@ class AbstractTest(abc.ABC):
     Returns: A string designating the suite's current status
     """
     if suffix == 'with patch':
-      valid, test_failures = self.with_patch_failures_including_retry()
+      valid, test_failures = self.with_patch_failures_including_retry(api)
       if not valid:
         return INVALID_SUITE_STATUS
       if not test_failures:
         return SUCCESS_SUITE_STATUS
       # Check if the without patch exonerates this suite
       valid, without_patch_failures = self.deterministic_without_patch_failures(
-      )
+          api)
       if valid and not without_patch_failures:
         return SUCCESS_SUITE_STATUS
       return FAILURE_SUITE_STATUS
-    valid, test_failures = self.failures_including_retry(suffix)
+    valid, test_failures = self.failures_including_retry(suffix, api)
     if not valid:
       return INVALID_SUITE_STATUS
     if test_failures:
@@ -655,13 +663,13 @@ class AbstractTest(abc.ABC):
     return SUCCESS_SUITE_STATUS
 
   def deterministic_without_patch_failures(
-      self) -> Tuple[bool, Optional[AbstractSet[str]]]:
+      self, api) -> Tuple[bool, Optional[AbstractSet[str]]]:
     # Check if the suite succeeded in without patch
     valid_results, ignored_failures = self.without_patch_failures_to_ignore()
     if not valid_results:
       return False, None
 
-    valid_results, test_failures = self.with_patch_failures_including_retry()
+    valid_results, test_failures = self.with_patch_failures_including_retry(api)
     assert valid_results, (
         "If there were no valid results, then there was no "
         "point in running 'without patch'. This is a recipe bug.")
@@ -979,6 +987,8 @@ class Test(AbstractTest):
     step_name = _add_suffix(self.name, suffix)
     return step_name
 
+  # TODO(crbug/1420094): Temporarily emit steps to track how often this
+  # occurs. Delete when no longer needed.
   def _tests_to_retry(self, suffix):
     """Computes the tests to run on an invocation of the test suite.
 
@@ -998,7 +1008,7 @@ class Test(AbstractTest):
                                   not self.retry_only_failed_tests):
       return None
 
-    valid_results, failures = self.with_patch_failures_including_retry()
+    valid_results, failures = self.with_patch_failures_including_retry(self.api)
 
     if (suffix == 'retry shards with patch' and self.retry_only_failed_tests):
       if valid_results:

@@ -61,7 +61,7 @@ def RunSteps(api, retry_failed_shards, test_kwargs_list):
   if failing:
     failed_tests = []
     for t in failing:
-      _, failed = t.with_patch_failures_including_retry()
+      _, failed = t.with_patch_failures_including_retry(api)
       tup = (t.name,)
       if failed:
         tup = tup + ('#'.join(sorted(failed)),)

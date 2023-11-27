@@ -1356,7 +1356,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """
     culpable_failures = []
     for t in test_suites:
-      if not t.has_failures_to_summarize():
+      if not t.has_failures_to_summarize(self):
         continue
       if t not in retried_without_patch_suites:
         self.m.test_utils.summarize_failing_test_with_no_retries(t)
@@ -1873,7 +1873,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # Both 'with patch' and 'without patch' must have valid results to
       # skip CQ retries.
       valid_results_with_patch, _ = (
-          test_suite.with_patch_failures_including_retry())
+          test_suite.with_patch_failures_including_retry(self))
       if valid_results_with_patch and test_suite.has_valid_results(
           'without patch'):
         valid.append(test_suite)
@@ -2068,7 +2068,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       if suffix:
         is_valid, deterministic_failures = suite.failures_including_retry(
-            suffix)
+            suffix, self)
         if is_valid:
           is_valid, failures_to_ignore = suite.without_patch_failures_to_ignore(
           )
