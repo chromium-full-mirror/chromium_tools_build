@@ -827,7 +827,7 @@ class _TestRunner:
         self.swarming.trigger_tasks()
 
       # Defer individual failures until the end of this block.
-      with self.api.defer.context(collect_step_name=None) as defer:
+      with self.api.defer.context() as defer:
         collecting = bool(self.swarming)
         while self.local_requests or collecting:
           if self.local_requests:

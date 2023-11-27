@@ -468,7 +468,7 @@ def publish_tarball(api):
   finally:
     api.file.rmtree('rmtree temp dir', temp_dir)
 
-  with api.defer.context(collect_step_name=None) as defer:
+  with api.defer.context() as defer:
     if not published_full_tarball(version, ls_result):
       defer(
           export_tarball,

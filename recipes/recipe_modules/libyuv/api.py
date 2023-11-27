@@ -159,7 +159,7 @@ class LibyuvApi(recipe_api.RecipeApi):
   def runtests(self):
     """Add a suite of test steps."""
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
-      with self.m.defer.context(collect_step_name=None) as defer:
+      with self.m.defer.context() as defer:
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
           defer(self.m.chromium_android.common_tests_setup_steps)
           defer(self.m.chromium_android.run_test_suite, 'libyuv_unittest')

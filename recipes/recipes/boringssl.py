@@ -280,7 +280,7 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
           ['-D%s=%s' % (k, v) for (k, v) in sorted(cmake_args.items())] + [src])
     api.step('ninja', msvc_prefix + [ninja_path, '-C', build_dir])
 
-    with api.defer.context(collect_step_name=None) as defer:
+    with api.defer.context() as defer:
       # The default Linux build may not depend on the C++ runtime. This is easy
       # to check when building shared libraries.
       #

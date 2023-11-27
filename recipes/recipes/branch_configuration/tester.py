@@ -154,7 +154,7 @@ def RunSteps(api, properties):
 
         with api.step.nest('verify'):
           try:
-            with api.defer.context(collect_step_name=None) as defer:
+            with api.defer.context() as defer:
               for entry_point in properties.starlark_entry_points:
                 for subcommand in ('generate', 'validate'):
                   cmd = ['lucicfg', subcommand, entry_point]

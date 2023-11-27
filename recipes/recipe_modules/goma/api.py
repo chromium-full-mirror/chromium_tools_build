@@ -411,7 +411,7 @@ class GomaApi(recipe_api.RecipeApi):
         # change the exception state in this frame
         def cleanup():
           try:
-            with self.m.defer.context(collect_step_name=None) as defer:
+            with self.m.defer.context() as defer:
               with self.m.context(infra_steps=True):
                 defer(self._run_jsonstatus)
 
@@ -460,7 +460,7 @@ class GomaApi(recipe_api.RecipeApi):
 
     with self.m.step.nest('postprocess_for_goma') as nested_result:
       try:
-        with self.m.defer.context(collect_step_name=None) as defer:
+        with self.m.defer.context() as defer:
           defer(self._run_jsonstatus)
 
           with self.m.context(env=self._goma_ctl_env):

@@ -104,7 +104,7 @@ def RunSteps(api):
       with api.reclient.process('compile', '', False):
         ExecBuildSteps(api, build_steps, sync_dir, dir_flags)
 
-      with api.defer.context(collect_step_name=None) as defer:
+      with api.defer.context() as defer:
         for step in bot_steps[builder]['test_steps']:
           script = sync_dir.join(step['command'][0])
           args = step['command'][1:]

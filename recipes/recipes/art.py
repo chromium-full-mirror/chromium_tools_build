@@ -219,7 +219,7 @@ def setup_host_x86(api,
     api.step('build',
              [art_tools.join('buildbot-build.sh'), '--host', '--installclean'])
 
-    with api.defer.context(collect_step_name=None) as defer:
+    with api.defer.context() as defer:
       defer(api.step, 'test gtest', [
           'build/soong/soong_ui.bash', '--make-mode',
           'test-art-host-gtest%d' % bitness
@@ -440,7 +440,7 @@ def setup_target(api,
         [ art_tools.join('buildbot-vm.sh'), 'boot' ]
       )
 
-  with api.defer.context(collect_step_name=None) as defer:
+  with api.defer.context() as defer:
     with api.context(env=test_env):
       defer(api.step, 'device pre-run cleanup',
             [art_tools.join('buildbot-cleanup-device.sh')])

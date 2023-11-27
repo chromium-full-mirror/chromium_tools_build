@@ -40,7 +40,7 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     avd_script_path = chromium_src.join('tools', 'android', 'avd', 'avd.py')
 
     with self.m.context(cwd=chromium_src):
-      with self.m.defer.context(collect_step_name=None) as defer:
+      with self.m.defer.context() as defer:
         for avd_config in self._avd_configs:
           avd_config_path = chromium_src.join(avd_config)
 
