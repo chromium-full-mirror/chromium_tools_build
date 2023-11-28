@@ -109,8 +109,7 @@ def upload_import_cl(api, import_range):
                       '-m', 'no-export: true',)
 
     api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail',
-                      '-b', V8_TEST262_ROLLS_META_BUG, '-d', '--hashtag',
-                      'noexport=true')
+                      '-b', V8_TEST262_ROLLS_META_BUG, '-d')
     issue = api.v8.git_output('cl', 'issue', name='cl_issue')
     issue_url = re.search('\((.*)\)', issue).group(1)
     parent_step.presentation.links[issue_url] = issue_url

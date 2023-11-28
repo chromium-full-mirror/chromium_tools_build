@@ -414,7 +414,7 @@ def collect_new_test_exceptions(api, roller, cl, unexpected_results):
 
   api.step.empty(f'Found {len(test_names)} tests failing')
 
-  return (['####', '# Roll-watcher patch', '[ALWAYS, {'] +
+  return (['', '####', '# Roll-watcher patch', '[ALWAYS, {'] +
           [f"  '{test_name}': [FAIL]," for test_name in test_names] +
           ['}],', '# End roll-watcher patch', '####'])
 
@@ -431,6 +431,7 @@ def update_test262_status_file(api, work_dir, new_status_lines):
   eof_status_lines = status_file_lines[-2:]
   assert eof_status_lines == ['', ']'], ('Unexpected status file eof.'
       f' {eof_status_lines}')
+  eof_status_lines.append('') # Adjusting for stripped empty line.
   api.file.write_text(
       'Write test262 status file',
       test262_status_path,

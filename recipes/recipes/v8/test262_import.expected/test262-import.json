@@ -386,9 +386,7 @@
       "--send-mail",
       "-b",
       "v8:7834",
-      "-d",
-      "--hashtag",
-      "noexport=true"
+      "-d"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
