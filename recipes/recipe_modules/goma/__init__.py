@@ -6,7 +6,6 @@ DEPS = [
     'builder_group',
     'depot_tools/depot_tools',
     'depot_tools/gclient',
-    'puppet_service_account',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',

@@ -28,7 +28,6 @@ DEPS = [
     'pgo',
     'presentation_utils',
     'profiles',
-    'puppet_service_account',
     'recipe_engine/bcid_reporter',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
