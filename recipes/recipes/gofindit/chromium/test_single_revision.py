@@ -148,7 +148,8 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
       if not run_all:
         test_filter = test_names_by_test_suite[test.canonical_name]
         test_options = attr.evolve(test_options, test_filter=test_filter)
-        test.spec = attr.evolve(test.spec, shards=1)
+        nshards = len(tests_to_run) // 10 + 1
+        test.spec = attr.evolve(test.spec, shards=nshards)
       test.test_options = test_options
 
       resultdb = test.spec.resultdb
