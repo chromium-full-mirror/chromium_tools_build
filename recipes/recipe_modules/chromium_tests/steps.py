@@ -2887,13 +2887,14 @@ class MockTest(AbstractSwarmingTest, Test):
 
   def pre_run(self, suffix: str) -> None:
     with self._mock_exit_codes():
-      self.api.m.step('pre_run {}'.format(self.step_name(suffix)), None)
+      self.api.m.step('pre_run {}'.format(self.step_name(suffix)),
+                      ['mock_test.pre_run'])
     if self.runs_on_swarming:
       self._tasks_by_suffix[suffix] = MockTask(self.shards)
 
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     with self._mock_exit_codes():
-      step_result = self.api.m.step(self.step_name(suffix), None)
+      step_result = self.api.m.step(self.step_name(suffix), ['mock_test'])
 
     _present_info_messages(step_result.presentation, self, info_messages)
 
