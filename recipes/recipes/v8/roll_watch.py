@@ -406,10 +406,11 @@ def test262_update_status_file(api, roller, cl):
 
 
 def collect_new_test_exceptions(api, roller, cl, unexpected_results):
-  test_names = []
+  test_names = set()
   for inv in unexpected_results.values():
     for result in inv.test_results:
-      test_names.append(test_name_in_status_file(result.test_id))
+      test_names.add(test_name_in_status_file(result.test_id))
+  test_names = sorted(test_names)
 
   api.step.empty(f'Found {len(test_names)} tests failing')
 
@@ -428,7 +429,7 @@ def update_test262_status_file(api, work_dir, new_status_lines):
                                          test262_status_path).splitlines()
   status_lines_before_eof = status_file_lines[:-2]
   eof_status_lines = status_file_lines[-2:]
-  assert eof_status_lines == [']', ''], ('Unexpected status file eof.'
+  assert eof_status_lines == ['', ']'], ('Unexpected status file eof.'
       f' {eof_status_lines}')
   api.file.write_text(
       'Write test262 status file',
@@ -563,7 +564,7 @@ def GenTests(api):
   def fake_test262_status_file():
     return api.override_step_data("Roller: 'test262'.Checking CL 123."
         "Read test262 status file",
-        api.file.read_text('\n[\n...\n\n]\n\n'),
+        api.file.read_text('\n[\n...\n\n]\n'),
     )
 
   yield api.test(
