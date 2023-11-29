@@ -449,7 +449,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]/cipd_tool/infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py/f921bd05e68b03740c450e565e0e6173e546193170b2dd404ddb6f153e9b5bf3"
     ],
     "infra_step": true,
@@ -557,7 +557,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
     ],
     "infra_step": true,

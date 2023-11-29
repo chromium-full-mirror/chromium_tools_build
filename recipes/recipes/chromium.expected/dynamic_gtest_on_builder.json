@@ -599,7 +599,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/builder/src/out/Release"
     ],
     "env": {
@@ -814,7 +814,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/goma/data/fake_builder"
     ],
     "cwd": "[CACHE]/builder/src",

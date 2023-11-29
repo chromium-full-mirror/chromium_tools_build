@@ -447,7 +447,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]\\builder\\src\\out\\Release_x64"
     ],
     "env": {
@@ -758,7 +758,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]\\goma\\data\\win_celab_try_rel"
     ],
     "cwd": "[CACHE]\\builder\\src",
@@ -1274,7 +1274,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]\\hosts"
     ],
     "infra_step": true,
@@ -1304,7 +1304,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]\\logs"
     ],
     "infra_step": true,

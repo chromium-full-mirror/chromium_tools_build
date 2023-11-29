@@ -224,7 +224,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]/openscreen/.code-coverage"
     ],
     "cwd": "[START_DIR]/openscreen",
@@ -466,7 +466,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CLEANUP]/tmp_tmp_1/profdata"
     ],
     "cwd": "[START_DIR]/openscreen",

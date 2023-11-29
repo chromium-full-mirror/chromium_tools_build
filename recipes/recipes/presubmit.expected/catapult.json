@@ -51,7 +51,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/builder/catapult_presubmit"
     ],
     "infra_step": true,

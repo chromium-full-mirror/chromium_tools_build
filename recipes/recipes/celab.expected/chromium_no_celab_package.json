@@ -447,7 +447,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]\\builder\\src\\out\\Release_x64"
     ],
     "env": {
@@ -758,7 +758,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]\\goma\\data\\win_celab_try_rel"
     ],
     "cwd": "[CACHE]\\builder\\src",

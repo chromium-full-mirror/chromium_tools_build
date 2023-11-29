@@ -674,7 +674,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/builder/src/out/Release"
     ],
     "env": {
@@ -901,7 +901,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/goma/data/Android_Compile_Perf"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -1349,7 +1349,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]/cipd_tool/infra/tools/luci/isolate/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
     ],
     "env": {

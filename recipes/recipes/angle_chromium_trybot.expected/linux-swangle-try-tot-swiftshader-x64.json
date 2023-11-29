@@ -1063,7 +1063,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/builder/src/out/Release"
     ],
     "env": {
@@ -1278,7 +1278,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/goma/data/linux_swangle_try_tot_swiftshader_x64"
     ],
     "cwd": "[CACHE]/builder/src",

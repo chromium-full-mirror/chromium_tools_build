@@ -886,7 +886,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/builder/src/out/Release"
     ],
     "env": {
@@ -1105,7 +1105,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/goma/data/fake_try_builder"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -1544,7 +1544,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]/cipd_tool/infra/tools/luci/isolate/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
     ],
     "env": {
@@ -1705,7 +1705,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[START_DIR]/cipd_tool/infra/tools/luci/swarming/90026cfdbec6795a35e48e95f30cbb0f779e0a4c35016adb14707e333aee4227"
     ],
     "cwd": "[CACHE]/builder",
@@ -3416,7 +3416,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/builder/src/out/Release"
     ],
     "cwd": "[CACHE]/builder",
@@ -3639,7 +3639,7 @@
       "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
-      "0777",
+      "0o777",
       "[CACHE]/goma/data/fake_try_builder"
     ],
     "cwd": "[CACHE]/builder",
