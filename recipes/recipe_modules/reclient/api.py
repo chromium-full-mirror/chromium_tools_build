@@ -42,6 +42,12 @@ def make_test_rbe_stats_pb():
   p1.metrics['some'].bool_value = 1
   p1.metrics['other'].int64_value = 7
 
+  s1 = p1.stats.add()
+  s1.name = "CPU"
+
+  s2 = p1.stats.add()
+  s2.name = "MEM"
+
   p2 = stats.proxy_info.add()
   p2.metrics['test'].double_value = 1.1
   getattr(p2.event_times['foo'],
@@ -65,6 +71,12 @@ def proxy_info_to_bq(proxy_info):
         'key': flag,
         'value': proxy_info.flags[flag]
     } for flag in sorted(proxy_info.flags)]
+  if proxy_info.stats:
+    proxy_info_bq['stats'] = [
+        json_format.MessageToDict(
+            message=stat, preserving_proto_field_name=True)
+        for stat in proxy_info.stats
+    ]
   if proxy_info.metrics:
     proxy_info_bq['metrics'] = [{
         'key':
