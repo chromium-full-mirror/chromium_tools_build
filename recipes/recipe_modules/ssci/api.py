@@ -6,8 +6,6 @@ import dataclasses
 import os
 import pathlib
 
-from typing import Union
-
 from recipe_engine import recipe_api
 
 
@@ -15,8 +13,8 @@ from recipe_engine import recipe_api
 class CIPDPkg:
   ensure_version: str
   pkg_path: str
-  tool_path: Union[str, None] = None
-  resolved_version: Union[str, None] = None
+  tool_path: str | None = None
+  resolved_version: str | None = None
 
 
 class SsciAPI(recipe_api.RecipeApi):

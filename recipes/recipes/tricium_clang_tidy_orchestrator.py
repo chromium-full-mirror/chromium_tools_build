@@ -4,7 +4,7 @@
 
 import itertools
 import json
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import NamedTuple
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from google.protobuf import duration_pb2
@@ -64,7 +64,7 @@ class _TriciumSuggestion(
         '_TriciumSuggestion',
         (
             ('description', str),
-            ('replacements', Tuple[_TriciumReplacement]),
+            ('replacements', tuple[_TriciumReplacement]),
         ),
     )):
   """A `suggestion` emitted by Tricium."""
@@ -87,7 +87,7 @@ class _TriciumComment(
             ('end_line', int),
             ('start_char', int),
             ('end_char', int),
-            ('suggestions', Tuple[_TriciumSuggestion]),
+            ('suggestions', tuple[_TriciumSuggestion]),
         ),
     )):
   """A full comment emitted by tricium.

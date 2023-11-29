@@ -4,8 +4,6 @@
 
 import textwrap
 
-from typing import Optional
-
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -34,7 +32,7 @@ class _NonExistentBuilder(ctbcm.BlockerCategory):
       self,
       builder_id: BuilderId,
       builder_spec: ctbc.BuilderSpec,
-  ) -> Optional[str]:
+  ) -> str | None:
     del builder_spec
     if builder_id not in self._NON_EXISTENT_BUILDERS:
       return None

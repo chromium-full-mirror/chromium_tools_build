@@ -2,9 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections.abc import Mapping, Sequence
 import re
-
-from typing import Mapping, Optional, Sequence
 
 from recipe_engine import recipe_test_api
 
@@ -27,9 +26,9 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_test_api.RecipeTestApi):
   def test_case(
       self,
       *,
-      properties_files_directory: Optional[str] = None,
-      properties_files: Optional[Mapping[str, Contents]] = None,
-      affected_files: Optional[Sequence[str]] = None,
+      properties_files_directory: str | None = None,
+      properties_files: Mapping[str, Contents] | None = None,
+      affected_files: Sequence[str] | None = None,
   ) -> recipe_test_api.StepTestData:
     """Set necessary step test data for calling verify_builder_configs.
 

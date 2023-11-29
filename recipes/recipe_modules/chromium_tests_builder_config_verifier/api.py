@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections.abc import Collection, Sequence, Set
 import difflib
-from typing import AbstractSet, Collection, Sequence, Optional, Tuple
 
 import attr
 from google.protobuf import json_format
@@ -39,7 +39,7 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
       self,
       repo_path: Path,
       properties_files_directory: str,
-      dbs: Sequence[Tuple[ctbc.BuilderDatabase, Optional[ctbc.TryDatabase]]],
+      dbs: Sequence[tuple[ctbc.BuilderDatabase, ctbc.TryDatabase | None]],
       try_buckets: Collection[str] = (),
   ) -> result_pb.RawResult:
     """Verify builder configs specified in properties files.
@@ -126,11 +126,11 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
   def _verify_builder_config(
       self,
       repo_path: Path,
-      files_at_head: AbstractSet[str],
+      files_at_head: Set[str],
       f: str,
       bucket: str,
       builder: str,
-      dbs: Sequence[Tuple[ctbc.BuilderDatabase, Optional[ctbc.TryDatabase]]],
+      dbs: Sequence[tuple[ctbc.BuilderDatabase, ctbc.TryDatabase | None]],
       try_buckets: Collection[str],
   ) -> bool:
     with self.m.step.nest(f'verify {f}') as presentation:
@@ -193,9 +193,11 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
 
       return success('src-side config matches recipe config')
 
-  def _compare_builder_configs(self, recipe_config: ctbc.BuilderConfig,
-                               src_side_config: ctbc.BuilderConfig
-                              ) -> Optional[Sequence[str]]:
+  def _compare_builder_configs(
+      self,
+      recipe_config: ctbc.BuilderConfig,
+      src_side_config: ctbc.BuilderConfig,
+  ) -> Sequence[str] | None:
     """Compare recipe and src-side configs for equivalence.
 
     There are some differences that need to be massaged between recipe

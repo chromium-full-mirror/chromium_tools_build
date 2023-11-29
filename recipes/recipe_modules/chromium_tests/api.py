@@ -4,11 +4,11 @@
 
 import attr
 import collections
+from collections.abc import Iterable
 import contextlib
 import itertools
 import time
 import traceback
-from typing import Iterable
 from urllib.parse import urlencode
 
 from google.protobuf import timestamp_pb2

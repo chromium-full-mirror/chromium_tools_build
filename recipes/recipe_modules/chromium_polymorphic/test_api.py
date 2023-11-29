@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from typing import Collection, Dict, Optional
+from collections.abc import Collection
 
 from recipe_engine import recipe_test_api
 
@@ -15,9 +15,9 @@ class ChromiumPolymorphicTestApi(recipe_test_api.RecipeTestApi):
 
   def properties_on_target_build(
       self,
-      properties: Dict[str, object],
+      properties: dict[str, object],
       *,
-      step_name: Optional[str] = None,
+      step_name: str | None = None,
   ) -> recipe_test_api.StepTestData:
     """Mocks the properties on the most recent build.
 
@@ -37,7 +37,7 @@ class ChromiumPolymorphicTestApi(recipe_test_api.RecipeTestApi):
       builder: str,
       project: str = 'chromium',
       bucket: str = 'ci',
-      testers: Optional[Collection[properties_pb.BuilderGroupAndName]] = None,
+      testers: Collection[properties_pb.BuilderGroupAndName] | None = None,
   ) -> recipe_test_api.TestData:
     """Set properties that would be set for a polymorphic builder.
 

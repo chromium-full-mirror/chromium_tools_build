@@ -30,6 +30,7 @@ spec type that contains the input details for the test or test wrapper.
 
 import abc
 import attr
+from collections.abc import Iterable, Set
 import contextlib
 import hashlib
 import itertools
@@ -37,7 +38,6 @@ import inspect
 import re
 import string
 import struct
-from typing import AbstractSet, Dict, Iterable, Optional, Tuple
 import urllib
 
 from recipe_engine import recipe_api, step_data
@@ -375,7 +375,7 @@ class AbstractTest(abc.ABC):
 
   @property
   @abc.abstractmethod
-  def isolate_target(self) -> Optional[str]:
+  def isolate_target(self) -> str | None:
     """The name of the isolate to create for the test."""
     raise NotImplementedError()  # pragma: no cover
 
@@ -498,11 +498,11 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix: str) -> Set[str]:
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def notrun_failures(self, suffix: str) -> AbstractSet[str]:
+  def notrun_failures(self, suffix: str) -> Set[str]:
     """Returns tests that had status NOTRUN/UNKNOWN.
 
     FindIt has special logic for handling for tests with status NOTRUN/UNKNOWN.
@@ -516,7 +516,7 @@ class AbstractTest(abc.ABC):
 
   @property
   @abc.abstractmethod
-  def known_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
+  def known_luci_analysis_flaky_failures(self) -> Set[str]:
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
@@ -529,7 +529,7 @@ class AbstractTest(abc.ABC):
 
   @property
   @abc.abstractmethod
-  def weak_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
+  def weak_luci_analysis_flaky_failures(self) -> Set[str]:
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
@@ -549,7 +549,7 @@ class AbstractTest(abc.ABC):
       self,
       suffix: str,
       api,
-  ) -> Tuple[bool, Optional[AbstractSet[str]]]:
+  ) -> tuple[bool, Set[str] | None]:
     """Returns test failures after retries.
 
     This method only considers tests to be failures if every test run fails,
@@ -597,8 +597,8 @@ class AbstractTest(abc.ABC):
 
     return False, None
 
-  def with_patch_failures_including_retry(
-      self, api) -> Tuple[bool, Optional[AbstractSet[str]]]:
+  def with_patch_failures_including_retry(self,
+                                          api) -> tuple[bool, Set[str] | None]:
     return self.failures_including_retry('with patch', api)
 
   # TODO(crbug.com/1040596): Remove this method and update callers to use
@@ -611,7 +611,7 @@ class AbstractTest(abc.ABC):
     _, failures = self.failures_including_retry('with patch', api)
     return bool(failures or self.known_luci_analysis_flaky_failures)
 
-  def without_patch_failures_to_ignore(self) -> Tuple[bool, AbstractSet[str]]:
+  def without_patch_failures_to_ignore(self) -> tuple[bool, Set[str]]:
     """Returns test failures that should be ignored.
 
     Tests that fail in 'without patch' should be ignored, since they're failing
@@ -669,8 +669,8 @@ class AbstractTest(abc.ABC):
       return FAILURE_SUITE_STATUS
     return SUCCESS_SUITE_STATUS
 
-  def deterministic_without_patch_failures(
-      self, api) -> Tuple[bool, Optional[AbstractSet[str]]]:
+  def deterministic_without_patch_failures(self,
+                                           api) -> tuple[bool, Set[str] | None]:
     # Check if the suite succeeded in without patch
     valid_results, ignored_failures = self.without_patch_failures_to_ignore()
     if not valid_results:
@@ -889,7 +889,7 @@ class Test(AbstractTest):
     return self.spec.test_id_prefix
 
   @property
-  def isolate_target(self) -> Optional[str]:
+  def isolate_target(self) -> str | None:
     """Returns isolate target name.
 
     Test types that use isolate should override this to return the
@@ -929,11 +929,11 @@ class Test(AbstractTest):
     self._rdb_results[suffix] = results
 
   @property
-  def known_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
+  def known_luci_analysis_flaky_failures(self) -> Set[str]:
     return self._known_luci_analysis_flaky_failures
 
   @property
-  def weak_luci_analysis_flaky_failures(self) -> AbstractSet[str]:
+  def weak_luci_analysis_flaky_failures(self) -> Set[str]:
     return self._weak_luci_analysis_flaky_failures
 
   def add_known_luci_analysis_flaky_failures(
@@ -970,7 +970,7 @@ class Test(AbstractTest):
 
     return not self._rdb_results[suffix].invalid
 
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix: str) -> Set[str]:
     failure_msg = (
         'There is no data for the test run suffix ({0}). This should never '
         'happen as all calls to deterministic_failures() should first check '
@@ -980,7 +980,7 @@ class Test(AbstractTest):
         t.test_name for t in self._rdb_results[suffix].unexpected_failing_tests
     }
 
-  def notrun_failures(self, suffix: str) -> AbstractSet[str]:
+  def notrun_failures(self, suffix: str) -> Set[str]:
     assert self.has_valid_results(suffix), (
         'notrun_failures must only be called when the test run is known to '
         'have valid results.')
@@ -1123,12 +1123,12 @@ class AbstractSkylabTest(AbstractTest):
 
   @property
   @abc.abstractmethod
-  def test_runner_builds(self) -> Iterable[Dict]:
+  def test_runner_builds(self) -> Iterable[dict]:
     raise NotImplementedError()  # pragma: no cover
 
   @test_runner_builds.setter
   @abc.abstractmethod
-  def test_runner_builds(self, value: Iterable[Dict]) -> None:
+  def test_runner_builds(self, value: Iterable[dict]) -> None:
     raise NotImplementedError()  # pragma: no cover
 
   @property
@@ -1495,7 +1495,7 @@ class ExperimentalTest(TestWrapper):
     return False
 
   #override
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix: str) -> Set[str]:
     if self._actually_has_valid_results(suffix):
       # Call the wrapped test's implementation in case it has side effects,
       # but ignore the result.
@@ -1506,7 +1506,7 @@ class ExperimentalTest(TestWrapper):
   def notrun_failures(
       self,
       suffix: str,
-  ) -> AbstractSet[str]:  # pragma: no cover
+  ) -> Set[str]:  # pragma: no cover
     if self._actually_has_valid_results(suffix):
       # Call the wrapped test's implementation in case it has side effects,
       # but ignore the result.
@@ -2921,7 +2921,7 @@ class MockTest(AbstractSwarmingTest, Test):
       return self.spec.per_suffix_valid[suffix]
     return self.spec.has_valid_results
 
-  def deterministic_failures(self, suffix: str) -> AbstractSet[str]:
+  def deterministic_failures(self, suffix: str) -> Set[str]:
     if suffix in self.spec.per_suffix_failures:  # pragma: no cover
       return self.spec.per_suffix_failures[suffix]
     return set(self._failures)
@@ -3058,11 +3058,11 @@ class SkylabTest(AbstractSkylabTest, Test):
     self._ctp_build_ids = value
 
   @property
-  def test_runner_builds(self) -> Iterable[Dict]:
+  def test_runner_builds(self) -> Iterable[dict]:
     return self._test_runner_builds
 
   @test_runner_builds.setter
-  def test_runner_builds(self, value: Iterable[Dict]) -> None:
+  def test_runner_builds(self, value: Iterable[dict]) -> None:
     self._test_runner_builds = value
 
   def did_complete(self, suffix) -> bool:

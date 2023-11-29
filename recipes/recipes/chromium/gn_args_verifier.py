@@ -7,9 +7,9 @@ Once migration of all GN args to starlark is complete, this recipe will be
 irrelevant.
 """
 
+from collections.abc import Iterable
 import difflib
 import re
-from typing import Iterable, Optional
 
 from recipe_engine import post_process
 from recipe_engine import recipe_test_api

@@ -7,9 +7,9 @@ Once migration of all specs to starlark is complete, this recipe will be
 irrelevant.
 """
 
+from collections.abc import Iterable, Sequence
 import difflib
 import re
-from typing import Iterable, Optional, Sequence
 
 import attr
 from google.protobuf import json_format
@@ -137,7 +137,7 @@ def _get_builder_config(
     repo_path: Path,
     *,
     require_properties_file: bool,
-) -> Optional[ctbc.BuilderConfig]:
+) -> ctbc.BuilderConfig | None:
   properties_json_path = repo_path.join(builder_dir, 'properties.json')
   if not require_properties_file and not api.path.exists(properties_json_path):
     return None
@@ -163,7 +163,7 @@ def _get_targets_config(
     builder_config: ctbc.BuilderConfig,
     repo_path: Path,
     targets_spec_dir: Path,
-    precommit_details: Optional[generators.PrecommitDetails],
+    precommit_details: generators.PrecommitDetails | None,
 ) -> targets_config_module.TargetsConfig:
   with api.step.nest(step_name):
     return api.chromium_tests.create_targets_config(
@@ -180,8 +180,8 @@ def _get_starlark_config(
     builder_dir: str,
     repo_path: Path,
     checkout_root: Path,
-    precommit_details: Optional[generators.PrecommitDetails],
-) -> Optional[targets_config_module.TargetsConfig]:
+    precommit_details: generators.PrecommitDetails | None,
+) -> targets_config_module.TargetsConfig | None:
   with api.step.nest(builder_dir) as presentation:
     builder_config = _get_builder_config(
         api, builder_dir, repo_path, require_properties_file=True)
@@ -208,7 +208,7 @@ def _verify_target_configs(
     api,
     builder_dir: str,
     repo_path: Path,
-    precommit_details: Optional[generators.PrecommitDetails],
+    precommit_details: generators.PrecommitDetails | None,
     starlark_config: targets_config_module.TargetsConfig,
 ) -> bool:
   with api.step.nest(f'verify {builder_dir}') as presentation:
@@ -255,7 +255,7 @@ def _compare_targets_configs(
     api,
     pyl_config: targets_config_module.TargetsConfig,
     starlark_config: targets_config_module.TargetsConfig,
-) -> Optional[Sequence[str]]:
+) -> Sequence[str] | None:
 
   def default_json_conversion(obj: object) -> object:
     if attr.has(obj):
@@ -344,14 +344,14 @@ def GenTests(api):
       bucket: str,
       builder: str,
       builder_group: str,
-      try_bucket: Optional[str] = None,
-      try_builder: Optional[str] = None,
+      try_bucket: str | None = None,
+      try_builder: str | None = None,
       with_ctbc_property: bool = True,
       with_targets_spec_directory: bool = True,
       with_properties_file_without_patch: bool = True,
       with_targets_spec_directory_without_patch=False,
-      starlark_targets_spec: Optional[object] = None,
-      testing_buildbot_targets_spec: Optional[object] = None,
+      starlark_targets_spec: object | None = None,
+      testing_buildbot_targets_spec: object | None = None,
   ) -> recipe_test_api.StepTestData:
     """Set necessary step test data for calling verify_builder_configs.
 

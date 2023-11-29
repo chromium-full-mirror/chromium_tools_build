@@ -9,7 +9,6 @@ import inspect
 import random
 import re
 import sys
-from typing import Dict, List, Tuple
 
 from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
@@ -492,8 +491,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     return new_tests_identified
 
   def _map_test_object(
-      self, test_objects: List[steps.Test],
-      new_test_tuples: Tuple[str, str]) -> Dict[steps.Test, Tuple[str, str]]:
+      self,
+      test_objects: list[steps.Test],
+      new_test_tuples: tuple[str, str],
+  ) -> dict[steps.Test, tuple[str, str]]:
     """_map_test_object formats tests objects to test filters and durations.
 
     One test object may be host to many new tests (ie/ if test_suite =

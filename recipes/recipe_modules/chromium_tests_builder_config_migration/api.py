@@ -4,10 +4,9 @@
 
 import abc
 import collections
+from collections.abc import Callable, Iterable, Mapping
 import contextlib
 import re
-
-from typing import Callable, ContextManager, Iterable, Mapping, Optional
 
 import attr
 
@@ -110,7 +109,7 @@ class _OutputArgumentsFactory(abc.ABC):
       self,
       name: str,
       expression: str,
-  ) -> 'ContextManager[_OutputArgumentsFactory]':
+  ) -> 'contextlib.AbstractContextManager[_OutputArgumentsFactory]':
     """Set an argument to a function call.
 
     The returned context manager takes care of opening and closing the
@@ -134,7 +133,7 @@ class _OutputFactory(abc.ABC):
   def edit_builder(
       self,
       builder_id: chromium.BuilderId,
-  ) -> ContextManager[_OutputArgumentsFactory]:
+  ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     """Set arguments for a builder.
 
     The returned context manager takes care of associating arguments
@@ -188,7 +187,7 @@ class _TextArgumentsFactory(_OutputArgumentsFactory):
       self,
       name: str,
       expression: str,
-  ) -> ContextManager[_OutputArgumentsFactory]:
+  ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     args_factory = _TextArgumentsFactory(self._indent + self.INDENT)
     yield args_factory
 
@@ -231,7 +230,7 @@ class _TextFactory(_OutputFactory):
   def edit_builder(
       self,
       builder_id: chromium.BuilderId,
-  ) -> ContextManager[_OutputArgumentsFactory]:
+  ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     args_factory = _TextArgumentsFactory(_TextArgumentsFactory.INDENT)
     yield args_factory
 
@@ -262,7 +261,7 @@ class _JsonArgumentsFactory(_OutputArgumentsFactory):
       self,
       name: str,
       expression: str,
-  ) -> 'ContextManager[_OutputArgumentsFactory]':
+  ) -> 'contextlib.AbstractContextManager[_OutputArgumentsFactory]':
     args_factory = _JsonArgumentsFactory()
     yield args_factory
 
@@ -295,7 +294,7 @@ class _JsonBuilderFactory(_OutputArgumentsFactory):
       self,
       name: str,
       expression: str,
-  ) -> ContextManager[_OutputArgumentsFactory]:
+  ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     args_factory = _JsonArgumentsFactory()
     yield args_factory
 
@@ -338,7 +337,7 @@ class _JsonFactory(_OutputFactory):
   def edit_builder(
       self,
       builder_id: chromium.BuilderId,
-  ) -> ContextManager[_OutputArgumentsFactory]:
+  ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     builder_factory = _JsonBuilderFactory()
     yield builder_factory
 
@@ -375,7 +374,7 @@ class BlockerCategory(abc.ABC):
       self,
       builder_id: chromium.BuilderId,
       builder_spec: ctbc.BuilderSpec,
-  ) -> Optional[str]:
+  ) -> str | None:
     raise NotImplementedError()  # pragma: no cover
 
 
@@ -536,8 +535,8 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
       builder_db: ctbc.BuilderDatabase,
       try_db: ctbc.TryDatabase,
       *,
-      additional_blocker_categories: Optional[Iterable[BlockerCategory]] = None,
-  ) -> Optional[result_pb.RawResult]:
+      additional_blocker_categories: Iterable[BlockerCategory] | None = None,
+  ) -> result_pb.RawResult | None:
     errors = _VALIDATORS.validate(properties)
     if errors:
       summary = [
@@ -606,7 +605,7 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
       builder_db: ctbc.BuilderDatabase,
       try_db: ctbc.TryDatabase,
       blocker_categories: Iterable[BlockerCategory],
-  ) -> Optional[result_pb.RawResult]:
+  ) -> result_pb.RawResult | None:
     groupings_by_builder_id = self._compute_groupings(builder_db, try_db,
                                                       blocker_categories)
 

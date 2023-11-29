@@ -5,14 +5,13 @@
 import re
 
 from datetime import datetime
-from typing import Tuple
 
 REF_LINE_RE = re.compile(
     r'refs\/tags\/(\d+(?:\.\d+){2,3})((?:-pgo)?)\ ([0-9a-f]{40})\ (.*)')
 
 V8_PATCHED_VERSION_RE = re.compile(r'\d+(?:\.\d+){3}')
 
-VersionTuple = Tuple[int, int, int, int]
+VersionTuple = tuple[int, int, int, int]
 
 # Offset by which we still try to roll a patched version when a newer unpatched
 # version exists.

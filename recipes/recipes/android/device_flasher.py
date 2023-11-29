@@ -4,7 +4,6 @@
 """Flash Android devices that meet certain criteria."""
 
 import collections
-from typing import Dict, Tuple
 
 from google.protobuf import json_format
 
@@ -34,7 +33,8 @@ UID_LOWER_LIMIT = 10000
 UID_UPPER_LIMIT = 19999
 
 
-def _LookupImage(api, cache: Dict[Tuple[str, str], bool], device_type, device_os):
+def _LookupImage(api, cache: dict[tuple[str, str], bool], device_type,
+                 device_os):
   """Check if an image exists in the bucket for a (device_type, device_os) combo
 
   The image url is of the pattern <base_uri>/<device_type>/<device_os>.zip

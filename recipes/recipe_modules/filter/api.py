@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections.abc import Callable, Collection, Mapping
 import functools
 import posixpath
 import re
-
-from typing import Any, Callable, Collection, Dict, List, Mapping, Optional, Tuple
+from typing import Any
 
 from recipe_engine import config_types
 from recipe_engine import recipe_api
@@ -14,8 +14,8 @@ from recipe_engine import step_data
 
 from RECIPE_MODULES.build import chromium
 
-_AnalyzeInput = Dict[str, Collection[str]]
-_AnalyzeOutput = Dict[str, Any]
+_AnalyzeInput = dict[str, Collection[str]]
+_AnalyzeOutput = dict[str, Any]
 # _AnalyzeOutput is the test data value
 _Analyzer = Callable[[_AnalyzeInput, _AnalyzeOutput], step_data.StepData]
 
@@ -25,7 +25,7 @@ class FilterApi(recipe_api.RecipeApi):
   def _load_analyze_config(
       self,
       config_path: config_types.Path,
-  ) -> Dict[str, Dict[str, List[str]]]:
+  ) -> dict[str, dict[str, list[str]]]:
     """Load the given analyze config.
 
     Analyze config files are expected to be JSONs in the following format:
@@ -88,7 +88,7 @@ class FilterApi(recipe_api.RecipeApi):
       self,
       additional_names: Collection[str],
       config_path: config_types.Path,
-  ) -> Tuple[Collection[re.Pattern], Collection[re.Pattern]]:
+  ) -> tuple[Collection[re.Pattern], Collection[re.Pattern]]:
     """Get the regular expressions for excluding and ignoring paths.
 
     Args:
@@ -126,7 +126,7 @@ class FilterApi(recipe_api.RecipeApi):
   def _find_matching_pattern(
       path: str,
       regexes: Collection[re.Pattern],
-  ) -> Optional[re.Pattern]:
+  ) -> re.Pattern | None:
     """Returns the pattern string that matches a path (if any)."""
     for regex in regexes:
       match = regex.fullmatch(path)
@@ -148,11 +148,11 @@ class FilterApi(recipe_api.RecipeApi):
       self,
       analyze_input: _AnalyzeInput,
       test_analyze_output: _AnalyzeOutput,
-      builder_id: Optional[chromium.BuilderId],
-      mb_path: Optional[config_types.Path],
-      mb_config_path: Optional[config_types.Path],
-      build_output_dir: Optional[config_types.Path],
-      phase: Optional[str],
+      builder_id: chromium.BuilderId | None,
+      mb_path: config_types.Path | None,
+      mb_config_path: config_types.Path | None,
+      build_output_dir: config_types.Path | None,
+      phase: str | None,
   ) -> step_data.StepData:
     env = {}
 
@@ -199,7 +199,7 @@ class FilterApi(recipe_api.RecipeApi):
       exclusions: Mapping[re.Pattern, str],
       ignores: Collection[re.Pattern],
       analyzer: _Analyzer,
-  ) -> Tuple[Collection[str], Collection[str]]:
+  ) -> tuple[Collection[str], Collection[str]]:
     if all(self._find_matching_pattern(p, ignores) for p in paths):
       self.m.step.empty(
           'analyze', step_text='No compile necessary (all files ignored)')
@@ -262,18 +262,18 @@ class FilterApi(recipe_api.RecipeApi):
   def analyze(
       self,
       affected_files: Collection[str],
-      test_targets: Optional[Collection[str]],
-      additional_compile_targets: Optional[Collection[str]],
+      test_targets: Collection[str] | None,
+      additional_compile_targets: Collection[str] | None,
       *,
       config_path: config_types.Path = None,
-      additional_names: Optional[Collection[str]] = None,
-      additional_exclusions: Mapping[str, str] = None,
-      builder_id: Optional[chromium.BuilderId] = None,
-      mb_path: Optional[config_types.Path] = None,
-      mb_config_path: Optional[config_types.Path] = None,
-      build_output_dir: Optional[config_types.Path] = None,
-      phase: Optional[str] = None,
-  ) -> Tuple[Collection[str], Collection[str]]:
+      additional_names: Collection[str] | None = None,
+      additional_exclusions: Mapping[str, str] | None = None,
+      builder_id: chromium.BuilderId | None = None,
+      mb_path: config_types.Path | None = None,
+      mb_config_path: config_types.Path | None = None,
+      build_output_dir: config_types.Path | None = None,
+      phase: str | None = None,
+  ) -> tuple[Collection[str], Collection[str]]:
     """Runs "analyze" step to determine targets affected by the patch.
 
     The config file identified by |config_file_name| will be read to get

@@ -21,8 +21,6 @@ the polymorphic builder:
   * lookup_builder_config
 """
 
-from typing import Dict, Optional, Tuple
-
 from google.protobuf import json_format
 
 from recipe_engine import recipe_api
@@ -61,9 +59,9 @@ class ChromiumPolymorphicApi(recipe_api.RecipeApi):
   def get_target_properties(
       self,
       target_builder_id: builder_common_pb.BuilderID,
-      tester_filter: Optional[TesterFilter] = None,
-      search_step_name: Optional[str] = None,
-  ) -> Dict[str, object]:
+      tester_filter: TesterFilter | None = None,
+      search_step_name: str | None = None,
+  ) -> dict[str, object]:
     """Get properties for triggering a polymorphic builder.
 
     Args:
@@ -127,7 +125,7 @@ class ChromiumPolymorphicApi(recipe_api.RecipeApi):
   def lookup_builder_config(
       self,
       allow_tester=False,
-  ) -> Tuple[chromium.BuilderId, ctbc.BuilderConfig]:
+  ) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
     """Look up the target builder's config.
 
     This is called by a polymorphic builder to get the builder config

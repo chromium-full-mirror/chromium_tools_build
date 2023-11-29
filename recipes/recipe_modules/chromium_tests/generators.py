@@ -2,10 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections.abc
+from collections.abc import Callable, Iterable, Mapping
 import string
 import textwrap
-from typing import Callable, Iterable, Mapping, Optional
 
 from . import steps
 
@@ -34,8 +33,8 @@ class Generator:
       got_revisions: Mapping[str, str],
       checkout_path: Path,
       remote_tests_only: bool = False,
-      precommit_details: Optional[PrecommitDetails] = None,
-      scripts_compile_targets_fn: Optional[Callable[[], Iterable[str]]] = None,
+      precommit_details: PrecommitDetails | None = None,
+      scripts_compile_targets_fn: Callable[[], Iterable[str]] | None = None,
   ):
     """
     Args:
@@ -285,7 +284,7 @@ class Generator:
 
     normalized = {}
     for expiration, dimensions_sequence in optional_dimensions.items():
-      if isinstance(dimensions_sequence, collections.abc.Mapping):
+      if isinstance(dimensions_sequence, Mapping):
         dimensions = dimensions_sequence
       else:
         # TODO(https://crbug.com/1148971): Convert source side specs to use single
@@ -300,7 +299,7 @@ class Generator:
       self,
       raw_test_spec: _RawTestSpec,
       swarming_delegate: Callable[..., steps.TestSpec],
-      local_delegate: Callable[..., Optional[steps.TestSpec]],
+      local_delegate: Callable[..., steps.TestSpec | None],
   ) -> Iterable[steps.TestSpec]:
     """Common logic for generating tests from JSON specs.
 

@@ -7,8 +7,6 @@ import inspect
 import itertools
 import traceback
 
-from typing import Optional, Tuple
-
 from .builder_spec import BuilderSpec, COMPILE_AND_TEST, TEST
 from .builder_db import BuilderDatabase
 from .try_spec import TryDatabase, ALWAYS, NEVER, QUICK_RUN_ONLY

@@ -6,7 +6,6 @@ from collections import defaultdict
 import contextlib
 import itertools
 import re
-from typing import List, Set, Tuple
 
 from recipe_engine.post_process import (
     Filter,
@@ -262,8 +261,7 @@ class VersionProfileTrack:
 
 @with_wrapper_step
 def init_trackers_for_candidate_versions(
-    api, max_parallel_versions, version_cutoff
-) -> List[VersionProfileTrack]:
+    api, max_parallel_versions, version_cutoff) -> list[VersionProfileTrack]:
   tags = select_tags_without_profiles(api)
   tags = filter_tags_by_cutoff(tags, version_cutoff)
   tags = filter_blocked_tags(api, tags)
@@ -271,7 +269,7 @@ def init_trackers_for_candidate_versions(
   return create_profile_trackers(tags)
 
 
-def select_tags_without_profiles(api) -> List[Tuple[VersionTuple, str]]:
+def select_tags_without_profiles(api) -> list[tuple[VersionTuple, str]]:
   lines = api.v8.git_output('ls-remote', '--tags', V8_REPO_URL).split('\n')
 
   all_tags = get_version_revision(lines, VERSION_TAG_PATTERN)
@@ -285,7 +283,7 @@ def select_tags_without_profiles(api) -> List[Tuple[VersionTuple, str]]:
   ]
 
 
-def get_version_revision(lines, pattern) -> Set[Tuple[str, str]]:
+def get_version_revision(lines, pattern) -> set[tuple[str, str]]:
   versions_revisions = set()
   for line in lines:
     match = re.fullmatch(pattern, line)
@@ -297,15 +295,15 @@ def get_version_revision(lines, pattern) -> Set[Tuple[str, str]]:
   return versions_revisions
 
 
-def filter_tags_by_cutoff(tags, cutoff) -> List[Tuple[VersionTuple, str]]:
+def filter_tags_by_cutoff(tags, cutoff) -> list[tuple[VersionTuple, str]]:
   return [t for t in tags if t[0] >= cutoff]
 
 
-def filter_max_parallel_tags(tags, parallel) -> List[Tuple[VersionTuple, str]]:
+def filter_max_parallel_tags(tags, parallel) -> list[tuple[VersionTuple, str]]:
   return sorted(tags, reverse=True)[:parallel]
 
 
-def filter_blocked_tags(api, tags) -> List[Tuple[VersionTuple, str]]:
+def filter_blocked_tags(api, tags) -> list[tuple[VersionTuple, str]]:
   """Load a blocklist from a storage bucket, and remove blocked versions."""
   blocked = download_blocked_versions(api)
   blocked = {normalize_version(v.split()[0]) for v in blocked if v}
@@ -313,7 +311,7 @@ def filter_blocked_tags(api, tags) -> List[Tuple[VersionTuple, str]]:
   return [t for t in tags if t[0] not in blocked]
 
 
-def download_blocked_versions(api) -> List[str]:
+def download_blocked_versions(api) -> list[str]:
   result = api.gsutil.cat(BLOCKLIST_PATH, stdout=api.raw_io.output())
   blocked = result.stdout.decode().strip()
   if not blocked:
@@ -321,7 +319,7 @@ def download_blocked_versions(api) -> List[str]:
   return blocked.split('\n')
 
 
-def create_profile_trackers(selected_versions) -> List[VersionProfileTrack]:
+def create_profile_trackers(selected_versions) -> list[VersionProfileTrack]:
   all_trackers = []
   for version, revision in selected_versions:
     for track in COMPILATORS:
