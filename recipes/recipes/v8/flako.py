@@ -857,7 +857,7 @@ def RunSteps(api, bisect_builder_group, bisect_buildername, extra_args,
              swarming_dimensions, swarming_priority, swarming_expiration,
              test_name, timeout_sec, total_timeout_sec, to_revision, variant):
   # Convert floats to ints.
-  assert mode in BISECTORS.keys()
+  assert mode in BISECTORS
   repro_only = mode == 'repro'
   max_calibration_attempts = max(min(int(max_calibration_attempts), 5), 1)
   num_shards = int(num_shards)

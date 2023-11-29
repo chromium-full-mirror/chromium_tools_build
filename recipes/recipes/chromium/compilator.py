@@ -384,7 +384,7 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun, 'skylab trigger properties'),
       api.post_check(lambda check, steps: check(
           steps['post output trigger properties'].tags[
-              u'chromium.outputted_trigger_properties'] ==
+              'chromium.outputted_trigger_properties'] ==
           ('outputted swarming and/or skylab trigger properties'))),
       api.post_process(post_process.MustRun,
                        'check_static_initializers (with patch)'),

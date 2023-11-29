@@ -460,9 +460,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     chromium_config = self.m.chromium.c
     arch_id = chromium_config.TARGET_ARCH, chromium_config.TARGET_BITS
     arch_digit = self._ARCHITECTURE_DIGIT_MAP.get(arch_id, None)
-    assert arch_digit is not None, (
-        'Architecture and bits (%r) does not have a version digit assigned' %
-        arch_id)
+    assert arch_digit is not None, (f'Architecture and bits ({arch_id!r})'
+                                    ' does not have a version digit assigned')
 
     android_version_name = '%(MAJOR)s.%(MINOR)s.%(BUILD)s.%(PATCH)s' % version
     android_version_code = '%d%03d%d0' % (int(

@@ -170,12 +170,10 @@ class AttributeConstraint:
 
     class _CallableDelegatingAttributeConstraint(AttributeConstraint):
 
-      @staticmethod
-      def validate(obj, attribute, value):
+      def validate(self, obj, attribute, value):
         validator(obj, attribute, value)
 
-      @staticmethod
-      def convert(value):
+      def convert(self, value):
         return converter(value)
 
     return _CallableDelegatingAttributeConstraint()

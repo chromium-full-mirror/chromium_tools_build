@@ -322,7 +322,7 @@ def download_blocked_versions(api) -> List[str]:
 
 
 def create_profile_trackers(selected_versions) -> List[VersionProfileTrack]:
-  all_trackers = list()
+  all_trackers = []
   for version, revision in selected_versions:
     for track in COMPILATORS:
       all_trackers.append(VersionProfileTrack(version, track, revision))

@@ -259,15 +259,6 @@ def RunSteps(api):
   x = AttrsTest()
   api.assertions.assertEqual(x.x, 'bar')
 
-  # string handling ************************************************************
-  @attrs()
-  class StrTest:
-    x = attrib(str)
-
-  # make sure a unicode can be asigned
-  x = StrTest(x=u'foo')
-  api.assertions.assertEqual(x.x, u'foo')
-
   # FieldMapping ***************************************************************
   @attrs()
   class FieldMappingTest(FieldMapping):

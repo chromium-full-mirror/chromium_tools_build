@@ -273,7 +273,7 @@ class V8TestsApi(recipe_api.RecipeApi):
       for result in unique_results[label]:
         results_per_command[result['command']].append(result)
 
-      for command in results_per_command.keys():
+      for command in results_per_command:
         results = results_per_command[command]
         # Determine flakiness.
         failure = failure_factory(results)

@@ -57,7 +57,7 @@ def GenTests(api):
               'args': ['${buildbucket_build_id}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'8945511751514863184'],
+          expected_args=['8945511751514863184'],
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -73,7 +73,7 @@ def GenTests(api):
               'args': ['${buildbucket_build_id}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'8945511751514863184'],
+          expected_args=['8945511751514863184'],
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -89,7 +89,7 @@ def GenTests(api):
               'args': ['${buildbucket_build_id}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'8945511751514863184'],
+          expected_args=['8945511751514863184'],
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -217,7 +217,7 @@ def GenTests(api):
               'args': ['${use_permissive_angle_pixel_comparison}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'0'],
+          expected_args=['0'],
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -233,7 +233,7 @@ def GenTests(api):
               'args': ['${use_permissive_angle_pixel_comparison}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'0'],
+          expected_args=['0'],
       ),
       api.post_process(post_process.DropExpectation),
   )
@@ -249,7 +249,7 @@ def GenTests(api):
               'args': ['${use_permissive_angle_pixel_comparison}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'0'],
+          expected_args=['0'],
       ),
       api.tryserver.get_footers(
           {'Use-Permissive-Angle-Pixel-Comparison': ['False']},),
@@ -267,7 +267,7 @@ def GenTests(api):
               'args': ['${use_permissive_angle_pixel_comparison}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'1'],
+          expected_args=['1'],
       ),
       api.tryserver.get_footers(
           {'Use-Permissive-Angle-Pixel-Comparison': ['True']},),
@@ -285,7 +285,7 @@ def GenTests(api):
               'args': ['${use_permissive_angle_pixel_comparison}'],
               'test': 'base_unittests',
           },
-          expected_args=[u'1'],
+          expected_args=['1'],
       ),
       api.tryserver.get_footers(
           {'Use-Permissive-Angle-Pixel-Comparison': ['foo', 'True']},),

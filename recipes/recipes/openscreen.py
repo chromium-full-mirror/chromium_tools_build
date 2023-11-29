@@ -223,8 +223,8 @@ def CheckSwarmingResults(api, name, results):
       api.step.StepFailure: swarming completed and failed, or timed out.
   """
   for result in results:
-    if (result.state == api.swarming.TaskState.COMPLETED or
-        result.state == api.swarming.TaskState.TIMED_OUT):
+    if result.state in (api.swarming.TaskState.COMPLETED,
+                        api.swarming.TaskState.TIMED_OUT):
       if not result.success:
         fail_text = '{} failure'.format(name)
         step = api.step(fail_text, None)

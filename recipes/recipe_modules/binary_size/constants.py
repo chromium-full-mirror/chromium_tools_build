@@ -52,7 +52,7 @@ TEST_RESULT_JSON = {
         },
         {
             'name': 'SuperSize Text Diff',
-            'lines': [u'!supersize text with \u0394!'],
+            'lines': ['!supersize text with \u0394!'],
         },
         {
             'name': 'Dex Method Diff',

@@ -120,7 +120,7 @@ class TestSpec:
     """
     assert len(self._test_spec) >= 1, 'No tests specified'
     assert len(self._test_spec) <= 1, 'Ambiguous tester names in spec'
-    return self.as_properties_dict(iter(self._test_spec.keys()).__next__())
+    return self.as_properties_dict(next(iter(self._test_spec.keys())))
 
   def as_properties_dict(self, buildername):
     """Packs a test spec and returns it as a properties dict to be passed to

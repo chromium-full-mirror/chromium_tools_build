@@ -169,6 +169,7 @@ class _TextArgumentsFactory(_OutputArgumentsFactory):
   INDENT = ' ' * 4
 
   def __init__(self, indent):
+    super().__init__()
     self._lines = []
     self._indent = indent
 
@@ -223,6 +224,7 @@ class _TextFactory(_OutputFactory):
   """
 
   def __init__(self):
+    super().__init__()
     self._lines = []
 
   @contextlib.contextmanager
@@ -245,6 +247,7 @@ class _JsonArgumentsFactory(_OutputArgumentsFactory):
   """An output arguments factory for json output."""
 
   def __init__(self):
+    super().__init__()
     self._pieces = []
 
   def set_raw_arg(self, name: str, value: str) -> None:
@@ -278,6 +281,7 @@ class _JsonBuilderFactory(_OutputArgumentsFactory):
   """
 
   def __init__(self):
+    super().__init__()
     self._edits = {}
 
   def set_raw_arg(self, name: str, value: str) -> None:
@@ -327,6 +331,7 @@ class _JsonFactory(_OutputFactory):
   """
 
   def __init__(self):
+    super().__init__()
     self._builders = []
 
   @contextlib.contextmanager

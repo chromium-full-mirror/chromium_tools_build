@@ -186,7 +186,7 @@ class RDBResults:
               len(suite.all_tests)))
       lines.append(
           '\t\tSize of all RDBPerIndividualTestResults entries: {}'.format(
-              hr_size(sum([t.get_size_in_mem() for t in suite.all_tests]))))
+              hr_size(sum(t.get_size_in_mem() for t in suite.all_tests))))
 
     return total_size_hr, lines
 
@@ -288,9 +288,8 @@ class RDBPerIndividualTestResults:
     return len(self.statuses)
 
   def unexpected_unpassed_count(self):
-    return sum([(status != test_result_pb2.PASS and not expected)
-                for status, expected in zip(self.statuses, self.expectednesses)
-               ])
+    return sum((status != test_result_pb2.PASS and not expected)
+               for status, expected in zip(self.statuses, self.expectednesses))
 
   def get_size_in_mem(self):
     total = sys.getsizeof(self)
@@ -627,8 +626,7 @@ class IndividualTestFailureRateAnalysis:
 
     Return: int
     """
-    return sum(
-        [verdict.has_unexpected_runs for verdict in self.recent_verdicts])
+    return sum(verdict.has_unexpected_runs for verdict in self.recent_verdicts)
 
   def get_flaky_verdict_counts(self, num_intervals_list):
     """Returns the number of flaky verdicts for each interval

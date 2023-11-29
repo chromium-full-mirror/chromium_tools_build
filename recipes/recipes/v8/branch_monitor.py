@@ -56,7 +56,7 @@ class CommitTime:
 
   @property
   def formatted_time_gap(self):
-    return str(self.time_gap).split(".")[0]
+    return str(self.time_gap).split(".", maxsplit=1)[0]
 
   @property
   def time_gap_hours(self):

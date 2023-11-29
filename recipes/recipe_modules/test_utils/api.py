@@ -505,10 +505,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
       return
 
     query_failure_rate_step_error_msg = None
-    total_failing_variants = sum([
+    total_failing_variants = sum(
         len(tests.get_rdb_results('with patch').unexpected_failing_tests)
-        for tests in tests_to_check
-    ])
+        for tests in tests_to_check)
     if total_failing_variants > 100:
       self.m.step.empty(
           'Skipping querying LUCI Analysis for failure rates',
@@ -1292,7 +1291,7 @@ class SkylabGroup(TestGroup):
     tests = [t for t in self._test_suites if t.is_skylabtest and t.is_enabled]
     if tests:
       # Respect timeout of each test run by this CTP build.
-      build_timeout = max([t.spec.timeout_sec for t in tests])
+      build_timeout = max(t.spec.timeout_sec for t in tests)
       if build_timeout > self.ctp_build_timeout_sec:
         self.ctp_build_timeout_sec = build_timeout
       self.ctp_builds_by_tag = api.skylab.schedule_suites(tests)

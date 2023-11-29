@@ -200,7 +200,7 @@ class FlakyReproducer(recipe_api.RecipeApi):
             step.debug_info['task_ui_link'] = self._swarming_task_url(
                 task_result.id)
             step_summary.append("* [{0}]({1})".format(
-                step.readable_info().strip().split('\n')[0],
+                step.readable_info().strip().split('\n', maxsplit=1)[0],
                 step.debug_info['task_ui_link']))
             reproducing_steps.append(step)
       except Exception:

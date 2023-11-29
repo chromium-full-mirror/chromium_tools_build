@@ -87,7 +87,7 @@ def GenTests(api):
       api.step_data(
           'deploy',
           stdout=api.raw_io.output(
-              '[1mChannel URL:[22m https://chromium-website-cl123456-ps7.web.app [channel id]\n'
+              '\x1B[1mChannel URL:\x1B[22m https://chromium-website-cl123456-ps7.web.app [channel id]\n'
           )),
       api.post_process(DropExpectation),
   )
@@ -98,7 +98,7 @@ def GenTests(api):
       api.step_data(
           'deploy',
           stdout=api.raw_io.output(
-              '[1m Hosting URL:[22m https://site.web.app\n')),
+              '\x1B[1m Hosting URL:\x1B[22m https://site.web.app\n')),
       api.post_process(DropExpectation),
   )
 

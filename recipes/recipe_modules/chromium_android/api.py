@@ -220,7 +220,7 @@ class AndroidApi(recipe_api.RecipeApi):
         self.m.path['checkout'].join('build', 'symlink.py'),
         '-f',
         self.m.adb.adb_path(),
-        os.path.join('~', 'adb'),
+        self.m.path.join('~', 'adb'),
     ]
     self.m.step('create adb symlink', cmd, infra_step=True)
 

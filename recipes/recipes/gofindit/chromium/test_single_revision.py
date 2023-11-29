@@ -38,14 +38,15 @@ PROPERTIES = InputProperties
 # TODO (nqmtuan): Extract out common step for compile and test failures.
 def RunSteps(api, properties):
   """Run tests for a particular revision."""
+  test_results = []
+  run_succeeded = False  # Whether the build finish running the tests and collecting results.
+
   try:
     api.chromium_swarming.add_default_tag('is_luci_bisection:true')
     api.chromium_tests.base_variant_getter = lambda spec: {
         'builder': spec.waterfall_buildername,
     }
 
-    test_results = []
-    run_succeeded = False  # Whether the build finish running the tests and collecting results.
     target_builder = properties.target_builder
     target_builder_id = chromium.BuilderId.create_for_group(
         target_builder.group, target_builder.builder)
@@ -108,7 +109,7 @@ def RunSteps(api, properties):
 
 
 def fetch_test_results(api, tests_to_run, step_tests, suffix):
-  test_ids_by_test_suite = dict()
+  test_ids_by_test_suite = {}
   for test_to_run in tests_to_run:
     test_ids = test_ids_by_test_suite.setdefault(test_to_run.test_suite_name,
                                                  [])
@@ -133,7 +134,7 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
 
   The step tests will be set with the test filter to run only the tests_to_run.
   """
-  test_names_by_test_suite = dict()
+  test_names_by_test_suite = {}
   for test_to_run in tests_to_run:
     test_names = test_names_by_test_suite.setdefault(
         test_to_run.test_suite_name, [])

@@ -53,6 +53,13 @@ from RECIPE_MODULES.build.test_utils import util
 from RECIPE_MODULES.build.attr_utils import (attrib, attrs, command_args, enum,
                                              mapping, sequence)
 
+# Pylint doesn't understand an abstract class hierarchy where a subclass will
+# override some of the abstract methods of its base and remain abstract itself.
+# The actual implementation of abstract base classes ensures that everything is
+# overridden when attempting to instantiate a class, so trying to make this
+# pylint clean isn't worth the effort.
+# pylint: disable=abstract-method
+
 RESULTS_URL = 'https://chromeperf.appspot.com'
 
 # When we retry failing tests, we try to choose a high repeat count so that
@@ -765,7 +772,8 @@ class TestSpec(AbstractTestSpec):
     kwargs['target_name'] = kwargs.get('target_name') or name
     return cls(name=name, **kwargs)
 
-  @abc.abstractproperty
+  @property
+  @abc.abstractmethod
   def test_class(self):
     """The test class associated with the spec."""
     raise NotImplementedError()  # pragma: no cover
@@ -1181,7 +1189,8 @@ class TestWrapperSpec(AbstractTestSpec):
                                    self._test_spec.get_test(chromium_tests_api),
                                    chromium_tests_api)
 
-  @abc.abstractproperty
+  @property
+  @abc.abstractmethod
   def test_wrapper_class(self):
     """The test wrapper class associated with the spec."""
     raise NotImplementedError()  # pragma: no cover
@@ -1197,16 +1206,16 @@ class _TestDelegateAbstractMeta(abc.ABCMeta):
   attribute of the same name from the instance's test attribute.
   """
 
-  def __new__(cls, class_name, bases, namespace, /, **kwargs):
+  def __new__(mcs, class_name, bases, namespace, /, **kwargs):
     for base in bases:
-      for name, value in inspect.getmembers(base, cls._is_abstractmethod):
+      for name, value in inspect.getmembers(base, mcs._is_abstractmethod):
         if name not in namespace:
           if isinstance(value, property):
-            delegate = cls._test_wrapper_delegate_property(name, value)
+            delegate = mcs._test_wrapper_delegate_property(name, value)
           else:
-            delegate = cls._test_wrapper_delegate_method(name)
+            delegate = mcs._test_wrapper_delegate_method(name)
           namespace[name] = delegate
-    return super().__new__(cls, class_name, bases, namespace, **kwargs)
+    return super().__new__(mcs, class_name, bases, namespace, **kwargs)
 
   @staticmethod
   def _is_abstractmethod(obj):
@@ -1223,15 +1232,15 @@ class _TestDelegateAbstractMeta(abc.ABCMeta):
     return wrapped
 
   @classmethod
-  def _test_wrapper_delegate_property(cls, name, prop):
+  def _test_wrapper_delegate_property(mcs, name, prop):
     fget = prop.fget
-    if cls._is_abstractmethod(fget):
+    if mcs._is_abstractmethod(fget):
 
       def fget(self):
         return getattr(self._test, name)
 
     fset = prop.fset
-    if cls._is_abstractmethod(fset):
+    if mcs._is_abstractmethod(fset):
 
       def fset(self, value):
         return setattr(self._test, name, value)
@@ -1259,6 +1268,7 @@ class TestWrapper(
   """
 
   def __init__(self, spec, test, chromium_tests_api):
+    super().__init__()
     self._wrapper_spec = spec
     self._test = test
     self._chromium_tests_api = chromium_tests_api
@@ -1615,7 +1625,7 @@ class ScriptTestSpec(TestSpec):
     return ScriptTest
 
 
-class ScriptTest(LocalTest):  # pylint: disable=W0232
+class ScriptTest(LocalTest):
   """
   Test which uses logic from script inside chromium repo.
 
@@ -2163,11 +2173,12 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     # shards doing nothing.
     return int(
         min(
-            min(
-                max(
-                    original_num_shards * REPEAT_COUNT_FOR_FAILING_TESTS *
-                    (float(num_tests_to_retry) / total_tests_ran), 1),
-                original_num_shards), num_tests_to_retry))
+            max(
+                original_num_shards * REPEAT_COUNT_FOR_FAILING_TESTS *
+                (float(num_tests_to_retry) / total_tests_ran), 1),
+            original_num_shards,
+            num_tests_to_retry,
+        ))
 
   def _apply_swarming_task_config(self, task, suffix, filter_flag,
                                   filter_delimiter, extra_args):
@@ -2754,21 +2765,27 @@ class AndroidJunitTest(LocalTest):
     assert self.api.m.chromium.c.TARGET_PLATFORM == 'android'
 
     json_results_file = self.api.m.test_utils.gtest_results(add_json_log=False)
+    step_result = None
     try:
       step_result = self._run_tests(suffix, json_results_file)
     except self.api.m.step.StepFailure as f:
       step_result = f.result
       raise
     finally:
-      self._update_inv_name_from_stderr(step_result.stderr, suffix)
-      self._update_failure_on_exit(suffix, step_result.retcode != 0,
-                                   step_result)
+      # step_result will only be None in the case of a non-StepFailure
+      # exception, which shouldn't really be happening, but pylint doesn't know
+      # that
+      if step_result is not None:
+        self._update_inv_name_from_stderr(step_result.stderr, suffix)
+        self._update_failure_on_exit(suffix, step_result.retcode != 0,
+                                     step_result)
 
-      _present_info_messages(step_result.presentation, self, info_messages)
+        _present_info_messages(step_result.presentation, self, info_messages)
 
-      presentation_step = self.api.m.step.empty('Report %s results' % self.name)
-      self.api.m.test_utils.present_gtest_failures(
-          step_result, presentation=presentation_step.presentation)
+        presentation_step = self.api.m.step.empty('Report %s results' %
+                                                  self.name)
+        self.api.m.test_utils.present_gtest_failures(
+            step_result, presentation=presentation_step.presentation)
 
   def compile_targets(self) -> Iterable[str]:
     return self.spec.compile_targets
