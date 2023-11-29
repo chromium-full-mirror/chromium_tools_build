@@ -25,6 +25,13 @@ _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
     See https://crbug.com/959436 for more context.
     """)
 
+# During Ninja to Siso migration,
+# Builders want to detect the build system switch and clean up the build
+# directory.
+# The file content is either "ninja" or "siso".
+# TODO: b/277863839 - Remove this logic after Siso migration.
+_LAST_BUILD_SYSTEM = 'LAST_BUILD_SYSTEM.txt'
+
 
 class ChromiumApi(recipe_api.RecipeApi):
 
@@ -598,8 +605,10 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @contextlib.contextmanager
   def guard_compile(self, suffix=''):
-    """Ensure that the output directory gets cleaned if compile is interrupted.
+    """Ensure that the output directory gets cleaned for the following
+    conditions.
 
+    1) Compile was interrupted during the last build.
     On entry, this context manager checks for the existence of a sentinel file
     inside the output directory, cleaning the output directory if it's present.
     It then creates the sentinel file.
@@ -611,15 +620,43 @@ class ChromiumApi(recipe_api.RecipeApi):
     untoward happens while in scope -- build cancellation, unexpected infra
     failure, etc -- the output directory will be clobbered during the next
     build.
+
+    2) Build system switches from the last build.
+    Before each compile, this context manager records the build system used in
+    this build. ("ninja" or "siso")
+    If the build system is different from the recorded one during the next
+    build, it cleans the output directory.
+    TODO: b/277863839 - Remove this logic after Siso rollout.
     """
+    should_clean = False
     guard_path = self.m.chromium.output_dir.join(_CR_COMPILE_GUARD_NAME)
     if self.m.path.exists(guard_path):
+      should_clean = True
+      clean_reason = 'the last compile step was interrupted'
+
+    build_system = 'siso' if self.m.siso.enabled else 'ninja'
+    last_build_system_path = self.m.chromium.output_dir.join(_LAST_BUILD_SYSTEM)
+    if self.m.path.exists(last_build_system_path):
+      last_build_system = self.m.file.read_text('read %s' % _LAST_BUILD_SYSTEM,
+                                                last_build_system_path)
+      if last_build_system and last_build_system != build_system:
+        should_clean = True
+        clean_reason = ('build system switches from %s to %s' %
+                        (last_build_system, build_system))
+
+    if should_clean:
       self.m.file.rmtree('remove unreliable output dir' + suffix,
                          self.m.chromium.output_dir)
+      clean_step_presentation = self.m.step.active_result.presentation
+      clean_step_presentation.step_text = 'reason: ' + clean_reason
+
     self.m.file.ensure_directory('ensure output directory' + suffix,
                                  self.m.chromium.output_dir)
     self.m.file.write_text('create compile guard' + suffix, guard_path,
                            _CR_COMPILE_GUARD_CONTENTS)
+    self.m.file.write_text('write %s' % _LAST_BUILD_SYSTEM,
+                           last_build_system_path, build_system)
+
     try:
       yield
     finally:

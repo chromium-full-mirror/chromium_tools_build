@@ -8,7 +8,9 @@ from RECIPE_MODULES.build import chromium
 
 DEPS = [
     'chromium',
+    'recipe_engine/file',
     'recipe_engine/path',
+    'siso',
 ]
 
 
@@ -56,5 +58,42 @@ def GenTests(api):
       'recovery',
       api.path.exists(api.path['checkout'].join('out', 'Release',
                                                 'CR_COMPILE_GUARD.txt')),
+      api.post_check(post_process.MustRun, 'remove unreliable output dir'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'no_last_build_system',
+      api.post_check(post_process.DoesNotRun, 'remove unreliable output dir'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'build_system_siso_to_siso', api.siso.properties(),
+      api.path.exists(api.path['checkout'].join('out', 'Release',
+                                                'LAST_BUILD_SYSTEM.txt')),
+      api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('siso')),
+      api.post_check(post_process.DoesNotRun, 'remove unreliable output dir'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'build_system_ninja_to_ninja',
+      api.path.exists(api.path['checkout'].join('out', 'Release',
+                                                'LAST_BUILD_SYSTEM.txt')),
+      api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('ninja')),
+      api.post_check(post_process.DoesNotRun, 'remove unreliable output dir'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'build_system_ninja_to_siso', api.siso.properties(),
+      api.path.exists(api.path['checkout'].join('out', 'Release',
+                                                'LAST_BUILD_SYSTEM.txt')),
+      api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('ninja')),
+      api.post_check(post_process.MustRun, 'remove unreliable output dir'),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'build_system_siso_to_ninja',
+      api.path.exists(api.path['checkout'].join('out', 'Release',
+                                                'LAST_BUILD_SYSTEM.txt')),
+      api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('siso')),
       api.post_check(post_process.MustRun, 'remove unreliable output dir'),
       api.post_process(post_process.DropExpectation))
