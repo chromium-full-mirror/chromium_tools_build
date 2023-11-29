@@ -18,23 +18,23 @@ from collections import namedtuple
 import re
 
 DEPS = [
-  'depot_tools/depot_tools',
-  'depot_tools/gclient',
-  'depot_tools/gerrit',
-  'depot_tools/git',
-  'depot_tools/gitiles',
-  'recipe_engine/buildbucket',
-  'recipe_engine/cipd',
-  'recipe_engine/context',
-  'recipe_engine/json',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'recipe_engine/raw_io',
-  'recipe_engine/step',
-  'recipe_engine/url',
-  'v8',
+    'depot_tools/depot_tools',
+    'depot_tools/gclient',
+    'depot_tools/gerrit',
+    'depot_tools/git',
+    'depot_tools/gitiles',
+    'infra/cloudkms',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/context',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
+    'recipe_engine/step',
+    'recipe_engine/url',
+    'v8',
 ]
-
 
 PROPERTIES = {
     # Configuration of the auto-roller
@@ -83,10 +83,15 @@ PROPERTIES = {
                 # Mapping between the dependency name in the target project and
                 # the name in the source project
                 deps_key_mapping=Dict(value_type=str),
+                # Flag for rolling trusted and untrusted deps
+                regular_deps_roller=Single(
+                    bool, empty_val=True, required=False),
                 # List of reviewers of rolling CLs requiring a manual review
                 reviewers=List(str),
                 # Flag for rolling the binary chromium pin in target project
-                roll_chromium_pin=Single(bool),
+                roll_chromium_pin=Single(bool, empty_val=False, required=False),
+                # Flag for rolling the test262
+                roll_test262=Single(bool, empty_val=False, required=False),
                 # List of keys of supported script assisted rolls
                 scripted_rolls=Single(list, empty_val=None),
                 # Add extra log entries to the commit message.
@@ -142,6 +147,12 @@ GCLIENT_CUSTOM_VARS = {
     'checkout_fuchsia_no_hooks': True,
   },
 }
+
+CREDS_NAME = 'test262-import-export'
+KMS_CRYPTO_KEY = (
+    'projects/v8-infra/locations/global/keyRings/%s/cryptoKeys/default' %
+    CREDS_NAME)
+V8_TEST262_ROLLS_META_BUG = 'v8:7834'
 
 
 class DepUpdate:
@@ -559,8 +570,6 @@ class RollHandler(ABC):
         target_config['gerrit_base_url'],
         query_params=[
             ('project', target_config['project_name']),
-            # TODO(sergiyb): Use api.service_account.default().get_email() when
-            # https://crbug.com/846923 is resolved.
             ('owner', target_config['account']),
             ('status', 'open'),
             ('subject', f'"{self.get_subject()}"'),
@@ -569,7 +578,8 @@ class RollHandler(ABC):
         step_test_data=self.api.gerrit.test_api.get_empty_changes_response_data,
     )
 
-    # Querying gerrit with a subject is not exact, so filter the results for precise match.
+    # Querying gerrit with a subject is not exact, so filter the results for
+    # precise match.
     commits = [c for c in commits if c['subject'] == self.get_subject()]
 
     for commit in commits:
@@ -803,6 +813,89 @@ class ScriptedRollHandler(RollHandler):
     return self.name()
 
 
+class Test262ImportHandler(RollHandler):
+
+  def __init__(self, api, autoroller_config):
+    super().__init__(api, autoroller_config)
+    self.enabled = self.config['roll_test262']
+    self.import_range = None
+
+  def name(self):
+    return 'test262 import'
+
+  def apply_changes(self):
+    creds = self.api.path['cleanup'].join(CREDS_NAME + '.json')
+    self.api.cloudkms.decrypt(
+        KMS_CRYPTO_KEY,
+        self.api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
+        creds,
+    )
+    checkout_root = self.api.path['cache'].join('builder')
+    chromium_path = checkout_root.join('src')
+    blink_tools_path = chromium_path.join('third_party', 'blink', 'tools')
+
+    v8_path = checkout_root.join('v8')
+
+    script = v8_path.join('test', 'test262', 'tools', 'import.py')
+
+    with self.api.context(cwd=v8_path), self.api.depot_tools.on_path():
+      self.api.v8.git_output('branch', '-D', 'test262_import', ok_ret='any')
+      self.api.v8.git_output('new-branch', 'test262_import')
+      last_test262_revision = self.api.gclient(
+          'get test262 revision',
+          ['getdep', '-r', 'test/test262/data'],
+          stdout=self.api.raw_io.output_text(),
+      ).stdout.strip()
+
+      self.run_import_script(
+          creds,
+          blink_tools_path,
+          script,
+          step_name='Import Test262 changes into V8.',
+          extra_args=['--phase=PREBUILD'])
+
+      output_lines = self.run_import_script(
+          creds,
+          blink_tools_path,
+          script,
+          step_name='Update Test262 status file.',
+          extra_args=[
+              '--phase=POSTBUILD',
+              '--v8-test262-last-revision',
+              last_test262_revision,
+              # TODO(liviurau): #2 Pass the failures collected at #1 to the
+              # script.
+              # '--test262-failure-file', failure_file,
+          ])
+      assert output_lines, 'Step should have output at least one line.'
+      self.import_range = output_lines[-1]
+
+  def get_subject(self):
+    return '[test262] Roll test262'
+
+  def summary(self):
+    return self.name()
+
+  def run_import_script(self, creds, blink_tools_path, script, step_name,
+                        extra_args):
+    args = [
+        '--credentials-json',
+        creds,
+        '--blink-tools-path',
+        blink_tools_path,
+    ] + extra_args
+    return self.api.v8.vpython(
+        step_name, script, args,
+        stdout=self.api.raw_io.output_text()).stdout.splitlines()
+
+  def commit_msg_lines(self, _):
+    return commit_msg_lines_w_reviewes([
+        self.import_range,
+        roll_origin_line(self.api),
+        'no-export: true',
+    ], self.config['reviewers'])
+
+
 def commit_msg_lines_w_reviewes(commit_msg_lines, reviewers):
   return [
       ('This roll requires a manual review. See http://go/reviewed-rolls for '
@@ -823,6 +916,8 @@ def handle_failed_deps(api, failed_deps):
 
 
 def set_defaults(autoroller_config):
+  autoroller_config.setdefault('regular_deps_roller', True)
+  autoroller_config.setdefault('roll_test262', False)
   autoroller_config.setdefault('roll_chromium_pin', False)
   autoroller_config.setdefault('scripted_rolls', [])
   target_config = autoroller_config['target_config']
@@ -838,18 +933,22 @@ def RunSteps(api, autoroller_config):
     setup_gclient(api, autoroller_config)
     setup_target_repository(api)
 
-  with api.step.nest('Find updated deps'):
-    discard_local_changes(api)
-    trusted_updates, untrusted_updates, failed = get_dep_updates(
-        api, autoroller_config)
+  if autoroller_config['regular_deps_roller']:
+    with api.step.nest('Find updated deps'):
+      discard_local_changes(api)
+      trusted_updates, untrusted_updates, failed = get_dep_updates(
+          api, autoroller_config)
 
-  TrustedRollHandler(api, autoroller_config, trusted_updates).roll(summary)
-  UntrustedRollHandler(api, autoroller_config, untrusted_updates).roll(summary)
+    TrustedRollHandler(api, autoroller_config, trusted_updates).roll(summary)
+    UntrustedRollHandler(api, autoroller_config,
+                         untrusted_updates).roll(summary)
 
-  with api.step.nest('Check failed deps'):
-    handle_failed_deps(api, failed)
+    with api.step.nest('Check failed deps'):
+      handle_failed_deps(api, failed)
 
   CfTPinRollHandler(api, autoroller_config).roll(summary)
+
+  Test262ImportHandler(api, autoroller_config).roll(summary)
 
   if autoroller_config['scripted_rolls']:
     with api.step.nest('Scripted rolls'):
@@ -1149,3 +1248,28 @@ remote:"""
   ) + [
       api.post_process(DropExpectation),
   ], status='FAILURE')
+
+  yield (api.test('test262-import') + api.properties(
+      autoroller_config={
+          "reviewers": ["ciciobello@google.com"],
+          "subject": "[test262] Roll test262",
+          "target_config": {
+              "account": "test262@serviceaccount",
+              "project_name": "v8/v8",
+              "solution_name": "v8",
+          },
+          'roll_test262': True,
+          'regular_deps_roller': False,
+      }) + api.override_step_data(
+          'Update test262 import deps.Update Test262 status file.',
+          api.raw_io.stream_output_text('range 1..3'),
+      ) + api.override_step_data(
+          'Update test262 import deps.gclient get test262 revision',
+          api.raw_io.stream_output_text('345'),
+      ) + api.override_step_data(
+          'Update test262 import deps.git status',
+          api.raw_io.stream_output_text('some difference', stream='stdout'),
+      ) + api.override_step_data(
+          'Update test262 import deps.git cl',
+          api.raw_io.stream_output_text(git_cl_info, stream='stdout'),
+      ))
