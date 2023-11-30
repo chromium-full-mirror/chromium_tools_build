@@ -75,7 +75,8 @@ class Generator:
           ('skylab_tests', self._generate_skylab_test_spec),
       ):
         for raw_test_spec in targets_spec.get(key, []):
-          for test_spec in handler(raw_test_spec):
+          test_spec = handler(raw_test_spec)
+          if test_spec is not None:
             yield raw_test_spec, test_spec
 
     for raw_test_spec, test_spec in generate_inner():
@@ -299,8 +300,8 @@ class Generator:
       self,
       raw_test_spec: _RawTestSpec,
       swarming_delegate: Callable[..., steps.TestSpec],
-      local_delegate: Callable[..., steps.TestSpec | None],
-  ) -> Iterable[steps.TestSpec]:
+      local_delegate: Callable[..., steps.TestSpec],
+  ) -> steps.TestSpec | None:
     """Common logic for generating tests from JSON specs.
 
     Args:
@@ -312,9 +313,6 @@ class Generator:
       local_delegate: Function to call to create a local test. Must take
         the raw test spec as a positional argument and then keyword
         arguments to be passed to the spec create call.
-
-    Yields:
-      instances of TestSpec.
     """
 
     kwargs = {}
@@ -336,10 +334,9 @@ class Generator:
 
     swarming_spec = raw_test_spec.get('swarming', None)
     if swarming_spec is None:
-      test_spec = local_delegate(raw_test_spec, **kwargs)
-      if test_spec:
-        yield test_spec
-      return
+      if self._remote_tests_only:
+        return None
+      return local_delegate(raw_test_spec, **kwargs)
 
     kwargs['dimensions'] = swarming_spec.get('dimensions', {})
     kwargs['optional_dimensions'] = self._normalize_optional_dimensions(
@@ -417,12 +414,12 @@ class Generator:
       kwargs['trigger_script'] = chromium_swarming.TriggerScript.create(
           **trigger_script)
 
-    yield swarming_delegate(raw_test_spec, **kwargs)
+    return swarming_delegate(raw_test_spec, **kwargs)
 
   def _generate_gtest_test_spec(
       self,
       raw_test_spec: _RawTestSpec,
-  ) -> Iterable[steps.TestSpec]:
+  ) -> steps.TestSpec | None:
     if raw_test_spec.get('use_isolated_scripts_api'):
       return self._generate_isolated_script_test_spec(raw_test_spec)
 
@@ -449,8 +446,6 @@ class Generator:
       return steps.SwarmingGTestTestSpec.create(**kwargs)
 
     def gtest_local_delegate(raw_test_spec, **kwargs):
-      if self._remote_tests_only:
-        return
       kwargs.update(gtest_delegate_common(raw_test_spec))
       kwargs['use_xvfb'] = raw_test_spec.get('use_xvfb', True)
       return steps.LocalGTestTestSpec.create(**kwargs)
@@ -461,25 +456,22 @@ class Generator:
   def _generate_junit_test_spec(
       self,
       raw_test_spec: _RawTestSpec,
-  ) -> Iterable[steps.TestSpec]:
+  ) -> steps.TestSpec | None:
     if self._remote_tests_only:
-      return []
+      return None
 
     kwargs = {}
     kwargs['target_name'] = raw_test_spec['test']
     kwargs['additional_args'] = raw_test_spec.get('args')
-    return [
-        steps.AndroidJunitTestSpec.create(
-            raw_test_spec.get('name', raw_test_spec['test']), **kwargs)
-    ]
+    return steps.AndroidJunitTestSpec.create(
+        raw_test_spec.get('name', raw_test_spec['test']), **kwargs)
 
   def _generate_script_test_spec(
       self,
       raw_test_spec: _RawTestSpec,
-  ) -> Iterable[steps.TestSpec]:
+  ) -> steps.TestSpec | None:
     if self._remote_tests_only:
-      return []
-
+      return None
 
     kwargs = {}
     kwargs['script'] = raw_test_spec['script']
@@ -487,12 +479,12 @@ class Generator:
     kwargs['script_args'] = raw_test_spec.get('args', [])
     kwargs['override_compile_targets'] = raw_test_spec.get(
         'override_compile_targets', [])
-    return [steps.ScriptTestSpec.create(str(raw_test_spec['name']), **kwargs)]
+    return steps.ScriptTestSpec.create(str(raw_test_spec['name']), **kwargs)
 
   def _generate_isolated_script_test_spec(
       self,
       raw_test_spec: _RawTestSpec,
-  ) -> Iterable[steps.TestSpec]:
+  ) -> steps.TestSpec | None:
 
     def isolated_script_delegate_common(raw_test_spec, name=None, **kwargs):
       del kwargs
@@ -534,8 +526,6 @@ class Generator:
       return steps.SwarmingIsolatedScriptTestSpec.create(**kwargs)
 
     def isolated_script_local_delegate(raw_test_spec, **kwargs):
-      if self._remote_tests_only:
-        return
       kwargs.update(isolated_script_delegate_common(raw_test_spec, **kwargs))
       return steps.LocalIsolatedScriptTestSpec.create(**kwargs)
 
@@ -546,7 +536,7 @@ class Generator:
   def _generate_skylab_test_spec(
       self,
       raw_test_spec: _RawTestSpec,
-  ) -> Iterable[steps.TestSpec]:
+  ) -> steps.TestSpec | None:
     kwargs_to_forward = set(
         k for k in attr.fields_dict(steps.SkylabTestSpec)
         if not k in ['test_args', 'resultdb'])
@@ -569,7 +559,5 @@ class Generator:
       common_skylab_kwargs['max_run_sec'] = int(
           common_skylab_kwargs.get('timeout_sec') / 2)
 
-    return [
-        steps.SkylabTestSpec.create(
-            raw_test_spec.get('name'), **common_skylab_kwargs)
-    ]
+    return steps.SkylabTestSpec.create(
+        raw_test_spec.get('name'), **common_skylab_kwargs)
