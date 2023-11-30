@@ -2138,11 +2138,17 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
 
-  def determine_compilation_targets(self, builder_id, builder_config,
-                                    affected_files, targets_config):
-    compile_targets = targets_config.compile_targets
-    test_targets = sorted(
-        set(self._all_compile_targets(targets_config.all_tests)))
+  def determine_compilation_targets(self,
+                                    builder_id,
+                                    builder_config,
+                                    affected_files,
+                                    targets_config,
+                                    skip_tests=None):
+    tests = targets_config.all_tests
+    if skip_tests:
+      tests = [test for test in tests if test.name not in skip_tests]
+    compile_targets = targets_config.compile_targets_without_tests(skip_tests)
+    test_targets = sorted(set(self._all_compile_targets(tests)))
 
     # Use analyze to determine the compile targets that are affected by the CL.
     # Use this to prune the relevant compile targets and test targets.
@@ -2203,7 +2209,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                              builder_config,
                              root_solution_revision=None,
                              isolate_output_files_for_coverage=False,
-                             additional_compile_targets=None):
+                             additional_compile_targets=None,
+                             skip_tests=None):
     """Builds targets affected by change.
 
     Args:
@@ -2219,6 +2226,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         specified recipe-side. This field is intended for recipes to add
         targets needed for recipe functionality and not for configuring builder
         outputs (which should be specified src-side in waterfalls.pyl).
+      skip_tests (List[str]): Names of tests that do not need to be run. The
+        target might still build if another test uses the same target however.
 
     Returns:
       A Tuple of
@@ -2260,7 +2269,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       tests = targets_config.all_tests
 
     test_targets, compile_targets = self.determine_compilation_targets(
-        builder_id, builder_config, affected_files, targets_config)
+        builder_id,
+        builder_config,
+        affected_files,
+        targets_config,
+        skip_tests=skip_tests)
 
     # Compiles and isolates test suites.
     raw_result = result_pb2.RawResult(status=common_pb.SUCCESS)
@@ -2301,6 +2314,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests = []
 
+    # Regardless of affected files or mutual compile targets, skip_tests are
+    # explicitly being set to not run
+    if skip_tests:
+      tests = [test for test in tests if test.name not in skip_tests]
     return raw_result, Task(builder_config, tests, bot_update_step,
                             affected_files, execution_info)
 

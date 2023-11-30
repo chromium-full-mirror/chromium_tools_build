@@ -78,3 +78,20 @@ class TargetsConfig:
     for t in self.all_tests:
       compile_targets.update(t.compile_targets())
     return sorted(compile_targets)
+
+  def compile_targets_without_tests(self, skip_tests):
+    """The compile targets to be built without the provided tests
+
+    The compile targets are the normal targets provided by compile_targets
+    without the targets provided by the skipped tests. If the targets for
+    skipped tests are used by other tests the targets can potentially be the
+    same
+
+    Args:
+      skip_tests (list[str]): names of tests that do not need to be compiled
+    """
+    compile_targets = set(self.compile_only_targets)
+    for t in self.all_tests:
+      if not skip_tests or t.name not in skip_tests:
+        compile_targets.update(t.compile_targets())
+    return sorted(compile_targets)

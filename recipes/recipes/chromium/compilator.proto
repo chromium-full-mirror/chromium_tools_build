@@ -31,6 +31,10 @@ message InputProperties {
   // This could be both or either swarming or skylab tests
   repeated string test_targets = 6;
 
+  // Sets test names to skip. This does not necessarily skip targets as multiple
+  // tests can have the same name
+  repeated string skip_tests = 7;
+
   // Sets which revision to check out for the dependency
   // Maps dependency repo's path name (like 'src/v8') to revision
   // This is required for other non-src projects running a builder using

@@ -110,7 +110,8 @@ def compilator_steps(api, properties):
           orch_builder_id,
           orch_builder_config,
           isolate_output_files_for_coverage=True,
-          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME])
+          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
+          skip_tests=properties.skip_tests)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
       bot_update_step = task.bot_update_step
