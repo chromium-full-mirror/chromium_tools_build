@@ -39,7 +39,11 @@ def RunSteps(api):
               'file':
                   'gs://my-bucket/os/version/luci-8945511751514863184/ExampleCanary.apk.spdx.json',
               'filename':
-                  'ExampleCanary.apk'
+                  'ExampleCanary.apk',
+              'sbom_name':
+                  'ExampleCanary.apk.spdx.json',
+              'target':
+                  'Example.apk'
           }
       })
 

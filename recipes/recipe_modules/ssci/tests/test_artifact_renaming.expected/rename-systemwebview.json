@@ -968,7 +968,7 @@
     "name": "SSCI collection.SBOM's generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@ssci_generated_artifacts@AndroidWebviewStable.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/AndroidWebviewStable.apk.spdx.json', 'filename': 'AndroidWebviewStable.apk'}@@@",
+      "@@@STEP_LOG_LINE@ssci_generated_artifacts@AndroidWebviewStable.apk:{'digest': 'testhash', 'file': 'gs://my-bucket/os/version/luci-8945511751514863184/AndroidWebviewStable.apk.spdx.json', 'filename': 'AndroidWebviewStable.apk', 'target': 'SystemWebViewGoogle.apk', 'sbom_name': 'AndroidWebviewStable.apk.spdx.json'}@@@",
       "@@@STEP_LOG_END@ssci_generated_artifacts@@@"
     ]
   },
