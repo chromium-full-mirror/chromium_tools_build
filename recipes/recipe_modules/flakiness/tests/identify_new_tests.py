@@ -70,7 +70,6 @@ def RunSteps(api):
     test_spec = steps.SwarmingGTestTestSpec.create(
         suite_name,
         test_id_prefix=test_id_prefix,
-        override_compile_targets=api.properties.get('override_compile_targets'),
         isolate_profile_data=api.properties.get('isolate_profile_data', False))
     # For coverage that the suite opts out Flake Endorser.
     if i == 5:

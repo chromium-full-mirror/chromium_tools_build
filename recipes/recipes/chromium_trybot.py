@@ -143,28 +143,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'script_test_with_overridden_compile_targets',
-      api.platform('linux', 64),
-      api.chromium.try_build(
-          builder_group='fake-try-group', builder='fake-try-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-builder': {
-                  'scripts': [{
-                      'name': 'script_test',
-                      'script': 'fake_script.py',
-                      'override_compile_targets': ['overridden_target']
-                  }],
-              }
-          }),
-  )
-
-  yield api.test(
       'dynamic_isolated_script_test_on_trybot_passing',
       api.platform('linux', 64),
       api.chromium.try_build(

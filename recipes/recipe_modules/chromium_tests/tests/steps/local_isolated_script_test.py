@@ -32,7 +32,6 @@ def RunSteps(api):
   resultdb = steps.ResultDB(result_format='json')
   test_spec = steps.LocalIsolatedScriptTestSpec.create(
       test_name,
-      override_compile_targets=api.properties.get('override_compile_targets'),
       isolate_profile_data=isolate_profile_data,
       resultdb=resultdb)
 
@@ -127,20 +126,6 @@ def GenTests(api):
           '--relative-cwd', 'out/Release', '--', './base_unittests', '--bar',
           '--isolated-script-test-output'
       ]),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'override_compile_targets',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-          },
-          override_compile_targets=['base_unittests_run']),
       api.post_process(post_process.DropExpectation),
   )
 

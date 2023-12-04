@@ -434,10 +434,6 @@ class Generator:
             f'--test-launcher-total-shards={total_shards}',
         ])
       common_gtest_kwargs['args'] = args
-
-      common_gtest_kwargs['override_compile_targets'] = raw_test_spec.get(
-          'override_compile_targets', None)
-
       return common_gtest_kwargs
 
     def gtest_swarming_delegate(raw_test_spec, **kwargs):
@@ -477,8 +473,6 @@ class Generator:
     kwargs['script'] = raw_test_spec['script']
     kwargs['all_compile_targets'] = self._scripts_compile_targets_fn()
     kwargs['script_args'] = raw_test_spec.get('args', [])
-    kwargs['override_compile_targets'] = raw_test_spec.get(
-        'override_compile_targets', [])
     return steps.ScriptTestSpec.create(str(raw_test_spec['name']), **kwargs)
 
   def _generate_isolated_script_test_spec(
@@ -499,8 +493,6 @@ class Generator:
       # target is needed to generate isolate files that contains dynamically libs.
       # TODO(nednguyen, kbr): Remove this once all the GYP builds are converted
       # to GN.
-      common_kwargs['override_compile_targets'] = raw_test_spec.get(
-          'override_compile_targets', None)
       common_kwargs['isolate_profile_data'] = raw_test_spec.get(
           'isolate_profile_data')
 

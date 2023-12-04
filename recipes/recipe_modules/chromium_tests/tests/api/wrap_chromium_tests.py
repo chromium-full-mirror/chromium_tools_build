@@ -27,17 +27,14 @@ def RunSteps(api):
     test_specs.append(steps.SwarmingGTestTestSpec.create('base_unittests'))
   if api.properties.get('local_isolated_script_test'):
     test_specs.append(
-        steps.LocalIsolatedScriptTestSpec.create(
-            'base_unittests',
-            override_compile_targets=['base_unittests_run']))
+        steps.LocalIsolatedScriptTestSpec.create('base_unittests'))
   if api.properties.get('script_test'):
     test_specs.append(
         steps.ScriptTestSpec.create(
             'script_test',
             script='script.py',
             all_compile_targets={'script.py': ['compile_target']},
-            script_args=['some', 'args'],
-            override_compile_targets=['other_target']))
+            script_args=['some', 'args']))
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   tests = [s.get_test(api.chromium_tests) for s in test_specs]

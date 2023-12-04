@@ -221,38 +221,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'dynamic_swarmed_gtest_override_compile_targets',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'tab_capture_end2end_tests': 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size',
-      }),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-builder': {
-                  'gtest_tests': [{
-                      'test': 'tab_capture_end2end_tests',
-                      'override_compile_targets':
-                          ['tab_capture_end2end_tests_run'],
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                          },
-                      },
-                  },],
-              },
-          }),
-  )
-
-  yield api.test(
       'build_dynamic_isolated_script_test',
       api.platform('linux', 64),
       api.chromium.ci_build(
@@ -452,33 +420,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'build_dynamic_isolated_script_test_compile_target_overriden',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-builder': {
-                  'isolated_scripts': [{
-                      'isolate_name':
-                          'telemetry_gpu_unittests',
-                      'name':
-                          'telemetry_gpu_unittests',
-                      'override_compile_targets':
-                          ['abc', 'telemetry_gpu_unittests_run'],
-                  },],
-              },
-          }),
-  )
-
-  yield api.test(
       'build_dynamic_swarmed_isolated_script_test',
       api.platform('linux', 64),
       api.chromium.ci_build(
@@ -501,38 +442,6 @@ def GenTests(api):
                               'os': 'Linux',
                           },
                       },
-                  },],
-              },
-          }),
-  )
-
-  yield api.test(
-      'build_dynamic_swarmed_isolated_script_test_compile_target_overidden',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-builder': {
-                  'isolated_scripts': [{
-                      'isolate_name':
-                          'telemetry_gpu_unittests',
-                      'name':
-                          'telemetry_gpu_unittests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                          },
-                      },
-                      'override_compile_targets':
-                          ['telemetry_gpu_unittests_run', 'a'],
                   },],
               },
           }),

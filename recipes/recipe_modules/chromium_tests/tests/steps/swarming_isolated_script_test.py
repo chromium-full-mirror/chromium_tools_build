@@ -57,7 +57,6 @@ def RunSteps(api):
         name=test_name,
         waterfall_builder_group='waterfall_builder_group',
         waterfall_buildername='waterfall_buildername',
-        override_compile_targets=api.properties.get('override_compile_targets'),
         io_timeout=120,
         hard_timeout=360,
         expiration=7200,
@@ -268,20 +267,6 @@ def GenTests(api):
           test_filter=['test1', 'test2'],
           repeat_count=20,
       ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'override_compile_targets',
-      arbitrary_tester(),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          override_compile_targets=['base_unittests_run']),
-      api.post_process(post_process.LogContains, 'details', 'details', [
-          "compile_targets: 'base_unittests_run'",
-      ]),
       api.post_process(post_process.DropExpectation),
   )
 

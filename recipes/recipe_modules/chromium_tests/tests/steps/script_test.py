@@ -30,8 +30,7 @@ def RunSteps(api):
       'script_test',
       script='script.py',
       all_compile_targets={'script.py': ['compile_target']},
-      script_args=['some', 'args'],
-      override_compile_targets=api.properties.get('override_compile_targets'))
+      script_args=['some', 'args'])
   test = test_spec.get_test(api.chromium_tests)
   api.assertions.assertEqual(test.option_flags, steps.TestOptionFlags.create())
 
@@ -62,26 +61,6 @@ def GenTests(api):
       ]),
       api.post_process(LogContains, 'details', 'details',
                        ["compile_targets: ['compile_target']"]),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
-      'override_compile_targets',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(override_compile_targets=['other_target']),
-      api.post_process(StepCommandContains, 'script_test', [
-          'vpython3',
-          'None/testing/scripts/script.py',
-      ]),
-      api.post_process(StepCommandContains, 'script_test', [
-          '--args',
-          '["some", "args"]',
-      ]),
-      api.post_process(LogContains, 'details', 'details',
-                       ["compile_targets: ('other_target',)"]),
       api.post_process(DropExpectation),
   )
 

@@ -46,7 +46,6 @@ def RunSteps(api):
 
   test_spec = steps.SwarmingGTestTestSpec.create(
       'base_unittests',
-      override_compile_targets=api.properties.get('override_compile_targets'),
       isolate_profile_data=api.properties.get('isolate_profile_data', False))
   test = test_spec.get_test(api.chromium_tests)
 
@@ -97,20 +96,6 @@ def GenTests(api):
           'test_pre_run.[trigger] base_unittests',
           lambda check, req: check('target_platform:android' in req[0].command),
       ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'overrides',
-      api.chromium.ci_build(builder='test_buildername',),
-      api.properties(
-          override_compile_targets=['base_unittests_run'],
-          builder_group='test_group',
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          }),
-      api.post_process(post_process.LogContains, 'details', 'details',
-                       ["compile_targets: 'base_unittests_run'"]),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -1609,15 +1609,11 @@ class ScriptTestSpec(TestSpec):
     * all_compile_targets - A mapping of script names to the compile
       targets that need to be built to run the script.
     * script_args - Arguments to be passed to the script.
-    * override_compile_targets - The compile targets that need to be
-      built to run the script. If a non-empty value is provided, the
-      `all_compile_targets` attribute will be ignored.
   """
 
   script = attrib(str)
   all_compile_targets = attrib(mapping[str, sequence[str]])
   script_args = attrib(command_args, default=())
-  override_compile_targets = attrib(sequence[str], default=())
 
   @property
   def test_class(self):
@@ -1639,9 +1635,6 @@ class ScriptTest(LocalTest):
   """
 
   def compile_targets(self) -> Iterable[str]:
-    if self.spec.override_compile_targets:
-      return self.spec.override_compile_targets
-
     substitutions = {'name': self.spec.name}
 
     if not self.spec.script in self.spec.all_compile_targets:
@@ -1727,9 +1720,6 @@ class LocalGTestTestSpec(TestSpec):
 
   Attributes:
     * args - Arguments to be passed to the test.
-    * override_compile_targets - An optional list of compile targets to
-      be built to run the test. If not provided the `target_name`
-      attribute of the spec will be the only compile target.
     * android_shard_timeout - For tests on Android, the timeout to be
       applied to the shards.
     * commit_position_property - The name of the property containing
@@ -1740,7 +1730,6 @@ class LocalGTestTestSpec(TestSpec):
   """
 
   args = attrib(command_args, default=())
-  override_compile_targets = attrib(sequence[str], default=())
   android_shard_timeout = attrib(int, default=None)
   commit_position_property = attrib(str, default='got_revision_cp')
   use_xvfb = attrib(bool, default=True)
@@ -1763,7 +1752,7 @@ class LocalGTestTest(LocalTest):
     return True
 
   def compile_targets(self) -> Iterable[str]:
-    return self.spec.override_compile_targets or [self.spec.target_name]
+    return [self.target_name]
 
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
@@ -2450,15 +2439,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
 @attrs()
 class SwarmingGTestTestSpec(SwarmingTestSpec):
-  """A spec for a test that runs a gtest-based test via swarming.
-
-  Attributes:
-    * override_compile_targets - The compile targets that need to be
-      built to run the script. If not provided, the target identified by
-      the `target_name` attribute will be used.
-  """
-
-  override_compile_targets = attrib(sequence[str], default=())
+  """A spec for a test that runs a gtest-based test via swarming."""
 
   @property
   def test_class(self):
@@ -2473,7 +2454,7 @@ class SwarmingGTestTest(SwarmingTest):
     return _GTEST_OPTION_FLAGS
 
   def compile_targets(self) -> Iterable[str]:
-    return self.spec.override_compile_targets or [self.spec.target_name]
+    return [self.target_name]
 
   def _create_task(
       self,
@@ -2516,9 +2497,6 @@ class LocalIsolatedScriptTestSpec(TestSpec):
 
   Attributes:
     * args - Arguments to be passed to the test.
-    * override_compile_targets - An optional list of compile targets to
-      be built to run the test. If not provided the `target_name`
-      attribute of the spec will be the only compile target.
     * results_handler_name - A name identifying the type of
       `ResultsHandler` that will be used for processing the test
       results:
@@ -2530,7 +2508,6 @@ class LocalIsolatedScriptTestSpec(TestSpec):
   """
 
   args = attrib(command_args, default=())
-  override_compile_targets = attrib(sequence[str], default=())
   results_handler_name = attrib(
       enum(ALLOWED_RESULT_HANDLER_NAMES), default='default')
   isolate_profile_data = attrib(bool, False)
@@ -2561,7 +2538,7 @@ class LocalIsolatedScriptTest(LocalTest):
     return self.target_name
 
   def compile_targets(self) -> Iterable[str]:
-    return self.spec.override_compile_targets or [self.spec.target_name]
+    return [self.target_name]
 
   # TODO(nednguyen, kbr): figure out what to do with Android.
   # (crbug.com/533480)
@@ -2640,9 +2617,6 @@ class SwarmingIsolatedScriptTestSpec(SwarmingTestSpec):
   """Spec for a test that runs an isolated script via swarming.
 
   Attributes:
-    * override_compile_targets - An optional list of compile targets to
-      be built to run the test. If not provided the `target_name`
-      attribute of the spec will be the only compile target.
     * results_handler_name - A name identifying the type of
       `ResultsHandler` that will be used for processing the test
       results:
@@ -2651,7 +2625,6 @@ class SwarmingIsolatedScriptTestSpec(SwarmingTestSpec):
       * 'fake' - FakeCustomResultsHandler
   """
 
-  override_compile_targets = attrib(sequence[str], default=())
   results_handler_name = attrib(
       enum(ALLOWED_RESULT_HANDLER_NAMES), default='default')
 
@@ -2664,7 +2637,7 @@ class SwarmingIsolatedScriptTestSpec(SwarmingTestSpec):
 class SwarmingIsolatedScriptTest(SwarmingTest):
 
   def compile_targets(self) -> Iterable[str]:
-    return self.spec.override_compile_targets or [self.target_name]
+    return [self.target_name]
 
   @property
   def option_flags(self) -> TestOptionFlags:
@@ -2714,7 +2687,6 @@ class AndroidJunitTestSpec(TestSpec):
     * additional_args - Additional arguments passed to the test.
   """
 
-  compile_targets = attrib(sequence[str])
   additional_args = attrib(command_args, default=())
 
   @classmethod
@@ -2727,9 +2699,7 @@ class AndroidJunitTestSpec(TestSpec):
         created object. The `compile_targets` attribute is fixed to the
         target name, so it cannot be specified.
     """
-    target_name = kwargs.pop('target_name', None) or name
-    return super().create(
-        name, target_name=target_name, compile_targets=[target_name], **kwargs)
+    return super().create(name, **kwargs)
 
   @property
   def test_class(self):
@@ -2788,7 +2758,7 @@ class AndroidJunitTest(LocalTest):
             step_result, presentation=presentation_step.presentation)
 
   def compile_targets(self) -> Iterable[str]:
-    return self.spec.compile_targets
+    return [self.target_name]
 
 
 @attrs()
