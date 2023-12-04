@@ -150,14 +150,18 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
     """This hides some infra steps in the expectations which are tested
     sufficiently elsewhere.
     """
-    skip_fragments = map(re.escape, [
+    return self.filter_exclude(
       'ensure builder cache dir',
       'read MB config',
       'tweak MB config',
       'preprocess for reclient',
       'postprocess for reclient',
       'read revision',
-    ])
+    )
+
+  def filter_exclude(self, *step_names):
+    """Exclude steps from the expectations."""
+    skip_fragments = map(re.escape, step_names)
     return self.post_process(
         Filter().include_re(r'^((?!(.*\.)?%s).)*$' % '|'.join(skip_fragments)))
 

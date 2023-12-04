@@ -1,95 +1,59 @@
-# Copyright 2022 The Chromium Authors. All rights reserved.
+# Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 from recipe_engine.post_process import (DoesNotRun, DoesNotRunRE,
                                         DropExpectation, MustRun,
                                         SummaryMarkdown)
-from recipe_engine.recipe_api import Property
-from recipe_engine.config import ConfigGroup, Dict, Single, List
 
 DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
+    'recipe_engine/context',
+    'recipe_engine/file',
     'recipe_engine/json',
-    'recipe_engine/properties',
+    'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/raw_io',
+    'recipe_engine/step',
+    'v8',
     'v8_auto_roller',
 ]
 
-PROPERTIES = {
-    # Configuration of the auto-roller
-    'autoroller_config':
-        Property(
-            kind=ConfigGroup(
-                # Subject of the rolling CLs; (trusted) or (reviewed) is
-                # appended
-                subject=Single(str),
-                # Configuration parameters of the project where dependencies
-                # will be rolled in. The source is always Chromium project.
-                target_config=ConfigGroup(
-                    # Solution name to be used for project checkout
-                    solution_name=Single(str, required=True),
-                    # Project name. Together with the 'base_url' it will form
-                    # the location for the project
-                    project_name=Single(str, required=True),
-                    # The name of the account used to create the roll CL
-                    account=Single(str),
-                    # Template for the commit message used with regular
-                    # dependencies
-                    log_template=Single(str),
-                    # Template for the commit message used with cipd
-                    # dependencies
-                    cipd_log_template=Single(str),
-                    # Gerrit URL to be used for rolling CL review
-                    gerrit_base_url=Single(str),
-                    # Repo base URL together with 'project_name' to locate the
-                    # repo where the rolling CL will be landed
-                    base_url=Single(str),
-                ),
-                # List of (target side) dependencies to be excluded from rolling
-                # with the current config
-                excludes=Single(list, empty_val=None),
-                # List of (target side) dependencies to be included when rolling
-                # with the current config
-                includes=Single(list, empty_val=None),
-                # Specify the source to determine the next version, must be
-                # `chromium`, `cipd`, `tip_of_tree`, or `auto` (default). E.g.
-                #     ...
-                #     "dependency_version_sources": {
-                #         "devtools-frontend": "tip-of-tree"
-                #     },
-                #     ...
-                dependency_version_sources=Dict(value_type=str),
-                # Mapping between the dependency name in the target project and
-                # the name in the source project
-                deps_key_mapping=Dict(value_type=str),
-                # Flag for rolling trusted and untrusted deps
-                regular_deps_roller=Single(
-                    bool, empty_val=True, required=False),
-                # List of reviewers of rolling CLs requiring a manual review
-                reviewers=List(str),
-                # Flag for rolling the binary chromium pin in target project
-                roll_chromium_pin=Single(bool, empty_val=False, required=False),
-                # Flag for rolling the test262
-                roll_test262=Single(bool, empty_val=False, required=False),
-                # List of keys of supported script assisted rolls
-                scripted_rolls=Single(list, empty_val=None),
-                # Add extra log entries to the commit message.
-                show_commit_log=Single(bool),
-                # Bugs included in roll CL description
-                bugs=Single(str),
-            )),
-}
-
 RETSAM = 'retsam'[::-1]
 
-def RunSteps(api, autoroller_config):
+
+def RunSteps(api):
+  autoroller_config = {
+      'target_config': {
+          'solution_name': 'v8',
+          'project_name': 'v8/v8',
+          'account': 'v8@example.com',
+          'log_template': 'Rolling v8/%s: %s/+log/%s..%s',
+          'cipd_log_template': 'Rolling v8/%s: %s..%s',
+      },
+      'subject': 'Update V8 deps',
+      'reviewers': [
+          'anybody@chromium.org',
+          'ciciobello@chromium.org',
+      ],
+      'deps_key_mapping': {
+          'buildtools-mapped': 'buildtools',
+      },
+      'dependency_version_sources': {
+          'mock-skip-chromium-roll': 'tip_of_tree',
+      },
+      'show_commit_log': True,
+      'roll_chromium_pin': True,
+      'roll_test262': True,
+      'scripted_rolls': ['puppeteer-core', 'browser-protocol'],
+      'bugs': 'none',
+  }
+
   api.v8_auto_roller.setup(autoroller_config)
 
   api.v8_auto_roller.regular_roll(autoroller_config)
   api.v8_auto_roller.cft_pin_roll(autoroller_config)
-  api.v8_auto_roller.test262_roll(autoroller_config)
   api.v8_auto_roller.scripted_rolls(autoroller_config)
 
   return api.v8_auto_roller.report_result()
@@ -116,41 +80,13 @@ src/ninja:infra/3pp/tools/ninja/${platform}: https://chrome-infra-packages.appsp
 src/mock-set-dep-failing: mock/set-dep-failing.git@2
 src/mock-skip-chromium-roll: mock/skip-chromium-roll.git@2"""
 
-  target_config_v8 = {
-    'solution_name': 'v8',
-    'project_name': 'v8/v8',
-    'account': 'v8@example.com',
-    'log_template': 'Rolling v8/%s: %s/+log/%s..%s',
-    'cipd_log_template': 'Rolling v8/%s: %s..%s',
-  }
-
   git_cl_info = """remote:
 remote:   https://chromium-review.googlesource.com/c/chromium/tools/build/+/3840339 [v8] Remove deprecated roll recipe [WIP]
 remote:"""
 
-  autoroller_config = {
-      'target_config': target_config_v8,
-      'subject': 'Update V8 deps',
-      'reviewers': [
-          'anybody@chromium.org',
-          'ciciobello@chromium.org',
-      ],
-      'deps_key_mapping': {
-          'buildtools-mapped': 'buildtools',
-      },
-      'dependency_version_sources': {
-          'mock-skip-chromium-roll': 'tip_of_tree',
-      },
-      'show_commit_log': True,
-      'roll_chromium_pin': True,
-      'scripted_rolls': ['puppeteer-core', 'browser-protocol'],
-      'bugs': 'none',
-  }
-
   def base_template(testname, additional_v8_deps, additional_cr_deps):
     return [
         testname,
-        api.properties(autoroller_config=autoroller_config),
         api.buildbucket.ci_build(
             project='v8',
             git_repo='https://chromium.googlesource.com/v8/v8',
@@ -252,7 +188,6 @@ remote:"""
 
     return result
 
-
   # Happy path
   yield api.test(
       *template('default') + [
@@ -267,7 +202,8 @@ remote:"""
           ),
           api.post_process(
               SummaryMarkdown,
-              'updated 4 trusted dep(s), 6 reviewed dep(s), Puppeteer Core')
+              'updated 4 trusted dep(s), 6 reviewed dep(s), Puppeteer Core'),
+          api.v8.filter_exclude('Setup.ensure builder cache dir'),
       ],)
 
   # No chrome pin roll
@@ -320,7 +256,6 @@ remote:"""
   # to update any dep (via `gclient setdep`).
   yield api.test(
       'no-version-difference',
-      api.properties(autoroller_config=autoroller_config),
       api.buildbucket.ci_build(
           project='v8',
           git_repo='https://chromium.googlesource.com/v8/v8',
@@ -355,13 +290,12 @@ remote:"""
   )
 
   # No update succeeded: If there is no dependency update, we don't create CLs
-  yield api.test(*template(
-      'no-depependency-update',
-      git_diff=''
-  ) + [
-      api.post_process(DoesNotRunRE, r'^Update \w* deps\.git cl$'),
-      api.post_process(DropExpectation),
-  ], status='SUCCESS')
+  yield api.test(
+      *template('no-depependency-update', git_diff='') + [
+          api.post_process(DoesNotRunRE, r'^Update \w* deps\.git cl$'),
+          api.post_process(DropExpectation),
+      ],
+      status='SUCCESS')
 
   # Malformed DEPS file: Raise an exception
   yield api.test(*base_template(
@@ -369,40 +303,17 @@ remote:"""
       additional_v8_deps='\nsrc/mock-malformed:  https://example.com/',
       additional_cr_deps='',
   ) + [
-    api.expect_exception('Exception'),
-    api.post_process(DropExpectation),
+      api.expect_exception('Exception'),
+      api.post_process(DropExpectation),
   ])
 
   # Changed locations: Fail if a dependency changes its repository
-  yield api.test(*base_template(
-      'changed-location',
-      additional_v8_deps='\nv8/mock-changed-location: foo/changed-location@1',
-      additional_cr_deps='\nsrc/mock-changed-location: bar/changed-location@2',
-  ) + [
-      api.post_process(DropExpectation),
-  ], status='FAILURE')
-
-  yield (api.test('test262-import') + api.properties(
-      autoroller_config={
-          "reviewers": ["ciciobello@google.com"],
-          "subject": "[test262] Roll test262",
-          "target_config": {
-              "account": "test262@serviceaccount",
-              "project_name": "v8/v8",
-              "solution_name": "v8",
-          },
-          'roll_test262': True,
-          'regular_deps_roller': False,
-      }) + api.override_step_data(
-          'Update test262 import deps.Update Test262 status file.',
-          api.raw_io.stream_output_text('range 1..3'),
-      ) + api.override_step_data(
-          'Update test262 import deps.gclient get test262 revision',
-          api.raw_io.stream_output_text('345'),
-      ) + api.override_step_data(
-          'Update test262 import deps.git status',
-          api.raw_io.stream_output_text('some difference', stream='stdout'),
-      ) + api.override_step_data(
-          'Update test262 import deps.git cl',
-          api.raw_io.stream_output_text(git_cl_info, stream='stdout'),
-      ))
+  yield api.test(
+      *base_template(
+          'changed-location',
+          additional_v8_deps='\nv8/mock-changed-location: foo/changed-location@1',
+          additional_cr_deps='\nsrc/mock-changed-location: bar/changed-location@2',
+      ) + [
+          api.post_process(DropExpectation),
+      ],
+      status='FAILURE')
