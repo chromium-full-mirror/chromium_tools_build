@@ -209,15 +209,10 @@ def BASE(c):
   c.analyze_config_path = c.CHECKOUT_PATH.join('testing', 'buildbot',
                                                'trybot_analyze_config.json')
   # Test runner memory tools that are not compile-time based.
+
+  ext = 'bat' if c.HOST_PLATFORM == 'win' else 'sh'
   c.runtests.memory_tests_runner = c.CHECKOUT_PATH.join(
-      'tools',
-      'valgrind',
-      'chrome_tests',
-      platform_ext={
-          'win': '.bat',
-          'mac': '.sh',
-          'linux': '.sh'
-      })
+      'tools', 'valgrind', 'chrome_tests.'+ext)
 
   if c.HOST_PLATFORM == 'mac':
     c.mac_toolchain.installer_cipd_package = (
