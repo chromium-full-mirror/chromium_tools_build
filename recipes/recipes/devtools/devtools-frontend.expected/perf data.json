@@ -1204,7 +1204,7 @@
     "name": "Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/><code>vpython3 -u scripts/test/run_unittests.py --target=Debug --swarming-output-file ${ISOLATED_OUTDIR} --coverage</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u scripts/test/run_unittests.py --target=Debug --swarming-output-file ${ISOLATED_OUTDIR} --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1370,7 +1370,7 @@
     "name": "Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/><code>vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/interactions --test-suite-source-dir=test/interactions --test-server-type='component-docs' --target=Debug --swarming-output-file ${ISOLATED_OUTDIR} --coverage</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/interactions --test-suite-source-dir=test/interactions --test-server-type='component-docs' --target=Debug --swarming-output-file ${ISOLATED_OUTDIR} --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1603,7 +1603,7 @@
     "name": "Performance Tests.Performance Tests shards results.Performance Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/><code>vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/perf --test-suite-source-dir=test/perf --test-server-type=hosted-mode --target=Debug --swarming-output-file ${ISOLATED_OUTDIR}</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/perf --test-suite-source-dir=test/perf --test-server-type=hosted-mode --target=Debug --swarming-output-file ${ISOLATED_OUTDIR}```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

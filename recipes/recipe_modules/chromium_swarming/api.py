@@ -76,7 +76,7 @@ def _text_for_task(task):
   cmd = cmd.removeprefix('luci-auth.exe context -- ')  # pylint: disable=no-member
   if len(cmd) <= 1000:
     lines.append('Test command:')
-    lines.append('<code>' + cmd + '</code>')
+    lines.append('```' + cmd + '```')
   else:
     lines.append('Test command too long to list. See "shard #0" link below '
                  'for the full invocation.')

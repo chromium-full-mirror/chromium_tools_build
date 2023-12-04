@@ -1672,7 +1672,7 @@
     },
     "name": "gl_tests intel on Intel GPU on Mac on Mac-10.10",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Mac-10.10'<br/>Test command:<br/><code>--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Mac-10.10'<br/>Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
@@ -1781,7 +1781,7 @@
     },
     "name": "gl_tests nvidia on NVIDIA GPU on Mac Retina on Mac-10.13",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br/>Test command:<br/><code>--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json</code><br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br/>Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",
