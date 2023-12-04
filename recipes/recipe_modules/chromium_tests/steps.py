@@ -71,7 +71,7 @@ REPEAT_COUNT_FOR_FAILING_TESTS = 10
 # https://chromium.googlesource.com/infra/infra/+/main/go/src/infra/cmd/mac_toolchain
 MAC_TOOLCHAIN_PACKAGE = 'infra/tools/mac_toolchain/${platform}'
 MAC_TOOLCHAIN_VERSION = (
-    'git_revision:32d81d877ee07af07bf03b7f70ce597e323b80ce')
+    'git_revision:b28cf90d462a7bbd45c28f2d931960c2b9404cb0')
 MAC_TOOLCHAIN_ROOT = '.'
 
 ALLOWED_RESULT_HANDLER_NAMES = ('default', 'layout tests', 'fake')
