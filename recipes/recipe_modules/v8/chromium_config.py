@@ -70,6 +70,8 @@ def node_ci(c):
     c.gn_args.append('use_sysroot=true')
     c.gn_args.append('use_custom_libcxx=true')
     c.gn_args.append('node_use_custom_libcxx=true')
+    c.gn_args.append('icu_use_data_file=false')
+
 
 @CONFIG_CTX(includes=['node_ci'])
 def node_ci_debug(c):
