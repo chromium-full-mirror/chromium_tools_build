@@ -93,3 +93,6 @@ class Test262ImportHandler(RollHandler):
         commons.roll_origin_line(self.api),
         'no-export: true',
     ], self.config['reviewers'])
+
+  def upload_flags(self):
+    return ['--set-bot-commit']
