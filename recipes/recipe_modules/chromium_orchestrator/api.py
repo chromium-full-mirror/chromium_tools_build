@@ -576,10 +576,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     ]
     outputted_trigger_tag = 'chromium.outputted_trigger_properties'
     if is_compile_phase:
-      cmd.append('-get-swarming-trigger-props')
       cmd.extend(['-end-step-tag', outputted_trigger_tag])
     else:
-      cmd.append('-get-local-tests')
       cmd.extend(['-start-step-tag', outputted_trigger_tag])
 
     if with_patch:
