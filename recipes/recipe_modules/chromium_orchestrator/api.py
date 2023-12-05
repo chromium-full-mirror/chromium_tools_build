@@ -218,6 +218,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     if test_names_to_skip:
       tests = [test for test in tests if test.name not in test_names_to_skip]
+      # Give the swarming shards for retries priority
+      self.m.chromium_swarming.default_priority = 20
 
     # crbug/1346781
     # src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata is needed
