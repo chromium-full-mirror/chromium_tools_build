@@ -7,7 +7,6 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
-    'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/json',
@@ -35,9 +34,6 @@ def RunSteps(api, properties):
           step_text=('Unexpected execution mode. Expect: %s, Actual: %s' %
                      (ctbc.TEST, execution_mode)))
     api.chromium_tests.configure_build(builder_config)
-    if builder_id.builder != 'linux-perf-fyi':
-      api.gclient.c.solutions[0].custom_vars['luci_go'] = (
-          'git_revision:7f62986230b0ff7fd5f2c74518352ac247c768d4')
     update_step, build_config = api.chromium_tests.prepare_checkout(
         builder_config, timeout=3600, no_fetch_tags=True)
     api.chromium_tests.lookup_builder_gn_args(builder_id, builder_config)
@@ -88,8 +84,8 @@ def GenTests(api):
   yield api.test(
       'tester-coverage',
       api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.perf.fyi',
-          builder='linux-perf-fyi',
+          builder_group='chromium.perf',
+          builder='linux-perf',
           parent_buildername='linux-builder-perf'),
       api.post_process(post_process.DropExpectation),
   )
