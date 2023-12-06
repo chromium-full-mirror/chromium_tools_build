@@ -64,7 +64,6 @@ class ProdCompilatorHandler(CompilatorHandler):
         '--',
         '-compilator-id',
         build_handle.id,
-        '-get-swarming-trigger-props'
     ]
     build_url = self.api.buildbucket.build_url(build_id=build_handle.id)
     build_link = f'compilator build: {build_handle.id}'

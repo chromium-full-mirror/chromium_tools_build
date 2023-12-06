@@ -403,8 +403,7 @@
       "[CLEANUP]/tmp_tmp_1/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514000",
-      "-get-swarming-trigger-props"
+      "8922054662172514000"
     ],
     "env": {
       "MAC_CHROMIUM_TMPDIR": "[CLEANUP]/tmp_tmp_2",

@@ -790,8 +790,7 @@
       "[CLEANUP]/tmp_tmp_2/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514000",
-      "-get-swarming-trigger-props"
+      "8922054662172514000"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -852,8 +851,7 @@
       "[CLEANUP]/tmp_tmp_4/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514001",
-      "-get-swarming-trigger-props"
+      "8922054662172514001"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -914,8 +912,7 @@
       "[CLEANUP]/tmp_tmp_6/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514002",
-      "-get-swarming-trigger-props"
+      "8922054662172514002"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -976,8 +973,7 @@
       "[CLEANUP]/tmp_tmp_8/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514003",
-      "-get-swarming-trigger-props"
+      "8922054662172514003"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -1038,8 +1034,7 @@
       "[CLEANUP]/tmp_tmp_10/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514004",
-      "-get-swarming-trigger-props"
+      "8922054662172514004"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -1100,8 +1095,7 @@
       "[CLEANUP]/tmp_tmp_12/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514005",
-      "-get-swarming-trigger-props"
+      "8922054662172514005"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -1162,8 +1156,7 @@
       "[CLEANUP]/tmp_tmp_14/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514006",
-      "-get-swarming-trigger-props"
+      "8922054662172514006"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
@@ -1224,8 +1217,7 @@
       "[CLEANUP]/tmp_tmp_16/sub_build.pb",
       "--",
       "-compilator-id",
-      "8922054662172514007",
-      "-get-swarming-trigger-props"
+      "8922054662172514007"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
     "env": {
