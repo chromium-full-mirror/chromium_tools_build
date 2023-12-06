@@ -232,7 +232,7 @@ def CheckPylintOnCommit(input_api, output_api):
       # sys.path so modifications to sys.path aren't kept.
       join(input_api, 'recipes', 'unittests'),
   ]
-  py3_8_files = [re.escape(x) for x in _PY3_8_FILES]
+  py3_8_files = [f'{re.escape(x)}$' for x in _PY3_8_FILES]
   lints = input_api.canned_checks.RunPylint(
       input_api,
       output_api,
