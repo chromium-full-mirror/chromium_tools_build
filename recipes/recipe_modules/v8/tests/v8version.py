@@ -6,7 +6,7 @@ from recipe_engine.post_process import DropExpectation
 from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.v8.v8version import (
-    choose_revision_to_roll, normalize_version)
+    choose_revision_to_roll, largest_major_version, normalize_version)
 
 DEPS = [
     'recipe_engine/assertions',
@@ -62,6 +62,10 @@ class VersionUtilsTest:
     self.assertEqual(normalize_version('11.6.176'), (11, 6, 176, 0))
     self.assertEqual(normalize_version('11.6'), (11, 6, 0, 0))
     self.assertEqual(normalize_version('11.6.4.9'), (11, 6, 4, 9))
+
+  def test_largest_major_version(self):
+    self.assertEqual(
+        largest_major_version(['1.2.3.4', '1.3.1', '1.2.40']), (1, 3))
 
   def test_ref_data(self):
     """Demonstrates the ref test data."""
@@ -202,6 +206,21 @@ class VersionUtilsTest:
     self.assertEqual(
         choose_revision_to_roll(refs, '11.10.9.1'),
         (None, 'found no newer revision than: 11.10.9.1'))
+
+  def test_revision_to_roll_on_branch_day(self):
+    refs = ref_data([
+      ('11.8.1-pgo', 4, 15),
+      ('11.8.1', 4, 15),
+      # On branch day, patches of the previous major branch look like patched
+      # rolls. This test ensures they are ignored as soon as a new major
+      # version (here 11.8) appears.
+      ('11.7.8.1', 3, 13),
+      ('11.7.8-pgo', 2, 12),
+      ('11.7.8', 2, 12),
+    ])
+    self.assertEqual(
+        choose_revision_to_roll(refs, '11.7.8'),
+        (git_hash(4), f'found revision to roll: {git_hash(4)}'))
 
   def test_revision_to_roll_errors(self):
     refs = ref_data([

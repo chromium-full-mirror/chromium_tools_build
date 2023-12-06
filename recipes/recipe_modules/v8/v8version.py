@@ -51,12 +51,24 @@ def prioritize_patched(version_revision):
   return timestamp - penalty, version
 
 
+def largest_major_version(versions):
+  """Returns the largest major version from a list of versions.
+
+  E.g. for 1.2.3, 1.3.1.1, 1.2.133.4 it would return (1.3) as a tuple.
+  """
+  assert versions
+  return max(normalize_version(version)[:2] for version in versions)
+
+
 def sorted_improvements(version_revisions, last_version):
   """Returns version tuples of strictly newer versions sorted by
   commit time prioritizing patches.
 
   All non-patch versions have a commit-time penalty of
   PATCH_VERSION_OFFSET_HOURS.
+
+  Only the version tuples of the largest major version are
+  returned.
   """
   last_version_normalized = normalize_version(last_version)
   timestamp = lambda commit_time: datetime.strptime(
@@ -65,9 +77,13 @@ def sorted_improvements(version_revisions, last_version):
     (version, revision, timestamp(commit_time))
     for version, pgo, revision, commit_time in version_revisions
     if not pgo and last_version_normalized < normalize_version(version)]
+  if not improvements:
+    return
+  major_version = largest_major_version(v for v, _, _ in improvements)
   for version, revision, _ in sorted(
       improvements, key=prioritize_patched, reverse=True):
-    yield version, revision
+    if major_version < normalize_version(version):
+      yield version, revision
 
 def choose_revision_to_roll(ref_lines, last_version):
   """Choose the next V8 revision to roll based on recent tags.
