@@ -29,7 +29,7 @@ def RunSteps(api):
   test_spec = steps.ScriptTestSpec.create(
       'script_test',
       script='script.py',
-      all_compile_targets={'script.py': ['compile_target']},
+      compile_targets=['compile_target'],
       script_args=['some', 'args'])
   test = test_spec.get_test(api.chromium_tests)
   api.assertions.assertEqual(test.option_flags, steps.TestOptionFlags.create())
@@ -60,7 +60,7 @@ def GenTests(api):
           '["some", "args"]',
       ]),
       api.post_process(LogContains, 'details', 'details',
-                       ["compile_targets: ['compile_target']"]),
+                       ["compile_targets: ('compile_target',)"]),
       api.post_process(DropExpectation),
   )
 

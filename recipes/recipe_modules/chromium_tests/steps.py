@@ -36,7 +36,6 @@ import hashlib
 import itertools
 import inspect
 import re
-import string
 import struct
 import urllib
 
@@ -1596,9 +1595,6 @@ class LocalTest(Test):
       self._suffix_to_invocation_names[suffix] = inv_name
 
 
-# TODO(gbeaty) Simplify ScriptTestSpec/ScriptTest to just have the compile
-# targets for the script rather than having a mapping with all compile targets
-# and optional override compile targets
 @attrs()
 class ScriptTestSpec(TestSpec):
   """A spec for a test that runs a script.
@@ -1606,13 +1602,13 @@ class ScriptTestSpec(TestSpec):
   Attributes:
     * script - The filename of a script to run. The script must be
       located within the //testing/scripts directory of the checkout.
-    * all_compile_targets - A mapping of script names to the compile
-      targets that need to be built to run the script.
+    * compile_targets - The compile targets that need to be built to run
+      the script.
     * script_args - Arguments to be passed to the script.
   """
 
   script = attrib(str)
-  all_compile_targets = attrib(mapping[str, sequence[str]])
+  compile_targets = attrib(sequence[str])
   script_args = attrib(command_args, default=())
 
   @property
@@ -1635,15 +1631,7 @@ class ScriptTest(LocalTest):
   """
 
   def compile_targets(self) -> Iterable[str]:
-    substitutions = {'name': self.spec.name}
-
-    if not self.spec.script in self.spec.all_compile_targets:
-      return []
-
-    return [
-        string.Template(s).safe_substitute(substitutions)
-        for s in self.spec.all_compile_targets[self.spec.script]
-    ]
+    return self.spec.compile_targets
 
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
     run_args = []

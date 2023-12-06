@@ -33,7 +33,7 @@ def RunSteps(api):
         steps.ScriptTestSpec.create(
             'script_test',
             script='script.py',
-            all_compile_targets={'script.py': ['compile_target']},
+            compile_targets=['compile_target'],
             script_args=['some', 'args']))
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)

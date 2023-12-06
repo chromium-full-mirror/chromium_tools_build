@@ -469,11 +469,22 @@ class Generator:
     if self._remote_tests_only:
       return None
 
-    kwargs = {}
-    kwargs['script'] = raw_test_spec['script']
-    kwargs['all_compile_targets'] = self._scripts_compile_targets_fn()
-    kwargs['script_args'] = raw_test_spec.get('args', [])
-    return steps.ScriptTestSpec.create(str(raw_test_spec['name']), **kwargs)
+    all_compile_targets = self._scripts_compile_targets_fn()
+
+    name = raw_test_spec['name']
+    script = raw_test_spec['script']
+
+    substitutions = {'name': name}
+
+    return steps.ScriptTestSpec.create(
+        name,
+        script=script,
+        compile_targets=[
+            string.Template(s).safe_substitute(substitutions)
+            for s in all_compile_targets.get(script, [])
+        ],
+        script_args=raw_test_spec.get('args', []),
+    )
 
   def _generate_isolated_script_test_spec(
       self,
