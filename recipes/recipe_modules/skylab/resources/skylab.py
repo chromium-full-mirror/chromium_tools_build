@@ -9,19 +9,21 @@ script to map browser test to a cros_test_platform request and run in CrOS lab.
 """
 
 import argparse
+import base64
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
+import zlib
 
 import requests
 from google.protobuf import json_format
 
 # Buildbucket v2 API
 BUILDBUCKET_RPC = 'https://beefy-dot-cr-buildbucket.appspot.com/prpc'
-BUILDBUCKET_SEARCH_ENDPOINT = (
-    BUILDBUCKET_RPC + '/buildbucket.v2.Builds/SearchBuilds')
+BUILDBUCKET_GET_ENDPOINT = (BUILDBUCKET_RPC + '/buildbucket.v2.Builds/GetBuild')
 BUILDBUCKET_SCHEDULE_ENDPOINT = (
     BUILDBUCKET_RPC + '/buildbucket.v2.Builds/ScheduleBuild')
 
@@ -40,18 +42,37 @@ def get_oauth_token(json_creds=None):
   return token
 
 
-def _call_buildbucket(bb_request_data, json_creds):
+def _call_buildbucket(bb_request_data, json_creds, end_point):
   headers = {'content-type': 'application/json', 'accept': 'application/json'}
   token = get_oauth_token(json_creds)
   headers['authorization'] = 'Bearer %s' % token
-  r = requests.post(
-      BUILDBUCKET_SCHEDULE_ENDPOINT, data=bb_request_data, headers=headers)
+  r = requests.post(end_point, data=bb_request_data, headers=headers)
   if r.status_code != requests.codes.ok:
     logging.warning('Fetch failed (%s %s)\n%s', r.status_code, r.reason, r.text)
     r.raise_for_status()
     return None
   content = r.content.decode('utf-8')
   return json.loads(content[content.find('\n') + 1:])
+
+
+def _check_build_status(url, opts):
+  if not url:
+    return None
+  match = re.search(
+      r'https://ci.chromium.org/p/chromeos/builders/test_runner/'
+      r'test_runner[-a-z]*/b(\d+)', url)
+  if not match:
+    logging.error('Could not find results of the test runner build.')
+    return None
+  bb_request_data = json.dumps({
+      'id': match.group(1),
+      'mask': {
+          'fields': 'status',
+      }
+  })
+  resp = _call_buildbucket(bb_request_data, opts.json_creds,
+                           BUILDBUCKET_GET_ENDPOINT)
+  return resp.get('status')
 
 
 def schedule_skylab_tests(opts):
@@ -97,6 +118,7 @@ def schedule_skylab_tests(opts):
     autotest.autotest.name = opts.autotest_name
     _test_args = (f'{opts.test_args} '
                   f'lacros_gcs_path={opts.lacros_gcs_path} '
+                  f'total_shards={opts.total_shards} '
                   f'shard_index={i}')
     if opts.secondary_boards:
       _should_provision_browser_files = [True] * len(opts.secondary_boards)
@@ -120,20 +142,55 @@ def schedule_skylab_tests(opts):
       'builder': {
           'project': 'chromeos',
           'bucket': opts.public_builder_bucket or 'testplatform',
-          # TODO(b/315040601): Use staging CTP builder before the bug is
-          # resolved.
-          'builder': opts.public_builder or 'cros_test_platform-staging',
+          'builder': opts.public_builder or 'cros_test_platform',
       },
       'properties': {
           'requests': tagged_requests,
       },
   })
-  resp = _call_buildbucket(bb_request_data, opts.json_creds)
+  resp = _call_buildbucket(bb_request_data, opts.json_creds,
+                           BUILDBUCKET_SCHEDULE_ENDPOINT)
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
       json.dump({'ctp_build_id': resp['id']}, json_file)
   else:
     logging.info('ctp_build_id: %s\n', resp['id'])
+
+
+def read_ctp_results(opts):
+  # pylint: disable=import-outside-toplevel
+  from chromite.api.gen.test_platform.steps import execution_pb2 as ctp_resp
+
+  bb_request_data = json.dumps({
+      'id': opts.ctp_build_id,
+      "mask": {
+          "fields": "output.properties",
+      }
+  })
+  resp = _call_buildbucket(bb_request_data, opts.json_creds,
+                           BUILDBUCKET_GET_ENDPOINT)
+
+  compressed_proto = resp.get('output', {}).get('properties',
+                                                {}).get('compressed_responses')
+  if not compressed_proto:
+    logging.error('Could not find results in build\'s output properties.')
+    return
+  wire_format = zlib.decompress(base64.b64decode(compressed_proto))
+  sharded_resp = ctp_resp.ExecuteResponses.FromString(
+      wire_format).tagged_responses
+
+  res = {}
+  for k, v in sharded_resp.items():
+    res[k] = {
+        'test_runner_url': v.task_results[0].task_url,
+        'log_url': v.task_results[0].log_data.testhaus_url,
+        'status': _check_build_status(v.task_results[0].task_url, opts),
+    }
+  if opts.json_outfile:
+    with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
+      json.dump(res, json_file)
+  else:
+    logging.info(res)
 
 
 def main(args):
@@ -225,7 +282,12 @@ def main(args):
       help='The test arguments to pass to the autotest wrapper.')
   subparser.set_defaults(func=schedule_skylab_tests)
 
-  # TODO(linxinan): Add code to parsing the response.
+  # Subcommand: read build results.
+  subparser = subparsers.add_parser(
+      'response', help=('Read the result of cros_test_platform build.'))
+  subparser.add_argument(
+      '--ctp-build-id', type=str, help='The CTP build ID to query.')
+  subparser.set_defaults(func=read_ctp_results)
 
   opts = p.parse_args(args)
   logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
