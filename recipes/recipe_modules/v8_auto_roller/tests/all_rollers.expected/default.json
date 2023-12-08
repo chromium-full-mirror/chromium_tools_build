@@ -1,0 +1,2129 @@
+[
+  {
+    "cmd": [],
+    "name": "Setup"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder"
+    ],
+    "infra_step": true,
+    "name": "Setup.ensure builder cache dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "--spec-path",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'dummy', 'url': 'https://chromium.googlesource.com/dumb/dumber'}, {'custom_vars': {'checkout_telemetry_dependencies': 'True'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]\ntarget_os = ['android', 'win']",
+      "--revision_mapping_file",
+      "{\"got_angle_revision\": \"src/third_party/angle\", \"got_buildtools_revision\": \"src/buildtools\", \"got_dawn_revision\": \"src/third_party/dawn\", \"got_nacl_revision\": \"src/native_client\", \"got_revision\": \"src\", \"got_swiftshader_revision\": \"src/third_party/swiftshader\", \"got_v8_revision\": \"src/v8\", \"got_webrtc_revision\": \"src/third_party/webrtc\"}",
+      "--git-cache-dir",
+      "[CACHE]/git",
+      "--cleanup-dir",
+      "[CLEANUP]/bot_update",
+      "--output_json",
+      "/path/to/tmp/json",
+      "--revision",
+      "dummy@HEAD"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "DEPOT_TOOLS_COLLECT_METRICS": "0",
+      "GIT_BACKENDINFO": "1",
+      "GIT_DAPPER_TRACE": "1",
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "1800",
+      "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE_CURL_NO_DATA": "1",
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Setup.bot_update",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@Some step text@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dummy\": \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dummy\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/dummy.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"829c3804401b0727f70f73d4415e162400cbe57b\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/buildtools\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/buildtools.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/native_client\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/native_client.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/angle\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/angle.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/swiftshader\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/swiftshader.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/third_party/webrtc\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/third_party/webrtc.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"src/v8\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/v8.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"dummy\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_buildtools_revision\": \"f0319a328b2809876916353cb994259692140934\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_buildtools_revision_cp\": \"refs/heads/main@{#182578}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_dawn_revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_dawn_revision_cp\": \"refs/heads/main@{#51819}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_nacl_revision_cp\": \"refs/heads/main@{#274981}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#170242}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_swiftshader_revision_cp\": \"refs/heads/main@{#202157}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_v8_revision\": \"801ada225ddc271c132c3a35f03975671d43e399\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_v8_revision_cp\": \"refs/heads/main@{#43426}\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"dummy\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"dummy\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/dummy.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"829c3804401b0727f70f73d4415e162400cbe57b\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/buildtools\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/buildtools.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/native_client\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/native_client.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/angle\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/angle.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/swiftshader\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/swiftshader.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/third_party/webrtc\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/third_party/webrtc.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"src/v8\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/v8.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@got_angle_revision@\"fac9503c46405f77757b9a728eb85b8d7bc6080c\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_angle_revision_cp@\"refs/heads/main@{#297276}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_buildtools_revision@\"f0319a328b2809876916353cb994259692140934\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_buildtools_revision_cp@\"refs/heads/main@{#182578}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_dawn_revision@\"1b5c932bc9a9a35c66edea3914fb675742d57cc2\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_dawn_revision_cp@\"refs/heads/main@{#51819}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_nacl_revision@\"d998e125e8253980d76e269b7982aeeefc1b9b50\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_nacl_revision_cp@\"refs/heads/main@{#274981}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#170242}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_swiftshader_revision@\"44a40deda357aff750ab1cbfd94ec79dbc8bb754\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_swiftshader_revision_cp@\"refs/heads/main@{#202157}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_v8_revision@\"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_v8_revision_cp@\"refs/heads/main@{#43426}\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_webrtc_revision@\"0f90628433546e61d9268596da93418c623137f4\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_webrtc_revision_cp@\"refs/heads/main@{#120644}\"@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Find updated deps",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-f",
+      "origin/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Find updated deps.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Find updated deps.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Find updated deps.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "name": "Find updated deps.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "revinfo",
+      "--deps",
+      "all",
+      "--spec",
+      "solutions=[{'managed': False, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src', 'custom_vars': {'checkout_fuchsia_no_hooks': True}, 'deps_file': 'DEPS'}]"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Find updated deps.gclient get src deps",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@deps@{@@@",
+      "@@@STEP_LOG_LINE@deps@  \"buildtools\": \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-set-dep-failing\": \"mock/set-dep-failing.git@2\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-skip-chromium-roll\": \"mock/skip-chromium-roll.git@2\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"ninja:infra/3pp/tools/ninja/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.4\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"tools/luci-go:infra/tools/luci/isolate/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@git_revision:3d8f881462b1a93c7525499381fafc8a08691be7\"@@@",
+      "@@@STEP_LOG_LINE@deps@}@@@",
+      "@@@STEP_LOG_END@deps@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "revinfo",
+      "--deps",
+      "all",
+      "--spec",
+      "solutions=[{'managed': False, 'name': 'dummy', 'url': 'https://chromium.googlesource.com/dumb/dumber', 'custom_vars': {}, 'deps_file': 'DEPS'}]"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Find updated deps.gclient get dummy deps",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@5fd66957f08bb752dca714a591c84587c9d70762@@@",
+      "@@@STEP_LOG_LINE@deps@{@@@",
+      "@@@STEP_LOG_LINE@deps@  \"buildtools-mapped\": \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-package-latest:mock/package-latest\": \"https://chrome-infra-packages.appspot.com/mock/package-latest@6fd66957f08bb752dca714a591c84587c9d70763\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-package-without-latest-ref:mock/package-without-latest-ref\": \"https://chrome-infra-packages.appspot.com/mock/package-without-latest-ref@7fd66957f08bb752dca714a591c84587c9d70764\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-set-dep-failing\": \"mock/set-dep-failing.git@1\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-skip-chromium-roll\": \"mock/skip-chromium-roll.git@1\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-tot-retsam-rolled\": \"https://chromium.googlesource.com/tot-retsam-rolled.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"mock-tot-rolled\": \"https://chromium.googlesource.com/tot-rolled.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"ninja:infra/3pp/tools/ninja/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.3\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"tools/clang\": \"https://chromium.googlesource.com/chromium/src/tools/clang@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"tools/clang-reviewed\": \"https://example.com/tools/clang-reviewed.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"tools/luci-go:infra/tools/luci/isolate/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9\"@@@",
+      "@@@STEP_LOG_LINE@deps@}@@@",
+      "@@@STEP_LOG_END@deps@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "instances",
+      "mock/package-latest",
+      "-limit",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "name": "Find updated deps.cipd instances mock/package-latest",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@resolved-instance_id-of-instance_id_1---@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"instances\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"instance_id\": \"resolved-instance_id-of-instance_id_1---\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"package\": \"mock/package-latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        },@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"refs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        ],@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574209@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"instance_id\": \"resolved-instance_id-of-instance_id_2---\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"package\": \"mock/package-latest\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        },@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:44-blablbla@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1446574208@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "instances",
+      "mock/package-without-latest-ref",
+      "-limit",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "name": "Find updated deps.cipd instances mock/package-without-latest-ref",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@resolved-instance_id-of-no-latest-------2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"instances\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"pin\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"instance_id\": \"resolved-instance_id-of-no-latest-------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"package\": \"mock/package-without-latest-ref\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        },@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"refs\": null,@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_by\": \"user:doe@developer.gserviceaccount.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"registered_ts\": 1987654321@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "mock/set-dep-failing/+log/1..2",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "name": "Find updated deps.gitiles log: 1..2",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "mock/skip-chromium-roll.git",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up mock-skip-chromium-roll (main)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "mock/skip-chromium-roll/+log/1..3",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "name": "Find updated deps.gitiles log: 1..3",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://chromium.googlesource.com/tot-retsam-rolled.git",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up mock-tot-retsam-rolled (main)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://chromium.googlesource.com/tot-retsam-rolled.git",
+      "refs/heads/master"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up mock-tot-retsam-rolled (master)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@deadbeef@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "name": "Find updated deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://chromium.googlesource.com/tot-rolled.git",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up mock-tot-rolled (main)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@deadbeef@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/tot-rolled/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "name": "Find updated deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetchedversion:2@1.8.2.chromium.4@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://chromium.googlesource.com/chromium/src/tools/clang",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up tools_clang (main)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://chromium.googlesource.com/chromium/src/tools/clang",
+      "refs/heads/master"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up tools_clang (master)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://example.com/tools/clang-reviewed.git",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up tools_clang-reviewed (main)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "https://example.com/tools/clang-reviewed.git",
+      "refs/heads/master"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up tools_clang-reviewed (master)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@git_revision:3d8f881462b1a93c7525499381fafc8a08691be7@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Update trusted deps",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@3 trusted dep(s)@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@",
+      "@@@STEP_WARNINGS@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "('dummy roll (trusted)',)",
+      "{}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update trusted deps.Abandon CLs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-f",
+      "origin/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update trusted deps.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update trusted deps.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update trusted deps.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update trusted deps.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "mock-set-dep-failing@2"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update trusted deps.gclient setdep mock-set-dep-failing",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_WARNINGS@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "ninja:infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.4"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update trusted deps.gclient setdep ninja:infra_3pp_tools_ninja_${platform}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "tools/luci-go:infra/tools/luci/isolate/${platform}@git_revision:3d8f881462b1a93c7525499381fafc8a08691be7"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update trusted deps.gclient setdep tools_luci-go:infra_tools_luci_isolate_${platform}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "()",
+      "{'subject': 'dummy roll (trusted)', 'upload_flags': ['--set-bot-commit'], 'commit_msg_lines': ['Rolling ninja: version:2@1.8.2.chromium.3..version:2@1.8.2.chromium.4', 'Rolling tools/luci-go: git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9..git_revision:3d8f881462b1a93c7525499381fafc8a08691be7', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0'], 'add': False}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update trusted deps.Upload CL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Update reviewed deps",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@5 reviewed dep(s)@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "('dummy roll (reviewed)',)",
+      "{}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update reviewed deps.Abandon CLs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-f",
+      "origin/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "mock-package-latest:mock/package-latest@resolved-instance_id-of-instance_id_1---"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.gclient setdep mock-package-latest:mock_package-latest",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "mock-package-without-latest-ref:mock/package-without-latest-ref@resolved-instance_id-of-no-latest-------"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.gclient setdep mock-package-without-latest-ref:mock_package-without-latest-ref",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "mock-skip-chromium-roll@3"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.gclient setdep mock-skip-chromium-roll",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "mock-tot-retsam-rolled@deadbeef"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.gclient setdep mock-tot-retsam-rolled",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "setdep",
+      "-r",
+      "mock-tot-rolled@deadbeef"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update reviewed deps.gclient setdep mock-tot-rolled",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "()",
+      "{'subject': 'dummy roll (reviewed)', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling mock-package-latest: 6fd66957f08bb752dca714a591c84587c9d70763..resolved-instance_id-of-instance_id_1---', 'Rolling mock-package-without-latest-ref: 7fd66957f08bb752dca714a591c84587c9d70764..resolved-instance_id-of-no-latest-------', 'Rolling mock-skip-chromium-roll: mock/skip-chromium-roll/+log/1..3', 'Commit 1 (Tex)\\nmock/skip-chromium-roll/+/deadbee', 'Commit 0 (Mex)\\nmock/skip-chromium-roll/+/beefdea', 'Rolling mock-tot-retsam-rolled: https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/beefdea', 'Rolling mock-tot-rolled: https://chromium.googlesource.com/tot-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-rolled/+/beefdea', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it'], 'add': False}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update reviewed deps.Upload CL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Check failed deps"
+  },
+  {
+    "cmd": [],
+    "name": "Update chromium pin deps",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@1 chromium pin@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "('Update Chrome (for Testing) PIN',)",
+      "{}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update chromium pin deps.Abandon CLs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-f",
+      "origin/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update chromium pin deps.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update chromium pin deps.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update chromium pin deps.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update chromium pin deps.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var=chrome"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update chromium pin deps.gclient get chrome deps",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
+      "--url",
+      "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json",
+      "--status-json",
+      "/path/to/tmp/json",
+      "--outfile",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update chromium pin deps.check latest chrome",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "()",
+      "{'subject': 'Update Chrome (for Testing) PIN', 'upload_flags': ['--set-bot-commit'], 'commit_msg_lines': ['\\nRoll created at https://cr-buildbucket.appspot.com/build/0'], 'add': False}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update chromium pin deps.Upload CL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Scripted rolls"
+  },
+  {
+    "cmd": [],
+    "name": "Scripted rolls.Update Puppeteer Core deps",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@Puppeteer Core@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "('Roll puppeteer-core',)",
+      "{}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Scripted rolls.Update Puppeteer Core deps.Abandon CLs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-f",
+      "origin/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Puppeteer Core deps.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Puppeteer Core deps.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Puppeteer Core deps.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Puppeteer Core deps.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/dummy/scripts/deps/roll_front_end_third_party.py",
+      "puppeteer-core",
+      "puppeteer",
+      "lib/esm"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Scripted rolls.Update Puppeteer Core deps.Run Puppeteer Core script",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "()",
+      "{'subject': 'Roll puppeteer-core', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/RECORDER_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it'], 'add': True}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Scripted rolls.Update Puppeteer Core deps.Upload CL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Scripted rolls.Update Browser Protocol deps",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@Browser Protocol@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "('Roll browser-protocol',)",
+      "{}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Scripted rolls.Update Browser Protocol deps.Abandon CLs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-f",
+      "origin/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Browser Protocol deps.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Browser Protocol deps.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Browser Protocol deps.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Scripted rolls.Update Browser Protocol deps.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "[CACHE]/builder/dummy/scripts/deps/roll_deps.py",
+      "--ref",
+      "working-tree",
+      "[CACHE]/builder/src",
+      "[CACHE]/builder/dummy"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Scripted rolls.Update Browser Protocol deps.Run Browser Protocol script",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "()",
+      "{'subject': 'Roll browser-protocol', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/RECORDER_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it'], 'add': True}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Scripted rolls.Update Browser Protocol deps.Upload CL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Update test262 import deps",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@test262 import@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "('[test262] Roll test262',)",
+      "{}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update test262 import deps.Abandon CLs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "-f",
+      "origin/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update test262 import deps.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update test262 import deps.git branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffd"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update test262 import deps.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/dummy/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update test262 import deps.git new-branch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cloudkms",
+      "-ensure-file",
+      "infra/tools/luci/cloudkms/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update test262 import deps.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/luci/cloudkms/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cloudkms/cloudkms",
+      "decrypt",
+      "-input",
+      "RECIPE_REPO[build]/recipes/recipes/assets/test262-import-export",
+      "-output",
+      "[CLEANUP]/test262-import-export.json",
+      "projects/v8-infra/locations/global/keyRings/test262-import-export/cryptoKeys/default"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update test262 import deps.decrypt",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "branch",
+      "-D",
+      "test262_import"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0",
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update test262 import deps.git branch (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "new-branch",
+      "test262_import"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0",
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update test262 import deps.git new-branch (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "-r",
+      "test/test262/data"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0",
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update test262 import deps.gclient get test262 revision",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/v8/test/test262/tools/import.py",
+      "--credentials-json",
+      "[CLEANUP]/test262-import-export.json",
+      "--blink-tools-path",
+      "[CACHE]/builder/src/third_party/blink/tools",
+      "--phase=PREBUILD"
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0",
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update test262 import deps.Import Test262 changes into V8.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/v8/test/test262/tools/import.py",
+      "--credentials-json",
+      "[CLEANUP]/test262-import-export.json",
+      "--blink-tools-path",
+      "[CACHE]/builder/src/third_party/blink/tools",
+      "--phase=POSTBUILD",
+      "--v8-test262-last-revision",
+      ""
+    ],
+    "cwd": "[CACHE]/builder/v8",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0",
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]",
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update test262 import deps.Update Test262 status file.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "()",
+      "{'subject': '[test262] Roll test262', 'upload_flags': ['--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'range 1..3', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'no-export: true', 'R=piedone@punto.it'], 'add': False}"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update test262 import deps.Upload CL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "name": "$result",
+    "summaryMarkdown": "updated 3 trusted dep(s), 5 reviewed dep(s), 1 chromium pin, Puppeteer Core, Browser Protocol, test262 import"
+  }
+]

@@ -27,7 +27,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'v8', 'url': 'https://chromium.googlesource.com/v8/v8'}, {'custom_vars': {'checkout_telemetry_dependencies': 'True'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]\ntarget_os = ['android', 'win']",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'dummy', 'url': 'https://chromium.googlesource.com/dumb/dumber'}, {'custom_vars': {'checkout_telemetry_dependencies': 'True'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]\ntarget_os = ['android', 'win']",
       "--revision_mapping_file",
       "{\"got_angle_revision\": \"src/third_party/angle\", \"got_buildtools_revision\": \"src/buildtools\", \"got_dawn_revision\": \"src/third_party/dawn\", \"got_nacl_revision\": \"src/native_client\", \"got_revision\": \"src\", \"got_swiftshader_revision\": \"src/third_party/swiftshader\", \"got_v8_revision\": \"src/v8\", \"got_webrtc_revision\": \"src/third_party/webrtc\"}",
       "--git-cache-dir",
@@ -37,7 +37,7 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "v8@HEAD"
+      "dummy@HEAD"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -68,9 +68,13 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"v8\": \"HEAD\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dummy\": \"HEAD\"@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dummy\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/dummy.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"829c3804401b0727f70f73d4415e162400cbe57b\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
       "@@@STEP_LOG_LINE@json.output@    \"src\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src.git\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\"@@@",
@@ -102,14 +106,10 @@
       "@@@STEP_LOG_LINE@json.output@    \"src/v8\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/src/v8.git\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"v8\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/v8.git\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"f2cbea7e89a45f46819777bb78a1f5bd0241f64c\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"v8\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"dummy\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision\": \"fac9503c46405f77757b9a728eb85b8d7bc6080c\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision_cp\": \"refs/heads/main@{#297276}\",@@@",
@@ -128,9 +128,15 @@
       "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision\": \"0f90628433546e61d9268596da93418c623137f4\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_webrtc_revision_cp\": \"refs/heads/main@{#120644}\"@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"root\": \"v8\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"dummy\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"dummy\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/dummy.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"829c3804401b0727f70f73d4415e162400cbe57b\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"src\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src.git\",@@@",
@@ -178,12 +184,6 @@
       "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/src/v8.git\",@@@",
       "@@@STEP_LOG_LINE@json.output@          \"revision\": \"801ada225ddc271c132c3a35f03975671d43e399\"@@@",
       "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"v8\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/v8.git\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"f2cbea7e89a45f46819777bb78a1f5bd0241f64c\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    },@@@",
       "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
@@ -211,10 +211,31 @@
   },
   {
     "cmd": [],
-    "name": "Update test262 import deps",
+    "name": "Update dummy deps",
     "~followup_annotations": [
-      "@@@STEP_TEXT@test262 import@@@",
-      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/chromium/tools/build/+/3840339@@@"
+      "@@@STEP_TEXT@dummy@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/chromium/tools/build/+/3840339@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "luci-auth",
+      "info"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update dummy deps.get login info",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -230,15 +251,15 @@
       "--limit",
       "20",
       "-p",
-      "project=v8/v8",
+      "project=dumb/dumber",
       "-p",
-      "owner=test262@serviceaccount",
+      "owner=account@example.com",
       "-p",
       "status=open",
       "-p",
-      "subject=\"[test262] Roll test262\""
+      "subject=\"dummy\""
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
     },
@@ -251,11 +272,79 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.gerrit changes",
+    "name": "Update dummy deps.gerrit changes",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@[]@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"123\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"dummy\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
       "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "abandon",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--change",
+      "123",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--message",
+      "stale roll"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update dummy deps.gerrit abandon",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"123\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"id\": \"fully~qualified~changeid\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"chromium/src\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"status\": \"ABANDONED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Update dummy deps.Previous roll failed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@Notify sheriffs!@@@",
+      "@@@STEP_FAILURE@@@"
     ]
   },
   {
@@ -265,10 +354,10 @@
       "-f",
       "origin/main"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/dummy/third_party/depot_tools"
       ]
     },
     "env_suffixes": {
@@ -280,7 +369,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git checkout",
+    "name": "Update dummy deps.git checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -292,10 +381,10 @@
       "-D",
       "roll"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/dummy/third_party/depot_tools"
       ]
     },
     "env_suffixes": {
@@ -307,7 +396,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git branch",
+    "name": "Update dummy deps.git branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -318,10 +407,10 @@
       "clean",
       "-ffd"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/dummy/third_party/depot_tools"
       ]
     },
     "env_suffixes": {
@@ -333,7 +422,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git clean",
+    "name": "Update dummy deps.git clean",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -344,10 +433,10 @@
       "new-branch",
       "roll"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/dummy/third_party/depot_tools"
       ]
     },
     "env_suffixes": {
@@ -359,201 +448,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git new-branch",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "cipd",
-      "ensure",
-      "-root",
-      "[START_DIR]/cloudkms",
-      "-ensure-file",
-      "infra/tools/luci/cloudkms/${platform} latest",
-      "-max-threads",
-      "0",
-      "-json-output",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "name": "Update test262 import deps.ensure_installed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/luci/cloudkms/resolved-platform\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cloudkms/cloudkms",
-      "decrypt",
-      "-input",
-      "RECIPE_REPO[build]/recipes/recipes/assets/test262-import-export",
-      "-output",
-      "[CLEANUP]/test262-import-export.json",
-      "projects/v8-infra/locations/global/keyRings/test262-import-export/cryptoKeys/default"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "name": "Update test262 import deps.decrypt",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "branch",
-      "-D",
-      "test262_import"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0",
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "Update test262 import deps.git branch (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "new-branch",
-      "test262_import"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0",
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "Update test262 import deps.git new-branch (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@stdout@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
-      "getdep",
-      "-r",
-      "test/test262/data"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0",
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "Update test262 import deps.gclient get test262 revision",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "[CACHE]/builder/v8/test/test262/tools/import.py",
-      "--credentials-json",
-      "[CLEANUP]/test262-import-export.json",
-      "--blink-tools-path",
-      "[CACHE]/builder/src/third_party/blink/tools",
-      "--phase=PREBUILD"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0",
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "name": "Update test262 import deps.Import Test262 changes into V8.",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "[CACHE]/builder/v8/test/test262/tools/import.py",
-      "--credentials-json",
-      "[CLEANUP]/test262-import-export.json",
-      "--blink-tools-path",
-      "[CACHE]/builder/src/third_party/blink/tools",
-      "--phase=POSTBUILD",
-      "--v8-test262-last-revision",
-      "345"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0",
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "name": "Update test262 import deps.Update Test262 status file.",
+    "name": "Update dummy deps.git new-branch",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -565,7 +460,7 @@
       "-s",
       "-uno"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
         "0"
@@ -575,11 +470,32 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git status",
+    "name": "Update dummy deps.git status",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@diff@some difference@@@",
+      "@@@STEP_LOG_LINE@diff@diff generated by roller@@@",
       "@@@STEP_LOG_END@diff@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "add",
+      "-A"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Update dummy deps.git add",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
@@ -590,22 +506,14 @@
       "commit",
       "-a",
       "-m",
-      "[test262] Roll test262",
+      "dummy",
       "-m",
-      "This roll requires a manual review. See http://go/reviewed-rolls for guidance.",
-      "-m",
-      "range 1..3",
-      "-m",
-      "\nRoll created at https://cr-buildbucket.appspot.com/build/0",
-      "-m",
-      "no-export: true",
-      "-m",
-      "R=ciciobello@google.com"
+      "dummy"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/dummy/third_party/depot_tools"
       ]
     },
     "env_suffixes": {
@@ -617,7 +525,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git -c",
+    "name": "Update dummy deps.git -c",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -627,10 +535,10 @@
       "git",
       "show"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/dummy/third_party/depot_tools"
       ]
     },
     "env_suffixes": {
@@ -642,7 +550,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git show",
+    "name": "Update dummy deps.git show",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -656,12 +564,13 @@
       "--use-commit-queue",
       "--bypass-hooks",
       "--send-mail",
-      "--set-bot-commit"
+      "-b",
+      "dummy:123"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/dummy",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/v8/third_party/depot_tools"
+        "[CACHE]/builder/dummy/third_party/depot_tools"
       ]
     },
     "env_suffixes": {
@@ -673,13 +582,13 @@
       ]
     },
     "infra_step": true,
-    "name": "Update test262 import deps.git cl",
+    "name": "Update dummy deps.git cl",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "name": "$result",
-    "summaryMarkdown": "updated test262 import"
+    "summaryMarkdown": "updated dummy"
   }
 ]

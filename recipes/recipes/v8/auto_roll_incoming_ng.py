@@ -42,22 +42,15 @@ PROPERTIES = {
             )),
 }
 
-CONFIG = {
-    "target_config": {
-        "solution_name": "v8",
-        "project_name": "v8/v8",
-        "account": "v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com",
-        "log_template": "Rolling v8/%s: %s/+log/%s..%s",
-        "cipd_log_template": "Rolling v8/%s: %s..%s",
-    },
-}
-
 def RunSteps(api, autoroller_config):
-  CONFIG.update(autoroller_config)
+  api.v8_auto_roller.setup_target(
+      'v8',
+      'https://chromium.googlesource.com/v8/v8',
+  )
 
-  api.v8_auto_roller.setup(CONFIG)
+  clm = api.v8_auto_roller.build_cl_manager()
 
-  api.v8_auto_roller.regular_roll(CONFIG)
+  api.v8_auto_roller.regular_roll(autoroller_config, clm)
 
   return api.v8_auto_roller.report_result()
 

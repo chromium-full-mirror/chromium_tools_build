@@ -29,6 +29,8 @@ TRUSTED_ORIGIN_DEPS = {
 }
 
 CIPD_DEP_URL_PREFIX = 'https://chrome-infra-packages.appspot.com/'
+CIPD_LOG_TEMPLATE = "Rolling %s: %s..%s"
+GIT_LOG_TEMPLATE = "Rolling %s: %s/+log/%s..%s"
 MAX_COMMIT_LOG_ENTRIES = 8
 
 # Custom vars by project. They are added to the gclient solution when
@@ -107,19 +109,17 @@ class DepUpdate:
 
 
 def get_dep_updates(api, autoroller_config):
-  target_config = autoroller_config['target_config']
+  chromium_deps = get_deps(
+      api,
+      'https://chromium.googlesource.com/chromium/src',
+      'src',
+  )
 
-  chromium_deps = get_deps(api, 'https://chromium.googlesource.com/', 'src',
-                           'chromium/src')
+  target = commons.get_targeted_solution(api)
+  target_deps = get_deps(api, target.url, target.name)
 
-  target_name = target_config['solution_name']
-  target_project = target_config['project_name']
-  target_base_url = target_config['base_url']
-  target_deps = get_deps(api, target_base_url, target_name, target_project)
-
-  key_mapper = get_key_mapper(autoroller_config)
-  cipd_log_template = target_config['cipd_log_template']
-  git_log_template = target_config['log_template']
+  custom_mapping = autoroller_config.get('deps_key_mapping', {})
+  key_mapper = get_key_mapper(custom_mapping)
 
   target_dep_names = sorted(target_deps.keys())
 
@@ -153,8 +153,8 @@ def get_dep_updates(api, autoroller_config):
     # Determine the recent version and if it can be trusted
     next_version = None
     is_trusted = clean_target_location in TRUSTED_ORIGIN_DEPS
-    version_source = get_dependency_version_source(autoroller_config,
-                                                   target_name,
+    sources = autoroller_config.get('dependency_version_sources', {})
+    version_source = get_dependency_version_source(sources, target_name,
                                                    bool(chromium_value),
                                                    is_cipd_dep)
 
@@ -206,12 +206,12 @@ def get_dep_updates(api, autoroller_config):
       # contain ${platform}, which can usually be resolved to multiple
       # distinct packages.
       path, _ = target_name.split(':')
-      commit_msg_lines.append(cipd_log_template %
+      commit_msg_lines.append(CIPD_LOG_TEMPLATE %
                               (path, target_version, next_version))
     else:
       params = (target_name, clean_target_location, target_version[:7],
                 next_version[:7])
-      commit_msg_lines.append(git_log_template % params)
+      commit_msg_lines.append(GIT_LOG_TEMPLATE % params)
       if autoroller_config['show_commit_log']:
         commit_msg_lines.extend(
             commit_messages_log_entries(api, clean_target_location,
@@ -234,10 +234,9 @@ def handle_failed_deps(api, failed_deps):
   raise api.step.StepFailure(message)
 
 
-def get_deps(api, base_url, name, project_name):
+def get_deps(api, repo_url, name):
   # Make a fake spec. Gclient is not nice to us when having two solutions
   # side by side. The latter checkout kills the former's gclient file.
-  repo_url = base_url + project_name
   custom_vars = GCLIENT_CUSTOM_VARS.get(repo_url, {})
   spec = 'solutions=[%s]' % {
       'managed': False,
@@ -283,10 +282,9 @@ def get_deps(api, base_url, name, project_name):
   return deps
 
 
-def get_key_mapper(autoroller_config):
+def get_key_mapper(custom_mapping):
   """Override keys between destination (key) and source (value) based on recipe
   config."""
-  custom_mapping = autoroller_config.get('deps_key_mapping', {})
   return lambda key: custom_mapping.get(key, key)
 
 
@@ -370,9 +368,8 @@ def commit_messages_log_entries(api, repo, from_commit, to_commit):
   ] + ellipse
 
 
-def get_dependency_version_source(autoroller_config, dependency_name,
-                                  is_chromium_dep, is_cipd_dep):
-  sources = autoroller_config.get('dependency_version_sources', {})
+def get_dependency_version_source(sources, dependency_name, is_chromium_dep,
+                                  is_cipd_dep):
   source = sources.get(dependency_name, 'auto')
 
   # If a specific version source is defined, the specific source should be used

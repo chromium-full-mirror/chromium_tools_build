@@ -7,68 +7,39 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 
 
+GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
+
+
 class RollHandler(ABC):
 
   def __init__(self, module, autoroller_config):
     self.module = module
     self.api = module.m
     self.config = autoroller_config
-    self.enabled = True
     self.add_new_files = False
 
-  def roll(self):
-    if self.enabled:
-      with self.api.step.nest(f'Update {self.name()} deps') as step:
-        with self.roll_contex():
-          step.presentation.step_text = self.summary()
-          self.abandon_active_cls()
-          commons.discard_local_changes(self.api)
-          changes = self.apply_changes()
-          cl_link = commons.upload_cl(
-              self.api,
-              subject=self.get_subject(),
-              upload_flags=self.upload_flags(),
-              commit_msg_lines=self.commit_msg_lines(changes),
-              bugs_label=self.config.get('bugs', None),
-              add=self.add_new_files,
-          )
-          if cl_link:
-            step.presentation.links['CL'] = cl_link
-            self.module.summary.append(self.summary())
+  def roll(self, cl_manager):
+    with self.api.step.nest(f'Update {self.name()} deps') as step:
+      with self.roll_contex():
+        step.presentation.step_text = self.summary()
+        cl_manager.abandon_active_cls(self.get_subject())
+        commons.discard_local_changes(self.api)
+        changes = self.apply_changes()
+        cl_link = cl_manager.upload_cl(
+            subject=self.get_subject(),
+            upload_flags=self.upload_flags(),
+            commit_msg_lines=self.commit_msg_lines(changes),
+            add=self.add_new_files,
+        )
+        if cl_link:
+          step.presentation.links['CL'] = cl_link
+          self.module.summary.append(self.summary())
 
   @contextmanager
   def roll_contex(self):
     with self.api.context(
         cwd=self.api.path['checkout']), self.api.depot_tools.on_path():
       yield
-
-  def abandon_active_cls(self):
-    """Ensure no other active roll exists. If it does, abandon the old one."""
-    target_config = self.config['target_config']
-
-    commits = self.api.gerrit.get_changes(
-        target_config['gerrit_base_url'],
-        query_params=[
-            ('project', target_config['project_name']),
-            ('owner', target_config['account']),
-            ('status', 'open'),
-            ('subject', f'"{self.get_subject()}"'),
-        ],
-        limit=20,
-        step_test_data=self.api.gerrit.test_api.get_empty_changes_response_data,
-    )
-
-    # Querying gerrit with a subject is not exact, so filter the results for
-    # precise match.
-    commits = [c for c in commits if c['subject'] == self.get_subject()]
-
-    for commit in commits:
-      self.api.gerrit.abandon_change(target_config['gerrit_base_url'],
-                                     commit['_number'], 'stale roll')
-
-      step_result = self.api.step('Previous roll failed', cmd=None)
-      step_result.presentation.step_text = 'Notify sheriffs!'
-      step_result.presentation.status = 'FAILURE'
 
   @abstractmethod
   def name(self):
@@ -92,3 +63,25 @@ class RollHandler(ABC):
   @abstractmethod
   def commit_msg_lines(self, changes):
     pass  # pragma: no cover
+
+
+class DummyRollHandler(RollHandler):
+
+  def __init__(self, module, autoroller_config):
+    super().__init__(module, autoroller_config)
+    self.add_new_files = True
+
+  def name(self):
+    return 'dummy'
+
+  def summary(self):
+    return 'dummy'
+
+  def apply_changes(self):
+    return None
+
+  def get_subject(self):
+    return 'dummy'
+
+  def commit_msg_lines(self, _):
+    return ['dummy']

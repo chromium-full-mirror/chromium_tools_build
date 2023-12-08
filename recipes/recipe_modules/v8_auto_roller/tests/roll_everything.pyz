@@ -25,13 +25,6 @@ RETSAM = 'retsam'[::-1]
 
 def RunSteps(api):
   autoroller_config = {
-      'target_config': {
-          'solution_name': 'v8',
-          'project_name': 'v8/v8',
-          'account': 'v8@example.com',
-          'log_template': 'Rolling v8/%s: %s/+log/%s..%s',
-          'cipd_log_template': 'Rolling v8/%s: %s..%s',
-      },
       'subject': 'Update V8 deps',
       'reviewers': [
           'anybody@chromium.org',
@@ -44,17 +37,22 @@ def RunSteps(api):
           'mock-skip-chromium-roll': 'tip_of_tree',
       },
       'show_commit_log': True,
-      'roll_chromium_pin': True,
-      'roll_test262': True,
-      'scripted_rolls': ['puppeteer-core', 'browser-protocol'],
       'bugs': 'none',
   }
 
-  api.v8_auto_roller.setup(autoroller_config)
+  api.v8_auto_roller.setup_target(
+      'v8',
+      'https://chromium.googlesource.com/v8/v8',
+  )
 
-  api.v8_auto_roller.regular_roll(autoroller_config)
-  api.v8_auto_roller.cft_pin_roll(autoroller_config)
-  api.v8_auto_roller.scripted_rolls(autoroller_config)
+  clm = api.v8_auto_roller.build_cl_manager(bugs="none")
+
+  api.v8_auto_roller.regular_roll(autoroller_config, clm)
+  api.v8_auto_roller.cft_pin_roll(autoroller_config, clm)
+  api.v8_auto_roller.scripted_rolls(autoroller_config, clm, [
+      'puppeteer-core',
+      'browser-protocol',
+  ])
 
   return api.v8_auto_roller.report_result()
 

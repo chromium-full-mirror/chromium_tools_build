@@ -14,13 +14,6 @@ DEPS = [
 
 
 CONFIG = {
-    "target_config": {
-        "solution_name": "devtools-frontend",
-        "project_name": "devtools/devtools-frontend",
-        "account": "devtools-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com",
-        "log_template": "Rolling %s: %s/+log/%s..%s",
-        "cipd_log_template": "Rolling %s: %s..%s",
-    },
     "subject": "Update DevTools DEPS",
     "excludes": [
         # `esbuild` is manually rolled; Chromium pulls our version from
@@ -31,22 +24,24 @@ CONFIG = {
         "devtools-waterfall-sheriff-onduty@grotations.appspotmail.com",
     ],
     "show_commit_log": False,
-    "roll_chromium_pin": True,
-    "scripted_rolls": [
-        "puppeteer-core",
-        "puppeteer-replay",
-    ],
-    # "Bug: none" is required to pass presubmit tests
-    "bugs": "none",
 }
 
 
 def RunSteps(api):
-  api.v8_auto_roller.setup(CONFIG)
+  api.v8_auto_roller.setup_target(
+      'devtools-frontend',
+      'https://chromium.googlesource.com/devtools/devtools-frontend',
+  )
 
-  api.v8_auto_roller.regular_roll(CONFIG)
-  api.v8_auto_roller.cft_pin_roll(CONFIG)
-  api.v8_auto_roller.scripted_rolls(CONFIG)
+  clm = api.v8_auto_roller.build_cl_manager(bugs="none")
+
+  api.v8_auto_roller.regular_roll(CONFIG, clm)
+  api.v8_auto_roller.cft_pin_roll(CONFIG, clm)
+  api.v8_auto_roller.scripted_rolls(CONFIG, clm, [
+      "puppeteer-core",
+      "puppeteer-replay",
+  ])
+
 
   return api.v8_auto_roller.report_result()
 

@@ -14,25 +14,21 @@ DEPS = [
 ]
 
 CONFIG = {
-    "target_config": {
-        "solution_name": "v8",
-        "project_name": "v8/v8",
-        "account": "v8-ci-test262-import-export@chops-service-accounts.iam.gserviceaccount.com",
-    },
-    "subject": "[test262] Roll test262",
-    "roll_test262": True,
-    "regular_deps_roller": False,
     "reviewers": [
         "syg@chromium.org",
     ],
-    "bugs": "v8:7834",
 }
 
 
 def RunSteps(api):
-  api.v8_auto_roller.setup(CONFIG)
+  api.v8_auto_roller.setup_target(
+      'v8',
+      'https://chromium.googlesource.com/v8/v8',
+  )
 
-  api.v8_auto_roller.test262_roll(CONFIG)
+  clm = api.v8_auto_roller.build_cl_manager(bugs="v8:7834")
+
+  api.v8_auto_roller.test262_roll(CONFIG, clm)
 
   return api.v8_auto_roller.report_result()
 

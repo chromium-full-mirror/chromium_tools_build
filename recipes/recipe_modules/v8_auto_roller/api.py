@@ -2,31 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from functools import cached_property
+
 from recipe_engine import recipe_api
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.recipe_engine import result as result_pb2
 
+from .cl_manager import CLManager
 from .commons import discard_local_changes
 from .deps_handlers import (TrustedRollHandler, UntrustedRollHandler,
                             handle_failed_deps, get_dep_updates)
 from .chrome_handler import CfTPinRollHandler
+from .handler_base import DummyRollHandler
 from .test262_handler import Test262ImportHandler
-from .script_handlers import SriptedRollsFactory
+from .script_handlers import get_rollers
 
 BASE_URL = 'https://chromium.googlesource.com/'
-GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
-
-
-def set_defaults(autoroller_config):
-  autoroller_config.setdefault('regular_deps_roller', True)
-  autoroller_config.setdefault('roll_test262', False)
-  autoroller_config.setdefault('roll_chromium_pin', False)
-  autoroller_config.setdefault('scripted_rolls', [])
-  target_config = autoroller_config['target_config']
-  target_config.setdefault('gerrit_base_url', GERRIT_BASE_URL)
-  target_config.setdefault('base_url', BASE_URL)
-
 
 class V8AutoRoller(recipe_api.RecipeApi):
   """General purpose module for rolling dependencies in Chromium satelite
@@ -42,17 +34,12 @@ class V8AutoRoller(recipe_api.RecipeApi):
     super().__init__(*args, **kwargs)
     self.summary = []
 
-
-  def setup(self, autoroller_config):
-    set_defaults(autoroller_config)
-
+  def setup_target(self, solution_name, target_url):
     with self.m.step.nest('Setup'):
-      target_config = autoroller_config['target_config']
-
       gclient_config = self.m.gclient.make_config()
       soln = gclient_config.solutions.add()
-      soln.name = target_config['solution_name']
-      soln.url = target_config['base_url'] + target_config['project_name']
+      soln.name = solution_name
+      soln.url = target_url
       soln.revision = 'HEAD'
 
       self.m.gclient.c = gclient_config
@@ -67,6 +54,8 @@ class V8AutoRoller(recipe_api.RecipeApi):
       # solution_name), and might be something else, e.g. devtools-frontend.
       self.m.v8.checkout(ignore_input_commit=True, set_output_commit=False)
 
+  def build_cl_manager(self, bugs=None):
+    return CLManager(self.m, bugs)
 
   def report_result(self):
     result = result_pb2.RawResult()
@@ -75,28 +64,45 @@ class V8AutoRoller(recipe_api.RecipeApi):
       result.summary_markdown = 'updated ' + ', '.join(self.summary)
     return result
 
-  def regular_roll(self, autoroller_config):
-    if autoroller_config['regular_deps_roller']:
-      with self.m.step.nest('Find updated deps'):
-        discard_local_changes(self.m)
-        trusted_updates, untrusted_updates, failed = get_dep_updates(
-            self.m, autoroller_config)
+  def regular_roll(self, autoroller_config, cl_manager):
+    with self.m.step.nest('Find updated deps'):
+      discard_local_changes(self.m)
+      trusted_updates, untrusted_updates, failed = get_dep_updates(
+          self.m, autoroller_config)
 
-      TrustedRollHandler(self, autoroller_config, trusted_updates).roll()
-      UntrustedRollHandler(self, autoroller_config, untrusted_updates).roll()
+    TrustedRollHandler(self, autoroller_config,
+                       trusted_updates).roll(cl_manager)
+    UntrustedRollHandler(self, autoroller_config,
+                         untrusted_updates).roll(cl_manager)
 
-      with self.m.step.nest('Check failed deps'):
-        handle_failed_deps(self.m, failed)
+    with self.m.step.nest('Check failed deps'):
+      handle_failed_deps(self.m, failed)
 
-  def cft_pin_roll(self, autoroller_config):
-    CfTPinRollHandler(self, autoroller_config).roll()
+  def cft_pin_roll(self, autoroller_config, cl_manager):
+    CfTPinRollHandler(self, autoroller_config).roll(cl_manager)
 
-  def test262_roll(self, autoroller_config):
-    Test262ImportHandler(self, autoroller_config).roll()
+  def test262_roll(self, autoroller_config, cl_manager):
+    Test262ImportHandler(self, autoroller_config).roll(cl_manager)
 
-  def scripted_rolls(self, autoroller_config):
-    if autoroller_config['scripted_rolls']:
+  def scripted_rolls(self, autoroller_config, cl_manager, scripted_keys=None):
+    scripted_rollers = get_rollers(self, autoroller_config, scripted_keys or [])
+    if scripted_rollers:
       with self.m.step.nest('Scripted rolls'):
-        factory = SriptedRollsFactory
-        for roller in factory(autoroller_config).get_rollers(self):
-          roller.roll()
+        for roller in scripted_rollers:
+          roller.roll(cl_manager)
+
+  @cached_property
+  def service_account(self):
+    output_prefix = "Logged in as "
+    step_result = self.m.step(
+        'get login info', ['luci-auth', 'info'],
+        infra_step=True,
+        stdout=self.m.raw_io.output_text(),
+        step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+            f'{output_prefix}account@example.com.', stream='stdout'))
+    first_line = step_result.stdout.splitlines()[0]
+    extracted_email = first_line[len(output_prefix):-1]
+    return extracted_email
+
+  def dummy_roll(self, cl_manager):
+    return DummyRollHandler(self, None).roll(cl_manager)

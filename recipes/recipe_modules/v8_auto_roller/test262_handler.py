@@ -16,7 +16,6 @@ class Test262ImportHandler(RollHandler):
 
   def __init__(self, api, autoroller_config):
     super().__init__(api, autoroller_config)
-    self.enabled = self.config['roll_test262']
     self.import_range = None
 
   def name(self):

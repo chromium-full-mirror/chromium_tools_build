@@ -13,10 +13,6 @@ CHROME_VAR = 'chrome'
 class CfTPinRollHandler(RollHandler):
   """Chrome for Testing pin roller."""
 
-  def __init__(self, module, autoroller_config):
-    super().__init__(module, autoroller_config)
-    self.enabled = self.config['roll_chromium_pin']
-
   def name(self):
     return 'chromium pin'
 
@@ -37,7 +33,7 @@ class CfTPinRollHandler(RollHandler):
     try:
       step_result = api.gclient(
           f'get {CHROME_VAR} deps', ['getdep', f'--var={CHROME_VAR}'],
-          stdout=api.raw_io.output_text())
+          stdout=api.raw_io.output_text(''))
       # The first line contains the commit position number. Strip the rest.
       return step_result.stdout.strip().splitlines()[0].strip()
     except Exception:

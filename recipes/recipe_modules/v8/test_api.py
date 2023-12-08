@@ -9,7 +9,7 @@ from collections import OrderedDict
 import re
 
 from recipe_engine import recipe_test_api
-from recipe_engine.post_process import Filter, StepCommandContains
+from recipe_engine.post_process import Filter
 
 from PB.go.chromium.org.luci.scheduler.api.scheduler.v1 import (
     triggers as triggers_pb2)
@@ -161,9 +161,12 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
 
   def filter_exclude(self, *step_names):
     """Exclude steps from the expectations."""
-    skip_fragments = map(re.escape, step_names)
     return self.post_process(
-        Filter().include_re(r'^((?!(.*\.)?%s).)*$' % '|'.join(skip_fragments)))
+        Filter().include_re(self.exclude_by_names_re(*step_names)))
+
+  def exclude_by_names_re(self, *step_names):
+    skip_fragments = map(re.escape, step_names)
+    return r'^((?!(.*\.)?%s).)*$' % '|'.join(skip_fragments)
 
   def version_file(self, patch_level, desc,
       count=1, prefix='', major=3, minor=4):
