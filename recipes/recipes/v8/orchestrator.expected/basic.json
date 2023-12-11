@@ -334,7 +334,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/74ad88252b3d7868b0d4f87f547a64fac4cc427e30a9cbcccc4ed73971ac6af9"
     ],
     "infra_step": true,
     "luci_context": {
@@ -359,9 +359,9 @@
       "cipd",
       "ensure",
       "-root",
-      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/74ad88252b3d7868b0d4f87f547a64fac4cc427e30a9cbcccc4ed73971ac6af9",
       "-ensure-file",
-      "infra/chromium/compilator_watcher/${platform} latest",
+      "infra/chromium/compilator_watcher/${platform} git_revision:27c191f304c8d7329a393d8a69020fc14032c3c3",
       "-max-threads",
       "0",
       "-json-output",
@@ -387,7 +387,7 @@
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-git_revision:27c\",@@@",
       "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/chromium/compilator_watcher/resolved-platform\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    ]@@@",
@@ -398,7 +398,7 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/compilator_watcher",
+      "[START_DIR]/cipd_tool/infra/chromium/compilator_watcher/74ad88252b3d7868b0d4f87f547a64fac4cc427e30a9cbcccc4ed73971ac6af9/compilator_watcher",
       "--output",
       "[CLEANUP]/tmp_tmp_1/sub_build.pb",
       "--",

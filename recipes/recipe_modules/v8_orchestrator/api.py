@@ -7,6 +7,9 @@ from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from recipe_engine import recipe_api
 from google.protobuf import json_format
 
+COMPILATOR_WATCHER_GIT_REVISION = '27c191f304c8d7329a393d8a69020fc14032c3c3'
+
+
 class V8OrchestratorApi(recipe_api.RecipeApi):
 
   INHERIT = object()
@@ -56,7 +59,8 @@ class ProdCompilatorHandler(CompilatorHandler):
     build.
     """
     cipd_pkg = 'infra/chromium/compilator_watcher/${platform}'
-    compilator_watcher = self.api.cipd.ensure_tool(cipd_pkg, 'latest')
+    version = 'git_revision:{}'.format(COMPILATOR_WATCHER_GIT_REVISION)
+    compilator_watcher = self.api.cipd.ensure_tool(cipd_pkg, version)
     sub_build = build_pb2.Build()
     sub_build.CopyFrom(build_handle)
     cmd = [
