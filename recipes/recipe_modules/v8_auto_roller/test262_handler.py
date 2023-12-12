@@ -94,4 +94,4 @@ class Test262ImportHandler(RollHandler):
     ], self.config['reviewers'])
 
   def upload_flags(self):
-    return ['--set-bot-commit']
+    return ['-d']

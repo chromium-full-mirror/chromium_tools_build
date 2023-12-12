@@ -2106,7 +2106,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': '[test262] Roll test262', 'upload_flags': ['--set-bot-commit'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'range 1..3', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'no-export: true', 'R=piedone@punto.it'], 'add': False}"
+      "{'subject': '[test262] Roll test262', 'upload_flags': ['-d'], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'range 1..3', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'no-export: true', 'R=piedone@punto.it'], 'add': False}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
