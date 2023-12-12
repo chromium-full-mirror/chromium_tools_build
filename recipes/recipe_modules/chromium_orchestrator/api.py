@@ -216,7 +216,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium_tests.configure_swarming(
         self.m.tryserver.is_tryserver, builder_group=builder_id.group)
 
-    if test_names_to_skip:
+    if skip_tests_active and test_names_to_skip:
       tests = [test for test in tests if test.name not in test_names_to_skip]
       # Give the swarming shards for retries priority
       self.m.chromium_swarming.default_priority = 20
