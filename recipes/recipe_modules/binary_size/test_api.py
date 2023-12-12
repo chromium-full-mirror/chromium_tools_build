@@ -106,3 +106,10 @@ class BinarySizeTestApi(recipe_test_api.RecipeTestApi):
     # Simulates manual clearing of the LATEST file.
     return self.override_step_data('gsutil cat LATEST',
                                    self.m.raw_io.stream_output(''))
+
+  # TODO(https://crbug.com/1414410): remove after migration.
+  def on_migration_underway(self):
+    # Simulates trybot moving over to arm64 but not the ci bot.
+    return self.override_step_data(
+        'ls with_results_dir',
+        self.m.file.listdir(['TrichromeChrome32.minimal.apks']))

@@ -246,7 +246,35 @@ class BinarySizeApi(recipe_api.RecipeApi):
       if gs_zip_path:
         without_results_dir = self._download_recent_tot_analysis(
             gs_zip_path, staging_dir)
-      else:
+
+        # During the migration, the ci builder will still be building with
+        # target_cpu=arm while the trybot will be using target_cpu=arm64. The
+        # existance of TrichromeChrome32.minimal.apks signifies
+        # target_cpu=arm64, if present in the trybot results but not in ci
+        # results, ignore the cached ci data and rebuild without patch.
+        # TODO(https://crbug.com/1414410): Remove when migration is complete.
+        gs_files = self.m.file.listdir(
+            'ls without_results_dir',
+            without_results_dir,
+            test_data=['TrichromeChrome.minimal.apks'])
+        gs_files = [self.m.path.basename(f) for f in gs_files]
+        gs_has_trichrome32 = any(
+            f == 'TrichromeChrome32.minimal.apks' for f in gs_files)
+
+        patch_files = self.m.file.listdir(
+            'ls with_results_dir',
+            with_results_dir,
+            test_data=['TrichromeChrome.minimal.apks'])
+        patch_files = [self.m.path.basename(f) for f in patch_files]
+        patch_has_trichrome32 = any(
+            f == 'TrichromeChrome32.minimal.apks' for f in patch_files)
+
+        if patch_has_trichrome32 and not gs_has_trichrome32:
+          gs_zip_path = None
+          self.m.step.empty(
+              'Ignoring ToT cache from GS due to migration in progress.')
+
+      if not gs_zip_path:
         with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
           self.m.bot_update.deapply_patch(bot_update_step)
 
@@ -394,7 +422,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         dest=local_zip,
         name='Downloading zip')
 
-    results_dir = staging_dir.join('without_patch')
+    results_dir = staging_dir.join('without_patch_gs')
     self.m.zip.unzip('Unzipping tot analysis', local_zip, results_dir)
     return results_dir
 
