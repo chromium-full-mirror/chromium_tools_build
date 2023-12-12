@@ -416,7 +416,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           tests=tests)
     if comp_output.skylab_props:
       self.process_skylab_props(
-          comp_output.skylab_props, targets_config, tests=tests)
+          comp_output.skylab_props, targets_config, tests=failing_test_suites)
 
     # Trigger and wait for the (without patch) tests!
     with self.m.chromium_tests.wrap_chromium_tests(builder_config,
