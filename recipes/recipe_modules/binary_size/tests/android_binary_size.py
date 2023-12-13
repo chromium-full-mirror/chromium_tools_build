@@ -157,26 +157,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  # TODO(https://crbug.com/1414410): remove after migration.
-  yield api.test(
-      'normal_during_migration',
-      api.binary_size.build(
-          'normal build but during migration', override_commit_log=True),
-      api.binary_size.on_migration_underway(),
-      api.post_check(has_expected_supersize_link),
-      api.post_check(has_expected_binary_size_url),
-      api.post_check(final_step_is_not_nested),
-      # Make sure that we both download gs data but then ignore it.
-      api.post_process(post_process.StepSuccess,
-                       'Commit log for uploaded revision'),
-      api.post_process(post_process.StepSuccess, 'gsutil Downloading zip'),
-      api.post_process(post_process.StepSuccess, 'bot_update (without patch)'),
-      api.post_process(post_process.StepSuccess,
-                       'gclient runhooks (with patch again)'),
-      api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
-      api.post_process(post_process.DropExpectation),
-  )
-
   yield api.test(
       'unexpected_increase',
       api.binary_size.build(override_commit_log=True),

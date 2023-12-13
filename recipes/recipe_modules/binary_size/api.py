@@ -246,35 +246,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       if gs_zip_path:
         without_results_dir = self._download_recent_tot_analysis(
             gs_zip_path, staging_dir)
-
-        # During the migration, the ci builder will still be building with
-        # target_cpu=arm while the trybot will be using target_cpu=arm64. The
-        # existance of TrichromeChrome32.minimal.apks signifies
-        # target_cpu=arm64, if present in the trybot results but not in ci
-        # results, ignore the cached ci data and rebuild without patch.
-        # TODO(https://crbug.com/1414410): Remove when migration is complete.
-        gs_files = self.m.file.listdir(
-            'ls without_results_dir',
-            without_results_dir,
-            test_data=['TrichromeChrome.minimal.apks'])
-        gs_files = [self.m.path.basename(f) for f in gs_files]
-        gs_has_trichrome32 = any(
-            f == 'TrichromeChrome32.minimal.apks' for f in gs_files)
-
-        patch_files = self.m.file.listdir(
-            'ls with_results_dir',
-            with_results_dir,
-            test_data=['TrichromeChrome.minimal.apks'])
-        patch_files = [self.m.path.basename(f) for f in patch_files]
-        patch_has_trichrome32 = any(
-            f == 'TrichromeChrome32.minimal.apks' for f in patch_files)
-
-        if patch_has_trichrome32 and not gs_has_trichrome32:
-          gs_zip_path = None
-          self.m.step.empty(
-              'Ignoring ToT cache from GS due to migration in progress.')
-
-      if not gs_zip_path:
+      else:
         with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
           self.m.bot_update.deapply_patch(bot_update_step)
 
@@ -382,7 +354,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     lines = self.m.gsutil.cat(
         'gs://{bucket}/{source}'.format(
             bucket=self.results_bucket, source=gs_directory + 'LATEST'),
-        stdout=self.m.raw_io.output_text(),
+        stdout=self.m.raw_io.output_text(add_output_log=True),
         step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
             test_data),
         name='cat LATEST').stdout.splitlines()
