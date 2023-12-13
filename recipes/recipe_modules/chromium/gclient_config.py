@@ -494,8 +494,3 @@ def reclient_clang_scan_deps(c):
 def siso_latest(c):
   cv = c.solutions[0].custom_vars
   cv['siso_version'] = 'latest'
-
-
-@CONFIG_CTX()
-def checkout_rust(c):
-  c.solutions[0].custom_vars['checkout_rust'] = 'True'
