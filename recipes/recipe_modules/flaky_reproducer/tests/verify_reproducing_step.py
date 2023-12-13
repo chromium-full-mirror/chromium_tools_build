@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 from recipe_engine.recipe_api import Property
-from RECIPE_MODULES.build.flaky_reproducer.libs import (ReproducingStep,
-                                                        UnexpectedTestResult)
 
 DEPS = [
     'flaky_reproducer',
@@ -20,30 +18,26 @@ DEPS = [
 
 PROPERTIES = {
     'task_id': Property(default=None, kind=str),
-    'failing_sample': Property(default=None),
-    'reproducing_step_data': Property(default=None),
+    'test_name': Property(default=None, kind=str),
+    'result_summary_path': Property(default=None, kind=str),
+    'reproducing_step_path': Property(default=None, kind=str),
     'verify_on_builders': Property(default=None, kind=list),
     'monorail_issue': Property(default=None, kind=str),
 }
 
 
-def RunSteps(api, task_id, failing_sample, reproducing_step_data,
-             verify_on_builders, monorail_issue):
+def RunSteps(api, task_id, test_name, result_summary_path,
+             reproducing_step_path, verify_on_builders, monorail_issue):
   api.flaky_reproducer.set_config('auto')
-  if reproducing_step_data:
-    reproducing_step = ReproducingStep.from_jsonish(reproducing_step_data)
-  else:
-    reproducing_step = None
   builder_results = api.flaky_reproducer.verify_reproducing_step(
-      task_id, failing_sample, reproducing_step, verify_on_builders)
+      task_id, test_name, result_summary_path, reproducing_step_path,
+      verify_on_builders)
   api.flaky_reproducer.summarize_results(
-      task_id=task_id,
-      failing_sample=failing_sample,
-      test_binary=reproducing_step and reproducing_step.test_binary or None,
-      reproducing_step=reproducing_step,
-      all_reproducing_steps=([] if reproducing_step is None else
-                             [reproducing_step]),
-      builder_results=builder_results,
+      task_id,
+      test_name,
+      reproducing_step_path,
+      [] if reproducing_step_path is None else [reproducing_step_path],
+      builder_results,
       monorail_issue=monorail_issue)
 
 
@@ -134,9 +128,12 @@ def GenTests(api):
       'cannot_retrieve_invocation',
       api.properties(
           task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('some-test'),
-          reproducing_step_data=api.json.loads(
-              api.flaky_reproducer.get_test_data('reproducing_step.json'))),
+          test_name='some-test',
+          result_summary_path=api.flaky_reproducer.get_test_path(
+              'gtest_good_output.json'),
+          reproducing_step_path=api.flaky_reproducer.get_test_path(
+              'reproducing_step.json'),
+      ),
       api.expect_status('FAILURE'),
       api.post_check(post_process.ResultReason,
                      'Cannot retrieve invocation for task some-task-id.'),
@@ -147,9 +144,12 @@ def GenTests(api):
       'cannot_find_test_result_for_test',
       api.properties(
           task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('Not.Exists.Test'),
-          reproducing_step_data=api.json.loads(
-              api.flaky_reproducer.get_test_data('reproducing_step.json'))),
+          test_name='Not.Exists.Test',
+          result_summary_path=api.flaky_reproducer.get_test_path(
+              'gtest_good_output.json'),
+          reproducing_step_path=api.flaky_reproducer.get_test_path(
+              'reproducing_step.json'),
+      ),
       api.resultdb.query(
           {
               'task-example.swarmingserver.appspot.com-some-task-id':
@@ -163,24 +163,14 @@ def GenTests(api):
   )
 
   yield api.test(
-      'no_verify_builders_and_no_reproducing_step',
-      api.properties(
-          task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('MockUnitTests.FailTest')),
-      api.post_check(lambda check, steps: check(
-          steps['summarize_results'].step_summary_text,
-          re.search(r"could NOT be reproduced.", steps['summarize_results'].
-                    step_summary_text))),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'verify_builder_failed',
       api.properties(
           task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('MockUnitTests.FailTest'),
-          reproducing_step_data=api.json.loads(
-              api.flaky_reproducer.get_test_data('reproducing_step.json')),
+          test_name='MockUnitTests.FailTest',
+          result_summary_path=api.flaky_reproducer.get_test_path(
+              'gtest_good_output.json'),
+          reproducing_step_path=api.flaky_reproducer.get_test_path(
+              'reproducing_step.json'),
       ),
       api.resultdb.query(
           {
@@ -200,20 +190,24 @@ def GenTests(api):
       ),
       api.buildbucket.simulated_get_multi(
           builds=[generate_bb_get_multi_result({'$recipe_engine/cq': ''})],
-          step_name='verify_reproducing_step.find_related_builders.buildbucket.get_multi',
+          step_name=('verify_reproducing_step.find_related_builders'
+                     '.buildbucket.get_multi'),
       ),
       api.resultdb.query_test_results(
           test_running_history,
-          step_name='verify_reproducing_step.find_related_builders.query_test_results',
+          step_name=('verify_reproducing_step.find_related_builders'
+                     '.query_test_results'),
       ),
       api.step_data(
-          'verify_reproducing_step.get_test_binary from 54321fffffabc001',
+          'verify_reproducing_step.verify on Linux Tests'
+          '.get_test_binary from 54321fffffabc001',
           api.json.output_stream(
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
                       'gtest_task_request.json')))),
       api.step_data(
-          'verify_reproducing_step.get_test_binary from some-task-id',
+          'verify_reproducing_step.verify on failing sample'
+          '.get_test_binary from some-task-id',
           api.json.output_stream(
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
@@ -223,12 +217,11 @@ def GenTests(api):
           api.swarming.collect([
               api.swarming.task_result(
                   '0', 'name', failure=True, output='failed-output'),
-              api.swarming.task_result(
-                  '1', 'name', failure=True, output='failed-output'),
+              api.swarming.task_result('1', 'name', output='failed-output'),
           ])),
       api.post_check(lambda check, steps: check(
           steps['summarize_results'].step_summary_text,
-          re.search(r"Linux Tests \(failing sample\).+with failure", steps[
+          re.search(r"failing sample\s+\[not reproduced", steps[
               'summarize_results'].step_summary_text))),
       api.post_check(lambda check, steps: check(
           steps['summarize_results'].step_summary_text,
@@ -250,9 +243,11 @@ def GenTests(api):
       'verify_not_reproducible',
       api.properties(
           task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('MockUnitTests.FailTest'),
-          reproducing_step_data=api.json.loads(
-              api.flaky_reproducer.get_test_data('reproducing_step.json')),
+          test_name='MockUnitTests.FailTest',
+          result_summary_path=api.flaky_reproducer.get_test_path(
+              'gtest_good_output.json'),
+          reproducing_step_path=api.flaky_reproducer.get_test_path(
+              'reproducing_step.json'),
           verify_on_builders=['Win10 Tests x64'],
       ),
       api.resultdb.query(
@@ -273,89 +268,26 @@ def GenTests(api):
       ),
       api.buildbucket.simulated_get_multi(
           builds=[generate_bb_get_multi_result({'$recipe_engine/cq': ''})],
-          step_name='verify_reproducing_step.find_related_builders.buildbucket.get_multi',
+          step_name=('verify_reproducing_step.find_related_builders'
+                     '.buildbucket.get_multi'),
       ),
       api.resultdb.query_test_results(
           test_running_history,
-          step_name='verify_reproducing_step.find_related_builders.query_test_results',
+          step_name=('verify_reproducing_step.find_related_builders'
+                     '.query_test_results'),
       ),
       api.step_data(
-          'verify_reproducing_step.get_test_binary from 54321fffffabc001',
+          'verify_reproducing_step.verify on Linux Tests'
+          '.get_test_binary from 54321fffffabc001',
           api.json.output_stream(
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
                       'gtest_task_request.json')))),
       api.step_data('verify_reproducing_step.collect verify results',
                     api.swarming.collect([verify_swarming_result])),
-      api.step_data('verify_reproducing_step.load verify result',
-                    api.file.read_json(gtest_empty_result)),
       api.post_check(lambda check, steps: check(
           steps['summarize_results'].step_summary_text,
           re.search(r"not reproduced", steps['summarize_results'].
-                    step_summary_text))),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  bad_task_request = api.json.loads(
-      api.flaky_reproducer.get_test_data('gtest_task_request.json'))
-  bad_task_request['task_slices'][0]['properties']['command'] = [
-      'unknown', 'wrapper'
-  ]
-  yield api.test(
-      'unknown_test_binary_wrapper',
-      api.properties(
-          task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('MockUnitTests.FailTest'),
-          reproducing_step_data=api.json.loads(
-              api.flaky_reproducer.get_test_data('reproducing_step.json')),
-      ),
-      api.resultdb.query(
-          {
-              'task-example.swarmingserver.appspot.com-some-task-id':
-                  resultdb_invocation,
-          },
-          step_name='verify_reproducing_step.find_related_builders.rdb query'),
-      api.luci_analysis.query_variants(
-          query_variants_res,
-          test_id='ninja://base:base_unittests/MockUnitTests.FailTest',
-          parent_step_name='verify_reproducing_step.find_related_builders',
-      ),
-      api.luci_analysis.query_test_history(
-          query_test_history_res,
-          test_id='ninja://base:base_unittests/MockUnitTests.FailTest',
-          parent_step_name='verify_reproducing_step.find_related_builders',
-      ),
-      api.buildbucket.simulated_get_multi(
-          builds=[generate_bb_get_multi_result({'$recipe_engine/cq': ''})],
-          step_name='verify_reproducing_step.find_related_builders.buildbucket.get_multi',
-      ),
-      api.resultdb.query_test_results(
-          test_running_history,
-          step_name='verify_reproducing_step.find_related_builders.query_test_results',
-      ),
-      api.step_data(
-          'verify_reproducing_step.get_test_binary from 54321fffffabc001',
-          api.json.output_stream(bad_task_request)),
-      api.post_check(lambda check, steps: check(
-          steps['summarize_results'].step_summary_text,
-          re.search(r"Not Supported test binary: unknown wrapper", steps[
-              'summarize_results'].step_summary_text))),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  not_reproduced_step = api.json.loads(
-      api.flaky_reproducer.get_test_data('reproducing_step.json'))
-  not_reproduced_step['reproducing_rate'] = 0
-  not_reproduced_step['reproduced_cnt'] = 0
-  yield api.test(
-      'report_not_reproduced_strategy',
-      api.properties(
-          task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('MockUnitTests.FailTest'),
-          reproducing_step_data=not_reproduced_step),
-      api.post_check(lambda check, steps: check(
-          steps['summarize_results'].step_summary_text,
-          re.search(r"strategy not reproduced", steps['summarize_results'].
                     step_summary_text))),
       api.post_process(post_process.DropExpectation),
   )
@@ -364,9 +296,11 @@ def GenTests(api):
       'no_invocations_found_for_related_builders',
       api.properties(
           task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('MockUnitTests.FailTest'),
-          reproducing_step_data=api.json.loads(
-              api.flaky_reproducer.get_test_data('reproducing_step.json')),
+          test_name='MockUnitTests.FailTest',
+          result_summary_path=api.flaky_reproducer.get_test_path(
+              'gtest_good_output.json'),
+          reproducing_step_path=api.flaky_reproducer.get_test_path(
+              'reproducing_step.json'),
       ),
       api.resultdb.query(
           {
@@ -386,9 +320,11 @@ def GenTests(api):
       'verify nothing if no verify_on_builders matches',
       api.properties(
           task_id='some-task-id',
-          failing_sample=UnexpectedTestResult('MockUnitTests.FailTest'),
-          reproducing_step_data=api.json.loads(
-              api.flaky_reproducer.get_test_data('reproducing_step.json')),
+          test_name='MockUnitTests.FailTest',
+          result_summary_path=api.flaky_reproducer.get_test_path(
+              'gtest_good_output.json'),
+          reproducing_step_path=api.flaky_reproducer.get_test_path(
+              'reproducing_step.json'),
           verify_on_builders=['not_exists_builder'],
       ),
       api.resultdb.query(

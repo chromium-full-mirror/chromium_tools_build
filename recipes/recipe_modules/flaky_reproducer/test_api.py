@@ -11,7 +11,12 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 class FlakyReproducerTestApi(recipe_test_api.RecipeTestApi):
 
   @staticmethod
+  def get_test_path(filename):
+    """Return test data filepath"""
+    return os.path.join(THIS_DIR, 'resources', 'testdata', filename)
+
+  @staticmethod
   def get_test_data(filename):
     """Return test data as str"""
-    with open(os.path.join(THIS_DIR, 'testdata', filename), 'rb') as fp:
+    with open(FlakyReproducerTestApi.get_test_path(filename), 'rb') as fp:
       return fp.read()

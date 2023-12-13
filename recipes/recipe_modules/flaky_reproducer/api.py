@@ -12,9 +12,6 @@ from PB.go.chromium.org.luci.analysis.proto.v1 import common as common_v1
 from PB.go.chromium.org.luci.analysis.proto.v1 import predicate as predicate_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import test_verdict as test_verdict_pb2
 
-from .libs import (create_test_binary_from_task_request,
-                   create_result_summary_from_output_json, strategies,
-                   ReproducingStep)
 from .monorail_api import MonorailApi
 
 
@@ -54,6 +51,8 @@ class FlakyReproducer(recipe_api.RecipeApi):
   SUPPRESS_BUILDER_RE = re.compile(
       r'.*(android|ios|fieldtrial|reviver|backuprefptr|code-coverage).*',
       re.IGNORECASE)
+  TEST_BINARY_API_RUNNER = "test_binary_api_runner.py"
+  STRATEGY_API_RUNNER = "strategy_api_runner.py"
 
   # Chromite includes a symlink which points to a file it expects to exist in a
   # chroot. We aren't using chromite in a chroot, so this is an invalid symlink.
@@ -63,6 +62,145 @@ class FlakyReproducer(recipe_api.RecipeApi):
   CHROMITE_BAD_SYMLINK_DIR = ('third_party', 'chromite', 'sdk', 'etc',
                               'bash_completion.d')
 
+  def _api_runner(self, script: str, method: str, test_data=None, **kwargs):
+    """
+    Run |method| from resources/|script| with given |kwargs|.
+
+    resources/libs are designed to be shared between recipe script and the
+    strategy scripts running on test swarming bots (without recipe modules).
+    Due to the restriction (e.g. direct file access) of recipe modules, libs
+    access would be proxy through api.step and resources/|script|.
+
+    Args:
+      script (str): Script path.
+      method (str): Exported method name.
+      test_data (Any): JSON-able step output for given API for testing.
+      **kwargs (dict[str, str|None]): Additional kwargs will be converted into
+        CLI arguments for the script CLI.
+
+    Return:
+      Return value from the script method, could be any JSON-able types.
+    """
+    args = []
+    for key, value in kwargs.items():
+      if not value:
+        continue
+      args.append('--' + key)
+      if isinstance(value, list):
+        for each_value in value:
+          args.append(str(each_value))
+      else:
+        args.append(str(value))
+    result = self.m.step(
+        "api_runner",
+        cmd=['python3', self.resource(script), method] + args,
+        stdout=self.m.raw_io.output_text(add_output_log='on_failure'),
+        step_test_data=lambda: self.m.json.test_api.output_stream(test_data),
+        timeout=60)
+    return self.m.json.loads(result.stdout)
+
+  def _test_binary_api(self, method, test_data=None, **kwargs):
+    return self._api_runner(self.TEST_BINARY_API_RUNNER, method, test_data,
+                            **kwargs)
+
+  def _strategy_api(self, method, test_data=None, **kwargs):
+    return self._api_runner(self.STRATEGY_API_RUNNER, method, test_data,
+                            **kwargs)
+
+  @nest_step
+  def create_test_binary_from_task_request(self, task_request_path):
+    test_binary = self._test_binary_api(
+        'create_test_binary_from_task_request', task_request=task_request_path)
+    test_binary_path = self.m.path.mkstemp('test_binary')
+    self.m.file.write_json('dump', test_binary_path, test_binary)
+    return test_binary_path
+
+  @nest_step
+  def get_test_binary_swarming_task_config(self, test_binary_path):
+
+    class TaskConfig:
+      """TestBinary test environment info used for swarming tasks"""
+
+      def __init__(self, cas_input_root: str, cwd: str, dimensions: dict,
+                   env_vars: dict):
+        self.cas_input_root = cas_input_root
+        self.cwd = cwd
+        self.dimensions = dimensions
+        self.env_vars = env_vars
+
+    ret = self._test_binary_api(
+        'get_test_binary_swarming_task_config',
+        test_binary=test_binary_path,
+        test_data={
+            'cas_input_root': '12345/1',
+            'cwd': '',
+            'dimensions': {
+                'pool': 'foo',
+            },
+            'env_vars': {},
+        })
+    return TaskConfig(**ret)
+
+  @nest_step
+  def choose_strategies(self, test_binary_path, result_summary_path, test_name):
+    """Chooses the strategies that be applied to the test."""
+    return self._strategy_api(
+        'choose_strategies',
+        test_binary=test_binary_path,
+        result_summary=result_summary_path,
+        test_name=test_name,
+        test_data=[])
+
+  @nest_step
+  def choose_best_reproducing_step(self, reproducing_step_paths):
+    if not reproducing_step_paths:
+      return None
+    reproducing_step = self._strategy_api(
+        'choose_best_reproducing_step',
+        reproducing_steps=reproducing_step_paths)
+    if reproducing_step:
+      reproducing_step_path = self.m.path.mkstemp('reproducing_step')
+      self.m.file.write_json('dump', reproducing_step_path, reproducing_step)
+      return reproducing_step_path
+
+  @nest_step
+  def update_test_binary_with_reproducing_step(self, test_binary_path,
+                                               reproducing_step_path):
+    test_binary = self._test_binary_api(
+        'update_test_binary_with_reproducing_step',
+        test_binary=test_binary_path,
+        reproducing_step=reproducing_step_path)
+    test_binary_path = self.m.path.mkstemp('test_binary')
+    self.m.file.write_json('dump', test_binary_path, test_binary)
+    return test_binary_path
+
+  @nest_step
+  def test_binary_as_command(self, test_binary_path, output):
+    return self._test_binary_api(
+        'test_binary_as_command',
+        test_binary=test_binary_path,
+        output=output,
+        test_data=[])
+
+  @nest_step
+  def count_reproduced_failures(self, test_name, result_summary_paths,
+                                original_result_summary_path):
+    return self._strategy_api(
+        'count_reproduced_failures',
+        test_name=test_name,
+        result_summaries=result_summary_paths,
+        original_result_summary=original_result_summary_path,
+        test_data=0)
+
+  @nest_step
+  def summarize_reproducing_steps(self, reproducing_step_path,
+                                  all_reproducing_step_paths):
+    return self._strategy_api(
+        'summarize_reproducing_steps',
+        reproducing_step=reproducing_step_path,
+        all_reproducing_steps=all_reproducing_step_paths,
+        test_data=['', ''])
+
   @nest_step
   def get_test_result_summary(self, task_id):
     """Gets TestResultSummary from the output of a swarming task result.
@@ -71,7 +209,7 @@ class FlakyReproducer(recipe_api.RecipeApi):
       task_id (str|TaskRequestMetadata): The task_id for the swarming task.
 
     Returns:
-      TestResultSummary
+      Path to result summary file
     """
     task_results = self.m.swarming.collect('swarming collect', [task_id])
     if not task_results:
@@ -79,13 +217,13 @@ class FlakyReproducer(recipe_api.RecipeApi):
           'Cannot find TaskResult for task {0}.'.format(task_id))
     task_result = task_results[0]
 
-    cas_output = self.m.cas.download('download swarming outputs',
-                                     task_result.cas_outputs.digest,
-                                     self.m.raw_io.output_dir())
+    cas_output_path = self.m.path.mkdtemp()
+    cas_output = self.m.cas.download(
+        'download swarming outputs', task_result.cas_outputs.digest,
+        self.m.raw_io.output_dir(leak_to=cas_output_path))
     for output_json in ('run_histories.json', 'output.json'):
       if output_json in cas_output.raw_io.output_dir:
-        return create_result_summary_from_output_json(
-            self.m.json.loads(cas_output.raw_io.output_dir[output_json]))
+        return self.m.path.join(cas_output_path, output_json)
 
     raise self.m.step.StepFailure('Not supported task result.')
 
@@ -98,67 +236,73 @@ class FlakyReproducer(recipe_api.RecipeApi):
       task_id (str|TaskRequestMetadata): The task_id for the swarming task.
 
     Returns:
-      TestBinary
+      Path to test binary
     """
     task_request = self.m.swarming.show_request(
         'get_test_binary from {0}'.format(task_id), task_id)
-    test_binary = create_test_binary_from_task_request(task_request)
-    return test_binary.strip_for_bots()
+    task_request_path = self.m.path.mkstemp('task_request')
+    self.m.file.write_json("dump task_request", task_request_path,
+                           task_request.to_jsonish())
+    test_binary_path = self.create_test_binary_from_task_request(
+        task_request_path)
+    return test_binary_path
 
   @nest_step
-  def repack_test_binary(self, test_binary, result_summary):
+  def repack_test_binary(self, test_binary_path, result_summary_path):
     """Repack original test binary CAS with strategy runner."""
     tmp_dir = self.m.path.mkdtemp()
-    self.m.cas.download('download test binary', test_binary.cas_input_root,
+    task_config = self.get_test_binary_swarming_task_config(test_binary_path)
+    self.m.cas.download('download test binary', task_config.cas_input_root,
                         tmp_dir)
     runner_dir = tmp_dir.join(self.RUNNER_PACKAGE_PATH)
-    self.m.file.copytree(
-        'copy flaky_reproducer source',
-        self.repo_resource('recipes', 'recipe_modules', 'flaky_reproducer'),
-        runner_dir)
+    self.m.file.copytree('copy flaky_reproducer source', self.resource('.'),
+                         runner_dir)
 
     # Delete bad symlink that causing CAS upload failure.
     bad_symlink_dir = tmp_dir.join(*self.CHROMITE_BAD_SYMLINK_DIR)
     self.m.file.rmtree('remove bad symlink directory', bad_symlink_dir)
 
-    self.m.file.write_text('dump ResultSummary',
-                           runner_dir.join(self.RESULT_SUMMARY_FILENAME),
-                           result_summary.dump_raw_data())
-    self.m.file.write_json('dump TestBinary',
-                           runner_dir.join(self.TEST_BINARY_JSON_FILENAME),
-                           test_binary.to_jsonish())
+    self.m.file.copy('copy result_summary', result_summary_path,
+                     runner_dir.join(self.RESULT_SUMMARY_FILENAME))
+    self.m.file.copy('copy test_binary', test_binary_path,
+                     runner_dir.join(self.TEST_BINARY_JSON_FILENAME))
 
     self.m.isolate.write_isolate_file(
         runner_dir.join(self.TEST_BINARY_ISOLATE_FILENAME), ['../'])
     return self.m.isolate.isolate(
         'new test binary', runner_dir.join(self.TEST_BINARY_ISOLATE_FILENAME))
 
-  def launch_strategy_in_swarming(self, strategy, repacked_cas_input_root):
+  def launch_strategy_in_swarming(self, strategy_name, repacked_cas_input_root,
+                                  test_name, task_config):
     """Launches a swarming task that runs the strategy logic."""
     command = [
         'vpython3',
         'strategy_runner.py',
-        strategy.name,
+        strategy_name,
         '--test-binary={0}'.format(self.TEST_BINARY_JSON_FILENAME),
         '--result-summary={0}'.format(self.RESULT_SUMMARY_FILENAME),
         '--output=${{ISOLATED_OUTDIR}}/{0}'.format(
             self.REPRODUCING_STEP_FILENAME),
-        strategy.test_name,
+        test_name,
     ]
 
     request = (
         self.m.swarming.task_request()  # go/pyformat-break
         .with_name("flaky reproducer strategy {0} for {1}".format(
-            strategy.name, strategy.test_name))  #
+            strategy_name, test_name))  #
         .with_priority(self.c.priority)  #
+        .with_tags({
+            'flaky_reproducer': ['1'],
+            'strategy': [strategy_name]
+        })  #
     )
     request_slice = (
         request[0]  # go/pyformat-break
         .with_command(command)  #
         .with_relative_cwd(self.RUNNER_PACKAGE_PATH)  #
         .with_cas_input_root(repacked_cas_input_root)  #
-        .with_env_vars(**strategy.test_binary.env_vars)  #
-        .with_dimensions(**strategy.test_binary.dimensions)  #
+        .with_env_vars(**task_config.env_vars)  #
+        .with_dimensions(**task_config.dimensions)  #
         .with_execution_timeout_secs(self.c.strategy_timeout)  #
         .with_io_timeout_secs(self.c.io_timeout)  #
         .with_expiration_secs(self.c.expiration)  #
@@ -166,25 +310,7 @@ class FlakyReproducer(recipe_api.RecipeApi):
     request = request.with_slice(0, request_slice)
 
     return self.m.swarming.trigger(
-        "swarming strategy {0}".format(strategy.name), [request])[0]
-
-  def choose_strategies(self, test_binary, result_summary, test_name):
-    """Chooses the strategies that be applied to the test.
-
-    Args:
-      test_binary (TestBinary)
-      result_summary (TestResultSummary)
-      test_name (str): the test name used in TestResultSummary.
-
-    Return:
-      A list of Strategy objects that can be applied to the test.
-    """
-    chosen_strategies = []
-    for strategy_cls in strategies.values():
-      strategy = strategy_cls(test_binary, result_summary, test_name)
-      if strategy.valid_for_test():
-        chosen_strategies.append(strategy)
-    return chosen_strategies
+        "swarming strategy {0}".format(strategy_name), [request])[0]
 
   @nest_step
   def collect_strategy_results(self, strategy_results):
@@ -193,15 +319,14 @@ class FlakyReproducer(recipe_api.RecipeApi):
     step_summary = []
     for task_result in strategy_results:
       try:
+        step_summary.append("* [{0}]({1})".format(
+            task_result.name,
+            self._swarming_task_url(task_result.id),
+        ))
         with self.m.step.nest(task_result.name):
           task_result.analyze()
           step = self.collect_strategy_result(task_result)
           if step is not None:
-            step.debug_info['task_ui_link'] = self._swarming_task_url(
-                task_result.id)
-            step_summary.append("* [{0}]({1})".format(
-                step.readable_info().strip().split('\n', maxsplit=1)[0],
-                step.debug_info['task_ui_link']))
             reproducing_steps.append(step)
       except Exception:
         has_error.append(task_result.name)
@@ -210,31 +335,19 @@ class FlakyReproducer(recipe_api.RecipeApi):
           '\n* '.join(has_error)))
 
     presentation = self.m.step.active_result.presentation
-    presentation.step_text = (('{0} strategies reproduced\n\n'.format(
-        len([x for x in reproducing_steps if x]))) + '\n'.join(step_summary))
+    presentation.step_text = '\n'.join(step_summary)
     return reproducing_steps
 
   def collect_strategy_result(self, task_result):
     """Collect strategy result from swarming task output."""
     if self.REPRODUCING_STEP_FILENAME not in task_result.outputs:
       return None
-    return ReproducingStep.from_jsonish(
-        self.m.file.read_json(
-            'load ReproducingStep',
-            task_result.outputs[self.REPRODUCING_STEP_FILENAME]))
-
-  def choose_best_reproducing_step(self, reproducing_steps):
-    """Chooses the best ReproducingStep produced by the strategies."""
-    best_step = None
-    for step in reproducing_steps:
-      if not best_step or step.better_than(best_step):
-        best_step = step
-    return best_step
+    return task_result.outputs[self.REPRODUCING_STEP_FILENAME]
 
   def launch_verify_in_swarming(self,
                                 builder,
                                 test_name,
-                                test_binary,
+                                test_binary_path,
                                 retries=3):
     """Launches a swarming task that verify the reproducing step."""
     command = [
@@ -244,90 +357,96 @@ class FlakyReproducer(recipe_api.RecipeApi):
          "[subprocess.Popen("
          " [x.replace('$N$', str(i)) for x in sys.argv[1:]]"
          ").wait() for i in range({0})]").format(retries),
-    ] + test_binary.as_command('${{ISOLATED_OUTDIR}}/{0}'.format(
-        self.VERIFY_RESULT_SUMMARY_FILENAME))
+    ] + self.test_binary_as_command(
+        test_binary_path, '${{ISOLATED_OUTDIR}}/{0}'.format(
+            self.VERIFY_RESULT_SUMMARY_FILENAME))
     request = (
         self.m.swarming.task_request()  # go/pyformat-break
         .with_name("flaky reproducer verify on {0} for {1}".format(
             builder, test_name))  #
         .with_priority(self.c.priority)  #
-        .with_tags({'builder': [builder]})  #
+        .with_tags({
+            'flaky_reproducer': ['1'],
+            'builder': [builder]
+        })  #
     )
+    task_config = self.get_test_binary_swarming_task_config(test_binary_path)
     request_slice = (
         request[0]  # go/pyformat-break
         .with_command(command)  #
-        .with_relative_cwd(test_binary.cwd)  #
-        .with_cas_input_root(test_binary.cas_input_root)  #
-        .with_env_vars(**test_binary.env_vars)  #
-        .with_dimensions(**test_binary.dimensions)  #
+        .with_relative_cwd(task_config.cwd)  #
+        .with_cas_input_root(task_config.cas_input_root)  #
+        .with_env_vars(**task_config.env_vars)  #
+        .with_dimensions(**task_config.dimensions)  #
         .with_execution_timeout_secs(self.c.verify_timeout)  #
         .with_io_timeout_secs(self.c.io_timeout)  #
         .with_expiration_secs(self.c.expiration)  #
     )
     request = request.with_slice(0, request_slice)
 
-    return self.m.swarming.trigger("swarming verify {0}".format(builder),
-                                   [request])[0]
+    return self.m.swarming.trigger("swarming", [request])[0]
 
-  def collect_verify_test_results(self, task_result, failing_sample):
+  def collect_verify_test_results(self, task_result, test_name,
+                                  result_summary_path):
     """Collect builder verify test results from swarming task output."""
-    reproduced_runs = 0
-    total_runs = 0
+    result_summary_paths = []
     for filename, filepath in task_result.outputs.items():
       if re.match(r'result_summary_\d+.json', filename):
-        result_summary = create_result_summary_from_output_json(
-            self.m.file.read_json('load verify result', filepath))
-        total_runs += 1
-        for result in result_summary.get_all(failing_sample.test_name):
-          if failing_sample.similar_with(result):
-            reproduced_runs += 1
-            break
-    return BuilderVerifyResult(task_result.id, reproduced_runs, total_runs,
+        result_summary_paths.append(filepath)
+    if result_summary_paths:
+      reproduced_runs = self.count_reproduced_failures(test_name,
+                                                       result_summary_paths,
+                                                       result_summary_path)
+    else:
+      reproduced_runs = 0
+    return BuilderVerifyResult(task_result.id, reproduced_runs,
+                               len(result_summary_paths),
                                task_result.duration_secs)
 
   @nest_step
   def verify_reproducing_step(self,
                               task_id,
-                              failing_sample,
-                              reproducing_step,
+                              test_name,
+                              result_summary_path,
+                              reproducing_step_path,
                               verify_on_builders=None,
                               retries=3):
-    if not reproducing_step:
+    if not reproducing_step_path:
       return {}
     # Launch verify swarming tasks
-    verify_builders = self.find_related_builders(task_id,
-                                                 failing_sample.test_name,
+    verify_builders = self.find_related_builders(task_id, test_name,
                                                  verify_on_builders)
     # Verify failing builder sample
     builder = 'failing sample'
-    if (not verify_on_builders or builder in verify_on_builders or
-        reproducing_step.test_binary.builder in verify_on_builders):
-      if reproducing_step.test_binary.builder:
-        builder = '{0} (failing sample)'.format(
-            reproducing_step.test_binary.builder)
+    if not verify_on_builders or builder in verify_on_builders:
       verify_builders[builder] = task_id
 
-    return self.verify_reproducing_step_on_builders(verify_builders,
-                                                    failing_sample,
-                                                    reproducing_step, retries)
+    return self.verify_reproducing_step_on_builders(verify_builders, test_name,
+                                                    result_summary_path,
+                                                    reproducing_step_path,
+                                                    retries)
 
   def verify_reproducing_step_on_builders(self,
                                           verify_builders,
-                                          failing_sample,
-                                          reproducing_step,
+                                          test_name,
+                                          result_summary_path,
+                                          reproducing_step_path,
                                           retries=3):
     builder_results = {}
     swarming_tasks = {}  # { task_id: (builder, task_meta) }
     for builder, builder_task_id in verify_builders.items():
-      try:
-        test_binary = self.get_test_binary(builder_task_id)
-        test_binary = test_binary.with_options_from_other(
-            reproducing_step.test_binary)
-        task = self.launch_verify_in_swarming(
-            builder, failing_sample.test_name, test_binary, retries=retries)
-        swarming_tasks[task.id] = (builder, task)
-      except Exception as err:
-        builder_results[builder] = BuilderVerifyResult(error=str(err))
+      with self.m.step.nest('verify on {0}'.format(builder)) as presentation:
+        try:
+          test_binary_path = self.get_test_binary(builder_task_id)
+          test_binary_path = self.update_test_binary_with_reproducing_step(
+              test_binary_path, reproducing_step_path)
+          task = self.launch_verify_in_swarming(
+              builder, test_name, test_binary_path, retries=retries)
+          swarming_tasks[task.id] = (builder, task)
+          presentation.step_text = '[{0}]({1})'.format(task.name,
+                                                       task.task_ui_link)
+        except Exception as err:
+          builder_results[builder] = BuilderVerifyResult(error=str(err))
     if not swarming_tasks:
       return builder_results
     # Collect swarming task result
@@ -338,63 +457,38 @@ class FlakyReproducer(recipe_api.RecipeApi):
     for result in verify_results:
       builder, _ = swarming_tasks[result.id]
       try:
-        builder_results[builder] = self.collect_verify_test_results(
-            result, failing_sample)
         result.analyze()
+        builder_results[builder] = self.collect_verify_test_results(
+            result, test_name, result_summary_path)
       except Exception as err:
         builder_results[builder] = builder_results.get(
             builder, BuilderVerifyResult())._replace(
                 task_id=result.id, error=str(err))
     return builder_results
 
-  @nest_step
-  def summarize_results(self,
-                        task_id,
-                        failing_sample,
-                        test_binary,
-                        reproducing_step,
-                        all_reproducing_steps,
-                        builder_results,
-                        monorail_issue=None):
+  def summarize_results(self, *args, **kwargs):
+    """proxy for _summarize_results to wrap and inject presentation"""
+    with self.m.step.nest('summarize_results') as presentation:
+      self._summarize_results(*args, **kwargs, presentation=presentation)
+
+  def _summarize_results(self,
+                         task_id,
+                         test_name,
+                         reproducing_step_path,
+                         all_reproducing_step_paths,
+                         builder_results,
+                         presentation,
+                         monorail_issue=None):
     summary = []
 
     # sample failure info
-    message = 'For {0} in {1}\n{2}\n'.format(
-        failing_sample.test_name,
-        (test_binary and test_binary.builder or 'task_ui'),
-        self._swarming_task_url(task_id))
+    message = 'For {0}\n{1}\n'.format(
+        test_name, self._milo_test_results_url(task_id, test_name))
     summary.append(message)
-    if failing_sample.primary_error_message:
-      summary.append(failing_sample.primary_error_message)
 
-    # reproduce info
-    summary_header = ''
-    summary.append('\n')
-    if reproducing_step:
-      readable_info = reproducing_step.readable_info()
-      summary_header = readable_info.strip().split('\n')[0]
-      summary.append(readable_info)
-    else:
-      summary_header = 'The failure could NOT be reproduced.'
-      summary.append(summary_header)
-
-    # strategies info
-    if all_reproducing_steps:
-      # Adding tailing '  ' to force line break for markdown.
-      summary.append("\nIt's verified with following strategies:  ")
-      for step in all_reproducing_steps:
-        if step.debug_info.get('task_ui_link'):
-          message = "[{0} strategy]({1})".format(
-              step.strategy, step.debug_info['task_ui_link'])
-        else:
-          message = "{0} strategy".format(step.strategy)
-        if step.reproduced_cnt:
-          message += " reproduced {0} times ({1:.1f}%)".format(
-              step.reproduced_cnt, step.reproducing_rate * 100)
-        else:
-          message += " not reproduced"
-        # Adding tailing '  ' to force line break for markdown.
-        summary.append(message + '  ')
+    summary_header, message = self.summarize_reproducing_steps(
+        reproducing_step_path, all_reproducing_step_paths)
+    summary.append(message)
 
     # Group builder results in reproduced, not reproduced, error.
     reproduced = False
@@ -426,13 +520,12 @@ class FlakyReproducer(recipe_api.RecipeApi):
         builder_summary.append(builder_message + '  ')
       summary.append('\n'.join(builder_summary))
 
-    presentation = self.m.step.active_result.presentation
     # Milo build UI will pick the first line as step description.
     presentation.step_summary_text = (
         summary_header + '  \n' + '\n'.join(summary))
-    if reproducing_step:
-      presentation.logs['reproducing_step.json'] = self.m.json.dumps(
-          reproducing_step.to_jsonish(), indent=2)
+    if reproducing_step_path:
+      presentation.logs['reproducing_step.json'] = self.m.file.read_raw(
+          'reproducing_step.json', reproducing_step_path)
     if builder_results:
       presentation.logs['builder_results.json'] = self.m.json.dumps(
           builder_results, indent=2)
@@ -657,46 +750,40 @@ class FlakyReproducer(recipe_api.RecipeApi):
     return self._run(task_id, test_name, verify_on_builders, monorail_issue)
 
   def _run(self, task_id, test_name, verify_on_builders, monorail_issue):
-    # Retrieve failing test info.
-    try:
-      result_summary = self.get_test_result_summary(task_id)
-      if test_name not in result_summary:
-        raise self.m.step.StepFailure(
-            'Cannot find test {0} in test result for task {1}.'.format(
-                test_name, task_id))
-      failing_sample = result_summary.get_failing_sample(test_name)
-      test_binary = self.get_test_binary(task_id)
-    except NotImplementedError as err:
-      # Raise as StepWarning instead of failure.
-      raise self.m.step.StepWarning(repr(err))
-    repacked_cas = self.repack_test_binary(test_binary, result_summary)
+    result_summary_path = self.get_test_result_summary(task_id)
+    test_binary_path = self.get_test_binary(task_id)
+    repacked_cas = self.repack_test_binary(test_binary_path,
+                                           result_summary_path)
 
     # Trigger reproducing strategies in swarming
     swarming_tasks = []
-    for strategy in self.choose_strategies(test_binary, result_summary,
-                                           test_name):
+    task_config = self.get_test_binary_swarming_task_config(test_binary_path)
+    for strategy in self.choose_strategies(test_binary_path,
+                                           result_summary_path, test_name):
       swarming_tasks.append(
-          self.launch_strategy_in_swarming(strategy, repacked_cas))
+          self.launch_strategy_in_swarming(strategy, repacked_cas, test_name,
+                                           task_config))
     strategy_results = self.m.swarming.collect(
         'collect strategy results',
         swarming_tasks,
         output_dir=self.m.path.mkdtemp())
 
     # Verify reproducing steps
-    reproducing_steps = self.collect_strategy_results(strategy_results)
-    reproducing_step = self.choose_best_reproducing_step(reproducing_steps)
-    builder_results = self.verify_reproducing_step(task_id, failing_sample,
-                                                   reproducing_step,
+    reproducing_step_paths = self.collect_strategy_results(strategy_results)
+    reproducing_step_path = self.choose_best_reproducing_step(
+        reproducing_step_paths)
+    builder_results = self.verify_reproducing_step(task_id, test_name,
+                                                   result_summary_path,
+                                                   reproducing_step_path,
                                                    verify_on_builders)
 
     # output
     return self.summarize_results(
-        task_id=task_id,
-        failing_sample=failing_sample,
-        test_binary=test_binary,
-        reproducing_step=reproducing_step,
-        all_reproducing_steps=reproducing_steps,
-        builder_results=builder_results,
+        task_id,
+        test_name,
+        reproducing_step_path,
+        reproducing_step_paths,
+        builder_results,
         monorail_issue=monorail_issue)
 
   def _extract_task_id_from_invocation_name(self, inv_name):
@@ -717,6 +804,12 @@ class FlakyReproducer(recipe_api.RecipeApi):
 
   def _swarming_task_url(self, task_id):
     return '{0}/task?id={1}'.format(self.m.swarming.current_server, task_id)
+
+  def _milo_test_results_url(self, task_id, test_name):
+    url = 'https://luci-milo.appspot.com/ui/inv/'
+    return '{0}{1}/test-results?q={2}'.format(
+        url, self._generate_invocation_id_from_task_id(task_id),
+        self.m.url.quote(test_name))
 
   @nest_step
   def find_related_builders(self, task_id, test_name, verify_on_builders):

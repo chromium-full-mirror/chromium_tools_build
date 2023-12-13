@@ -37,9 +37,10 @@ def RunSteps(api, config, task_id, build_id, test_name, test_id,
       monorail_issue=monorail_issue)
 
 
+import re
 from google.protobuf import timestamp_pb2, struct_pb2
 
-from recipe_engine.post_process import DropExpectation, ResultReason
+from recipe_engine.post_process import DoesNotRun, DropExpectation, ResultReason
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
     common as common_pb2,  # go/pyformat-break
     invocation as invocation_pb2,  #
@@ -204,16 +205,12 @@ def GenTests(api):
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
                       'gtest_task_request.json')))),
+      api.step_data('choose_strategies.api_runner',
+                    api.json.output_stream(['repeat', 'batch'])),
       api.step_data('collect strategy results',
                     api.swarming.collect(success_swarming_results)),
-      api.step_data(
-          ('collect_strategy_results'
-           '.flaky reproducer strategy repeat for MockUnitTests.FailTest'
-           '.load ReproducingStep'),
-          api.file.read_json(
-              api.json.loads(
-                  api.flaky_reproducer.get_test_data(
-                      'reproducing_step.json')))),
+      api.step_data('choose_best_reproducing_step.api_runner',
+                    api.json.output_stream({'a': 'b'})),
       api.resultdb.query(
           {
               'task-example.swarmingserver.appspot.com-54321fffffabc123':
@@ -278,7 +275,8 @@ def GenTests(api):
                      '.query_test_results'),
       ),
       api.step_data(
-          'verify_reproducing_step.get_test_binary from 54321fffffabc123',
+          'verify_reproducing_step.verify on failing sample'
+          '.get_test_binary from 54321fffffabc123',
           api.json.output_stream(
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
@@ -286,22 +284,28 @@ def GenTests(api):
       api.step_data('verify_reproducing_step.collect verify results',
                     api.swarming.collect([verify_swarming_result('2')])),
       api.step_data(
-          'verify_reproducing_step.load verify result',
-          api.file.read_json(
-              api.json.loads(
-                  api.flaky_reproducer.get_test_data(
-                      'gtest_good_output.json')))),
-      api.step_data(
-          'verify_reproducing_step.load verify result (2)',
-          api.file.read_json(
-              api.json.loads(
-                  api.flaky_reproducer.get_test_data(
-                      'gtest_good_output.json')))),
+          'verify_reproducing_step.count_reproduced_failures.api_runner',
+          api.json.output_stream(2)),
+      api.step_data('summarize_results.summarize_reproducing_steps.api_runner',
+                    api.json.output_stream(['<header>',
+                                            '<reproducing_steps>'])),
       api.step_data(
           'summarize_results.post_summary_to_monorail'
           '.ModifyIssues projects/chromium/issues/123',
           api.json.output_stream(issue_result),
       ),
+      api.expect_status('SUCCESS'),
+      api.post_check(lambda check, steps: check(
+          steps['summarize_results'].step_summary_text,
+          ("<header>  \n"
+           "For MockUnitTests.FailTest\n"
+           "https://luci-milo.appspot.com/ui/inv/task-example.swarmingserver.appspot.com-54321fffffabc123/test-results?q=MockUnitTests.FailTest\n\n"
+           "<reproducing_steps>\n\n"
+           "The failure could be reproduced on following builders:\n"
+           "failing sample                 [reproduced](https://example.swarmingserver.appspot.com/task?id=2) 2/2  \n"
+           "Win10 Tests x64                [not reproduced](https://example.swarmingserver.appspot.com/task?id=None), with failure: 'NoneType' object has no attribute 'get'"
+          ) in steps['summarize_results'].step_summary_text)),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -333,6 +337,7 @@ def GenTests(api):
       state=api.swarming.TaskState.COMPLETED,
       output='some-output',
   )
+
   yield api.test(
       'strategy_without_result',
       api.properties(
@@ -355,26 +360,9 @@ def GenTests(api):
           'collect strategy results',
           api.swarming.collect(
               [success_swarming_result_without_reproducing_step])),
-  )
-
-  yield api.test(
-      'test_name_not_in_test_result',
-      api.properties(task_id='54321fffffabc123', test_name='NotExists.Test'),
-      api.step_data(
-          'get_test_result_summary.download swarming outputs',
-          api.raw_io.output_dir({
-              'output.json':
-                  api.flaky_reproducer.get_test_data('gtest_good_output.json'),
-          })),
-      api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'unknown_result_summary',
-      api.properties(task_id='54321fffffabc123', test_name='NotExists.Test'),
-      api.step_data('get_test_result_summary.download swarming outputs',
-                    api.raw_io.output_dir({'output.json': b'{}'})),
-      api.expect_status('FAILURE'),
+      api.post_process(DoesNotRun, 'choose_best_reproducing_step.api_runner'),
+      api.expect_status('SUCCESS'),
+      api.post_process(DropExpectation),
   )
 
   yield api.test(
@@ -434,7 +422,7 @@ def GenTests(api):
           [],
           'chromium/123',
           parent_step_name='query_sample_failure_from_luci_analysis'),
+      api.expect_status('FAILURE'),
       api.post_check(ResultReason, 'No cluster associated with bug.'),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
   )

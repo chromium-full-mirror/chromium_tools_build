@@ -41,11 +41,3 @@ def auto(c):
 def manual(c):
   c.priority = 30
   c.expiration = 20 * 60  # 20 minutes
-
-
-@config_ctx()
-def verify_on_every_builders(c):
-  '''Verify ReproducingStep on every builders that ran the test.
-  This config is mainly used for builder_verifier.'''
-  c.verify_on_all_buckets = True
-  c.verify_only_cq_sheriff_builders = False
