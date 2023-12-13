@@ -122,7 +122,7 @@ def _run_ninja(out_dir: str,
   # 500 targets per invocation is arbitrary, but we start hitting OS argv size
   # limits around 1K in my experience.
   def make_ninja_command(targets):
-    ninja_cmd = ['ninja', '-k', '1000000']
+    ninja_cmd = ['autoninja', '-k', '1000000']
     if jobs is not None:
       ninja_cmd.append('-j%d' % jobs)
 
