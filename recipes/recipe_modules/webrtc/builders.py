@@ -1129,6 +1129,24 @@ _TRYSERVER_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Debug',
                 'TARGET_BITS': 64,
             }),
+    'win11_release':
+        WebRTCBuilderSpec.create(
+            chromium_config='webrtc_clang',
+            gclient_config='webrtc',
+            simulation_platform='win',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Release',
+                'TARGET_BITS': 64,
+            }),
+    'win11_debug':
+        WebRTCBuilderSpec.create(
+            chromium_config='webrtc_clang',
+            gclient_config='webrtc',
+            simulation_platform='win',
+            chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_BITS': 64,
+            }),
 }
 
 BUILDERS_DB = builder_db.BuilderDatabase.create({
