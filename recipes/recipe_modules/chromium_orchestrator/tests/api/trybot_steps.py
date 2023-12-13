@@ -256,11 +256,7 @@ def GenTests(api):
           tester='fake-tester',
           skylab_tests=['lacros_all_tast_tests'],
       ),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[[(901, common_pb.SUCCESS), (902, common_pb.SUCCESS),
-                          (903, common_pb.SUCCESS)]]),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.override_step_data(
           'lacros_all_tast_tests results',
           stdout=api.raw_io.output_text(
@@ -376,16 +372,8 @@ def GenTests(api):
           tester='fake-tester',
           skylab_tests=['lacros_all_tast_tests'],
       ),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[[(901, common_pb.SUCCESS), (902, common_pb.SUCCESS),
-                          (903, common_pb.SUCCESS)]]),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build (2)',
-          1,
-          runner_builds=[[(901, common_pb.SUCCESS), (902, common_pb.SUCCESS),
-                          (903, common_pb.SUCCESS)]]),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('find test runner build (2)', 1),
       api.override_step_data(
           'lacros_all_tast_tests results',
           stdout=api.raw_io.output_text(
