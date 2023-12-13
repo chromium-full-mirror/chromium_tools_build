@@ -213,6 +213,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                             checkout_path,
                             targets_spec_dir=None,
                             precommit_details=_COMPUTE_PRECOMMIT_DETAILS,
+                            scripts_compile_targets_fn=None,
                             remote_tests_only=False):
     """
     Args:
@@ -229,26 +230,34 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         will use the non-pre-commit behavior. By default, the
         pre-commit-specific behavior will be used if there is a CL for
         the build, with the footers being taken from the CL description.
+      scripts_compile_targets_fn: A callable taking no arguments that
+        returns a mapping that maps from the script basename to a list
+        of compile targets for the script for all supported scripts.
+        Results will be memoized, so it will only be called a single
+        time.
       remote_tests_only (bool): only include targets for remote tests
 
     Returns: TargetsConfig for current builder
     """
-    # The scripts_compile_targets is indirected through a function so that we
-    # don't execute unnecessary steps if there are no scripts that need to be
-    # run
-    # Memoize the call to get_compile_targets_for_scripts so that we only
-    # execute the step once
-    memo = []
-
     if not targets_spec_dir:
       if builder_config.targets_spec_directory:
         targets_spec_dir = self.m.chromium_checkout.checkout_dir.join(
             builder_config.targets_spec_directory)
 
-    def scripts_compile_targets_fn():
-      if not memo:
-        memo.append(self.get_compile_targets_for_scripts())
-      return memo[0]
+    # The scripts_compile_targets is indirected through a function so that we
+    # don't execute unnecessary steps if there are no scripts that need to be
+    # run
+    # Memoize the call to get_compile_targets_for_scripts so that we only
+    # execute the step once
+    scripts_compile_targets = None
+    scripts_compile_targets_fn = (
+        scripts_compile_targets_fn or self.get_compile_targets_for_scripts)
+
+    def memoized_scripts_compile_targets_fn():
+      nonlocal scripts_compile_targets
+      if scripts_compile_targets is None:
+        scripts_compile_targets = scripts_compile_targets_fn()
+      return scripts_compile_targets
 
     targets_specs_by_builder_by_group = {}
     for group, spec_file in sorted(builder_config.targets_spec_files.items()):
@@ -262,7 +271,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     generator = generators.Generator(self, got_revisions, checkout_path,
                                      remote_tests_only, precommit_details,
-                                     scripts_compile_targets_fn)
+                                     memoized_scripts_compile_targets_fn)
 
     targets_by_builder_id = {}
     for builder_id in builder_config.builder_ids_in_scope_for_testing:

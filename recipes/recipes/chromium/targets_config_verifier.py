@@ -172,6 +172,7 @@ def _get_targets_config(
         checkout_path=repo_path,
         targets_spec_dir=targets_spec_dir,
         precommit_details=precommit_details,
+        scripts_compile_targets_fn=lambda: {},
     )
 
 
@@ -473,6 +474,10 @@ def GenTests(api):
                       'script': '//merge-script',
                   },
               }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
+              }],
           },
           testing_buildbot_targets_spec={
               'additional_compile_targets': ['foo'],
@@ -482,6 +487,10 @@ def GenTests(api):
                   'merge': {
                       'script': '//merge-script',
                   },
+              }],
+              'scripts': [{
+                  'name': 'bar',
+                  'script': 'bar.py',
               }],
           },
       ),
