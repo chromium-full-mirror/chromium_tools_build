@@ -181,8 +181,9 @@ def read_ctp_results(opts):
 
   res = {}
   for k, v in sharded_resp.items():
+    # The field name should align with TestRunner defined in ../test_runner.py.
     res[k] = {
-        'test_runner_url': v.task_results[0].task_url,
+        'url': v.task_results[0].task_url,
         'log_url': v.task_results[0].log_data.testhaus_url,
         'status': _check_build_status(v.task_results[0].task_url, opts),
     }
