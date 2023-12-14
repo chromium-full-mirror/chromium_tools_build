@@ -24,11 +24,8 @@ DEPS = [
 def GetChangedFiles(api, checkout_path):
   files = []
   if api.m.tryserver.gerrit_change:
-    patch_root = api.gclient.get_gerrit_patch_root()
-    assert patch_root, ('local path is not configured for {}'.format(
-        api.m.tryserver.gerrit_change_repo_url))
     with api.context(cwd=checkout_path):
-      files = api.m.tryserver.get_files_affected_by_patch(patch_root)
+      files = api.m.tryserver.get_files_affected_by_patch(checkout_path)
     for i, path in enumerate(files):
       path = str(path)
       files[i] = api.path.relpath(path, checkout_path)
@@ -71,7 +68,7 @@ def GenTests(api):
 
   def test_data(affected_files):
     existing_files = [
-        api.path['cache'].join('builder', 'pdfium', x) for x in affected_files
+        api.path['start_dir'].join('pdfium', x) for x in affected_files
     ]
     return sum([
         api.buildbucket.try_build(
