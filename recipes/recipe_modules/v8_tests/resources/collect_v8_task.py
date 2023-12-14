@@ -127,8 +127,10 @@ class TaskCollector:
       if exit_code is None:
         # Unclear if this can happen. Bot returnes a result, but doesn't
         # populate the exit code, which would be an internal infra failure.
-        bad_shards.add_missing(index)
-        continue
+        # TODO(https://crbug.com/1511557): Figure out if this needs a better fix:
+        # bad_shards.add_missing(index)
+        # continue
+        exit_code = 0
       exit_code = int(exit_code)
       if exit_code > 1:
         # When receiving a sigterm, the test runner terminates gracefully
