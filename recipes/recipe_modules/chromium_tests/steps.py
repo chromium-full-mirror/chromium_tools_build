@@ -3065,13 +3065,10 @@ class SkylabTest(AbstractSkylabTest, Test):
     raise self.api.m.step.StepFailure(status)
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
-    # TODO(crbug.com/1248693): Use the invocation included by the parent builds.
     del suffix
     invocation_names = []
-    for shard_runner_builds in self.test_runner_builds.values():
-      for attempt_runner_build in shard_runner_builds:
-        invocation_names.append('invocations/build-%d' %
-                                attempt_runner_build.id)
+    for ctp_id in self.ctp_build_ids:
+      invocation_names.append(f'invocations/build-{ctp_id}')
     return invocation_names
 
   def pre_run(self, suffix: str) -> None:
