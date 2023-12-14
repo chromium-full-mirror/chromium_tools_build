@@ -440,50 +440,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'without_patch_compilator_non_src_CL_trigger_compile_wo_patch_early',
-      ctbc_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium_orchestrator.override_test_spec(
-          builder_group='fake-group',
-          builder='fake-builder',
-          tester='fake-tester',
-      ),
-      api.chromium.try_build(
-          builder='fake-orchestrator',
-          git_repo='https://chromium.googlesource.com/v8/v8',
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-          experiments=['chromium.pre_retry_shards_without_patch_compile'],
-      ),
-      api.chromium_orchestrator.override_compilator_steps(
-          include_override_deps=True),
-      api.chromium_orchestrator.override_compilator_steps(
-          with_patch=True, is_compile_phase=False, include_override_deps=True),
-      api.chromium_orchestrator.override_compilator_steps(with_patch=False),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'retry shards with patch', failures=['Test.One']),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'without patch', failures=['Test.One']),
-      api.post_process(post_process.MustRun,
-                       'trigger compilator (without patch)'),
-      api.post_process(
-          post_process.LogContains,
-          'trigger compilator (without patch)',
-          'request',
-          ['deps_revision_overrides', 'src/v8'],
-      ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'coverage_not_enabled',
       get_try_build(),
       ctbc_properties(),
@@ -771,44 +727,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'retry_shards_trigger_compile_wo_patch_early',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-          experiments=['chromium.pre_retry_shards_without_patch_compile'],
-      ),
-      ctbc_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium_orchestrator.override_test_spec(
-          builder_group='fake-group',
-          builder='fake-builder',
-          tester='fake-tester',
-      ),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'with patch', failures=['Test.One']),
-      api.chromium_orchestrator.override_compilator_steps(),
-      api.chromium_orchestrator.override_compilator_steps(
-          is_compile_phase=False),
-      api.post_process(post_process.MustRun,
-                       'trigger compilator (without patch)'),
-      api.post_process(post_process.MustRun,
-                       'browser_tests (retry shards with patch)'),
-      api.post_process(post_process.MustRun, 'buildbucket.cancel'),
-      api.post_process(post_process.DoesNotRun,
-                       COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.MustRun, 'Test statistics'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'retry_shards_skip_without_patch',
       api.chromium.try_build(
           builder_group='fake-try-group',
@@ -1061,101 +979,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'retry_shards_invalid_trigger_compile_wo_patch_early',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-          experiments=['chromium.pre_retry_shards_without_patch_compile'],
-      ),
-      ctbc_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium_orchestrator.override_test_spec(
-          builder_group='fake-group',
-          builder='fake-builder',
-          tester='fake-tester',
-      ),
-      api.override_step_data(
-          'browser_tests (with patch)',
-          api.chromium_swarming.canned_summary_output(
-              api.test_utils.gtest_results(test_results_json='', retcode=1),
-              failure=True)),
-      api.override_step_data(
-          'browser_tests (retry shards with patch)',
-          api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_gtest_output(passing=True), failure=False)),
-      api.chromium_orchestrator.override_compilator_steps(),
-      api.chromium_orchestrator.override_compilator_steps(
-          is_compile_phase=False),
-      api.post_process(post_process.MustRun,
-                       'trigger compilator (without patch)'),
-      api.post_process(post_process.MustRun,
-                       'browser_tests (retry shards with patch)'),
-      api.post_process(post_process.DoesNotRun,
-                       'browser_tests (without patch)'),
-      api.post_process(post_process.MustRun, 'buildbucket.cancel'),
-      api.post_process(post_process.DoesNotRun,
-                       COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'retry_shards_invalid_trigger_compile_wo_patch_early_can_outlive',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-          experiments=[
-              'chromium.pre_retry_shards_without_patch_compile',
-              'chromium.compilator_can_outlive_parent',
-          ],
-      ),
-      ctbc_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium_orchestrator.override_test_spec(
-          builder_group='fake-group',
-          builder='fake-builder',
-          tester='fake-tester',
-      ),
-      api.override_step_data(
-          'browser_tests (with patch)',
-          api.chromium_swarming.canned_summary_output(
-              api.test_utils.gtest_results(test_results_json='', retcode=1),
-              failure=True)),
-      api.override_step_data(
-          'browser_tests (retry shards with patch)',
-          api.chromium_swarming.canned_summary_output(
-              api.test_utils.canned_gtest_output(passing=True), failure=False)),
-      api.chromium_orchestrator.override_compilator_steps(),
-      api.chromium_orchestrator.override_compilator_steps(
-          is_compile_phase=False),
-      api.post_process(post_process.MustRun,
-                       'trigger compilator (without patch)'),
-      api.post_process(post_process.MustRun,
-                       'browser_tests (retry shards with patch)'),
-      api.post_process(post_process.DoesNotRun,
-                       'browser_tests (without patch)'),
-      api.post_process(post_process.DoesNotRun, 'buildbucket.cancel'),
-      api.post_process(post_process.DoesNotRun,
-                       COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'retry_shards_invalid_retry',
       api.chromium.try_build(
           builder_group='fake-try-group',
@@ -1229,54 +1052,6 @@ def GenTests(api):
                        'browser_tests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'browser_tests (without patch)'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'retry_shards_all_invalid_results_trigger_compile_wo_patch_early',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-          experiments=['chromium.pre_retry_shards_without_patch_compile'],
-      ),
-      ctbc_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium_orchestrator.override_test_spec(
-          builder_group='fake-group',
-          builder='fake-builder',
-          tester='fake-tester',
-      ),
-      api.override_step_data(
-          'browser_tests (with patch)',
-          api.chromium_swarming.canned_summary_output(
-              api.test_utils.gtest_results('invalid', retcode=1),
-              failure=True)),
-      api.override_step_data(
-          'browser_tests (retry shards with patch)',
-          api.chromium_swarming.canned_summary_output(
-              api.test_utils.gtest_results('invalid', retcode=1),
-              failure=True)),
-      api.chromium_orchestrator.override_compilator_steps(),
-      api.chromium_orchestrator.override_compilator_steps(
-          is_compile_phase=False),
-      api.post_process(post_process.MustRun,
-                       'browser_tests (retry shards with patch)'),
-      api.post_process(post_process.MustRun,
-                       'trigger compilator (without patch)'),
-      api.post_process(post_process.DoesNotRun,
-                       'browser_tests (without patch)'),
-      api.post_process(post_process.MustRun, 'buildbucket.cancel'),
-      api.post_process(post_process.DoesNotRun,
-                       COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -1677,8 +1452,6 @@ def GenTests(api):
           build_id=54321,
       ),
       api.chromium_orchestrator.override_compilator_build_proto_fetch(
-          build_id=12345, status=common_pb.FAILURE),
-      api.chromium_orchestrator.override_compilator_build_proto_fetch(
           build_id=54321, status=common_pb.FAILURE),
       api.chromium_orchestrator.override_test_spec(
           builder_group='fake-group',
@@ -1794,52 +1567,6 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'failed_compilator_local_test_trigger_compile_wo_patch_early',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-orchestrator',
-          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
-          experiments=['chromium.pre_retry_shards_without_patch_compile'],
-      ),
-      ctbc_properties(),
-      api.properties(
-          **{
-              '$build/chromium_orchestrator':
-                  InputProperties(
-                      compilator='fake-compilator',
-                      compilator_watcher_git_revision='e841fc',
-                  ),
-          }),
-      api.chromium_orchestrator.override_test_spec(
-          builder_group='fake-group',
-          builder='fake-builder',
-          tester='fake-tester',
-      ),
-      api.chromium_orchestrator.override_compilator_build_proto_fetch(
-          status=common_pb.FAILURE),
-      api.chromium_orchestrator.override_schedule_compilator_build(),
-      api.chromium_orchestrator.override_compilator_steps(),
-      api.chromium_orchestrator.override_compilator_steps(
-          is_compile_phase=False,
-          sub_build_status=common_pb.FAILURE,
-          sub_build_summary=("1 Test Suite(s) failed.\n\n"
-                             "**headless_python_unittests** failed.")),
-      api.chromium_orchestrator.override_schedule_compilator_build(
-          step_name='trigger compilator (without patch)',
-          build_id=54321,
-      ),
-      api.chromium_orchestrator.override_compilator_build_proto_fetch(
-          build_id=54321),
-      api.chromium_tests.gen_swarming_and_rdb_results(
-          'browser_tests', 'with patch', failures=['Test.One']),
-      api.post_process(post_process.DoesNotRun,
-                       COMPILATOR_SWARMING_TASK_COLLECT_STEP),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.MustRun, 'buildbucket.cancel'),
       api.post_process(post_process.DropExpectation),
   )
 

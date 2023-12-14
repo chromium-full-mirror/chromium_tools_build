@@ -73,14 +73,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # True when the compilator is triggered.
     self.disable_auto_compilator_cancels = False
 
-    # Build proto to be assigned when triggering a without patch compilator
-    # build. This needs to be defined here so that the
-    # trigger_without_patch_compile_callback function can assign the variable.
-    self.without_patch_build = None
-    # Without patch build was triggered early, before the retry shards
-    # are triggered.
-    self.triggered_without_patch_build_early = False
-
   def trybot_steps(self):
     if self.m.led.launched_by_led and not self.m.led.led_build:
       return result_pb2.RawResult(
@@ -106,14 +98,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         self.m.buildbucket.set_output_gitiles_commit(
             comp_build.output.gitiles_commit)
 
-      # When the without_patch_build was triggered early in the build
-      # (during the retry shards step) but no longer needed by the
-      # orchestrator, we don't need to wait around for it to finish.
-      # By this point the without_patch_build has already been cancelled through
-      # buildbucket.cancel() and the compilator swarming task will finish
-      # shutting down on its own time.
-      if (self.triggered_without_patch_build_early or
-          self.disable_auto_compilator_cancels):
+      if self.disable_auto_compilator_cancels:
         return raw_result
       # crbug.com/1271287#c22
       # Wait for compilator task overhead to complete
@@ -248,49 +233,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
               output_dir,
           ))
 
-    trigger_without_patch_compile_early = False
-    if ('chromium.pre_retry_shards_without_patch_compile'
-        in self.m.buildbucket.build.input.experiments):
-      trigger_without_patch_compile_early = True
-
-    def trigger_without_patch_compile_callback(test_suites):
-      if self.m.chromium_tests.should_skip_without_patch(
-          builder_config, affected_files,
-          self.m.chromium_checkout.src_dir.join(
-              comp_output.src_side_test_spec_dir)):
-        return
-
-      # Trigger another compilator build with the targets needed
-      compilator_properties['test_targets'] = list(
-          set(t.target_name for t in test_suites))
-
-      if comp_output.override_deps != None:
-        compilator_properties['deps_revision_overrides'] = (
-            dict(comp_output.override_deps))
-
-      # With can_outlive_parent=True, this means that when the orchestrator
-      # is cancelled or infra failed, the triggered compilator won't
-      # automatically get cancelled. This is so that orchestrator builds
-      # don't have to wait up to 4m waiting for the compilator swarming task
-      # to finish cleanly.
-      self.without_patch_build = self._trigger_compilator(
-          'trigger compilator (without patch)',
-          compilator_properties,
-          gitiles_commit,
-          can_outlive_parent=True)
-      self.triggered_without_patch_build_early = True
-
-    if trigger_without_patch_compile_early:
-      pre_retry_shards_callback = trigger_without_patch_compile_callback
-    else:
-      pre_retry_shards_callback = None
     # Trigger and wait for the tests (and process coverage data, if enabled)!
     with self.m.chromium_tests.wrap_chromium_tests(builder_config, tests):
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests_with_patch(
               tests,
               retry_failed_shards=builder_config.retry_failed_shards,
-              pre_retry_shards_callback=pre_retry_shards_callback,
           ))
 
       if (tests and self.m.code_coverage.using_coverage and
@@ -308,17 +256,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     _, local_tests_raw_result = self.process_sub_build(
         build_to_process, is_compile_phase=False, with_patch=True)
 
-    def cancel_without_patch_build(wo_build_id):
-      self.m.buildbucket.cancel_build(
-          wo_build_id,
-          ('Canceling because the parent builder does not need to retry '
-           'shards without patch.'),
-      )
-
     if not failing_test_suites:
-      if (self.without_patch_build and trigger_without_patch_compile_early and
-          not self.disable_auto_compilator_cancels):
-        cancel_without_patch_build(self.without_patch_build.id)
       self.m.chromium_swarming.report_stats()
       # There could be exonerated failed tests from FindIt flakes
       self.m.chromium_tests.summarize_test_failures(tests)
@@ -357,9 +295,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         builder_config, affected_files,
         self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir)):
-      if (self.without_patch_build and trigger_without_patch_compile_early and
-          not self.disable_auto_compilator_cancels):
-        cancel_without_patch_build(self.without_patch_build.id)
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
 
       summary_markdown = self.m.chromium_tests.format_unrecoverable_failures(
@@ -377,28 +312,24 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # =====================================================================
     # Now we're going into the without patch phase
     # =====================================================================
-    if trigger_without_patch_compile_early:
-      # self.without_patch_build should have been set via the callback function
-      assert self.without_patch_build is not None
-    else:
-      # Trigger another compilator build with the targets needed
-      compilator_properties['test_targets'] = list(
-          set(t.target_name for t in failing_test_suites))
+    # Trigger another compilator build with the targets needed
+    compilator_properties['test_targets'] = list(
+        set(t.target_name for t in failing_test_suites))
 
-      if comp_output.override_deps != None:
-        compilator_properties['deps_revision_overrides'] = (
-            dict(comp_output.override_deps))
+    if comp_output.override_deps != None:
+      compilator_properties['deps_revision_overrides'] = (
+          dict(comp_output.override_deps))
 
-      self.without_patch_build = self._trigger_compilator(
-          'trigger compilator (without patch)',
-          compilator_properties,
-          gitiles_commit,
-          can_outlive_parent=self.disable_auto_compilator_cancels)
+    wo_build = self._trigger_compilator(
+        'trigger compilator (without patch)',
+        compilator_properties,
+        gitiles_commit,
+        can_outlive_parent=self.disable_auto_compilator_cancels)
 
     # Display steps of triggered (without patch) compilator until it outputs
     # swarming trigger props for the tests to retrigger without patch
     wo_build_to_process = self.launch_compilator_watcher(
-        self.without_patch_build, is_compile_phase=True, with_patch=False)
+        wo_build, is_compile_phase=True, with_patch=False)
 
     comp_output, maybe_raw_result = self.process_sub_build(
         wo_build_to_process, is_compile_phase=True, with_patch=False)
