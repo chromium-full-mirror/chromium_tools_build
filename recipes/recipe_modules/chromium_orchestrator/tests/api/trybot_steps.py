@@ -906,8 +906,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           revision='d3advegg13',
           tags=api.buildbucket.tags(
-              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
-          experiments=['chromium.skip_successful_tests']),
+              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890')),
       api.cq(run_mode='FULL_RUN'),
       ctbc_properties(),
       api.properties(
@@ -946,8 +945,7 @@ def GenTests(api):
           builder='fake-orchestrator',
           revision='d3advegg13',
           tags=api.buildbucket.tags(
-              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
-          experiments=['chromium.skip_successful_tests']),
+              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890')),
       api.cq(run_mode='FULL_RUN'),
       ctbc_properties(),
       api.properties(
