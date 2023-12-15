@@ -6,11 +6,13 @@ from recipe_engine.post_process import (DropExpectation, StepCommandContains,
                                         StepSuccess)
 
 DEPS = [
-  'chromium_android',
+    'recipe_engine/path',
+    'chromium_android',
 ]
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.chromium_android.get_changed_lines_for_revision()
 
 

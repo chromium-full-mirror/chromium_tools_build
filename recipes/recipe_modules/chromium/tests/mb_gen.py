@@ -34,6 +34,8 @@ def RunSteps(api):
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   api.chromium.mb_gen(
       chromium.BuilderId.create_for_group('test-group', 'test-builder'),
       phase='test_phase',
@@ -74,12 +76,12 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        [
                            '--config-file',
-                           'None/override/mb_config.pyl',
+                           '[CACHE]/builder/src/override/mb_config.pyl',
                        ]),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        [
                            '--isolate-map-file',
-                           'None/override/gn_isolate_map.pyl',
+                           '[CACHE]/builder/src/override/gn_isolate_map.pyl',
                        ]),
       api.post_process(post_process.DropExpectation),
   )

@@ -20,6 +20,7 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   api.chromium.mb_gen(
       chromium.BuilderId.create_for_group('chromium.perf.pinpoint',

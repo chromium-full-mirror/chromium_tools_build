@@ -19,6 +19,7 @@ def RunSteps(api):
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
   api.chromium.apply_config('mb')
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   api.chromium.runhooks()
 

@@ -5,9 +5,10 @@
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
 DEPS = [
-  'chromium',
-  'recipe_engine/platform',
-  'recipe_engine/properties',
+    'chromium',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
 ]
 
 
@@ -16,6 +17,7 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       BUILD_CONFIG=api.properties.get('build_config', 'Release'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   use_remoteexec = api.properties.get('use_remoteexec', False)
   use_goma = not use_remoteexec

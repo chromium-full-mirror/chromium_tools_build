@@ -14,6 +14,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
     'recipe_engine/assertions',
+    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
 ]
@@ -66,6 +67,8 @@ FAKE_TARGETS_SPEC = {
 
 
 def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   targets_config = api.chromium_tests.create_targets_config(

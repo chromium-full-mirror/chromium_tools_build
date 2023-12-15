@@ -7,6 +7,7 @@ from recipe_engine import post_process
 DEPS = [
     'chromium',
     'isolate',
+    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
 ]
@@ -14,6 +15,7 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   api.isolate.compare_build_artifacts('first_dir', 'second_dir')
 

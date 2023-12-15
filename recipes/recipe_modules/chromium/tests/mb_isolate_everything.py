@@ -6,10 +6,15 @@ from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium
 
-DEPS = ['chromium']
+DEPS = [
+    'chromium',
+    'recipe_engine/path',
+]
+
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.chromium.mb_isolate_everything(
       chromium.BuilderId.create_for_group('test-group', 'test-builder'))
 

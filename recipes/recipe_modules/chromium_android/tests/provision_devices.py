@@ -5,14 +5,17 @@
 from recipe_engine.post_process import DropExpectation, StepCommandContains
 
 DEPS = [
-  'chromium',
-  'chromium_android',
+    'recipe_engine/path',
+    'chromium',
+    'chromium_android',
 ]
 
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('non_device_wipe_provisioning')
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   api.chromium_android.provision_devices(emulators=True)
 
 
@@ -21,7 +24,7 @@ def GenTests(api):
       'basic',
       api.post_process(StepCommandContains, 'provision_devices', [
           'vpython3',
-          'None/build/android/provision_devices.py',
+          '[CACHE]/builder/src/build/android/provision_devices.py',
       ]),
       api.post_process(StepCommandContains, 'provision_devices', [
           '--emulators',

@@ -10,6 +10,7 @@ from recipe_engine.post_process import (
 DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/json',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/runtime',
     'recipe_engine/swarming',
@@ -22,6 +23,8 @@ def RunSteps(api):
   api.v8_tests.set_up_swarming()
   api.v8_tests.read_cl_footer_flags()
   api.v8_tests.load_static_test_configs()
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   tests = api.v8_tests.extra_tests_from_properties()
   api.v8_tests.runtests(tests)
 

@@ -12,6 +12,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.archive.download_and_unzip_build(
       'extract build',
       target=api.path['checkout'].join('Release', 'out'),

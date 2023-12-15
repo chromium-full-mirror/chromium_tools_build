@@ -21,7 +21,7 @@ PROPERTIES = {
 
 
 def RunSteps(api, label_or_pattern, what_to_show):
-  refs = api.gn.desc(api.path['checkout'].join('out', 'Release'),
+  refs = api.gn.desc(api.path['cache'] / 'builder' / 'src' / 'out' / 'Release',
                      label_or_pattern, what_to_show)
   api.assertions.assertEqual(refs, ['file1', 'file2'])
 

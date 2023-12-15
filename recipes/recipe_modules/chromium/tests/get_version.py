@@ -5,12 +5,15 @@
 from recipe_engine import post_process
 
 DEPS = [
-  'chromium',
-  'recipe_engine/assertions'
+    'chromium',
+    'recipe_engine/assertions',
+    'recipe_engine/path',
 ]
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   version = api.chromium.get_version()
   api.assertions.assertEqual(version, {
       'MAJOR': '51',

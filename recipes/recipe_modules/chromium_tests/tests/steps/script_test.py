@@ -25,6 +25,7 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   test_spec = steps.ScriptTestSpec.create(
       'script_test',
@@ -53,7 +54,7 @@ def GenTests(api):
       ),
       api.post_process(StepCommandContains, 'script_test', [
           'vpython3',
-          'None/testing/scripts/script.py',
+          '[CACHE]/builder/src/testing/scripts/script.py',
       ]),
       api.post_process(StepCommandContains, 'script_test', [
           '--args',

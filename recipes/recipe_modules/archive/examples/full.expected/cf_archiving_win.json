@@ -51,7 +51,7 @@
       "[START_DIR]\\src\\out\\Release",
       "--no-root-dir",
       "--lzma-sdk-dir",
-      "None\\third_party\\lzma_sdk\\bin\\win64"
+      "[CACHE]\\builder\\src\\third_party\\lzma_sdk\\bin\\win64"
     ],
     "infra_step": true,
     "name": "zipping"

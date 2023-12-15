@@ -4,7 +4,6 @@
 
 from recipe_engine.post_process import (DropExpectation, PropertyEquals,
                                         StepCommandContains)
-from recipe_engine.recipe_api import Property
 
 DEPS = [
     'isolate',
@@ -14,6 +13,7 @@ DEPS = [
 ]
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.isolate.isolate_tests(
       api.path['checkout'].join('out', 'Release'),
       targets=['dummy_target_1', 'dummy_target_2'])
@@ -23,8 +23,8 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.post_process(StepCommandContains, 'isolate tests', [
-          'None/out/Release/dummy_target_1.isolated.gen.json',
-          'None/out/Release/dummy_target_2.isolated.gen.json',
+          '[CACHE]/builder/src/out/Release/dummy_target_1.isolated.gen.json',
+          '[CACHE]/builder/src/out/Release/dummy_target_2.isolated.gen.json',
       ]),
       api.post_process(
           PropertyEquals, 'swarm_hashes', {

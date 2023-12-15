@@ -22,7 +22,7 @@ PROPERTIES = {
 
 def RunSteps(api, targets, output_type):
   refs = api.gn.refs(
-      api.path['checkout'].join('out', 'Release'),
+      api.path['cache'] / 'builder' / 'src' / 'out' / 'Release',
       targets,
       output_type=output_type)
   api.assertions.assertEqual(refs, set(['target3', 'target4']))

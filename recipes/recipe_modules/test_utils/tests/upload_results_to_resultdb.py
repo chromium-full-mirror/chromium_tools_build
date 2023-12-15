@@ -50,6 +50,7 @@ def RunSteps(api, is_swarming_test=True):
       'got_revision': 'd3adv3ggie',
       'got_revision_cp': 'refs/heads/main@{#54321}',
   })
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   test_specs = []
   if not is_swarming_test:

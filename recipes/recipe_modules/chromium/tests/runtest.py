@@ -24,6 +24,8 @@ def RunSteps(api):
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   kwargs = {}
   if api.properties.get('parse_gtest_output'):
     kwargs.update({
@@ -170,7 +172,7 @@ def GenTests(api):
           '--pass-build-dir',
           '--pass-target',
           '--run-shell-script',
-          'None/tools/valgrind/chrome_tests.sh',
+          '[CACHE]/builder/src/tools/valgrind/chrome_tests.sh',
           '--test',
           'base_unittests',
           '--tool',

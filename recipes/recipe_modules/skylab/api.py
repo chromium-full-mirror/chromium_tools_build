@@ -4,7 +4,6 @@
 
 import attr
 import base64
-import os
 
 from collections import defaultdict
 
@@ -60,8 +59,8 @@ class SkylabApi(recipe_api.RecipeApi):
       The fully specified image name. e.g. "octopus-release/R89-13609".
 
     """
-    build_api = os.path.join(chrome_src, 'third_party', 'chromite', 'bin',
-                             'build_api')
+    build_api = self.m.path.join(chrome_src, 'third_party', 'chromite', 'bin',
+                                 'build_api')
     cmd = [
         build_api,
         'chromite.api.ChromeLkgmService/FindLkgm',
@@ -250,8 +249,9 @@ class SkylabApi(recipe_api.RecipeApi):
 
             if any(should_provision_browser_files):
               autotest_secondary_lacros_paths_list = [
-                  os.path.join(t.lacros_gcs_path, 'lacros_compressed.squash')
-                  if p else '' for p in should_provision_browser_files
+                  self.m.path.join(t.lacros_gcs_path,
+                                   'lacros_compressed.squash') if p else ''
+                  for p in should_provision_browser_files
               ]
               autotest_secondary_lacros_paths = ','.join(
                   autotest_secondary_lacros_paths_list)
@@ -266,8 +266,8 @@ class SkylabApi(recipe_api.RecipeApi):
 
             shard_test_args.append('shard_index={}'.format(shard))
             shard_test_args.append('total_shards={}'.format(t.spec.shards))
-            lacros_gcs_path = os.path.join(t.lacros_gcs_path,
-                                           'lacros_compressed.squash')
+            lacros_gcs_path = self.m.path.join(t.lacros_gcs_path,
+                                               'lacros_compressed.squash')
             shard_test_args.append('lacros_gcs_path={}'.format(lacros_gcs_path))
             if autotest_secondary_lacros_paths:
               shard_test_args.append('secondary_lacros_gcs_path={}'.format(

@@ -14,6 +14,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   api.goma.ensure_goma()
   api.goma.build_with_goma(
       ['ninja', '-C', api.path['checkout'].join('out', 'Release')],

@@ -10,6 +10,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   default_adb_path = api.adb.adb_path()
   api.adb.set_adb_path(api.path['checkout'].join('custom', 'adb', 'path'))
   custom_adb_path = api.adb.adb_path()

@@ -8,6 +8,7 @@ DEPS = [
     'chromium',
     'chromium_android',
     'recipe_engine/buildbucket',
+    'recipe_engine/path',
     'recipe_engine/properties',
 ]
 
@@ -16,6 +17,7 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('try_builder')
   api.chromium_android.c.logcat_bucket = api.properties.get('logcat_bucket')
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.chromium_android.logcat_dump()
 
 

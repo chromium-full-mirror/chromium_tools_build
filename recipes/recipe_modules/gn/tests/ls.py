@@ -22,7 +22,7 @@ PROPERTIES = {
 
 def RunSteps(api, targets, output_type):
   targets = api.gn.ls(
-      api.path['checkout'].join('out', 'Release'),
+      api.path['cache'] / 'builder' / 'src' / 'out' / 'Release',
       targets,
       output_type=output_type)
   api.assertions.assertEqual(targets, set(['target3', 'target4']))

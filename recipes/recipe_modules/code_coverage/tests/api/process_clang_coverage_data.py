@@ -32,6 +32,8 @@ def RunSteps(api):
   # Fake path.
   api.profiles.src_dir = api.path['start_dir']
   api.code_coverage.src_dir = api.path['start_dir']
+  api.path['checkout'] = api.path['start_dir']
+
   api.path.mock_add_paths(
       api.profiles.profile_dir().join('unit-merged.profdata'))
   api.path.mock_add_paths(

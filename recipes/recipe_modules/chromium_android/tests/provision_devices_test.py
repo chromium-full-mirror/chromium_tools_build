@@ -6,10 +6,12 @@ from recipe_engine.post_process import (DropExpectation, StepException,
                                         StepWarning, SummaryMarkdown)
 
 DEPS = [
+    'recipe_engine/path',
     'chromium_android',
 ]
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.chromium_android.configure_from_properties('base_config')
   api.chromium_android.provision_devices()
 

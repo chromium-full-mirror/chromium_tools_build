@@ -30,6 +30,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   if api.tryserver.is_tryserver:

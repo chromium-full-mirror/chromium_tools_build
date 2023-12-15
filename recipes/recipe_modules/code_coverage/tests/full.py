@@ -39,6 +39,7 @@ def RunSteps(api):
   # Fake path.
   api.profiles.src_dir = api.path['start_dir']
   api.code_coverage.src_dir = api.path['start_dir']
+  api.path['checkout'] = api.path['start_dir']
 
   if api.tryserver.is_tryserver:
     api.code_coverage.instrument(
@@ -138,9 +139,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
-      api.post_process(
-          post_process.MustRun,
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.generate '
@@ -156,7 +156,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS),
-                       ['None/out/Release/content_shell']),
+                       ['[START_DIR]/out/Release/content_shell']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1021,9 +1021,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
-      api.post_process(
-          post_process.MustRun,
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(
           post_process.DoesNotRun,
           'process clang code coverage data for overall test coverage.generate '
@@ -1038,13 +1037,13 @@ def GenTests(api):
           'profile merge errors', ['--root-dir']),
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
-          'metadata for overall test coverage in %s tests' % _NUM_TESTS),
-                       ['None/out/Debug/content_shell.app/content_shell']),
+          'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
+              '[START_DIR]/out/Debug/content_shell.app/content_shell'
+          ]),
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
-          'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
-              'None/out/Debug/ios_chrome_eg2tests.app/ios_chrome_eg2tests'
-          ]),
+          'metadata for overall test coverage in %s tests' % _NUM_TESTS
+      ), ['[START_DIR]/out/Debug/ios_chrome_eg2tests.app/ios_chrome_eg2tests']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1215,7 +1214,7 @@ def GenTests(api):
           post_process.StepCommandContains,
           'process clang code coverage data for overall test coverage.filter '
           'binaries with valid data for %s binaries' % (_NUM_TESTS - 2),
-          ['None\\out\\Release\\content_shell.exe']),
+          ['[START_DIR]\\out\\Release\\content_shell.exe']),
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'html report for overall test coverage in %s tests' % _NUM_TESTS)),
@@ -1236,9 +1235,8 @@ def GenTests(api):
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS)),
-      api.post_process(
-          post_process.MustRun,
-          'gsutil Upload coverage artifacts'),
+      api.post_process(post_process.MustRun,
+                       'gsutil Upload coverage artifacts'),
       api.post_process(post_process.DropExpectation),
   )
 

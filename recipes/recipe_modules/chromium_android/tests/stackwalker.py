@@ -12,6 +12,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['start_dir'].join('checkout')
+
   api.chromium.set_config('chromium')
   api.chromium_android.stackwalker(
       api.path['checkout'],

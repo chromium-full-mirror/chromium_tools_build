@@ -14,6 +14,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   api.step(
@@ -36,7 +38,7 @@ def GenTests(api):
           '--build-config-fs',
           'Release',
           '--paths',
-          '{"checkout": "None"}',
+          '{"checkout": "[CACHE]/builder/src"}',
           '--properties',
           ('{"bot_id": "fake-bot-id", '
            '"buildername": "linux-perf", '

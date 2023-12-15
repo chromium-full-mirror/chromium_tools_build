@@ -22,6 +22,14 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   for c in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(c)
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
+  # We convert these kwargs in analyze_kwargs from checkout-relative paths to
+  # Path objects by joining them to api.path['checkout']
+  kwargs = dict(api.properties.get('analyze_kwargs', {}))
+  for k in ('mb_path', 'mb_config_path', 'build_output_dir'):
+    if (val := kwargs.get(k)) is not None:
+      kwargs[k] = api.path['checkout'].join(*val)
 
   affected_test_targets, affected_compile_targets = (
       api.filter.analyze(
@@ -30,7 +38,7 @@ def RunSteps(api):
           api.properties.get('compile_targets', ['compile1', 'compile2']),
           builder_id=chromium.BuilderId.create_for_group(
               'test_group', 'test_buildername'),
-          **api.properties.get('analyze_kwargs', {}),
+          **kwargs,
       ))
 
   expected_affected_test_targets = api.properties.get(
@@ -196,14 +204,10 @@ def GenTests(api):
       api.platform('linux', 64),
       api.properties(
           analyze_kwargs={
-              'mb_path':
-                  api.path['checkout'].join('fake-mb-path'),
-              'mb_config_path':
-                  api.path['checkout'].join('fake-mb-config-path'),
-              'build_output_dir':
-                  api.path['checkout'].join('fake-build-output-dir'),
-              'phase':
-                  'fake-phase',
+              'mb_path': ['fake-mb-path'],
+              'mb_config_path': ['fake-mb-config-path'],
+              'build_output_dir': ['fake-build-output-dir'],
+              'phase': 'fake-phase',
           }),
       api.post_check(post_process.StepCommandContains, 'analyze',
                      [re.compile(r'.+/fake-mb-path/mb\.py')]),

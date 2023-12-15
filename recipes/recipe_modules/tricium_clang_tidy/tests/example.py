@@ -22,6 +22,7 @@ DEPS = [
 
 def RunSteps(api):
   cache_dir = api.path['cache']
+  api.path['checkout'] = cache_dir / 'builder' / 'src'
   with api.context(cwd=cache_dir):
     # file_paths should be kept in sync with the paths used in test below.
     api.tricium_clang_tidy.lint_source_files(

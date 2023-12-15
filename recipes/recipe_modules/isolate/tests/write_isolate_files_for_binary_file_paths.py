@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.chromium_tests.api import ALL_TEST_BINARIES_ISOLATE_NAME
 
@@ -15,6 +14,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   browser_test_path = api.path['checkout'].join('out/Release/browser_tests')
   api.isolate.write_isolate_files_for_binary_file_paths(
       file_paths=[browser_test_path],

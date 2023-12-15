@@ -6,14 +6,16 @@ from recipe_engine.post_process import (DropExpectation, StepCommandContains,
                                         StepSuccess)
 
 DEPS = [
-  'build',
-  'chromium',
-  'chromium_android',
+    'recipe_engine/path',
+    'build',
+    'chromium',
+    'chromium_android',
 ]
 
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.chromium_android.upload_build('test-bucket', 'test/path')
 
 
@@ -24,7 +26,7 @@ def GenTests(api):
       api.post_process(StepSuccess, 'gsutil upload_build_product'),
       api.post_process(StepCommandContains, 'gsutil upload_build_product', [
           'cp',
-          'None/out/build_product.zip',
+          '[CACHE]/builder/src/out/build_product.zip',
           'gs://test-bucket/test/path',
       ]),
       api.post_process(DropExpectation),

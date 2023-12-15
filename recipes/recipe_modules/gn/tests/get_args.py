@@ -23,7 +23,7 @@ def _test_args(api, args=None):
 
 def RunSteps(api):
   args = api.gn.get_args(
-      api.path['checkout'].join('out', 'Release'),
+      api.path['cache'] / 'builder' / 'src' / 'out' / 'Release',
       location=api.properties.get('location'),
       max_text_lines=api.properties.get('max_text_lines'))
   assert args == api.properties.get('expected_args'), \

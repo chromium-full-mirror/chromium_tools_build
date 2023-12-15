@@ -11,6 +11,7 @@ DEPS = [
     'chromium',
     'chromium_tests',
     'depot_tools/tryserver',
+    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
@@ -25,6 +26,7 @@ def RunSteps(api):
       'got_revision': 'd3adv3ggie',
       'got_revision_cp': 'refs/heads/main@{#54321}',
   })
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   test_runner = api.chromium_tests.create_test_runner(
       tests=[

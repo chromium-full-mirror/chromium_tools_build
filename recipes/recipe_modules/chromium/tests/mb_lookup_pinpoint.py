@@ -9,6 +9,7 @@ from RECIPE_MODULES.build import chromium
 DEPS = [
     'chromium',
     'recipe_engine/assertions',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
 ]
@@ -19,6 +20,7 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   gn_args = api.chromium.mb_lookup(
       chromium.BuilderId.create_for_group('chromium.perf.pinpoint',

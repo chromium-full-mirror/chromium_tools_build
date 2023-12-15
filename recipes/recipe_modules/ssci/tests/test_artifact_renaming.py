@@ -14,6 +14,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   api.ssci.run(
       src_dir=api.path.abspath(api.path['checkout']),
       build_dir='out/Release',

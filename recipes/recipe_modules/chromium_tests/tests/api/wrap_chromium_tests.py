@@ -20,6 +20,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   test_specs = []
   if api.properties.get('local_gtest'):
     test_specs.append(steps.LocalGTestTestSpec.create('base_unittests'))

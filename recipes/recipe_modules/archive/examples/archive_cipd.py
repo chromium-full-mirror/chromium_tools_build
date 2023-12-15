@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 from recipe_engine import post_process
 
 from PB.recipe_modules.build.archive import properties
@@ -23,6 +25,8 @@ non_existing_spec_path = ['non', 'existing', 'foo.json']
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   build_dir = api.chromium.output_dir
@@ -95,10 +99,11 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
-              '-hash-algo', 'sha256', '-ref', 'canary', '-tag',
-              'version:1.2.3.4', '-pkg-var', 'targetarch:arm64',
-              '-compression-level', '8', '-json-output', '/path/to/tmp/json'
+              'cipd', 'create', '-pkg-def',
+              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
+              '-ref', 'canary', '-tag', 'version:1.2.3.4', '-pkg-var',
+              'targetarch:arm64', '-compression-level', '8', '-json-output',
+              '/path/to/tmp/json'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -131,14 +136,14 @@ def GenTests(api):
           **{'$build/archive': input_properties}),
       api.chromium.override_version(
           major=90, step_name='Generic Archiving Steps.get version'),
-      api.post_process(
-          post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
-              '-hash-algo', 'sha256', '-ref', 'beta', '-tag', 'version:1.2.3.4',
-              '-pkg-var', 'targetarch:amd64', '-compression-level', '8',
-              '-json-output', '/path/to/tmp/json'
-          ]),
+      api.post_process(post_process.StepCommandContains,
+                       "Generic Archiving Steps.create foo", [
+                           'cipd', 'create', '-pkg-def',
+                           '[CACHE]/builder/src/out/Release/foo', '-hash-algo',
+                           'sha256', '-ref', 'beta', '-tag', 'version:1.2.3.4',
+                           '-pkg-var', 'targetarch:amd64', '-compression-level',
+                           '8', '-json-output', '/path/to/tmp/json'
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -183,9 +188,10 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
-              '-hash-algo', 'sha256', '-ref', 'legacy88', '-tag',
-              'version:2.3.4.5', '-json-output', '/path/to/tmp/json'
+              'cipd', 'create', '-pkg-def',
+              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
+              '-ref', 'legacy88', '-tag', 'version:2.3.4.5', '-json-output',
+              '/path/to/tmp/json'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -227,7 +233,7 @@ def GenTests(api):
               'python3', '-u', 'RECIPE_MODULE[depot_tools::gsutil]/resources/'
               'gsutil_smart_retry.py', '--',
               'RECIPE_REPO[depot_tools]/gsutil.py', '----', 'cp',
-              '/path/to/another/file.txt',
+              re.compile('.*/path/to/another/file\\.txt'),
               'gs://any-bucket/dest_dir/path/to/another/file.txt'
           ]),
       api.post_process(post_process.DropExpectation),
@@ -268,10 +274,11 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
-              '-hash-algo', 'sha256', '-tag', 'version:1.2.3.4', '-pkg-var',
-              'targetarch:arm32', '-compression-level', '8',
-              '-verification-timeout', '5m', '-json-output', '/path/to/tmp/json'
+              'cipd', 'create', '-pkg-def',
+              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
+              '-tag', 'version:1.2.3.4', '-pkg-var', 'targetarch:arm32',
+              '-compression-level', '8', '-verification-timeout', '5m',
+              '-json-output', '/path/to/tmp/json'
           ]),
       api.post_process(post_process.StepCommandContains,
                        "Generic Archiving Steps After Tests.cipd set-ref foo", [
@@ -318,10 +325,11 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
-              '-hash-algo', 'sha256', '-ref', 'canary', '-ref', '91', '-tag',
-              'version:1.2.3.4', '-pkg-var', 'targetarch:arm64',
-              '-compression-level', '8', '-json-output', '/path/to/tmp/json'
+              'cipd', 'create', '-pkg-def',
+              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
+              '-ref', 'canary', '-ref', '91', '-tag', 'version:1.2.3.4',
+              '-pkg-var', 'targetarch:arm64', '-compression-level', '8',
+              '-json-output', '/path/to/tmp/json'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -365,11 +373,12 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
-              '-hash-algo', 'sha256', '-ref', 'canary', '-ref',
-              'm91_fuchsia_ready', '-tag', 'canary-milestone:91', '-tag',
-              'version:1.2.3.4', '-pkg-var', 'targetarch:arm64',
-              '-compression-level', '8', '-json-output', '/path/to/tmp/json'
+              'cipd', 'create', '-pkg-def',
+              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
+              '-ref', 'canary', '-ref', 'm91_fuchsia_ready', '-tag',
+              'canary-milestone:91', '-tag', 'version:1.2.3.4', '-pkg-var',
+              'targetarch:arm64', '-compression-level', '8', '-json-output',
+              '/path/to/tmp/json'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -404,14 +413,14 @@ def GenTests(api):
           major=90, step_name='Generic Archiving Steps.get version'),
       api.post_process(post_process.MustRun,
                        "Generic Archiving Steps.create foo"),
-      api.post_process(
-          post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def', 'None/out/Release/foo',
-              '-hash-algo', 'sha256', '-ref', 'beta', '-tag', 'version:1.2.3.4',
-              '-pkg-var', 'targetarch:arm64', '-compression-level', '8',
-              '-json-output', '/path/to/tmp/json'
-          ]),
+      api.post_process(post_process.StepCommandContains,
+                       "Generic Archiving Steps.create foo", [
+                           'cipd', 'create', '-pkg-def',
+                           '[CACHE]/builder/src/out/Release/foo', '-hash-algo',
+                           'sha256', '-ref', 'beta', '-tag', 'version:1.2.3.4',
+                           '-pkg-var', 'targetarch:arm64', '-compression-level',
+                           '8', '-json-output', '/path/to/tmp/json'
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
 

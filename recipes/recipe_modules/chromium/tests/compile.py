@@ -13,9 +13,6 @@ DEPS = [
     'siso',
 ]
 
-from PB.recipe_engine import result as result_pb2
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
 import textwrap
@@ -33,6 +30,8 @@ def RunSteps(api, use_goma):
 
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
+
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   api.chromium.ensure_goma()
   return api.chromium.compile(

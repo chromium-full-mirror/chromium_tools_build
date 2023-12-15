@@ -33,6 +33,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+
   use_lacros = api.properties.get('use_lacros', False)
   if use_lacros:
     builders = builder_db.BuilderDatabase.create({
@@ -63,11 +65,6 @@ def RunSteps(api):
 
   # Fake path.
   api.profiles.src_dir = api.path['start_dir']
-  # We're forcing the root profile dir to '/', such that the file.listdir
-  # call being made by ensure_profdata_files can be overridden in the test run.
-  # There's no way to translate a generated Path object into a string in
-  # the current GenTest structure.
-  api.profiles._root_profile_dir = api.path.get('/')
 
   if api.properties.get('mock_merged_profdata', True):
     api.path.mock_add_paths(
@@ -129,8 +126,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '/performance_test_suite/performance_test_suite.profdata',
-              '/different_test_suite/different_test_suite.profdata'
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
           ])),
       api.post_process(
           post_process.MustRun,
@@ -150,8 +147,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '\\\\performance_test_suite\\\\performance_test_suite.profdata',
-              '\\\\different_test_suite\\\\different_test_suite.profdata'
+              'performance_test_suite\\\\performance_test_suite.profdata',
+              'different_test_suite\\\\different_test_suite.profdata'
           ])),
       api.post_process(post_process.MustRunRE, 'ensure profile dir for .*'),
       api.post_process(
@@ -190,8 +187,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '\\\\performance_test_suite\\\\performance_test_suite.profdata',
-              '\\\\different_test_suite\\\\different_test_suite.profdata'
+              'performance_test_suite\\\\performance_test_suite.profdata',
+              'different_test_suite\\\\different_test_suite.profdata'
           ])),
       api.post_process(post_process.MustRunRE, 'ensure profile dir for .*'),
       api.post_process(
@@ -230,8 +227,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '/performance_test_suite/performance_test_suite.profdata',
-              '/different_test_suite/different_test_suite.profdata'
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
           ])),
       api.post_process(
           post_process.StepCommandContains,
@@ -254,8 +251,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '/performance_test_suite/performance_test_suite.profdata',
-              '/different_test_suite/different_test_suite.profdata'
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
           ])),
       api.post_process(
           post_process.StepCommandContains,
@@ -283,8 +280,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '/performance_test_suite/performance_test_suite.profdata',
-              '/different_test_suite/different_test_suite.profdata'
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
           ])),
       api.post_process(
           post_process.StepCommandContains,
@@ -312,8 +309,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '/performance_test_suite/performance_test_suite.profdata',
-              '/different_test_suite/different_test_suite.profdata'
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
           ])),
       api.override_step_data(
           'Processing PGO .profraw data.Finding profile merge errors',
@@ -356,7 +353,7 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir(
-              ['/performance_test_suite/performance_test_suite.profdata'])),
+              ['performance_test_suite/performance_test_suite.profdata'])),
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
@@ -375,7 +372,7 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir(
-              ['/performance_test_suite/performance_test_suite.profdata'])),
+              ['performance_test_suite/performance_test_suite.profdata'])),
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
@@ -394,7 +391,7 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir(
-              ['/performance_test_suite/performance_test_suite.profdata'])),
+              ['performance_test_suite/performance_test_suite.profdata'])),
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
@@ -413,8 +410,8 @@ def GenTests(api):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              '\\\\performance_test_suite\\\\performance_test_suite.profdata',
-              '\\\\different_test_suite\\\\different_test_suite.profdata'
+              'performance_test_suite\\\\performance_test_suite.profdata',
+              'different_test_suite\\\\different_test_suite.profdata'
           ])),
       api.post_process(post_process.DropExpectation),
   ) + api.post_process(post_process.DoesNotRunRE,

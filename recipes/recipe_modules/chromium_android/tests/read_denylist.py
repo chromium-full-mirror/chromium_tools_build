@@ -15,6 +15,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   if api.properties['denylist_exists']:
     api.path.mock_add_paths(api.chromium_android.denylist_file)
   api.chromium_android._devices = ['serial1', 'serial2']

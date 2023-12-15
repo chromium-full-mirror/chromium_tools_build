@@ -5,7 +5,7 @@
 import attr
 
 from recipe_engine import post_process
-from recipe_engine.config_types import NamedBasePath, Path
+from recipe_engine.config_types import Path
 from recipe_engine.engine_types import FrozenDict
 from recipe_engine.util import Placeholder
 
@@ -16,6 +16,7 @@ from RECIPE_MODULES.build.attr_utils import (FieldMapping, attrib, attrs,
 
 DEPS = [
     'recipe_engine/assertions',
+    'recipe_engine/path',
 ]
 
 
@@ -160,11 +161,7 @@ def RunSteps(api):
        "(got [] that is a {}).".format(int, str, Path, Placeholder, list)))
 
   # test that all valid argument types can be passed
-  args = [
-      0, 'x',
-      Path(NamedBasePath('fake-base-path')),
-      Placeholder('fake-placeholder')
-  ]
+  args = [0, 'x', api.path['start_dir'], Placeholder('fake-placeholder')]
   x = CommandArgsTest(args)
   api.assertions.assertEqual(x.args, tuple(args))
 

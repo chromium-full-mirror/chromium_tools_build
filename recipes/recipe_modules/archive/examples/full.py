@@ -34,6 +34,7 @@ TEST_COMMIT_POSITON_COMPONENT = 'refs/heads/main@{#234}'
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   if 'test_get_channel_name' in api.properties:
     api.assertions.assertEqual(

@@ -10,7 +10,7 @@
       "--staging-dir",
       "[CACHE]/chrome_staging",
       "--src-dir",
-      "None",
+      "[CACHE]/builder/src",
       "--use-build-url-name",
       "--build-url",
       "gs://dummy-bucket/Linux Release/full-build.zip",

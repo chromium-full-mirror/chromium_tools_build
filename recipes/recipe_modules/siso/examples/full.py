@@ -12,6 +12,7 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   env = {}
   if api.siso.enabled:
     api.path.mock_add_paths(

@@ -12,7 +12,7 @@ DEPS = [
 
 def RunSteps(api):
   api.gn.clean(
-      api.path['start_dir'].join('out', 'Release'),
+      api.path['cache'] / 'builder' / 'src' / 'out' / 'Release',
       step_name='foobar')
 
 
@@ -22,7 +22,7 @@ def GenTests(api):
       api.post_process(StepCommandContains, 'foobar', [
           'RECIPE_REPO[depot_tools]/gn.py',
           'clean',
-          '[START_DIR]/out/Release',
+          '[CACHE]/builder/src/out/Release',
       ]),
       api.post_process(DropExpectation),
   )
