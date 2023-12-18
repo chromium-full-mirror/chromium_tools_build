@@ -7,6 +7,9 @@ per-file recipes.py=recipe-mega-autoroller@chops-service-accounts.iam.gserviceac
 per-file goma_utils.py=file://recipes/goma/GOMA_OWNERS
 per-file upload_goma_logs.py=file://recipes/goma/GOMA_OWNERS
 
+# For reverts only
+agrieve@chromium.org
+
 # For goma cleanup CLs.
 # TODO(b/306109834): remove this after removing goma related code from recipes.
 tikuta@chromium.org
