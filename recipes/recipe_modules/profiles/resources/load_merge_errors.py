@@ -39,11 +39,12 @@ def main():
     except ValueError:
       steps_with_failed_profiles[step_name] = '- BAD JSON FORMAT'
 
-  result = {
-      'total': num_failed_profiles,
-      'failed profiles': steps_with_failed_profiles
-  }
-  json.dump(result, sys.stdout)
+  if num_failed_profiles:
+    result = {
+        'total': num_failed_profiles,
+        'failed profiles': steps_with_failed_profiles
+    }
+    json.dump(result, sys.stdout)
 
 
 if __name__ == '__main__':
