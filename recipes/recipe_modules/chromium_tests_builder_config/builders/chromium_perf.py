@@ -314,6 +314,7 @@ _AddIsolatedTestSpec(
 _AddIsolatedTestSpec('win-10-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_amd_laptop-perf', 'win', 'win64-builder-perf')
+_AddIsolatedTestSpec('win-11-perf', 'win', 'win64-builder-perf')
 
 _AddIsolatedTestSpec('mac-laptop_low_end-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec('mac-laptop_high_end-perf', 'mac', 'mac-builder-perf')
@@ -358,6 +359,7 @@ _AddIsolatedTestSpec('android-pixel2_webview-processor-perf', 'android',
 _AddIsolatedTestSpec('win-10-processor-perf', 'win', 'win-10-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-processor-perf', 'win',
                      'win-10_laptop_low_end-perf')
+_AddIsolatedTestSpec('win-11-processor-perf', 'win', 'win-11-perf')
 
 _AddIsolatedTestSpec('mac-laptop_low_end-processor-perf', 'mac',
                      'mac-laptop_low_end-perf')

@@ -307,6 +307,7 @@ _AddIsolatedTestSpec(
 _AddIsolatedTestSpec('win-10-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_laptop_low_end-perf', 'win', 'win64-builder-perf')
 _AddIsolatedTestSpec('win-10_amd_laptop-perf', 'win', 'win64-builder-perf')
+_AddIsolatedTestSpec('win-11-perf', 'win', 'win64-builder-perf')
 
 _AddIsolatedTestSpec('mac-laptop_low_end-perf', 'mac', 'mac-builder-perf')
 _AddIsolatedTestSpec('mac-laptop_high_end-perf', 'mac', 'mac-builder-perf')
@@ -391,3 +392,4 @@ _AddPinpointTestSpec('win-10_laptop_low_end-perf-pgo', 'win',
                      'win64-builder-perf-pgo')
 _AddPinpointTestSpec('win-10_amd_laptop-perf-pgo', 'win',
                      'win64-builder-perf-pgo')
+_AddPinpointTestSpec('win-11-perf-pgo', 'win', 'win64-builder-perf-pgo')
