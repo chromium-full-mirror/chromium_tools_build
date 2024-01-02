@@ -16,13 +16,13 @@
       "--limit",
       "20",
       "-p",
-      "project=devtools/devtools-internal",
-      "-p",
-      "owner=liviurau@google.com",
-      "-p",
       "status=open",
       "-p",
       "-hashtag=rw_reported",
+      "-p",
+      "project=devtools/devtools-internal",
+      "-p",
+      "owner=liviurau@google.com",
       "-p",
       "-hashtag=screenshots_applied",
       "-o",
@@ -51,7 +51,7 @@
       "@@@STEP_LOG_LINE@json.output@  {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"_number\": 123,@@@",
       "@@@STEP_LOG_LINE@json.output@    \"hashtags\": [],@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"project\": \"project1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"v8/v8\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"last\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"_number\": 1,@@@",
@@ -74,7 +74,7 @@
     "name": "Roller: 'experiment'.Checking CL 123",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@project1/+/123@https://chrome-internal-review.googlesource.com/c/project1/+/123@@@"
+      "@@@STEP_LINK@v8/v8/+/123@https://chrome-internal-review.googlesource.com/c/v8/v8/+/123@@@"
     ]
   },
   {
@@ -90,7 +90,7 @@
       "-fields",
       "tags.*,steps.*",
       "-predicate",
-      "{\"gerritChanges\": [{\"change\": \"123\", \"host\": \"chrome-internal-review.googlesource.com\", \"patchset\": \"1\", \"project\": \"devtools/devtools-internal\"}], \"includeExperimental\": true}"
+      "{\"gerritChanges\": [{\"change\": \"123\", \"host\": \"chrome-internal-review.googlesource.com\", \"patchset\": \"1\", \"project\": \"v8/v8\"}], \"includeExperimental\": true}"
     ],
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -126,7 +126,7 @@
     },
     "infra_step": true,
     "name": "Roller: 'experiment'.Checking CL 123.Trigger screenshots builders",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"try\", \"builder\": \"devtools_screenshot_linux_rel\", \"project\": \"devtools-internal\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gerritChanges\": [{\"change\": \"123\", \"host\": \"chrome-internal-review.googlesource.com\", \"patchset\": \"1\", \"project\": \"project1\"}], \"requestId\": \"0-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"try\", \"builder\": \"devtools_screenshot_linux_rel\", \"project\": \"devtools-internal\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gerritChanges\": [{\"change\": \"123\", \"host\": \"chrome-internal-review.googlesource.com\", \"patchset\": \"1\", \"project\": \"v8/v8\"}], \"requestId\": \"0-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"parent_buildbucket_id\", \"value\": \"0\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -163,7 +163,7 @@
       "@@@STEP_LOG_LINE@request@            \"change\": \"123\",@@@",
       "@@@STEP_LOG_LINE@request@            \"host\": \"chrome-internal-review.googlesource.com\",@@@",
       "@@@STEP_LOG_LINE@request@            \"patchset\": \"1\",@@@",
-      "@@@STEP_LOG_LINE@request@            \"project\": \"project1\"@@@",
+      "@@@STEP_LOG_LINE@request@            \"project\": \"v8/v8\"@@@",
       "@@@STEP_LOG_LINE@request@          }@@@",
       "@@@STEP_LOG_LINE@request@        ],@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"0-00000000-0000-0000-0000-000000001337\",@@@",

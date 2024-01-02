@@ -16,15 +16,13 @@
       "--limit",
       "20",
       "-p",
-      "project=v8/v8",
-      "-p",
-      "owner=autoroll@service-accounts.com",
-      "-p",
       "status=open",
       "-p",
       "-hashtag=rw_reported",
       "-p",
-      "hashtags=sometag",
+      "project=v8/v8",
+      "-p",
+      "owner=autoroll@service-accounts.com",
       "-o",
       "LABELS",
       "-o",
@@ -51,7 +49,7 @@
       "@@@STEP_LOG_LINE@json.output@  {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"_number\": 123,@@@",
       "@@@STEP_LOG_LINE@json.output@    \"hashtags\": [],@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"project\": \"project1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"v8/v8\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"last\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"_number\": 1,@@@",
@@ -74,7 +72,7 @@
     "name": "Roller: 'roller'.Checking CL 123",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@project1/+/123@https://review.googlesource.com/c/project1/+/123@@@"
+      "@@@STEP_LINK@v8/v8/+/123@https://review.googlesource.com/c/v8/v8/+/123@@@"
     ]
   },
   {
@@ -104,9 +102,14 @@
     "name": "Roller: 'roller'.Checking CL 123.buildbucket.search",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"builder\": {}, \"id\": \"1\", \"status\": \"SUCCESS\", \"tags\": [{\"key\": \"cq_experimental\", \"value\": \"false\"}]}@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@{\"builder\": {}, \"id\": \"2\", \"status\": \"FAILURE\", \"tags\": [{\"key\": \"cq_experimental\", \"value\": \"false\"}]}@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'roller'.Checking CL 123.No CQ failures on this CL yet...",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {

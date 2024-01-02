@@ -19,13 +19,13 @@
       "--limit",
       "20",
       "-p",
-      "project=devtools/devtools-internal",
-      "-p",
-      "owner=liviurau@google.com",
-      "-p",
       "status=open",
       "-p",
       "-hashtag=rw_reported",
+      "-p",
+      "project=devtools/devtools-internal",
+      "-p",
+      "owner=liviurau@google.com",
       "-p",
       "-hashtag=screenshots_applied",
       "-o",
@@ -56,7 +56,7 @@
       "@@@STEP_LOG_LINE@json.output@    \"hashtags\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      \"screenshot_builders_triggered\"@@@",
       "@@@STEP_LOG_LINE@json.output@    ],@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"project\": \"project1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"v8/v8\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"last\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"_number\": 1,@@@",
@@ -79,7 +79,7 @@
     "name": "Roller: 'experiment'.Checking CL 123",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@project1/+/123@https://chrome-internal-review.googlesource.com/c/project1/+/123@@@",
+      "@@@STEP_LINK@v8/v8/+/123@https://chrome-internal-review.googlesource.com/c/v8/v8/+/123@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -96,7 +96,7 @@
       "-fields",
       "tags.*,steps.*",
       "-predicate",
-      "{\"gerritChanges\": [{\"change\": \"123\", \"host\": \"chrome-internal-review.googlesource.com\", \"patchset\": \"1\", \"project\": \"devtools/devtools-internal\"}], \"includeExperimental\": true}"
+      "{\"gerritChanges\": [{\"change\": \"123\", \"host\": \"chrome-internal-review.googlesource.com\", \"patchset\": \"1\", \"project\": \"v8/v8\"}], \"includeExperimental\": true}"
     ],
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -134,7 +134,7 @@
     "cmd": [
       "git",
       "clone",
-      "$git-url",
+      "https://chrome-internal-review.googlesource.com/v8/v8",
       "."
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -157,7 +157,7 @@
     "cmd": [
       "git",
       "fetch",
-      "$git-url",
+      "https://chrome-internal-review.googlesource.com/v8/v8",
       "$ref"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -400,7 +400,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Please review screenshot patch!@@@",
-      "@@@STEP_LINK@project1/+/123@https://chrome-internal-review.googlesource.com/c/project1/+/123@@@",
+      "@@@STEP_LINK@v8/v8/+/123@https://chrome-internal-review.googlesource.com/c/v8/v8/+/123@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },

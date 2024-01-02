@@ -1,10 +1,7 @@
 [
   {
     "cmd": [],
-    "name": "Roller: 'roller'",
-    "~followup_annotations": [
-      "@@@STEP_FAILURE@@@"
-    ]
+    "name": "Roller: 'roller'"
   },
   {
     "cmd": [
@@ -19,13 +16,15 @@
       "--limit",
       "20",
       "-p",
+      "status=open",
+      "-p",
+      "-hashtag=rw_reported",
+      "-p",
       "project=v8/v8",
       "-p",
       "owner=autoroll@service-accounts.com",
       "-p",
-      "status=open",
-      "-p",
-      "-hashtag=rw_reported",
+      "hashtags=sometag",
       "-o",
       "LABELS",
       "-o",
@@ -52,7 +51,7 @@
       "@@@STEP_LOG_LINE@json.output@  {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"_number\": 123,@@@",
       "@@@STEP_LOG_LINE@json.output@    \"hashtags\": [],@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"project\": \"project1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"v8/v8\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"last\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"_number\": 1,@@@",
@@ -75,8 +74,7 @@
     "name": "Roller: 'roller'.Checking CL 123",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@project1/+/123@https://review.googlesource.com/c/project1/+/123@@@",
-      "@@@STEP_FAILURE@@@"
+      "@@@STEP_LINK@v8/v8/+/123@https://review.googlesource.com/c/v8/v8/+/123@@@"
     ]
   },
   {
@@ -112,57 +110,6 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "RECIPE_REPO[depot_tools]/gerrit_client.py",
-      "rawapi",
-      "--host",
-      "https://review.googlesource.com",
-      "--path",
-      "/changes/123/hashtags",
-      "--json_file",
-      "/path/to/tmp/json",
-      "--method",
-      "POST",
-      "--body",
-      "{\"add\": [\"rw_reported\"]}",
-      "--accept_status",
-      "200,201"
-    ],
-    "env": {
-      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
-    },
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "Roller: 'roller'.Checking CL 123.gerrit Mark as reported",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Roller: 'roller'.Checking CL 123.Roller 'roller' failed",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@project1/+/123@https://review.googlesource.com/c/project1/+/123@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
-    "failure": {
-      "failure": {},
-      "humanReason": ""
-    },
     "name": "$result"
   }
 ]

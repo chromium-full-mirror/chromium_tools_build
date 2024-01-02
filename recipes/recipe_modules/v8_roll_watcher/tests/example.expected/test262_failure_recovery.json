@@ -19,13 +19,13 @@
       "--limit",
       "20",
       "-p",
-      "project=v8/v8",
-      "-p",
-      "owner=liviurau@google.com",
-      "-p",
       "status=open",
       "-p",
       "-hashtag=rw_reported",
+      "-p",
+      "project=v8/v8",
+      "-p",
+      "owner=liviurau@google.com",
       "-p",
       "-hashtag=test262_status_file_patched",
       "-o",
@@ -54,7 +54,7 @@
       "@@@STEP_LOG_LINE@json.output@  {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"_number\": 123,@@@",
       "@@@STEP_LOG_LINE@json.output@    \"hashtags\": [],@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"project\": \"project1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"v8/v8\",@@@",
       "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
       "@@@STEP_LOG_LINE@json.output@      \"last\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"_number\": 1,@@@",
@@ -77,7 +77,7 @@
     "name": "Roller: 'test262'.Checking CL 123",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@project1/+/123@https://chromium-review.googlesource.com/c/project1/+/123@@@",
+      "@@@STEP_LINK@v8/v8/+/123@https://chromium-review.googlesource.com/c/v8/v8/+/123@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
@@ -223,7 +223,7 @@
     "cmd": [
       "git",
       "clone",
-      "$git-url",
+      "https://chromium-review.googlesource.com/v8/v8",
       "."
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -246,7 +246,7 @@
     "cmd": [
       "git",
       "fetch",
-      "$git-url",
+      "https://chromium-review.googlesource.com/v8/v8",
       "$ref"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -478,7 +478,7 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_TEXT@Please review status file patch!@@@",
-      "@@@STEP_LINK@project1/+/123@https://chromium-review.googlesource.com/c/project1/+/123@@@",
+      "@@@STEP_LINK@v8/v8/+/123@https://chromium-review.googlesource.com/c/v8/v8/+/123@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
