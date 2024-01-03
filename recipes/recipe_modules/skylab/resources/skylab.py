@@ -26,6 +26,7 @@ BUILDBUCKET_RPC = 'https://beefy-dot-cr-buildbucket.appspot.com/prpc'
 BUILDBUCKET_GET_ENDPOINT = (BUILDBUCKET_RPC + '/buildbucket.v2.Builds/GetBuild')
 BUILDBUCKET_SCHEDULE_ENDPOINT = (
     BUILDBUCKET_RPC + '/buildbucket.v2.Builds/ScheduleBuild')
+CONTAINER_METADATA_LOC = 'metadata/containers.jsonpb'
 
 
 def get_oauth_token(json_creds=None):
@@ -93,8 +94,13 @@ def schedule_skylab_tests(opts):
   tagged_requests = {}
   for i in opts.shard_indexes or range(opts.total_shards):
     req = ctp_request.Request()
-    req.params.metadata.test_metadata_url = opts.bucket + opts.image
-    req.params.metadata.debug_symbols_archive_url = opts.bucket + opts.image
+    _bucket = opts.bucket.replace('gs://', '').rstrip('/')
+    gs_url = f'gs://{_bucket}/{opts.image}'
+    req.params.metadata.test_metadata_url = gs_url
+    req.params.metadata.debug_symbols_archive_url = gs_url
+    if opts.bucket:
+      sw_dep = req.params.software_dependencies.add()
+      sw_dep.chromeos_build_gcs_bucket = opts.bucket
     sw_dep = req.params.software_dependencies.add()
     sw_dep.chromeos_build = opts.image
     req.params.scheduling.CopyFrom(_scheduling_for_pool(opts.pool))
@@ -102,6 +108,10 @@ def schedule_skylab_tests(opts):
     req.params.decorations.tags.append(f'label-board:{opts.board}')
     req.params.software_attributes.build_target.name = opts.board
     req.params.time.maximum_duration.seconds = opts.timeout_mins * 60
+    if opts.run_cft:
+      req.params.metadata.container_metadata_url = os.path.join(
+          gs_url, CONTAINER_METADATA_LOC)
+      req.params.run_via_cft = True
     if opts.model:
       req.params.hardware_attributes.model = opts.model
     if opts.secondary_boards and opts.secondary_images:
@@ -218,7 +228,7 @@ def main(args):
   subparser.add_argument(
       '--bucket',
       type=str,
-      default='gs://chromeos-image-archive/',
+      default='gs://chromeos-image-archive',
       help='GCS bucket to pass browser artifacts to Skylab.')
   subparser.add_argument(
       '--public-builder',
@@ -281,6 +291,8 @@ def main(args):
       type=str,
       default='',
       help='The test arguments to pass to the autotest wrapper.')
+  subparser.add_argument(
+      '--run-cft', action='store_true', help='Run the test on CFT.')
   subparser.set_defaults(func=schedule_skylab_tests)
 
   # Subcommand: read build results.
