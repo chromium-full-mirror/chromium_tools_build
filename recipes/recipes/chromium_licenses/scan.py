@@ -74,15 +74,15 @@ def RunSteps(api):
         step_result.presentation.logs['stdout'] = output
 
         # Process the script output for license errors.
-        license_error_count = 0
+        errors = 0
         for line in output:
-          if re.match(r'^.*: .*$', line):
-            license_error_count += 1
-        status = api.step.FAILURE if license_error_count else api.step.SUCCESS
+          if re.match(r'^Errors.*$', line):
+            errors += 1
+        status = api.step.FAILURE if errors else api.step.SUCCESS
         api.step.empty(
             'summary of results',
             status=status,
-            step_text=f'{license_error_count} license errors found',
+            step_text=f'Found {errors} README files with license errors.',
         )
 
 
@@ -102,7 +102,7 @@ def GenTests(api):
               'debug info that is not a license error\n')),
       api.post_process(post_process.StepTextEquals,
                        'scan for license errors.summary of results',
-                       '0 license errors found'),
+                       'Found 0 README files with license errors.'),
       api.post_process(post_process.StepSuccess, 'scan for license errors'),
       api.expect_status('SUCCESS'),
       api.post_process(post_process.DropExpectation),
@@ -114,14 +114,14 @@ def GenTests(api):
       api.step_data(
           'scan for license errors.run licenses tool',
           stdout=api.raw_io.output_text(
-              '/file/path/to/readme: error message\n'
+              'Errors: /file/path/to/readme: bad things in here\n'
               '\n'
               'debug info that is not a license error\n'
-              'another README: license error details\n'
+              'Errors: license error details\n'
               '\n')),
       api.post_process(post_process.StepTextEquals,
                        'scan for license errors.summary of results',
-                       '2 license errors found'),
+                       'Found 2 README files with license errors.'),
       api.post_process(post_process.StepFailure, 'scan for license errors'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
@@ -137,7 +137,7 @@ def GenTests(api):
               'debug info that is not a license error\n')),
       api.post_process(post_process.StepTextEquals,
                        'scan for license errors.summary of results',
-                       '0 license errors found'),
+                       'Found 0 README files with license errors.'),
       api.post_process(post_process.StepSuccess, 'scan for license errors'),
       api.expect_status('SUCCESS'),
       api.post_process(post_process.DropExpectation),
