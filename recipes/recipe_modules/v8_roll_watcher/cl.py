@@ -36,7 +36,8 @@ class GerritCL:
 
   @property
   def git_url(self):
-    return f'https://{self.host}/{self.project}'
+    git_host = self.host.removesuffix('-review')
+    return f'https://{git_host}/{self.project}'
 
   @property
   def git_ref(self):
