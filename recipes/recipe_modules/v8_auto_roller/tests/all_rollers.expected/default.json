@@ -1741,7 +1741,8 @@
       "--ref",
       "working-tree",
       "[CACHE]/builder/src",
-      "[CACHE]/builder/dummy"
+      "[CACHE]/builder/dummy",
+      "--update-node"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {

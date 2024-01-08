@@ -23,7 +23,9 @@ SUPPORTED_SCRIPTS = {
     'browser-protocol':
         SupportedScript(
             'Browser Protocol', 'scripts/deps/roll_deps.py',
-            ['--ref', 'working-tree', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}']),
+            ['--ref', 'working-tree',
+             '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
+             '--update-node']),
     # Add more scripts here
 }
 
