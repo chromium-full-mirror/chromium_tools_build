@@ -237,19 +237,19 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              '--board',
+              '-board',
               'eve',
           ]),
       api.post_process(
           post_process.StepCommandContains,
           'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              '--image',
+              '-image',
               'eve-release/R89-13631.0.0',
           ]),
       api.post_process(
           post_process.StepCommandContains,
           'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              '--timeout-mins',
+              '-timeout-mins',
               '60',
           ]),
       api.post_process(
