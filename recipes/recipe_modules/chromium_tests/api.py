@@ -2583,7 +2583,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                    tests,
                                    phase='with patch'):
     if not (builder_config.skylab_gs_bucket and tests):
-      return
+      raise self.m.step.InfraFailure(
+          'Test was not scheduled because of absent lacros_gcs_path.')
     gcs_path = ''
     if builder_config.skylab_gs_extra:
       gcs_path += '%s/' % builder_config.skylab_gs_extra
