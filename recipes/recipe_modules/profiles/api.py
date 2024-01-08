@@ -183,7 +183,7 @@ class ProfilesApi(recipe_api.RecipeApi):
 
   def find_merge_errors(self):
     """Search for any profiles that failed to merge"""
-    step_result = self.m.step(
+    self.m.step(
         'Finding profile merge errors', [
             'python3',
             self.resource('load_merge_errors.py'),
@@ -191,5 +191,3 @@ class ProfilesApi(recipe_api.RecipeApi):
             self.profile_dir(),
         ],
         stdout=self.m.json.output())
-
-    return step_result

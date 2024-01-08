@@ -523,27 +523,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'merge errors',
-      api.chromium.generic_build(
-          builder_group='fake-group', builder='fake-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.code_coverage(use_clang_coverage=True),
-      api.override_step_data(
-          'process clang code coverage data for overall test coverage.Finding '
-          'profile merge errors',
-          stdout=api.json.output(['some_step'])),
-      api.post_process(
-          post_process.MustRun,
-          'process clang code coverage data for overall test coverage.Finding '
-          'profile merge errors'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'skip collecting coverage data',
       api.chromium.try_build(
           builder_group='fake-try-group',
