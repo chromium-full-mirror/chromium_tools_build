@@ -5526,7 +5526,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "disable_trace_events_android_arm",
+      "disable_trace_events",
       "-v",
       "//out/rtti_no_sctp",
       "{\"additional_compile_targets\": [\"default\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
@@ -5589,7 +5589,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "disable_trace_events_android_arm",
+      "disable_trace_events",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -5627,10 +5627,10 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "disable_trace_events_android_arm",
+      "disable_trace_events",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/disable_trace_events_android_arm"
+      "//out/disable_trace_events"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -5977,7 +5977,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/disable_trace_events_android_arm",
+      "[CACHE]/builder/src/out/disable_trace_events",
       "-j",
       "160",
       "default"
@@ -6008,7 +6008,7 @@
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/disable_trace_events_android_arm",
+      "[CACHE]/builder/src/out/disable_trace_events",
       "-j",
       "160",
       "default",
@@ -6283,7 +6283,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/disable_trace_events_android_arm/.ninja_log",
+      "[CACHE]/builder/src/out/disable_trace_events/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",

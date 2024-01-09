@@ -5564,7 +5564,7 @@
       "--config-file",
       "[CACHE]\\builder\\src\\tools_webrtc\\mb\\mb_config.pyl",
       "--phase",
-      "disable_trace_events_x86",
+      "disable_trace_events",
       "-v",
       "//out/rtti_no_sctp",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
@@ -5626,7 +5626,7 @@
       "--config-file",
       "[CACHE]\\builder\\src\\tools_webrtc\\mb\\mb_config.pyl",
       "--phase",
-      "disable_trace_events_x86",
+      "disable_trace_events",
       "--quiet"
     ],
     "cwd": "[CACHE]\\builder\\src",
@@ -5663,10 +5663,10 @@
       "--config-file",
       "[CACHE]\\builder\\src\\tools_webrtc\\mb\\mb_config.pyl",
       "--phase",
-      "disable_trace_events_x86",
+      "disable_trace_events",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/disable_trace_events_x86"
+      "//out/disable_trace_events"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -6012,7 +6012,7 @@
       "--",
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]\\builder\\src\\out\\disable_trace_events_x86",
+      "[CACHE]\\builder\\src\\out\\disable_trace_events",
       "-j",
       "160"
     ],
@@ -6041,7 +6041,7 @@
     "cmd": [
       "[CACHE]\\builder\\src\\third_party\\ninja\\ninja",
       "-C",
-      "[CACHE]\\builder\\src\\out\\disable_trace_events_x86",
+      "[CACHE]\\builder\\src\\out\\disable_trace_events",
       "-j",
       "160",
       "-d",
@@ -6314,7 +6314,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\out\\disable_trace_events_x86\\.ninja_log",
+      "[CACHE]\\builder\\src\\out\\disable_trace_events\\.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]\\builder\\src",

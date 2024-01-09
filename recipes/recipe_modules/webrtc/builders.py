@@ -718,7 +718,7 @@ _TRYSERVER_WEBRTC_SPEC = {
     'android_arm_more_configs':
         WebRTCBuilderSpec.create(
             phases=('bwe_test_logging', 'dummy_audio_file_devices_no_protobuf',
-                    'rtti_no_sctp', 'disable_trace_events_android_arm'),
+                    'rtti_no_sctp', 'disable_trace_events'),
             chromium_config='webrtc_android',
             gclient_config='webrtc',
             gclient_apply_config=['android'],
@@ -1122,7 +1122,7 @@ _TRYSERVER_WEBRTC_SPEC = {
     'win_x86_more_configs':
         WebRTCBuilderSpec.create(
             phases=('bwe_test_logging', 'dummy_audio_file_devices_no_protobuf',
-                    'rtti_no_sctp', 'disable_trace_events_x86'),
+                    'rtti_no_sctp', 'disable_trace_events'),
             chromium_config='webrtc_default',
             gclient_config='webrtc',
             simulation_platform='win',
