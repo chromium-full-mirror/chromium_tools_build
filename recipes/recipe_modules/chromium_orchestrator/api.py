@@ -398,14 +398,23 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.m.chromium.apply_config('trybot_flavor')
     return builder_id, builder_config
 
+  _EXPERIMENTS_TO_FORWARD = set(('chromium.enable_cleandead',))
+
   def _trigger_compilator(self,
                           step_name,
                           compilator_properties,
                           gitiles_commit,
                           can_outlive_parent=False):
+    experiments = {
+        e: True
+        for e in self.m.buildbucket.build.input.experiments
+        if e in self._EXPERIMENTS_TO_FORWARD
+    }
+
     if self.m.led.launched_by_led:
       build = self._trigger_compilator_led_build(step_name,
-                                                 compilator_properties)
+                                                 compilator_properties,
+                                                 experiments)
 
     else:
       request = self.m.buildbucket.schedule_request(
@@ -418,6 +427,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
               'skip-rety-in-gerrit': 'pointless',
           }),
           can_outlive_parent=can_outlive_parent,
+          experiments=experiments,
       )
 
       build = self.m.buildbucket.schedule([request], step_name=step_name)[0]
@@ -426,7 +436,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     return build
 
-  def _trigger_compilator_led_build(self, step_name, compilator_properties):
+  def _trigger_compilator_led_build(
+      self,
+      step_name,
+      compilator_properties,
+      experiments,
+  ):
     with self.m.step.nest(step_name):
       builder_name = 'luci.{project}.{bucket}:{builder}'.format(
           project=self.m.buildbucket.build.builder.project,
@@ -435,8 +450,11 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       # By default, the priority of the tasks will be increased by 10, but
       # since this builder runs as part of CQ for the recipe repos, we want
       # the builds to run at regular priority
-      led_result = self.m.led('get-builder', '-adjust-priority', '0',
-                              builder_name)
+      get_cmd = ['get-builder', '-adjust-priority', '0']
+      for e, val in experiments.items():
+        get_cmd.extend(['-experiment', f'{e}={"true" if val else "false"}'])
+      get_cmd.append(builder_name)
+      led_result = self.m.led(*get_cmd)
 
       gerrit_change = self.m.tryserver.gerrit_change
       gerrit_cl_url = (

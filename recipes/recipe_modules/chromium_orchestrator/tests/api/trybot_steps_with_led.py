@@ -277,3 +277,35 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
+
+  yield api.test(
+      'experiment-to-forward',
+      setup(),
+      api.chromium.try_build(
+          bucket="try.shadow",
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          experiments=('chromium.enable_cleandead',),
+      ),
+      api.chromium_orchestrator.override_led_get_builder(),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_compile_phase=False),
+      api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'trigger compilator (with patch).led get-builder',
+          [
+              'led', 'get-builder', '-adjust-priority', '0', '-experiment',
+              'chromium.enable_cleandead=true', '-real-build',
+              'luci.chromium.try:fake-compilator'
+          ],
+      ),
+      api.post_process(post_process.MustRun, 'compilator steps (with patch)'),
+      api.post_process(post_process.DropExpectation),
+  )
