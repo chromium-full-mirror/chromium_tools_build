@@ -90,12 +90,18 @@ def RunSteps(api):
       per_build_timeout_s = 6 * 60 * 60
 
       def _make_req():
+        tags = {'mega_cq_build': '1'}
+        # CV recipe module reads both tags and props, so need to propagate both
+        # from parent build to children.
+        for t in api.buildbucket.build.tags:
+          tags[t.key] = t.value
         req = api.buildbucket.schedule_request(
             b,
             project=project,
             bucket=bucket,
             priority=api.buildbucket.build.infra.swarming.priority + 10,
-            tags=api.buildbucket.tags(mega_cq_build='1'))
+            tags=api.buildbucket.tags(**tags),
+            properties=api.cv.props_for_child_build)
         req.scheduling_timeout.FromSeconds(per_build_expiration_s)
         req.execution_timeout.FromSeconds(per_build_timeout_s)
         return req
