@@ -777,7 +777,7 @@ def _get_clang_summary_metrics(clang_summary):
       }
       summaries.append(summary)
     else:
-      raise Exception("Unexpected coverage metric")
+      raise Exception("Unexpected coverage metric %s" % k)
   return summaries
 
 
