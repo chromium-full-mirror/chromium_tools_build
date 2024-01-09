@@ -103,8 +103,6 @@ def GenTests(api):
 
   yield from_config('android_asan')
 
-  yield from_config('download_vr_test_apks')
-
   yield from_config('download_xr_test_apks')
 
   yield api.test(

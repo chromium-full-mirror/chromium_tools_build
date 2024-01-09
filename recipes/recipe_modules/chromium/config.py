@@ -52,7 +52,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       ),
       gyp_env=ConfigGroup(
           # VR version is deprecated, use XR version going forward.
-          DOWNLOAD_VR_TEST_APKS=Single(int, required=False),
           DOWNLOAD_XR_TEST_APKS=Single(int, required=False),
           GYP_DEFINES=Dict(equal_fn, ' '.join, (str, int, Path)),
       ),
@@ -602,12 +601,6 @@ def codesearch(c):
   if c.TARGET_PLATFORM == 'ios':
     c.mac_toolchain.enabled = True
     c.env.FORCE_MAC_TOOLCHAIN = 0
-
-
-# VR version is deprecated, use XR version going forward.
-@config_ctx()
-def download_vr_test_apks(c):
-  c.gyp_env.DOWNLOAD_VR_TEST_APKS = 1
 
 
 @config_ctx()
