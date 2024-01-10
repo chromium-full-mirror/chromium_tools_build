@@ -138,7 +138,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     if test_names_to_skip:
       compilator_properties['skip_tests'] = list(test_names_to_skip)
 
-    gitiles_commit = None
     # When this enabled, triggered compilators will not be automatically
     # canceled when the parent orchestrators are canceled.
     self.disable_auto_compilator_cancels = (
@@ -151,7 +150,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     build = self._trigger_compilator(
         'trigger compilator (with patch)',
         compilator_properties,
-        gitiles_commit,
         can_outlive_parent=self.disable_auto_compilator_cancels)
 
     # Now that we've finished the Orchestrator's bot_update and analyze,
@@ -318,7 +316,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     wo_build = self._trigger_compilator(
         'trigger compilator (without patch)',
         compilator_properties,
-        gitiles_commit,
         can_outlive_parent=self.disable_auto_compilator_cancels)
 
     # Display steps of triggered (without patch) compilator until it outputs
@@ -400,7 +397,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
   def _trigger_compilator(self,
                           step_name,
                           compilator_properties,
-                          gitiles_commit,
                           can_outlive_parent=False):
     experiments = {
         e: True
@@ -418,7 +414,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           builder=self.compilator,
           swarming_parent_run_id=self.m.swarming.task_id,
           properties=compilator_properties,
-          gitiles_commit=gitiles_commit,
           tags=self.m.buildbucket.tags(**{
               'hide-in-gerrit': 'pointless',
               'skip-rety-in-gerrit': 'pointless',
