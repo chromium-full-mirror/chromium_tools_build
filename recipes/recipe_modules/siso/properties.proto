@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package recipe_modules.build.siso;
 
-// NEXT ID TO USE: 10
+// NEXT ID TO USE: 11
 message InputProperties {
   // Backend config
 
@@ -39,4 +39,8 @@ message InputProperties {
   // https://chromium.googlesource.com/chromium/src/+/refs/heads/main/build/config/siso/config.star
   reserved 8;
   repeated string configs = 9;
+
+  // The number of remote jobs to run in parallel.
+  // The default is calculated by Siso internally.
+  int32 remote_jobs = 10;
 }

@@ -91,6 +91,14 @@ def GenTests(api):
                        ['--config', 'foo,bar']),
       api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+      'remote_jobs',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(remote_jobs=100),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['--remote_jobs', '100']),
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'compile_failure',

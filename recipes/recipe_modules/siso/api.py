@@ -93,6 +93,11 @@ class SisoApi(recipe_api.RecipeApi):
           '--action_salt',
           self._props.action_salt,
       ])
+    if self._props.remote_jobs:
+      cmd.extend([
+          '--remote_jobs',
+          self._props.remote_jobs,
+      ])
     if siso_args:
       cmd.extend(siso_args)
     cmd.extend(ninja_command[1:])
