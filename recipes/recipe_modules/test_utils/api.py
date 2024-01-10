@@ -841,7 +841,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # any suites which are now fully passing.
     # failures_including_retry accounts for flaky tests and for both runs
     def _still_failing(suite):
-      valid, failures = suite.failures_including_retry(suffix, self)
+      valid, failures = suite.failures_including_retry(suffix)
       return (not valid) or failures
 
     # Don't check the exonerated_suites_to_retry since they've already been
@@ -968,7 +968,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
       suggests that the error is due to an issue with top of tree, and should
       not cause the CL to fail.
     """
-    valid, new_failures = test_suite.deterministic_without_patch_failures(self)
+    valid, new_failures = test_suite.deterministic_without_patch_failures()
     if not valid:
       result = self.m.step.empty(
           '%s (test results summary)' % test_suite.name,
@@ -988,7 +988,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
   def summarize_failing_test_with_no_retries(self, test_suite):
     """Summarizes a failing test suite that is not going to be retried."""
     valid_results, new_failures = (
-        test_suite.with_patch_failures_including_retry(self))
+        test_suite.with_patch_failures_including_retry())
 
     if not valid_results:  # pragma: nocover
       self.m.step.empty(
@@ -1049,7 +1049,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     step_result.presentation.properties['test_status'] = {}
     for test_suite in test_suites:
       step_result.presentation.properties['test_status'][
-          test_suite.name] = test_suite.get_status(suffix, self)
+          test_suite.name] = test_suite.get_status(suffix)
 
 
 class TestGroup:
