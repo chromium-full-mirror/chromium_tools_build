@@ -13,8 +13,8 @@ DEPS = [
 import base64
 import copy
 import json
+import re
 
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
 
@@ -141,7 +141,6 @@ MULTI_DUT_REQUESTS = [
     gen_skylab_test(
         'multi_dut_skip_secondary_lacros_paths',
         secondary_cros_board='pixel6',
-        tast_expr=LACROS_TAST_EXPR,
         should_provision_browser_files=[False],
         autotest_name='tast.nearby-share',
     ),
@@ -190,8 +189,8 @@ PROPERTIES = {
 
 
 def RunSteps(api, requests):
-  api.skylab.schedule_suites(requests)
-  api.skylab.wait_on_suites(requests, timeout_seconds=3600)
+  build_ids = api.skylab.schedule_suites(requests)
+  api.skylab.wait_on_suites(build_ids, requests, timeout_seconds=3600)
 
 
 def GenTests(api):
@@ -226,54 +225,62 @@ def GenTests(api):
   def b64_encode(s):
     return base64.b64encode(s.encode('utf-8')).decode('ascii')
 
-  def test_args(name, test_level_retries=0):
+  def test_args_for_shard(name,
+                          shard,
+                          shard_count=SHARD_COUNT,
+                          max_run_sec=TAST_MAX_RUN_SEC,
+                          test_level_retries=0):
+    return 'resultdb_settings={} '\
+        'tast_expr_b64={} '\
+        'retries={} '\
+        'exe_rel_path=out/Release/chrome '\
+        'tast_expr_file=tast_expr_file.filter '\
+        'tast_expr_key=default '\
+        'max_run_sec={} '\
+        'shard_index={} '\
+        'total_shards={} '\
+        'lacros_gcs_path={}'.format(
+            b64_encode(json.dumps(gen_skylab_rdb(name))),
+            b64_encode(LACROS_TAST_EXPR), test_level_retries, max_run_sec,
+            shard, shard_count, 'gs://fake_bucket/fake_test/lacros_compressed.squash')
+
+  def test_args(name,
+                test_level_retries=0,
+                shard=0,
+                shard_count=1,
+                lacros_gcs_path="",
+                secondary_lacros_gcs_path=""):
     args = []
     args.append('resultdb_settings={}'.format(
         b64_encode(json.dumps(gen_skylab_rdb(name)))))
     args.append('tast_expr_b64={}'.format(b64_encode(LACROS_TAST_EXPR)))
     args.append('retries={}'.format(test_level_retries))
     args.append('exe_rel_path=out/Release/chrome')
+    args.append('shard_index={}'.format(shard))
+    args.append('total_shards={}'.format(shard_count))
+    if lacros_gcs_path:
+      args.append('lacros_gcs_path={}'.format(lacros_gcs_path))
+    if secondary_lacros_gcs_path:
+      args.append(
+          'secondary_lacros_gcs_path={}'.format(secondary_lacros_gcs_path))
     return ' '.join(args)
 
   yield api.test(
       'basic',
-      api.properties(requests=REQUESTS[:1]),
+      api.properties(requests=REQUESTS),
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[0].name + '.schedule', [
-              '--chromium-src',
-              '[CACHE]/builder/src',
-              '--json-outfile',
-              '/path/to/tmp/json',
-              'request',
-              '--board',
-              'eve',
-              '--model',
-              'baks',
-              '--bucket',
-              'a_different_chromium_bucket',
-              '--public-builder',
-              'ctp-public-builder',
-              '--public-builder-bucket',
-              'public-bucket',
-              '--pool',
-              'DUT_POOL_QUOTA',
-              '--image',
-              'eve-release/R88-13545.0.0',
-              '--timeout-mins',
-              '60',
-              '--qs-account',
-              'lacros',
-              '--test-args',
-              test_args(REQUESTS[0].name) + ' run_private_tests=False',
-              '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/lacros_compressed.squash',
+              'run', 'test', '-json', '-board', 'eve', '-model', 'baks',
+              '-bucket', 'a_different_chromium_bucket', '-public-builder',
+              'ctp-public-builder', '-public-builder-bucket', 'public-bucket',
+              '-pool', 'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-timeout-mins', '60', '-qs-account', 'lacros'
           ]),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('find test runner build', len(REQUESTS)),
       api.post_process(post_process.DropExpectation),
   )
 
-  # This test should fail. Because the test did not run.
   yield api.test(
       'fail_request_continues',
       api.properties(requests=REQUESTS),
@@ -283,9 +290,9 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[2].name + '.schedule', [
-              'request', '--board', 'eve', '--pool', 'cross_device_multi_cb',
-              '--image', 'eve-release/R88-13545.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'cross_device_multi_cb', '-image', 'eve-release/R88-13545.0.0',
+              '-timeout-mins', '60', '-qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -300,9 +307,16 @@ def GenTests(api):
           post_process.MustRun,
           'schedule skylab tests.{0}.schedule'.format(REQUESTS[4].name)),
       api.post_process(
+          post_process.MustRun,
+          'schedule skylab tests.{0}.schedule (1)'.format(REQUESTS[4].name)),
+      api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[4].name + '.schedule',
-          ['--total-shards', '2']),
+          [test_args_for_shard(REQUESTS[4].name, 0)]),
+      api.post_process(
+          post_process.StepCommandContains,
+          'schedule skylab tests.' + REQUESTS[4].name + '.schedule (1)',
+          [test_args_for_shard(REQUESTS[4].name, 1)]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -322,10 +336,11 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + MULTI_DUT_REQUESTS[0].name + '.schedule', [
-              'request', '--board', 'eve', '--pool', 'DUT_POOL_QUOTA',
-              '--image', 'eve-release/R88-13545.0.0', '--secondary-boards',
-              'eve', '--secondary-images', 'eve-release/R88-13545.0.0',
-              '--timeout-mins', '60', '--qs-account', 'lacros'
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-secondary-boards', 'eve', '-secondary-images',
+              'eve-release/R88-13545.0.0', '-timeout-mins', '60', '-qs-account',
+              'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -336,29 +351,10 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + MULTI_DUT_REQUESTS[1].name + '.schedule', [
-              'request',
-              '--board',
-              'eve',
-              '--pool',
-              'DUT_POOL_QUOTA',
-              '--image',
-              'eve-release/R88-13545.0.0',
-              '--timeout-mins',
-              '60',
-              '--qs-account',
-              'lacros',
-              '--test-args',
-              test_args(MULTI_DUT_REQUESTS[1].name),
-              '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/lacros_compressed.squash',
-              '--should-provision-browser-files',
-              'False',
-              '--secondary-lacros-gcs-path',
-              '',
-              '--autotest-name',
-              'tast.nearby-share',
-              '--total-shards',
-              '1',
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-secondary-boards', 'pixel6', '-timeout-mins', '60',
+              '-qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -369,49 +365,16 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + MULTI_DUT_REQUESTS[2].name + '.schedule', [
-              'request',
-              '--board',
-              'eve',
-              '--pool',
-              'DUT_POOL_QUOTA',
-              '--image',
-              'eve-release/R88-13545.0.0',
-              '--secondary-boards',
-              'atlas',
-              '--secondary-images',
-              'atlas-release/R111-15300.0.0',
-              '--secondary-boards',
-              'pixel6',
-              '--secondary-images',
-              '',
-              '--secondary-boards',
-              'octopus',
-              '--secondary-images',
-              'octopus-release/R111-15300.0.0',
-              '--timeout-mins',
-              '60',
-              '--qs-account',
-              'lacros',
-              '--test-args',
-              test_args(MULTI_DUT_REQUESTS[2].name),
-              '--lacros-gcs-path',
-              'gs://fake_bucket/fake_test/lacros_compressed.squash',
-              '--should-provision-browser-files',
-              'True',
-              '--secondary-lacros-gcs-path',
-              'gs://fake_bucket/fake_test/lacros_compressed.squash',
-              '--should-provision-browser-files',
-              'False',
-              '--secondary-lacros-gcs-path',
-              '',
-              '--should-provision-browser-files',
-              'True',
-              '--secondary-lacros-gcs-path',
-              'gs://fake_bucket/fake_test/lacros_compressed.squash',
-              '--autotest-name',
-              'tast.nearby-share',
-              '--total-shards',
-              '1',
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-secondary-boards', 'atlas,pixel6,octopus', '-secondary-images',
+              'atlas-release/R111-15300.0.0,,octopus-release/R111-15300.0.0',
+              '-timeout-mins', '60', '-qs-account', 'lacros', '-test-args',
+              test_args(
+                  MULTI_DUT_REQUESTS[2].name,
+                  lacros_gcs_path='gs://fake_bucket/fake_test/lacros_compressed.squash',
+                  secondary_lacros_gcs_path='gs://fake_bucket/fake_test/lacros_compressed.squash,,gs://fake_bucket/fake_test/lacros_compressed.squash'
+              )
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -438,25 +401,10 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + MULTI_DUT_REQUESTS[3].name + '.schedule', [
-              'request',
-              '--board',
-              'eve',
-              '--pool',
-              'DUT_POOL_QUOTA',
-              '--image',
-              'eve-release/R88-13545.0.0',
-              '--secondary-boards',
-              'atlas',
-              '--secondary-images',
-              'atlas-release/R118-15580.0.0',
-              '--secondary-boards',
-              'pixel6',
-              '--secondary-images',
-              '',
-              '--secondary-boards',
-              'octopus',
-              '--secondary-images',
-              'octopus-release/R118-15580.0.0',
+              'run', 'test', '-json', '-board', 'eve', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R88-13545.0.0',
+              '-secondary-boards', 'atlas,pixel6,octopus', '-secondary-images',
+              'atlas-release/R118-15580.0.0,,octopus-release/R118-15580.0.0'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -478,11 +426,11 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'schedule skylab tests.' + LKGM_REQUESTS[0].name + '.schedule', [
-              'request', '--board', 'eve', '--bucket', 'chromeos-image-archive',
-              '--public-builder', 'ctp-public-builder',
-              '--public-builder-bucket', 'public-bucket', '--pool',
-              'DUT_POOL_QUOTA', '--image', 'eve-release/R118-15580.0.0',
-              '--timeout-mins', '60', '--qs-account', 'lacros'
+              'run', 'test', '-json', '-board', 'eve', '-bucket',
+              'chromeos-image-archive', '-public-builder', 'ctp-public-builder',
+              '-public-builder-bucket', 'public-bucket', '-pool',
+              'DUT_POOL_QUOTA', '-image', 'eve-release/R118-15580.0.0',
+              '-timeout-mins', '60', '-qs-account', 'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -505,10 +453,10 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab tests.' + PUBLIC_LKGM_REQUESTS[0].name + '.schedule',
           [
-              'request', '--board', 'eve', '--bucket',
-              'chromiumos-image-archive', '--pool', 'DUT_POOL_QUOTA', '--image',
-              'eve-public/R118-15580.0.0', '--timeout-mins', '60',
-              '--qs-account', 'lacros'
+              'run', 'test', '-json', '-board', 'eve', '-bucket',
+              'chromiumos-image-archive', '-pool', 'DUT_POOL_QUOTA', '-image',
+              'eve-public/R118-15580.0.0', '-timeout-mins', '60', '-qs-account',
+              'lacros'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -522,31 +470,4 @@ def GenTests(api):
       api.post_process(post_process.StepFailure, 'schedule skylab tests'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
-  )
-
-  yield api.test(
-      'retry_for_infra_failures',
-      api.properties(requests=REQUESTS[:1]),
-      api.post_process(
-          post_process.StepCommandDoesNotContain,
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule',
-          ['--shard-indexes']),
-      api.post_process(
-          post_process.StepCommandContains,
-          'find test runner build.schedule skylab tests.' + REQUESTS[0].name +
-          '.schedule', ['--shard-indexes', '0']),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(901, common_pb2.INFRA_FAILURE)]),
-      api.override_step_data(
-          'find test runner build (2).read_ctp_response',
-          api.m.json.output({
-              '0': {
-                  'url': 'http://runner-link/904',
-                  'log_url': 'https://runner-log-link',
-                  'status': str(common_pb2.SUCCESS),
-              }
-          })),
-      api.post_process(post_process.DropExpectation),
   )

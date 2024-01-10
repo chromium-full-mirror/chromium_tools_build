@@ -4,13 +4,17 @@
 
 import attr
 import base64
-import os
+
+from collections import defaultdict
 
 from recipe_engine import recipe_api
 
-from .test_runner import TestRunner
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
+from PB.go.chromium.org.luci.buildbucket.proto \
+  import builder_common as builder_common_pb2
+from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
+                                                       builds_service_pb2)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
 
@@ -86,10 +90,7 @@ class SkylabApi(recipe_api.RecipeApi):
 
     return result
 
-  def schedule_suites(self,
-                      tests,
-                      step_name='schedule skylab tests',
-                      retry_shards=None):
+  def schedule_suites(self, tests, step_name='schedule skylab tests'):
     """Schedule CrOS autotest suites by invoking the cros_test_platform recipe.
 
     Translate each skylab test request into a CTP Buildbucket request and call
@@ -97,37 +98,36 @@ class SkylabApi(recipe_api.RecipeApi):
     test suite.
 
     Args:
-    * tests (list[SkylabTest]): List of steps.SkylabTest to schedule.
+    * tests (list[SkylabTest]): List of Autotest suites to schedule.
     * step_name (str): a name of scheduling buildbucket build.
+
+    Returns:
+      A dict of CTP build IDs keyed by test name(see SkylabTest).
     """
+    # Ensure the crosfleet cipd package is installed
+    crosfleet_tool = self.m.cipd.ensure_tool(
+        'chromiumos/infra/crosfleet/${platform}', 'prod')
+
+    build_ids_by_tags = defaultdict(lambda: [])
     with self.m.step.nest(step_name) as presentation:
       for t in tests:
         with self.m.step.nest(t.name):
-          cmd = [
-              'vpython3',
-              self.resource('skylab.py'),
-              '--chromium-src',
-              str(self.m.chromium_checkout.src_dir),
-              '--json-outfile',
-              self.m.json.output(),
-              'request',
-          ]
+          cmd = [crosfleet_tool, 'run', 'test', '-json']
 
-          cmd.extend(['--board', t.spec.cros_board])
+          cmd.extend(['-board', t.spec.cros_board])
 
           if t.spec.cros_model:
-            cmd.extend(['--model', t.spec.cros_model])
+            cmd.extend(['-model', t.spec.cros_model])
 
           if t.spec.bucket:
-            cmd.extend(['--bucket', t.spec.bucket])
+            cmd.extend(['-bucket', t.spec.bucket])
 
           if t.spec.public_builder and t.spec.public_builder_bucket:
-            cmd.extend(['--public-builder', t.spec.public_builder])
-            cmd.extend(
-                ['--public-builder-bucket', t.spec.public_builder_bucket])
+            cmd.extend(['-public-builder', t.spec.public_builder])
+            cmd.extend(['-public-builder-bucket', t.spec.public_builder_bucket])
 
           cmd.extend([
-              '--pool', t.spec.dut_pool if t.spec.dut_pool else 'DUT_POOL_QUOTA'
+              '-pool', t.spec.dut_pool if t.spec.dut_pool else 'DUT_POOL_QUOTA'
           ])
 
           if t.spec.use_lkgm:
@@ -138,29 +138,32 @@ class SkylabApi(recipe_api.RecipeApi):
                 is_public)
             assert lkgm_cros_img, 'chromite build_api command not found'
 
-            cmd.extend(['--image', lkgm_cros_img])
+            cmd.extend(['-image', lkgm_cros_img])
           else:
-            cmd.extend(['--image', t.spec.cros_img])
+            cmd.extend(['-image', t.spec.cros_img])
 
           if t.spec.secondary_cros_board:
+            cmd.extend(['-secondary-boards', t.spec.secondary_cros_board])
             if t.spec.secondary_cros_img:
               boards = t.spec.secondary_cros_board.split(',')
               imgs = t.spec.secondary_cros_img.split(',')
               if len(boards) != len(imgs):
                 raise recipe_api.StepFailure('Length of secondary_cros_img'
                                              ' must match secondary_cros_board')
-              for b, img in zip(boards, imgs):
+              updated_imgs = imgs.copy()
+              for i, img in enumerate(imgs):
                 if img == 'use_lkgm':
                   is_public = t.spec.bucket.startswith('chromiumos-')
-                  img = self.get_lkgm_version(
-                      b, str(self.m.chromium_checkout.src_dir), is_public)
-                cmd.extend(['--secondary-boards', b])
-                cmd.extend(['--secondary-images', img])
+                  updated_imgs[i] = self.get_lkgm_version(
+                      boards[i], str(self.m.chromium_checkout.src_dir),
+                      is_public)
 
-          cmd.extend(['--timeout-mins', str(int(t.spec.timeout_sec / 60))])
+              cmd.extend(['-secondary-images', ','.join(updated_imgs)])
+
+          cmd.extend(['-timeout-mins', str(int(t.spec.timeout_sec / 60))])
 
           cmd.extend([
-              '--qs-account', QS_ACCOUNT_FYI
+              '-qs-account', QS_ACCOUNT_FYI
               if 'fyi' in self.m.buildbucket.builder_name else QS_ACCOUNT_PROD
           ])
 
@@ -225,51 +228,89 @@ class SkylabApi(recipe_api.RecipeApi):
           # if t.telemetry_shard_index is not None:
           #   test_args.append('test_shard_index=%s' % t.telemetry_shard_index)
 
+          autotest_secondary_lacros_paths = ''
+
+          # TODO(b/305311640): Remove TLS provision once the lacros version
+          # skews have all moved to 'tast.chrome-from-gcs'.
+          if t.lacros_gcs_path and t.spec.autotest_name == 'tast.lacros':
+            cmd.extend(['-lacros-path', t.lacros_gcs_path])
+
+          if t.spec.secondary_cros_board:
+            num_boards = len(t.spec.secondary_cros_board.split(','))
+            # By default, browser files are sent to all secondary DUTs unless
+            # users explicitly override through should_provision_browser_files.
+            should_provision_browser_files = [True] * num_boards
+            if t.spec.should_provision_browser_files:
+              if len(t.spec.should_provision_browser_files) != num_boards:
+                raise recipe_api.StepFailure(
+                    'Length of should_provision_browser_files'
+                    ' must match secondary_cros_board')
+              should_provision_browser_files = t.spec.should_provision_browser_files
+
+            if any(should_provision_browser_files):
+              autotest_secondary_lacros_paths_list = [
+                  self.m.path.join(t.lacros_gcs_path,
+                                   'lacros_compressed.squash') if p else ''
+                  for p in should_provision_browser_files
+              ]
+              autotest_secondary_lacros_paths = ','.join(
+                  autotest_secondary_lacros_paths_list)
+
           if t.spec.bucket and 'chromium' in t.spec.bucket:
             test_args.append('run_private_tests=False')
-          cmd.extend(['--test-args', ' '.join(test_args)])
 
-          lacros_gcs_path = os.path.join(t.lacros_gcs_path,
-                                         'lacros_compressed.squash')
-          cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
+          for shard in range(t.spec.shards):
+            # Create a request for each shard
+            shard_cmd = list(cmd)
+            shard_test_args = list(test_args)
 
-          if (t.spec.secondary_cros_board and
-              t.spec.should_provision_browser_files):
-            if len(t.spec.should_provision_browser_files) != len(
-                t.spec.secondary_cros_board.split(',')):
-              raise recipe_api.StepFailure(
-                  'Length of should_provision_browser_files'
-                  ' must match secondary_cros_board')
-            for s in t.spec.should_provision_browser_files:
-              cmd.extend(['--should-provision-browser-files', s])
-              cmd.extend(
-                  ['--secondary-lacros-gcs-path', lacros_gcs_path if s else ''])
+            shard_test_args.append('shard_index={}'.format(shard))
+            shard_test_args.append('total_shards={}'.format(t.spec.shards))
+            lacros_gcs_path = self.m.path.join(t.lacros_gcs_path,
+                                               'lacros_compressed.squash')
+            shard_test_args.append('lacros_gcs_path={}'.format(lacros_gcs_path))
+            if autotest_secondary_lacros_paths:
+              shard_test_args.append('secondary_lacros_gcs_path={}'.format(
+                  autotest_secondary_lacros_paths))
 
-          cmd.extend(['--autotest-name', t.spec.autotest_name])
-          cmd.extend(['--total-shards', t.spec.shards])
-          for shard in retry_shards or []:
-            cmd.extend(['--shard-indexes', shard])
+            shard_cmd.extend(['-test-args', ' '.join(shard_test_args)])
+            shard_cmd.append('-exit-early')
+            shard_cmd.append(t.spec.autotest_name)
 
-          step_result = self.m.step(
-              'schedule',
-              cmd,
-              raise_on_failure=False,
-              stdout=self.m.json.output(),
-              step_test_data=lambda: self.m.json.test_api.output(
-                  {'ctp_build_id': '889900'}))
+            shard_link_name = (
+                t.name if shard == 0 else '{0} ({1})'.format(t.name, shard))
+            step_result = self.m.step(
+                'schedule' if shard == 0 else 'schedule ({})'.format(shard),
+                shard_cmd,
+                raise_on_failure=False,
+                stdout=self.m.json.output(),
+                step_test_data=lambda: self.m.json.test_api.output_stream(
+                    {"Launches": [{
+                        "Build": {
+                            "id": str(889900 + shard),
+                        },
+                    }]}))
 
-          if step_result.retcode == 0:
-            build_id = int(step_result.json.output['ctp_build_id'])
-            presentation.links[
-                t.name] = 'https://ci.chromium.org/b/%s' % build_id
-            t.ctp_build_ids.append(build_id)
+            if step_result.retcode == 0:
+              shard_build_id = int(
+                  step_result.stdout["Launches"][0]["Build"]["id"])
+              presentation.links[
+                  shard_link_name] = 'https://ci.chromium.org/b/%s' % shard_build_id
 
-  def _try_wait_ctp_builds(self, test_suites, timeout_seconds):
+              build_ids_by_tags[t.name].append(shard_build_id)
+
+    return build_ids_by_tags
+
+  def _try_wait_ctp_builds(self, ctp_builds_by_tag, timeout_seconds):
     """Helper to wait for the given CTP builds to finish."""
     with self.m.step.nest('collect skylab results'):
-      all_build_ids = [
-          t.ctp_build_ids[-1] for t in test_suites if t.ctp_build_ids
-      ]
+      # collect_builds() may hit timeout, but it does not mean
+      # all tests are aborted. Some tests may still have exported
+      # results to RDB. So an exception or failure here should not
+      # block following steps.
+      all_build_ids = []
+      for ids in ctp_builds_by_tag.values():
+        all_build_ids += ids
       try:
         self.m.buildbucket.collect_builds(
             all_build_ids, timeout=timeout_seconds)
@@ -285,41 +326,40 @@ class SkylabApi(recipe_api.RecipeApi):
     Returns:
       A list of ChromeOS test runner builds in `build_pb2.Build`.
     """
-    cmd = [
-        'vpython3',
-        self.resource('skylab.py'),
-        '--chromium-src',
-        str(self.m.chromium_checkout.src_dir),
-        '--json-outfile',
-        self.m.json.output(),
-        'response',
-        '--ctp-build-id',
-        ctp_build_id,
-    ]
-    step_result = self.m.step(
-        'read_ctp_response',
-        cmd,
-        stdout=self.m.raw_io.output(),
-        stderr=self.m.raw_io.output(),
-        raise_on_failure=False,
-        step_test_data=lambda: self.m.json.test_api.output({
-            '0': {
-                'url':
-                    'https://ci.chromium.org/p/chromeos/builders/test_runner/'
-                    f'test_runner/b{ctp_build_id}0',
-                'log_url':
-                    'https://cros-test-analytics.appspot.com/p/chromeos/logs/'
-                    'browse/chromeos-test-logs/test-runner/prod/abcd',
-                'status': 'SUCCESS'
-            }
-        }))
-    return step_result.json.output
+    # For each shard's CTP build, get any attempts (runner builds)
+    return self.m.buildbucket.search(
+        builds_service_pb2.BuildPredicate(
+            builder=builder_common_pb2.BuilderID(
+                project='chromeos',
+                bucket='test_runner',
+                builder='test_runner',
+            ),
+            tags=[
+                common_pb2.StringPair(
+                    key='parent_buildbucket_id', value=str(ctp_build_id))
+            ],
+            include_experimental=self.m.runtime.is_experimental))
 
-  def wait_on_suites(self, tests, timeout_seconds):
+  def _retry_ctp(self, build_id):
+    """Helper to retry the failed CrOS test build.
+
+    Args:
+      build_id: (int64) A Buildbucket ID to retry.
+
+    Returns:
+      int64, the Buildbucket ID for the retried build.
+    """
+    builds = self.m.buildbucket.schedule(
+        [builds_service_pb2.ScheduleBuildRequest(template_build_id=build_id)])
+    return builds[0].id
+
+  def wait_on_suites(self, ctp_builds_by_tag, test_suites, timeout_seconds):
     """Wait for the CTP builds to complete and return their test runner builds.
 
     Args:
-    * tests (list[SkylabTest]): See schedule_suites().
+    * ctp_builds_by_tag: A dict of CTP build IDs (a list), keyed by request
+        tag.
+    * test_suites: Iterable of objects implementing the steps.Test interface.
     * timeout_seconds: How long to wait for results before giving up.
 
     Returns:
@@ -327,38 +367,47 @@ class SkylabApi(recipe_api.RecipeApi):
         test_runner attempts.
     * A list of the CTP build ID in int64, in the order of shards.
     """
-    cur = [t for t in tests if t.ctp_build_ids]
+    test_runners_by_tag = defaultdict(lambda: {})
+    build_by_shard = {}
+    for t, builds in ctp_builds_by_tag.items():
+      build_by_shard.update(dict({b: x for x, b in enumerate(builds)}))
+    cur = ctp_builds_by_tag.copy()
     attempt = 0
+    max_retries_by_suite = {t.name: t.spec.retries for t in test_suites}
     while cur:
       self._try_wait_ctp_builds(cur, timeout_seconds)
-      prev, cur = cur, []
+      prev = cur
+      cur = defaultdict(lambda: [])
       with self.m.step.nest('find test runner build') as step:
         while prev:
-          t = prev.pop()
-          runner_by_shards = self._fetch_test_runner(t.ctp_build_ids[-1])
-          retry_shards = []
-          for shard, test_runner in runner_by_shards.items():
+          # Pop the request tag and its list of shard CTP build ID.
+          t, shard_builds = prev.popitem()
+          for idx, b in enumerate(shard_builds):
+            test_runner_builds = self._fetch_test_runner(b)
             # Retry for infra issues that should not be caused by tests
             # regressions. Specifically for below scenarios:
             # - no test runner builds found
-            # - test runner has infra issue, aka the build status is out of
-            #   success and failure.
+            # - test runner has infra failures
             # Requests from browser builders do not enable retry for CTP,
-            # because CTP does not separate test failure and infra failures.
-            # Test failure is better to get retried by test_level_retry.
-            if test_runner:
-              tr = TestRunner.create(**test_runner)
-              t.test_runner_builds.setdefault(shard, []).append(tr)
-              if tr.status in [common_pb2.SUCCESS, common_pb2.FAILURE]:
+            # so we expect only one test runner build found. But we can not
+            # control it. Thus only kick off retry if all of test runners
+            # failed due to infra.
+            if not test_runner_builds or all(
+                runner.status == common_pb2.INFRA_FAILURE
+                for runner in test_runner_builds):
+              step.presentation.status = self.m.step.EXCEPTION
+              if attempt < max_retries_by_suite[t]:
+                retry_build = self._retry_ctp(b)
+                build_by_shard[retry_build] = idx
+                cur[t].append(retry_build)
                 continue
-            step.presentation.status = self.m.step.EXCEPTION
-            if attempt < t.spec.retries:
-              retry_shards.append(shard)
-
-          if retry_shards:
-            self.schedule_suites([t], retry_shards=retry_shards)
-            cur.append(t)
+            test_runners_by_tag[t].update({b: test_runner_builds})
       attempt += 1
+    ctp_builds_with_retry = {}
+    for t, test_runner_builds in test_runners_by_tag.items():
+      ctp_builds_with_retry[t] = sorted(
+          test_runner_builds.keys(), key=lambda x: build_by_shard[x])
+    return test_runners_by_tag, ctp_builds_with_retry
 
   def gen_rdb_config(self, test):
     """Generate the resultDB config for SkylabTest.
