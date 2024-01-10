@@ -214,7 +214,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                             targets_spec_dir=None,
                             precommit_details=_COMPUTE_PRECOMMIT_DETAILS,
                             scripts_compile_targets_fn=None,
-                            remote_tests_only=False):
+                            remote_tests_only=False,
+                            test_names_to_skip=()):
     """
     Args:
       builder_config (BuilderConfig): config for the current builder
@@ -236,6 +237,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         Results will be memoized, so it will only be called a single
         time.
       remote_tests_only (bool): only include targets for remote tests
+      test_names_to_skip (string[]): Names of tests to not actually run
 
     Returns: TargetsConfig for current builder
     """
@@ -280,7 +282,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       tests = self._generate_tests_from_targets_spec(generator,
                                                      builder_id.group,
                                                      builder_id.builder,
-                                                     targets_spec)
+                                                     targets_spec,
+                                                     test_names_to_skip)
       additional_compile_targets = targets_spec.get(
           'additional_compile_targets', [])
       targets_by_builder_id[builder_id] = targets_config_module.Targets(
@@ -363,8 +366,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_group: str,
       builder: str,
       targets_spec: generators.TargetsSpec,
+      test_names_to_skip: Iterable[str] = (),
   ) -> Iterable[steps.AbstractTest]:
-    test_specs = list(generator.generate(builder_group, builder, targets_spec))
+    test_specs = list(
+        generator.generate(builder_group, builder, targets_spec,
+                           test_names_to_skip))
     return tuple(spec.get_test(self) for spec in test_specs)
 
   def read_targets_spec(self, targets_spec_file, targets_spec_dir=None):

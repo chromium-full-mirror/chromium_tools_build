@@ -6,6 +6,7 @@ from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
 from RECIPE_MODULES.build.chromium_tests import generators
+from RECIPE_MODULES.build.chromium_tests.steps import SuccessReuseTest
 
 DEPS = [
     'chromium',
@@ -23,6 +24,7 @@ PROPERTIES = {
     'remote_tests_only': Property(default=False),
     'expected_tests': Property(default=[]),
     'targets_spec_dir': Property(default=None),
+    'skip_tests': Property(default=[]),
 }
 
 FAKE_TARGETS_SPEC = {
@@ -66,7 +68,8 @@ FAKE_TARGETS_SPEC = {
 }
 
 
-def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir):
+def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
+             skip_tests):
   api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
@@ -86,12 +89,17 @@ def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir):
       targets_spec_dir=targets_spec_dir,
       precommit_details=(generators.PrecommitDetails()
                          if api.tryserver.is_tryserver else None),
-      remote_tests_only=remote_tests_only)
+      remote_tests_only=remote_tests_only,
+      test_names_to_skip=skip_tests)
   tests = []
+  skipped_tests = []
   for t in targets_config.all_tests:
     tests.append(t.name)
+    if isinstance(t, SuccessReuseTest):
+      skipped_tests.append(t.name)
 
   api.assertions.assertCountEqual(tests, expected_tests)
+  api.assertions.assertCountEqual(skip_tests, skipped_tests)
 
 
 def GenTests(api):
@@ -196,6 +204,25 @@ def GenTests(api):
           remote_tests_only=True,
           expected_tests=['angle_unittests', 'browser_tests', 'basic_EVE_TOT'],
       ),
+      fake_targets_spec(),
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'skipped_test',
+      ctbc_properties(),
+      api.properties(
+          remote_tests_only=False,
+          expected_tests=[
+              'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
+              'browser_tests_no_swarm', 'android_webview_junit_tests',
+              'check_static_initializers', 'basic_EVE_TOT'
+          ],
+          skip_tests=['browser_tests']),
       fake_targets_spec(),
       api.chromium.try_build(
           builder_group='fake-try-group',

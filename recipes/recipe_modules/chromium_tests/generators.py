@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Container, Iterable, Mapping
 import string
 import textwrap
 
@@ -64,6 +64,7 @@ class Generator:
       builder_group: str,
       builder: str,
       targets_spec: TargetsSpec,
+      test_names_to_skip: Iterable[str] = (),
   ) -> Iterable[steps.AbstractTestSpec]:
 
     def generate_inner():
@@ -79,6 +80,7 @@ class Generator:
           if test_spec is not None:
             yield raw_test_spec, test_spec
 
+    test_names_to_skip = set(test_names_to_skip)
     for raw_test_spec, test_spec in generate_inner():
       test_spec = attr.evolve(
           test_spec,
@@ -94,6 +96,8 @@ class Generator:
       test_spec = self._handle_resultdb(raw_test_spec, test_spec)
       test_spec = self._handle_experimental(raw_test_spec, test_spec)
       test_spec = self._handle_ci_only(raw_test_spec, test_spec)
+      test_spec = self._handle_skip_test(raw_test_spec, test_spec,
+                                         test_names_to_skip)
       yield test_spec
 
   def _handle_resultdb(
@@ -158,6 +162,29 @@ class Generator:
     if not raw_test_spec.get('ci_only'):
       return test_spec
     return steps.CiOnlyTestSpec.create(test_spec)
+
+  def _handle_skip_test(
+      self,
+      raw_test_spec: _RawTestSpec,
+      test_spec: steps.AbstractTestSpec,
+      test_names_to_skip: Container[str],
+  ) -> steps.AbstractTestSpec:
+    """Handle tests that are being skipped because of previous successs
+
+    Args:
+      * raw_spec - The source-side spec dictionary describing the test.
+      * test_spec - The TestSpec instance for the test.
+      * test_names_to_skip - Names of tests that should be disabled
+
+    Returns:
+      The test_spec object that should be used for the test. If the test's name
+      is present in the test_names_to_skip list a SuccessReuseTestSpec
+      object is used to prevent that test from running while still providing
+      steps.
+    """
+    if raw_test_spec.get('name') in test_names_to_skip:
+      return steps.SuccessReuseTestSpec.create(test_spec)
+    return test_spec
 
   def _get_args_for_test(self, raw_test_spec: _RawTestSpec):
     """Gets the argument list for a dynamically generated test, as

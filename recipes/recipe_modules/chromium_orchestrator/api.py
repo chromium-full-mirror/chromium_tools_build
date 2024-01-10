@@ -13,6 +13,7 @@ from PB.go.chromium.org.luci.buildbucket.proto \
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
+from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.chromium_tests.api import (
     ALL_TEST_BINARIES_ISOLATE_NAME)
 from RECIPE_MODULES.build.code_coverage import constants
@@ -182,7 +183,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         self.m.chromium_checkout.src_dir,
         targets_spec_dir=self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir),
-        remote_tests_only=True)
+        remote_tests_only=True,
+        test_names_to_skip=test_names_to_skip)
     # This is used to set build properties on swarming tasks
     self.m.chromium.set_build_properties(comp_output.got_revisions)
 
@@ -198,11 +200,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           self.process_skylab_props(comp_output.skylab_props, targets_config))
     self.m.chromium_tests.configure_swarming(
         self.m.tryserver.is_tryserver, builder_group=builder_id.group)
-
-    if test_names_to_skip:
-      tests = [test for test in tests if test.name not in test_names_to_skip]
-      # Give the swarming shards for retries priority
-      self.m.chromium_swarming.default_priority = 20
 
     # crbug/1346781
     # src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata is needed
@@ -654,6 +651,9 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       tests = [
           t for t in targets_config.all_tests
           if t.uses_isolate and t.target_name in self.m.isolate.isolated_tests
+          # The compilator will not compile all tests that can be skipped but we
+          # still want to include tests that are disabled for display
+          or (t.isolate_target and not t.is_enabled)
       ]
 
     # CLs that update the test command lines are actually blocked from

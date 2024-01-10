@@ -921,7 +921,8 @@ def GenTests(api):
       api.code_coverage(use_clang_coverage=True),
       api.chromium_orchestrator.override_compilator_build_proto_fetch(),
       api.chromium_orchestrator.override_schedule_compilator_build(),
-      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          tests=['browser_tests', 'unit_tests']),
       api.chromium_orchestrator.override_compilator_steps(
           is_compile_phase=False),
       api.chromium_orchestrator.override_test_spec(
@@ -932,9 +933,13 @@ def GenTests(api):
       ),
       api.buildbucket.simulated_search_results(
           [_create_previous_build({'unit_tests': 'Success'})],
-          step_name='check previous builds for skippable test suites.find equivalent patchset builds'
-      ),
-      api.post_process(post_process.DoesNotRun, 'unit_tests (with patch)'),
+          step_name=('check previous builds for skippable test suites.find '
+                     'equivalent patchset builds')),
+      api.post_process(post_process.MustRun, 'unit_tests (with patch)'),
+      api.post_process(
+          post_process.StepTextEquals, 'unit_tests (with patch)',
+          ('This test is not being run because it has passed in the last 24 '
+           'hours with the equivalent patchset')),
       api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
       api.post_process(post_process.DropExpectation),
   )
@@ -971,9 +976,13 @@ def GenTests(api):
       ),
       api.buildbucket.simulated_search_results(
           [_create_previous_build({'unit_tests': 'Success'})],
-          step_name='check previous builds for skippable test suites.find equivalent patchset builds'
-      ),
-      api.post_process(post_process.DoesNotRun, 'unit_tests (with patch)'),
+          step_name=('check previous builds for skippable test suites.find '
+                     'equivalent patchset builds')),
+      api.post_process(post_process.MustRun, 'unit_tests (with patch)'),
+      api.post_process(
+          post_process.StepTextEquals, 'unit_tests (with patch)',
+          ('This test is not being run because it has passed in the last 24 '
+           'hours with the equivalent patchset')),
       api.post_process(post_process.DropExpectation),
   )
 

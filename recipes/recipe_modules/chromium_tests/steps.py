@@ -1357,6 +1357,24 @@ class CiOnlyTest(TestWrapper):
     return 'This test will not be run on try builders'
 
 
+class SuccessReuseTestSpec(TestWrapperSpec):
+  """A spec for a test that is being skipped."""
+
+  @property
+  def test_wrapper_class(self):
+    """The test wrapper class associated with the spec."""
+    return SuccessReuseTest
+
+
+class SuccessReuseTest(TestWrapper):
+  """A test wrapper that provides steps for a skipped test."""
+
+  @property
+  def _disabled_message(self):
+    return ("This test is not being run because it has passed in the last 24 "
+            "hours with the equivalent patchset")
+
+
 @attrs()
 class ExperimentalTestSpec(TestWrapperSpec):
   """A spec for a test to be executed at some percentage."""
