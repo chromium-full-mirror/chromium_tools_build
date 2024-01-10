@@ -8,6 +8,7 @@ DEPS = [
     'chromium',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'siso',
 ]
 
 
@@ -21,6 +22,15 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic',
-                 api.post_check(post_process.MustRun, 'ninja -t cleandead'),
-                 api.post_process(post_process.DropExpectation))
+  step_name = 'ninja -t cleandead'
+  yield api.test(
+      'basic',
+      api.post_check(post_process.StepCommandRE, step_name,
+                     ['.*/ninja', '-C', '.*', '-t', 'cleandead']),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'siso', api.siso.properties(),
+      api.post_check(post_process.StepCommandRE, step_name,
+                     ['.*/siso', 'ninja', '-C', '.*', '-t', 'cleandead']),
+      api.post_process(post_process.DropExpectation))
