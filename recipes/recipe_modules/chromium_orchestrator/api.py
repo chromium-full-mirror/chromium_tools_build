@@ -93,12 +93,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           step_name='fetch compilator build proto',
           build_id=self.current_compilator_buildbucket_id)
 
-      # The compilator build's gitiles_commit contains the commit position too,
-      # so use this instead of the gitiles_commit fed in by the bootstrapper.
-      if comp_build.output.HasField('gitiles_commit'):
-        self.m.buildbucket.set_output_gitiles_commit(
-            comp_build.output.gitiles_commit)
-
       if self.disable_auto_compilator_cancels:
         return raw_result
       # crbug.com/1271287#c22
@@ -569,6 +563,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     if sub_build.output.HasField('gitiles_commit'):
       self.m.chromium_checkout.update_rdb_invocation(
           gitiles_commit=sub_build.output.gitiles_commit)
+
+      # Set the output gitiles commit ASAP before any skylab tests are
+      # triggered, so the source position can be uploaded with the skylab
+      # test results (if any).
+      self.m.buildbucket.set_output_gitiles_commit(
+          sub_build.output.gitiles_commit)
     else:
       # If the compilator didn't have a commit position we want to know about
       # it but not fail the build
