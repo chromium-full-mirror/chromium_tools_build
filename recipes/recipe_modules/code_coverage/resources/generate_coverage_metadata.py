@@ -765,7 +765,10 @@ def _get_clang_summary_metrics(clang_summary):
       'branches': 'branch',
       'regions': 'region',
       'functions': 'function',
-      'instantiations': 'instantiation'
+      'instantiations': 'instantiation',
+      # Modified condition/decision coverage
+      # See https://llvm.org/devmtg/2022-11/slides/TechTalk4-MCDC-EnablingSafetyCriticalCodeCoverage.pdf
+      'mcdc': 'mcdc'
   }
   summaries = []
   for k, v in clang_summary.items():
