@@ -12,6 +12,8 @@ DEPS = [
     'chromium_tests_builder_config',
     'filter',
     'depot_tools/tryserver',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cq',
     'recipe_engine/json',
     'recipe_engine/properties',
     'recipe_engine/swarming',
@@ -554,6 +556,24 @@ def GenTests(api):
           'gtest_test (with patch)',
           ["This test is not being run because it is marked 'ci_only'"],
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'swarmed_ci_only_test_on_mega_cq_build',
+      try_build(
+          test_spec={
+              'ci_only': True,
+              'test': 'gtest_test',
+              'swarming': {},
+          },
+          tags=api.buildbucket.tags(
+              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
+      ),
+      api.cq(run_mode='CQ_MODE_MEGA_DRY_RUN'),
+      api.post_process(post_process.MustRun, 'gtest_test (with patch)'),
+      api.post_process(post_process.StepTextContains, 'gtest_test (with patch)',
+                       [('This test is being run on Mega CQ runs')]),
       api.post_process(post_process.DropExpectation),
   )
 

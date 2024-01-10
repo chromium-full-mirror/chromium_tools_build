@@ -1338,6 +1338,10 @@ class CiOnlyTest(TestWrapper):
     if not self.api.m.tryserver.is_tryserver:
       return False
 
+    if (self.api.m.cv.active and
+        self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES):
+      return False
+
     footer_vals = self.api.m.tryserver.get_footer(INCLUDE_CI_FOOTER)
     if not footer_vals:
       return True
@@ -1351,6 +1355,10 @@ class CiOnlyTest(TestWrapper):
 
   @property
   def _info_message(self):
+    if (self.api.m.cv.active and
+        self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES):
+      return 'This test is being run on Mega CQ runs'
+
     if self.api.m.tryserver.is_tryserver:
       return ('This test is being run due to the'
               f' {INCLUDE_CI_FOOTER} gerrit footer')

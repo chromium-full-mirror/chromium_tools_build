@@ -136,6 +136,10 @@ class Task:
 
 
 class ChromiumTestsApi(recipe_api.RecipeApi):
+
+  # These are defined in //infra/config/lib/try.star in chromium/src.
+  MEGA_CQ_MODE_NAMES = ('CQ_MODE_MEGA_DRY_RUN', 'CQ_MODE_MEGA_FULL_RUN')
+
   Task = Task
 
   def __init__(self, input_properties, **kwargs):
