@@ -338,10 +338,21 @@ def GenTests(api):
 
   yield api.test(
       'patch_parent_no_cp',
-      api.binary_size.build(
-          recent_upload_cp=12345,
-          patch_parent_cp=None,
-          override_commit_log=True),
+      api.binary_size.build(override_commit_log=True),
+      api.binary_size.override_cp_for_parents(count=1),
+      api.post_process(post_process.MustRun, 'gsutil Downloading zip'),
+      api.post_process(post_process.DoesNotRun, 'compile (without patch)'),
+      api.post_check(has_expected_supersize_link),
+      api.post_check(has_expected_binary_size_url),
+      api.post_check(final_step_is_not_nested),
+      api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'patch_parent_no_cp_max_limit',
+      api.binary_size.build(override_commit_log=True),
+      api.binary_size.override_cp_for_parents(count=10, add_final_parent=False),
       api.post_process(post_process.DoesNotRun, 'gsutil Downloading zip'),
       api.post_process(post_process.MustRun, 'compile (without patch)'),
       api.post_check(has_expected_supersize_link),

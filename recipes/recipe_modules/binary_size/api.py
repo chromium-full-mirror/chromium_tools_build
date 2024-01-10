@@ -56,19 +56,27 @@ class BinarySizeApi(recipe_api.RecipeApi):
     self._size_config_json = (
         properties.size_config_json or constants.DEFAULT_SIZE_CONFIG_JSON)
 
-  def get_commit_position(self, url, revision, for_uploaded_rev):
-    if for_uploaded_rev:
-      suffix = 'uploaded revision'
-    else:
-      suffix = 'patch\'s parent revision'
-    commit_message = self.m.gitiles.commit_log(
-        url, revision, step_name='Commit log for {}'.format(suffix))['message']
-    cp_footer = self.m.tryserver.get_footer(
-        constants.COMMIT_POSITION_FOOTER_KEY, patch_text=commit_message)
-    # A patch's parent may be another CL that hasn't landed yet, so there's
-    # no commit position footer yet
-    if not cp_footer:
+  def get_first_committed_ancestor_position(self,
+                                            url,
+                                            revision,
+                                            step_name_suffix=None,
+                                            ancestor_index=1):
+    # Limit to 10 links up the chain, if we still haven't found a committed CL,
+    # there must be something wrong.
+    if ancestor_index > 10:
       return None
+    if not step_name_suffix:
+      step_name_suffix = f'patch\'s parent(x{ancestor_index}) revision'
+    commit_details = self.m.gitiles.commit_log(
+        url, revision, step_name='Commit log for {}'.format(step_name_suffix))
+    cp_footer = self.m.tryserver.get_footer(
+        constants.COMMIT_POSITION_FOOTER_KEY,
+        patch_text=commit_details['message'])
+    # A patch's parent may be another CL that hasn't landed yet, so there's
+    # no commit position footer yet. If so, go one more link up the chain.
+    if not cp_footer:
+      return self.get_first_committed_ancestor_position(
+          url, commit_details['parents'][0], ancestor_index=ancestor_index + 1)
     return int(self.m.commit_position.parse(cp_footer[0])[1])
 
   def android_binary_size(self, **kwargs):
@@ -377,10 +385,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
     # recently uploaded revision. We can't use the uploaded results
     # in that case.
     url = self.m.gclient.c.solutions[0].url
-    uploaded_cp = self.get_commit_position(
-        url, latest_upload_revision, for_uploaded_rev=True)
-    patch_cp = self.get_commit_position(
-        url, patch_parent_revision, for_uploaded_rev=False)
+    uploaded_cp = self.get_first_committed_ancestor_position(
+        url, latest_upload_revision, step_name_suffix='uploaded revision')
+    patch_cp = self.get_first_committed_ancestor_position(
+        url, patch_parent_revision)
     if not patch_cp or patch_cp > uploaded_cp:
       return None, None
 
