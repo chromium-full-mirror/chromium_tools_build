@@ -507,6 +507,72 @@
   },
   {
     "cmd": [],
+    "name": "upload git traces"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::archive]/resources/archive.py"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload git traces.compress traces",
+    "stdin": "{\"archive_type\": \"zip\", \"entries\": [{\"path\": \"[CLEANUP]/trace2-event\", \"type\": \"file\"}, {\"path\": \"[CLEANUP]/trace-curl\", \"type\": \"file\"}, {\"path\": \"[CLEANUP]/trace-packet\", \"type\": \"file\"}], \"output\": \"[CLEANUP]/8945511751514863184.zip\", \"root\": \"[CLEANUP]\"}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/8945511751514863184.zip",
+      "gs://chrome-bot-traces"
+    ],
+    "cwd": "[CACHE]/builder",
+    "env": {
+      "CHROME_HEADLESS": "1"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "upload git traces.gsutil upload",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "set_output_gitiles_commit",
     "~followup_annotations": [
       "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"position\": 170242, \"project\": \"src\", \"ref\": \"refs/heads/main\"}@@@"
