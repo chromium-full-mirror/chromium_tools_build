@@ -273,8 +273,13 @@ class SkylabApi(recipe_api.RecipeApi):
       try:
         self.m.buildbucket.collect_builds(
             all_build_ids, timeout=timeout_seconds)
-      except self.m.step.StepFailure:
-        pass
+      except self.m.step.StepFailure as err:
+        # Perhaps some of the builds have completed, so continue
+        # to collect their results even if the step timed out.
+        if err.had_timeout:
+          pass
+        else:
+          raise
 
   def _fetch_test_runner(self, ctp_build_id):
     """Helper to fetch test runner builds kicked of by given CTP build

@@ -550,3 +550,14 @@ def GenTests(api):
           })),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'build_canceled_while_test_running',
+      api.properties(requests=REQUESTS[:1]),
+      api.step_data(
+          'collect skylab results.buildbucket.collect.wait', cancel=True),
+      api.post_process(post_process.StepException, 'collect skylab results'),
+      api.post_process(post_process.DoesNotRun, 'find test runner build'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
+  )
