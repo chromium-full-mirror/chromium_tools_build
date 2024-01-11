@@ -1990,10 +1990,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config)
     self.print_link_to_results()
+    skip_tests = self.find_suites_to_skip()
     raw_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
-        root_solution_revision=root_solution_revision)
+        root_solution_revision=root_solution_revision,
+        skip_tests=skip_tests)
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
