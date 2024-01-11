@@ -125,6 +125,7 @@ class SisoApi(recipe_api.RecipeApi):
           '.siso_deps',
           '.siso_filegroups',
           '.siso_fs_state',
+          '.siso_fs_state.0',
       ]:
         abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
         if self.m.path.exists(abs_path):
