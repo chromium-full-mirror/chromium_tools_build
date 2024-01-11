@@ -7,7 +7,6 @@ DEFAULT_ANALYZE_TARGETS = [
     '//tools/binary_size:binary_size_trybot_py',
 ]
 DEFAULT_COMPILE_TARGETS = [
-    'monochrome_static_initializers',
     'trichrome_32_minimal_apks',
 ]
 
