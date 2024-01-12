@@ -2684,6 +2684,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       bucket = self.m.buildbucket.build.builder.bucket
       predicate = builds_service_pb2.BuildPredicate(
           builder=self.m.buildbucket.build.builder,
+          status=common_pb.ENDED_MASK,
           tags=self.m.buildbucket.tags(
               cq_equivalent_cl_group_key=str(equivalent_key)),
           create_time=common_pb.TimeRange(
