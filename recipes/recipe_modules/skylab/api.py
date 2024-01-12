@@ -143,19 +143,20 @@ class SkylabApi(recipe_api.RecipeApi):
             cmd.extend(['--image', t.spec.cros_img])
 
           if t.spec.secondary_cros_board:
+            boards = t.spec.secondary_cros_board.split(',')
+            imgs = [''] * len(boards)
             if t.spec.secondary_cros_img:
-              boards = t.spec.secondary_cros_board.split(',')
               imgs = t.spec.secondary_cros_img.split(',')
               if len(boards) != len(imgs):
                 raise recipe_api.StepFailure('Length of secondary_cros_img'
                                              ' must match secondary_cros_board')
-              for b, img in zip(boards, imgs):
-                if img == 'use_lkgm':
-                  is_public = t.spec.bucket.startswith('chromiumos-')
-                  img = self.get_lkgm_version(
-                      b, str(self.m.chromium_checkout.src_dir), is_public)
-                cmd.extend(['--secondary-boards', b])
-                cmd.extend(['--secondary-images', img])
+            for b, img in zip(boards, imgs):
+              if img == 'use_lkgm':
+                is_public = t.spec.bucket.startswith('chromiumos-')
+                img = self.get_lkgm_version(
+                    b, str(self.m.chromium_checkout.src_dir), is_public)
+              cmd.extend(['--secondary-boards', b])
+              cmd.extend(['--secondary-images', img])
 
           cmd.extend(['--timeout-mins', str(int(t.spec.timeout_sec / 60))])
 
@@ -233,15 +234,15 @@ class SkylabApi(recipe_api.RecipeApi):
                                          'lacros_compressed.squash')
           cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
 
-          if (t.spec.secondary_cros_board and
-              t.spec.should_provision_browser_files):
-            if len(t.spec.should_provision_browser_files) != len(
-                t.spec.secondary_cros_board.split(',')):
+          if t.spec.secondary_cros_board:
+            should_provision_browser_files = t.spec.should_provision_browser_files or [
+                False
+            ] * len(boards)
+            if len(should_provision_browser_files) != len(boards):
               raise recipe_api.StepFailure(
                   'Length of should_provision_browser_files'
                   ' must match secondary_cros_board')
-            for s in t.spec.should_provision_browser_files:
-              cmd.extend(['--should-provision-browser-files', s])
+            for s in should_provision_browser_files:
               cmd.extend(
                   ['--secondary-lacros-gcs-path', lacros_gcs_path if s else ''])
 

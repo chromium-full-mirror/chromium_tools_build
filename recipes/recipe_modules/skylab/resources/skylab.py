@@ -114,15 +114,6 @@ def schedule_skylab_tests(opts):
       req.params.run_via_cft = True
     if opts.model:
       req.params.hardware_attributes.model = opts.model
-    if opts.secondary_boards and opts.secondary_images:
-      assert len(opts.secondary_boards) == len(
-          opts.secondary_images), ('Length of --secondary-boards must match'
-                                   '--secondary-images')
-      for board, img in zip(opts.secondary_boards, opts.secondary_images):
-        secondary_device = req.params.secondary_devices.add()
-        secondary_sw_dep = secondary_device.software_dependencies.add()
-        secondary_sw_dep.chromeos_build = img
-        secondary_device.software_attributes.build_target.name = board
 
     autotest = req.test_plan.test.add()
     autotest.autotest.name = opts.autotest_name
@@ -130,20 +121,23 @@ def schedule_skylab_tests(opts):
                   f'lacros_gcs_path={opts.lacros_gcs_path} '
                   f'total_shards={opts.total_shards} '
                   f'shard_index={i}')
+
     if opts.secondary_boards:
-      _should_provision_browser_files = [True] * len(opts.secondary_boards)
-      if opts.should_provision_browser_files:
-        assert len(opts.secondary_boards) == len(
-            opts.should_provision_browser_files), (
-                'Length of --should-provision-browser-files must match'
-                '--secondary-boards')
-        _should_provision_browser_files = opts.should_provision_browser_files
-      autotest_secondary_lacros_paths_list = []
-      for p in _should_provision_browser_files:
-        autotest_secondary_lacros_paths_list.append(
-            opts.lacros_gcs_path if p else '')
-      _test_args += (' secondary_lacros_gcs_path'
-                     f'={",".join(autotest_secondary_lacros_paths_list)}')
+      assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
+          opts.secondary_lacros_gcs_path), (
+              'Length of --secondary-lacros-gcs-path and --secondary-images '
+              'must match --secondary-boards. Pass empty string if not '
+              'require CrOS and Lacros provision.')
+
+      for board, img in zip(opts.secondary_boards, opts.secondary_images):
+        secondary_device = req.params.secondary_devices.add()
+        secondary_sw_dep = secondary_device.software_dependencies.add()
+        secondary_sw_dep.chromeos_build = img
+        secondary_device.software_attributes.build_target.name = board
+
+      if any(opts.secondary_lacros_gcs_path):
+        _test_args += (' secondary_lacros_gcs_path'
+                       f'={",".join(opts.secondary_lacros_gcs_path)}')
 
     autotest.autotest.test_args = _test_args
     tagged_requests[str(i)] = json_format.MessageToDict(req)
@@ -245,6 +239,11 @@ def main(args):
   subparser.add_argument(
       '--image', type=str, help='ChromeOS image for the board to run tests.')
   subparser.add_argument(
+      '--lacros-gcs-path',
+      type=str,
+      default='',
+      help='The full GCS path to the lacros artifact for the test.')
+  subparser.add_argument(
       '--secondary-boards',
       type=str,
       action='append',
@@ -255,22 +254,17 @@ def main(args):
       action='append',
       help='CrOS image for the secondary boards. May be repeated.')
   subparser.add_argument(
-      '--should-provision-browser-files',
-      type=bool,
+      '--secondary-lacros-gcs-path',
+      type=str,
       action='append',
-      help='Should provision browser files for the secondary DUT. May be '
-      'repeated.')
+      help='The full GCS path to the lacros artifact for secondary board of '
+      'nearby tests. May be repeated.')
   subparser.add_argument(
       '--qs-account',
       type=str,
       default='',
       help='Quota account for the tests thus test could get prioritized to run.'
   )
-  subparser.add_argument(
-      '--lacros-gcs-path',
-      type=str,
-      default='',
-      help='The full GCS path to the lacros artifact for the test.')
   subparser.add_argument(
       '--timeout-mins',
       type=int,
