@@ -128,8 +128,6 @@ def RunSteps(api, properties):
   with api.osx_sdk('ios'):
     with api.depot_tools.on_path():
       args = ['--upload']
-      if api.buildbucket.builder_name in ARM_MAC_BUILDERS:
-        args += ['--build-mac-arm']
       # TODO: specify --revision as package_clang.py does.
       api.step('package rust', [
           'python3', api.path['checkout'].join('tools', 'rust',
