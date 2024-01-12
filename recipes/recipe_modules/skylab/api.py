@@ -6,12 +6,16 @@ import attr
 import base64
 import os
 
+from google.protobuf import json_format
 from recipe_engine import recipe_api
 
 from .test_runner import TestRunner
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (invocation as
+                                                       invocation_pb)
 
 
 # Skylab prioritizes tests by the Quota Scheduler account attached in the
@@ -387,6 +391,25 @@ class SkylabApi(recipe_api.RecipeApi):
       result_format = 'tast'
     elif test.is_GPU_test:
       result_format = 'native'
+
+    gitiles_commit = self.m.buildbucket.build.output.gitiles_commit
+
+    sources = invocation_pb.Sources(
+        gitiles_commit=common_rdb_pb.GitilesCommit(
+            host=gitiles_commit.host,
+            project=gitiles_commit.project,
+            commit_hash=gitiles_commit.id,
+            ref=gitiles_commit.ref,
+            position=gitiles_commit.position,
+        ),
+        changelists=[
+            common_rdb_pb.GerritChange(
+                host=change.host,
+                project=change.project,
+                change=change.change,
+                patchset=change.patchset)
+            for change in self.m.buildbucket.build.input.gerrit_changes
+        ])
     return attr.evolve(
         test.spec.resultdb,
         test_id_prefix=test.spec.test_id_prefix,
@@ -403,4 +426,6 @@ class SkylabApi(recipe_api.RecipeApi):
         # CrOS recipe will feed that path to result adapter when uploading
         # results.
         artifact_directory='',
+        # The source code position of the test artifacts we send to Skylab.
+        sources=json_format.MessageToJson(sources),
     )

@@ -44,6 +44,8 @@ class ResultDB:
     * result_adapter_path - path to result_adapter binary.
     * include - If True, a new invocation will be created for the test and
       included in the parent invocation.
+    * sources - JSON-serialized luci.resultdb.v1.Sources object that
+      contains information about the code sources tested by the invocation.
   """
   enable = attrib(bool, default=True)
   has_native_resultdb_integration = attrib(bool, default=False)
@@ -63,6 +65,7 @@ class ResultDB:
   exonerate_unexpected_pass = attrib(bool, default=True)
   include = attrib(bool, default=False)
   baseline_id = attrib(str, default='')
+  sources = attrib(str, default='')
   # result_adapter binary is available in chromium checkout or
   # the swarming bot.
   #

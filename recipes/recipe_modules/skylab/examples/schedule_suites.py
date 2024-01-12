@@ -14,6 +14,13 @@ import base64
 import copy
 import json
 
+from google.protobuf import json_format
+
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (invocation as
+                                                       invocation_pb)
+
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
@@ -32,7 +39,24 @@ SHARD_COUNT = 2
 TAST_MAX_RUN_SEC = 21600
 
 
+GITILES_COMMIT = common_pb2.GitilesCommit(
+    host='chromium.googlesource.com',
+    project='chromium/src',
+    ref='refs/heads/main',
+    id='a' * 40,
+    position=42,
+)
+
+
 def gen_skylab_rdb(suite):
+  sources = invocation_pb.Sources(
+      gitiles_commit=common_rdb_pb.GitilesCommit(
+          host=GITILES_COMMIT.host,
+          project=GITILES_COMMIT.project,
+          commit_hash=GITILES_COMMIT.id,
+          ref=GITILES_COMMIT.ref,
+          position=GITILES_COMMIT.position,
+      ))
   return {
       'base_variant': {
           'cros_img': 'eve-release/R88-13545.0.0',
@@ -47,6 +71,7 @@ def gen_skylab_rdb(suite):
       'include': False,
       'result_adapter_path': 'result_adapter',
       'result_format': 'tast',
+      'sources': json_format.MessageToJson(sources),
       'test_id_as_test_location': False,
   }
 
@@ -191,6 +216,7 @@ PROPERTIES = {
 
 
 def RunSteps(api, requests):
+  api.buildbucket.set_output_gitiles_commit(GITILES_COMMIT)
   api.skylab.schedule_suites(requests)
   api.skylab.wait_on_suites(requests, timeout_seconds=3600)
 
