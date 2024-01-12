@@ -3088,20 +3088,24 @@ class SkylabTest(AbstractSkylabTest, Test):
                         step,
                         shard_index=0) -> None:
 
-    def _map_runner_status(step, runner):
+    def _present_runner(step, runner):
       if runner.status == common_pb2.INFRA_FAILURE:
         step.presentation.status = (self.api.m.step.EXCEPTION)
       elif runner.status == common_pb2.FAILURE:
         step.presentation.status = (self.api.m.step.FAILURE)
+      if runner.url:
+        step.presentation.links['test results'] = (f'{runner.url}/test-results')
+      if runner.log_url:
+        step.presentation.links['debug log'] = (
+            f'{runner.log_url}/?test=&file=autoserv_test/'
+            f'{self.spec.autotest_name}/debug/{self.spec.autotest_name}.DEBUG')
 
     if len(attempt_runners) == 1:
-      step.links[f'shard #{shard_index} Test Run'] = attempt_runners[0].url
-      _map_runner_status(step, attempt_runners[0])
+      _present_runner(step, attempt_runners[0])
     else:
       for i, attempt_runner in enumerate(attempt_runners):
         with self.api.m.step.nest('attempt: #' + str(i + 1)) as attempt_step:
-          attempt_step.links['Test Run'] = attempt_runner.url
-          _map_runner_status(attempt_step, attempt_runner)
+          _present_runner(attempt_step, attempt_runner)
 
       # If the status of any attempt is success, the shard step should be
       # success too. The "Test Results" tab could expose the detailed flaky
