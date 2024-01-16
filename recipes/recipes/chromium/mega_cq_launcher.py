@@ -155,7 +155,11 @@ def RunSteps(api):
       '%d builders succeeded' % total_success,
       '%d builders failed' % total_failure,
   ])
-  overall_status = common_pb.FAILURE if total_failure else common_pb.SUCCESS
+  overall_status = common_pb.SUCCESS
+  if total_failure:
+    overall_status = common_pb.FAILURE
+    # We retry each builder so many times, no need to have the CQ retry us.
+    api.cv.set_do_not_retry_build()
   return RawResult(status=overall_status, summary_markdown=summary_md)
 
 
