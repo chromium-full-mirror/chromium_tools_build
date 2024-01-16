@@ -80,6 +80,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
     return int(self.m.commit_position.parse(cp_footer[0])[1])
 
   def android_binary_size(self, **kwargs):
+    kwargs['gclient_apply_configs'] = kwargs.get(
+        'gclient_apply_configs', ['android', 'checkout_pgo_profiles'])
     return self._binary_size(
         binary_size_footer=constants.ANDROID_BINARY_SIZE_FOOTER_KEY,
         diff_func=self._create_diffs_android,
