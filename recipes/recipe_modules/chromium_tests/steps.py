@@ -573,12 +573,11 @@ class AbstractTest(abc.ABC):
       retry_shards_failures = self.deterministic_failures(retry_suffix)
 
     if original_run_valid and retry_shards_valid:
-      # TODO(martiniss): Maybe change this behavior? This allows for failures
-      # in 'retry shards with patch' which might not be reported to devs, which
-      # may confuse them.
+      # Returning retry_shards_failures ensures that if there were passed
+      # tests in the original run that failed in the retry shards, those
+      # failures are exposed in the build.
       return True, (
-          set(failures).intersection(retry_shards_failures) -
-          self.known_luci_analysis_flaky_failures)
+          set(retry_shards_failures) - self.known_luci_analysis_flaky_failures)
 
     if original_run_valid:
       return True, set(failures) - self.known_luci_analysis_flaky_failures

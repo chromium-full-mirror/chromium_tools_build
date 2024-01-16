@@ -157,7 +157,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'test (retry shards with patch)'),
       api.post_process(post_process.MustRun, 'test2 (with patch)'),
       api.post_process(post_process.MustRun, 'NONE invalid'),
-      api.post_process(post_process.MustRun, 'test:testB failing'),
+      api.post_process(post_process.MustRun, 'test:testB#testC failing'),
       api.post_process(post_process.DropExpectation),
   )
 
