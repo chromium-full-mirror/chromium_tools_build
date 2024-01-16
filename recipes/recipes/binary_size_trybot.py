@@ -15,6 +15,7 @@ def RunSteps(api):
       chromium_config='chromium',
       chromium_apply_configs=['mb'],
       gclient_config='chromium',
+      gclient_apply_configs=['android'],
       try_gs_analysis=True)
 
 
