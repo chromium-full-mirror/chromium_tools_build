@@ -55,10 +55,6 @@ BUILDERS = {
                         'TARGET_PLATFORM': 'mac',
                         'TARGET_BITS': 64,
                     },
-                    gclient_apply_config=[
-                        # Required to build the builtins.a for Fuchsia.
-                        'fuchsia_no_hooks',
-                    ],
                 ),
             'mac_upload_clang_arm':
                 chromium.BuilderSpec.create(
@@ -67,10 +63,6 @@ BUILDERS = {
                         'TARGET_PLATFORM': 'mac',
                         'TARGET_BITS': 64,
                     },
-                    gclient_apply_config=[
-                        # Required to build the builtins.a for Fuchsia.
-                        'fuchsia_no_hooks',
-                    ],
                 ),
         },
     },
