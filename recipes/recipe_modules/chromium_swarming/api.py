@@ -94,10 +94,10 @@ def _parse_time(value):
   # supports python 3.11. See
   # https://chromium-review.googlesource.com/c/infra/luci/recipes-py/+/4973538
   for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S',
-              '%Y-%m-%dT%H:%M:%S.%f%z'):
+              '%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%dT%H:%M:%S%z'):
     try:
       return datetime.datetime.strptime(value, fmt)
-    except ValueError:  # pragma: no cover
+    except ValueError:
       pass
   raise ValueError('Failed to parse %s' % value)  # pragma: no cover
 

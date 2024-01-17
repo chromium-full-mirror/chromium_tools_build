@@ -9,6 +9,8 @@ DEPS = [
     'recipe_engine/swarming',
 ]
 
+import datetime
+
 from recipe_engine import recipe_test_api, post_process
 
 
@@ -134,3 +136,26 @@ def GenTests(api):
                        'sample_task', ['Test command too long to list']),
       api.post_process(post_process.DropExpectation),
   )
+
+  possible_formats = [
+      '%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S',
+      '%Y-%m-%dT%H:%M:%S%z', '%Y-%m-%dT%H:%M:%S.%f%z'
+  ]
+  timestamp = datetime.datetime.strptime('2024-01-12T15:10:53.123456Z',
+                                         '%Y-%m-%dT%H:%M:%S.%f%z')
+  for i, fmt in enumerate(possible_formats):
+    data = api.chromium_swarming.canned_summary_output_raw()
+
+    create = timestamp.strftime(fmt)
+    start = (timestamp + datetime.timedelta(seconds=1)).strftime(fmt)
+    end = (timestamp + datetime.timedelta(seconds=2)).strftime(fmt)
+    data['shards'][0]['created_ts'] = create
+    data['shards'][0]['started_ts'] = start
+    data['shards'][0]['completed_ts'] = end
+
+    yield api.test(
+        'timestamp_format%d' % i,
+        api.properties(task_name='task'),
+        api.step_data('task', api.chromium_swarming.summary(None, data)),
+        api.post_process(post_process.DropExpectation),
+    )
