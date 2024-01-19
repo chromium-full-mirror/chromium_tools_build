@@ -293,7 +293,8 @@ class SkylabApi(recipe_api.RecipeApi):
       ctp_build_id: (int64) A CTP's Buildbucket ID.
 
     Returns:
-      A list of ChromeOS test runner builds in `build_pb2.Build`.
+      A dict of ChromeOS test runner builds in `build_pb2.Build` keyed with
+      shards. An empty dict if hit any exceptions.
     """
     cmd = [
         'vpython3',
@@ -323,7 +324,10 @@ class SkylabApi(recipe_api.RecipeApi):
                 'status': 'SUCCESS'
             }
         }))
-    return step_result.json.output
+    if (hasattr(step_result, 'json') and step_result.json.output):
+      return step_result.json.output
+    step_result.presentation.status = self.m.step.EXCEPTION
+    return {}
 
   def wait_on_suites(self, tests, timeout_seconds):
     """Wait for the CTP builds to complete and return their test runner builds.
@@ -347,27 +351,27 @@ class SkylabApi(recipe_api.RecipeApi):
           t = prev.pop()
           runner_by_shards = self._fetch_test_runner(t.ctp_build_ids[-1])
           retry_shards = []
+          # Retry for infra issues that should not be caused by tests
+          # regressions. Specifically for below scenarios:
+          # - no test runner builds found, aka runner_by_shards is empty.
+          # - test runner has infra issue, aka the build status is out of
+          #   success and failure.
+          # Requests from browser builders do not enable retry for CTP,
+          # because CTP does not separate test failure and infra failures.
+          # Test failure is better to get retried by test_level_retry.
           for shard, test_runner in runner_by_shards.items():
-            # Retry for infra issues that should not be caused by tests
-            # regressions. Specifically for below scenarios:
-            # - no test runner builds found
-            # - test runner has infra issue, aka the build status is out of
-            #   success and failure.
-            # Requests from browser builders do not enable retry for CTP,
-            # because CTP does not separate test failure and infra failures.
-            # Test failure is better to get retried by test_level_retry.
             if test_runner:
               tr = TestRunner.create(**test_runner)
               t.test_runner_builds.setdefault(shard, []).append(tr)
               if tr.status in [common_pb2.SUCCESS, common_pb2.FAILURE]:
                 continue
+            retry_shards.append(shard)
+
+          if not runner_by_shards or retry_shards:
             step.presentation.status = self.m.step.EXCEPTION
             if attempt < t.spec.retries:
-              retry_shards.append(shard)
-
-          if retry_shards:
-            self.schedule_suites([t], retry_shards=retry_shards)
-            cur.append(t)
+              self.schedule_suites([t], retry_shards=retry_shards)
+              cur.append(t)
       attempt += 1
 
   def gen_rdb_config(self, test):

@@ -7,6 +7,7 @@ DEPS = [
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'skylab',
 ]
 
@@ -571,6 +572,24 @@ def GenTests(api):
                   'status': str(common_pb2.SUCCESS),
               }
           })),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'retry_for_CTP_infra_failures',
+      api.properties(requests=REQUESTS[:1]),
+      api.override_step_data('find test runner build.read_ctp_response',
+                             api.m.json.invalid('')),
+      api.post_process(post_process.StepException,
+                       'find test runner build.read_ctp_response'),
+      api.post_process(
+          post_process.MustRun,
+          'find test runner build.schedule skylab tests.m88_tast_with_retry'),
+      api.post_process(post_process.StepSuccess, 'find test runner build (2)'),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'find test runner build.schedule skylab tests.' + REQUESTS[0].name +
+          '.schedule', ['--shard-indexes']),
       api.post_process(post_process.DropExpectation),
   )
 
