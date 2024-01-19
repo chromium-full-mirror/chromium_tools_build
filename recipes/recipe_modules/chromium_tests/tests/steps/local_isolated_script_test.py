@@ -75,9 +75,8 @@ def GenTests(api):
   def verify_isolate_flag(check, step_odict):
     step = step_odict[
         'base_unittests']
-    check(
-        'LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%1m.profraw'
-        in step.cmd)
+    check('LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%1m%c.profraw'
+          in step.cmd)
 
   yield api.test(
       'basic',

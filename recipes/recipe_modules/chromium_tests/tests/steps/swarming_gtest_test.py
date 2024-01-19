@@ -8,6 +8,7 @@ DEPS = [
     'chromium_tests',
     'depot_tools/bot_update',
     'isolate',
+    'pgo',
     'profiles',
     'recipe_engine/assertions',
     'recipe_engine/buildbucket',
@@ -146,6 +147,26 @@ def GenTests(api):
       ),
       api.properties(
           isolate_profile_data=True,
+          swarm_hashes={
+              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          }),
+      api.post_check(
+          api.swarming.check_triggered_request,
+          'test_pre_run.[trigger] base_unittests', lambda check, req: check(
+              req[0].env_vars['LLVM_PROFILE_FILE'] ==
+              '${ISOLATED_OUTDIR}/profraw/default-%2m%c.profraw')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'using_pgo',
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.pgo(use_pgo=True),
+      api.properties(
+          isolate_profile_data=False,
           swarm_hashes={
               'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
           }),

@@ -2221,8 +2221,20 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       # determine where to write the profile dumps. The %Nm syntax is understood
       # by this instrumentation, see:
       #   https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#id4
+      llvm_profile_file = '${ISOLATED_OUTDIR}/profraw/'
+
+      if self.isolate_profile_data:
+        # Enable the continuous mode, which is set by adding %c to
+        # LLVM_PROFILE_FILE, for coverage builds. The continuous mode causes the
+        # instrumentation to update counters in real time instead of flushing
+        # them to disk at process shutdown, which recovers coverage data for
+        # sandboxed processes and processes that exit abnormally (e.g. death
+        # tests). See https://crbug.com/1468343.
+        llvm_profile_file = llvm_profile_file + 'default-%2m%c.profraw'
+      else:
+        llvm_profile_file = llvm_profile_file + 'default-%2m.profraw'
       env_vars = {
-          'LLVM_PROFILE_FILE': '${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
+          'LLVM_PROFILE_FILE': llvm_profile_file,
       }
 
       # crbug.com/1124774 - For PGO, we're increasing the shutdown timeout to
@@ -2569,12 +2581,14 @@ class LocalIsolatedScriptTest(LocalTest):
           # environment variable to determine where to write the profile dumps.
           # The %Nm syntax # is understood by this instrumentation, see:
           #   https://clang.llvm.org/docs/SourceBasedCodeCoverage.html#id4
+          # The %c syntax enables the continuous mode, which updates counters
+          # in real time instead of flusing to disk at process exit.
           # We use one profile only as this is meant for short, single-process
           # tests. Anything longer or more complex should be running on swarming
           # instead of locally.
           'env': {
               'LLVM_PROFILE_FILE':
-                  '${ISOLATED_OUTDIR}/profraw/default-%1m.profraw',
+                  '${ISOLATED_OUTDIR}/profraw/default-%1m%c.profraw',
           },
           # The results of the script will be isolated, and the .isolate will be
           # dumped to stdout.
