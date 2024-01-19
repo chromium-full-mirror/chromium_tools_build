@@ -3107,12 +3107,9 @@ class SkylabTest(AbstractSkylabTest, Test):
       elif runner.status == common_pb2.FAILURE:
         step.presentation.status = (self.api.m.step.FAILURE)
       if runner.url:
-        step.presentation.links['test results'] = (f'{runner.url}/test-results')
+        step.presentation.links['test results'] = f'{runner.url}/test-results'
       if runner.log_url:
-        step.presentation.links['debug log'] = (
-            f'{runner.log_url}/?test=&file=autoserv_test/'
-            f'{self.spec.autotest_name}/debug/{self.spec.autotest_name}.DEBUG')
-
+        step.presentation.links['debug log'] = runner.log_url
     if len(attempt_runners) == 1:
       _present_runner(step, attempt_runners[0])
     else:

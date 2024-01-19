@@ -361,7 +361,7 @@ class SkylabApi(recipe_api.RecipeApi):
           # Test failure is better to get retried by test_level_retry.
           for shard, test_runner in runner_by_shards.items():
             if test_runner:
-              tr = TestRunner.create(**test_runner)
+              tr = TestRunner.create(t, **test_runner)
               t.test_runner_builds.setdefault(shard, []).append(tr)
               if tr.status in [common_pb2.SUCCESS, common_pb2.FAILURE]:
                 continue

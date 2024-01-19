@@ -181,6 +181,10 @@ def GenTests(api):
     cmd = step_odict[step].cmd
     check(argument in cmd[cmd.index('--test-args') + 1])
 
+  def _check_link_equals(check, step_odict, step, link_name, link_value):
+    check(f'link {link_name} for step {step} is {link_value}',
+          (link_name, link_value) in step_odict[step].links.items())
+
   yield api.test(
       'basic for tast',
       boilerplate(
@@ -237,6 +241,14 @@ def GenTests(api):
           post_process.ResultReason,
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'failed because of:\n\n- Test.Two'),
+      api.post_process(
+          _check_link_equals,
+          'basic_EVE_TOT.shard: #0',
+          'debug log',
+          'https://cros-test-analytics.appspot.com/p/chromeos/file/view/'
+          'chromeos-test-logs/test-runner/prod/2023-12-07/abcd/'
+          '?test=&file=autoserv_test%2Ftast%2Fdebug%2Ftast.DEBUG',
+      ),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
@@ -402,6 +414,11 @@ def GenTests(api):
           post_process.ResultReason,
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'failed because of:\n\n- Test.One'),
+      api.post_process(
+          _check_link_equals, 'basic_EVE_TOT.shard: #0', 'debug log',
+          'https://cros-test-analytics.appspot.com/p/chromeos/file/view/'
+          'chromeos-test-logs/test-runner/prod/2023-12-07/abcd/'
+          '?test=&file=autoserv_test%2Fchromium%2Fdebug%2Fchromium.DEBUG'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
