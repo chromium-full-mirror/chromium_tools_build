@@ -30,6 +30,7 @@ spec type that contains the input details for the test or test wrapper.
 
 import abc
 import attr
+from collections import defaultdict
 from collections.abc import Iterable, Set
 import contextlib
 import hashlib
@@ -1101,7 +1102,7 @@ class AbstractSkylabTest(AbstractTest):
 
   @property
   @abc.abstractmethod
-  def ctp_build_ids(self) -> list[int]:
+  def ctp_build_ids(self) -> dict[str, int]:
     raise NotImplementedError()  # pragma: no cover
 
   @property
@@ -2994,14 +2995,14 @@ class SkylabTest(AbstractSkylabTest, Test):
 
   def __init__(self, spec, chromium_tests_api):
     super().__init__(spec, chromium_tests_api)
-    # List of cros_test_platform, aka CTP, build IDs.
-    # CTP build is the entrance of the CrOS hardware tests.
+    # Dict of cros_test_platform, aka CTP, build IDs keyed with
+    # suffix. CTP build is the entrance of the CrOS hardware tests.
     # which kicks off test_runner builds for our test suite.
     # Each test suite invokes one CTP build, and the CTP build
     # initiates test_runner builds for each shard.
     # If retry enabled, SkylabTest may call CTP multiple times.
-    self._ctp_build_ids = []
-    # Dict of skylab.TestRunner list with shard index as the key.
+    self._ctp_build_ids = {}
+    # Dict of skylab.TestRunner list with suffix as the key.
     # TestRunner represents the test execution in Skylab. We may retry
     # tests for infra issues, so each shard may have multiple
     # test runner builds attached.
@@ -3029,7 +3030,7 @@ class SkylabTest(AbstractSkylabTest, Test):
     return self.spec.autotest_name == 'chromium_Graphics'
 
   @property
-  def ctp_build_ids(self) -> list[int]:
+  def ctp_build_ids(self) -> dict[str, int]:
     return self._ctp_build_ids
 
   @property
@@ -3037,20 +3038,17 @@ class SkylabTest(AbstractSkylabTest, Test):
     return self._test_runner_builds
 
   def did_complete(self, suffix) -> bool:
-    # ctp_build_ids must not be empty, otherwise the build should raise errors
-    # when calling Buildbucket.
-    assert self.ctp_build_ids, (
-        'Skylab test did not schedule, likely due to an infra bug.')
-    if not self.test_runner_builds:
+    # Raise exception if any shard has infra failure which was not recovered
+    # by retry.
+    if not self.test_runner_builds.get(suffix):
       return False
-    for runner_builds in self.test_runner_builds.values():
-      # Raise exception if any shard has infra failure which was not recovered
-      # by retry.
-      if not runner_builds or all(
-          b.status not in (common_pb2.FAILURE, common_pb2.SUCCESS)
-          for b in runner_builds):
-        return False
-    return True
+    complete = defaultdict(bool)
+    for t in self.test_runner_builds[suffix]:
+      # If any attempt runner in the shard has a deterministic result,
+      # consider the shard done.
+      complete[t.shard] = complete[t.shard] or t.status in (common_pb2.FAILURE,
+                                                            common_pb2.SUCCESS)
+    return all(v for v in complete.values())
 
   @property
   def exe_rel_path(self) -> str:
@@ -3083,9 +3081,8 @@ class SkylabTest(AbstractSkylabTest, Test):
     raise self.api.m.step.StepFailure(status)
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
-    del suffix
     invocation_names = []
-    for ctp_id in self.ctp_build_ids:
+    for ctp_id in self.ctp_build_ids.get(suffix, []):
       invocation_names.append(f'invocations/build-{ctp_id}')
     return invocation_names
 
@@ -3096,10 +3093,7 @@ class SkylabTest(AbstractSkylabTest, Test):
     # pylint: disable=useless-super-delegation
     super().pre_run(suffix)  # pragma: no cover
 
-  def _process_attempts(self,
-                        attempt_runners,
-                        step,
-                        shard_index=0) -> None:
+  def _process_attempts(self, attempt_runners, step) -> None:
 
     def _present_runner(step, runner):
       if runner.status == common_pb2.INFRA_FAILURE:
@@ -3138,8 +3132,8 @@ class SkylabTest(AbstractSkylabTest, Test):
         # its lifecycle as expected.
         self._update_failure_on_exit(suffix, False, step)
       else:
-        if self.ctp_build_ids:
-          for i, ctp_build in enumerate(self.ctp_build_ids):
+        if self.ctp_build_ids.get(suffix):
+          for i, ctp_build in enumerate(self.ctp_build_ids[suffix]):
             step.links['Shard #%d CTP Build' % i] = bb_url % ctp_build
 
         self._raise_failed_step(
@@ -3156,12 +3150,13 @@ class SkylabTest(AbstractSkylabTest, Test):
       # to RDB. So iterate all shards and raise a failure
       # if any shard is not green.
       shard_steps = []
-      # Iterate shard's result with ctp_build_ids, where the CTP build
-      # ID is appended following the shard order.
-      for shard_index, runners in self.test_runner_builds.items():
+      test_runners = defaultdict(list)
+      for t in self.test_runner_builds.get(suffix, []):
+        test_runners[t.shard].append(t)
+      for shard_index, runners in test_runners.items():
         with self.api.m.step.nest(
             f'shard: #{shard_index}', status='last') as shard_step:
-          self._process_attempts(runners, shard_step, shard_index=shard_index)
+          self._process_attempts(runners, shard_step)
           shard_steps.append(shard_step)
 
       if any(s.presentation.status != self.api.m.step.SUCCESS

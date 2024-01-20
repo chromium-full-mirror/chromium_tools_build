@@ -218,8 +218,8 @@ PROPERTIES = {
 
 def RunSteps(api, requests):
   api.buildbucket.set_output_gitiles_commit(GITILES_COMMIT)
-  api.skylab.schedule_suites(requests)
-  api.skylab.wait_on_suites(requests, timeout_seconds=3600)
+  api.skylab.schedule_suites(requests, '')
+  api.skylab.wait_on_suites(requests, '', timeout_seconds=3600)
 
 
 def GenTests(api):

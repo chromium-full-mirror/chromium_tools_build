@@ -92,6 +92,7 @@ class SkylabApi(recipe_api.RecipeApi):
 
   def schedule_suites(self,
                       tests,
+                      suffix,
                       step_name='schedule skylab tests',
                       retry_shards=None):
     """Schedule CrOS autotest suites by invoking the cros_test_platform recipe.
@@ -102,7 +103,9 @@ class SkylabApi(recipe_api.RecipeApi):
 
     Args:
     * tests (list[SkylabTest]): List of steps.SkylabTest to schedule.
+    * suffix: A string suffix.
     * step_name (str): a name of scheduling buildbucket build.
+    * retry_shards (list[str]): the index for shards to retry. None by default.
     """
     with self.m.step.nest(step_name) as presentation:
       for t in tests:
@@ -267,14 +270,12 @@ class SkylabApi(recipe_api.RecipeApi):
             build_id = int(step_result.json.output['ctp_build_id'])
             presentation.links[
                 t.name] = 'https://ci.chromium.org/b/%s' % build_id
-            t.ctp_build_ids.append(build_id)
+            t.ctp_build_ids.setdefault(suffix, []).append(build_id)
 
-  def _try_wait_ctp_builds(self, test_suites, timeout_seconds):
+  def _try_wait_ctp_builds(self, test_suites, suffix, timeout_seconds):
     """Helper to wait for the given CTP builds to finish."""
     with self.m.step.nest('collect skylab results'):
-      all_build_ids = [
-          t.ctp_build_ids[-1] for t in test_suites if t.ctp_build_ids
-      ]
+      all_build_ids = [t.ctp_build_ids[suffix][-1] for t in test_suites]
       try:
         self.m.buildbucket.collect_builds(
             all_build_ids, timeout=timeout_seconds)
@@ -329,11 +330,12 @@ class SkylabApi(recipe_api.RecipeApi):
     step_result.presentation.status = self.m.step.EXCEPTION
     return {}
 
-  def wait_on_suites(self, tests, timeout_seconds):
+  def wait_on_suites(self, tests, suffix, timeout_seconds):
     """Wait for the CTP builds to complete and return their test runner builds.
 
     Args:
     * tests (list[SkylabTest]): See schedule_suites().
+    * suffix: A string suffix.
     * timeout_seconds: How long to wait for results before giving up.
 
     Returns:
@@ -341,15 +343,16 @@ class SkylabApi(recipe_api.RecipeApi):
         test_runner attempts.
     * A list of the CTP build ID in int64, in the order of shards.
     """
-    cur = [t for t in tests if t.ctp_build_ids]
+    cur = [t for t in tests if t.ctp_build_ids.get(suffix)]
     attempt = 0
     while cur:
-      self._try_wait_ctp_builds(cur, timeout_seconds)
+      self._try_wait_ctp_builds(cur, suffix, timeout_seconds)
       prev, cur = cur, []
       with self.m.step.nest('find test runner build') as step:
         while prev:
           t = prev.pop()
-          runner_by_shards = self._fetch_test_runner(t.ctp_build_ids[-1])
+          runner_by_shards = self._fetch_test_runner(
+              t.ctp_build_ids[suffix][-1])
           retry_shards = []
           # Retry for infra issues that should not be caused by tests
           # regressions. Specifically for below scenarios:
@@ -361,8 +364,8 @@ class SkylabApi(recipe_api.RecipeApi):
           # Test failure is better to get retried by test_level_retry.
           for shard, test_runner in runner_by_shards.items():
             if test_runner:
-              tr = TestRunner.create(t, **test_runner)
-              t.test_runner_builds.setdefault(shard, []).append(tr)
+              tr = TestRunner.create(t, shard=int(shard), **test_runner)
+              t.test_runner_builds.setdefault(suffix, []).append(tr)
               if tr.status in [common_pb2.SUCCESS, common_pb2.FAILURE]:
                 continue
             retry_shards.append(shard)
@@ -370,7 +373,7 @@ class SkylabApi(recipe_api.RecipeApi):
           if not runner_by_shards or retry_shards:
             step.presentation.status = self.m.step.EXCEPTION
             if attempt < t.spec.retries:
-              self.schedule_suites([t], retry_shards=retry_shards)
+              self.schedule_suites([t], suffix, retry_shards=retry_shards)
               cur.append(t)
       attempt += 1
 

@@ -43,7 +43,7 @@ PROPERTIES = {
 
 
 def RunSteps(api, requests):
-  api.skylab.schedule_suites(requests)
+  api.skylab.schedule_suites(requests, '')
 
 
 def GenTests(api):

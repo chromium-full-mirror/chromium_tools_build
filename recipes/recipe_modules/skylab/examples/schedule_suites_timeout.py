@@ -40,7 +40,7 @@ def gen_skylab_test(name, **kwargs):
   k.update(**kwargs)
   t = SkylabTestSpec.create(name, **k).get_test(SkylabTest)
   t.lacros_gcs_path = LACROS_GCS_PATH
-  t.ctp_build_ids.append(1234)
+  t.ctp_build_ids[''] = [1234]
   return t
 
 
@@ -55,7 +55,7 @@ request = gen_skylab_test(
 
 
 def RunSteps(api):
-  api.skylab.wait_on_suites([request], timeout_seconds=10)
+  api.skylab.wait_on_suites([request], '', timeout_seconds=10)
 
 
 def GenTests(api):

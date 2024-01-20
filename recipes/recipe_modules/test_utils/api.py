@@ -1282,12 +1282,12 @@ class SkylabGroup(TestGroup):
       build_timeout = max(t.spec.timeout_sec for t in tests)
       if build_timeout > self.ctp_build_timeout_sec:
         self.ctp_build_timeout_sec = build_timeout
-      api.skylab.schedule_suites(tests)
+      api.skylab.schedule_suites(tests, suffix)
 
   def run(self, api, suffix):
     """Fetch the responses for each test request."""
     api.skylab.wait_on_suites(
-        self._test_suites, timeout_seconds=self.ctp_build_timeout_sec)
+        self._test_suites, suffix, timeout_seconds=self.ctp_build_timeout_sec)
     for t in self._test_suites:
       # Skylab tests are executed by CrOS builders, which may retry upon
       # failures within their builds. So the same suffix may have multiple test

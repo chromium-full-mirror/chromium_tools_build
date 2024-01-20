@@ -21,11 +21,13 @@ class TestRunner:
       RDB, this also includes system log for troubleshooting infra related
       issues.
     * status - Build status.
+    * shard - Shard of this test run.
   """
   url = attrib(str, default='')
   log_url = attrib(str, default='')
   status = attrib(
       enum(common_pb2.Status.values()), default=common_pb2.STATUS_UNSPECIFIED)
+  shard = attrib(int, default=0)
 
   @classmethod
   def create(cls, test, **kwargs):
