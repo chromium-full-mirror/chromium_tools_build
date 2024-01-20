@@ -100,7 +100,7 @@ def schedule_skylab_tests(opts):
     req.params.metadata.debug_symbols_archive_url = gs_url
     if opts.bucket:
       sw_dep = req.params.software_dependencies.add()
-      sw_dep.chromeos_build_gcs_bucket = opts.bucket
+      sw_dep.chromeos_build_gcs_bucket = _bucket
     sw_dep = req.params.software_dependencies.add()
     sw_dep.chromeos_build = opts.image
     req.params.scheduling.CopyFrom(_scheduling_for_pool(opts.pool))
@@ -108,19 +108,21 @@ def schedule_skylab_tests(opts):
     req.params.decorations.tags.append(f'label-board:{opts.board}')
     req.params.software_attributes.build_target.name = opts.board
     req.params.time.maximum_duration.seconds = opts.timeout_mins * 60
-    if opts.run_cft:
-      req.params.metadata.container_metadata_url = os.path.join(
-          gs_url, CONTAINER_METADATA_LOC)
-      req.params.run_via_cft = True
     if opts.model:
       req.params.hardware_attributes.model = opts.model
 
-    autotest = req.test_plan.test.add()
-    autotest.autotest.name = opts.autotest_name
     _test_args = (f'{opts.test_args} '
                   f'lacros_gcs_path={opts.lacros_gcs_path} '
                   f'total_shards={opts.total_shards} '
                   f'shard_index={i}')
+
+    autotest_name = opts.autotest_name.replace('tauto.', '')
+    if opts.run_cft:
+      req.params.metadata.container_metadata_url = os.path.join(
+          gs_url, CONTAINER_METADATA_LOC)
+      req.params.run_via_cft = True
+      _test_args += ' is_cft=True'
+      autotest_name = f'tauto.{autotest_name}'
 
     if opts.secondary_boards:
       assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
@@ -139,6 +141,8 @@ def schedule_skylab_tests(opts):
         _test_args += (' secondary_lacros_gcs_path'
                        f'={",".join(opts.secondary_lacros_gcs_path)}')
 
+    autotest = req.test_plan.test.add()
+    autotest.autotest.name = autotest_name
     autotest.autotest.test_args = _test_args
     tagged_requests[str(i)] = json_format.MessageToDict(req)
 
