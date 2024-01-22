@@ -223,7 +223,7 @@
     "cmd": [
       "git",
       "clone",
-      "https://chromium-review.googlesource.com/v8/v8",
+      "https://chromium.googlesource.com/v8/v8",
       "."
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -246,7 +246,7 @@
     "cmd": [
       "git",
       "fetch",
-      "https://chromium-review.googlesource.com/v8/v8",
+      "https://chromium.googlesource.com/v8/v8",
       "$ref"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",

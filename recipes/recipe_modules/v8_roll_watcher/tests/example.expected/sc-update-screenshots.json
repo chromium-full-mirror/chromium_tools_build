@@ -134,7 +134,7 @@
     "cmd": [
       "git",
       "clone",
-      "https://chrome-internal-review.googlesource.com/v8/v8",
+      "https://chrome-internal.googlesource.com/v8/v8",
       "."
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
@@ -157,7 +157,7 @@
     "cmd": [
       "git",
       "fetch",
-      "https://chrome-internal-review.googlesource.com/v8/v8",
+      "https://chrome-internal.googlesource.com/v8/v8",
       "$ref"
     ],
     "cwd": "[CLEANUP]/tmp_tmp_1",
