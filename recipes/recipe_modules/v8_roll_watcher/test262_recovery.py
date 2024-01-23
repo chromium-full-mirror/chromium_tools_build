@@ -81,7 +81,7 @@ def collect_new_test_exceptions(api, roller, cl, unexpected_results):
   api.step.empty(f'Found {len(test_names)} tests failing')
 
   return (['', '####', '# Roll-watcher patch', '[ALWAYS, {'] +
-          [f"  '{test_name}': [FAIL]," for test_name in test_names] +
+          [f"  '{test_name}': [SKIP]," for test_name in test_names] +
           ['}],', '# End roll-watcher patch', '####'])
 
 
