@@ -24,6 +24,7 @@ DEPS = [
     "recipe_engine/time",
     "recipe_engine/step",
     "infra/zip",
+    "reclient",
 ]
 
 UPLOAD_BUCKET = 'chrome-codeql-databases'
@@ -32,6 +33,7 @@ UPLOAD_BUCKET = 'chrome-codeql-databases'
 def RunSteps(api):
   api.gclient.set_config("chromium")
   api.chromium.set_config()
+  api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
   api.bot_update.ensure_checkout()
   api.gclient.runhooks()
   out_dir = 'out'
@@ -50,7 +52,9 @@ def RunSteps(api):
         'infra/3pp/tools/codeql/${platform}', "version:2@2.15.4")
     api.cipd.ensure(codeql_root, ensure_file)
     codeql_path = codeql_root.join('codeql')
-    api.step('gn gen out/release', ['python3', gn_path, 'gen', build_dir])
+    api.step(
+        'gn gen out/release',
+        ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
     api.chromium.compile(
         use_reclient=True, targets=['all'], out_dir=out_dir, target=target_dir)
     codeql_script_path = api.path['checkout'].join('tools', 'codeql',
