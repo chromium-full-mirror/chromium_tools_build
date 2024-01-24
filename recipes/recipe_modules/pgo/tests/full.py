@@ -299,6 +299,36 @@ def GenTests(api):
   )
 
   yield api.test(
+      'merge errors',
+      api.chromium.generic_build(
+          builder_group='chromium.perf', builder='mac-builder-perf'),
+      api.pgo(use_pgo=True),
+      api.platform('mac', 64),
+      api.properties(mock_merged_profdata=True),
+      api.override_step_data(
+          'validate benchmark results and profile data.searching for '
+          'profdata files',
+          api.file.listdir([
+              'performance_test_suite/performance_test_suite.profdata',
+              'different_test_suite/different_test_suite.profdata'
+          ])),
+      api.override_step_data(
+          'Processing PGO .profraw data.Finding profile merge errors',
+          stdout=api.json.output({
+              "failed profiles": {
+                  "browser_tests": ["/tmp/1/default-123.profraw"]
+              },
+              "total": 1
+          })),
+      api.post_process(
+          post_process.MustRun,
+          'Processing PGO .profraw data.Failing due to merge errors found '
+          'alongside invalid profile data.'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'missing profdata file',
       api.chromium.generic_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),

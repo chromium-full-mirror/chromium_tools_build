@@ -44,8 +44,6 @@ def main():
       'failed profiles': steps_with_failed_profiles
   }
   json.dump(result, sys.stdout)
-  if num_failed_profiles:
-    sys.exit(1)
 
 
 if __name__ == '__main__':

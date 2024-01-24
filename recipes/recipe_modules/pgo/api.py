@@ -222,6 +222,14 @@ class PgoApi(recipe_api.RecipeApi):
 
       # Check for any merge errors
       self.m.profiles.find_merge_errors()
+      result = self.m.step.active_result
+      if result.stdout and result.stdout['total'] > 0:
+        result.presentation.text = 'Found invalid profraw files'
+        result.presentation.properties['merge errors'] = result.stdout
+        self.m.step.empty(
+            'Failing due to merge errors found alongside invalid profile data.',
+            status=self.m.step.FAILURE,
+            step_text='Please see logs of failed step for details.')
 
       # TODO(crbug.com/1076999) - Look into replacing this hash for the sha1
       # of the git commit of src associated w/ build.

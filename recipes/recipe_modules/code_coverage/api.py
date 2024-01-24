@@ -763,8 +763,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           self.m.step.empty('skip processing because no profdata was generated')
           return
 
-        self.m.profiles.find_merge_errors()
-
+        try:
+          self.m.profiles.find_merge_errors()
+        finally:
+          result = self.m.step.active_result
+          if result.stdout and result.stdout['total'] > 0:
+            result.presentation.text = 'Found invalid profraw files'
+            result.presentation.properties['merge errors'] = result.stdout
         if not binaries:
           binaries = self.get_binaries(
               tests, may_use_binaries_list_file=True, test_type=test_type)
