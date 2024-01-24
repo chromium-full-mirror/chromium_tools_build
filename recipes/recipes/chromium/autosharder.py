@@ -150,7 +150,7 @@ def RunSteps(api):
   api.step('regenerate test specs', ['vpython3', regen_path])
 
   commit_message = COMMIT_MESSAGE.format(api.buildbucket.build.id)
-  api.git('commit', '-a', '-m', 'Autoshard test suites')
+  api.git('commit', 'testing/buildbot', '-m', 'Autoshard test suites')
   upload_args = [
       '--cq-dry-run',
       '--bypass-hooks',
