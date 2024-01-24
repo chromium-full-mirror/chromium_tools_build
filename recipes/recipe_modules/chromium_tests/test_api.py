@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from google.protobuf import timestamp_pb2
+
+from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
+
 from recipe_engine import recipe_test_api
 
 
@@ -113,3 +117,23 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
                     expected_failing_tests=expected_failures,
                     skipped_tests=skips,
                     expected_skipped_tests=expected_skips)))
+
+  def simulate_previous_build(self, test_statuses=None):
+    """Simulates a previous build for find_suites_to_skip
+
+    Args:
+      test_statuses: A mapping of test names to their status. E.g.
+          {'browser_tests': 'Success'}
+    """
+    reusable_build = build_pb2.Build(
+        id=1234,
+        status='SUCCESS',
+        create_time=timestamp_pb2.Timestamp(seconds=1598338800),
+        output=build_pb2.Build.Output())
+    reusable_build.output.properties[
+        'test_status'] = test_statuses if test_statuses else {}
+
+    return self.m.buildbucket.simulated_search_results(
+        [reusable_build],
+        step_name=('check previous builds for skippable test suites.find '
+                   'equivalent patchset builds'))

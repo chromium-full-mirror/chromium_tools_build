@@ -218,8 +218,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                             targets_spec_dir=None,
                             precommit_details=_COMPUTE_PRECOMMIT_DETAILS,
                             scripts_compile_targets_fn=None,
-                            remote_tests_only=False,
-                            test_names_to_skip=()):
+                            remote_tests_only=False):
     """
     Args:
       builder_config (BuilderConfig): config for the current builder
@@ -241,7 +240,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         Results will be memoized, so it will only be called a single
         time.
       remote_tests_only (bool): only include targets for remote tests
-      test_names_to_skip (string[]): Names of tests to not actually run
 
     Returns: TargetsConfig for current builder
     """
@@ -259,6 +257,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     scripts_compile_targets_fn = (
         scripts_compile_targets_fn or self.get_compile_targets_for_scripts)
 
+    test_names_to_skip = self.find_suites_to_skip()
     def memoized_scripts_compile_targets_fn():
       nonlocal scripts_compile_targets
       if scripts_compile_targets is None:
@@ -297,7 +296,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return targets_config_module.TargetsConfig.create(
         builder_config=builder_config,
-        targets_by_builder_id=targets_by_builder_id)
+        targets_by_builder_id=targets_by_builder_id,
+        skip_tests=test_names_to_skip)
 
   def prepare_checkout(self,
                        builder_config,
@@ -1990,12 +1990,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.report_builders(builder_config)
     self.print_link_to_results()
-    skip_tests = self.find_suites_to_skip()
     raw_result, task = self.build_affected_targets(
         builder_id,
         builder_config,
-        root_solution_revision=root_solution_revision,
-        skip_tests=skip_tests)
+        root_solution_revision=root_solution_revision)
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
@@ -2159,16 +2157,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
 
-  def determine_compilation_targets(self,
-                                    builder_id,
-                                    builder_config,
-                                    affected_files,
-                                    targets_config,
-                                    skip_tests=None):
+  def determine_compilation_targets(self, builder_id, builder_config,
+                                    affected_files, targets_config):
     tests = targets_config.all_tests
-    if skip_tests:
-      tests = [test for test in tests if test.name not in skip_tests]
-    compile_targets = targets_config.compile_targets_without_tests(skip_tests)
+    compile_targets = targets_config.compile_targets
     test_targets = sorted(set(self._all_compile_targets(tests)))
 
     # Use analyze to determine the compile targets that are affected by the CL.
@@ -2230,8 +2222,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                              builder_config,
                              root_solution_revision=None,
                              isolate_output_files_for_coverage=False,
-                             additional_compile_targets=None,
-                             skip_tests=None):
+                             additional_compile_targets=None):
     """Builds targets affected by change.
 
     Args:
@@ -2247,8 +2238,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         specified recipe-side. This field is intended for recipes to add
         targets needed for recipe functionality and not for configuring builder
         outputs (which should be specified src-side in waterfalls.pyl).
-      skip_tests (List[str]): Names of tests that do not need to be run. The
-        target might still build if another test uses the same target however.
 
     Returns:
       A Tuple of
@@ -2290,11 +2279,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       tests = targets_config.all_tests
 
     test_targets, compile_targets = self.determine_compilation_targets(
-        builder_id,
-        builder_config,
-        affected_files,
-        targets_config,
-        skip_tests=skip_tests)
+        builder_id, builder_config, affected_files, targets_config)
 
     # Compiles and isolates test suites.
     raw_result = result_pb2.RawResult(status=common_pb.SUCCESS)
@@ -2335,10 +2320,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests = []
 
-    # Regardless of affected files or mutual compile targets, skip_tests are
-    # explicitly being set to not run
-    if skip_tests:
-      tests = [test for test in tests if test.name not in skip_tests]
     return raw_result, Task(builder_config, tests, bot_update_step,
                             affected_files, execution_info)
 
@@ -2444,8 +2425,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.test_utils.luci_milo_test_results_url(invocation_id))
 
   def _all_compile_targets(self, tests):
-    """Returns the compile_targets for all the Tests in |tests|."""
-    return sorted(set(x for test in tests for x in test.compile_targets()))
+    """Returns the compile_targets for all the enabled Tests in |tests|."""
+    return sorted(
+        set(x for test in tests for x in test.compile_targets()
+            if test.is_enabled))
 
   def tests_in_compile_targets(self, compile_targets, tests):
     """Returns the tests in |tests| that have at least one of their compile
@@ -2454,9 +2437,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     for test in tests:
       test_compile_targets = test.compile_targets()
       # Always return tests that don't require compile. Otherwise we'd never
-      # run them.
+      # run them. Also include tests that are disabled to reserve their steps
       if ((set(compile_targets) & set(test_compile_targets)) or
-          not test_compile_targets):
+          not test_compile_targets or not test.is_enabled):
         result.append(test)
     return result
 
@@ -2695,6 +2678,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       )
       if bucket.endswith('.shadow'):
         predicate.builder.bucket = bucket[:-len('.shadow')]
+      # Compilators should check their orchestrator which has the test statuses
+      if 'orchestrator' in self.m.properties:
+        predicate.builder.builder = self.m.properties['orchestrator'][
+            'builder_name']
 
       builds = self.m.buildbucket.search(
           predicate, step_name='find equivalent patchset builds')
