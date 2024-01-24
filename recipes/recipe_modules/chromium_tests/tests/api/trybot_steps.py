@@ -31,7 +31,6 @@ DEPS = [
     'pgo',
     'profiles',
     'recipe_engine/buildbucket',
-    'recipe_engine/cq',
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/legacy_annotation',
@@ -444,49 +443,6 @@ def GenTests(api):
                        'base_unittests (retry shards with patch)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests (without patch)'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'skips_successful_tests',
-      api.chromium_tests_builder_config.try_build(
-          builder_group='tryserver.chromium.test',
-          builder='retry-shards',
-          builder_db=_TEST_BUILDERS,
-          try_db=_TEST_TRYBOTS,
-          tags=api.buildbucket.tags(
-              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890')),
-      api.cq(run_mode='FULL_RUN'),
-      api.properties(
-          swarm_hashes={
-              'browser_tests': '[dummy hash for base_unittests/size]',
-              'unit_tests': '[dummy hash for base_unittests/size]',
-          }),
-      api.chromium_tests.read_targets_spec(
-          'chromium.test', {
-              'retry-shards': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'test': 'browser_tests',
-                      'swarming': {},
-                  }, {
-                      'name': 'unit_tests',
-                      'test': 'unit_tests',
-                      'swarming': {},
-                  }],
-              },
-          }),
-      api.chromium_tests.simulate_previous_build(
-          test_statuses={'unit_tests': 'Success'}),
-      api.post_process(post_process.MustRun, 'unit_tests (with patch)'),
-      api.post_process(
-          post_process.StepTextEquals, 'unit_tests (with patch)',
-          ('This test is not being run because it has passed in the last 24 '
-           'hours with the equivalent patchset')),
-      api.post_process(post_process.StepCommandDoesNotContain,
-                       'compile (with patch)', ['unit_tests']),
-      api.post_process(post_process.StepCommandContains, 'compile (with patch)',
-                       ['browser_tests']),
       api.post_process(post_process.DropExpectation),
   )
 

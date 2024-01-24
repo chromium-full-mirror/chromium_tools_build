@@ -6,6 +6,7 @@ from recipe_engine import post_process
 from PB.recipes.build.chromium.compilator import InputProperties
 
 from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests.api import (
     ALL_TEST_BINARIES_ISOLATE_NAME)
 
@@ -17,7 +18,6 @@ DEPS = [
     'filter',
     'depot_tools/tryserver',
     'recipe_engine/assertions',
-    'recipe_engine/cq',
     'recipe_engine/buildbucket',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -44,7 +44,8 @@ def RunSteps(api, properties):
       orch_builder_id,
       orch_builder_config,
       isolate_output_files_for_coverage=True,
-      additional_compile_targets=['infra_orchestrator:orchestrator_all'])
+      additional_compile_targets=['infra_orchestrator:orchestrator_all'],
+      skip_tests=properties.skip_tests)
 
   expected_tests = api.properties.get('expected_tests')
   if expected_tests is not None:
@@ -112,8 +113,7 @@ def GenTests(api):
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-compilator',
-          tags=api.buildbucket.tags(
-              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890')),
+      ),
       ctbc_properties(),
       api.chromium_tests.read_targets_spec(
           'fake-group', {
@@ -138,10 +138,8 @@ def GenTests(api):
           InputProperties(
               orchestrator=InputProperties.Orchestrator(
                   builder_name='fake-orchestrator',
-                  builder_group='fake-try-group'))),
-      api.cq(run_mode='FULL_RUN'),
-      api.chromium_tests.simulate_previous_build(
-          test_statuses={'browser_tests': 'Success'}),
+                  builder_group='fake-try-group'),
+              skip_tests=['browser_tests'])),
       api.path.exists(api.path['checkout'].join('out/Release/browser_tests')),
       api.post_process(
           post_process.StepCommandDoesNotContain,

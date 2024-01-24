@@ -15,8 +15,6 @@ DEPS = [
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
     'recipe_engine/assertions',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cq',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -91,7 +89,8 @@ def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
       targets_spec_dir=targets_spec_dir,
       precommit_details=(generators.PrecommitDetails()
                          if api.tryserver.is_tryserver else None),
-      remote_tests_only=remote_tests_only)
+      remote_tests_only=remote_tests_only,
+      test_names_to_skip=skip_tests)
   tests = []
   skipped_tests = []
   for t in targets_config.all_tests:
@@ -224,15 +223,10 @@ def GenTests(api):
               'check_static_initializers', 'basic_EVE_TOT'
           ],
           skip_tests=['browser_tests']),
-      api.chromium_tests.simulate_previous_build(
-          test_statuses={'browser_tests': 'Success'}),
       fake_targets_spec(),
-      api.cq(run_mode='FULL_RUN'),
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-try-builder',
-          tags=api.buildbucket.tags(
-              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
       ),
       api.post_process(post_process.DropExpectation),
   )
