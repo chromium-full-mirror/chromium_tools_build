@@ -150,7 +150,8 @@ class DevToolsTests(ABC):
 class UnitTests(DevToolsTests):
 
   def trigger(self):
-    shuffle = ['--shuffle'] if self.api.devtools.is_shuffled_run() else []
+    # TODO(liviurau) Use shuffle on unit tests after runner fix.
+    shuffle = []  #['--shuffle'] if self.api.devtools.is_shuffled_run() else []
     with self.api.step.nest(f'Trigger {self.step_name}'):
       command = [
           self.api.path.join('scripts', 'test', 'run_unittests.py'),
