@@ -2,24 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
-    BuildPredicate)
+from google.protobuf import timestamp_pb2
 from PB.go.chromium.org.luci.buildbucket.proto.build import Build
 from PB.go.chromium.org.luci.buildbucket.proto.builder_common import BuilderID
 from PB.go.chromium.org.luci.buildbucket.proto.common import (
     FAILURE,
-    INFRA_FAILURE,
-    SCHEDULED,
     STARTED,
     SUCCESS,
-    GerritChange,
     StringPair,
 )
 from PB.go.chromium.org.luci.buildbucket.proto.step import Step
 from PB.go.chromium.org.luci.cv.api.v0 import run as run_pb
 from PB.go.chromium.org.luci.cv.api.v0 import service_runs as service_runs_pb
 from PB.go.chromium.org.luci.cv.api.v0 import tryjob as tryjob_pb
-from PB.recipe_engine.result import RawResult
 
 from recipe_engine.recipe_api import Property
 from recipe_engine.post_process import (DropExpectation, StepSuccess,
@@ -148,12 +143,14 @@ def GenTests(api):
   def fake_cv_runs(mode="FULL_RUN",
                    status=CV_RUN_STATUS_FAILED,
                    cls=None,
-                   tryjobs=None):
+                   tryjobs=None,
+                   end_time=1234):
     return [
         run_pb.Run(
             id='projects/prj/runs/1',
             mode=mode,
             status=status,
+            end_time=timestamp_pb2.Timestamp(seconds=end_time),
             cls=cls,
             tryjobs=tryjobs,
         )
@@ -422,7 +419,22 @@ def GenTests(api):
       find_fake_cv(test262_importer, fake_cv_runs(status=-1)),
       api.post_process(
           StepSuccess,
-          "Roller: 'test262'.Checking CL 123.Last CV run did not fail (yet?)."),
+          "Roller: 'test262'.Checking CL 123.Last CV run did not fail."),
+      api.post_process(DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'test262_not_finished',
+      roller(test262_importer),
+      find_fake_cls(test262_importer),
+      find_fake_builds(test262_importer, build(1, FAILURE),
+                       build(2, FAILURE, builder_name='some_v8_builder')),
+      find_fake_cv(test262_importer, fake_cv_runs(end_time=None)),
+      api.post_process(
+          StepSuccess,
+          "Roller: 'test262'.Checking CL 123.Last CV run has not finished yet."
+      ),
       api.post_process(DropExpectation),
       status='SUCCESS',
   )

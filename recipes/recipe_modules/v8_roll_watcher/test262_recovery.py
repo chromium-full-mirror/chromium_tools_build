@@ -20,8 +20,11 @@ def find_unexpected_results_in_last_cv_attempt(api, cl, test_regex):
   if last_cv_run.mode not in ['FULL_RUN', 'DRY_RUN']:
     api.step.empty(f'Last CV run mode is unsupported: {last_cv_run.mode}.')
     return
+  if not last_cv_run.end_time.ToSeconds():
+    api.step.empty('Last CV run has not finished yet.')
+    return
   if last_cv_run.status != CV_RUN_STATUS_FAILED:
-    api.step.empty('Last CV run did not fail (yet?).')
+    api.step.empty('Last CV run did not fail.')
     return
   if last_cv_run.cls[0].patchset != cl.last_patch_number:
     api.step.empty('Last CV run was not for the latest patchset.')

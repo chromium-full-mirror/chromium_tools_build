@@ -150,6 +150,7 @@
       "@@@STEP_LOG_LINE@proto.output@          \"patchset\": 1@@@",
       "@@@STEP_LOG_LINE@proto.output@        }@@@",
       "@@@STEP_LOG_LINE@proto.output@      ],@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"end_time\": \"1970-01-01T00:20:34Z\",@@@",
       "@@@STEP_LOG_LINE@proto.output@      \"id\": \"projects/prj/runs/1\",@@@",
       "@@@STEP_LOG_LINE@proto.output@      \"mode\": \"FULL_RUN\",@@@",
       "@@@STEP_LOG_LINE@proto.output@      \"status\": \"FAILED\",@@@",
