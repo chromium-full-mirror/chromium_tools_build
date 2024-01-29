@@ -1744,6 +1744,157 @@
     ]
   },
   {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/devtools-frontend/karma-coverage/coverage-summary.json",
+      "/path/to/tmp/"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Coverage.Coverage summary",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br/>Lines: 11.11%<br/>Statements: 11.12%<br/>Functions: 11.13%<br/>Branches: 11.14%@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@{@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@  \"total\": {@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    \"branches\": {@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@      \"pct\": 11.14@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    },@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    \"functions\": {@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@      \"pct\": 11.13@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    },@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    \"lines\": {@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@      \"pct\": 11.11@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    },@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    \"statements\": {@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@      \"pct\": 11.12@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@    }@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@  }@@@",
+      "@@@STEP_LOG_LINE@coverage-summary.json@}@@@",
+      "@@@STEP_LOG_END@coverage-summary.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "rev-list",
+      "--count",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789"
+    ],
+    "cwd": "[CACHE]/builder/devtools-frontend",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Coverage.Retrieve commit count",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "luci-auth",
+      "token",
+      "-lifetime",
+      "3m"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Coverage.get access token for default account",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[build::perf_dashboard]/resources/post_json.py",
+      "https://chromeperf.appspot.com/add_point",
+      "-i",
+      "{\"data\": \"[{\\\"bot\\\": \\\"linux\\\", \\\"buildername\\\": \\\"linux\\\", \\\"buildnumber\\\": 0, \\\"master\\\": \\\"tryserver.devtools-frontend\\\", \\\"masterid\\\": \\\"tryserver.devtools-frontend\\\", \\\"revision\\\": 123, \\\"supplemental_columns\\\": {\\\"a_default_rev\\\": \\\"r_devtools_git\\\", \\\"r_devtools_git\\\": \\\"2d72510e447ab60a9728aeea2362d8be2cbd7789\\\"}, \\\"test\\\": \\\"devtools.infra/coverage_v2/lines\\\", \\\"value\\\": 11.11}, {\\\"bot\\\": \\\"linux\\\", \\\"buildername\\\": \\\"linux\\\", \\\"buildnumber\\\": 0, \\\"master\\\": \\\"tryserver.devtools-frontend\\\", \\\"masterid\\\": \\\"tryserver.devtools-frontend\\\", \\\"revision\\\": 123, \\\"supplemental_columns\\\": {\\\"a_default_rev\\\": \\\"r_devtools_git\\\", \\\"r_devtools_git\\\": \\\"2d72510e447ab60a9728aeea2362d8be2cbd7789\\\"}, \\\"test\\\": \\\"devtools.infra/coverage_v2/statements\\\", \\\"value\\\": 11.12}, {\\\"bot\\\": \\\"linux\\\", \\\"buildername\\\": \\\"linux\\\", \\\"buildnumber\\\": 0, \\\"master\\\": \\\"tryserver.devtools-frontend\\\", \\\"masterid\\\": \\\"tryserver.devtools-frontend\\\", \\\"revision\\\": 123, \\\"supplemental_columns\\\": {\\\"a_default_rev\\\": \\\"r_devtools_git\\\", \\\"r_devtools_git\\\": \\\"2d72510e447ab60a9728aeea2362d8be2cbd7789\\\"}, \\\"test\\\": \\\"devtools.infra/coverage_v2/functions\\\", \\\"value\\\": 11.13}, {\\\"bot\\\": \\\"linux\\\", \\\"buildername\\\": \\\"linux\\\", \\\"buildnumber\\\": 0, \\\"master\\\": \\\"tryserver.devtools-frontend\\\", \\\"masterid\\\": \\\"tryserver.devtools-frontend\\\", \\\"revision\\\": 123, \\\"supplemental_columns\\\": {\\\"a_default_rev\\\": \\\"r_devtools_git\\\", \\\"r_devtools_git\\\": \\\"2d72510e447ab60a9728aeea2362d8be2cbd7789\\\"}, \\\"test\\\": \\\"devtools.infra/coverage_v2/branches\\\", \\\"value\\\": 11.14}]\"}",
+      "-o",
+      "/path/to/tmp/json",
+      "-t",
+      "extra.secret.token.should.not.be.logged"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Coverage.perf dashboard post",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"status_code\": 200@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "Publish performance benchmarks"
   },

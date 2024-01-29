@@ -55,11 +55,6 @@ PROPERTIES = {
     'coverage':
         Property(
             kind=bool, help='Should the runner have coverage', default=True),
-    'parallel':
-        Property(
-            kind=bool,
-            help='Switch swarming assisted parallel executions of tests',
-            default=False),
     'perf_benchmarks':
         Property(
             kind=bool,
@@ -346,7 +341,7 @@ class PerformanceTests(DevToolsTests):
 
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
-             clobber, coverage, parallel, perf_benchmarks):
+             clobber, coverage, perf_benchmarks):
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
   api.devtools.update()
@@ -358,78 +353,44 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
 
-    if not parallel:
-      run_unit_tests(api, builder_config, coverage)
-      run_interactions(api, builder_config, coverage)
+    cas_digest = api.devtools.archive_to_cas()
+    tests = [
+        UnitTests(api, cas_digest, builder_config, coverage, 'Unit Tests'),
+        InteractionsTests(api, cas_digest, builder_config, coverage,
+                          'Interactions Tests'),
+    ]
 
-      if coverage:
-        publish_coverage_points(api)
-
-      if api.devtools.is_debug(builder_config):
-        return
-
-      run_lint_check(api)
-
-      api.devtools.run_e2e(builder_config)
-    else:
-      cas_digest = api.devtools.archive_to_cas()
-      tests = [
-          UnitTests(api, cas_digest, builder_config, coverage, 'Unit Tests'),
-          InteractionsTests(api, cas_digest, builder_config, coverage,
-                            'Interactions Tests'),
+    if perf_benchmarks:
+      tests += [
+          PerformanceTests(api, cas_digest, builder_config, coverage,
+                            'Performance Tests'),
       ]
 
-      if perf_benchmarks:
-        tests += [
-            PerformanceTests(api, cas_digest, builder_config, coverage,
-                             'Performance Tests'),
-        ]
+    if not api.devtools.is_debug(builder_config):
+      tests += [
+          E2ETests(api, cas_digest, builder_config, coverage, 'E2E Tests')
+      ]
 
-      if not api.devtools.is_debug(builder_config):
-        tests += [
-            E2ETests(api, cas_digest, builder_config, coverage, 'E2E Tests')
-        ]
+    with api.step.nest('Trigger Tests'):
+      for t in tests:
+        t.trigger()
+        t.include_invocations()
 
-      with api.step.nest('Trigger Tests'):
-        for t in tests:
-          t.trigger()
-          t.include_invocations()
+    if not api.devtools.is_debug(builder_config):
+      with api.step.nest('Linting'):
+        run_lint_check(api)
 
-      if not api.devtools.is_debug(builder_config):
-        with api.step.nest('Linting'):
-          run_lint_check(api)
+    all_results = sum((t.process_results() for t in tests), Results())
 
-      all_results = sum((t.process_results() for t in tests), Results())
+    if coverage:
+      with api.step.nest('Coverage'):
+        publish_coverage_points(api)
 
-      if coverage:
-        with api.step.nest('Coverage'):
-          publish_coverage_points(api)
+    if perf_benchmarks:
+      with api.step.nest('Publish performance benchmarks'):
+        publish_performance_benchmarks(api)
 
-      if perf_benchmarks:
-        with api.step.nest('Publish performance benchmarks'):
-          publish_performance_benchmarks(api)
-
-      all_results.raise_on_failure()
-
-    if can_run_experimental_steps(api):
-      # Place here any unstable steps that you want to be performed on
-      # builders with property run_experimental_steps == True
-      pass
-
-
-def run_script(api, step_name, script, args=None):
-  sc_path = api.path['checkout'].join('scripts', 'test', script)
-  args = ["vpython3", "-u", sc_path] + (args or [])
-  api.step(step_name, args)
-
-
-def run_unit_tests(api, builder_config, coverage):
-  args = [
-      '--target=' + builder_config,
-  ]
-  if coverage:
-    args.append('--coverage')
-  run_script(api, 'Unit Tests', 'run_unittests.py', args)
+    all_results.raise_on_failure()
 
 
 def lint_script_exists(api, name):
@@ -443,28 +404,6 @@ def run_lint_check(api):
   api.devtools.run_node_script('Lint Check with ESLint', lint_script)
   api.devtools.run_node_script('Lint check with Stylelint',
                                'run_lint_check_css.js')
-
-
-def run_interactions(api, builder_config, coverage):
-  bucket = 'devtools-frontend-screenshots'
-  with api.devtools.collect_screenshots_on_trybot(bucket):
-    args = [
-        "--test-suite-path=gen/test/interactions",
-        "--test-suite-source-dir=test/interactions",
-        "--test-server-type='component-docs'", "--target=" + builder_config
-    ]
-    if coverage:
-      args.append('--coverage')
-    api.devtools.rdb_node_script(
-        'Interactions',
-        'run_test_suite.js',
-        args,
-    )
-
-
-def can_run_experimental_steps(api):
-  return api.properties.get('run_experimental_steps', False)
-
 
 def publish_performance_benchmarks(api):
   report_file = api.path['checkout'].join('perf-data', 'devtools-perf.json')
@@ -503,8 +442,6 @@ def publish_coverage_points(api):
 
   report_file = api.path['checkout'].join('karma-coverage',
                                           'coverage-summary.json')
-  if not api.path.exists(report_file):
-    return
 
   summary = api.file.read_json(
       'Coverage summary', report_file, test_data=test_cov_data())
@@ -570,22 +507,6 @@ def GenTests(api):
         **kwargs)
 
   yield api.test(
-      'basic try',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      api.post_process(post_process.DoesNotRun, 'archive'),
-      try_build(builder='linux'),
-      status='SUCCESS',
-  )
-
-  yield api.test(
-      'experimental',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='linux'),
-      api.properties(run_experimental_steps=True),
-      status='SUCCESS',
-  )
-
-  yield api.test(
       'compile failure',
       api.builder_group.for_current('devtools-frontend'),
       ci_build(builder='linux'),
@@ -608,7 +529,7 @@ def GenTests(api):
       'official build',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
-      api.properties(is_official_build=True),
+      api.properties(is_official_build=True, builder_config='Debug'),
       api.post_process(post_process.Filter('gn')),
       status='SUCCESS',
   )
@@ -617,7 +538,7 @@ def GenTests(api):
       'skip typecheck build',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
-      api.properties(devtools_skip_typecheck=True),
+      api.properties(devtools_skip_typecheck=True, builder_config='Debug'),
       api.post_process(post_process.Filter('gn')),
       status='SUCCESS',
   )
@@ -626,7 +547,7 @@ def GenTests(api):
       'skip coverage',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
-      api.properties(coverage=False),
+      api.properties(coverage=False, builder_config='Debug'),
       api.post_process(post_process.Filter('gn')),
       status='SUCCESS',
   )
@@ -635,8 +556,7 @@ def GenTests(api):
       'perf data',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
-      api.properties(
-          parallel=True, perf_benchmarks=True, builder_config='Debug'),
+      api.properties(perf_benchmarks=True, builder_config='Debug'),
       api.path.exists(api.path['checkout'].join(
           'perf-data',
           'devtools-perf.json',
@@ -647,20 +567,8 @@ def GenTests(api):
       'run performance benchmarks',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
-      api.properties(
-          parallel=True, perf_benchmarks=True, builder_config='Debug'),
+      api.properties(perf_benchmarks=True, builder_config='Debug'),
       api.post_process(post_process.Filter('gn')),
-      status='SUCCESS',
-  )
-
-  yield api.test(
-      'new lint check',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      ci_build(builder='linux'),
-      api.properties(builder_config='Debug'),
-      api.path.exists(api.path['checkout'].join(
-          'scripts', 'test', 'run_lint_check_js.mjs'
-      )),
       status='SUCCESS',
   )
 
@@ -668,7 +576,6 @@ def GenTests(api):
       'cq parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -683,7 +590,6 @@ def GenTests(api):
       'ci parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -705,7 +611,7 @@ def GenTests(api):
       'ci parallel builder performance benchmarks',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True, perf_benchmarks=True),
+      api.properties(perf_benchmarks=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -739,7 +645,6 @@ def GenTests(api):
       'failed parallel builder on E2E',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -775,7 +680,6 @@ def GenTests(api):
       'ci infra failure for parallel builder on unit tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -802,7 +706,7 @@ def GenTests(api):
       'ci infra failure for parallel builder on performance tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True, perf_benchmarks=True),
+      api.properties(perf_benchmarks=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -830,7 +734,6 @@ def GenTests(api):
       'cq infra failure for parallel builder on interactions',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -857,7 +760,6 @@ def GenTests(api):
       'cq failed parallel builder on interactions',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       try_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -884,7 +786,6 @@ def GenTests(api):
       'ci failed parallel builder on interactions',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -911,7 +812,6 @@ def GenTests(api):
       'ci failed parallel builder on unit tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -932,7 +832,7 @@ def GenTests(api):
       'ci failed parallel builder on Performance tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True, perf_benchmarks=True),
+      api.properties(perf_benchmarks=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -966,7 +866,7 @@ def GenTests(api):
       ' performance tests',
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='parallel_linux'),
-      api.properties(parallel=True, perf_benchmarks=True),
+      api.properties(perf_benchmarks=True),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
