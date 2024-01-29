@@ -88,16 +88,18 @@ def _incremental_build_with_one_day_changes(api, target):
         step_name_suffix=suffix)
     _raise_raw_result_on_failure(api, raw_result)
 
-    ## Siso native build
-    api.chromium_build_perf.recreate_build_dir(
-        phase='siso_native', build_dir=api.chromium.c.build_dir.join('siso'))
-    suffix = ' with Siso in native mode at current revision (warmup)'
-    raw_result = api.chromium_build_perf.build_with_siso(
-        target,
-        with_remote_cache=True,
-        out_sub_dir='siso',
-        step_name_suffix=suffix)
-    _raise_raw_result_on_failure(api, raw_result)
+    # TODO: b/322728907 - enable iOS builds with Siso native.
+    if api.chromium.c.TARGET_PLATFORM != 'ios':
+      ## Siso native build
+      api.chromium_build_perf.recreate_build_dir(
+          phase='siso_native', build_dir=api.chromium.c.build_dir.join('siso'))
+      suffix = ' with Siso in native mode at current revision (warmup)'
+      raw_result = api.chromium_build_perf.build_with_siso(
+          target,
+          with_remote_cache=True,
+          out_sub_dir='siso',
+          step_name_suffix=suffix)
+      _raise_raw_result_on_failure(api, raw_result)
 
     # Clean up deps cache and check out to the base revision.
     api.chromium_build_perf.checkout(base_rev)
@@ -124,17 +126,20 @@ def _incremental_build_with_one_day_changes(api, target):
         step_name_suffix=' with Siso in Reproxy mode at base revision (warmup)')
     _raise_raw_result_on_failure(api, raw_result)
 
-    ## Siso native
-    api.chromium_build_perf.recreate_build_dir(
-        phase='siso_native',
-        build_dir=api.chromium.c.build_dir.join('siso'),
-        remove_deps_cache=True)
-    raw_result = api.chromium_build_perf.build_with_siso(
-        target,
-        with_remote_cache=True,
-        out_sub_dir='siso',
-        step_name_suffix=' with Siso in native mode at base revision (warmup)')
-    _raise_raw_result_on_failure(api, raw_result)
+    # TODO: b/322728907 - enable iOS builds with Siso native.
+    if api.chromium.c.TARGET_PLATFORM != 'ios':
+      ## Siso native
+      api.chromium_build_perf.recreate_build_dir(
+          phase='siso_native',
+          build_dir=api.chromium.c.build_dir.join('siso'),
+          remove_deps_cache=True)
+      raw_result = api.chromium_build_perf.build_with_siso(
+          target,
+          with_remote_cache=True,
+          out_sub_dir='siso',
+          step_name_suffix=' with Siso in native mode at base revision (warmup)'
+      )
+      _raise_raw_result_on_failure(api, raw_result)
 
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(cur_rev)
@@ -152,13 +157,15 @@ def _incremental_build_with_one_day_changes(api, target):
         step_name_suffix=' with Siso in Reproxy mode')
     _raise_raw_result_on_failure(api, raw_result)
 
-    ## Siso native
-    raw_result = api.chromium_build_perf.build_with_siso(
-        target,
-        with_remote_cache=True,
-        out_sub_dir='siso',
-        step_name_suffix=' with Siso in native mode')
-    _raise_raw_result_on_failure(api, raw_result)
+    # TODO: b/322728907 - enable iOS builds with Siso native.
+    if api.chromium.c.TARGET_PLATFORM != 'ios':
+      ## Siso native
+      raw_result = api.chromium_build_perf.build_with_siso(
+          target,
+          with_remote_cache=True,
+          out_sub_dir='siso',
+          step_name_suffix=' with Siso in native mode')
+      _raise_raw_result_on_failure(api, raw_result)
 
 
 def _incremental_builds_with_patch(api, target):
@@ -225,10 +232,12 @@ def _incremental_builds_with_patch(api, target):
         phase='siso_reproxy',
         build_dir=api.chromium.c.build_dir.join('rbe'),
         remove_deps_cache=True)
-    api.chromium_build_perf.recreate_build_dir(
-        phase='siso_native',
-        build_dir=api.chromium.c.build_dir.join('siso'),
-        remove_deps_cache=True)
+    # TODO: b/322728907 - enable iOS builds with Siso native.
+    if api.chromium.c.TARGET_PLATFORM != 'ios':
+      api.chromium_build_perf.recreate_build_dir(
+          phase='siso_native',
+          build_dir=api.chromium.c.build_dir.join('siso'),
+          remove_deps_cache=True)
 
     # Run a build at each revision.
     for i, rev in enumerate(revs):
@@ -260,13 +269,15 @@ def _incremental_builds_with_patch(api, target):
           step_name_suffix=' with Siso in Reproxy mode' + step_name_suffix)
       _raise_raw_result_on_failure(api, raw_result)
 
-      # Siso native build
-      raw_result = api.chromium_build_perf.build_with_siso(
-          target,
-          with_remote_cache=with_remote_cache,
-          out_sub_dir='siso',
-          step_name_suffix=' with Siso in native mode' + step_name_suffix)
-      _raise_raw_result_on_failure(api, raw_result)
+      # TODO: b/322728907 - enable iOS builds with Siso native.
+      if api.chromium.c.TARGET_PLATFORM != 'ios':
+        # Siso native build
+        raw_result = api.chromium_build_perf.build_with_siso(
+            target,
+            with_remote_cache=with_remote_cache,
+            out_sub_dir='siso',
+            step_name_suffix=' with Siso in native mode' + step_name_suffix)
+        _raise_raw_result_on_failure(api, raw_result)
 
 
 def _clean_builds(api, target):
@@ -298,19 +309,21 @@ def _clean_builds(api, target):
         target, with_remote_cache=True, step_name_suffix=step_name_suffix)
     _raise_raw_result_on_failure(api, result)
 
-    # Siso native builds.
-    phase = 'siso_native'
-    step_name_suffix = ' with Siso in native mode'
-    api.chromium_build_perf.recreate_build_dir(
-        phase=phase, remove_deps_cache=True)
-    result = api.chromium_build_perf.build_with_siso(
-        target, with_remote_cache=False, step_name_suffix=step_name_suffix)
-    _raise_raw_result_on_failure(api, result)
+    # TODO: b/322728907 - enable iOS builds with Siso native.
+    if api.chromium.c.TARGET_PLATFORM != 'ios':
+      # Siso native builds.
+      phase = 'siso_native'
+      step_name_suffix = ' with Siso in native mode'
+      api.chromium_build_perf.recreate_build_dir(
+          phase=phase, remove_deps_cache=True)
+      result = api.chromium_build_perf.build_with_siso(
+          target, with_remote_cache=False, step_name_suffix=step_name_suffix)
+      _raise_raw_result_on_failure(api, result)
 
-    api.chromium_build_perf.recreate_build_dir(phase=phase)
-    result = api.chromium_build_perf.build_with_siso(
-        target, with_remote_cache=True, step_name_suffix=step_name_suffix)
-    _raise_raw_result_on_failure(api, result)
+      api.chromium_build_perf.recreate_build_dir(phase=phase)
+      result = api.chromium_build_perf.build_with_siso(
+          target, with_remote_cache=True, step_name_suffix=step_name_suffix)
+      _raise_raw_result_on_failure(api, result)
 
 
 def RunSteps(api):
