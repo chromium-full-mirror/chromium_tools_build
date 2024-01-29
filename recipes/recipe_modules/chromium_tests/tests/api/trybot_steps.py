@@ -361,6 +361,35 @@ def GenTests(api):
   )
 
   yield api.test(
+      'infra_fail_retry_test_failure_is_not_infra_failure',
+      custom_props(),
+      api.chromium_tests.read_targets_spec(
+          'chromium.test', {
+              'retry-shards': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {},
+                  }],
+              },
+          }),
+      api.override_step_data(
+          'base_unittests (with patch)',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.canned_gtest_output(False),
+              internal_failure=True)),
+      api.override_step_data(
+          'base_unittests (retry shards with patch)',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.canned_gtest_output(False), failure=True)),
+      api.post_process(post_process.MustRun,
+                       'base_unittests (retry shards with patch)'),
+      # The shard did not infra fail on retry and should be treated as a normal
+      # failure, not infra failure
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'retry_shards_without_patch',
       custom_props(),
       api.chromium_tests.read_targets_spec(

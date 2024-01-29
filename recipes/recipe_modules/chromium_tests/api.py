@@ -2050,10 +2050,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Returns: a buildbucket.proto.common.Status
     """
     status = common_pb.SUCCESS
+    retry_suffix = 'retry shards ' + suffix
     for t in test_suites:
       if not t.has_valid_results(suffix) or t.deterministic_failures(suffix):
         status = common_pb.FAILURE
-      if not t.did_complete(suffix):
+      if not t.did_complete(suffix) and not t.did_complete(retry_suffix):
         return common_pb.INFRA_FAILURE  # Nothing should override INFRA_FAILURE
     return status
 

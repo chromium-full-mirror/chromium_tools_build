@@ -2082,7 +2082,8 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     return self.spec.shards
 
   def did_complete(self, suffix) -> bool:
-    return not self._tasks[suffix].has_incomplete_shards
+    return suffix in self._tasks and not self._tasks[
+        suffix].has_incomplete_shards
 
   @abc.abstractmethod
   def _create_task(
