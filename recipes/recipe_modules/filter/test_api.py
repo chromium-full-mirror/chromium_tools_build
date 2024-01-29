@@ -38,16 +38,24 @@ class FilterTestApi(recipe_test_api.RecipeTestApi):
         test_targets=[],
     )
 
+  def analyze_config(self,
+                     *,
+                     exclusions: list[str] | None = None,
+                     ignores: list[str] | None = None):
+    config = {}
+    if exclusions is not None:
+      config['exclusions'] = exclusions
+    if ignores is not None:
+      config['ignores'] = ignores
+    return self.override_step_data(
+        'read filter exclusion spec',
+        self.m.json.output({'base': config}),
+    )
+
   def exclude_everything(self) -> recipe_test_api.StepTestData:
     """Overrides analyze step data so that all targets get compiled.
 
     This is generally not needed: by default, analyze will return all
     input targets as affected.
     """
-    return self.override_step_data(
-        'read filter exclusion spec',
-        self.m.json.output({
-            'base': {
-                'exclusions': ['.+'],
-            },
-        }))
+    return self.analyze_config(exclusions=['.+'])

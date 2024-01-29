@@ -73,29 +73,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'all-files-ignored',
-      api.platform('linux', 64),
-      api.override_step_data(
-          'read filter exclusion spec',
-          api.json.output({
-              'base': {
-                  'ignores': [r'.*\.cc'],
-              },
-          }),
-      ),
-      api.properties(
-          affected_files=['foo.cc', 'bar.cc'],
-          test_targets=['test1', 'test2'],
-          compile_targets=['compile1', 'compile2'],
-          expected_affected_test_targets=[],
-          expected_affected_compile_targets=[],
-      ),
-      api.post_check(post_process.StepTextContains, 'analyze',
-                     ['No compile necessary (all files ignored)']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'no-dependency',
       api.filter.no_dependency(),
       api.properties(
@@ -137,6 +114,18 @@ def GenTests(api):
       ),
       api.post_check(post_process.StepTextContains, 'analyze',
                      ['Analyze disabled: matched exclusion']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ignored-exclusion',
+      api.platform('linux', 64),
+      api.filter.analyze_config(
+          exclusions=['foo/.+'], ignores=[r'(.+/)?PRESUBMIT\.py']),
+      api.properties(affected_files=['foo/PRESUBMIT.py'],),
+      api.post_check(
+          lambda check, steps: check('Analyze disabled: matched exclusion'
+                                     not in steps['analyze'].step_text)),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -227,16 +216,9 @@ def GenTests(api):
       api.properties(affected_files=[
           'path\\to\\changed\\file1', 'path\\to\\changed\\file2'
       ]),
-      api.override_step_data(
-          'read filter exclusion spec',
-          api.json.output({
-              'base': {
-                  'ignores': ['path/to/changed/.*'],
-              },
-          }),
-      ),
+      api.filter.analyze_config(exclusions=['path/to/changed/.*']),
       api.post_check(post_process.StepTextContains, 'analyze',
-                     ['No compile necessary (all files ignored)']),
+                     ['Analyze disabled: matched exclusion']),
       api.post_process(post_process.DropExpectation),
   )
 

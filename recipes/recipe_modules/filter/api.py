@@ -200,12 +200,9 @@ class FilterApi(recipe_api.RecipeApi):
       ignores: Collection[re.Pattern],
       analyzer: _Analyzer,
   ) -> tuple[Collection[str], Collection[str]]:
-    if all(self._find_matching_pattern(p, ignores) for p in paths):
-      self.m.step.empty(
-          'analyze', step_text='No compile necessary (all files ignored)')
-      return [], []
-
     for path in paths:
+      if self._find_matching_pattern(path, ignores):
+        continue
       matched_pattern = self._find_matching_pattern(path, exclusions)
       if matched_pattern:
         self.m.step.empty(
@@ -293,9 +290,8 @@ class FilterApi(recipe_api.RecipeApi):
     The config named 'base' will always be used if present, with
     additional configs being used depending on the value of
     |additional_names|. If any file paths are matched by selected
-    exclusions, then all provided targets will be considered affected.
-    If all file paths are matched by selected ignores, then no provided
-    targets will be considered affected.
+    exclusions and not matched by any selected ignores, then all
+    provided targets will be considered affected.
 
     An analysis script will be called out to that takes as input the
     affected file paths, the test targets to analyze and any additional
