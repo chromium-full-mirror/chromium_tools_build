@@ -325,6 +325,8 @@ def RunSteps(api):
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
   api.chromium_checkout.ensure_checkout()
+  api.chromium.ensure_toolchains(
+      checkout_dir=api.chromium_checkout.checkout_dir)
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
