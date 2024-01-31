@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from abc import ABC, abstractmethod
+from functools import cached_property
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
@@ -103,6 +104,9 @@ class DevToolsTests(ABC):
     self.output_dir = self.api.path.mkdtemp()
     self.tasks = []
     self.coverage = coverage
+
+  def skip(self):
+    return False
 
   def collect(self):
     """
@@ -275,17 +279,19 @@ class InteractionsTests(DevToolsTests):
 
 
 class E2ETests(DevToolsTests):
+  def __init__(self, api, cas_digest, builder_config, coverage, step_name, divider):
+    super().__init__(api, cas_digest, builder_config, coverage, step_name)
+    self.divider = divider
+
+  def skip(self):
+    return self.api.devtools.is_debug(self.builder_config)
 
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):
-      commands = self.api.devtools.divided_e2e_commands(
-          builder_config=self.builder_config,
-          shuffle=self.api.devtools.is_shuffled_run(),
-      )
       self.tasks = self.api.devtools.trigger_test_swarming_tasks(
           step_name=self.step_name,
           cas_digest=self.cas_digest,
-          commands=commands,
+          commands=self.divider.commands,
           rdb_wrapped=True,
           env={
               "HTML_OUTPUT_FILE":
@@ -299,7 +305,15 @@ class E2ETests(DevToolsTests):
       return self.collect()
 
 
+class RepeatE2EShuffledTests(E2ETests):
+  def skip(self):
+    return super().skip() or (not self.api.devtools.is_shuffled_run())
+
+
 class PerformanceTests(DevToolsTests):
+
+  def skip(self):
+    return not self.api.properties.get("perf_benchmarks", False)
 
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):
@@ -339,6 +353,17 @@ class PerformanceTests(DevToolsTests):
         'copy interaction tests coverage data', perf_data_dir,
         self.api.path.join(self.api.path['checkout'], 'perf-data'))
 
+class E2ETestDivider:
+  def __init__(self, api, builder_config):
+    self.api = api
+    self.builder_config = builder_config
+
+  @cached_property
+  def commands(self):
+    return self.api.devtools.divided_e2e_commands(
+        builder_config=self.builder_config
+    )
+
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
              clobber, coverage, perf_benchmarks):
@@ -354,22 +379,20 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       return compilation_result
 
     cas_digest = api.devtools.archive_to_cas()
+    divider = E2ETestDivider(api, builder_config)
     tests = [
-        UnitTests(api, cas_digest, builder_config, coverage, 'Unit Tests'),
+        UnitTests(api, cas_digest, builder_config, coverage,
+                          'Unit Tests'),
         InteractionsTests(api, cas_digest, builder_config, coverage,
                           'Interactions Tests'),
+        PerformanceTests(api, cas_digest, builder_config, coverage,
+                          'Performance Tests'),
+        E2ETests(api, cas_digest, builder_config, coverage,
+                          'E2E Tests', divider),
+        RepeatE2EShuffledTests(api, cas_digest, builder_config, coverage,
+                          'Repeat E2E Tests', divider),
     ]
-
-    if perf_benchmarks:
-      tests += [
-          PerformanceTests(api, cas_digest, builder_config, coverage,
-                            'Performance Tests'),
-      ]
-
-    if not api.devtools.is_debug(builder_config):
-      tests += [
-          E2ETests(api, cas_digest, builder_config, coverage, 'E2E Tests')
-      ]
+    tests = [t for t in tests if not t.skip()]
 
     with api.step.nest('Trigger Tests'):
       for t in tests:
@@ -589,7 +612,7 @@ def GenTests(api):
   yield api.test(
       'ci parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
-      ci_build(builder='parallel_linux'),
+      ci_build(builder='parallel_shuffled_linux'),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.divide test run',
           api.raw_io.stream_output_text(
@@ -603,6 +626,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.MustRun, 'Repeat E2E Tests'),
       api.post_process(post_process.Filter().include_re(
           'Trigger Tests.*|.*\(Shard #\d*\).*')),
       status='SUCCESS',

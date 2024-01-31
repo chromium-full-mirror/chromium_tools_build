@@ -103,8 +103,8 @@ class DevToolsAPI(recipe_api.RecipeApi):
                            builder_config,
                            shards=4,
                            file_pattern='',
-                           iterations=1,
-                           shuffle=False):
+                           iterations=1):
+    shuffle=self.is_shuffled_run()
     modified_commands = []
     shuffled = ['--shuffle'] if shuffle else []
     raw_commands = self.m.devtools.run_python_script(
