@@ -28,7 +28,11 @@ _REPROXY_LOG_FORMAT = 'reducedtext'
 # For builds using the goma input processor, sometimes the deps cache file is
 # too big for the default setting.  So just set the max file size permitted to
 # be large enough.
-_DEPS_CACHE_MAX_MB = '256'
+_DEPS_CACHE_MAX_MB = {
+    'linux': '256',
+    'mac': '512',
+    'win': '256',
+}
 
 _VALID_ENV_PREFIX_LIST = ['RBE_', 'GLOG_', 'GOMA_']
 
@@ -496,7 +500,7 @@ class ReclientApi(recipe_api.RecipeApi):
         'RBE_deps_cache_dir': reclient_cache_dir,
         'RBE_cache_dir': reclient_cache_dir,
         'RBE_enable_deps_cache': 'true',
-        'RBE_deps_cache_max_mb': _DEPS_CACHE_MAX_MB,
+        'RBE_deps_cache_max_mb': _DEPS_CACHE_MAX_MB[self.m.platform.name],
         'RBE_use_unified_uploads': 'true',
         'RBE_grpc_keepalive_time': '30s',
         'RBE_grpc_keepalive_permit_without_stream': 'false',
