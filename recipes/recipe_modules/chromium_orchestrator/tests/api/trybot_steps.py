@@ -890,6 +890,16 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  def _create_previous_build(test_statuses=None):
+    reusable_build = build_pb2.Build(
+        id=1234,
+        status='SUCCESS',
+        create_time=timestamp_pb2.Timestamp(seconds=1598338800),
+        output=build_pb2.Build.Output())
+    reusable_build.output.properties[
+        'test_status'] = test_statuses if test_statuses else {}
+    return reusable_build
+
   yield api.test(
       'skips_successful_tests',
       api.chromium.try_build(
@@ -921,8 +931,10 @@ def GenTests(api):
           builder='fake-builder',
           tester='fake-tester',
       ),
-      api.chromium_tests.simulate_previous_build(
-          test_statuses={'unit_tests': 'Success'}),
+      api.buildbucket.simulated_search_results(
+          [_create_previous_build({'unit_tests': 'Success'})],
+          step_name=('check previous builds for skippable test suites.find '
+                     'equivalent patchset builds')),
       api.post_process(post_process.MustRun, 'unit_tests (with patch)'),
       api.post_process(
           post_process.StepTextEquals, 'unit_tests (with patch)',
@@ -962,8 +974,10 @@ def GenTests(api):
           builder='fake-builder',
           tester='fake-tester',
       ),
-      api.chromium_tests.simulate_previous_build(
-          test_statuses={'unit_tests': 'Success'}),
+      api.buildbucket.simulated_search_results(
+          [_create_previous_build({'unit_tests': 'Success'})],
+          step_name=('check previous builds for skippable test suites.find '
+                     'equivalent patchset builds')),
       api.post_process(post_process.MustRun, 'unit_tests (with patch)'),
       api.post_process(
           post_process.StepTextEquals, 'unit_tests (with patch)',

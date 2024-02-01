@@ -4,6 +4,7 @@
 """Compiles with patch and isolates tests"""
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from PB.recipes.build.chromium.compilator import InputProperties
 from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build import chromium
@@ -31,7 +32,6 @@ DEPS = [
     'isolate',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
-    'recipe_engine/cv',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -110,7 +110,8 @@ def compilator_steps(api, properties):
           orch_builder_id,
           orch_builder_config,
           isolate_output_files_for_coverage=True,
-          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME])
+          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
+          skip_tests=properties.skip_tests)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
       bot_update_step = task.bot_update_step
@@ -1152,40 +1153,5 @@ def GenTests(api):
                        '.*check_static_initializers.*'),
       api.post_process(post_process.MustRun, 'calculate flake rates'),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'dont_compile_skip_tests',
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-compilator',
-          revision='deadbeef',
-          tags=api.buildbucket.tags(
-              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
-      ),
-      api.platform.name('linux'),
-      api.path.exists(api.path['checkout'].join('out', 'Release',
-                                                'browser_tests')),
-      ctbc_properties(),
-      api.properties(
-          InputProperties(
-              orchestrator=InputProperties.Orchestrator(
-                  builder_name='fake-orchestrator',
-                  builder_group='fake-try-group'))),
-      override_test_spec(),
-      api.cv(run_mode='FULL_RUN'),
-      api.chromium_tests.simulate_previous_build(
-          test_statuses={'browser_tests': 'Success'}),
-      api.post_process(post_process.StepTextContains, 'report builders', [
-          "running tester 'fake-tester' on group 'fake-group' against "
-          "builder 'fake-builder' on group 'fake-group'"
-      ]),
-      api.post_process(post_process.MustRun, 'compile (with patch)'),
-      api.post_process(
-          post_process.StepCommandDoesNotContain,
-          'compile (with patch)',
-          ['browser_tests'],
-      ),
       api.post_process(post_process.DropExpectation),
   )
