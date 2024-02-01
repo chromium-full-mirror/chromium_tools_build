@@ -127,10 +127,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             'builder_group': self.m.builder_group.for_current,
         }
     }
-    # Find any test suites that have passed in a previous patchset to skip
-    test_names_to_skip = self.m.chromium_tests.find_suites_to_skip()
-    if test_names_to_skip:
-      compilator_properties['skip_tests'] = list(test_names_to_skip)
 
     # When this enabled, triggered compilators will not be automatically
     # canceled when the parent orchestrators are canceled.
@@ -175,8 +171,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         self.m.chromium_checkout.src_dir,
         targets_spec_dir=self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir),
-        remote_tests_only=True,
-        test_names_to_skip=test_names_to_skip)
+        remote_tests_only=True)
     # This is used to set build properties on swarming tasks
     self.m.chromium.set_build_properties(comp_output.got_revisions)
 
@@ -404,14 +399,18 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
                                                  experiments)
 
     else:
+      tags = [
+          tag for tag in self.m.buildbucket.build.tags
+          if tag.key.startswith('cq_')
+      ]
+      tags.append(common_pb.StringPair(key='hide-in-gerrit', value='pointless'))
+      tags.append(
+          common_pb.StringPair(key='skip-rety-in-gerrit', value='pointless'))
       request = self.m.buildbucket.schedule_request(
           builder=self.compilator,
           swarming_parent_run_id=self.m.swarming.task_id,
           properties=compilator_properties,
-          tags=self.m.buildbucket.tags(**{
-              'hide-in-gerrit': 'pointless',
-              'skip-rety-in-gerrit': 'pointless',
-          }),
+          tags=tags,
           can_outlive_parent=can_outlive_parent,
           experiments=experiments,
       )

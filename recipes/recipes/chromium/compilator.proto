@@ -6,6 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.compilator;
 
+// Next ID: 8
 message InputProperties {
   message Orchestrator {
     string builder_name = 1;
@@ -23,7 +24,6 @@ message InputProperties {
   // without a patch.
   repeated string swarming_targets = 2;
 
-  // Next ID: 2
   // When this field is absent, the Compilator will compile (with patch) all
   // targets affected by the patch.
   // When this field is populated, the Compilator will compile these targets
@@ -31,9 +31,7 @@ message InputProperties {
   // This could be both or either swarming or skylab tests
   repeated string test_targets = 6;
 
-  // Sets test names to skip. This does not necessarily skip targets as multiple
-  // tests can have the same name
-  repeated string skip_tests = 7;
+  reserved 7; // skip_tests
 
   // Sets which revision to check out for the dependency
   // Maps dependency repo's path name (like 'src/v8') to revision

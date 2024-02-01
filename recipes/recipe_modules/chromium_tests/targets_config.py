@@ -29,6 +29,7 @@ class TargetsConfig:
 
   builder_config = attrib(ctbc.BuilderConfig)
   _targets_by_builder_id = attrib(mapping[chromium.BuilderId, Targets])
+  _skip_tests = attrib(sequence[str])
 
   @classmethod
   def create(cls, **kwargs):
@@ -76,22 +77,8 @@ class TargetsConfig:
     """
     compile_targets = set(self.compile_only_targets)
     for t in self.all_tests:
-      compile_targets.update(t.compile_targets())
-    return sorted(compile_targets)
-
-  def compile_targets_without_tests(self, skip_tests):
-    """The compile targets to be built without the provided tests
-
-    The compile targets are the normal targets provided by compile_targets
-    without the targets provided by the skipped tests. If the targets for
-    skipped tests are used by other tests the targets can potentially be the
-    same
-
-    Args:
-      skip_tests (list[str]): names of tests that do not need to be compiled
-    """
-    compile_targets = set(self.compile_only_targets)
-    for t in self.all_tests:
-      if not skip_tests or t.name not in skip_tests:
+      # If/when ci_only tests shouldn't be compiled this can be replaced with
+      # t.is_enabled
+      if t.name not in self._skip_tests:
         compile_targets.update(t.compile_targets())
     return sorted(compile_targets)
