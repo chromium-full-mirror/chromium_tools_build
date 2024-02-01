@@ -20,7 +20,9 @@ MAX_CANDIDATE_FILES = 200
 # This should be same as toolchain side token at bit.ly/3F3IIMC
 INSTRUMENT_ALL_JACOCO_OVERRIDE_TOKEN = 'INSTRUMENT_ALL_JACOCO'
 
-
+PROBLEMATIC_JACOCO_PATHS = [
+    'ui/android/java/src/org/chromium/ui/UiUtils.java'  # crbug.com/1522985
+]
 class CodeCoverageApi(recipe_api.RecipeApi):
   """This module contains apis to generate code coverage data."""
 
@@ -497,6 +499,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               candidate_files,
               constants.TOOLS_TO_EXTENSIONS_MAP[constants.tools.CLANG]))
     if self.use_java_coverage:
+      candidate_files = [
+          x for x in candidate_files if x not in PROBLEMATIC_JACOCO_PATHS
+      ]
       self._eligible_files_by_tool[constants.tools.JACOCO] = (
           _filter_source_file(
               candidate_files,
