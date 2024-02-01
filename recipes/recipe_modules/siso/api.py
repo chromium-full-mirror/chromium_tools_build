@@ -11,6 +11,9 @@ from recipe_engine import recipe_api
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
+# GCS bucket for Siso reports.
+_GS_BUCKET = 'chrome-build-logs'
+
 
 class SisoApi(recipe_api.RecipeApi):
   """A module for interacting with siso."""
@@ -111,28 +114,39 @@ class SisoApi(recipe_api.RecipeApi):
           post_step_func(step_result)
         return step_result
     finally:
-      files_to_upload = []
-      for file in [
-          # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
-          # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
-          'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
-          'siso_build.pprof',
-          'siso_explain',
-          'siso_metrics.json',
-          'siso_output',
-          'siso_trace.json',
-          '.siso_config',
-          '.siso_deps',
-          '.siso_filegroups',
-          '.siso_fs_state',
-          '.siso_fs_state.0',
-      ]:
-        abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
-        if self.m.path.exists(abs_path):
-          files_to_upload.append(abs_path)
-
-      self.m.cas.archive('upload siso reports: %s' % name,
-                         self.m.path.abspath(ninja_dir), *files_to_upload)
+      with self.m.step.nest('upload siso reports') as s:
+        s.step_text = name
+        now = self.m.time.utcnow()
+        report_foldername = 'reports.%s.%s' % (now.strftime('%Y%m%dT%H%M%SZ'),
+                                               self.m.uuid.random())
+        gs_foldername = '%s/siso/%s' % (now.date().strftime('%Y/%m/%d'),
+                                        report_foldername)
+        for file in [
+            # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
+            # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
+            'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
+            'siso_build.pprof',
+            'siso_explain',
+            'siso_metrics.json',
+            'siso_output',
+            'siso_trace.json',
+            '.siso_config',
+            '.siso_deps',
+            '.siso_filegroups',
+            '.siso_fs_state',
+            '.siso_fs_state.0',
+        ]:
+          abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
+          if not self.m.path.exists(abs_path):
+            continue
+          gs_filename = '%s/%s' % (gs_foldername, file)
+          # Allow failure to not block the build.
+          self.m.gsutil.upload(
+              abs_path,
+              _GS_BUCKET,
+              gs_filename,
+              name='upload ' + file,
+              ok_ret=('any'))
 
   def _assert_ninja_command(self, ninja_command):
     """Check ninja_command runs ninja
