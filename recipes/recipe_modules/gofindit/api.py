@@ -44,7 +44,7 @@ class LuciBisectionApi(recipe_api.RecipeApi):
         "bbid": bbid,
         "botId": bot_id,
         "results": self._rerun_test_results(test_results),
-        "run_succeeded": run_succeeded,
+        "runSucceeded": run_succeeded,
     }
     self._call_prpc(step_name, host, method, request_input)
 

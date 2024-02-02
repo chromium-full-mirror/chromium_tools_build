@@ -101,7 +101,7 @@ def GenTests(api):
       ]),
       api.post_process(
           LogEquals, "send_test_results_to_luci_bisection", "input",
-          '{\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "results": [\n    {\n      "isExpected": false,\n      "status": 1,\n      "testId": "gtest-test-2",\n      "variantHash": "123"\n    },\n    {\n      "isExpected": false,\n      "status": 1,\n      "testId": "gtest-test",\n      "variantHash": "123"\n    }\n  ],\n  "run_succeeded": false\n}'
+          '{\n  "bbid": "0",\n  "botId": "fake-bot-id",\n  "results": [\n    {\n      "isExpected": false,\n      "status": 1,\n      "testId": "gtest-test-2",\n      "variantHash": "123"\n    },\n    {\n      "isExpected": false,\n      "status": 1,\n      "testId": "gtest-test",\n      "variantHash": "123"\n    }\n  ],\n  "runSucceeded": false\n}'
       ),
       api.post_process(DropExpectation),
   )

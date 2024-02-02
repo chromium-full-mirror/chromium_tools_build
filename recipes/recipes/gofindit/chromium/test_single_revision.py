@@ -292,7 +292,7 @@ def GenTests(api):
       api.post_process(MustRun, 'fake-gtest-2 (bisection) on Mac'),
       api.post_process(MustRun, 'send_test_results_to_luci_bisection'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
-                       "input", ['"run_succeeded": true']),
+                       "input", ['"runSucceeded": true']),
       api.post_process(DoesNotRun, 'fake-gtest-3 (bisection) on Mac'),
       api.post_process(DoesNotRun, 'fake-script-test (bisection)'),
       api.post_process(DropExpectation),
@@ -319,7 +319,7 @@ def GenTests(api):
       api.post_process(MustRun, 'fake-gtest-2 (bisection) on Mac'),
       api.post_process(MustRun, 'send_test_results_to_luci_bisection'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
-                       "input", ['"run_succeeded": true']),
+                       "input", ['"runSucceeded": true']),
       api.post_process(DoesNotRun, 'adjust_fast_run_priority'),
       api.post_process(DropExpectation),
   )
@@ -338,7 +338,7 @@ def GenTests(api):
       api.post_process(MustRun, 'fake-gtest-2 (bisection) on Mac'),
       api.post_process(MustRun, 'send_test_results_to_luci_bisection'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
-                       "input", ['"run_succeeded": true']),
+                       "input", ['"runSucceeded": true']),
       api.post_process(DoesNotRun, 'adjust_fast_run_priority'),
       api.post_process(DropExpectation),
   )
@@ -356,7 +356,7 @@ def GenTests(api):
       api.post_process(MustRun, 'compile'),
       api.post_process(MustRun, 'fake-gtest (bisection) on Mac'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
-                       "input", ['"run_succeeded": true']),
+                       "input", ['"runSucceeded": true']),
       api.post_process(DropExpectation),
   )
 
@@ -369,7 +369,7 @@ def GenTests(api):
       api.expect_status('FAILURE'),
       api.post_process(MustRun, 'compile'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
-                       "input", ['"run_succeeded": false']),
+                       "input", ['"runSucceeded": false']),
       api.post_process(DropExpectation),
   )
 
@@ -380,6 +380,6 @@ def GenTests(api):
       api.post_process(MustRun, 'Error: No test is found'),
       api.expect_status('FAILURE'),
       api.post_process(LogContains, "send_test_results_to_luci_bisection",
-                       "input", ['"run_succeeded": false']),
+                       "input", ['"runSucceeded": false']),
       api.post_process(DropExpectation),
   )
