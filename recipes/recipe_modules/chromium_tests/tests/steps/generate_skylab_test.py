@@ -551,7 +551,10 @@ def GenTests(api):
   yield api.test(
       'ci_only_test_on_trybot',
       boilerplate(
-          'chrome-test-builds', tast_expr='dummy_tast', is_ci_build=False),
+          'chrome-test-builds',
+          tast_expr='dummy_tast',
+          is_ci_build=False,
+          isolate_file_exists=False),
       api.post_process(
           post_process.StepCommandEmpty,
           'basic_EVE_TOT (with patch)',
@@ -651,7 +654,8 @@ def GenTests(api):
       boilerplate(
           'chrome-test-builds',
           tast_expr='dummy_tast',
-          experiment_percentage='0'),
+          experiment_percentage='0',
+          isolate_file_exists=False),
       api.post_process(
           post_process.StepCommandEmpty,
           'basic_EVE_TOT (experimental)',

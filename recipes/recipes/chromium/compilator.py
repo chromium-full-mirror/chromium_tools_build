@@ -4,7 +4,6 @@
 """Compiles with patch and isolates tests"""
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from PB.recipes.build.chromium.compilator import InputProperties
 from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build import chromium
@@ -32,6 +31,7 @@ DEPS = [
     'isolate',
     'recipe_engine/buildbucket',
     'recipe_engine/cas',
+    'recipe_engine/cv',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -110,8 +110,7 @@ def compilator_steps(api, properties):
           orch_builder_id,
           orch_builder_config,
           isolate_output_files_for_coverage=True,
-          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
-          skip_tests=properties.skip_tests)
+          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME])
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
       bot_update_step = task.bot_update_step
@@ -130,7 +129,8 @@ def compilator_steps(api, properties):
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    if any(t.runs_on_swarming or t.is_skylabtest for t in test_suites):
+    if any((t.runs_on_swarming or t.is_skylabtest) and t.is_enabled
+           for t in test_suites):
       affected_files_to_archive = []
       # If properties.test_targets exist, it means this build is doing a
       # "without patch" so there's no affected files to archive
@@ -147,7 +147,7 @@ def compilator_steps(api, properties):
         ]
       archive_src_side_deps(api, affected_files_to_archive)
 
-      if any(t.runs_on_swarming for t in test_suites):
+      if any(t.runs_on_swarming and t.is_enabled for t in test_suites):
         # Isolate the tests first so the Orchestrator can trigger them asap
         trigger_properties = execution_info.ensure_command_lines_archived(
             api.chromium_tests).as_trigger_prop()
@@ -159,7 +159,7 @@ def compilator_steps(api, properties):
             'swarming_trigger_properties'] = api.m.json.dumps(
                 trigger_properties, indent=2)
 
-      if any(t.is_skylabtest for t in test_suites):
+      if any(t.is_skylabtest and t.is_enabled for t in test_suites):
         skylab_tests = [t for t in test_suites if t.is_skylabtest]
         skylab_trigger_properties = (
             api.chromium_tests._get_skylab_trigger_properties(skylab_tests))
@@ -1153,5 +1153,40 @@ def GenTests(api):
                        '.*check_static_initializers.*'),
       api.post_process(post_process.MustRun, 'calculate flake rates'),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'dont_compile_skip_tests',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+          tags=api.buildbucket.tags(
+              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
+      ),
+      api.platform.name('linux'),
+      api.path.exists(api.path['checkout'].join('out', 'Release',
+                                                'browser_tests')),
+      ctbc_properties(),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'))),
+      override_test_spec(),
+      api.cv(run_mode='FULL_RUN'),
+      api.chromium_tests.simulate_previous_build(
+          test_statuses={'browser_tests': 'Success'}),
+      api.post_process(post_process.StepTextContains, 'report builders', [
+          "running tester 'fake-tester' on group 'fake-group' against "
+          "builder 'fake-builder' on group 'fake-group'"
+      ]),
+      api.post_process(post_process.MustRun, 'compile (with patch)'),
+      api.post_process(
+          post_process.StepCommandDoesNotContain,
+          'compile (with patch)',
+          ['browser_tests'],
+      ),
       api.post_process(post_process.DropExpectation),
   )
