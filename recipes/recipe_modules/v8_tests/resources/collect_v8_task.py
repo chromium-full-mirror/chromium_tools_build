@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import logging
 
 MISSING_SHARDS_MSG = r"""Missing results from the following shard(s): %s
 
@@ -24,6 +25,9 @@ It can happen in following cases:
 Please examine logs to figure out what happened.
 """
 
+_log = logging.getLogger("collect_v8_task")
+logging.basicConfig()
+_log.setLevel(logging.INFO)
 
 class BadShards:
 
@@ -91,11 +95,13 @@ class TaskCollector:
   def get_shards_info(self, output_dir):
     # summary.json is produced by swarming.py itself. We are mostly interested
     # in the number of shards.
+    _log.info('Reading summary.json')
     try:
       with open(os.path.join(output_dir, 'summary.json')) as f:
         summary = json.load(f)
       return summary['shards']
     except (IOError, ValueError):
+      _log.error('summary.json is missing or can not be read')
       self.emit_warning(
           'summary.json is missing or can not be read',
           'Something is seriously wrong with swarming_client/ or the bot.')
@@ -110,6 +116,7 @@ class TaskCollector:
     Returns dict with merged test output on success or None on failure. Emits
     annotations.
     """
+    _log.info('Merging shard results')
     if not shards:
       return None
 
@@ -119,6 +126,7 @@ class TaskCollector:
     aggregated_results = AggregatedResults(options.top_tests_cutoff)
     bad_shards = BadShards()
     for index, result in enumerate(shards):
+      _log.info('Merging shard %d' % index)
       if result is None:
         # Bot died, or anything that aborts the task ungracefully.
         bad_shards.add_missing(index)
@@ -135,6 +143,7 @@ class TaskCollector:
       if exit_code > 1:
         # When receiving a sigterm, the test runner terminates gracefully
         # with json output, but has a return code > 1.
+        _log.error('shard %d failed with exit code %d' % (index, exit_code))
         bad_shards.add_incomplete(index)
       json_data = self.load_shard_json(
           output_dir, result['task_id'], 'output.json')
@@ -144,6 +153,7 @@ class TaskCollector:
       else:
         # Unclear if this can happen. When the test-runner returns, it should
         # also add the json output.
+        _log.error('shard %d did not produce output.json' % index)
         bad_shards.add_incomplete(index)
 
     # If some shards are missing, make it known. Continue parsing anyway. Step
@@ -151,6 +161,7 @@ class TaskCollector:
     # case.
     if bad_shards.not_empty():
       # Not all tests run, combined JSON summary can not be trusted.
+      _log.error('Some shards did not complete: %s', bad_shards.as_str())
       tags.add('UNRELIABLE_RESULTS')
       as_str = bad_shards.as_str()
       self.emit_warning('some shards did not complete: %s' % as_str,
@@ -160,6 +171,7 @@ class TaskCollector:
 
 
   def merge_test_results(self, output_dir, shards, options):
+    _log.info('Merging test results')
     with open(options.merged_test_output, 'wb') as f:
       merged_data = self.merge_shard_results(output_dir, shards, options)
       f.write(json.dumps(merged_data, separators=(',', ':')).encode('utf-8'))
@@ -167,14 +179,18 @@ class TaskCollector:
 
   def merge_coverage_data(self, output_dir, shards, options):
     # Merge coverage data if specified.
+    _log.info('Merging coverage data')
     if options.coverage_dir:
       for index, result in enumerate(shards):
+        _log.info('Merging coverage data of shard %d' % index)
         exit_code = subprocess.call([
             sys.executable, '-u', options.sancov_merger, '--coverage-dir',
             options.coverage_dir, '--swarming-output-dir',
             os.path.join(output_dir, result['task_id'])
         ])
         if exit_code:
+          _log.error('error when merging coverage data of shard %d' % index)
+          _log.error('exit code: %d' % exit_code)
           self.emit_warning(
               'error when merging coverage data of shard %d' % index)
 
@@ -238,6 +254,7 @@ class TaskCollector:
 
 
   def run(self, args):
+    _log.info('Running task collector')
     options, swarming_args = self.parse_args(args)
     cmd, output_dir = self.swarming_cmd(swarming_args, options)
 
@@ -255,13 +272,16 @@ class TaskCollector:
         self.merge_test_results(output_dir, shards, options)
         self.merge_coverage_data(output_dir, shards, options)
       except Exception:
+        _log.error('Failed to process v8 output JSON', exc_info=True)
         self.emit_warning(
             'failed to process v8 output JSON', traceback.format_exc())
 
     finally:
+      _log.info('Cleaning up output directory %s', output_dir)
       shutil.rmtree(output_dir, ignore_errors=True)
 
     # Aggregated warnings are passed to the collecting recipe.
+    _log.info('Writing warnings to %s', options.warnings_json)
     with open(options.warnings_json, 'w') as f:
       json.dump(self.warnings, f)
 
