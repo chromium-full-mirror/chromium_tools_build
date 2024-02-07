@@ -1,0 +1,17 @@
+participant roll_recipe as "Roll recipe" #lightblue
+collections roller as "Roller" #lightblue
+participant cl_manager as "CL manager" #lightblue
+participant FS as "File system"
+
+roll_recipe -> FS : bot update
+roll_recipe --> cl_manager : create
+roll_recipe --> roller : for all
+roller -> cl_manager : init
+cl_manager -> Gerrit : abandon active cls
+cl_manager -> FS : clean up & create temp branch
+
+roller -> FS : perform changes
+roller -> cl_manager : roll changes
+cl_manager -> FS : commit changes
+cl_manager -> Gerrit : upload
+

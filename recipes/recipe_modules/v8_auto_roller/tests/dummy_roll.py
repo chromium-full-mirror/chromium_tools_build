@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DoesNotRunRE, DropExpectation)
+from recipe_engine.post_process import (
+    DoesNotRunRE, DropExpectation, SummaryMarkdown)
 
 DEPS = [
     'recipe_engine/buildbucket',
@@ -32,6 +33,8 @@ def RunSteps(api):
   clm = api.v8_auto_roller.build_cl_manager(bugs='dummy:123')
 
   api.v8_auto_roller.dummy_roll(clm)
+  if api.properties.get('try_again', False ):
+    api.v8_auto_roller.dummy_roll(clm)
 
   return api.v8_auto_roller.report_result()
 
@@ -83,3 +86,34 @@ def GenTests(api):
       "Update dummy deps.git status",
       "$result",
   ) + api.post_process(DropExpectation)
+
+  yield (
+    api.test('failure') +
+    api.properties(u_no_pass=True, try_again=True) +
+    runs_only(api,
+      "Setup",
+      "Setup.ensure builder cache dir",
+      "Setup.bot_update",
+      "Update dummy deps",
+      "Update dummy deps.get login info",
+      "Update dummy deps.gerrit changes",
+      "Update dummy deps.git checkout",
+      "Update dummy deps.git branch",
+      "Update dummy deps.git clean",
+      "Update dummy deps.git new-branch",
+      "Roll failed",
+      "Update dummy deps (2)",
+      "Update dummy deps (2).get login info",
+      "Update dummy deps (2).gerrit changes",
+      "Update dummy deps (2).git checkout",
+      "Update dummy deps (2).git branch",
+      "Update dummy deps (2).git clean",
+      "Update dummy deps (2).git new-branch",
+      "Roll failed (2)",
+      "$result",
+  ) +
+  api.expect_status('FAILURE') +
+  api.post_process(
+          SummaryMarkdown,
+          "Failed to update dummy, dummy.") +
+  api.post_process(DropExpectation))

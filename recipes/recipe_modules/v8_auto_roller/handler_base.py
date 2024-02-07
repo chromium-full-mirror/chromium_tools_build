@@ -5,6 +5,8 @@
 from . import commons
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from recipe_engine import recipe_api
+
 
 
 GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
@@ -19,21 +21,27 @@ class RollHandler(ABC):
     self.add_new_files = False
 
   def roll(self, cl_manager):
-    with self.api.step.nest(f'Update {self.name()} deps') as step:
-      with self.roll_contex():
-        step.presentation.step_text = self.summary()
-        cl_manager.abandon_active_cls(self.get_subject())
-        commons.discard_local_changes(self.api)
-        changes = self.apply_changes()
-        cl_link = cl_manager.upload_cl(
-            subject=self.get_subject(),
-            upload_flags=self.upload_flags(),
-            commit_msg_lines=self.commit_msg_lines(changes),
-            add=self.add_new_files,
-        )
-        if cl_link:
-          step.presentation.links['CL'] = cl_link
-          self.module.summary.append(self.summary())
+    try:
+      with self.api.step.nest(f'Update {self.name()} deps') as step:
+        with self.roll_contex():
+          step.presentation.step_text = self.summary()
+          cl_manager.abandon_active_cls(self.get_subject())
+          commons.discard_local_changes(self.api)
+          changes = self.apply_changes()
+          cl_link = cl_manager.upload_cl(
+              subject=self.get_subject(),
+              upload_flags=self.upload_flags(),
+              commit_msg_lines=self.commit_msg_lines(changes),
+              add=self.add_new_files,
+          )
+          if cl_link:
+            step.presentation.links['CL'] = cl_link
+            self.module.summary.append(self.summary())
+    except Exception as e:
+      failed = self.api.step.empty('Roll failed')
+      failed.presentation.status = self.api.step.FAILURE
+      failed.presentation.summary = str(e)
+      self.module.failures.append(self.name())
 
   @contextmanager
   def roll_contex(self):
@@ -78,7 +86,8 @@ class DummyRollHandler(RollHandler):
     return 'dummy'
 
   def apply_changes(self):
-    return None
+    if self.api.properties.get('u_no_pass', False):
+      raise recipe_api.InfraFailure('dummy failure')
 
   def get_subject(self):
     return 'dummy'

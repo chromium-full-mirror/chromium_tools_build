@@ -2125,6 +2125,6 @@
   },
   {
     "name": "$result",
-    "summaryMarkdown": "updated 3 trusted dep(s), 5 reviewed dep(s), 1 chromium pin, Puppeteer Core, Browser Protocol, test262 import"
+    "summaryMarkdown": "Updated 3 trusted dep(s), 5 reviewed dep(s), 1 chromium pin, Puppeteer Core, Browser Protocol, test262 import."
   }
 ]

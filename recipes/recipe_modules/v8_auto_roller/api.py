@@ -33,6 +33,7 @@ class V8AutoRoller(recipe_api.RecipeApi):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.summary = []
+    self.failures = []
 
   def setup_target(self, solution_name, target_url):
     with self.m.step.nest('Setup'):
@@ -59,9 +60,12 @@ class V8AutoRoller(recipe_api.RecipeApi):
 
   def report_result(self):
     result = result_pb2.RawResult()
-    result.status = common_pb2.SUCCESS
+    result.status = common_pb2.FAILURE if self.failures else common_pb2.SUCCESS
     if self.summary:
-      result.summary_markdown = 'updated ' + ', '.join(self.summary)
+      result.summary_markdown = 'Updated ' + ', '.join(self.summary) + '.'
+    if self.failures:
+      result.summary_markdown += 'Failed to update ' + ', '.join(
+        self.failures) + '.'
     return result
 
   def regular_roll(self, autoroller_config, cl_manager):
