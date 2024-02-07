@@ -101,7 +101,7 @@ def GenTests(api):
       "Update dummy deps.git branch",
       "Update dummy deps.git clean",
       "Update dummy deps.git new-branch",
-      "Roll failed",
+      "Update dummy deps.Roll failed",
       "Update dummy deps (2)",
       "Update dummy deps (2).get login info",
       "Update dummy deps (2).gerrit changes",
@@ -109,7 +109,7 @@ def GenTests(api):
       "Update dummy deps (2).git branch",
       "Update dummy deps (2).git clean",
       "Update dummy deps (2).git new-branch",
-      "Roll failed (2)",
+      "Update dummy deps (2).Roll failed",
       "$result",
   ) +
   api.expect_status('FAILURE') +

@@ -21,8 +21,8 @@ class RollHandler(ABC):
     self.add_new_files = False
 
   def roll(self, cl_manager):
-    try:
-      with self.api.step.nest(f'Update {self.name()} deps') as step:
+    with self.api.step.nest(f'Update {self.name()} deps') as step:
+      try:
         with self.roll_contex():
           step.presentation.step_text = self.summary()
           cl_manager.abandon_active_cls(self.get_subject())
@@ -37,11 +37,11 @@ class RollHandler(ABC):
           if cl_link:
             step.presentation.links['CL'] = cl_link
             self.module.summary.append(self.summary())
-    except Exception as e:
-      failed = self.api.step.empty('Roll failed')
-      failed.presentation.status = self.api.step.FAILURE
-      failed.presentation.summary = str(e)
-      self.module.failures.append(self.name())
+      except Exception as e:
+        failed = self.api.step.empty('Roll failed')
+        failed.presentation.status = self.api.step.FAILURE
+        failed.presentation.summary = str(e)
+        self.module.failures.append(self.name())
 
   @contextmanager
   def roll_contex(self):
