@@ -1200,11 +1200,17 @@ class SwarmingGroup(TestGroup):
 
   def pre_run(self, api, suffix):
     """Executes the |pre_run| method of each test."""
-    futures = []
-    for t in self._test_suites:
-      futures.append(api.futures.spawn_immediate(t.pre_run, suffix))
-    for f in futures:
-      f.result()
+    # Universal Test Runner is running on annotation run mode
+    # which does not support concurrency
+    if api.futures.concurrency_client.supports_concurrency:
+      futures = []
+      for t in self._test_suites:
+        futures.append(api.futures.spawn_immediate(t.pre_run, suffix))
+      for f in futures:
+        f.result()
+    else:  #pragma nocover
+      for t in self._test_suites:
+        t.pre_run(suffix)
 
     for t in self._test_suites:
       if not t.is_enabled:

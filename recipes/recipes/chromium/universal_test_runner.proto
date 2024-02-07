@@ -1,0 +1,26 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.chromium.universal_test_runner;
+
+// Next ID: 5
+message InputProperties {
+  // Required, the directory where chromium/src is checked out
+  string checkout_path = 1;
+
+  // Test names to run
+  //
+  // This must match the test names, not their target names to uniquely identify
+  // the tests to be run on the builder
+  repeated string tests_to_run = 2;
+
+  // Optional map of revisions received during gclient sync
+  map<string, string> got_revisions = 3;
+
+  // The build_dir to use either containing the binary to run or where it is to
+  // be compiled
+  string build_dir = 4;
+}
