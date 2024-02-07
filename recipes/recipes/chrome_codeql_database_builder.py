@@ -66,7 +66,7 @@ def RunSteps(api):
     zip_out_dir = api.path['start_dir'].join('codeql_output')
     cur_date = api.time.utcnow()
     zip_out_filename = 'codeql-' + cur_date.strftime(
-        '%Y/%m/%d-%H:%M:%S') + '.zip'
+        '%Y-%m-%d-%H:%M:%S') + '.zip'
     zip_out_file = zip_out_dir.join(zip_out_filename)
     api.step("mkdir codeql_output", ['mkdir', zip_out_dir])
     api.zip.directory('zip codeql dir', db_path, zip_out_file)
