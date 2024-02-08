@@ -81,9 +81,13 @@ class SsciAPI(recipe_api.RecipeApi):
       sbom_bucket: Bucket that should be used for data upload
     """
     step_name = f"upload {data_name} to BigQuery"
+    # TODO(dlf): crbug/324078360 - poor streaming insert performance.
+    bq_step_timeout = 60
     try:
-      self.m.step(step_name, [self.bqupload.tool_path, "-json-list=true"] +
-                  bq_args + [file_to_upload])
+      self.m.step(
+          step_name, [self.bqupload.tool_path, "-json-list=true"] + bq_args +
+          [file_to_upload],
+          timeout=bq_step_timeout)
     except self.m.step.StepFailure:
       pass
 

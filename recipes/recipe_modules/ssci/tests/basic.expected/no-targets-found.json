@@ -677,6 +677,7 @@
       }
     },
     "name": "SSCI collection.upload third party dependencies to BigQuery",
+    "timeout": 60,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -837,6 +838,7 @@
       }
     },
     "name": "SSCI collection (2).upload third party dependencies to BigQuery",
+    "timeout": 60,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -907,6 +909,7 @@
       }
     },
     "name": "SSCI collection (2).target specific steps for Example.apk.upload artifacts to BigQuery",
+    "timeout": 60,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -970,6 +973,7 @@
       }
     },
     "name": "SSCI collection (2).target specific steps for Example.apk.upload libraries to BigQuery",
+    "timeout": 60,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
