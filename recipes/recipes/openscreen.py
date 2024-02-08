@@ -496,7 +496,10 @@ def RunSteps(api):
   solution.name = 'openscreen'
   solution.url = OPENSCREEN_REPO
   solution.deps_file = 'DEPS'
-
+  # We need to set the target CPU for gclient to pull down its related sysroot.
+  target_cpu = api.properties.get('target_cpu')
+  if target_cpu:
+    openscreen_config.target_cpu.add(target_cpu)
   api.gclient.c = openscreen_config
 
   api.bot_update.ensure_checkout()
@@ -550,17 +553,16 @@ def RunSteps(api):
           coverage_step.status = api.step.FAILURE
           use_coverage = False
 
-    api.step('gn gen', [
-        api.depot_tools.gn_py_path,
-        'gen',
-        paths.output_path,
-        '--check',
-        '--args=' + FormatGnArgs(api.properties),
-    ])
-
-    # NOTE: The following just runs Ninja without setting up the Mac toolchain
-    # if this is being run on a non-Mac platform.
+    # NOTE: the api.osx_sdk statement is a no-op on non-macOS platforms.
     with api.osx_sdk('mac'):
+      api.step('gn gen', [
+          api.depot_tools.gn_py_path,
+          'gen',
+          paths.output_path,
+          '--check',
+          '--args=' + FormatGnArgs(api.properties),
+      ])
+
       ninja_cmd = [paths.ninja_path, '-C', paths.output_path]
       ninja_cmd.extend(BUILD_TARGETS)
 

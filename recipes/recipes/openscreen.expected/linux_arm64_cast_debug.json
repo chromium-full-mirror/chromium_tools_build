@@ -60,7 +60,7 @@
       "-u",
       "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
       "--spec-path",
-      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'openscreen', 'url': 'https://chromium.googlesource.com/openscreen'}]\ntarget_cpu = ['arm64']",
       "--patch_root",
       "openscreen",
       "--revision_mapping_file",

@@ -180,29 +180,6 @@
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/gn.py",
-      "gen",
-      "[START_DIR]/openscreen/out/Default",
-      "--check",
-      "--args=is_debug=true"
-    ],
-    "cwd": "[START_DIR]/openscreen",
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "gn gen"
-  },
-  {
-    "cmd": [
       "cipd",
       "ensure",
       "-root",
@@ -292,6 +269,29 @@
       }
     },
     "name": "select XCode"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "gen",
+      "[START_DIR]/openscreen/out/Default",
+      "--check",
+      "--args=is_debug=true"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gn gen"
   },
   {
     "cmd": [
