@@ -13,7 +13,7 @@ import sys
 def main():
   # tempfile.gettempdir() doesn't return system tempdir from recipe.
   # hardcoding the glob pattern starting with /var/folders.
-  for d in glob.iglob('/var/folders/**/com.apple.CoreSimulator.SimDevice.*'):
+  for d in glob.iglob('/var/folders/**/com.apple.CoreSimulator.SimDevice.*', recursive=True):
     print('Removing ' + d)
     shutil.rmtree(d)
 
