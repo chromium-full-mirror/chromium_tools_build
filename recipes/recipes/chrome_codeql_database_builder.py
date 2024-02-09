@@ -71,10 +71,7 @@ def RunSteps(api):
     api.step("mkdir codeql_output", ['mkdir', zip_out_dir])
     api.zip.directory('zip codeql dir', db_path, zip_out_file)
     api.gsutil.upload(
-        zip_out_file,
-        UPLOAD_BUCKET,
-        'upload CodeQL index',
-        link_name="CodeQL index")
+        zip_out_file, UPLOAD_BUCKET, zip_out_filename, link_name="CodeQL index")
 
 
 def GenTests(api):
