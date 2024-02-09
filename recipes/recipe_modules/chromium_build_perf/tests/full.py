@@ -16,6 +16,7 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'reclient',
     'siso',
 ]
@@ -61,6 +62,26 @@ def GenTests(api):
                   build_gs_bucket=None,
               ),
               **builder).assemble()),
+      api.reclient.properties(),
+      api.siso.properties(),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ios',
+      api.chromium.ci_build(**builder),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='ios',
+                  chromium_config='chromium',
+                  build_gs_bucket=None,
+                  chromium_config_kwargs={
+                      'TARGET_PLATFORM': 'ios',
+                  },
+              ),
+              **builder).assemble()),
+      api.platform.name('mac'),
       api.reclient.properties(),
       api.siso.properties(),
       api.post_process(post_process.DropExpectation),

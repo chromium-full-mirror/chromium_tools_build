@@ -4,6 +4,9 @@
 """APIs for taking Chrome build performance metrics."""
 
 import copy
+import glob
+import os
+import tempfile
 
 from RECIPE_MODULES.build import chromium
 from recipe_engine import recipe_api
@@ -55,14 +58,22 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       step_name += step_name_suffix
     timeout = 60 * 60 * 1.5  # 1.5h
     with self.m.context(env=env, cwd=self.m.path['cache'].join('builder')):
-      return self.m.chromium.compile(
-          [target],
-          name=step_name,
-          timeout=timeout,
-          target=out_sub_dir,  # target is a sub directory name at compile().
-          # always enable reclient even if it's not used.
-          use_reclient=True,
-          siso_args=siso_args)
+      try:
+        return self.m.chromium.compile(
+            [target],
+            name=step_name,
+            timeout=timeout,
+            target=out_sub_dir,  # target is a sub directory name at compile().
+            # always enable reclient even if it's not used.
+            use_reclient=True,
+            siso_args=siso_args)
+      finally:
+        # b/323976014: Clean up temp dirs for iOS simulators.
+        if self.m.chromium.c.TARGET_PLATFORM == 'ios':
+          self.m.step(
+              'cleanup for iOS',
+              ['python3', self.resource('cleanup_ios_tempdirs.py')])
+
 
   def recreate_build_dir(self,
                          phase=None,
