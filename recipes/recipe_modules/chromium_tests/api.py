@@ -1158,7 +1158,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       if ('chromium.enable_cleandead'
           in self.m.buildbucket.build.input.experiments):
-        self.m.chromium.cleandead()
+        try:
+          self.m.chromium.cleandead()
+        except self.m.step.StepFailure:
+          self.m.file.rmtree('remove output dir' + name_suffix,
+                             self.m.chromium.output_dir)
+          clean_step_presentation = self.m.step.active_result.presentation
+          clean_step_presentation.step_text = 'reason: cleandead unsuccessful'
+
 
       return self.m.chromium.compile(
           compile_targets,

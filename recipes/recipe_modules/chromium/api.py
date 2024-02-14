@@ -685,7 +685,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       command = [str(self.m.siso.siso_path), 'ninja']
     command += ['-C', target_output_dir, '-t', 'cleandead']
     with self.m.context(env=ninja_env, cwd=self.m.path['checkout']):
-      self.m.step(name='ninja -t cleandead', cmd=command)
+      self.m.step(name='cleandead', cmd=command)
 
   # TODO(tikuta): Remove use_goma_module.
   # Decrease the number of ways configuring with or without goma.

@@ -22,7 +22,7 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  step_name = 'ninja -t cleandead'
+  step_name = 'cleandead'
   yield api.test(
       'basic',
       api.post_check(post_process.StepCommandRE, step_name,

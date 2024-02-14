@@ -346,6 +346,23 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.post_check(post_process.MustRun, 'ninja -t cleandead'),
+      api.post_check(post_process.MustRun, 'cleandead'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'failing_cleandead',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-try-builder',
+          experiments=['chromium.enable_cleandead'],
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.step_data('cleandead', retcode=1),
+      api.post_check(post_process.MustRun, 'remove output dir (with patch)'),
       api.post_process(post_process.DropExpectation),
   )
