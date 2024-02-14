@@ -171,7 +171,8 @@ def GenTests(api):
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
               'gs://chromium-optimization-profiles/pgo_profiles/'
               'chrome-win64-main-1587876258-'
-              'ade24b3118b1feaa04cb4406253403f3f72a7f0e.profdata'
+              'ade24b3118b1feaa04cb4406253403f3f72a7f0e-'
+              'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde.profdata'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -211,7 +212,8 @@ def GenTests(api):
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
               'gs://chromium-optimization-profiles/pgo_profiles/'
               'chrome-win-arm64-main-1587876258-'
-              'ade24b3118b1feaa04cb4406253403f3f72a7f0e.profdata'
+              'ade24b3118b1feaa04cb4406253403f3f72a7f0e-'
+              'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde.profdata'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -235,7 +237,8 @@ def GenTests(api):
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
               'gs://chromium-optimization-profiles/pgo_profiles/'
               'chrome-android32-main-1587876258-'
-              'ade24b3118b1feaa04cb4406253403f3f72a7f0e.profdata'
+              'ade24b3118b1feaa04cb4406253403f3f72a7f0e-'
+              'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde.profdata'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -259,7 +262,8 @@ def GenTests(api):
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
               'gs://chromium-optimization-profiles/pgo_profiles/'
               'chrome-mac-arm-main-1587876258-'
-              'ade24b3118b1feaa04cb4406253403f3f72a7f0e.profdata'
+              'ade24b3118b1feaa04cb4406253403f3f72a7f0e-'
+              'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde.profdata'
           ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -293,7 +297,8 @@ def GenTests(api):
           'Processing PGO .profraw data.gsutil upload artifact to GS', [
               'gs://chromium-optimization-profiles/pgo_profiles/'
               'chrome-chromeos-amd64-generic-main-1587876258-'
-              'ade24b3118b1feaa04cb4406253403f3f72a7f0e.profdata'
+              'ade24b3118b1feaa04cb4406253403f3f72a7f0e-'
+              'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde.profdata'
           ]),
       api.post_process(post_process.DropExpectation),
   )

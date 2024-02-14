@@ -76,6 +76,24 @@ class PgoApi(recipe_api.RecipeApi):
               'Detected cros. Overriding llvm-profdata path to %s' %
               target_path)
 
+  def _get_commit(self, test_data=None):
+    """Return the hash of the current commit.
+
+    Args:
+      * test_data (bytes): used as the return value for testing.
+
+    Return:
+        (string) commit hash.
+    """
+    step_test_data = None
+    if test_data is not None:
+      step_test_data = lambda: self.m.raw_io.test_api.stream_output(test_data)
+    return self.m.git(
+        'rev-parse',
+        'HEAD',
+        stdout=self.m.raw_io.output(),
+        step_test_data=step_test_data).stdout.strip().decode('utf-8')
+
   def _profdata_artifact_name(self, sha1):
     """Generate profdata artifact name.
 
@@ -83,19 +101,20 @@ class PgoApi(recipe_api.RecipeApi):
       sha1 - (string) sha1 hash of the profdata content.
 
     Template:
-    chrome-{platform}-{branch number}-{timestamp}-{profile_hash}.profdata
+    chrome-{platform}-{branch number}-{timestamp}-{profile_hash}-{commit_hash}.profdata
     * {platform} refers to the platform, which is one of
         [android32, android64, linux, win32, win64 and mac].
     * {branch number} refers to the branch number, such as 4103.
     * {timestamp} refers to the timestamp of the commit at HEAD.
     * {profile_hash} refers to the sha1 hash of the profdata content.
+    * {commit_hash} refers to the Chromium commit where the profile was generated.
 
     Return:
         (string) filename of the resulting .profdata.
     """
     # TODO(crbug.com/1077004) - Prefix should be chromium for profiles generated
     # without internal sources. Update this prefix when support is introduced.
-    profdata_template = 'chrome-%s-%s-%s-%s.profdata'
+    profdata_template = 'chrome-%s-%s-%s-%s-%s.profdata'
 
     # android and chromeos are undefined through platform API,
     # so we use the chromium config
@@ -132,12 +151,16 @@ class PgoApi(recipe_api.RecipeApi):
         if arch_def in target_cros_boards:
           platform += '-' + arch_def
 
-    # timestamp from git commit HEAD. under the hood invokes
-    # `git show --format=%at -s`, where %at=author date, UNIX timestamp
+    commit = 'none'
     with self.m.context(cwd=self.m.path['checkout']):
+      # timestamp from git commit HEAD. under the hood invokes
+      # `git show --format=%at -s`, where %at=author date, UNIX timestamp
       timestamp = str(self.m.git.get_timestamp(test_data='1587876258'))
+      commit = self._get_commit(
+          test_data=b'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde')
 
-    return profdata_template % (platform, self.branch, timestamp, sha1)
+    return profdata_template % (platform, self.branch, timestamp, sha1, commit)
+
 
   def ensure_profdata_files(self, tests):
     """Ensure there is a profdata file generated for each test.
@@ -231,9 +254,7 @@ class PgoApi(recipe_api.RecipeApi):
             status=self.m.step.FAILURE,
             step_text='Please see logs of failed step for details.')
 
-      # TODO(crbug.com/1076999) - Look into replacing this hash for the sha1
-      # of the git commit of src associated w/ build.
-      # SHA1 hash content of the profdata is required as part of the naming
+      # SHA1 hash content of the profdata is used as part of the naming to
       # make it content-addressed.
       contents = self.m.file.read_raw(
           'Read profdata content',
@@ -241,7 +262,7 @@ class PgoApi(recipe_api.RecipeApi):
           test_data='some_profdata_content')
       sha1 = hashlib.sha1(contents).hexdigest()
 
-      # The final profdata artifact name requires the sha1 hash of the contents,
+      # The final profdata artifact name uses the sha1 hash of the contents,
       # so the profdata file is generated first, and then renamed.
       new_filename = self._profdata_artifact_name(sha1)
       new_filepath = self.m.profiles.profile_dir().join(new_filename)
