@@ -85,7 +85,6 @@ def cronet_builder(c):
   c.gn_args.append('disable_file_support=true')
   c.gn_args.append('enable_websockets=false')
   c.gn_args.append('include_transport_security_state_preload_list=false')
-  c.gn_args.append('use_crash_key_stubs=true')
   c.gn_args.append('use_platform_icu_alternatives=true')
 
   # From //tools/mb/mb_config.pyl's "cronet_android":
@@ -97,7 +96,6 @@ def cronet_builder(c):
   c.gn_args.append('media_use_ffmpeg=false')
   c.gn_args.append('use_thin_lto=false')
   c.gn_args.append('enable_resource_allowlist_generation=false')
-  c.gn_args.append('enable_jdk_library_desugaring=false')
 
   c.compile_py.default_targets=[
       'cronet_package',
