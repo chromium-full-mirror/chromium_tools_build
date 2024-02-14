@@ -13,14 +13,15 @@ DEPS = [
     'infra/cloudkms',
     'recipe_engine/context',
     'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/scheduler',
     'recipe_engine/step',
     'v8',
 ]
 
-CREDS_NAME = 'test262-import-export'
-KMS_CRYPTO_KEY = (
-    'projects/v8-infra/locations/global/keyRings/%s/cryptoKeys/default' %
-    CREDS_NAME)
+EXPORTER_CREDS_NAME = 'test262-import-export'
+APPROVER_CREDS_NAME = 'test262-approve'
+KMS_CRYPTO_KEY = 'projects/v8-infra/locations/global/keyRings/{name}/cryptoKeys/default'
 
 
 def RunSteps(api):
@@ -28,11 +29,13 @@ def RunSteps(api):
 
   api.v8.checkout()
 
-  creds = api.path['cleanup'].join(CREDS_NAME + '.json')
+  creds_file = api.path['cleanup'].join('test262.json')
+  is_approver = api.properties.get('approver', False)
+  creds_name = APPROVER_CREDS_NAME if is_approver else EXPORTER_CREDS_NAME
   api.cloudkms.decrypt(
-      KMS_CRYPTO_KEY,
-      api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
-      creds,
+      KMS_CRYPTO_KEY.format(name=creds_name),
+      api.repo_resource('recipes', 'recipes', 'v8', 'assets', creds_name),
+      creds_file,
   )
 
   checkout_root = api.path['cache'].join('builder')
@@ -46,12 +49,23 @@ def RunSteps(api):
   with api.context(cwd=v8_path):
     args = [
         '--credentials-json',
-        creds,
+        creds_file,
         '--surface-failures-to-gerrit',
         '--blink-tools-path',
         blink_tools_path,
     ]
-    api.v8.vpython('Export V8 commits to Test262', script, args)
+
+    if is_approver:
+      api.v8.vpython('Approve exported PRs in Test262', script,
+                     args + ['--approver'])
+    else:
+      api.v8.vpython('Export V8 commits to Test262', script, args)
+      api.scheduler.emit_trigger(
+          api.scheduler.BuildbucketTrigger(),
+          'v8',
+          ['Test262 PR approver'],
+          step_name='Trigger approver',
+      )
 
 def configure(api):
   api.gclient.set_config('chromium')
@@ -62,3 +76,4 @@ def configure(api):
 
 def GenTests(api):
   yield api.test('test262-export')
+  yield api.test('test262-approve') + api.properties(approver=True)
