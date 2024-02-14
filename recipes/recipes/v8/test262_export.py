@@ -21,7 +21,8 @@ DEPS = [
 
 EXPORTER_CREDS_NAME = 'test262-import-export'
 APPROVER_CREDS_NAME = 'test262-approve'
-KMS_CRYPTO_KEY = 'projects/v8-infra/locations/global/keyRings/{name}/cryptoKeys/default'
+KMS_CRYPTO_KEY = ('projects/v8-infra/locations/global/keyRings/'
+                  'test262-import-export/cryptoKeys/default')
 
 
 def RunSteps(api):
@@ -33,7 +34,7 @@ def RunSteps(api):
   is_approver = api.properties.get('approver', False)
   creds_name = APPROVER_CREDS_NAME if is_approver else EXPORTER_CREDS_NAME
   api.cloudkms.decrypt(
-      KMS_CRYPTO_KEY.format(name=creds_name),
+      KMS_CRYPTO_KEY,
       api.repo_resource('recipes', 'recipes', 'v8', 'assets', creds_name),
       creds_file,
   )

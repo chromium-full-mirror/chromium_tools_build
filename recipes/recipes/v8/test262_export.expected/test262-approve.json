@@ -227,7 +227,7 @@
       "RECIPE_REPO[build]/recipes/recipes/v8/assets/test262-approve",
       "-output",
       "[CLEANUP]/test262.json",
-      "projects/v8-infra/locations/global/keyRings/test262-approve/cryptoKeys/default"
+      "projects/v8-infra/locations/global/keyRings/test262-import-export/cryptoKeys/default"
     ],
     "name": "decrypt"
   },
