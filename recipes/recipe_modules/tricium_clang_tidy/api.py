@@ -240,9 +240,9 @@ class TriciumClangTidyApi(RecipeApi):
     else:
       fix_file_path = lambda x: x
 
-    ninja_dir = self.m.path['checkout'].join('third_party', 'ninja')
-    ninja_path = {'PATH': [ninja_dir]}
-    with self.m.context(env_suffixes=ninja_path):
+    autoninja_dir = self.m.path['checkout'].join('third_party', 'depot_tools')
+    autoninja_path = {'PATH': [autoninja_dir]}
+    with self.m.context(env_suffixes=autoninja_path):
       self._build_with_reclient('tricium_clang_tidy_script.py',
                                 tricium_clang_tidy_command)
 
