@@ -554,6 +554,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                 ninja_log_outdir,
                                 name=None,
                                 ninja_env=None,
+                                skip_log_upload=False,
                                 **kwargs):
     """
     Run ninja and uploads the ninja logs.
@@ -565,6 +566,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       ninja_log_outdir: Directory of ninja log. (e.g. "out/Release")
       name: Name of compile step.
       ninja_env: Environment for ninja.
+      skip_log_upload: Skip uploading the ninja log.
 
     Returns:
       A named tuple with the fields
@@ -588,20 +590,20 @@ class ChromiumApi(recipe_api.RecipeApi):
       compile_exit_status = ex.retcode
       raise ex
     finally:
-      upload_ninja_log_args = [
-          '--gsutil-py-path', self.m.depot_tools.gsutil_py_path,
-          '--ninja-log-outdir', ninja_log_outdir,
-          '--ninja-log-command-file',
-          self.m.json.input(ninja_command), '--build-exit-status',
-          compile_exit_status, '--ninja-log-compiler',
-          self.c.compile_py.compiler or 'unknown'
-      ]
-      self.m.step(
-          name='upload_ninja_log',
-          cmd=[
-              'vpython3',
-              self.repo_resource('recipes', 'upload_goma_logs.py')
-          ] + upload_ninja_log_args)
+      if not skip_log_upload:
+        upload_ninja_log_args = [
+            '--gsutil-py-path', self.m.depot_tools.gsutil_py_path,
+            '--ninja-log-outdir', ninja_log_outdir, '--ninja-log-command-file',
+            self.m.json.input(ninja_command), '--build-exit-status',
+            compile_exit_status, '--ninja-log-compiler',
+            self.c.compile_py.compiler or 'unknown'
+        ]
+        self.m.step(
+            name='upload_ninja_log',
+            cmd=[
+                'vpython3',
+                self.repo_resource('recipes', 'upload_goma_logs.py')
+            ] + upload_ninja_log_args)
 
   @contextlib.contextmanager
   def guard_compile(self, suffix=''):
@@ -697,6 +699,7 @@ class ChromiumApi(recipe_api.RecipeApi):
               target=None,
               use_goma_module=False,
               use_reclient=False,
+              target_output_dir=None,
               **kwargs):
     """Return a compile.py invocation.
 
@@ -712,6 +715,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         "Release" or "Debug").
       use_goma_module (bool): If True, use the goma recipe module.
       use_reclient (bool): If True, use reclient as the remote compiler.
+      target_output_dir (BasePath): Path to the directory to be compiled.
 
     Returns:
       A RawResult object with the compile step's status and failure message
@@ -752,9 +756,10 @@ class ChromiumApi(recipe_api.RecipeApi):
     if out_dir is None:
       out_dir = 'out'
 
-    target_output_dir = self.m.path.join(self.m.path['checkout'], out_dir,
-                                         target or self.c.build_config_fs)
-    target_output_dir = self.m.path.abspath(target_output_dir)
+    if not target_output_dir:
+      target_output_dir = self.m.path.join(self.m.path['checkout'], out_dir,
+                                           target or self.c.build_config_fs)
+      target_output_dir = self.m.path.abspath(target_output_dir)
 
     command = [str(self.ninja_path), '-C', target_output_dir]
 
@@ -1261,13 +1266,20 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     args = [
         mb_command,
-        '-m',
-        builder_id.group,
-        '-b',
-        builder_id.builder,
+    ]
+
+    # If builder_id is not set the gn args already in the path are used
+    if builder_id:
+      args.extend([
+          '-m',
+          builder_id.group,
+          '-b',
+          builder_id.builder,
+      ])
+    args.extend([
         '--config-file',
         mb_config_path,
-    ]
+    ])
 
     if phase is not None:
       args += ['--phase', str(phase)]

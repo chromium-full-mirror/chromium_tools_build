@@ -656,12 +656,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return raw_result, execution_info
 
-  def find_swarming_command_lines(self, suffix):
+  def find_swarming_command_lines(self, suffix, build_dir=None):
+    if not build_dir:
+      build_dir = self.m.chromium.output_dir
     script = self.m.chromium_tests.resource('find_command_lines.py')
-    args = [
-        '--build-dir', self.m.chromium.output_dir, '--output-json',
-        self.m.json.output()
-    ]
+    args = ['--build-dir', build_dir, '--output-json', self.m.json.output()]
 
     step_name = 'find command lines%s' % suffix
 
@@ -672,13 +671,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return step_result.json.output
 
-  def isolate_tests(self,
-                    builder_config,
-                    tests,
-                    suffix,
-                    got_revision_cp,
-                    swarm_hashes_property_name='',
-                    additional_isolate_targets=None):
+  def isolate_tests(
+      self,
+      builder_config,
+      tests,
+      suffix,
+      got_revision_cp,
+      swarm_hashes_property_name='',
+      additional_isolate_targets=None,
+      build_dir=None,
+  ):
     """Isolates a set of tests.
 
     This also updates the test objects with the commands which are generated
@@ -698,6 +700,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         into.
       * additional_isolate_targets: Any additional isolate targets which aren't
         already included in 'tests'.
+      * build_dir: A Path to the build directory to create the isolates
 
     Returns:
       SwarmingExecutionInfo describing how to execute the isolate tests in the
@@ -724,22 +727,23 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # in parentheses, if it exists. Suffix currently is something like 'with
     # patch', with no parentheses, or ''. Wrap it in parens if needed.
     name_suffix = ' (%s)' % suffix if suffix else ''
+    if not build_dir:
+      build_dir = self.m.chromium.output_dir
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.
     self.m.isolate.isolate_tests(
-        self.m.chromium.output_dir,
+        build_dir,
         targets,
         suffix=name_suffix,
         swarm_hashes_property_name=swarm_hashes_property_name,
         verbose=True)
 
-    command_lines = self.find_swarming_command_lines(name_suffix)
+    command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
     return self.set_swarming_test_execution_info(
         tests,
         command_lines,
-        self.m.path.relpath(self.m.chromium.output_dir,
-                            self.m.path['checkout']),
+        self.m.path.relpath(build_dir, self.m.path['checkout']),
         expose_to_properties=builder_config.expose_trigger_properties)
 
   def set_swarming_test_execution_info(self,

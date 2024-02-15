@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.universal_test_runner;
 
-// Next ID: 5
+// Next ID: 8
 message InputProperties {
   // Required, the directory where chromium/src is checked out
   string checkout_path = 1;
@@ -15,7 +15,7 @@ message InputProperties {
   //
   // This must match the test names, not their target names to uniquely identify
   // the tests to be run on the builder
-  repeated string tests_to_run = 2;
+  repeated string test_names = 2;
 
   // Optional map of revisions received during gclient sync
   map<string, string> got_revisions = 3;
@@ -23,4 +23,21 @@ message InputProperties {
   // The build_dir to use either containing the binary to run or where it is to
   // be compiled
   string build_dir = 4;
+
+  enum RunType {
+    // 0 is reserved for errors
+    RUN_TYPE_RUN = 0;
+    RUN_TYPE_COMPILE = 1;
+    RUN_TYPE_COMPILE_AND_RUN = 2;
+  }
+
+  // Whether or not the recipe should attempt to build and/or build the tests
+  RunType run_type = 5;
+
+  // When true the gn args in the build dir will be preserved. Otherwise
+  // the builder gn args will overwrite the file
+  bool preserve_gn_args = 6;
+
+  // When true code coverage is skipped
+  bool disable_code_coverage = 7;
 }
