@@ -22,11 +22,13 @@ from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
 
 DEPS = [
     'chromium',
+    'depot_tools/gerrit',
     'depot_tools/gitiles',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
     'recipe_engine/cv',
     'recipe_engine/futures',
+    'recipe_engine/json',
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/time',
@@ -76,9 +78,20 @@ def RunSteps(api):
   peak_end = datetime.datetime.combine(
       now.date(), datetime.time(hour=20), tzinfo=now.tzinfo)
   if now.weekday() < 5 and peak_start < now < peak_end:
+    gerrit_change = api.tryserver.gerrit_change
     diff_s = (peak_end - now).seconds
     api.step('need to wait for off-peak hours; sleeping for %ds' % diff_s, None)
     api.time.sleep(diff_s)
+    # We've seen CLs get deleted after triggering the mega CQ but before the CQ
+    # wakes up from its sleep. So make sure the CL still exists before
+    # proceeding.
+    cls = api.gerrit.get_changes(
+        'https://%s' % gerrit_change.host,
+        query_params=[('change', str(gerrit_change.change))],
+        o_params=['ALL_REVISIONS', 'ALL_COMMITS'],
+        limit=1)
+    if not cls:
+      raise api.step.StepFailure('CL no longer present on Gerrit')
   else:
     api.step('no sleep needed', None)
 
@@ -175,6 +188,22 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'need to wait for off-peak hours; sleeping for 39600s'),
       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'sleep_deleted_cl',
+      api.chromium.try_build(),
+      api.step_data(
+          'get time',
+          stdout=api.raw_io.output_text('2023-10-23 09:00:00.000000-07:00'),
+      ),
+      api.override_step_data('gerrit changes', api.json.output([])),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'CL no longer present on Gerrit',
+      ),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
