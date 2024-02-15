@@ -61,6 +61,8 @@ def RunSteps(api):
   api.chromium_tests.configure_build(builder_config)
 
   api.chromium_checkout.ensure_checkout()
+  api.chromium.ensure_toolchains(
+      checkout_dir=api.chromium_checkout.checkout_dir)
 
   if api.code_coverage.using_coverage:
     api.code_coverage.src_dir = api.chromium_checkout.src_dir
