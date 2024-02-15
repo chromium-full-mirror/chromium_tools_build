@@ -235,6 +235,52 @@
     "cmd": [
       "vpython3",
       "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/test262.json",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "name": "read credetials"
+  },
+  {
+    "cmd": [
+      "luci-auth",
+      "info"
+    ],
+    "infra_step": true,
+    "name": "get login info"
+  },
+  {
+    "cmd": [
+      "luci-auth",
+      "token",
+      "-lifetime",
+      "3m"
+    ],
+    "infra_step": true,
+    "name": "get access token for default account"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "{\"GERRIT_TOKEN\": \"extra.secret.token.should.not.be.logged\", \"GERRIT_USER\": \"account@example.com\"}",
+      "[CLEANUP]/test262.json"
+    ],
+    "infra_step": true,
+    "name": "update credetials"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
       "[CACHE]/builder/v8/test/test262/tools/export.py",
       "--credentials-json",
       "[CLEANUP]/test262.json",

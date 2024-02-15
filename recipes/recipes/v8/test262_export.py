@@ -8,15 +8,20 @@ at a short interval. It creates pull requests on GitHub for V8 commits that
 contain exportable changes and merges these pull requests.
 """
 
+import json
+
 DEPS = [
     'depot_tools/gclient',
     'infra/cloudkms',
     'recipe_engine/context',
+    'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/scheduler',
+    'recipe_engine/service_account',
     'recipe_engine/step',
     'v8',
+    'v8_auto_roller',
 ]
 
 EXPORTER_CREDS_NAME = 'test262-import-export'
@@ -38,6 +43,7 @@ def RunSteps(api):
       api.repo_resource('recipes', 'recipes', 'v8', 'assets', creds_name),
       creds_file,
   )
+  patch_gerrit_credentials(api, creds_file)
 
   checkout_root = api.path['cache'].join('builder')
   chromium_path = checkout_root.join('src')
@@ -73,6 +79,15 @@ def configure(api):
   api.gclient.apply_config('v8_bare')
   # TODO: Remove this in finalized version. This is just for testing.
   #api.gclient.c.revisions['v8'] = "49cd7d838c98245268b12d2c75538faa3e402ac0"
+
+
+def patch_gerrit_credentials(api, creds_file):
+  # read the file as json
+  creds = api.file.read_json("read credetials", creds_file,
+                             test_data={}, include_log=False)
+  creds['GERRIT_USER'] = api.v8_auto_roller.service_account
+  creds['GERRIT_TOKEN'] = api.service_account.default().get_access_token()
+  api.file.write_json("update credetials", creds_file, creds, include_log=False)
 
 
 def GenTests(api):
