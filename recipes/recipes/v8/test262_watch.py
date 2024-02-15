@@ -17,7 +17,7 @@ def RunSteps(api):
       "project":"v8/v8",
       "review-host":"chromium-review.googlesource.com",
       "criteria": ["-hashtag:test262_status_file_patched"],
-      "failure_recovery":"test262_update_status_file"
+      "failure_recovery": ["test262_update_status_file"],
   }])
 
 
