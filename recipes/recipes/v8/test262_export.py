@@ -67,12 +67,7 @@ def RunSteps(api):
                      args + ['--approver'])
     else:
       api.v8.vpython('Export V8 commits to Test262', script, args)
-      api.scheduler.emit_trigger(
-          api.scheduler.BuildbucketTrigger(),
-          'v8',
-          ['Test262 PR approver'],
-          step_name='Trigger approver',
-      )
+
 
 def configure(api):
   api.gclient.set_config('chromium')
@@ -86,7 +81,9 @@ def patch_gerrit_credentials(api, creds_file):
   creds = api.file.read_json("read credetials", creds_file,
                              test_data={}, include_log=False)
   creds['GERRIT_USER'] = api.v8_auto_roller.service_account
-  creds['GERRIT_TOKEN'] = api.service_account.default().get_access_token()
+  creds['GERRIT_TOKEN'] = api.service_account.default().get_access_token(
+    scopes='https://www.googleapis.com/auth/gerritcodereview',
+  )
   api.file.write_json("update credetials", creds_file, creds, include_log=False)
 
 

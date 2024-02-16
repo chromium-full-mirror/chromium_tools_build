@@ -257,6 +257,8 @@
     "cmd": [
       "luci-auth",
       "token",
+      "-scopes",
+      ". . / / / / : a a c c d e e e e e g g g h h i i i l m o o o o p p r r r s s t t t t u v w w w w",
       "-lifetime",
       "3m"
     ],
@@ -290,44 +292,6 @@
     ],
     "cwd": "[CACHE]/builder/v8",
     "name": "Export V8 commits to Test262"
-  },
-  {
-    "cmd": [
-      "prpc",
-      "call",
-      "-format=json",
-      "luci-scheduler.appspot.com",
-      "scheduler.Scheduler.EmitTriggers"
-    ],
-    "cwd": "[CACHE]/builder/v8",
-    "infra_step": true,
-    "name": "Trigger approver",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Test262 PR approver\", \"project\": \"v8\"}], \"trigger\": {\"buildbucket\": {\"tags\": [\"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"/0\"}}], \"timestamp\": 1337000001500000}",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@input@{@@@",
-      "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
-      "@@@STEP_LOG_LINE@input@        {@@@",
-      "@@@STEP_LOG_LINE@input@            \"jobs\": [@@@",
-      "@@@STEP_LOG_LINE@input@                {@@@",
-      "@@@STEP_LOG_LINE@input@                    \"job\": \"Test262 PR approver\",@@@",
-      "@@@STEP_LOG_LINE@input@                    \"project\": \"v8\"@@@",
-      "@@@STEP_LOG_LINE@input@                }@@@",
-      "@@@STEP_LOG_LINE@input@            ],@@@",
-      "@@@STEP_LOG_LINE@input@            \"trigger\": {@@@",
-      "@@@STEP_LOG_LINE@input@                \"buildbucket\": {@@@",
-      "@@@STEP_LOG_LINE@input@                    \"tags\": [@@@",
-      "@@@STEP_LOG_LINE@input@                        \"user_agent:recipe\"@@@",
-      "@@@STEP_LOG_LINE@input@                    ]@@@",
-      "@@@STEP_LOG_LINE@input@                },@@@",
-      "@@@STEP_LOG_LINE@input@                \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\",@@@",
-      "@@@STEP_LOG_LINE@input@                \"title\": \"/0\"@@@",
-      "@@@STEP_LOG_LINE@input@            }@@@",
-      "@@@STEP_LOG_LINE@input@        }@@@",
-      "@@@STEP_LOG_LINE@input@    ],@@@",
-      "@@@STEP_LOG_LINE@input@    \"timestamp\": 1337000001500000@@@",
-      "@@@STEP_LOG_LINE@input@}@@@",
-      "@@@STEP_LOG_END@input@@@"
-    ]
   },
   {
     "name": "$result"
