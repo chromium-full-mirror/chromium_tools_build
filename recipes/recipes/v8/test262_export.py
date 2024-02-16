@@ -82,7 +82,7 @@ def patch_gerrit_credentials(api, creds_file):
                              test_data={}, include_log=False)
   creds['GERRIT_USER'] = api.v8_auto_roller.service_account
   creds['GERRIT_TOKEN'] = api.service_account.default().get_access_token(
-    scopes='https://www.googleapis.com/auth/gerritcodereview',
+    scopes=['https://www.googleapis.com/auth/gerritcodereview'],
   )
   api.file.write_json("update credetials", creds_file, creds, include_log=False)
 

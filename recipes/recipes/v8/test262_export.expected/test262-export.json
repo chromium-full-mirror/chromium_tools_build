@@ -258,7 +258,7 @@
       "luci-auth",
       "token",
       "-scopes",
-      ". . / / / / : a a c c d e e e e e g g g h h i i i l m o o o o p p r r r s s t t t t u v w w w w",
+      "https://www.googleapis.com/auth/gerritcodereview",
       "-lifetime",
       "3m"
     ],
