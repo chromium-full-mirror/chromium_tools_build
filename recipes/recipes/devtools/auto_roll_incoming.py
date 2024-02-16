@@ -21,7 +21,7 @@ CONFIG = {
         "third_party/esbuild:infra/3pp/tools/esbuild/${platform}",
     ],
     "reviewers": [
-        "devtools-waterfall-sheriff-onduty@grotations.appspotmail.com",
+        "devtools-waterfall-sheriff-onduty@rotations.google.com",
     ],
     "show_commit_log": False,
 }
