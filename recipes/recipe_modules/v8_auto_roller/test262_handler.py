@@ -25,7 +25,8 @@ class Test262ImportHandler(RollHandler):
     creds = self.api.path['cleanup'].join(CREDS_NAME + '.json')
     self.api.cloudkms.decrypt(
         KMS_CRYPTO_KEY,
-        self.module.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
+        self.module.repo_resource('recipes', 'recipes',
+                                  'v8', 'assets', CREDS_NAME),
         creds,
     )
     checkout_root = self.api.path['cache'].join('builder')

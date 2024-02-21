@@ -1953,7 +1953,7 @@
       "[START_DIR]/cloudkms/cloudkms",
       "decrypt",
       "-input",
-      "RECIPE_REPO[build]/recipes/recipes/assets/test262-import-export",
+      "RECIPE_REPO[build]/recipes/recipes/v8/assets/test262-import-export",
       "-output",
       "[CLEANUP]/test262-import-export.json",
       "projects/v8-infra/locations/global/keyRings/test262-import-export/cryptoKeys/default"
