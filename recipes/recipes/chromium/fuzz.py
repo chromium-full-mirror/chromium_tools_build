@@ -543,9 +543,8 @@ def RunSteps(api):
     else:
       # copy data deps outside the build directory
       # Needed for tests
-      api.path.mock_add_paths('[CACHE]/builder/src/out/Release/src_root/path1',
-                              'FILE')
-      api.path.mock_add_paths('[CACHE]/builder/src/path2', 'FILE')
+      api.path.mock_add_file('[CACHE]/builder/src/out/Release/src_root/path1')
+      api.path.mock_add_file('[CACHE]/builder/src/path2')
 
       paths_to_copy = set()
       with api.step.nest(
