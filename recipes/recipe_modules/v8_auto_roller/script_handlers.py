@@ -7,25 +7,31 @@ from .handler_base import RollHandler
 from collections import namedtuple
 
 
-SupportedScript = namedtuple('SupportedScript', ['title', 'exe', 'args'])
+SupportedScript = namedtuple('SupportedScript',
+                             ['title', 'exe', 'args', 'message'])
 """A dict of supported scripted rolls. The key is the script key and the value
 is a tuple of the title and the path elements to the script.
 """
 SUPPORTED_SCRIPTS = {
     'puppeteer-core':
-        SupportedScript('Puppeteer Core',
-                        'scripts/deps/roll_front_end_third_party.py',
-                        ['puppeteer-core', 'puppeteer', 'lib/esm']),
+        SupportedScript(
+            'Puppeteer Core', 'scripts/deps/roll_front_end_third_party.py',
+            ['puppeteer-core', 'puppeteer', 'lib/esm'],
+            'In case of failures or errors, reach out to someone from '
+            'config/owner/RECORDER_OWNERS.'),
     'puppeteer-replay':
-        SupportedScript('Puppeteer Replay',
-                        'scripts/deps/roll_front_end_third_party.py',
-                        ['@puppeteer/replay', 'puppeteer-replay', 'lib']),
+        SupportedScript(
+            'Puppeteer Replay', 'scripts/deps/roll_front_end_third_party.py',
+            ['@puppeteer/replay', 'puppeteer-replay', 'lib'],
+            'In case of failures or errors, reach out to someone from '
+            'config/owner/RECORDER_OWNERS.'),
     'browser-protocol':
         SupportedScript(
-            'Browser Protocol', 'scripts/deps/roll_deps.py',
-            ['--ref', 'working-tree',
-             '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
-             '--update-node']),
+            'Browser Protocol', 'scripts/deps/roll_deps.py', [
+                '--ref', 'working-tree', '{{CHROMIUM_DIR}}', '{{DEVTOOLS_DIR}}',
+                '--update-node'
+            ], 'In case of failures or errors, reach out to someone from '
+            'config/owner/COMMON_OWNERS.'),
     # Add more scripts here
 }
 
@@ -71,11 +77,9 @@ class ScriptedRollHandler(RollHandler):
     return f'Roll {self.key}'
 
   def commit_msg_lines(self, _):
-    return commons.commit_msg_lines_w_reviewes([
-        'In case of failures or errors, reach out to someone from '
-        'config/owner/RECORDER_OWNERS.',
-        commons.roll_origin_line(self.api)
-    ], self.config['reviewers'])
+    return commons.commit_msg_lines_w_reviewes(
+        [self.script.message,
+         commons.roll_origin_line(self.api)], self.config['reviewers'])
 
   def summary(self):
     return self.name()

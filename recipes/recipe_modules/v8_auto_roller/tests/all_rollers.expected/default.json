@@ -1761,7 +1761,7 @@
   {
     "cmd": [
       "()",
-      "{'subject': 'Roll browser-protocol', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/RECORDER_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it'], 'add': True}"
+      "{'subject': 'Roll browser-protocol', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'In case of failures or errors, reach out to someone from config/owner/COMMON_OWNERS.', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it'], 'add': True}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
