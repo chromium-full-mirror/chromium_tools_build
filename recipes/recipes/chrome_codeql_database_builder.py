@@ -20,7 +20,9 @@ DEPS = [
     "build/chromium",
     "recipe_engine/cipd",
     "recipe_engine/context",
+    "recipe_engine/file",
     "recipe_engine/path",
+    "recipe_engine/raw_io",
     "recipe_engine/time",
     "recipe_engine/step",
     "infra/zip",
@@ -41,7 +43,7 @@ def RunSteps(api):
   build_dir = out_dir + "/" + target_dir
   gn_path = api.depot_tools.gn_py_path
   cipd_root = api.path['start_dir'].join('cipd')
-  db_path = api.path['start_dir'].join("codeql_db")
+  db_path = api.path.mkdtemp('codeql_dbs')
   with api.context(
       cwd=api.path['checkout'], env_suffixes={'PATH': [cipd_root]}):
     codeql_root = api.path['start_dir'].join('codeql')
@@ -56,22 +58,33 @@ def RunSteps(api):
         'gn gen out/release',
         ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
     api.chromium.compile(
-        use_reclient=True, targets=['all'], out_dir=out_dir, target=target_dir)
+        use_reclient=True, targets=["all"], out_dir=out_dir, target=target_dir)
     codeql_script_path = api.path['checkout'].join('tools', 'codeql',
                                                    'index_target.py')
     api.step("index_target.py", [
         'vpython3', codeql_script_path, '--out_path', build_dir, '--db_path',
-        db_path, '--codeql_binary_path', codeql_path
+        db_path, '--codeql_binary_path', codeql_path, '--gn_path', gn_path
     ])
+
     zip_out_dir = api.path['start_dir'].join('codeql_output')
-    cur_date = api.time.utcnow()
-    zip_out_filename = 'codeql-' + cur_date.strftime(
-        '%Y-%m-%d-%H:%M:%S') + '.zip'
-    zip_out_file = zip_out_dir.join(zip_out_filename)
     api.step("mkdir codeql_output", ['mkdir', zip_out_dir])
-    api.zip.directory('zip codeql dir', db_path, zip_out_file)
+    cur_date = api.time.utcnow()
+    TEST_DATA = ['chrome']
+    db_list = api.file.listdir(
+        "get list of codeql db paths", db_path, test_data=TEST_DATA)
+    for target_db_path in db_list:
+      target_db_basename = api.path.basename(target_db_path)
+      zip_out_filename = target_db_basename + '-codeql-' + cur_date.strftime(
+          '%Y-%m-%d-%H:%M:%S') + '.zip'
+      zip_out_file = zip_out_dir.join(zip_out_filename)
+      api.zip.directory('zip codeql dir', db_path, zip_out_file)
+    cloud_folder_name = "codeql-" + cur_date.strftime('%Y-%m-%d-%H:%M:%S')
     api.gsutil.upload(
-        zip_out_file, UPLOAD_BUCKET, zip_out_filename, link_name="CodeQL index")
+        zip_out_dir,
+        UPLOAD_BUCKET,
+        cloud_folder_name,
+        args=['-r'],
+        link_name='CodeQL indices')
 
 
 def GenTests(api):
