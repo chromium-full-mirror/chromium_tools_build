@@ -55,6 +55,10 @@ _TARGET_DEVICE_MAP = {
         'bitness': 32,
         'product': 'arm_krait',
     },
+    'qemu-armv8': {
+        'bitness': 64,
+        'product': 'armv8',
+    },
     'qemu-riscv64': {
         'bitness': 64,
         'product': 'riscv64',
