@@ -307,8 +307,8 @@ def RunSteps(api, properties):
           status=common_pb.CANCELED,
           summary_markdown=global_shutdown_summary_markdown(
               create_orchestrator_milo_link(
-                  api.buildbucket.build.infra.swarming.parent_run_id,
-                  api.buildbucket.build.infra.swarming.hostname)))
+                  api.buildbucket.swarming_parent_run_id,
+                  api.buildbucket.backend_hostname)))
 
 
 def GenTests(api):
