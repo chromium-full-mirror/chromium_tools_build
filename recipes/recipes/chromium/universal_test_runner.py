@@ -4,23 +4,33 @@
 """Triggers building and running tests for the Universal Test Runner"""
 
 import itertools
+from collections.abc import Iterable, Mapping
 
 from recipe_engine import post_process
 from recipe_engine.config_types import Path, BasePath
+from recipe_engine.recipe_api import RecipeApi
+from recipe_engine.recipe_test_api import RecipeTestApi
 
 from PB.recipe_engine import result as result_pb2
 from PB.recipes.build.chromium.universal_test_runner import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests.steps import Test
 
 DEPS = [
     'chromium',
+    'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
     'gn',
+    'test_utils',
+    'skylab',
     'recipe_engine/buildbucket',
+    'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
 ]
 
 PROPERTIES = InputProperties
@@ -33,16 +43,14 @@ class RootBasePath(BasePath):
     return ''
 
 
-def RunSteps(api, properties):
+def RunSteps(api: RecipeApi, properties: InputProperties):
   should_build = properties.run_type != InputProperties.RunType.RUN_TYPE_RUN
   should_test = properties.run_type != InputProperties.RunType.RUN_TYPE_COMPILE
 
-  checkout_path = Path(RootBasePath(), properties.checkout_path)
-  builder_id, builder_config = configure_build(api, checkout_path, should_build)
+  builder_id, builder_config, _, build_path = configure_build(
+      api, properties.checkout_path, properties.build_dir, should_build)
 
-  build_dir = properties.build_dir or '//out/%s' % api.chromium.c.build_config_fs
-  build_dir = Path(RootBasePath(), build_dir)
-  raw_result, tests = create_tests(api, build_dir, properties.test_names,
+  raw_result, tests = create_tests(api, build_path, properties.test_names,
                                    properties.got_revisions, builder_id,
                                    builder_config, should_build,
                                    properties.preserve_gn_args)
@@ -57,9 +65,17 @@ def RunSteps(api, properties):
     return test_runner()
 
 
-def create_tests(api, build_dir, test_names, got_revisions, builder_id,
-                 builder_config, should_build, preserve_gn_args):
-  """Creates and potentially compiles the test for the builder/test names
+def create_tests(
+    api: RecipeApi,
+    build_dir: Path,
+    test_names: Iterable[str],
+    got_revisions: Mapping[str, str],
+    builder_id: chromium.BuilderId,
+    builder_config: ctbc.BuilderConfig,
+    should_build: bool,
+    preserve_gn_args: bool,
+) -> tuple[result_pb2.RawResult, Iterable[Test]]:
+  """Creates the test objects for the provided builder/test names
 
   Args:
       api: Recipe API object.
@@ -88,10 +104,11 @@ def create_tests(api, build_dir, test_names, got_revisions, builder_id,
       return raw_result, None
 
   isolate_tests = [test for test in tests if test.isolate_target]
-  if isolate_tests:
+  skylab_tests = [test for test in tests if test.is_skylabtest]
+  if isolate_tests or skylab_tests:
     mb_args = ['--no-build']
     mb_args.append(build_dir)
-    mb_args.extend([test.target_name for test in tests if test.isolate_target])
+    mb_args.extend([test.target_name for test in isolate_tests + skylab_tests])
     # Pass an empty builder_id to prevent gn_args from getting reapplied. They
     # should have been set in the mb gen or should not be overwritten
     api.chromium.run_mb_cmd(
@@ -100,19 +117,26 @@ def create_tests(api, build_dir, test_names, got_revisions, builder_id,
         builder_id=None,
         additional_args=mb_args,
     )
+  if isolate_tests:
     api.chromium_tests.isolate_tests(
         builder_config, isolate_tests, '', '', build_dir=build_dir)
 
+  if skylab_tests:
+    api.chromium_tests.prepare_artifact_for_skylab(
+        builder_config, skylab_tests, phase='')
   return None, tests
 
 
-def configure_build(api, checkout_path, build):
+def configure_build(
+    api: RecipeApi, checkout_dir: str, build_dir: str,
+    build: bool) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
   """Prepares the recipe to build with the provided checkout.
 
   Args:
       api: Recipe API object.
-      checkout_path: Path to a chromium/src checkout that already has all
+      checkout_dir: String to a chromium/src checkout that already has all
         intended updates or syncs.
+      build_dir: String to a where the binaries are built
       build: Bool to configure the run to include compiling/building.
   """
   builder = api.buildbucket.build.builder.builder
@@ -120,13 +144,24 @@ def configure_build(api, checkout_path, build):
       api.m.properties['builder_group'], builder)
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
-  # TODO(crbug.com/1519709): test_only should be based on run mode
+  checkout_path = Path(RootBasePath(), checkout_dir)
   api.chromium_tests.configure_build(builder_config, test_only=not build)
-  api.path['checkout'] = checkout_path
-  return builder_id, builder_config
+  api.path['checkout'] = checkout_path.join('src')
+  api.chromium_checkout.checkout_dir = checkout_path
+
+  build_dir = build_dir or '//out/%s' % api.chromium.c.build_config_fs
+  build_path = Path(RootBasePath(), build_dir)
+  api.chromium.output_dir = build_path
+  return builder_id, builder_config, checkout_path, build_path
 
 
-def compile_targets(api, tests, builder_id, preserve_gn_args, build_dir):
+def compile_targets(
+    api: RecipeApi,
+    tests: Iterable[Test],
+    builder_id: chromium.BuilderId,
+    preserve_gn_args: bool,
+    build_dir: str,
+) -> result_pb2.RawResult:
   """Builds the test targets
 
   Args:
@@ -155,7 +190,7 @@ def compile_targets(api, tests, builder_id, preserve_gn_args, build_dir):
       targets, skip_log_upload=True, target_output_dir=build_dir)
 
 
-def GenTests(api):
+def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
   def ctbc_properties(builder_spec=None):
@@ -183,6 +218,14 @@ def GenTests(api):
                               'pool': 'fake-pool',
                           },
                       },
+                  }, {
+                      'name': 'not_run_test',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
                   }],
               },
           }),
@@ -203,7 +246,9 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.StepCommandContains, 'compile',
-                       ['//out/Release']),
+                       ['//out/Release', 'browser_tests']),
+      api.post_process(post_process.StepCommandContains, 'isolate',
+                       ['browser_tests']),
       api.post_process(post_process.StepCommandContains, 'isolate tests',
                        ['//out/Release/browser_tests.isolated.gen.json']),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
@@ -212,6 +257,12 @@ def GenTests(api):
                        ['//out/Release']),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.DoesNotRun, 'upload_ninja_log'),
+      api.post_process(post_process.StepCommandDoesNotContain, 'compile',
+                       ['not_run_test']),
+      api.post_process(
+          post_process.StepCommandDoesNotContain, 'isolate tests',
+          ['fake_root/fake_out/Debug/not_run_test.isolated.gen.json']),
+      api.post_process(post_process.DoesNotRun, 'not_run_test'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
@@ -250,7 +301,7 @@ def GenTests(api):
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.StepCommandContains, 'compile',
-                       ['fake_root/fake_out/Debug']),
+                       ['fake_root/fake_out/Debug', 'browser_tests']),
       api.post_process(
           post_process.StepCommandContains, 'isolate tests',
           ['fake_root/fake_out/Debug/browser_tests.isolated.gen.json']),
@@ -486,6 +537,80 @@ def GenTests(api):
       api.post_process(post_process.DoesNotRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.DoesNotRun, 'browser_tests'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  SKYLAB_ISOLATE_TEXT = """
+    {'variables': {'command': ['bin/run_lacros_smoke_tast_tests',
+                            '--logs-dir=${ISOLATED_OUTDIR}'],
+                'files': ['../../.vpython',
+                          'bin/run_vaapi_unittest',
+                          'resources.pak',
+                          'resources.pak.info',
+                          './chrome',
+                          '../../testing/buildbot/filters',
+                          'gen/third_party',
+                          '../../testing/buildbot/filters',
+                          'bin/lacros_fyi_tast_tests.filter'
+                            ]}}
+  """
+
+  yield api.test(
+      'skylab_test',
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+              skylab_gs_bucket='chrome-test-builds',
+          ),),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'skylab_tests': [{
+                      'name': 'lacros-test',
+                      'cros_board': 'volteer',
+                      'lacros_gcs_path': 'lacros_gcs_path',
+                  }],
+              },
+          }),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['lacros-test'],
+          checkout_path='checkout',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          build_dir='fake_root/fake_out/Debug'),
+      api.path.exists(
+          Path(RootBasePath(), 'fake_root/fake_out/Debug/lacros-test.isolate'),
+          api.path['start_dir'].join('squashfs', 'squashfs-tools',
+                                     'mksquashfs'),
+      ),
+      api.step_data(
+          'prepare skylab tests.collect runtime deps for lacros-test.read '
+          'isolate file', api.file.read_text(SKYLAB_ISOLATE_TEXT)),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.override_step_data(
+          'lacros-test results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'lacros-test', passing_tests=['Test.One']))),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.MustRun, 'generate_build_files'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.schedule skylab tests.lacros-test'),
+      api.post_process(post_process.MustRun, 'lacros-test'),
+      api.post_process(
+          post_process.MustRun,
+          'prepare skylab tests.collect runtime deps for lacros-test'),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['fake_root/fake_out/Debug', 'lacros-test']),
+      api.post_process(
+          post_process.StepCommandContains,
+          'prepare skylab tests.collect runtime deps for lacros-test.read '
+          'isolate file', ['fake_root/fake_out/Debug/lacros-test.isolate']),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

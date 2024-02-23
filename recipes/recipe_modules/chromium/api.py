@@ -37,6 +37,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   def __init__(self, input_properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
+    self._output_dir = None
     self._build_properties = None
     self._version = None
     self._clang_version = None
@@ -131,7 +132,13 @@ class ChromiumApi(recipe_api.RecipeApi):
   @property
   def output_dir(self):
     """Return the path to the built executable directory."""
+    if self._output_dir:
+      return self._output_dir
     return self.c.build_dir.join(self.c.build_config_fs)
+
+  @output_dir.setter
+  def output_dir(self, value):
+    self._output_dir = value
 
   @property
   def ninja_path(self):

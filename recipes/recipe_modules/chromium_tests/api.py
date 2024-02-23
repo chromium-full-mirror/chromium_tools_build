@@ -650,7 +650,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             }]), instance, self.m.isolate.isolated_tests)
 
     if skylab_isolates:
-      self._prepare_artifact_for_skylab(
+      self.prepare_artifact_for_skylab(
           builder_config,
           [t for t in tests if t.target_name in skylab_isolates])
 
@@ -681,7 +681,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       additional_isolate_targets=None,
       build_dir=None,
   ):
-    """Isolates a set of tests.
+    """Uploads prepared isolated tests.
 
     This also updates the test objects with the commands which are generated
     when we create the isolates for the tests. See
@@ -1325,7 +1325,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         return raw_result, None
 
     if skylab_isolates:
-      self._prepare_artifact_for_skylab(
+      self.prepare_artifact_for_skylab(
           builder_config,
           [t for t in failing_tests if t.target_name in skylab_isolates],
           suffix)
@@ -2585,10 +2585,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           gcs_bucket, '/experimental' if self.m.runtime.is_experimental else '',
           gcs_path, target)
 
-  def _prepare_artifact_for_skylab(self,
-                                   builder_config,
-                                   tests,
-                                   phase='with patch'):
+  def prepare_artifact_for_skylab(self,
+                                  builder_config,
+                                  tests,
+                                  phase='with patch'):
     if not (builder_config.skylab_gs_bucket and tests):
       raise self.m.step.InfraFailure(
           'Test was not scheduled because of absent lacros_gcs_path.')

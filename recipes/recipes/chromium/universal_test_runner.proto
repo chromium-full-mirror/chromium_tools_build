@@ -8,7 +8,7 @@ package recipes.build.chromium.universal_test_runner;
 
 // Next ID: 8
 message InputProperties {
-  // Required, the directory where chromium/src is checked out
+  // Required, the directory where chromium is checked out not including the src dir
   string checkout_path = 1;
 
   // Test names to run
@@ -25,7 +25,6 @@ message InputProperties {
   string build_dir = 4;
 
   enum RunType {
-    // 0 is reserved for errors
     RUN_TYPE_RUN = 0;
     RUN_TYPE_COMPILE = 1;
     RUN_TYPE_COMPILE_AND_RUN = 2;
