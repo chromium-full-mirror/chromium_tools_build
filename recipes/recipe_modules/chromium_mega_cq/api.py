@@ -1,0 +1,159 @@
+# Copyright 2024 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import datetime
+
+from recipe_engine import recipe_api
+from recipe_engine.engine_types import ResourceCost
+from PB.recipe_engine.result import RawResult
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
+    BatchResponse)
+
+
+class ChromiumMegaCqApi(recipe_api.RecipeApi):
+
+  def read_bots_file(self, repo, file_path):
+    # Just curl the file to avoid needing a checkout. This means additions to
+    # the mega CQ can't be tested in the CL that adds them via the mega CQ. We
+    # assume this isn't a big deal.
+    with self.m.step.nest('get mega_cq_bots.txt') as nest_step:
+      mega_cq_bots_lines = self.m.gitiles.download_file(
+          repo,
+          file_path,
+          branch=self.m.tryserver.gerrit_change_target_ref,
+          step_name='read mega_cq_bots.txt',
+          step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(
+              'chromium/try/bot1\nchromium/try/bot2'),
+      ).splitlines()
+      nest_step.logs['bots'] = mega_cq_bots_lines
+
+    trybots = []
+    for line in mega_cq_bots_lines:
+      project, bucket, builder = line.split('/')
+      assert project == self.m.buildbucket.build.builder.project
+      assert self.m.buildbucket.build.builder.bucket in [
+          bucket,
+          bucket + '.shadow',  # For led builds.
+      ]
+      trybots.append(builder)
+    return trybots
+
+  def sleep_until_off_peak(self):
+    # Use a resource script so we can get vpython to fetch "pytz", which will
+    # handle timezones for us.
+    step_result = self.m.step(
+        'get time',
+        ['vpython3', self.resource('print_us_pac_time.py')],
+        stdout=self.m.raw_io.output_text(),
+        step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+            '2023-10-23 12:00:00.000000-07:00'),  # Noon on a Mon.
+    )
+    now = datetime.datetime.fromisoformat(step_result.stdout.strip())
+    # We consider "peak" between 4:00 AM and 8:00 PM Pacific. 4:00 is quite
+    # early, but that should avoid mega CQ runs triggered at 3:59 AM from
+    # impacting normal CQ traffic during the real peak times.
+    peak_start = datetime.datetime.combine(
+        now.date(), datetime.time(hour=4), tzinfo=now.tzinfo)
+    peak_end = datetime.datetime.combine(
+        now.date(), datetime.time(hour=20), tzinfo=now.tzinfo)
+    if now.weekday() < 5 and peak_start < now < peak_end:
+      gerrit_change = self.m.tryserver.gerrit_change
+      diff_s = (peak_end - now).seconds
+      self.m.step('need to wait for off-peak hours; sleeping for %ds' % diff_s,
+                  None)
+      self.m.time.sleep(diff_s)
+      # We've seen CLs get deleted after triggering the mega CQ but before the CQ
+      # wakes up from its sleep. So make sure the CL still exists before
+      # proceeding.
+      cls = self.m.gerrit.get_changes(
+          'https://%s' % gerrit_change.host,
+          query_params=[('change', str(gerrit_change.change))],
+          o_params=['ALL_REVISIONS', 'ALL_COMMITS'],
+          limit=1)
+      if not cls:
+        raise self.m.step.StepFailure('CL no longer present on Gerrit')
+    else:
+      self.m.step('no sleep needed', None)
+
+  def trigger_and_collect_bots(self, trybots):
+
+    def _run_bot(b):
+      with self.m.step.nest('trigger ' + b):
+        # Increase the default priority + timeout + expiration since we expect
+        # mega CQ builds to take longer.
+        per_build_expiration_s = 12 * 60 * 60
+        per_build_timeout_s = 6 * 60 * 60
+
+        def _make_req():
+          tags = {'mega_cq_build': '1'}
+          # CV recipe module reads both tags and props, so need to propagate both
+          # from parent build to children.
+          for t in self.m.buildbucket.build.tags:
+            tags[t.key] = t.value
+          req = self.m.buildbucket.schedule_request(
+              b,
+              project=self.m.buildbucket.build.builder.project,
+              bucket=self.m.buildbucket.build.builder.bucket,
+              priority=self.m.buildbucket.build.infra.swarming.priority + 10,
+              tags=self.m.buildbucket.tags(**tags),
+              properties=self.m.cv.props_for_child_build)
+          req.scheduling_timeout.FromSeconds(per_build_expiration_s)
+          req.execution_timeout.FromSeconds(per_build_timeout_s)
+          return req
+
+        for i in range(1, 4):  # At most 2 retries per builder.
+          # Buildbucket de-dupes when using the exact same request object. So need
+          # to create a new one each time.
+          req = _make_req()
+          build = self.m.buildbucket.schedule(
+              [req],
+              step_name='trigger (attempt %d)' % i,
+              # Merging all sub-builds' test results into a single invocation is
+              # too much for RDB. So don't bother. Gerrit should still show all
+              # results in the checks tab.
+              include_sub_invs=False)[0]
+          self.m.cv.record_triggered_builds(build)
+          result = self.m.buildbucket.collect_build(
+              build.id,
+              step_name='collect (attempt %d)' % i,
+              # Mark the step as resource-free so it uncaps the amount of parallel
+              # collects that can run. The step has minimal machine impact, so this
+              # should be fine.
+              cost=ResourceCost.zero(),
+              timeout=per_build_expiration_s + per_build_timeout_s)
+          if result.status == common_pb.SUCCESS:
+            return result
+        return result
+
+    workers = []
+    for b in trybots:
+      workers.append(self.m.futures.spawn_immediate(_run_bot, b))
+    self.m.futures.wait(workers)
+    final_build_results = []
+    for w in workers:
+      final_build_results.append(w.result())
+
+    total_success = 0
+    total_failure = 0
+    for result in final_build_results:
+      if result.status == common_pb.SUCCESS:
+        total_success += 1
+      else:
+        total_failure += 1
+        step_result = self.m.step(result.builder.builder + ' failed', cmd=None)
+        step_result.presentation.links[str(result.id)] = (
+            self.m.buildbucket.build_url(build_id=result.id))
+        step_result.presentation.status = self.m.step.FAILURE
+
+    summary_md = '<br/>'.join([
+        '%d builders succeeded' % total_success,
+        '%d builders failed' % total_failure,
+    ])
+    overall_status = common_pb.SUCCESS
+    if total_failure:
+      overall_status = common_pb.FAILURE
+      # We retry each builder so many times, no need to have the CQ retry us.
+      self.m.cv.set_do_not_retry_build()
+    return RawResult(status=overall_status, summary_markdown=summary_md)
