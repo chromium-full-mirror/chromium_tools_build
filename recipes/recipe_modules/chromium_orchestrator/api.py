@@ -95,12 +95,14 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
       if self.disable_auto_compilator_cancels:
         return raw_result
+
+      task_id = comp_build.infra.swarming.task_id
+      if not task_id:
+        task_id = comp_build.infra.backend.task.id.id
       # crbug.com/1271287#c22
       # Wait for compilator task overhead to complete
       self.m.swarming.collect(
-          name=COMPILATOR_SWARMING_TASK_COLLECT_STEP,
-          tasks=[comp_build.infra.swarming.task_id],
-          timeout="4m")
+          name=COMPILATOR_SWARMING_TASK_COLLECT_STEP, tasks=[task_id], timeout="4m")
 
     return raw_result
 

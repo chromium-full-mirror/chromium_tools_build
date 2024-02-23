@@ -1862,3 +1862,50 @@ def GenTests(api):
       ),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'basic_with_buildbucket_backend',
+      get_try_build(),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.code_coverage(use_clang_coverage=True),
+      api.chromium_orchestrator.override_compilator_build_proto_fetch(
+          backend=True),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_compile_phase=False),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.post_process(
+          post_process.StepCommandContains,
+          'install infra/chromium/compilator_watcher.ensure_installed', [
+              '-ensure-file', 'infra/chromium/compilator_watcher/${platform} '
+              'git_revision:e841fc'
+          ]),
+      api.post_process(post_process.MustRun, 'set_output_gitiles_commit'),
+      api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
+      api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
+      api.post_process(post_process.MustRun,
+                       'downloading cas digest all_test_binaries'),
+      api.post_process(post_process.MustRun,
+                       COMPILATOR_SWARMING_TASK_COLLECT_STEP),
+      api.post_process(post_process.MustRun, 'ensure clang coverage tools'),
+      api.post_process(post_process.MustRun, 'download src-side deps'),
+      api.post_process(
+          post_process.StepTextContains,
+          'read test spec (fake-group.json)',
+          ['[CLEANUP]/src/testing/buildbot/fake-group.json'],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )

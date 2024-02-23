@@ -7,6 +7,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
                                                        builds_service_pb2)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.buildbucket.proto import task as task_pb2
 from PB.go.chromium.org.luci.led.job import job
 
 from google.protobuf import struct_pb2
@@ -229,7 +230,8 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
 
   def override_compilator_build_proto_fetch(self,
                                             build_id=12345,
-                                            status=common_pb.SUCCESS):
+                                            status=common_pb.SUCCESS,
+                                            backend=False):
     gitiles_commit = {
         'host': 'chromium.googlesource.com',
         'id': '6eb925582a36cdba74ad60f01a19897866a92cca',
@@ -237,14 +239,25 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
         'project': 'chromium/src',
         'ref': 'refs/heads/main',
     }
+
+    if backend:
+      infra = build_pb2.BuildInfra(
+          backend=build_pb2.BuildInfra.Backend(
+              task=task_pb2.Task(
+                  id=task_pb2.TaskID(
+                      target='swarming://chromium-swarm',
+                      id='57d9108e76b91310'))))
+    else:
+      infra = build_pb2.BuildInfra(
+          swarming=build_pb2.BuildInfra.Swarming(task_id='57d9108e76b91310'))
+
     fake_build = build_pb2.Build(
         id=build_id,
         status=status,
         output=dict(
             gitiles_commit=json_format.Parse(
                 self.m.json.dumps(gitiles_commit), common_pb.GitilesCommit()),),
-        infra=build_pb2.BuildInfra(
-            swarming=build_pb2.BuildInfra.Swarming(task_id='57d9108e76b91310')))
+        infra=infra)
     return self.m.buildbucket.simulated_get(
         build=fake_build,
         step_name='fetch compilator build proto',
