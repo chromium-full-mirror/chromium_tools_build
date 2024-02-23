@@ -18,6 +18,9 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.recipe_engine.json.api import JsonOutputPlaceholder
 
+# The suffix to indicate a retry attempt.
+_RETRY_SUFFIX = 'retry shards'
+
 
 class GTestResultsOutputPlaceholder(JsonOutputPlaceholder):
 
@@ -760,6 +763,12 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # Only Swarming suites can be usefully retried
     return [t for t in target_suites if t.runs_on_swarming]
 
+  def prepend_retry_shards(self, suffix):
+    """Helper to prepend retry shards to the given suffix."""
+    if not suffix:
+      return _RETRY_SUFFIX
+    return _RETRY_SUFFIX + ' ' + suffix
+
   def run_tests(self,
                 test_suites,
                 suffix,
@@ -827,9 +836,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     if not swarming_test_suites:
       return invalid_test_suites, failed_and_invalid_suites
 
-    retry_suffix = 'retry shards'
-    if suffix:
-      retry_suffix += ' ' + suffix
+    retry_suffix = self.prepend_retry_shards(suffix)
     _, new_swarming_invalid_suites, _ = self.run_tests_once(
         swarming_test_suites, retry_suffix, sort_by_shard=True)
 

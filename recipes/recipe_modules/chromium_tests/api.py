@@ -2059,7 +2059,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Returns: a buildbucket.proto.common.Status
     """
     status = common_pb.SUCCESS
-    retry_suffix = 'retry shards ' + suffix
+    retry_suffix = self.m.test_utils.prepend_retry_shards(suffix)
     for t in test_suites:
       if not t.has_valid_results(suffix) or t.deterministic_failures(suffix):
         status = common_pb.FAILURE
