@@ -2109,7 +2109,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         deterministic_failures = suite.deterministic_failures(suffix)
 
       deterministic_failures = deterministic_failures or set()
-      if not suite.did_complete(suffix):
+      retry_suffix = self.m.test_utils.prepend_retry_shards(suffix)
+      if not suite.did_complete(suffix) and not suite.did_complete(
+          retry_suffix):
         test_suite_header = (
             '**%s** did not complete, likely due to an infra bug.' % suite.name)
       elif deterministic_failures:
