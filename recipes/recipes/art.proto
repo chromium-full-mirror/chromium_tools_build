@@ -40,4 +40,7 @@ message InputProperties {
   // Whether to exit early after building or run the full test suite.
   // Used as an intermediary while builds are functional but tests are not.
   bool build_only = 11;
+
+  // The TARGET_PRODUCT to build for.
+  string product = 12;
 }
