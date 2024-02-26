@@ -31,6 +31,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
+    'recipe_engine/step',
 ]
 
 PROPERTIES = InputProperties
@@ -96,6 +97,8 @@ def create_tests(
       api.path['checkout'],
       targets_spec_dir=api.path['checkout'].join('testing', 'buildbot'))
   tests = [test for test in targets_config.all_tests if test.name in test_names]
+  if not tests:
+    raise api.step.StepFailure('No tests selected for running')
 
   if should_build:
     raw_result = compile_targets(api, tests, builder_id, preserve_gn_args,
@@ -263,7 +266,42 @@ def GenTests(api: RecipeTestApi):
           post_process.StepCommandDoesNotContain, 'isolate tests',
           ['fake_root/fake_out/Debug/not_run_test.isolated.gen.json']),
       api.post_process(post_process.DoesNotRun, 'not_run_test'),
-      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no_tests',
+      ctbc_properties(),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['non_existant_test'],
+          checkout_path='checkout',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+      ),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'No tests selected for running',
+      ),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -308,7 +346,6 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.StepCommandContains, 'find command lines',
                        ['fake_root/fake_out/Debug']),
       api.post_process(post_process.MustRun, 'browser_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -347,7 +384,6 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        ['-m', 'fake-group', '-b', 'fake-tester']),
       api.post_process(post_process.MustRun, 'browser_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -463,7 +499,6 @@ def GenTests(api: RecipeTestApi):
                        ['-m', 'fake-group', '-b', 'fake-tester']),
       api.post_process(post_process.DoesNotRun, 'lookup GN args'),
       api.post_process(post_process.MustRun, 'browser_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -499,7 +534,6 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.MustRun, 'browser_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -537,7 +571,6 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.DoesNotRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.DoesNotRun, 'browser_tests'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -611,6 +644,5 @@ def GenTests(api: RecipeTestApi):
           post_process.StepCommandContains,
           'prepare skylab tests.collect runtime deps for lacros-test.read '
           'isolate file', ['fake_root/fake_out/Debug/lacros-test.isolate']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
