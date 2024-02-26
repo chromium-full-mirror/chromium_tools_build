@@ -149,7 +149,7 @@ def configure_build(
   api.path['checkout'] = checkout_path.join('src')
   api.chromium_checkout.checkout_dir = checkout_path
 
-  build_dir = build_dir or '//out/%s' % api.chromium.c.build_config_fs
+  build_dir = build_dir or api.path.join('out', api.chromium.c.build_config_fs)
   build_path = Path(RootBasePath(), build_dir)
   api.chromium.output_dir = build_path
   return builder_id, builder_config, checkout_path, build_path
@@ -246,15 +246,15 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.StepCommandContains, 'compile',
-                       ['//out/Release', 'browser_tests']),
+                       ['out/Release', 'browser_tests']),
       api.post_process(post_process.StepCommandContains, 'isolate',
                        ['browser_tests']),
       api.post_process(post_process.StepCommandContains, 'isolate tests',
-                       ['//out/Release/browser_tests.isolated.gen.json']),
+                       ['out/Release/browser_tests.isolated.gen.json']),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        ['-m', 'fake-group', '-b', 'fake-tester']),
       api.post_process(post_process.StepCommandContains, 'find command lines',
-                       ['//out/Release']),
+                       ['out/Release']),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.DoesNotRun, 'upload_ninja_log'),
       api.post_process(post_process.StepCommandDoesNotContain, 'compile',
