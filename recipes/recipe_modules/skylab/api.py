@@ -243,7 +243,7 @@ class SkylabApi(recipe_api.RecipeApi):
 
           if t.spec.secondary_cros_board:
             should_provision_browser_files = t.spec.should_provision_browser_files or [
-                False
+                True
             ] * len(boards)
             if len(should_provision_browser_files) != len(boards):
               raise recipe_api.StepFailure(
