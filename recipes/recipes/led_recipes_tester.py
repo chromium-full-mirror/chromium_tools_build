@@ -578,7 +578,11 @@ def GenTests(api):
     job = job_pb2.Definition()
     build = job.buildbucket.bbagent_args.build
     build.input.properties['recipe'] = recipe
-    build.infra.swarming.priority = 40
+    build.infra.backend.config.CopyFrom(
+        api.buildbucket.dict_to_struct({
+            'priority': 40,
+        },))
+
     return job
 
   def default_builders():
