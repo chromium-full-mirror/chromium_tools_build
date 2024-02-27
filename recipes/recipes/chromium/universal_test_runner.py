@@ -27,6 +27,7 @@ DEPS = [
     'test_utils',
     'skylab',
     'recipe_engine/buildbucket',
+    'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -132,7 +133,7 @@ def create_tests(
 
 def configure_build(
     api: RecipeApi, checkout_dir: str, build_dir: str,
-    build: bool) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
+    build: bool) -> tuple[chromium.BuilderId, ctbc.BuilderConfig, Path, Path]:
   """Prepares the recipe to build with the provided checkout.
 
   Args:
@@ -141,6 +142,9 @@ def configure_build(
         intended updates or syncs.
       build_dir: String to a where the binaries are built
       build: Bool to configure the run to include compiling/building.
+
+  Returns:
+    Tuple of the BuilderId, BuilderConfig, checkout path, and build path.
   """
   builder = api.buildbucket.build.builder.builder
   builder_id = chromium.BuilderId.create_for_group(
@@ -189,8 +193,35 @@ def compile_targets(
         recursive_lookup=True,
         build_dir=build_dir)
 
+  use_reclient = get_remote_compile_options(api, build_dir)
+
+  # TODO(crbug.com/41492686): Remove if/when chromium.compile
+  # can support developers' machines
+  if use_reclient:
+    with api.context(cwd=api.path['checkout']):
+      # Ignore the builder job count and use a high number. This isn't run by
+      # builders and more likely someone actively waiting for results
+      step_result = api.step(
+          name='reclient compile',
+          cmd=[
+              'ninja_reclient.py',
+              '-C',
+              api.path.relpath(build_dir, api.path['checkout']),
+              '-j',
+              '1000',
+          ] + targets)
+      return result_pb2.RawResult(status=step_result.presentation.status)
   return api.chromium.compile(
       targets, skip_log_upload=True, target_output_dir=build_dir)
+
+
+def get_remote_compile_options(api, build_dir) -> bool:
+  use_reclient = False
+  if api.chromium.c.project_generator.tool == 'mb':
+    gn_args, _ = api.gn.read_args(build_dir)
+    args = api.gn.parse_gn_args(gn_args)
+    use_reclient = args.get('use_remoteexec') == 'true'
+  return use_reclient
 
 
 def GenTests(api: RecipeTestApi):
@@ -302,6 +333,53 @@ def GenTests(api: RecipeTestApi):
           'No tests selected for running',
       ),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'reclient',
+      ctbc_properties(),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='checkout',
+          build_dir='checkout/src/out/Release',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+      ),
+      api.step_data('read GN args',
+                    api.raw_io.output_text('use_remoteexec = true')),
+      api.post_process(post_process.MustRun, 'reclient compile'),
+      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'lookup GN args'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.StepCommandContains, 'reclient compile', [
+          'ninja_reclient.py', '-C', 'out/Release', '-j', '1000',
+          'browser_tests'
+      ]),
+      api.post_process(post_process.StepCommandContains, 'isolate',
+                       ['browser_tests']),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
