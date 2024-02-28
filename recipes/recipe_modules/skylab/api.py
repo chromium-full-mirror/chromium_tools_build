@@ -193,8 +193,11 @@ class SkylabApi(recipe_api.RecipeApi):
                              _base64_encode_str(t.spec.tast_expr))
 
           if t.spec.test_args:
-            test_args.append('test_args_b64=%s' %
-                             _base64_encode_str(' '.join(t.spec.test_args)))
+            if t.is_tast_test:
+              test_args.extend(t.spec.test_args)
+            else:
+              test_args.append('test_args_b64=%s' %
+                               _base64_encode_str(' '.join(t.spec.test_args)))
 
           test_retries = '2'
           if t.spec.test_level_retries != None:

@@ -39,6 +39,7 @@ LACROS_SQUASH = 'lacros_compressed.squash'
 SHARD_COUNT = 2
 TAST_MAX_RUN_SEC = 21600
 
+FIELDTRIAL_TAST_VAR = 'setup.FieldTrialConfig=enable'
 
 GITILES_COMMIT = common_pb2.GitilesCommit(
     host='chromium.googlesource.com',
@@ -211,9 +212,30 @@ PUBLIC_LKGM_REQUESTS = [
         bucket='chromiumos-image-archive')
 ]
 
+TEST_ARGS_REQUESTS = [
+    gen_skylab_test(
+        'tast_runtime_var',
+        test_args=["tast." + FIELDTRIAL_TAST_VAR],
+        bucket='chromiumos-image-archive',
+        tast_expr="placeholder: this is tast test"),
+]
+
 PROPERTIES = {
     'requests': Property(help="Set of requests", default=[]),
 }
+
+
+def StepCommandContainsSubstring(check, step_odict, step, substring):
+  """Assert that a step's command contained the given substring
+
+  Args:
+    step (str) - The name of the step to check the command of.
+    substring (str) - The expected substring of an argument. If any of
+      the commandline element contained this substring, the check is success.
+  """
+  check(
+      'command line for step %s contained %s as substring' % (step, substring),
+      any(substring in arg for arg in step_odict[step].cmd))
 
 
 def RunSteps(api, requests):
@@ -341,6 +363,16 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab tests.' + REQUESTS[5].name + '.schedule',
           'chromium_Graphics'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tast_vars',
+      api.properties(requests=TEST_ARGS_REQUESTS),
+      api.post_process(
+          StepCommandContainsSubstring,
+          'schedule skylab tests.' + TEST_ARGS_REQUESTS[0].name + '.schedule',
+          'tast.' + FIELDTRIAL_TAST_VAR),
       api.post_process(post_process.DropExpectation),
   )
 
