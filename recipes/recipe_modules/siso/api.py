@@ -145,6 +145,8 @@ class SisoApi(recipe_api.RecipeApi):
               abs_path,
               _GS_BUCKET,
               gs_filename,
+              # Set text/plain for browser to detect the file type.
+              metadata={'Content-Type': 'text/plain; charset=utf-8'},
               name='upload ' + file,
               ok_ret=('any'))
 
