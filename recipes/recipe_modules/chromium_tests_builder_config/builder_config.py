@@ -252,7 +252,8 @@ class BuilderConfig:
              builder_db,
              try_db=None,
              use_try_db=True,
-             step_api=None):
+             step_api=None,
+             default_retry_failed_shards=True):
     """Create a BuilderConfig by looking up a builder.
 
     Args:
@@ -264,6 +265,8 @@ class BuilderConfig:
       * step_api - Optional step API. If provided, in the event that a
         BuilderConfigException would be raised, an infra failing step
         will be created with the details instead.
+      * default_retry_failed_shards - Specifies the default value for
+        retry_failed_shards if not defined in TrySpec.
 
     Returns:
       A BuilderConfig instance for the associated builder. If try_db was
@@ -293,6 +296,7 @@ class BuilderConfig:
 
     if try_spec is None:
       kwargs['builder_ids'] = [builder_id]
+      kwargs['retry_failed_shards'] = default_retry_failed_shards
 
       if try_db:
 

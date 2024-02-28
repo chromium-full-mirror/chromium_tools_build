@@ -29,7 +29,7 @@ def GenTests(api):
   yield api.test(
       'deapply_deps_after_failure',
       api.platform('linux', 64),
-      api.chromium.ci_build(
+      api.chromium.try_build(
           builder_group='fake-group',
           builder='fake-builder',
           git_repo='https://chromium.googlesource.com/v8/v8.git'),

@@ -226,7 +226,7 @@ def _validate_builder_config(obj, ctx):
       obj, 'mirroring_builder_group_and_names', optional=True)
 
 
-def convert_builder_config(obj):
+def convert_builder_config(obj, default_retry_failed_shards=True):
   # The builder ID in the protos is (project, bucket, builder), whereas the
   # one in the recipes is (group, builder), so we need to map between them
   # until such time as the recipes version uses project and bucket
@@ -262,7 +262,8 @@ def convert_builder_config(obj):
       analyze_names=obj.analyze_names,
       additional_exclusions=obj.additional_exclusions or None,
       retry_failed_shards=(obj.retry_failed_shards
-                           if obj.HasField('retry_failed_shards') else True),
+                           if obj.HasField('retry_failed_shards') else
+                           default_retry_failed_shards),
       retry_without_patch=(obj.retry_without_patch
                            if obj.HasField('retry_without_patch') else True),
   )

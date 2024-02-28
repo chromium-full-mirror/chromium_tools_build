@@ -27,7 +27,8 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
   def try_db(self):
     return self._try_db
 
-  def _get_builder_config_from_properties(self):
+  def _get_builder_config_from_properties(self,
+                                          default_retry_failed_shards=True):
     if not self._properties.HasField('builder_config'):
       return None
 
@@ -42,7 +43,8 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
       result.presentation.status = self.m.step.EXCEPTION
       self.m.step.raise_on_failure(result)
 
-    return proto.convert_builder_config(self._properties.builder_config)
+    return proto.convert_builder_config(self._properties.builder_config,
+                                        default_retry_failed_shards)
 
   # TODO(gbeaty) Remove the builder ID argument when it is possible. The builder
   # ID argument is only used for Findit and the compilator. Once those use cases
@@ -88,7 +90,10 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
     """
     builder_id = builder_id or self.m.chromium.get_builder_id()
 
-    builder_config = self._get_builder_config_from_properties()
+    # retry_failed_shards is default enabled on tryjobs and disabled on CI.
+    default_retry_failed_shards = self.m.tryserver.is_tryserver
+    builder_config = self._get_builder_config_from_properties(
+        default_retry_failed_shards)
 
     if builder_config is not None:
       return builder_id, builder_config
@@ -107,5 +112,6 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
         builder_db,
         try_db,
         use_try_db=use_try_db,
-        step_api=self.m.step)
+        step_api=self.m.step,
+        default_retry_failed_shards=default_retry_failed_shards)
     return builder_id, builder_config
