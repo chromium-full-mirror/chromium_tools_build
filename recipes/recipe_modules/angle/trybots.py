@@ -41,6 +41,18 @@ _SPEC = {
             analyze_names=['angle'],
             retry_failed_shards=False,
         ),
+    'android-arm64-exp-s22-test':
+        try_spec.TrySpec.create(
+            mirrors=[
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='android-arm64-exp-s22-test',
+                    tester='android-arm64-exp-s22',
+                ),
+            ],
+            analyze_names=['angle'],
+            retry_failed_shards=False,
+        ),
     'android-arm64-exp-test':
         try_spec.TrySpec.create(
             mirrors=[
