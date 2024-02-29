@@ -246,8 +246,8 @@ def RunSteps(api, requests):
     for r in requests:
       api.skylab.schedule_suite(
           r, '', retry_shards=api.properties.get('retry_shards'))
-      if r.ctp_build_ids.get(''):
-        ctp_build_ids.append(r.ctp_build_ids[''][-1])
+      if cpt_id := r.ctp_build_ids.get(''):
+        ctp_build_ids.append(cpt_id)
   api.buildbucket.collect_builds(ctp_build_ids, timeout=60)
   with api.step.nest('find test runner build'):
     for r in requests:

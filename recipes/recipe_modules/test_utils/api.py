@@ -1306,9 +1306,9 @@ class SkylabGroup(TestGroup):
       self.ctp_build_timeout_sec = max(t.spec.timeout_sec,
                                        self.ctp_build_timeout_sec)
       t.pre_run(suffix)
-      for build_ids in t.ctp_build_ids.values():
-        if not build_ids[-1] in self.ctp_build_ids:
-          self.ctp_build_ids.add(build_ids[-1])
+      for build_id in t.ctp_build_ids.values():
+        if not build_id in self.ctp_build_ids:
+          self.ctp_build_ids.add(build_id)
 
   def run(self, api, suffix):
     """Render test results for each Skylab Test."""

@@ -266,7 +266,7 @@ class SkylabApi(recipe_api.RecipeApi):
         build_id = int(step_result.json.output['ctp_build_id'])
         presentation.links[
             test.name] = 'https://ci.chromium.org/b/%s' % build_id
-        test.ctp_build_ids.setdefault(suffix, []).append(build_id)
+        test.ctp_build_ids[suffix] = build_id
 
   def fetch_test_runners(self, test, suffix):
     """Fetch the CrOS test runner builds for each shard.
@@ -279,9 +279,8 @@ class SkylabApi(recipe_api.RecipeApi):
     * test (SkylabTest): a steps.SkylabTest.
     * suffix: A string suffix.
     """
-    assert len(
-        test.ctp_build_ids[suffix]) > 0, ('No CTP build found.'
-                                          'Must call schedule_suite() first.')
+    assert test.ctp_build_ids[suffix], ('No CTP build found.'
+                                        'Must call schedule_suite() first.')
     cmd = [
         'vpython3',
         self.resource('skylab.py'),
@@ -291,7 +290,7 @@ class SkylabApi(recipe_api.RecipeApi):
         self.m.json.output(),
         'response',
         '--ctp-build-id',
-        test.ctp_build_ids[suffix][-1],
+        test.ctp_build_ids[suffix],
     ]
     step_result = self.m.step(
         'read_ctp_response',
@@ -303,7 +302,7 @@ class SkylabApi(recipe_api.RecipeApi):
             '0': {
                 'url':
                     'https://ci.chromium.org/p/chromeos/builders/test_runner/'
-                    f'test_runner/b{test.ctp_build_ids[suffix][-1]}0',
+                    f'test_runner/b{test.ctp_build_ids[suffix]}0',
                 'log_url':
                     'https://cros-test-analytics.appspot.com/p/chromeos/logs/'
                     'browse/chromeos-test-logs/test-runner/prod/abcd',

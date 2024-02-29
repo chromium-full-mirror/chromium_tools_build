@@ -2940,8 +2940,9 @@ class SkylabTestSpec(TestSpec):
   dut_pool = attrib(str, default='')
   # The number of shards used to run the test.
   shards = attrib(int, default=1)
-  # The max attempt to retry infra failures from test runner builds of
-  # CrOS infra. This retry is implemented at the browser side.
+  # Deprecated. Skylab tests retries once for infra failure
+  # same with swarming tests. For test failure retry, consider
+  # test_level_retries within one test run.
   retries = attrib(int, default=1)
   # Only applies to Tast tests.
   # When set to non zero, failed test will be immediatelly retried.
@@ -2998,17 +2999,15 @@ class SkylabTest(AbstractSkylabTest, Test):
 
   def __init__(self, spec, chromium_tests_api):
     super().__init__(spec, chromium_tests_api)
-    # Dict of cros_test_platform, aka CTP, build IDs keyed with
+    # Dict of a cros_test_platform, aka CTP, build ID keyed with
     # suffix. CTP build is the entrance of the CrOS hardware tests.
     # which kicks off test_runner builds for our test suite.
     # Each test suite invokes one CTP build, and the CTP build
     # initiates test_runner builds for each shard.
-    # If retry enabled, SkylabTest may call CTP multiple times.
     self._ctp_build_ids = {}
     # Dict of skylab.TestRunner list with suffix as the key.
-    # TestRunner represents the test execution in Skylab. We may retry
-    # tests for infra issues, so each shard may have multiple
-    # test runner builds attached.
+    # TestRunner represents the test execution in Skylab. For a suffix
+    # given, there should be one test runner to represent each shard.
     self._test_runner_builds = {}
 
     # These fields represent the variables generated at the runtime.
@@ -3044,13 +3043,12 @@ class SkylabTest(AbstractSkylabTest, Test):
     # Return false to trigger retry if any shard has infra failure.
     if not self.test_runner_builds.get(suffix):
       return False
-    complete = defaultdict(bool)
     for t in self.test_runner_builds[suffix]:
       # If any attempt runner in the shard has a deterministic result,
       # consider the shard done.
-      complete[t.shard] = complete[t.shard] or t.status in (common_pb2.FAILURE,
-                                                            common_pb2.SUCCESS)
-    return all(v for v in complete.values())
+      if not t.status in (common_pb2.FAILURE, common_pb2.SUCCESS):
+        return False
+    return True
 
   @property
   def exe_rel_path(self) -> str:
@@ -3083,10 +3081,9 @@ class SkylabTest(AbstractSkylabTest, Test):
     raise self.api.m.step.StepFailure(status)
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
-    invocation_names = []
-    for ctp_id in self.ctp_build_ids.get(suffix, []):
-      invocation_names.append(f'invocations/build-{ctp_id}')
-    return invocation_names
+    if build_id := self.ctp_build_ids.get(suffix):
+      return [f'invocations/build-{build_id}']
+    return []
 
   def pre_run(self, suffix: str) -> None:
     retry_shards = []
@@ -3095,22 +3092,6 @@ class SkylabTest(AbstractSkylabTest, Test):
       if not tr.status in [common_pb2.SUCCESS, common_pb2.FAILURE]:
         retry_shards.append(tr.shard)
     self.api.m.skylab.schedule_suite(self, suffix, retry_shards=retry_shards)
-
-  def _process_attempts(self, attempt_runners, step) -> None:
-
-    def _present_runner(step, runner):
-      if runner.status == common_pb2.FAILURE:
-        step.presentation.status = (self.api.m.step.FAILURE)
-      elif runner.status != common_pb2.SUCCESS:
-        step.presentation.status = (self.api.m.step.EXCEPTION)
-      if runner.url:
-        step.presentation.links['test results'] = f'{runner.url}/test-results'
-      if runner.log_url:
-        step.presentation.links['debug log'] = runner.log_url
-
-    # TODO(crbug.com/325007940): Remove attempt runners, as we rely on suffix to
-    # retry, so each shard only has one runner.
-    _present_runner(step, attempt_runners[0])
 
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
 
@@ -3126,9 +3107,8 @@ class SkylabTest(AbstractSkylabTest, Test):
         # its lifecycle as expected.
         self._update_failure_on_exit(suffix, False, step)
       else:
-        if self.ctp_build_ids.get(suffix):
-          for i, ctp_build in enumerate(self.ctp_build_ids[suffix]):
-            step.links['Shard #%d CTP Build' % i] = bb_url % ctp_build
+        if ctp_id := self.ctp_build_ids.get(suffix):
+          step.links['CTP Build'] = bb_url % ctp_id
 
         self._raise_failed_step(
             suffix, step, self.api.m.step.EXCEPTION,
@@ -3145,13 +3125,20 @@ class SkylabTest(AbstractSkylabTest, Test):
       # if any shard did not reach a deterministic success or
       # failure.
       shard_steps = []
-      test_runners = defaultdict(list)
-      for t in self.test_runner_builds.get(suffix, []):
-        test_runners[t.shard].append(t)
-      for shard_index, runners in test_runners.items():
+      test_runners = sorted(
+          self.test_runner_builds.get(suffix, []), key=lambda x: x.shard)
+      for tr in test_runners:
         with self.api.m.step.nest(
-            f'shard: #{shard_index}', status='last') as shard_step:
-          self._process_attempts(runners, shard_step)
+            f'shard: #{tr.shard}', status='last') as shard_step:
+          if tr.status == common_pb2.FAILURE:
+            shard_step.presentation.status = self.api.m.step.FAILURE
+          elif tr.status != common_pb2.SUCCESS:
+            shard_step.presentation.status = self.api.m.step.EXCEPTION
+          if tr.url:
+            shard_step.presentation.links['test results'] = (
+                f'{tr.url}/test-results')
+          if tr.log_url:
+            shard_step.presentation.links['debug log'] = tr.log_url
           shard_steps.append(shard_step)
 
       if any(not s.presentation.status in
