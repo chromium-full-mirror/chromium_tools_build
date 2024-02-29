@@ -39,11 +39,10 @@ BUILD_TARGETS = [
 OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 
 GN_PROPERTIES = [
-    'cast_allow_developer_certificate', 'clang_use_chrome_plugins',
-    'have_ffmpeg', 'have_libsdl2', 'have_libopus', 'have_libvpx', 'is_debug',
-    'is_asan', 'is_tsan', 'is_gcc', 'mac_min_system_version',
-    'mac_deployment_target', 'target_cpu', 'sysroot_platform', 'sysroot',
-    'target_sysroot_dir', 'use_coverage', 'use_remoteexec'
+    'cast_allow_developer_certificate', 'have_ffmpeg', 'have_libsdl2',
+    'have_libopus', 'have_libvpx', 'is_debug', 'is_asan', 'is_tsan', 'is_gcc',
+    'target_cpu', 'sysroot_platform', 'sysroot', 'target_sysroot_dir',
+    'use_coverage'
 ]
 
 # List of dimensions used for starting swarming on ARM64.
