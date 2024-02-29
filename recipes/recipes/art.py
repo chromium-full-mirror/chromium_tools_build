@@ -72,17 +72,18 @@ def RunSteps(api, props):
     cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
     with api.context(cwd=api.path['cache'].join(cache_name)):
       setup_target(
-        api,
-        device=props.device,
-        debug=props.debug,
-        build_only=props.build_only,
-        concurrent_collector=props.concurrent_collector,
-        generational_cc=props.generational_cc,
-        heap_poisoning=props.heap_poisoning,
-        gcstress=props.gcstress,
-        on_virtual_machine=props.on_virtual_machine,
-        manifest_branch=manifest_branch or 'master-art'
-      )
+          api,
+          device=props.device,
+          bitness=props.bitness,
+          product=props.product,
+          debug=props.debug,
+          build_only=props.build_only,
+          concurrent_collector=props.concurrent_collector,
+          generational_cc=props.generational_cc,
+          heap_poisoning=props.heap_poisoning,
+          gcstress=props.gcstress,
+          on_virtual_machine=props.on_virtual_machine,
+          manifest_branch=manifest_branch or 'master-art')
   else:
     with api.context(cwd=api.path['cache'].join('art')):
       setup_host_x86(
@@ -286,6 +287,8 @@ def setup_host_x86(api,
 
 def setup_target(api,
                  device,
+                 bitness,
+                 product,
                  debug,
                  build_only=False,
                  concurrent_collector=True,
@@ -393,12 +396,14 @@ def setup_target(api,
       'ART_TEST_ON_VM': 'true',
     })
 
-  bitness = _TARGET_DEVICE_MAP[device]['bitness']
-  env.update(
-      {'TARGET_PRODUCT': _TARGET_DEVICE_MAP[device]['product'],
-       'ANDROID_PRODUCT_OUT': build_top_dir.join('out','target', 'product',
-         _TARGET_DEVICE_MAP[device]['product'])
-      })
+  assert bitness == _TARGET_DEVICE_MAP[device]['bitness']
+  assert product == _TARGET_DEVICE_MAP[device]['product']
+  env.update({
+      'TARGET_PRODUCT':
+          product,
+      'ANDROID_PRODUCT_OUT':
+          build_top_dir.join('out', 'target', 'product', product),
+  })
 
   env.update({ 'ART_TEST_CHROOT' : chroot_dir })
 
@@ -608,75 +613,74 @@ def GenTests(api):
   )
 
   yield api.test(
-    'target-default_opts',
-    api.buildbucket.ci_build(
-      project='art',
-    ),
-    api.properties(
-      debug=False,
-      device="angler-armv7",
-      build_only=False,
-      concurrent_collector=True,
-      gcstress=False,
-      generational_cc=True,
-      heap_poisoning=False,
-      on_virtual_machine=False,
-    ),
+      'target-default_opts',
+      api.buildbucket.ci_build(project='art',),
+      api.properties(
+          debug=False,
+          device="angler-armv7",
+          build_only=False,
+          concurrent_collector=True,
+          gcstress=False,
+          generational_cc=True,
+          heap_poisoning=False,
+          on_virtual_machine=False,
+          bitness=32,
+          product="arm_krait",
+      ),
   )
 
   yield api.test(
-    'target-opts',
-    api.buildbucket.ci_build(
-      project='art',
-    ),
-    api.properties(
-      debug=True,
-      device="fugu",
-      concurrent_collector=False,
-      gcstress=True,
-      generational_cc=False,
-      heap_poisoning=True,
-      on_virtual_machine=True,
-    ),
+      'target-opts',
+      api.buildbucket.ci_build(project='art',),
+      api.properties(
+          debug=True,
+          device="fugu",
+          concurrent_collector=False,
+          gcstress=True,
+          generational_cc=False,
+          heap_poisoning=True,
+          on_virtual_machine=True,
+          bitness=32,
+          product="silvermont",
+      ),
   )
 
   yield api.test(
-    'target-build_only',
-    api.buildbucket.ci_build(
-      project='art',
-    ),
-    api.properties(
-      device="angler-armv7",
-      build_only=True,
-    ),
+      'target-build_only',
+      api.buildbucket.ci_build(project='art',),
+      api.properties(
+          device="angler-armv7",
+          build_only=True,
+          bitness=32,
+          product="arm_krait",
+      ),
   )
 
   yield api.test(
       'target_angler_setup_failure',
       api.buildbucket.ci_build(
-            project='art',
-            builder='angler-armv7-ndebug',
-      ),
-      api.step_data('setup device', retcode=1),
-      api.expect_status('FAILURE'),
+          project='art',
+          builder='angler-armv7-ndebug',
+      ), api.step_data('setup device', retcode=1), api.expect_status('FAILURE'),
       api.properties(
-        bot_id='TestBot',
-        device='angler-armv7',
-        debug=False,
-      )
-  )
+          bot_id='TestBot',
+          device='angler-armv7',
+          debug=False,
+          bitness=32,
+          product="arm_krait",
+      ))
 
   yield api.test(
       'target_angler_device_pre_run_cleanup_failure',
       api.buildbucket.ci_build(
-        project='art',
-        builder='angler-armv7-ndebug',
-      ),
-      api.step_data('device pre-run cleanup', retcode=1),
+          project='art',
+          builder='angler-armv7-ndebug',
+      ), api.step_data('device pre-run cleanup', retcode=1),
       api.expect_status('FAILURE'),
       api.properties(
-        bot_id='TestBot',
-        device='angler-armv7',
-        debug=False,
-      )
-  )
+          bot_id='TestBot',
+          device='angler-armv7',
+          debug=False,
+          bitness=32,
+          product="arm_krait",
+      ))
