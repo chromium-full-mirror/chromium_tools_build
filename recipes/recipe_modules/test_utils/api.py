@@ -692,13 +692,14 @@ class TestUtilsApi(recipe_api.RecipeApi):
     self._query_luci_analysis_failures(luci_analysis_tests_to_check)
 
   def _still_invalid_suites(self, old_invalid_suites, retried_invalid_suites):
-    # For swarming test suites, if we have valid test results from one of
-    # the runs of a test suite, then that test suite by definition doesn't
-    # have invalid test results.
-    # Non-swarming test suites don't get retried in 'retry shards with patch'
-    # steps, so all invalid non-swarming suites are still invalid
+    # For remote(swarming or skylab) test suites, if we have valid test results
+    # from one of the runs of a test suite, then that test suite by definition
+    # doesn't have invalid test results.
+    # Non-remote test suites don't get retried in 'retry shards with patch'
+    # steps, so all invalid non-remote suites are still invalid
     non_swarming_invalid_suites = [
-        t for t in old_invalid_suites if not t.runs_on_swarming
+        t for t in old_invalid_suites
+        if not t.runs_on_swarming and not t.is_skylabtest
     ]
     still_invalid_swarming_suites = list(
         set(old_invalid_suites).intersection(retried_invalid_suites))
@@ -760,8 +761,16 @@ class TestUtilsApi(recipe_api.RecipeApi):
       target_suites.update(failed_suites)
     if retry_invalid_shards:
       target_suites.update(invalid_suites)
-    # Only Swarming suites can be usefully retried
-    return [t for t in target_suites if t.runs_on_swarming]
+    # Only Swarming or Skylab suites can be usefully retried
+    return [t for t in target_suites if t.runs_on_swarming or t.is_skylabtest]
+
+  def remove_retry_shards(self, suffix):
+    """Helper to remove retry shards from the given suffix."""
+    if not suffix.startswith(_RETRY_SUFFIX):
+      return suffix
+    if suffix == _RETRY_SUFFIX:
+      return ''
+    return suffix[len(_RETRY_SUFFIX) + 1:]
 
   def prepend_retry_shards(self, suffix):
     """Helper to prepend retry shards to the given suffix."""
@@ -1286,21 +1295,38 @@ class SkylabGroup(TestGroup):
   def __init__(self, test_suites, result_db):
     super().__init__(test_suites, result_db)
     self.ctp_build_timeout_sec = 3600
+    self.ctp_build_ids = set()
 
   def pre_run(self, api, suffix):
     """Schedule each Skylab test request to a CTP build."""
-    tests = [t for t in self._test_suites if t.is_skylabtest and t.is_enabled]
-    if tests:
+    for t in self._test_suites:
+      if not t.is_enabled:
+        continue
       # Respect timeout of each test run by this CTP build.
-      build_timeout = max(t.spec.timeout_sec for t in tests)
-      if build_timeout > self.ctp_build_timeout_sec:
-        self.ctp_build_timeout_sec = build_timeout
-      api.skylab.schedule_suites(tests, suffix)
+      self.ctp_build_timeout_sec = max(t.spec.timeout_sec,
+                                       self.ctp_build_timeout_sec)
+      t.pre_run(suffix)
+      for build_ids in t.ctp_build_ids.values():
+        if not build_ids[-1] in self.ctp_build_ids:
+          self.ctp_build_ids.add(build_ids[-1])
 
   def run(self, api, suffix):
-    """Fetch the responses for each test request."""
-    api.skylab.wait_on_suites(
-        self._test_suites, suffix, timeout_seconds=self.ctp_build_timeout_sec)
+    """Render test results for each Skylab Test."""
+    try:
+      api.buildbucket.collect_builds(
+          list(self.ctp_build_ids),
+          timeout=self.ctp_build_timeout_sec,
+          step_name='collect skylab results')
+    except api.step.StepFailure as err:
+      # Perhaps some of the builds have completed, so continue
+      # to collect their results even if the step timed out.
+      if err.had_timeout:
+        pass
+      # For other types of errors returned from buildbucket, raise it to
+      # draw some attentions.
+      else:  # pragma: no cover
+        raise
+
     for t in self._test_suites:
       # Skylab tests are executed by CrOS builders, which may retry upon
       # failures within their builds. So the same suffix may have multiple test

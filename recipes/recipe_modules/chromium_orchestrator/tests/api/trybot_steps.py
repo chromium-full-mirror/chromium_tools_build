@@ -257,7 +257,7 @@ def GenTests(api):
           tester='fake-tester',
           skylab_tests=['lacros_all_tast_tests'],
       ),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('lacros_all_tast_tests (with patch)', 1),
       api.override_step_data(
           'lacros_all_tast_tests results',
           stdout=api.raw_io.output_text(
@@ -265,9 +265,9 @@ def GenTests(api):
                   'lacros_all_tast_tests', passing_tests=['Test.Two']))),
       api.post_process(post_process.MustRun, 'set_output_gitiles_commit'),
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
-      api.post_process(post_process.MustRun,
-                       ('test_pre_run (with patch).schedule skylab tests.'
-                        'lacros_all_tast_tests')),
+      api.post_process(post_process.MustRun, (
+          'test_pre_run (with patch).lacros_all_tast_tests (with patch).schedule'
+      )),
       api.post_process(post_process.MustRun,
                        COMPILATOR_SWARMING_TASK_COLLECT_STEP),
       api.post_process(post_process.MustRun, 'download src-side deps'),
@@ -373,27 +373,36 @@ def GenTests(api):
           tester='fake-tester',
           skylab_tests=['lacros_all_tast_tests'],
       ),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
-      api.skylab.mock_wait_on_suites('find test runner build (2)', 1),
+      api.skylab.mock_wait_on_suites('lacros_all_tast_tests (with patch)', 1),
+      api.skylab.mock_wait_on_suites('lacros_all_tast_tests (without patch)',
+                                     1),
+      # with patch
       api.override_step_data(
           'lacros_all_tast_tests results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'lacros_all_tast_tests', failing_tests=['Test.Two']))),
+      # retry with patch
       api.override_step_data(
           'lacros_all_tast_tests results (2)',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'lacros_all_tast_tests', failing_tests=['Test.Two']))),
+      # without patch
+      api.override_step_data(
+          'lacros_all_tast_tests results (3)',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'lacros_all_tast_tests', failing_tests=['Test.Two']))),
       api.post_process(post_process.MustRun, 'trigger compilator (with patch)'),
       api.post_process(post_process.MustRun,
                        'trigger compilator (without patch)'),
-      api.post_process(post_process.MustRun,
-                       ('test_pre_run (with patch).schedule skylab tests.'
-                        'lacros_all_tast_tests')),
-      api.post_process(post_process.MustRun,
-                       ('test_pre_run (without patch).schedule skylab tests.'
-                        'lacros_all_tast_tests')),
+      api.post_process(post_process.MustRun, (
+          'test_pre_run (with patch).lacros_all_tast_tests (with patch).schedule'
+      )),
+      api.post_process(post_process.MustRun, (
+          'test_pre_run (without patch).lacros_all_tast_tests (without patch).schedule'
+      )),
       api.post_process(post_process.DropExpectation),
   )
 

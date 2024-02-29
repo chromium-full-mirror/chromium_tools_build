@@ -3041,8 +3041,7 @@ class SkylabTest(AbstractSkylabTest, Test):
     return self._test_runner_builds
 
   def did_complete(self, suffix) -> bool:
-    # Raise exception if any shard has infra failure which was not recovered
-    # by retry.
+    # Return false to trigger retry if any shard has infra failure.
     if not self.test_runner_builds.get(suffix):
       return False
     complete = defaultdict(bool)
@@ -3090,42 +3089,34 @@ class SkylabTest(AbstractSkylabTest, Test):
     return invocation_names
 
   def pre_run(self, suffix: str) -> None:
-    # SkylabTestGroup never actually calls pre_run, so just call the
-    # unimplemented super version
-    # The super method is abstract, so we have to override it
-    # pylint: disable=useless-super-delegation
-    super().pre_run(suffix)  # pragma: no cover
+    retry_shards = []
+    for tr in self.test_runner_builds.get(
+        self.api.m.test_utils.remove_retry_shards(suffix), []):
+      if not tr.status in [common_pb2.SUCCESS, common_pb2.FAILURE]:
+        retry_shards.append(tr.shard)
+    self.api.m.skylab.schedule_suite(self, suffix, retry_shards=retry_shards)
 
   def _process_attempts(self, attempt_runners, step) -> None:
 
     def _present_runner(step, runner):
-      if runner.status == common_pb2.INFRA_FAILURE:
-        step.presentation.status = (self.api.m.step.EXCEPTION)
-      elif runner.status == common_pb2.FAILURE:
+      if runner.status == common_pb2.FAILURE:
         step.presentation.status = (self.api.m.step.FAILURE)
+      elif runner.status != common_pb2.SUCCESS:
+        step.presentation.status = (self.api.m.step.EXCEPTION)
       if runner.url:
         step.presentation.links['test results'] = f'{runner.url}/test-results'
       if runner.log_url:
         step.presentation.links['debug log'] = runner.log_url
-    if len(attempt_runners) == 1:
-      _present_runner(step, attempt_runners[0])
-    else:
-      for i, attempt_runner in enumerate(attempt_runners):
-        with self.api.m.step.nest('attempt: #' + str(i + 1)) as attempt_step:
-          _present_runner(attempt_step, attempt_runner)
 
-      # If the status of any attempt is success, the shard step should be
-      # success too. The "Test Results" tab could expose the detailed flaky
-      # information.
-      if any(b.status == common_pb2.SUCCESS for b in attempt_runners):
-        step.presentation.status = self.api.m.step.SUCCESS
-        step.presentation.step_text = (
-            'Test had failed runs. '
-            'Check "Test Results" tab for the deterministic results.')
+    # TODO(crbug.com/325007940): Remove attempt runners, as we rely on suffix to
+    # retry, so each shard only has one runner.
+    _present_runner(step, attempt_runners[0])
 
   def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
+      self.api.m.skylab.fetch_test_runners(self, suffix)
+
       _present_info_messages(step, self, info_messages)
 
       bb_url = 'https://ci.chromium.org/b/%d'
@@ -3149,9 +3140,10 @@ class SkylabTest(AbstractSkylabTest, Test):
       self._present_rdb_results(step, rdb_results)
 
       # RDB may not collect all failures from test runners. E.g.
-      # infra failure on one shard and did not upload results
-      # to RDB. So iterate all shards and raise a failure
-      # if any shard is not green.
+      # infra failure on one shard and did not upload its results
+      # to RDB. So iterate all shards and raise an exception
+      # if any shard did not reach a deterministic success or
+      # failure.
       shard_steps = []
       test_runners = defaultdict(list)
       for t in self.test_runner_builds.get(suffix, []):
@@ -3162,9 +3154,10 @@ class SkylabTest(AbstractSkylabTest, Test):
           self._process_attempts(runners, shard_step)
           shard_steps.append(shard_step)
 
-      if any(s.presentation.status != self.api.m.step.SUCCESS
+      if any(not s.presentation.status in
+             [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
              for s in shard_steps):
-        self._raise_failed_step(suffix, step, self.api.m.step.FAILURE,
+        self._raise_failed_step(suffix, step, self.api.m.step.EXCEPTION,
                                 'Some shards were unsuccessful.')
 
   def compile_targets(self) -> Iterable[str]:

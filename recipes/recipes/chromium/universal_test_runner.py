@@ -702,7 +702,7 @@ def GenTests(api: RecipeTestApi):
       api.step_data(
           'prepare skylab tests.collect runtime deps for lacros-test.read '
           'isolate file', api.file.read_text(SKYLAB_ISOLATE_TEXT)),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('lacros-test', 1),
       api.override_step_data(
           'lacros-test results',
           stdout=api.raw_io.output_text(
@@ -711,7 +711,7 @@ def GenTests(api: RecipeTestApi):
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'generate_build_files'),
       api.post_process(post_process.MustRun,
-                       'test_pre_run.schedule skylab tests.lacros-test'),
+                       'test_pre_run.lacros-test.schedule'),
       api.post_process(post_process.MustRun, 'lacros-test'),
       api.post_process(
           post_process.MustRun,

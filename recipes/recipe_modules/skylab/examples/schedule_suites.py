@@ -8,6 +8,7 @@ DEPS = [
     'recipe_engine/json',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
+    'recipe_engine/step',
     'skylab',
 ]
 
@@ -240,8 +241,19 @@ def StepCommandContainsSubstring(check, step_odict, step, substring):
 
 def RunSteps(api, requests):
   api.buildbucket.set_output_gitiles_commit(GITILES_COMMIT)
-  api.skylab.schedule_suites(requests, '')
-  api.skylab.wait_on_suites(requests, '', timeout_seconds=3600)
+  ctp_build_ids = []
+  with api.step.nest('schedule skylab test'):
+    for r in requests:
+      api.skylab.schedule_suite(
+          r, '', retry_shards=api.properties.get('retry_shards'))
+      if r.ctp_build_ids.get(''):
+        ctp_build_ids.append(r.ctp_build_ids[''][-1])
+  api.buildbucket.collect_builds(ctp_build_ids, timeout=60)
+  with api.step.nest('find test runner build'):
+    for r in requests:
+      if not r.ctp_build_ids.get(''):
+        continue
+      api.skylab.fetch_test_runners(r, '')
 
 
 def GenTests(api):
@@ -290,7 +302,7 @@ def GenTests(api):
       api.properties(requests=REQUESTS[:1]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule', [
+          'schedule skylab test.' + REQUESTS[0].name + '.schedule', [
               '--chromium-src',
               '[CACHE]/builder/src',
               '--json-outfile',
@@ -328,11 +340,11 @@ def GenTests(api):
       'fail_request_continues',
       api.properties(requests=REQUESTS),
       api.step_data(
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule', retcode=1),
-      api.post_process(post_process.StepFailure, 'schedule skylab tests'),
+          'schedule skylab test.' + REQUESTS[0].name + '.schedule', retcode=1),
+      api.post_process(post_process.StepFailure, 'schedule skylab test'),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[2].name + '.schedule', [
+          'schedule skylab test.' + REQUESTS[2].name + '.schedule', [
               'request', '--board', 'eve', '--pool', 'cross_device_multi_cb',
               '--image', 'eve-release/R88-13545.0.0', '--timeout-mins', '60',
               '--qs-account', 'lacros'
@@ -344,25 +356,23 @@ def GenTests(api):
       'multiple_shards_trigger',
       api.properties(requests=REQUESTS),
       api.step_data(
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule', retcode=1),
-      api.post_process(post_process.StepFailure, 'schedule skylab tests'),
+          'schedule skylab test.' + REQUESTS[0].name + '.schedule', retcode=1),
+      api.post_process(post_process.StepFailure, 'schedule skylab test'),
       api.post_process(
           post_process.MustRun,
-          'schedule skylab tests.{0}.schedule'.format(REQUESTS[4].name)),
-      api.post_process(
-          post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[4].name + '.schedule',
-          ['--total-shards', '2']),
+          'schedule skylab test.{0}.schedule'.format(REQUESTS[4].name)),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[4].name + '.schedule',
+                       ['--total-shards', '2']),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'chromium_Graphics_test',
-      api.properties(requests=REQUESTS),
-      api.post_process(
-          post_process.StepCommandContains,
-          'schedule skylab tests.' + REQUESTS[5].name + '.schedule',
-          'chromium_Graphics'),
+      api.properties(requests=[REQUESTS[5]]),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[5].name + '.schedule',
+                       'chromium_Graphics'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -371,7 +381,7 @@ def GenTests(api):
       api.properties(requests=TEST_ARGS_REQUESTS),
       api.post_process(
           StepCommandContainsSubstring,
-          'schedule skylab tests.' + TEST_ARGS_REQUESTS[0].name + '.schedule',
+          'schedule skylab test.' + TEST_ARGS_REQUESTS[0].name + '.schedule',
           'tast.' + FIELDTRIAL_TAST_VAR),
       api.post_process(post_process.DropExpectation),
   )
@@ -381,7 +391,7 @@ def GenTests(api):
       api.properties(requests=MULTI_DUT_REQUESTS[0:1]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + MULTI_DUT_REQUESTS[0].name + '.schedule', [
+          'schedule skylab test.' + MULTI_DUT_REQUESTS[0].name + '.schedule', [
               'request', '--board', 'eve', '--pool', 'DUT_POOL_QUOTA',
               '--image', 'eve-release/R88-13545.0.0', '--secondary-boards',
               'eve', '--secondary-images', 'eve-release/R88-13545.0.0',
@@ -395,7 +405,7 @@ def GenTests(api):
       api.properties(requests=MULTI_DUT_REQUESTS[1:2]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + MULTI_DUT_REQUESTS[1].name + '.schedule', [
+          'schedule skylab test.' + MULTI_DUT_REQUESTS[1].name + '.schedule', [
               'request',
               '--board',
               'eve',
@@ -430,7 +440,7 @@ def GenTests(api):
       api.properties(requests=MULTI_DUT_REQUESTS[2:3]),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + MULTI_DUT_REQUESTS[2].name + '.schedule', [
+          'schedule skylab test.' + MULTI_DUT_REQUESTS[2].name + '.schedule', [
               'request',
               '--board',
               'eve',
@@ -476,7 +486,7 @@ def GenTests(api):
       'multi_dut_secondary_cros_img_use_lkgm',
       api.properties(requests=MULTI_DUT_REQUESTS[3:4]),
       api.step_data(
-          'schedule skylab tests.' + MULTI_DUT_REQUESTS[3].name +
+          'schedule skylab test.' + MULTI_DUT_REQUESTS[3].name +
           '.call build API',
           api.json.output({
               "chromeosLkgm": "15580.0.0",
@@ -484,7 +494,7 @@ def GenTests(api):
               "fullVersion": "R118-15580.0.0"
           })),
       api.step_data(
-          'schedule skylab tests.' + MULTI_DUT_REQUESTS[3].name +
+          'schedule skylab test.' + MULTI_DUT_REQUESTS[3].name +
           '.call build API (2)',
           api.json.output({
               "chromeosLkgm": "15580.0.0",
@@ -493,7 +503,7 @@ def GenTests(api):
           })),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + MULTI_DUT_REQUESTS[3].name + '.schedule', [
+          'schedule skylab test.' + MULTI_DUT_REQUESTS[3].name + '.schedule', [
               'request',
               '--board',
               'eve',
@@ -522,10 +532,10 @@ def GenTests(api):
       api.properties(requests=LKGM_REQUESTS),
       api.post_process(
           check_use_external_config,
-          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
+          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
           False),
       api.step_data(
-          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
+          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
           api.json.output({
               "chromeosLkgm": "15581.0.0",
               "configName": "eve-release",
@@ -533,7 +543,7 @@ def GenTests(api):
           })),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + LKGM_REQUESTS[0].name + '.schedule', [
+          'schedule skylab test.' + LKGM_REQUESTS[0].name + '.schedule', [
               'request', '--board', 'eve', '--bucket', 'chromeos-image-archive',
               '--public-builder', 'ctp-public-builder',
               '--public-builder-bucket', 'public-bucket', '--pool',
@@ -548,10 +558,9 @@ def GenTests(api):
       api.properties(requests=PUBLIC_LKGM_REQUESTS),
       api.post_process(
           check_use_external_config,
-          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
-          True),
+          'schedule skylab test.m88_tast_with_retry_lkgm.call build API', True),
       api.step_data(
-          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
+          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
           api.json.output({
               "chromeosLkgm": "15581.0.0",
               "configName": "eve-public",
@@ -559,7 +568,7 @@ def GenTests(api):
           })),
       api.post_process(
           post_process.StepCommandContains,
-          'schedule skylab tests.' + PUBLIC_LKGM_REQUESTS[0].name + '.schedule',
+          'schedule skylab test.' + PUBLIC_LKGM_REQUESTS[0].name + '.schedule',
           [
               'request', '--board', 'eve', '--bucket',
               'chromiumos-image-archive', '--pool', 'DUT_POOL_QUOTA', '--image',
@@ -573,65 +582,19 @@ def GenTests(api):
       'lkgm_error',
       api.properties(requests=LKGM_REQUESTS),
       api.step_data(
-          'schedule skylab tests.m88_tast_with_retry_lkgm.call build API',
+          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
           api.json.output({"error": "error occurred, unable to find version"})),
-      api.post_process(post_process.StepFailure, 'schedule skylab tests'),
+      api.post_process(post_process.StepFailure, 'schedule skylab test'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
 
   yield api.test(
-      'retry_for_infra_failures',
-      api.properties(requests=REQUESTS[:1]),
-      api.post_process(
-          post_process.StepCommandDoesNotContain,
-          'schedule skylab tests.' + REQUESTS[0].name + '.schedule',
-          ['--shard-indexes']),
-      api.post_process(
-          post_process.StepCommandContains,
-          'find test runner build.schedule skylab tests.' + REQUESTS[0].name +
-          '.schedule', ['--shard-indexes', '0']),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(901, common_pb2.INFRA_FAILURE)]),
-      api.override_step_data(
-          'find test runner build (2).read_ctp_response',
-          api.m.json.output({
-              '0': {
-                  'url': 'http://runner-link/904',
-                  'log_url': 'https://runner-log-link',
-                  'status': str(common_pb2.SUCCESS),
-              }
-          })),
+      'retry shards',
+      api.properties(requests=REQUESTS[:1], retry_shards=[2]),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
+                       ['--shard-indexes', '2']),
+      api.skylab.mock_wait_on_suites('find test runner build', 1),
       api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'retry_for_CTP_infra_failures',
-      api.properties(requests=REQUESTS[:1]),
-      api.override_step_data('find test runner build.read_ctp_response',
-                             api.m.json.invalid('')),
-      api.post_process(post_process.StepException,
-                       'find test runner build.read_ctp_response'),
-      api.post_process(
-          post_process.MustRun,
-          'find test runner build.schedule skylab tests.m88_tast_with_retry'),
-      api.post_process(post_process.StepSuccess, 'find test runner build (2)'),
-      api.post_process(
-          post_process.StepCommandDoesNotContain,
-          'find test runner build.schedule skylab tests.' + REQUESTS[0].name +
-          '.schedule', ['--shard-indexes']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'build_canceled_while_test_running',
-      api.properties(requests=REQUESTS[:1]),
-      api.step_data(
-          'collect skylab results.buildbucket.collect.wait', cancel=True),
-      api.post_process(post_process.StepException, 'collect skylab results'),
-      api.post_process(post_process.DoesNotRun, 'find test runner build'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('INFRA_FAILURE'),
   )

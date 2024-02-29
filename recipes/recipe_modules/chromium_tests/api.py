@@ -2638,7 +2638,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         # to an existing issue with occasional corruption of collected coverage
         # data.
         retry_invalid_shards=any(
-            t.runs_on_swarming and t.isolate_profile_data for t in tests),
+            t.is_skylabtest or (t.runs_on_swarming and t.isolate_profile_data)
+            for t in tests),
     )
     with self.wrap_chromium_tests(builder_config, tests):
       test_failure_summary = test_runner()

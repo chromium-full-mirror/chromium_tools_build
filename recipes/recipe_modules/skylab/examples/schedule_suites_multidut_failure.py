@@ -4,6 +4,7 @@
 
 DEPS = [
     'recipe_engine/properties',
+    'recipe_engine/step',
     'skylab',
 ]
 
@@ -43,7 +44,9 @@ PROPERTIES = {
 
 
 def RunSteps(api, requests):
-  api.skylab.schedule_suites(requests, '')
+  with api.step.nest('schedule skylab test'):
+    for r in requests:
+      api.skylab.schedule_suite(r, '')
 
 
 def GenTests(api):
@@ -51,7 +54,7 @@ def GenTests(api):
       'multi_dut_should_provision_browser_files_len_mismatch',
       api.properties(requests=REQUESTS[0:1]),
       api.post_process(post_process.StepFailure,
-                       'schedule skylab tests.' + REQUESTS[0].name),
+                       'schedule skylab test.' + REQUESTS[0].name),
       api.post_process(
           post_process.ResultReason,
           'Length of should_provision_browser_files must match secondary_cros_board'
@@ -64,7 +67,7 @@ def GenTests(api):
       'multi_dut_secondary_cros_img_len_mismatch',
       api.properties(requests=REQUESTS[1:2]),
       api.post_process(post_process.StepFailure,
-                       'schedule skylab tests.' + REQUESTS[1].name),
+                       'schedule skylab test.' + REQUESTS[1].name),
       api.post_process(
           post_process.ResultReason,
           'Length of secondary_cros_img must match secondary_cros_board'),

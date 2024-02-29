@@ -22,7 +22,6 @@ DEPS = [
     'recipe_engine/resultdb',
     'recipe_engine/step',
     'recipe_engine/time',
-    'skylab',
 ]
 
 PROPERTIES = properties.InputProperties

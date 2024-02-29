@@ -35,7 +35,6 @@ def RunSteps(api):
   return api.chromium_tests.main_waterfall_steps(builder_id, builder_config)
 
 
-
 def GenTests(api):
 
   TAST_TARGET = 'lacros_fyi_tast_tests'
@@ -192,9 +191,7 @@ def GenTests(api):
           tast_expr='("group:mainline" && "dep:lacros")',
           retries=1),
       api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(901, common_pb2.FAILURE)]),
+          'basic_EVE_TOT', 1, runner_builds=[(901, common_pb2.FAILURE)]),
       api.post_process(post_process.StepCommandContains, 'compile', ['chrome']),
       api.post_process(
           post_process.LogContains,
@@ -215,10 +212,9 @@ def GenTests(api):
           ('prepare skylab tests.upload skylab runtime deps for %s.'
            'write metadata.json') % TAST_TARGET,
       ),
-      api.post_process(
-          _check_test_args,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
-          'tast_expr_file=out/Release/bin/%s.filter' % TAST_TARGET),
+      api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
+                       'tast_expr_file=out/Release/bin/%s.filter' %
+                       TAST_TARGET),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -228,7 +224,7 @@ def GenTests(api):
                   flaky_failing_tests=['Test.One']))),
       api.post_process(
           post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
+          'test_pre_run.basic_EVE_TOT.schedule', [
               '--lacros-gcs-path',
               'gs://chrome-test-builds/lacros/8945511751514863184_with_patch/'
               f'{TAST_TARGET}/lacros_compressed.squash'
@@ -260,14 +256,16 @@ def GenTests(api):
           tast_expr='("group:mainline" && "dep:lacros")',
           shards=2),
       api.skylab.mock_wait_on_suites(
-          'find test runner build',
+          'basic_EVE_TOT',
           2,
           runner_builds=[(901, common_pb2.FAILURE), (902, common_pb2.SUCCESS)]),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
-                  'basic_EVE_TOT', passing_tests=['Test.Two']))),
+                  'basic_EVE_TOT',
+                  passing_tests=['Test.Two'],
+                  failing_tests=['Test.One']))),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #0'),
       api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #1'),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
@@ -276,45 +274,24 @@ def GenTests(api):
   )
 
   yield api.test(
-      'some shards had exited by infra failure',
-      boilerplate(
-          'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
-          shards=3),
-      api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          3,
-          runner_builds=[(901, common_pb2.SUCCESS),
-                         (902, common_pb2.INFRA_FAILURE),
-                         (903, common_pb2.SUCCESS)]),
-      api.override_step_data(
-          'basic_EVE_TOT results',
-          stdout=api.raw_io.output_text(
-              api.test_utils.rdb_results(
-                  'basic_EVE_TOT', passing_tests=['Test.One', 'Test.Two']))),
-      api.post_process(post_process.StepException, 'find test runner build'),
-      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
-      api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #1'),
-      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #2'),
-      api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'some shards had exited by infra failure and retry',
+      'some shards infra failure and retry succeeded',
       boilerplate(
           'chrome-test-builds',
           tast_expr='("group:mainline" && "dep:lacros")',
           shards=3,
           retries=1),
       api.skylab.mock_wait_on_suites(
-          'find test runner build',
+          'basic_EVE_TOT',
           3,
-          runner_builds=[(901, common_pb2.SUCCESS), (902, common_pb2.FAILURE),
+          runner_builds=[(901, common_pb2.SUCCESS), (902, common_pb2.SUCCESS),
                          (903, common_pb2.INFRA_FAILURE)]),
       api.override_step_data(
-          'find test runner build (2).read_ctp_response',
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
+          api.m.json.output({
+              'ctp_build_id': '889901',
+          })),
+      api.override_step_data(
+          'basic_EVE_TOT (retry shards).read_ctp_response',
           api.m.json.output({
               '2': {
                   'url': 'http://runner-link/904',
@@ -328,40 +305,46 @@ def GenTests(api):
               api.test_utils.rdb_results(
                   'basic_EVE_TOT',
                   passing_tests=['Test.One', 'Test.Three'],
-                  failing_tests=['Test.Two']))),
+              ))),
+      api.override_step_data(
+          'basic_EVE_TOT results (2)',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.Two']))),
       # Only retried shard 2.
       api.post_process(
           post_process.StepCommandContains,
-          'find test runner build.schedule skylab tests.'
-          'basic_EVE_TOT.schedule', ['--shard-indexes', '2']),
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
+          ['--shard-indexes', '2']),
       # Only retry the infra failed test runner build 903 and pass.
       api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
-      api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #1'),
-      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #2'),
-      api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
-      api.expect_status('FAILURE'),
+      api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #1'),
+      api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #2'),
+      api.post_process(post_process.StepSuccess,
+                       'basic_EVE_TOT (retry shards).shard: #2'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'retry infra failure and hit limit',
+      'infra failure not recovered by retry',
       boilerplate(
           'chrome-test-builds',
           tast_expr='("group:mainline" && "dep:lacros")',
-          shards=1,
-          retries=1),
+          shards=1),
       api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(901, common_pb2.INFRA_FAILURE)]),
+          'basic_EVE_TOT', 1, runner_builds=[(901, common_pb2.INFRA_FAILURE)]),
+      api.override_step_data(
+          'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
+          api.m.json.output({
+              'ctp_build_id': '889901',
+          })),
       api.skylab.mock_wait_on_suites(
-          'find test runner build (2)',
+          'basic_EVE_TOT (retry shards)',
           1,
           runner_builds=[(904, common_pb2.INFRA_FAILURE)]),
       api.post_process(
-          post_process.StepCommandContains,
-          'find test runner build.schedule skylab tests.'
-          'basic_EVE_TOT.schedule', ['--shard-indexes', '0']),
+          post_process.StepCommandContains, 'test_pre_run (retry shards).'
+          'basic_EVE_TOT (retry shards).schedule', ['--shard-indexes', '0']),
       api.post_process(post_process.DoesNotRun, 'find test runner build (3)'),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
@@ -373,7 +356,7 @@ def GenTests(api):
           'chrome-test-builds',
           test_args='--test-launcher-filter-file=../../testing/buildbot/filter',
           target_name=GTEST_TARGET),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -398,13 +381,11 @@ def GenTests(api):
       ),
       api.post_process(post_process.StepCommandContains, 'compile',
                        [GTEST_TARGET]),
-      api.post_process(
-          _check_test_args,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
-          'exe_rel_path=out/Release/bin/run_%s' % GTEST_TARGET),
+      api.post_process(_check_test_args, 'test_pre_run.basic_EVE_TOT.schedule',
+                       'exe_rel_path=out/Release/bin/run_%s' % GTEST_TARGET),
       api.post_process(
           post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
+          'test_pre_run.basic_EVE_TOT.schedule', [
               '--lacros-gcs-path', 'gs://chrome-test-builds/lacros/'
               f'8945511751514863184_with_patch/{GTEST_TARGET}/'
               'lacros_compressed.squash'
@@ -426,16 +407,15 @@ def GenTests(api):
   yield api.test(
       'test from fyi builder',
       boilerplate('chrome-test-builds', builder='lacros-amd64-generic-fyi'),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
               api.test_utils.rdb_results(
                   'basic_EVE_TOT', passing_tests=['Test.One']))),
-      api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
-          ['--qs-account', 'lacros_fyi']),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule',
+                       ['--qs-account', 'lacros_fyi']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -443,7 +423,7 @@ def GenTests(api):
       'RDB returned empty test_results',
       boilerplate(
           'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.post_process(post_process.StepCommandContains, 'compile', ['chrome']),
       api.post_process(post_process.StepException, 'basic_EVE_TOT'),
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT',
@@ -456,10 +436,10 @@ def GenTests(api):
   yield api.test(
       'Skylab outage',
       boilerplate(
-          'chrome-test-builds',
-          tast_expr='("group:mainline" && "dep:lacros")',
-          retries=0),
-      api.override_step_data('find test runner build.read_ctp_response',
+          'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
+      api.override_step_data('basic_EVE_TOT.read_ctp_response',
+                             api.m.json.output({})),
+      api.override_step_data('basic_EVE_TOT (retry shards).read_ctp_response',
                              api.m.json.output({})),
       api.post_process(post_process.StepException, 'basic_EVE_TOT'),
       api.post_process(
@@ -529,7 +509,7 @@ def GenTests(api):
       'test_suite_with_decription_on_ci_builder',
       boilerplate(
           'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT',
                        ['This is a description.']),
       api.post_process(post_process.DropExpectation),
@@ -540,7 +520,7 @@ def GenTests(api):
       'ci_only_test_on_ci_builder',
       boilerplate(
           'chrome-test-builds', tast_expr='("group:mainline" && "dep:lacros")'),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.post_process(post_process.StepTextContains, 'basic_EVE_TOT', [
           'This test will not be run on try builders',
       ]),
@@ -573,7 +553,7 @@ def GenTests(api):
           'chrome-test-builds', tast_expr='dummy_tast', is_ci_build=False),
       api.step_data('parse description',
                     api.json.output({'Include-Ci-Only-Tests': ['true']})),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT (with patch)', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -594,7 +574,7 @@ def GenTests(api):
       'basic for telemetry test',
       boilerplate(
           'chrome-test-builds', benchmark='speedometer2', target_name='chrome'),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -602,10 +582,9 @@ def GenTests(api):
                   'basic_EVE_TOT',
                   failing_tests=['Test.One'],
                   skipped_tests=['Test.One']))),
-      api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule',
-          ['chromium_Telemetry']),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule',
+                       ['chromium_Telemetry']),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
@@ -621,7 +600,7 @@ def GenTests(api):
           'prepare skylab tests (2).'
           'collect runtime deps for %s.read isolate file' % GTEST_TARGET,
           api.file.read_text(GOOD_ISOLATE_TEXT)),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT (with patch)', 1),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -631,7 +610,7 @@ def GenTests(api):
                   skipped_tests=['Test.One']))),
       # Retry without patch.
       api.post_process(post_process.MustRun, 'test_pre_run (without patch)'),
-      api.skylab.mock_wait_on_suites('find test runner build (2)', 1),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT (without patch)', 1),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
@@ -690,9 +669,8 @@ def GenTests(api):
       ),
       api.post_process(post_process.StepCommandContains, 'compile',
                        [GTEST_TARGET]),
-      api.post_process(
-          post_process.DoesNotRun,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule'),
+      api.post_process(post_process.DoesNotRun,
+                       'test_pre_run.basic_EVE_TOT.schedule'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -755,9 +733,7 @@ def GenTests(api):
               },
           }),
       api.skylab.mock_wait_on_suites(
-          'find test runner build',
-          1,
-          runner_builds=[(902, common_pb2.SUCCESS)]),
+          'basic_EVE_TOT', 1, runner_builds=[(902, common_pb2.SUCCESS)]),
       api.override_step_data(
           'basic_EVE_TOT results',
           stdout=api.raw_io.output_text(
@@ -777,8 +753,25 @@ def GenTests(api):
            'Copy folder testing/buildbot/filters') % GTEST_TARGET,
       ),
       api.post_process(post_process.DoesNotRun, 'compile'),
-      api.post_process(
-          post_process.MustRun,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.basic_EVE_TOT.schedule'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'collect_results_even_timeout',
+      boilerplate(
+          'chrome-test-builds',
+          test_args='--test-launcher-filter-file=../../testing/buildbot/filter',
+          target_name=GTEST_TARGET),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
+      api.step_data('collect skylab results.wait', times_out_after=7201),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.One']))),
+      api.post_process(post_process.StepException, 'collect skylab results'),
+      api.post_process(post_process.MustRun, 'basic_EVE_TOT.read_ctp_response'),
       api.post_process(post_process.DropExpectation),
   )

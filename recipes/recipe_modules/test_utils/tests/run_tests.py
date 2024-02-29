@@ -233,36 +233,31 @@ def GenTests(api):
           }],
           test_skylab=True,
       ),
-      api.skylab.mock_wait_on_suites('find test runner build', 1),
-      api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              '--board',
-              'eve',
-          ]),
-      api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              '--image',
-              'eve-release/R89-13631.0.0',
-          ]),
-      api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              '--timeout-mins',
-              '60',
-          ]),
-      api.post_process(
-          post_process.StepCommandContains,
-          'test_pre_run.schedule skylab tests.basic_EVE_TOT.schedule', [
-              'tast.lacros',
-          ]),
-      api.post_process(
-          post_process.StepTextEquals, 'basic_EVE_TOT',
-          'Test did not run or failed to report to ResultDB.'
-          'Check the CTP build for details.'),
-      api.post_process(post_process.SummaryMarkdown, 'failed: basic_EVE_TOT'),
-      api.expect_status('FAILURE'),
+      api.skylab.mock_wait_on_suites('basic_EVE_TOT', 1),
+      api.override_step_data(
+          'basic_EVE_TOT results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'basic_EVE_TOT', passing_tests=['Test.One']))),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--board',
+                           'eve',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--image',
+                           'eve-release/R89-13631.0.0',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           '--timeout-mins',
+                           '60',
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'test_pre_run.basic_EVE_TOT.schedule', [
+                           'tast.lacros',
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
 
