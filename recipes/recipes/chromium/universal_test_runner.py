@@ -62,7 +62,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
     return result_pb2.RawResult(status=common_pb2.SUCCESS)
 
   test_runner = api.chromium_tests.create_test_runner(tests)
-  with api.chromium_tests.wrap_chromium_tests(builder_config, tests):
+  with api.chromium_tests.wrap_chromium_tests(tests):
     api.chromium_tests.configure_swarming(True, builder_group=builder_id.group)
     return test_runner()
 

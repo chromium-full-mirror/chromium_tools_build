@@ -182,8 +182,7 @@ def compilator_steps(api, properties):
           local_tests,
           suffix='with patch',
       )
-      with api.chromium_tests.wrap_chromium_tests(orch_builder_config,
-                                                  local_tests):
+      with api.chromium_tests.wrap_chromium_tests(local_tests):
         raw_result = test_runner()
         if raw_result and raw_result.status != common_pb.SUCCESS:
           return raw_result
@@ -193,8 +192,7 @@ def compilator_steps(api, properties):
         new_tests = api.flakiness.find_tests_for_flakiness(
             local_tests, affected_files=task.affected_files)
         if new_tests:
-          return api.chromium_tests.run_tests_for_flakiness(
-              orch_builder_config, new_tests)
+          return api.chromium_tests.run_tests_for_flakiness(new_tests)
 
     return raw_result
 

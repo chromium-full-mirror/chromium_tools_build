@@ -218,7 +218,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           ))
 
     # Trigger and wait for the tests (and process coverage data, if enabled)!
-    with self.m.chromium_tests.wrap_chromium_tests(builder_config, tests):
+    with self.m.chromium_tests.wrap_chromium_tests(tests):
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests_with_patch(
               tests,
@@ -251,8 +251,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         new_tests = self.m.flakiness.find_tests_for_flakiness(
             tests, affected_files=affected_files)
         if new_tests:
-          result = self.m.chromium_tests.run_tests_for_flakiness(
-              builder_config, new_tests)
+          result = self.m.chromium_tests.run_tests_for_flakiness(new_tests)
 
           # If the swarming checks for flakiness succeed, we'll only need to
           # check for the compilator's failures. On success, None is returned by
@@ -333,8 +332,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           comp_output.skylab_props, targets_config, tests=failing_test_suites)
 
     # Trigger and wait for the (without patch) tests!
-    with self.m.chromium_tests.wrap_chromium_tests(builder_config,
-                                                   failing_test_suites):
+    with self.m.chromium_tests.wrap_chromium_tests(failing_test_suites):
       self.m.test_utils.run_tests(
           failing_test_suites,
           'without patch',

@@ -95,8 +95,7 @@ def RunSteps(api, properties):
         api.chromium_swarming.default_priority -= 1
 
       suffix = 'bisection'
-      with api.chromium_tests.wrap_chromium_tests(
-          builder_config, tests=step_tests):
+      with api.chromium_tests.wrap_chromium_tests(tests=step_tests):
         api.test_utils.run_tests_once(step_tests, suffix)
 
       test_results = fetch_test_results(api, properties.tests_to_run,

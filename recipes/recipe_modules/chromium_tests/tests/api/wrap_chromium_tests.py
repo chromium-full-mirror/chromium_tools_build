@@ -40,7 +40,7 @@ def RunSteps(api):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   tests = [s.get_test(api.chromium_tests) for s in test_specs]
-  with api.chromium_tests.wrap_chromium_tests(builder_config, tests=tests):
+  with api.chromium_tests.wrap_chromium_tests(tests=tests):
     pass
 
 

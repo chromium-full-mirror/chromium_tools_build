@@ -1230,7 +1230,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                               else source_group))
 
   @contextlib.contextmanager
-  def wrap_chromium_tests(self, builder_config, tests=None):
+  def wrap_chromium_tests(self, tests=None):
     with self.m.context(
         cwd=self.m.chromium_checkout.checkout_dir,
         env=self.m.chromium.get_env()):
@@ -1417,7 +1417,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if self.m.code_coverage.use_clang_coverage:
       self.m.code_coverage.ensure_clang_coverage_tools()
 
-    with self.wrap_chromium_tests(task.builder_config, task.test_suites):
+    with self.wrap_chromium_tests(task.test_suites):
       # Run the test. The isolates have already been created.
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests_with_patch(
@@ -2036,7 +2036,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         if new_tests:
           # Executing for flakiness checks is done in chromium_tests so that we
           # avoid a circular dependency between chromium_tests and flakiness.
-          return self.run_tests_for_flakiness(builder_config, new_tests)
+          return self.run_tests_for_flakiness(new_tests)
 
     return None
 
@@ -2142,14 +2142,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return '\n\n'.join(test_summary_lines)
 
-  def run_tests_for_flakiness(self, builder_config, test_objects_by_suffix):
+  def run_tests_for_flakiness(self, test_objects_by_suffix):
     """Runs tests for flake endorser.
 
 
     Args:
-       builder_config: The configuration of the running builder.
-       test_objects_by_suffix: A dict mapping from test suffixes to lists of
-         steps.AbstractTest objects.
+      test_objects_by_suffix: A dict mapping from test suffixes to lists of
+        steps.AbstractTest objects.
 
     Returns:
       A RawResult object with the status of the build and failure message if
@@ -2165,8 +2164,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                      'Infra>Test>Flakiness component.')
       # |general_suffix| is always in |test_objects_by_suffix| dict and all
       # local tests are under this key.
-      with self.wrap_chromium_tests(builder_config,
-                                    test_objects_by_suffix[general_suffix]):
+      with self.wrap_chromium_tests(test_objects_by_suffix[general_suffix]):
         self.m.test_utils.run_tests_for_flake_endorser(test_objects_by_suffix)
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
@@ -2641,7 +2639,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             t.is_skylabtest or (t.runs_on_swarming and t.isolate_profile_data)
             for t in tests),
     )
-    with self.wrap_chromium_tests(builder_config, tests):
+    with self.wrap_chromium_tests(tests):
       test_failure_summary = test_runner()
 
       if self.m.code_coverage.using_coverage:

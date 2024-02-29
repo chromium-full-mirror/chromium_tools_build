@@ -51,7 +51,7 @@ def RunSteps(api):
 
     new_tests = api.flakiness.find_tests_for_flakiness(task.test_suites)
     if new_tests:
-      api.chromium_tests.run_tests_for_flakiness(b_config, new_tests)
+      api.chromium_tests.run_tests_for_flakiness(new_tests)
 
 
 def GenTests(api):

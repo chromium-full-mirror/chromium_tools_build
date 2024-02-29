@@ -85,7 +85,7 @@ def RunSteps(api):
         tests,
         serialize_tests=builder_config.serialize_tests,
         surface_invalid_results_as_infra_failure=True)
-    with api.chromium_tests.wrap_chromium_tests(builder_config, tests=tests):
+    with api.chromium_tests.wrap_chromium_tests(tests=tests):
       test_result = test_runner()
       if api.code_coverage.using_coverage:
         api.code_coverage.process_coverage_data(
