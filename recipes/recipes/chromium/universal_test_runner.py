@@ -17,6 +17,8 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests.steps import Test
+from RECIPE_MODULES.build.chromium_tests_builder_config import (
+    builder_config as builder_config_module)
 
 DEPS = [
     'chromium',
@@ -49,12 +51,14 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   should_build = properties.run_type != InputProperties.RunType.RUN_TYPE_RUN
   should_test = properties.run_type != InputProperties.RunType.RUN_TYPE_COMPILE
 
-  builder_id, builder_config, _, build_path = configure_build(
-      api, properties.checkout_path, properties.build_dir, should_build)
+  (compiling_builder_id, compiling_builder_config, _,
+   build_path) = configure_build(api, properties.checkout_path,
+                                 properties.build_dir, should_build)
 
   raw_result, tests = create_tests(api, build_path, properties.test_names,
-                                   properties.got_revisions, builder_id,
-                                   builder_config, should_build,
+                                   properties.got_revisions,
+                                   compiling_builder_id,
+                                   compiling_builder_config, should_build,
                                    properties.preserve_gn_args)
   if raw_result and raw_result.status != common_pb2.SUCCESS:
     return raw_result
@@ -63,7 +67,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
   test_runner = api.chromium_tests.create_test_runner(tests)
   with api.chromium_tests.wrap_chromium_tests(tests):
-    api.chromium_tests.configure_swarming(True, builder_group=builder_id.group)
+    api.chromium_tests.configure_swarming(True)
     return test_runner()
 
 
@@ -144,22 +148,44 @@ def configure_build(
       build: Bool to configure the run to include compiling/building.
 
   Returns:
-    Tuple of the BuilderId, BuilderConfig, checkout path, and build path.
+    Tuple of
+      BuilderId for the compiler builder,
+      BuilderConfig for the compiling builder
+      checkout path,
+      build path
   """
   builder = api.buildbucket.build.builder.builder
   builder_id = chromium.BuilderId.create_for_group(
       api.m.properties['builder_group'], builder)
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
+
+  # Default to assuming the builder both compiles and tests. But if it's
+  # test-only, then we need to fetch its parent configs for use with mb/GN.
+  compiling_builder_config = builder_config
+  compiling_builder_id = builder_id
+  if builder_config.execution_mode == ctbc.TEST:
+    compiling_builder_id = chromium.BuilderId.create_for_group(
+        builder_config.parent_builder_group, builder_config.parent_buildername)
+    compiling_builder_config = builder_config_module.BuilderConfig.lookup(
+        compiling_builder_id, builder_config.builder_db)
+    if compiling_builder_config.execution_mode != ctbc.COMPILE_AND_TEST:
+      raise api.step.StepFailure(
+          f'Unsupported UTR invocation for builder {builder} triggered by '
+          f'builder {builder_config.parent_buildername}. Please file a general '
+          "infra bug via https://g.co/bugatrooper if you're seeing this.")
+
   checkout_path = Path(RootBasePath(), checkout_dir)
-  api.chromium_tests.configure_build(builder_config, test_only=not build)
+  api.chromium_tests.configure_build(
+      compiling_builder_config, test_only=not build)
   api.path['checkout'] = checkout_path.join('src')
   api.chromium_checkout.checkout_dir = checkout_path
 
   build_dir = build_dir or api.path.join('out', api.chromium.c.build_config_fs)
   build_path = Path(RootBasePath(), build_dir)
   api.chromium.output_dir = build_path
-  return builder_id, builder_config, checkout_path, build_path
+  return (compiling_builder_id, compiling_builder_config, checkout_path,
+          build_path)
 
 
 def compile_targets(
@@ -297,6 +323,98 @@ def GenTests(api: RecipeTestApi):
           post_process.StepCommandDoesNotContain, 'isolate tests',
           ['fake_root/fake_out/Debug/not_run_test.isolated.gen.json']),
       api.post_process(post_process.DoesNotRun, 'not_run_test'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'child_tester',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          parent_builder_group='fake-group',
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='checkout',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+      ),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'unsupported_child_testers',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-grandchild-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-child-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          parent_builder_group='fake-group',
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-grandchild-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-child-tester',
+                          parent_builder_group='fake-group',
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='checkout',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+      ),
+      api.post_process(
+          post_process.SummaryMarkdownRE,
+          'Unsupported UTR invocation for builder fake-grandchild-tester.*',
+      ),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
