@@ -5,6 +5,7 @@
 
 import itertools
 from collections.abc import Iterable, Mapping
+from google.protobuf import json_format
 
 from recipe_engine import post_process
 from recipe_engine.config_types import Path, BasePath
@@ -28,6 +29,7 @@ DEPS = [
     'gn',
     'test_utils',
     'skylab',
+    'depot_tools/gclient',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -55,6 +57,13 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
    build_path) = configure_build(api, properties.checkout_path,
                                  properties.build_dir, should_build)
 
+  if not properties.bypass_gclient:
+    error_message = check_gclient(api)
+    if error_message:
+      rerun_props = InputProperties(bypass_gclient=True)
+      return create_rerun_result(api, rerun_props, error_message,
+                                 properties.output_properties_file)
+
   raw_result, tests = create_tests(api, build_path, properties.test_names,
                                    properties.got_revisions,
                                    compiling_builder_id,
@@ -69,6 +78,69 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   with api.chromium_tests.wrap_chromium_tests(tests):
     api.chromium_tests.configure_swarming(True)
     return test_runner()
+
+
+def get_gclient_config(api: RecipeApi):
+  # TODO(crbug.com/41492686): The .gclient file can technically
+  # exist in any parent dir but will normally be in the chromium
+  # or chromium/src.
+  checkout_file = api.path['checkout'].join('.gclient')
+  src_file = api.path.split(api.path['checkout'])[0].join('.gclient')
+  if api.path.exists(checkout_file):
+    gclient_file_path = checkout_file
+  elif api.path.exists(src_file):
+    gclient_file_path = src_file
+  else:
+    raise FileNotFoundError(f'.gclient file not found at {str(checkout_file)} '
+                            f'or {str(src_file)}')
+  # TODO(https://crbug.com/327270127): Use some utility to get the current
+  # .gclient config so we don't have to exec() the file
+  gclient_text = api.file.read_text('read gclient', gclient_file_path)
+  local_env = {}
+  exec(gclient_text, {}, local_env)
+  return local_env
+
+
+def check_gclient(api: RecipeApi) -> str:
+  mismatch_messages = []
+  gclient_config = get_gclient_config(api)
+  solution = [
+      sol for sol in gclient_config.get('solutions', []) if sol.get('url', '')
+      == 'https://chromium.googlesource.com/chromium/src.git'
+  ]
+  if len(solution) != 1:
+    return ('Caution: your .gclient file could not be validated. Exactly one '
+            'solution with \'url\' set to '
+            'https://chromium.googlesource.com/chromium/src.git'
+            ' must be set\n')
+  solution = solution[0]
+
+  current_custom_vars = solution.get('custom_vars', {})
+  if 'rbe_instance' in current_custom_vars:
+    mismatch_messages.append('- rbe_instance has been set in the .gclient file')
+
+  if len(api.gclient.c.solutions) > 0:
+    for builder_custom_var in api.gclient.c.solutions[0].custom_vars:
+      if (builder_custom_var not in current_custom_vars or
+          not current_custom_vars.get(builder_custom_var, {})):
+        mismatch_messages.append(
+            f'- custom_var {builder_custom_var} is not set the local '
+            '.gclient file')
+
+  current_target_os = gclient_config.get('target_os', [])
+  builder_target_os = api.gclient.c.target_os
+  for os in builder_target_os:
+    if os not in current_target_os:
+      mismatch_messages.append(
+          f'- target_os in builder config ({os}) not in local .gclient ' +
+          f'({str(current_target_os)})')
+
+  # TODO(crbug.com/41492686): Check custom_deps
+  error_info = ''
+  if mismatch_messages:
+    error_info = ('Caution: your .gclient file and the builder\'s mismatches in'
+                  ' the following way(s):\n' + '\n'.join(mismatch_messages))
+  return error_info
 
 
 def create_tests(
@@ -175,16 +247,14 @@ def configure_build(
           f'builder {builder_config.parent_buildername}. Please file a general '
           "infra bug via https://g.co/bugatrooper if you're seeing this.")
 
-  checkout_path = Path(RootBasePath(), checkout_dir)
-  api.chromium_tests.configure_build(
-      compiling_builder_config, test_only=not build)
-  api.path['checkout'] = checkout_path.join('src')
-  api.chromium_checkout.checkout_dir = checkout_path
+  api.chromium_tests.configure_build(builder_config, test_only=not build)
+  api.path['checkout'] = api.path.abs_to_path(checkout_dir)
+  api.chromium_checkout.checkout_dir = api.path['cache']
 
   build_dir = build_dir or api.path.join('out', api.chromium.c.build_config_fs)
   build_path = Path(RootBasePath(), build_dir)
   api.chromium.output_dir = build_path
-  return (compiling_builder_id, compiling_builder_config, checkout_path,
+  return (compiling_builder_id, compiling_builder_config, api.path['checkout'],
           build_path)
 
 
@@ -250,6 +320,35 @@ def get_remote_compile_options(api, build_dir) -> bool:
   return use_reclient
 
 
+def create_rerun_result(api: RecipeApi, rerun_properties: InputProperties,
+                        info: str,
+                        output_properties_file: str) -> result_pb2.RawResult:
+  """Create a result for retriggering the recipe
+
+  Writes the provided properties and creates a RawResult meant for the CLI to
+  retrigger the recipe. The presence of rerun_properties should indicate to the
+  CLI that the recipe can be invoked again differently for a different result.
+  The info will be included in the RawResult meant to provide additional
+  information to the user e.g. a prompt asking if gclient args from the builder
+  are not set locally.
+
+  Args:
+      api: Recipe API object.
+      rerun_properties: InputProperties that should overwrite properties on the
+        next run
+      info: Information string that the user should see
+      output_properties_file: Where the rerun_properties should be written
+  Returns:
+    A RawResult that should be returned to trigger a rerun
+  """
+  if output_properties_file:
+    api.file.write_json(
+        'write output_properties_file', output_properties_file,
+        json_format.MessageToDict(
+            message=rerun_properties, preserving_proto_field_name=True))
+  return result_pb2.RawResult(status=common_pb2.FAILURE, summary_markdown=info)
+
+
 def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
@@ -295,11 +394,25 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
           disable_code_coverage=True,
+          bypass_gclient=False,
       ),
+      api.path.exists(api.path['cache'].join('.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text("""
+solutions = [
+  {
+    'url': 'https://chromium.googlesource.com/chromium/src.git',
+    'custom_vars': {
+      'checkout_telemetry_dependencies': True,
+    },
+  },
+]
+""")),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
@@ -364,10 +477,11 @@ def GenTests(api: RecipeTestApi):
           }),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
           disable_code_coverage=True,
+          bypass_gclient=True,
       ),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.DropExpectation),
@@ -441,10 +555,11 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['non_existant_test'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
           disable_code_coverage=True,
+          bypass_gclient=True,
       ),
       api.post_process(
           post_process.SummaryMarkdown,
@@ -477,11 +592,12 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
-          build_dir='checkout/src/out/Release',
+          checkout_path='[CACHE]/src',
+          build_dir='[CACHE]/src/out/Release',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
           disable_code_coverage=True,
+          bypass_gclient=True,
       ),
       api.step_data('read GN args',
                     api.raw_io.output_text('use_remoteexec = true')),
@@ -498,6 +614,171 @@ def GenTests(api: RecipeTestApi):
                        ['browser_tests']),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'bad_gclient',
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='ios',
+              chromium_config='chromium',
+          )),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='[CACHE]/src',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+          bypass_gclient=False,
+          output_properties_file='checkout/output_properties.json'),
+      api.path.exists(api.path['cache'].join('src', '.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text("""
+solutions = [
+  {
+    'url': 'https://chromium.googlesource.com/chromium/src.git',
+    'custom_vars': {
+      'rbe_instance': 'fake_instance',
+    },
+  },
+]
+target_os=['os']
+""")),
+      api.post_process(
+          post_process.ResultReason,
+          'Caution: your .gclient file and the builder\'s mismatches in the '
+          'following way(s):\n'
+          '- rbe_instance has been set in the .gclient file\n'
+          '- custom_var checkout_telemetry_dependencies is not set the local '
+          '.gclient file\n'
+          '- target_os in builder config (ios) not in local .gclient ([\'os\'])'
+      ),
+      api.post_process(post_process.StepCommandContains, 'read gclient',
+                       ['[CACHE]/src/.gclient']),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'gclient_above_src',
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+          )),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='[CACHE]/src',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+          bypass_gclient=False,
+      ),
+      api.path.exists(api.path['cache'].join('.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text("""
+solutions = [
+  {
+    'url': 'https://chromium.googlesource.com/chromium/src.git',
+    'custom_vars': {
+      'checkout_telemetry_dependencies': True,
+    },
+  },
+]
+""")),
+      api.post_process(post_process.StepCommandContains, 'read gclient',
+                       ['[CACHE]/.gclient']),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'src_not_in_gclient',
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='ios',
+              chromium_config='chromium',
+          )),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='[CACHE]/src',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+          bypass_gclient=False,
+          output_properties_file='checkout/output_properties.json'),
+      api.path.exists(api.path['cache'].join('src', '.gclient')),
+      api.step_data(
+          'read gclient',
+          api.file.read_text("""
+solutions = [
+  {
+    'custom_vars': {
+      'rbe_instance': 'fake_instance',
+    },
+  },
+]
+target_os=['os']
+""")),
+      api.post_process(
+          post_process.ResultReason,
+          'Caution: your .gclient file could not be validated. Exactly one '
+          'solution with \'url\' set to '
+          'https://chromium.googlesource.com/chromium/src.git must be set\n'),
+      api.post_process(post_process.StepCommandContains, 'read gclient',
+                       ['[CACHE]/src/.gclient']),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'missing_gclient',
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+          )),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='[CACHE]/src',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          disable_code_coverage=True,
+          bypass_gclient=False,
+      ),
+      api.expect_exception('FileNotFoundError'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -524,11 +805,13 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
           disable_code_coverage=True,
-          build_dir='fake_root/fake_out/Debug'),
+          build_dir='fake_root/fake_out/Debug',
+          bypass_gclient=True,
+      ),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
@@ -569,9 +852,10 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
+          bypass_gclient=True,
       ),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
@@ -606,9 +890,10 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
+          bypass_gclient=True,
       ),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', '', failures=['Test.One']),
@@ -646,9 +931,10 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
+          bypass_gclient=True,
       ),
       api.override_step_data('compile', retcode=1),
       api.post_process(post_process.MustRun, 'compile'),
@@ -681,9 +967,10 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=True,
+          bypass_gclient=True,
       ),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
@@ -721,8 +1008,9 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_RUN,
+          bypass_gclient=True,
       ),
       api.post_process(post_process.DoesNotRun, 'compile'),
       api.post_process(post_process.DoesNotRun, 'generate_build_files'),
@@ -756,9 +1044,10 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['browser_tests'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE,
           preserve_gn_args=False,
+          bypass_gclient=True,
       ),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
@@ -809,9 +1098,11 @@ def GenTests(api: RecipeTestApi):
       ),
       api.properties(
           test_names=['lacros-test'],
-          checkout_path='checkout',
+          checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          build_dir='fake_root/fake_out/Debug'),
+          build_dir='fake_root/fake_out/Debug',
+          bypass_gclient=True,
+      ),
       api.path.exists(
           Path(RootBasePath(), 'fake_root/fake_out/Debug/lacros-test.isolate'),
           api.path['start_dir'].join('squashfs', 'squashfs-tools',
