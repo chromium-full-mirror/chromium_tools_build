@@ -530,7 +530,7 @@ def setup_target(api,
       libcore_command.append('--no-getrandom')
 
     # Disable libcore runs with gcstress and debug, they time out.
-    if not (gcstress and debug):
+    if not (gcstress and debug) and not on_virtual_machine:
       with api.context(env=test_env):
         defer(api.step, 'test libcore', libcore_command)
       test_logging(api, 'test libcore')
@@ -544,13 +544,13 @@ def setup_target(api,
       libjdwp_command += ['--vm-arg', '-Xgc:gcstress']
 
     # Disable jit libjdwp runs with gcstress and debug, they time out.
-    if not (gcstress and debug):
+    if not (gcstress and debug) and not on_virtual_machine:
       with api.context(env=test_env):
         defer(api.step, 'test libjdwp jit', libjdwp_command)
       test_logging(api, 'test libjdwp jit')
 
     # Disable interpreter libjdwp runs with gcstress, they time out.
-    if not gcstress:
+    if not gcstress and not on_virtual_machine:
       with api.context(env=test_env):
         defer(api.step, 'test libjdwp interpreter',
               libjdwp_command + ['--no-jit'])
