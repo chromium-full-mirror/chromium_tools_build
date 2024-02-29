@@ -302,7 +302,10 @@ def setup_target(api,
   art_tools = api.context.cwd.join('art', 'tools')
   # The path to the chroot directory on the device where ART and its
   # dependencies are installed, in case of chroot-based testing.
-  chroot_dir='/data/local/art-test-chroot'
+  if on_virtual_machine:
+    chroot_dir = '/home/ubuntu/art-test-chroot'
+  else:
+    chroot_dir = '/data/local/art-test-chroot'
 
   qemu_path = ensure_tool(
     api=api,
