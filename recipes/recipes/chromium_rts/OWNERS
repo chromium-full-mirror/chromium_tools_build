@@ -1,3 +1,7 @@
+# Prefer chrome-dev-infra-reviewers@ to individual owners. Sending code
+# reviews to the alias allows the owners to distribute code review loads.
+chrome-dev-infra-reviewers@google.com
+
 gbeaty@google.com
 guterman@google.com
 sshrimp@google.com
