@@ -43,4 +43,7 @@ message InputProperties {
 
   // The TARGET_PRODUCT to build for.
   string product = 12;
+
+  // Command line arguments for the testrunner.py script.
+  repeated string testrunner_args = 13;
 }
