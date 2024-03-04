@@ -26,45 +26,6 @@ PROPERTIES = InputProperties
 
 HOST_TEST_INTERPRETER_MAKE_JOBS = 5
 
-_TARGET_DEVICE_MAP = {
-    'walleye-armv7': {
-        'bitness': 32,
-        'product': 'arm_krait',
-    },
-    'walleye-armv8': {
-        'bitness': 64,
-        'product': 'armv8',
-    },
-    'angler-armv7': {
-        'bitness': 32,
-        'product': 'arm_krait',
-    },
-    'fugu': {
-        'bitness': 32,
-        'product': 'silvermont',
-    },
-    'angler-armv8': {
-        'bitness': 64,
-        'product': 'armv8',
-    },
-    'bullhead-armv8': {
-        'bitness': 64,
-        'product': 'armv8',
-    },
-    'bullhead-armv7': {
-        'bitness': 32,
-        'product': 'arm_krait',
-    },
-    'qemu-armv8': {
-        'bitness': 64,
-        'product': 'armv8',
-    },
-    'qemu-riscv64': {
-        'bitness': 64,
-        'product': 'riscv64',
-    },
-}
-
 def RunSteps(api, props):
   manifest_branch = props.manifest_branch or 'master-art'
   if props.device:
@@ -399,8 +360,6 @@ def setup_target(api,
       'ART_TEST_ON_VM': 'true',
     })
 
-  assert bitness == _TARGET_DEVICE_MAP[device]['bitness']
-  assert product == _TARGET_DEVICE_MAP[device]['product']
   env.update({
       'TARGET_PRODUCT':
           product,
