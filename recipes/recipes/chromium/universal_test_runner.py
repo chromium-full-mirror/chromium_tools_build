@@ -124,7 +124,7 @@ def check_gclient(api: RecipeApi) -> str:
       if (builder_custom_var not in current_custom_vars or
           not current_custom_vars.get(builder_custom_var, {})):
         mismatch_messages.append(
-            f'- custom_var {builder_custom_var} is not set the local '
+            f'- custom_var {builder_custom_var} is not set in the local '
             '.gclient file')
 
   current_target_os = gclient_config.get('target_os', [])
@@ -132,8 +132,8 @@ def check_gclient(api: RecipeApi) -> str:
   for os in builder_target_os:
     if os not in current_target_os:
       mismatch_messages.append(
-          f'- target_os in builder config ({os}) not in local .gclient ' +
-          f'({str(current_target_os)})')
+          f'- target_os in builder config ({os}) is not in the local '
+          f'.gclient file ({str(current_target_os)})')
 
   # TODO(crbug.com/41492686): Check custom_deps
   error_info = ''
@@ -655,10 +655,10 @@ target_os=['os']
           'Caution: your .gclient file and the builder\'s mismatches in the '
           'following way(s):\n'
           '- rbe_instance has been set in the .gclient file\n'
-          '- custom_var checkout_telemetry_dependencies is not set the local '
-          '.gclient file\n'
-          '- target_os in builder config (ios) not in local .gclient ([\'os\'])'
-      ),
+          '- custom_var checkout_telemetry_dependencies is not set in the '
+          'local .gclient file\n'
+          '- target_os in builder config (ios) is not in the local .gclient '
+          'file ([\'os\'])'),
       api.post_process(post_process.StepCommandContains, 'read gclient',
                        ['[CACHE]/src/.gclient']),
       api.expect_status('FAILURE'),
