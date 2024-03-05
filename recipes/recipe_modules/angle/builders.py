@@ -200,6 +200,8 @@ _SPEC = {
         _create_builder_config('win', 'Debug', 64, is_clang=False),
     'win10-x64-exp-intel':
         _create_tester_config('win', 64, 'win-exp-test'),
+    'win10-x64-exp-nvidia':
+        _create_tester_config('win', 64, 'win-exp-test'),
     'win10-x64-intel':
         _create_tester_config('win', 64, 'win-test'),
     'win10-x64-intel-perf':

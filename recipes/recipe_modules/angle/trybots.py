@@ -277,6 +277,11 @@ _SPEC = {
                     buildername='win-exp-test',
                     tester='win10-x64-exp-intel',
                 ),
+                try_spec.TryMirror.create(
+                    builder_group='angle',
+                    buildername='win-exp-test',
+                    tester='win10-x64-exp-nvidia',
+                ),
             ],
             analyze_names=['angle'],
             retry_failed_shards=False,
