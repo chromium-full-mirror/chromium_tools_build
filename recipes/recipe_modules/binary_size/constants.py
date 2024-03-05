@@ -8,6 +8,7 @@ DEFAULT_ANALYZE_TARGETS = [
 ]
 DEFAULT_COMPILE_TARGETS = [
     'trichrome_32_minimal_apks',
+    'trichrome_library_64_apk',
 ]
 
 # Path is relative to Chromium output directory.
