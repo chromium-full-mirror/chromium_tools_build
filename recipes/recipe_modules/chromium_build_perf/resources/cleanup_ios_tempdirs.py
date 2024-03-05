@@ -10,19 +10,12 @@ import shutil
 import sys
 
 
-# tempfile.gettempdir() doesn't return system tempdir from recipe.
-# hardcoding the glob pattern starting with /var/folders.
-patterns = [
-    '/var/folders/**/com.apple.CoreSimulator.SimDevice.*',
-    '/var/folders/**/*IBTOOLD*',
-    '/var/folders/**/ibtoold*',
-]
-
 def main():
-  for p in patterns:
-    for d in glob.iglob(p, recursive=True):
-      print('Removing ' + d)
-      shutil.rmtree(d)
+  # tempfile.gettempdir() doesn't return system tempdir from recipe.
+  # hardcoding the glob pattern starting with /var/folders.
+  for d in glob.iglob('/var/folders/**/com.apple.CoreSimulator.SimDevice.*', recursive=True):
+    print('Removing ' + d)
+    shutil.rmtree(d)
 
 
 if '__main__' == __name__:
