@@ -15,5 +15,6 @@
 /runtest.py                       recipes
 /tee.py                           recipes
 /upload_goma_logs.py*             recipes
+/withxvfb.py                      recipes
 /xvfb.py                          recipes
 /zip_build.py                     recipes

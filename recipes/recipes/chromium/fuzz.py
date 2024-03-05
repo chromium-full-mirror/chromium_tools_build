@@ -516,11 +516,19 @@ def RunSteps(api):
               'python3', 'tools/code_coverage/download_fuzz_corpora.py',
               '--download-dir', corpora_dir, '--build-dir', build_dir
           ])
-          api.step('run all fuzzers', [
-              'python3', 'tools/code_coverage/run_all_fuzzers.py',
-              '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
-              corpora_dir, '--profdata-outdir', profdata_dir
-          ])
+          # Figure out what we need to start X. Some fuzzers rely on an
+          # X environment
+          withxvfb_path = api.repo_resource('recipes', 'withxvfb.py')
+          withxvfb_args = ['--target', api.chromium.c.build_config_fs]
+          withxvfb_args.append('--bot-name=%s' % api.m.properties['bot_id'])
+          withxvfb_args.append('--build-dir=%s' % build_dir)
+
+          api.step(
+              'run all fuzzers', ['python3', withxvfb_path] + withxvfb_args + [
+                  '--', 'python3', 'tools/code_coverage/run_all_fuzzers.py',
+                  '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
+                  corpora_dir, '--profdata-outdir', profdata_dir
+              ])
           profdata_path = api.chromium_checkout.src_dir.join(
               'total_fuzz_coverage.profdata')
           llvm_profdata_path = api.chromium_checkout.src_dir.join(
