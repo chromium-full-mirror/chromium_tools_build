@@ -2764,13 +2764,6 @@
   },
   {
     "cmd": [],
-    "name": "proceed with retry",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "Test statistics",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>Stats<br/>Total shards: 1<br/>Total deduped shards: 0<br/><br/>Total runtime: 32s<br/>Total saved runtime from deduping: 0s<br/>@@@",

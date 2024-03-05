@@ -2632,6 +2632,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     test_runner = self.create_test_runner(
         tests,
         serialize_tests=builder_config.serialize_tests,
+        retry_failed_shards=builder_config.retry_failed_shards,
         # If any tests export coverage data we want to retry invalid shards due
         # to an existing issue with occasional corruption of collected coverage
         # data.

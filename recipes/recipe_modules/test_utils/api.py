@@ -705,7 +705,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
         set(old_invalid_suites).intersection(retried_invalid_suites))
     return still_invalid_swarming_suites + non_swarming_invalid_suites
 
-  def _should_abort_tryjob(self, rdb_results, allowed_failing_suites):
+  def _should_abort_retry(self, rdb_results, allowed_failing_suites):
     """Determines if the current recipe should skip its next retry phases.
 
     Args:
@@ -716,20 +716,21 @@ class TestUtilsApi(recipe_api.RecipeApi):
     Return:
       True if we should skip retries; False otherwise.
     """
-    try:
-      skip_retry_footer = self.m.tryserver.get_footer(
-          self.m.tryserver.constants.SKIP_RETRY_FOOTER)
-    except self.m.step.StepFailure:
-      result = self.m.step('failure getting footers', [])
-      result.presentation.status = self.m.step.WARNING
-      result.presentation.logs['exception'] = traceback.format_exc()
-    else:
-      if skip_retry_footer:
-        result = self.m.step('retries disabled', [])
-        result.presentation.step_text = (
-            '\nfooter {} disables suite-level retries'.format(
-                self.m.tryserver.constants.SKIP_RETRY_FOOTER))
-        return True
+    if self.m.tryserver.is_tryserver:
+      try:
+        skip_retry_footer = self.m.tryserver.get_footer(
+            self.m.tryserver.constants.SKIP_RETRY_FOOTER)
+      except self.m.step.StepFailure:
+        result = self.m.step('failure getting footers', [])
+        result.presentation.status = self.m.step.WARNING
+        result.presentation.logs['exception'] = traceback.format_exc()
+      else:
+        if skip_retry_footer:
+          result = self.m.step('retries disabled', [])
+          result.presentation.step_text = (
+              '\nfooter {} disables suite-level retries'.format(
+                  self.m.tryserver.constants.SKIP_RETRY_FOOTER))
+          return True
 
     unexpected = [
         x.suite_name
@@ -820,7 +821,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
         for x in test_suites
         if not self._suite_exceed_allowed_failure_rate(x, suffix)
     ]
-    if self.m.tryserver.is_tryserver and self._should_abort_tryjob(
+    if retry_failed_shards and self._should_abort_retry(
         rdb_results, allowed_failing_suites=_allowed_failing_suites):
       return invalid_test_suites, invalid_test_suites + failed_test_suites
 

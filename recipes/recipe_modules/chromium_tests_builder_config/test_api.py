@@ -227,21 +227,24 @@ class _PropertiesAssembler:
 
 class _CiBuilderPropertiesAssembler:
 
-  def __init__(self, props_assembler, builder_id, builder_spec):
+  def __init__(self, props_assembler, builder_id, builder_spec,
+               retry_failed_shards):
     self._props_assembler = props_assembler
     self._builder_id = builder_id
     self._builder_spec = builder_spec
     self._mirroring_builders = []
+    self._retry_failed_shards = retry_failed_shards
 
   @classmethod
-  def create(cls, **kwargs):
+  def create(cls, *, retry_failed_shards=False, **kwargs):
     props_assembler = _PropertiesAssembler()
     kwargs.setdefault('bucket', 'ci')
     details = BuilderDetails(
         execution_mode=_ExecutionMode.COMPILE_AND_TEST, parent=None, **kwargs)
     builder_id = props_assembler.add_builder(details)
     props_assembler.add_builder_id(builder_id)
-    return cls(props_assembler, builder_id, details.builder_spec)
+    return cls(props_assembler, builder_id, details.builder_spec,
+               retry_failed_shards)
 
   def with_tester(self, **kwargs):
     kwargs.setdefault('builder_spec', self._builder_spec)
@@ -264,22 +267,24 @@ class _CiBuilderPropertiesAssembler:
 
   def assemble(self):
     return self._props_assembler.assemble(
-        mirroring_builder_group_and_names=self._mirroring_builders)
+        mirroring_builder_group_and_names=self._mirroring_builders,
+        retry_failed_shards=self._retry_failed_shards)
 
 
 class _CiTesterPropertiesAssembler:
 
-  def __init__(self, props_assembler, tester_details):
+  def __init__(self, props_assembler, tester_details, retry_failed_shards):
     self._props_assembler = props_assembler
     self._tester_details = tester_details
     self._parent_details = None
+    self._retry_failed_shards = retry_failed_shards
 
   @classmethod
-  def create(cls, **kwargs):
+  def create(cls, *, retry_failed_shards=False, **kwargs):
     props_assembler = _PropertiesAssembler()
     kwargs.setdefault('bucket', 'ci')
     details = BuilderDetails(execution_mode=_ExecutionMode.TEST, **kwargs)
-    return cls(props_assembler, details)
+    return cls(props_assembler, details, retry_failed_shards)
 
   def with_parent(self, **kwargs):
     if self._parent_details is not None:
@@ -306,7 +311,8 @@ class _CiTesterPropertiesAssembler:
   def assemble(self):
     if self._parent_details is None:
       raise TypeError('`with_parent` must be called before calling `assemble`')
-    return self._props_assembler.assemble()
+    return self._props_assembler.assemble(
+        retry_failed_shards=self._retry_failed_shards,)
 
 
 class _TryBuilderPropertiesAssembler:

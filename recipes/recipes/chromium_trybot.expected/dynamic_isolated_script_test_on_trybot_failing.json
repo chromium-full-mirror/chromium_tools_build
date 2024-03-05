@@ -4478,13 +4478,6 @@
   },
   {
     "cmd": [],
-    "name": "proceed with retry (2)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "telemetry_gpu_unittests (test results summary)",
     "~followup_annotations": [
       "@@@STEP_TEXT@<br/>Tests failed with patch, and caused build to fail:<br/>Test.One<br/>@@@",

@@ -174,7 +174,11 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
       for builder_db, try_db in dbs:
         try:
           recipe_config = ctbc.BuilderConfig.lookup(
-              builder_id, builder_db, try_db, use_try_db=bucket in try_buckets)
+              builder_id,
+              builder_db,
+              try_db,
+              use_try_db=bucket in try_buckets,
+              default_retry_failed_shards=bucket in try_buckets)
           break
         except ctbc.BuilderConfigException:
           pass

@@ -74,7 +74,7 @@ def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
     def deterministic_failures(self, suffix):
       if self.name.endswith('failed_results') or self.name.endswith(
           'invalid_results'):
-        return [self]
+        return [self.name]
       return super().deterministic_failures(suffix)
 
     def has_valid_results(self, suffix):
@@ -400,6 +400,33 @@ def GenTests(api):
   yield api.test(
       'abort_retry_too_many_failures',
       api.chromium.try_build(builder='test_builder'),
+      api.properties(
+          test_name='base_unittests',
+          test_swarming=True,
+          swarm_hashes={
+              'base_unittests': '[dummy hash for base_unittests/size]',
+              'base_unittests_2': '[dummy hash for base_unittests_2/size]',
+          },
+          retry_failed_shards=True,
+          retry_invalid_shards=True,
+          **{
+              '$build/test_utils': {
+                  'min_failed_suites_to_skip_retry': 1,
+              },
+          }),
+      api.override_step_data(
+          'collect tasks.base_unittests results',
+          stdout=api.raw_io.output_text(
+              api.test_utils.rdb_results(
+                  'base_unittests', failing_tests=['Test.One']))),
+      api.post_check(post_process.MustRun, 'abort retry'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'abort_retry_too_many_failures_for_ci',
+      api.chromium.ci_build(builder='test_builder'),
       api.properties(
           test_name='base_unittests',
           test_swarming=True,

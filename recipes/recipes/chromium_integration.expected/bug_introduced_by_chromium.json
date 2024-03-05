@@ -4616,13 +4616,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "proceed with retry (2)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@"
-    ]
-  },
-  {
     "cmd": [
       "rdb",
       "rpc",

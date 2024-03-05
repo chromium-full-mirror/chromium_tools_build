@@ -68,6 +68,10 @@ RESULTS_URL = 'https://chromeperf.appspot.com'
 # total run time, which we want to keep low.
 REPEAT_COUNT_FOR_FAILING_TESTS = 10
 
+# To guarantee a deterministic failure, we would extend the retry time when
+# running failed tests on CI retry shards.
+RETRY_LIMIT_FOR_CI_RETRY_SHARDS = 5
+
 # Pinned version of
 # https://chromium.googlesource.com/infra/infra/+/main/go/src/infra/cmd/mac_toolchain
 MAC_TOOLCHAIN_PACKAGE = 'infra/tools/mac_toolchain/${platform}'
@@ -216,6 +220,10 @@ class TestOptions:
           # results.
           force_independent_tests=True,
       )
+
+    # Allow more retries for CI shard retries.
+    if suffix == 'retry shards':
+      return attr.evolve(self, retry_limit=RETRY_LIMIT_FOR_CI_RETRY_SHARDS)
 
     return self
 
@@ -990,39 +998,23 @@ class Test(AbstractTest):
     """Computes the tests to run on an invocation of the test suite.
 
     Args:
-      suffix: A unique identifier for this test suite invocation. Must be 'with
-      patch', 'retry shards with patch', or 'without patch'.
-      retry_only_failed_tests: When this is True, shards will receive a filter
-      to retry only the failed tests.
+      suffix: A unique identifier for this test suite invocation. Only supported
+          suffix will get a list of filtered tests. Others will return None
+          meaning all tests should be run.
 
     Returns:
       A list of tests to retry. Returning None means all tests should be run.
     """
-    # For the initial invocation, run every test in the test suite. Unless
-    # retry_only_failed_tests is True, run every test when retrying shards, as
-    # we explicitly want to run every test when retrying a shard.
-    if suffix == 'with patch' or (suffix == 'retry shards with patch' and
-                                  not self.retry_only_failed_tests):
-      return None
-
-    valid_results, failures = self.with_patch_failures_including_retry()
-
-    if (suffix == 'retry shards with patch' and self.retry_only_failed_tests):
-      if valid_results:
-        # Failures may also include known_luci_analysis_flaky_failures that
-        # are still being retried if they are weak exonerations.
-        return failures
+    if suffix == 'retry shards':
+      valid_results, failures = self.failures_including_retry('')
       # Invalid results should be treated as if every test failed.
-      return None
+      return failures if valid_results else None
 
-    # For the second invocation, run previously deterministically failing tests.
-    # When a patch is adding a new test (and it fails), the test runner is
-    # required to just ignore the unknown test.
-    if suffix == 'without patch':
+    if (suffix == 'without patch' or
+        (suffix == 'retry shards with patch' and self.retry_only_failed_tests)):
+      valid_results, failures = self.with_patch_failures_including_retry()
       # Invalid results should be treated as if every test failed.
-      return sorted(
-          failures -
-          self.known_luci_analysis_flaky_failures) if valid_results else None
+      return failures if valid_results else None
 
     # If we don't recognize the step, then return None. This makes it easy for
     # bugs to slip through, but this matches the previous behavior. Importantly,

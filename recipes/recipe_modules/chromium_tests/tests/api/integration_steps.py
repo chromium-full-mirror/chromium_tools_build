@@ -34,7 +34,7 @@ def GenTests(api):
           builder='fake-builder',
           git_repo='https://chromium.googlesource.com/v8/v8.git'),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
+          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),

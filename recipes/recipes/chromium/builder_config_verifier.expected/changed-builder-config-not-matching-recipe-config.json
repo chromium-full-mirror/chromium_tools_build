@@ -58,7 +58,7 @@
       "@@@STEP_LOG_LINE@diff@   ],@@@",
       "@@@STEP_LOG_LINE@diff@   \"is_compile_only\": false,@@@",
       "@@@STEP_LOG_LINE@diff@   \"mirroring_try_builders\": [],@@@",
-      "@@@STEP_LOG_LINE@diff@   \"retry_failed_shards\": true,@@@",
+      "@@@STEP_LOG_LINE@diff@   \"retry_failed_shards\": false,@@@",
       "@@@STEP_LOG_LINE@diff@   \"retry_without_patch\": true,@@@",
       "@@@STEP_LOG_LINE@diff@   \"targets_spec_directory\": null@@@",
       "@@@STEP_LOG_LINE@diff@ }@@@",

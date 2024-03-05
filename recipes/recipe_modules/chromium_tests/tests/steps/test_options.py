@@ -55,6 +55,14 @@ def RunSteps(api):
   new_options = options.for_running('without patch', ['test0'])
   api.assertions.assertEqual(new_options, options)
 
+  # Options for CI 'retry shards' suffix will be modified.
+  options = steps.TestOptions.create()
+  new_options = options.for_running('retry shards', ['test0'])
+  api.assertions.assertEqual(
+      new_options,
+      steps.TestOptions.create(
+          retry_limit=steps.RETRY_LIMIT_FOR_CI_RETRY_SHARDS,))
+
 
 def GenTests(api):
   yield api.test(

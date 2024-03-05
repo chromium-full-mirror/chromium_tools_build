@@ -344,9 +344,58 @@ def GenTests(api):
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', '', failures=['Test.One']),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DoesNotRun, 'abort retry'),
       api.post_process(post_process.MustRun, 'record test suite statuses'),
       api.post_process(post_process.PropertyEquals, 'test_status',
                        {'base_unittests': 'Failure'}),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'retry_failed_shards_enabled_on_tester',
+      api.platform('linux', 64),
+      api.chromium.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          parent_buildername='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_tester(
+              builder_group='fake-group',
+              builder='fake-tester',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket='fake-gs-bucket',
+              ),
+              retry_failed_shards=True,
+          ).with_parent(
+              builder_group='fake-group',
+              builder='fake-builder',
+          ).assemble()),
+      api.properties(swarm_hashes={
+          'base_unittests': '[dummy hash for base_unittests/size]'
+      }),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'linux',
+                          },
+                      }
+                  }],
+              },
+          }),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'base_unittests', '', failures=['Test.One']),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.MustRun, 'base_unittests'),
+      api.post_process(post_process.MustRun, 'base_unittests (retry shards)'),
+      api.post_process(post_process.MustRun, 'record test suite statuses'),
+      api.post_process(post_process.PropertyEquals, 'test_status',
+                       {'base_unittests': 'Success'}),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -857,7 +906,7 @@ def GenTests(api):
       }]
   }
   yield api.test(
-      'skip_retrying_logic_is_limited_to_try_jobs',
+      'skip_retrying_when_too_many_failures',
       api.platform('linux', 64),
       api.chromium.ci_build(
           builder_group='fake-group',
@@ -872,6 +921,7 @@ def GenTests(api):
                   chromium_config='chromium',
                   build_gs_bucket='fake-gs-bucket',
               ),
+              retry_failed_shards=True,
           ).with_parent(
               builder_group='fake-group',
               builder='fake-builder',
@@ -927,7 +977,7 @@ def GenTests(api):
           # The above failure is for dispatched task, the collect step
           # itself succeeds.
           api.legacy_annotation.success_step),
-      api.post_process(post_process.DoesNotRunRE, 'skip retrying'),
+      api.post_process(post_process.MustRun, 'abort retry'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )

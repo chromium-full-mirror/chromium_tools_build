@@ -4608,13 +4608,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "proceed with retry (2)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>fewer than 5 failures, continue with retries@@@"
-    ]
-  },
-  {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::test_utils]/resources/archive_layout_test_results_summary.py",
