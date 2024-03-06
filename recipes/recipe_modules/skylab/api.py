@@ -5,6 +5,7 @@
 import attr
 import base64
 import os
+import re
 
 from google.protobuf import json_format
 from recipe_engine import recipe_api
@@ -29,9 +30,37 @@ CTP_BUILDER = 'cros_test_platform'
 CTP_BUILDER_DEV = 'cros_test_platform-dev'
 CROS_BUCKET = 'gs://chromeos-image-archive/'
 
+# Prefix of args that indicates variable names of Tast '-var' flags.
+TAST_VARS_PREFIX = 'tast.'
 
 def _base64_encode_str(s):
   return base64.b64encode(s.encode('utf-8')).decode('ascii')
+
+
+def _base64_encode_args(args, skip_prefix=None):
+  """Base64-encode some args which contain shell-unsafe characters
+
+    Args:
+      args (list[str]): List of tast args, in the form of name=value
+      skip_prefix: If a name starts with this, it is copied to the result as-is.
+    Returns:
+      list of args, with some args encoded in base64 and _b64 suffix added to the name.
+  """
+  find_unsafe = re.compile(r'[^\w@%+=:,./-]', re.ASCII).search
+
+  def encode_if_necessary(arg):
+    a = arg.split('=', 1)
+    if len(a) < 2:
+      return arg
+    name, value = a
+    if skip_prefix and name.startswith(skip_prefix):
+      return arg
+    if not find_unsafe(value):
+      return arg
+    b = _base64_encode_str(value)
+    return f'{name}_b64={b}'
+
+  return [encode_if_necessary(arg) for arg in args]
 
 
 class SkylabApi(recipe_api.RecipeApi):
@@ -187,7 +216,8 @@ class SkylabApi(recipe_api.RecipeApi):
 
       if test.spec.test_args:
         if test.is_tast_test:
-          test_args.extend(test.spec.test_args)
+          test_args.extend(
+              _base64_encode_args(test.spec.test_args, TAST_VARS_PREFIX))
         else:
           test_args.append('test_args_b64=%s' %
                            _base64_encode_str(' '.join(test.spec.test_args)))

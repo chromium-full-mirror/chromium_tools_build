@@ -32,6 +32,7 @@ from recipe_engine.recipe_api import Property
 
 LACROS_TAST_EXPR = '("group:mainline" && "dep:lacros" && "!informational")'
 LACROS_GTEST_ARGS = '--gtest_filter="VaapiTest.*"'
+MAYBE_MISSING_VARS = 'ui\\.gaiaPoolDefault|anotherpackage\\..*'
 GPU_GTEST_ARGS = ['--show-stdout', '--browser=cros-chrome', '--passthrough']
 GPU_EXTRA_BROWSWER_ARGS = ('--log-level=0 --js-flags=--expose-gc '
                            '--force_high_performance_gpu')
@@ -219,6 +220,18 @@ TEST_ARGS_REQUESTS = [
         test_args=["tast." + FIELDTRIAL_TAST_VAR],
         bucket='chromiumos-image-archive',
         tast_expr="placeholder: this is tast test"),
+    gen_skylab_test(
+        'tast_maybemissingvars',
+        test_args=[
+            "maybemissingvars=" + MAYBE_MISSING_VARS, 'another_flag=123'
+        ],
+        bucket='chromiumos-image-archive',
+        tast_expr="placeholder: this is tast test"),
+    gen_skylab_test(
+        'tast_other_args',
+        test_args=["unknown_flag=XYZ", "unknown_boolean_flag"],
+        bucket='chromiumos-image-archive',
+        tast_expr="placeholder: this is tast test"),
 ]
 
 PROPERTIES = {
@@ -226,7 +239,7 @@ PROPERTIES = {
 }
 
 
-def StepCommandContainsSubstring(check, step_odict, step, substring):
+def StepCommandContainsSubstrings(check, step_odict, step, substrings):
   """Assert that a step's command contained the given substring
 
   Args:
@@ -234,9 +247,13 @@ def StepCommandContainsSubstring(check, step_odict, step, substring):
     substring (str) - The expected substring of an argument. If any of
       the commandline element contained this substring, the check is success.
   """
+
+  def found_in_commandline(substring):
+    return any(substring in arg for arg in step_odict[step].cmd)
+
   check(
-      'command line for step %s contained %s as substring' % (step, substring),
-      any(substring in arg for arg in step_odict[step].cmd))
+      'command line for step %s contained %s as substrings' %
+      (step, substrings), all(found_in_commandline(s) for s in substrings))
 
 
 def RunSteps(api, requests):
@@ -380,9 +397,29 @@ def GenTests(api):
       'tast_vars',
       api.properties(requests=TEST_ARGS_REQUESTS),
       api.post_process(
-          StepCommandContainsSubstring,
+          StepCommandContainsSubstrings,
           'schedule skylab test.' + TEST_ARGS_REQUESTS[0].name + '.schedule',
-          'tast.' + FIELDTRIAL_TAST_VAR),
+          ['tast.' + FIELDTRIAL_TAST_VAR]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tast_maybe_missing_vars',
+      api.properties(requests=TEST_ARGS_REQUESTS),
+      api.post_process(
+          StepCommandContainsSubstrings,
+          'schedule skylab test.' + TEST_ARGS_REQUESTS[1].name + '.schedule',
+          ['maybemissingvars_b64=' + b64_encode(MAYBE_MISSING_VARS)]),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'tast_unknown_arg',
+      api.properties(requests=TEST_ARGS_REQUESTS),
+      api.post_process(
+          StepCommandContainsSubstrings,
+          'schedule skylab test.' + TEST_ARGS_REQUESTS[2].name + '.schedule',
+          ['unknown_flag=XY', 'unknown_boolean_flag']),
       api.post_process(post_process.DropExpectation),
   )
 
