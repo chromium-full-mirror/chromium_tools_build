@@ -32,35 +32,34 @@ FLAKY_FAILURES = ['SomeOtherTest.FLAKY_Baz']
 
 TIMEOUT_MESSAGE = 'Killed (timed out).'
 
-RELOAD_ERRORS = (r'C:\b\slave\chrome-release-snappy\build\chrome\browser'
-r'\navigation_controller_unittest.cc:381: Failure' + """
+RELOAD_ERRORS = r"""
+C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:381: Failure
 Value of: -1
 Expected: contents->controller()->GetPendingEntryIndex()
 Which is: 0
 
-""")
+"""
 
-SPDY_ERRORS = (r'C:\b\slave\chrome-release-snappy\build\chrome\browser'
-r'\navigation_controller_unittest.cc:439: Failure' + """
+SPDY_ERRORS = r"""
+C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:439: Failure
 Value of: -1
 Expected: contents->controller()->GetPendingEntryIndex()
 Which is: 0
 
-""")
+"""
 
-SWITCH_ERRORS = (r'C:\b\slave\chrome-release-snappy\build\chrome\browser'
-r'\navigation_controller_unittest.cc:615: Failure' + """
+SWITCH_ERRORS = r"""
+C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:615: Failure
 Value of: -1
 Expected: contents->controller()->GetPendingEntryIndex()
 Which is: 0
 
-""" + r'C:\b\slave\chrome-release-snappy\build\chrome\browser'
-r'\navigation_controller_unittest.cc:617: Failure' + """
+C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:617: Failure
 Value of: contents->controller()->GetPendingEntry()
   Actual: true
 Expected: false
 
-""")
+"""
 
 TIMEOUT_ERRORS = ('[61613:263:0531/042613:2887943745568888:ERROR:/b/slave'
 '/chromium-rel-mac-builder/build/src/chrome/browser/extensions'
@@ -74,7 +73,7 @@ Value of: entry->page_type()
 Expected: NavigationEntry::NORMAL_PAGE
 """
 
-TEST_DATA = ("""
+TEST_DATA = f"""
 [==========] Running 7 tests from 3 test cases.
 [----------] Global test environment set-up.
 [----------] 1 test from HunspellTest
@@ -86,12 +85,12 @@ TEST_DATA = ("""
 [ RUN      ] NavigationControllerTest.Defaults
 [       OK ] NavigationControllerTest.Defaults (48 ms)
 [ RUN      ] NavigationControllerTest.Reload
-%(reload_errors)s
+{RELOAD_ERRORS}
 [  FAILED  ] NavigationControllerTest.Reload (2 ms)
 [ RUN      ] NavigationControllerTest.Reload_GeneratesNewPage
 [       OK ] NavigationControllerTest.Reload_GeneratesNewPage (22 ms)
 [ RUN      ] NavigationControllerTest/SpdyNetworkTransTest.Constructor/0
-%(spdy_errors)s
+{SPDY_ERRORS}
 [  FAILED  ] NavigationControllerTest/SpdyNetworkTransTest.Constructor/0 (2 ms)
 [----------] 4 tests from NavigationControllerTest (74 ms total)
 
@@ -99,34 +98,23 @@ TEST_DATA = ("""
 
 [----------] 1 test from BadTest
 [ RUN      ] BadTest.TimesOut
-%(timeout_errors)s
-""" % {'reload_errors': RELOAD_ERRORS,
-       'spdy_errors': SPDY_ERRORS,
-       'timeout_errors': TIMEOUT_ERRORS} +
-'[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome'
-'/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) '
-'exceeded for BadTest.TimesOut' + """
+{TIMEOUT_ERRORS}
+[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for BadTest.TimesOut
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
-""" +
-'[61613:19971:0531/042642:2887973024284693:INFO:/b/slave/chromium-rel-mac-'
-'builder/build/src/chrome/browser/browser_main.cc(285)] Handling shutdown for '
-'signal 15.' + """
+[61613:19971:0531/042642:2887973024284693:INFO:/b/slave/chromium-rel-mac-builder/build/src/chrome/browser/browser_main.cc(285)] Handling shutdown for signal 15.
 
 [----------] 1 test from MoreBadTest
 [ RUN      ] MoreBadTest.TimesOutAndFails
-%(morebad_errors)s
-""" % {'morebad_errors': MOREBAD_ERRORS} +
-'[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test'
-'/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) '
-'exceeded for MoreBadTest.TimesOutAndFails' + """
+{MOREBAD_ERRORS}
+[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for MoreBadTest.TimesOutAndFails
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
 [  FAILED  ] MoreBadTest.TimesOutAndFails (31000 ms)
 
 [----------] 5 tests from SomeOtherTest
 [ RUN      ] SomeOtherTest.SwitchTypes
-%(switch_errors)s
+{SWITCH_ERRORS}
 [  FAILED  ] SomeOtherTest.SwitchTypes (40 ms)
 [ RUN      ] SomeOtherTest.Foo
 [       OK ] SomeOtherTest.Foo (20 ms)
@@ -134,9 +122,7 @@ Successfully wrote to shutdown pipe, resetting signal handler.
 Some error message for a failing test.
 [  FAILED  ] SomeOtherTest.FAILS_Bar (40 ms)
 [ RUN      ] SomeOtherTest.FAILS_ThisTestTimesOut
-""" %  {'switch_errors' : SWITCH_ERRORS} +
-'[0521/041343:ERROR:test_launcher.cc(384)] Test timeout (5000 ms) '
-'exceeded for SomeOtherTest.FAILS_ThisTestTimesOut' + """
+[0521/041343:ERROR:test_launcher.cc(384)] Test timeout (5000 ms) exceeded for SomeOtherTest.FAILS_ThisTestTimesOut
 [ RUN      ] SomeOtherTest.FLAKY_Baz
 Some error message for a flaky test.
 [  FAILED  ] SomeOtherTest.FLAKY_Baz (40 ms)
@@ -157,7 +143,7 @@ Some error message for a flaky test.
   YOU HAVE 2 FLAKY TESTS
 
 program finished with exit code 1
-""")
+"""
 
 TEST_DATA_CRASH = """
 [==========] Running 7 tests from 3 test cases.
@@ -269,7 +255,8 @@ FAILING_TESTS_EXPECTED = ['ChromeRenderViewTest.FAILS_AllowDOMStorage',
                           'PrerenderBrowserTest.PrerenderHTML5VideoJs']
 
 
-TEST_DATA_SHARD_0 = ("""Note: This is test shard 1 of 30.
+TEST_DATA_SHARD_0 = f"""\
+Note: This is test shard 1 of 30.
 [==========] Running 6 tests from 3 test cases.
 [----------] Global test environment set-up.
 [----------] 1 test from HunspellTest
@@ -279,21 +266,15 @@ TEST_DATA_SHARD_0 = ("""Note: This is test shard 1 of 30.
 
 [----------] 1 test from BadTest
 [ RUN      ] BadTest.TimesOut
-%(timeout_errors)s
-""" % {'timeout_errors': TIMEOUT_ERRORS} +
-'[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test'
-'/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) '
-'exceeded for BadTest.TimesOut' + """
+{TIMEOUT_ERRORS}
+[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for BadTest.TimesOut
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
-""" +
-'[61613:19971:0531/042642:2887973024284693:INFO:/b/slave/chromium-rel-mac-'
-'builder/build/src/chrome/browser/browser_main.cc(285)] Handling shutdown for '
-'signal 15.' + """
+[61613:19971:0531/042642:2887973024284693:INFO:/b/slave/chromium-rel-mac-builder/build/src/chrome/browser/browser_main.cc(285)] Handling shutdown for signal 15.
 
 [----------] 4 tests from SomeOtherTest
 [ RUN      ] SomeOtherTest.SwitchTypes
-%(switch_errors)s
+{SWITCH_ERRORS}
 [  FAILED  ] SomeOtherTest.SwitchTypes (40 ms)
 [ RUN      ] SomeOtherTest.Foo
 [       OK ] SomeOtherTest.Foo (20 ms)
@@ -301,9 +282,7 @@ Successfully wrote to shutdown pipe, resetting signal handler.
 Some error message for a failing test.
 [  FAILED  ] SomeOtherTest.FAILS_Bar (40 ms)
 [ RUN      ] SomeOtherTest.FAILS_ThisTestTimesOut
-"""  % {'switch_errors' : SWITCH_ERRORS} +
-'[0521/041343:ERROR:test_launcher.cc(384)] Test timeout (5000 ms) exceeded '
-'for SomeOtherTest.FAILS_ThisTestTimesOut' + """
+[0521/041343:ERROR:test_launcher.cc(384)] Test timeout (5000 ms) exceeded for SomeOtherTest.FAILS_ThisTestTimesOut
 [ RUN      ] SomeOtherTest.FLAKY_Baz
 Some error message for a flaky test.
 [  FAILED  ] SomeOtherTest.FLAKY_Baz (40 ms)
@@ -320,36 +299,31 @@ Some error message for a flaky test.
   YOU HAVE 10 DISABLED TESTS
 
   YOU HAVE 2 FLAKY TESTS
-""")
+"""
 
-TEST_DATA_SHARD_1 = ("""Note: This is test shard 13 of 30.
+TEST_DATA_SHARD_1 = f"""\
+Note: This is test shard 13 of 30.
 [==========] Running 5 tests from 2 test cases.
 [----------] Global test environment set-up.
 [----------] 4 tests from NavigationControllerTest
 [ RUN      ] NavigationControllerTest.Defaults
 [       OK ] NavigationControllerTest.Defaults (48 ms)
 [ RUN      ] NavigationControllerTest.Reload
-%(reload_errors)s
+{RELOAD_ERRORS}
 [  FAILED  ] NavigationControllerTest.Reload (2 ms)
 [ RUN      ] NavigationControllerTest.Reload_GeneratesNewPage
 [       OK ] NavigationControllerTest.Reload_GeneratesNewPage (22 ms)
 [ RUN      ] NavigationControllerTest/SpdyNetworkTransTest.Constructor/0
-%(spdy_errors)s
-""" % {'reload_errors' : RELOAD_ERRORS,
-       'spdy_errors'   : SPDY_ERRORS} +
-'[  FAILED  ] NavigationControllerTest/SpdyNetworkTransTest.Constructor'
-'/0 (2 ms)' + """
+{SPDY_ERRORS}
+[  FAILED  ] NavigationControllerTest/SpdyNetworkTransTest.Constructor/0 (2 ms)
 [----------] 4 tests from NavigationControllerTest (74 ms total)
 
   YOU HAVE 2 FLAKY TESTS
 
 [----------] 1 test from MoreBadTest
 [ RUN      ] MoreBadTest.TimesOutAndFails
-%(morebad_errors)s
-""" % {'morebad_errors': MOREBAD_ERRORS} +
-'[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test'
-'/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) '
-'exceeded for MoreBadTest.TimesOutAndFails' + """
+{MOREBAD_ERRORS}
+[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for MoreBadTest.TimesOutAndFails
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
 [  FAILED  ] MoreBadTest.TimesOutAndFails (31000 ms)
@@ -365,7 +339,7 @@ Successfully wrote to shutdown pipe, resetting signal handler.
   YOU HAVE 10 DISABLED TESTS
 
   YOU HAVE 2 FLAKY TESTS
-""")
+"""
 
 TEST_DATA_SHARD_EXIT = 'program finished with exit code '
 
@@ -376,16 +350,14 @@ TEST_DATA_CRASH_SHARD = """Note: This is test shard 5 of 5.
 [ RUN      ] HunspellTest.Crashes
 Oops, this test crashed!"""
 
-TEST_DATA_NESTED_RUNS = ("""
+TEST_DATA_NESTED_RUNS = """
 [ 1/3] 1.0s Foo.Bar (45.5s)
 Note: Google Test filter = Foo.Bar
 [==========] Running 1 test from 1 test case.
 [----------] Global test environment set-up.
 [----------] 1 test from Foo, where TypeParam =
 [ RUN      ] Foo.Bar
-""" +
-'[0725/050653:ERROR:test_launcher.cc(380)] Test timeout (45000 ms) exceeded '
-'for Foo.Bar' + """
+[0725/050653:ERROR:test_launcher.cc(380)] Test timeout (45000 ms) exceeded for Foo.Bar
 Starting tests...
 IMPORTANT DEBUGGING NOTE: each test is run inside its own process.
 For debugging a test inside a debugger, use the
@@ -397,7 +369,7 @@ process mode).
 1 test failed (0 ignored)
 Failing tests:
 Foo.Bar
-[ 2/2] 2.00s Foo.Pass (1.0s)""")
+[ 2/2] 2.00s Foo.Pass (1.0s)"""
 
 
 # Data generated with run_test_case.py
