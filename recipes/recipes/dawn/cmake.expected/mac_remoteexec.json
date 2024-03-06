@@ -1,0 +1,6105 @@
+[
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/uncached"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "init cache if not exists"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "--spec-path",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'dawn_node': 'True', 'dawn_root': 'dawn', 'download_remoteexec_cfg': 'True', 'fetch_cmake': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
+      "--revision_mapping_file",
+      "{\"got_revision\": \"dawn\"}",
+      "--git-cache-dir",
+      "[CACHE]/git",
+      "--cleanup-dir",
+      "[CLEANUP]/bot_update",
+      "--output_json",
+      "/path/to/tmp/json",
+      "--revision",
+      "dawn@2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--refs",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/uncached",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "GIT_BACKENDINFO": "1",
+      "GIT_DAPPER_TRACE": "1",
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "1800",
+      "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE_CURL_NO_DATA": "1",
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bot_update",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Some step text@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dawn\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"dawn\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#120015}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"dawn\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#120015}\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "runhooks"
+    ],
+    "cwd": "[CACHE]/uncached",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gclient runhooks"
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/builder",
+      "-ensure-file",
+      "@Subdir clang\nfuchsia/third_party/clang/mac-amd64 fDkN9wRoOjxDSowpeqX2rRdHF3sgPEbM9ulbizq9kCQC",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"clang\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-fDkN9wRoOjxDSowp\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"fuchsia/third_party/clang/mac-amd64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/check-no-crlf"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Check for no CRLF"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/lint"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run cpplint"
+  },
+  {
+    "cmd": [
+      "go",
+      "test",
+      "./..."
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run go tool unittests"
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_USE_BUILT_DXC=1",
+      "-DTINT_BUILD_SPV_READER=1",
+      "-DTINT_BUILD_WGSL_READER=1",
+      "-DTINT_BUILD_GLSL_WRITER=1",
+      "-DTINT_BUILD_HLSL_WRITER=1",
+      "-DTINT_BUILD_MSL_WRITER=1",
+      "-DTINT_BUILD_SPV_WRITER=1",
+      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=0",
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DTINT_BUILD_FUZZERS=1",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
+      "-DTINT_BUILD_AST_FUZZER=1",
+      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.CMake generate step for default targets",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "/path/to/tmp/"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets.preprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "download_remoteexec_cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "rbe_instance"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.gclient check if rbe_instance var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets.preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs",
+      "--recursive"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.list reclient_cfgs dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.list reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.start cloudtail: reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.start reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-j",
+      "160",
+      "all"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_exec_strategy": "remote",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.Compile default targets",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets.postprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap",
+      "-shutdown"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.shutdown reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.stop cloudtail",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/rbe_metrics.pb",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.load rbe_metrics.pb",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets.postprocess for reclient.install infra/tools/bqupload",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.install infra/tools/bqupload.ensure package directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8",
+      "-ensure-file",
+      "infra/tools/bqupload/${platform} latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.install infra/tools/bqupload.ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/bqupload/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "goma-logs.rbe_metrics.builds"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload RBE metrics to BigQuery",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:21.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:21.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"flags\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"abc\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"def\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"bar\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"other\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"int64_value\": \"7\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"some\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"bool_value\": true@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"stats\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"CPU\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"MEM\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"event_times\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"from\": \"2022-07-19T22:26:45Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"to\": \"2022-07-21T02:13:25Z\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"test\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"double_value\": 1.1@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@}@@@",
+      "@@@STEP_LOG_END@rbe_metrics@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_1",
+      "--output-gzip-path",
+      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.gzip reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.gsutil upload reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CLEANUP]/reclient_log_tmp_1"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.list reclient log directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_1/rewrapper.INFO@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets.postprocess for reclient.upload logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake tar contents",
+      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.create reclient log tar",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.upload logs.gsutil upload reclient logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_1",
+      "--build-exit-status",
+      "-1"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.perform reclient health check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/reclient_log_tmp_1"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.cleanup reclient log dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_USE_BUILT_DXC=1",
+      "-DTINT_BUILD_SPV_READER=1",
+      "-DTINT_BUILD_WGSL_READER=1",
+      "-DTINT_BUILD_GLSL_WRITER=1",
+      "-DTINT_BUILD_HLSL_WRITER=1",
+      "-DTINT_BUILD_MSL_WRITER=1",
+      "-DTINT_BUILD_SPV_WRITER=1",
+      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=1",
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DTINT_BUILD_FUZZERS=1",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
+      "-DTINT_BUILD_AST_FUZZER=1",
+      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.CMake generate step for default targets with dawn.node enabled",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "/path/to/tmp/"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "download_remoteexec_cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "rbe_instance"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.gclient check if rbe_instance var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs",
+      "--recursive"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.list reclient_cfgs dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.list reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.start cloudtail: reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy-gomaip.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_2",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_2",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.start reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-j",
+      "160",
+      "dawn.node"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_exec_strategy": "remote",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.Compile default targets with dawn.node enabled",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap",
+      "-shutdown"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_2",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_2",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.shutdown reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.stop cloudtail",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_2/rbe_metrics.pb",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.load rbe_metrics.pb",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "goma-logs.rbe_metrics.builds"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload RBE metrics to BigQuery",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:24.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:24.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"flags\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"abc\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"def\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"bar\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"other\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"int64_value\": \"7\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"some\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"bool_value\": true@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"stats\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"CPU\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"MEM\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"event_times\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"from\": \"2022-07-19T22:26:45Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"to\": \"2022-07-21T02:13:25Z\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"test\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"double_value\": 1.1@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@}@@@",
+      "@@@STEP_LOG_END@rbe_metrics@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_2",
+      "--output-gzip-path",
+      "[TMP_BASE]/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.gzip reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.gsutil upload reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CLEANUP]/reclient_log_tmp_2"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.list reclient log directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_2/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_2/reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_2/reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_2/reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_2/rewrapper.INFO@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_2/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy.INFO",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_2/reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy_stderr.log",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_2/reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake tar contents",
+      "[TMP_BASE]/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.create reclient log tar",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.upload logs.gsutil upload reclient logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_2",
+      "--build-exit-status",
+      "-1"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.perform reclient health check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/reclient_log_tmp_2"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.cleanup reclient log dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/cmake-build/tint_unittests"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tint_unittests"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/run",
+      "fuzz",
+      "--check",
+      "--build",
+      "[CACHE]/uncached/dawn/cmake-build"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Check fuzzers"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/run",
+      "tests",
+      "--tint",
+      "[CACHE]/uncached/dawn/cmake-build/tint",
+      "--verbose"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run Tint end-to-end tests"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/run",
+      "tests",
+      "--tint",
+      "[CACHE]/uncached/dawn/cmake-build/tint",
+      "--verbose",
+      "--format",
+      "spvasm",
+      "--use-ir"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run Tint end-to-end tests for SPIR-V IR backend"
+  },
+  {
+    "cmd": [],
+    "name": "CMake build _other.cc files"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_USE_BUILT_DXC=1",
+      "-DTINT_BUILD_SPV_READER=1",
+      "-DTINT_BUILD_WGSL_READER=1",
+      "-DTINT_BUILD_GLSL_WRITER=1",
+      "-DTINT_BUILD_HLSL_WRITER=1",
+      "-DTINT_BUILD_MSL_WRITER=1",
+      "-DTINT_BUILD_SPV_WRITER=1",
+      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=0",
+      "-DTINT_BUILD_AS_OTHER_OS=1",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DTINT_BUILD_FUZZERS=1",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
+      "-DTINT_BUILD_AST_FUZZER=1",
+      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.CMake generate step for _other.cc files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "/path/to/tmp/"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build _other.cc files.preprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "download_remoteexec_cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "rbe_instance"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.gclient check if rbe_instance var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build _other.cc files.preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs",
+      "--recursive"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.list reclient_cfgs dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.list reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.start cloudtail: reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy-gomaip.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_3",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_3",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.start reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-j",
+      "160",
+      "all"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_exec_strategy": "remote",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.Compile _other.cc files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build _other.cc files.postprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap",
+      "-shutdown"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_3",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_3",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.shutdown reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.stop cloudtail",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_3/rbe_metrics.pb",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.load rbe_metrics.pb",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "goma-logs.rbe_metrics.builds"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload RBE metrics to BigQuery",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:27.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:27.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"flags\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"abc\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"def\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"bar\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"other\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"int64_value\": \"7\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"some\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"bool_value\": true@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"stats\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"CPU\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"MEM\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"event_times\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"from\": \"2022-07-19T22:26:45Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"to\": \"2022-07-21T02:13:25Z\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"test\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"double_value\": 1.1@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@}@@@",
+      "@@@STEP_LOG_END@rbe_metrics@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_3",
+      "--output-gzip-path",
+      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.gzip reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.gsutil upload reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CLEANUP]/reclient_log_tmp_3"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.list reclient log directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_3/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_3/reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_3/reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_3/reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_3/rewrapper.INFO@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_3/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy.INFO",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_3/reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy_stderr.log",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_3/reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake tar contents",
+      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.create reclient log tar",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reclient logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_3",
+      "--build-exit-status",
+      "-1"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.perform reclient health check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/reclient_log_tmp_3"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.cleanup reclient log dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build disabled readers and writers"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_USE_BUILT_DXC=1",
+      "-DTINT_BUILD_SPV_READER=0",
+      "-DTINT_BUILD_WGSL_READER=0",
+      "-DTINT_BUILD_GLSL_WRITER=0",
+      "-DTINT_BUILD_HLSL_WRITER=0",
+      "-DTINT_BUILD_MSL_WRITER=0",
+      "-DTINT_BUILD_SPV_WRITER=0",
+      "-DTINT_BUILD_WGSL_WRITER=0",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=0",
+      "-DTINT_BUILD_AS_OTHER_OS=0",
+      "-DCMAKE_C_COMPILER=clang",
+      "-DCMAKE_CXX_COMPILER=clang++",
+      "-DTINT_BUILD_FUZZERS=1",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
+      "-DTINT_BUILD_AST_FUZZER=1",
+      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.CMake generate step for disabled readers and writers",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
+      "/path/to/tmp/"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build disabled readers and writers.preprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "download_remoteexec_cfg"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "getdep",
+      "--var",
+      "rbe_instance"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.gclient check if rbe_instance var exists",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build disabled readers and writers.preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/uncached/dawn/buildtools/reclient_cfgs",
+      "--recursive"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.list reclient_cfgs dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/uncached/dawn/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CACHE]/builder/reclient/deps/mac"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.list reclient cache directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.start cloudtail: reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.INFO",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_4",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_4",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.start reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/third_party/ninja/ninja",
+      "-C",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-j",
+      "160",
+      "all"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_exec_strategy": "remote",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.Compile disabled readers and writers",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build disabled readers and writers.postprocess for reclient",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap",
+      "-shutdown"
+    ],
+    "env": {
+      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
+      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "PLATFORM": "mac",
+      "RBE_automatic_auth": "false",
+      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/mac",
+      "RBE_deps_cache_max_mb": "512",
+      "RBE_enable_deps_cache": "true",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_fail_early_min_action_count": "4000",
+      "RBE_fail_early_min_fallback_ratio": "0.5",
+      "RBE_fast_log_collection": "true",
+      "RBE_grpc_keepalive_permit_without_stream": "false",
+      "RBE_grpc_keepalive_time": "30s",
+      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
+      "RBE_log_format": "reducedtext",
+      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_4",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_4",
+      "RBE_re_proxy": "[CACHE]/uncached/dawn/buildtools/reclient/reproxy",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
+      "RBE_service": "remotebuildexecution.googleapis.com:443",
+      "RBE_use_application_default_credentials": "false",
+      "RBE_use_gce_credentials": "true",
+      "RBE_use_unified_uploads": "true",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.shutdown reproxy via bootstrap",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_4/rbe_metrics.pb",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.load rbe_metrics.pb",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
+      "goma-logs.rbe_metrics.builds"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload RBE metrics to BigQuery",
+    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:30.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:30.500Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"flags\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"abc\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"def\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"bar\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"other\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"int64_value\": \"7\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"some\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"bool_value\": true@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"stats\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"CPU\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"MEM\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      },@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"event_times\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"from\": \"2022-07-19T22:26:45Z\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"to\": \"2022-07-21T02:13:25Z\"@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"test\",@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@              \"double_value\": 1.1@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@      }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@    ]@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@  }@@@",
+      "@@@STEP_LOG_LINE@rbe_metrics@}@@@",
+      "@@@STEP_LOG_END@rbe_metrics@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_4",
+      "--output-gzip-path",
+      "[TMP_BASE]/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.gzip reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.gsutil upload reproxy RPL",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "listdir",
+      "[CLEANUP]/reclient_log_tmp_4"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.list reclient log directory",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/rewrapper.INFO@@@",
+      "@@@STEP_LOG_END@listdir@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reproxy.INFO",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log",
+      "/path/to/tmp/"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reproxy_stderr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "fake tar contents",
+      "[TMP_BASE]/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.create reclient log tar",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[TMP_BASE]/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reclient logs",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
+      "--reclient-log-dir",
+      "[CLEANUP]/reclient_log_tmp_4",
+      "--build-exit-status",
+      "-1"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.perform reclient health check",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmtree",
+      "[CLEANUP]/reclient_log_tmp_4"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.cleanup reclient log dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "name": "$result"
+  }
+]

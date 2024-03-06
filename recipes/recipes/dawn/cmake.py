@@ -1,0 +1,438 @@
+# Copyright 2024 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+"""Buildbot recipe to build and test Dawn standalone using CMake.
+"""
+
+DEPS = [
+    'depot_tools/bot_update',
+    'depot_tools/depot_tools',
+    'depot_tools/gclient',
+    'depot_tools/gsutil',
+    'depot_tools/osx_sdk',
+    'reclient',
+    'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/step',
+    'recipe_engine/time',
+]
+
+from contextlib import contextmanager
+from dataclasses import dataclass
+from recipe_engine.recipe_api import Property
+
+PROPERTIES = {
+    'target_cpu':
+        Property(default=None, kind=str),
+    'debug':
+        Property(default=False, kind=bool),
+    'clang':
+        Property(default=False, kind=bool),
+    'asan':
+        Property(default=False, kind=bool),
+    'ubsan':
+        Property(default=False, kind=bool),
+    'gen_fuzz_corpus':  # TODO(amaiorano): remove once main.star is updated
+        Property(default=False, kind=bool),
+    'enable_remoteexec':  # TODO(amaiorano): remove once we get rbe working
+        Property(default=False, kind=bool),
+}
+
+DAWN_REPO = "https://dawn.googlesource.com/dawn"
+
+
+def _checkout_steps(api):
+  '''Checks out Dawn. After this, api.path['checkout'] returns the dawn root.'''
+  # Check out dawn into an un-cached directory in 'cache'. This seems weird,
+  # but it allows us to use api.path['cache'] as a common root for RBE.
+  solution_path = api.path['cache'].join('uncached')
+  api.file.ensure_directory('init cache if not exists', solution_path)
+
+  with api.context(cwd=solution_path):
+    # Checkout dawn and its dependencies (specified in DEPS) using gclient.
+    api.gclient.set_config('dawn')
+    api.gclient.c.got_revision_mapping['dawn'] = 'got_revision'
+    # Standalone developer dawn builds want the dawn checkout in the same
+    # directory the .gclient file is in.  Bots want it in a directory called
+    # 'dawn'.  To make both cases work, the dawn DEPS file pulls deps and runs
+    # hooks relative to the variable "root" which is set to . by default and
+    # then to 'dawn' on bots here:
+    api.gclient.c.solutions[0].custom_vars = {
+        'dawn_root': 'dawn',
+        'fetch_cmake': 'True',  # Fetch cmake
+        'dawn_node': 'True',  # Fetch deps for dawn.node
+    }
+    if api.reclient.instance:
+      api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+    api.bot_update.ensure_checkout()
+    api.gclient.runhooks()
+
+
+def _install_clang(api):
+  # 'builder' directory is implicitly cached, so cache clang there
+  install_path = api.path['cache'].join('builder')
+
+  env_paths = []
+  # Install binaries to named cache directory mentioned in luci builder
+  # configurations. Data in this directory will be persistent and will be
+  # available between builds.
+  ensure_file = api.cipd.EnsureFile()
+  # CIPD packages and versions for clang.
+  # See https://chrome-infra-packages.appspot.com/p/fuchsia/third_party/clang
+  # Note: arm64 packages are also available
+  package_name = ''
+  package_hash = ''
+  if api.platform.is_win:
+    package_name = 'windows-amd64'
+    package_hash = 'yrliUGUdB_0T81Mf6FV-Oz-nF1lgdcEuaJF2MfNhI5EC'
+  elif api.platform.is_linux:
+    package_name = 'linux-amd64'
+    package_hash = '8ii0cvHxegwLJjXM6PekCWB7xzEnFsY7cc2G96VT0VsC'
+  elif api.platform.is_mac:
+    package_name = 'mac-amd64'
+    package_hash = 'fDkN9wRoOjxDSowpeqX2rRdHF3sgPEbM9ulbizq9kCQC'
+  ensure_file.add_package(f'fuchsia/third_party/clang/{package_name}',
+                          package_hash, 'clang')
+  api.cipd.ensure(install_path, ensure_file)
+  env_paths.append(install_path.join('clang/bin'))
+  return env_paths
+
+
+def _rbe_host_platform_name(api):
+  if api.platform.is_win:
+    return 'windows'
+  if api.platform.is_linux:
+    return 'linux'
+  if api.platform.is_mac:
+    return 'mac'
+
+
+def _get_rbe_plaform_from_cfg(api, rewrapper_cfg):
+
+  def parse_line(line):
+    line = line.strip()
+    if len(line) == 0 or line.startswith('#'):
+      return None
+    parts = line.split('=', 1)
+    parts[0].lstrip('-')
+    return (parts[0], True if len(parts) == 1 else parts[1])
+
+  rbe_platform = ''
+  cfg_content = api.file.read_text(
+      '',
+      str(rewrapper_cfg),
+      test_data='#comment\nplatform=test',
+      include_log=False)
+  for line in cfg_content.split('\n'):
+    flag = parse_line(line)
+    if flag and flag[0] == 'platform':
+      rbe_platform = flag[1]
+      break
+  return rbe_platform
+
+
+def _rbe_exec_root(api):
+  '''Returns base absolute path that contains all required inputs for RBE'''
+  # We make sure to checkout Dawn and any required build inputs (e.g. clang)
+  # under the cache directory (note: note everything under it is actually
+  # cached).
+  return api.path['cache']
+
+
+@dataclass
+class CMakeFixedArgs:
+  '''Args to CMake that shouldn't change for a given build'''
+  target_cpu: str
+  debug: bool
+  clang: bool
+  asan: bool
+  ubsan: bool
+  enable_remoteexec: bool
+
+
+# Make a CMake build for Dawn. Returns the build_path, which is unique based
+# on cmake args.
+def _cmake_build(flavor,
+                 api,
+                 fixed_args: CMakeFixedArgs,
+                 dawn_node=False,
+                 build_as_other=False,
+                 enable_readers_and_writers=True,
+                 targets=None):
+  if targets is None:
+    targets = ['all']
+  with api.step.nest(f'CMake build {flavor}'):
+    return _do_cmake_build(flavor, api, fixed_args, dawn_node, build_as_other,
+                           enable_readers_and_writers, targets)
+
+
+def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
+                    build_as_other: bool, enable_readers_and_writers: bool,
+                    targets: list):
+  use_remoteexec = fixed_args.enable_remoteexec and fixed_args.clang and api.reclient.instance
+  build_env_vars = {}
+
+  # Cross-compilation with CMake is painful, requiring toolchain files
+  # (except with Visual Studio that supprts "-A <platform-name>").
+  # For now, don't support cross-compilation and assume the host and target
+  # cpus are the same.
+  # TODO(amaiorano): Assert that host cpu is same as target cpu
+  _ = fixed_args.target_cpu
+
+  checkout = api.path['checkout']
+
+  def cmake_bool_arg(v: bool):
+    return "1" if v else "0"
+
+  cmake_args = [
+      '-GNinja',
+      f'-DCMAKE_BUILD_TYPE={"DEBUG" if fixed_args.debug else "RELEASE"}',
+      '-DTINT_BUILD_BENCHMARKS=1',
+      '-DTINT_RANDOMIZE_HASHES=1',
+      '-DDAWN_USE_BUILT_DXC=1',
+      f'-DTINT_BUILD_SPV_READER={cmake_bool_arg(enable_readers_and_writers)}',
+      f'-DTINT_BUILD_WGSL_READER={cmake_bool_arg(enable_readers_and_writers)}',
+      f'-DTINT_BUILD_GLSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+      f'-DTINT_BUILD_HLSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+      f'-DTINT_BUILD_MSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+      f'-DTINT_BUILD_SPV_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+      f'-DTINT_BUILD_WGSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+      f'-DDAWN_ENABLE_ASAN={cmake_bool_arg(fixed_args.asan)}',
+      f'-DDAWN_ENABLE_UBSAN={cmake_bool_arg(fixed_args.ubsan)}',
+      f'-DDAWN_BUILD_NODE_BINDINGS={cmake_bool_arg(dawn_node)}',
+      f'-DTINT_BUILD_AS_OTHER_OS={cmake_bool_arg(build_as_other)}',
+  ]
+  if fixed_args.clang:
+    cmake_args.extend([
+        '-DCMAKE_C_COMPILER=clang',
+        '-DCMAKE_CXX_COMPILER=clang++',
+        '-DTINT_BUILD_FUZZERS=1',
+        '-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1',
+        '-DTINT_BUILD_AST_FUZZER=1',
+        '-DTINT_BUILD_REGEX_FUZZER=1',
+    ])
+
+  rbe_exec_root = _rbe_exec_root(api)
+  if use_remoteexec:
+    # Tell CMake to use reclient via it's launcher flags
+    # See go/reclient-migration-guide (CMake section)
+    rewrapper = checkout.join('buildtools', 'reclient', 'rewrapper')
+    config = checkout.join('buildtools', 'reclient_cfgs',
+                           'chromium-browser-clang',
+                           f'rewrapper_{_rbe_host_platform_name(api)}.cfg')
+    cmake_args.extend([
+        # f'-DCMAKE_C_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
+        # f'-DCMAKE_CXX_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
+        f'-DCMAKE_C_COMPILER_LAUNCHER={rewrapper};-cfg={config}',
+        f'-DCMAKE_CXX_COMPILER_LAUNCHER={rewrapper};-cfg={config}',
+    ])
+
+  # Always use the same build directory so that incremental builds are faster.
+  # Note that this directory is not cached.
+  outdir_name = 'cmake-build'
+
+  build_path = checkout.join(outdir_name)
+  ninja_path = checkout.join('third_party', 'ninja')
+  cmake_path = checkout.join('tools', 'cmake', 'bin', 'cmake')
+
+  with api.context(cwd=checkout, env_prefixes={'PATH': [ninja_path]}):
+    api.step(
+        f'CMake generate step for {flavor}',
+        [cmake_path, '-S', str(checkout), '-B', build_path] + cmake_args)
+
+  step_desc = f'Compile {flavor}'
+  if use_remoteexec:
+    # RBE build
+    ninja_cmd = [
+        ninja_path.join('ninja'), '-C', build_path, '-j', api.reclient.jobs
+    ]
+    ninja_cmd.extend(targets)
+
+    # Setup RBE environment required to work with CMake
+    build_env_vars['PLATFORM'] = _rbe_host_platform_name(api)
+    build_env_vars['RBE_exec_root'] = rbe_exec_root
+    build_env_vars['RBE_canonicalize_working_dir'] = 'False'
+    rbe_platform = _get_rbe_plaform_from_cfg(api, config)
+    if rbe_platform:
+      build_env_vars[
+          'RBE_platform'] = f'{rbe_platform},InputRootAbsolutePath={rbe_exec_root}'
+
+    # Force remote-only to see if this fails (can't do this via env var)
+    api.reclient.rewrapper_env['RBE_exec_strategy'] = 'remote'
+    build_env_vars['RBE_v'] = '2'
+
+    with api.context(env=build_env_vars):
+      with api.reclient.process(step_desc, ''):
+        api.step(step_desc, ninja_cmd)
+  else:
+    # Regular cmake build
+    cmake_build_cmd = [cmake_path, '--build', build_path
+                      ] + [f'--target {t}' for t in targets]
+    with api.context(env=build_env_vars):
+      api.step(step_desc, cmake_build_cmd)
+  return build_path
+
+
+def RunSteps(api,
+             target_cpu: str,
+             debug: bool,
+             clang: bool,
+             asan: bool,
+             ubsan: bool,
+             enable_remoteexec: bool = False):
+  env = {}
+  if api.platform.is_win:
+    env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
+        api.path['cache'].join('win_toolchain'))
+
+  with api.context(env=env):
+    _checkout_steps(api)
+
+    checkout = api.path['checkout']
+    env_paths = _install_clang(api)
+    env_paths.append(checkout.join('tools', 'golang', 'bin'))
+    env_paths.append(checkout.join('third_party', 'depot_tools'))
+
+    with api.context(env_prefixes={'PATH': env_paths}):
+      with api.context(cwd=checkout):
+        api.step('Check for no CRLF', [checkout.join('tools', 'check-no-crlf')])
+        api.step('Run cpplint', [checkout.join('tools', 'lint')])
+        api.step('Run go tool unittests', ['go', 'test', './...'])
+
+      cmake_fixed_args = CMakeFixedArgs(target_cpu, debug, clang, asan, ubsan,
+                                        enable_remoteexec)
+
+      build_path = _cmake_build('default targets', api, cmake_fixed_args)
+
+      _cmake_build(
+          'default targets with dawn.node enabled',
+          api,
+          cmake_fixed_args,
+          dawn_node=True,
+          targets=['dawn.node'])
+
+      def run_target(target, must_exist):
+        target_path = build_path.join(target)
+        if must_exist or api.path.exists(target_path):
+          run_target_env = {}
+          if asan:
+            # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.
+            # See https://github.com/google/sanitizers/wiki/AddressSanitizerContainerOverflow#false-positives
+            run_target_env['ASAN_OPTIONS'] = 'detect_container_overflow=0'
+          if ubsan:
+            run_target_env[
+                'UBSAN_OPTIONS'] = 'print_stacktrace=1:halt_on_error=1'
+          with api.context(env=run_target_env):
+            api.step(f'Run {target}', [target_path])
+
+      run_target('tint_unittests', True)
+
+      tools_run = checkout.join('tools', 'run')
+
+      api.step('Check fuzzers',
+               [tools_run, 'fuzz', '--check', '--build', build_path])
+
+      # TODO(amaiorano): Build and run 'tint_ast_fuzzer_unittests' and 'tint_regex_fuzzer_unittests'
+      # by passing TINT_BUILD_TESTS=1 to CMake. Kokoro used to do this, but it hasn't for a while.
+      # Apparently, we will be removing these targets soon, so perhaps just delete?
+      run_target('tint_ast_fuzzer_unittests', False)
+      run_target('tint_regex_fuzzer_unittests', False)
+
+      # TODO(amaiorano): Consider spreading the runtime of Tint's e2e tests by only validating
+      # formats native to the host (e.g. spir-v on Linux, MSL on Mac, hlsl on Windows).
+      api.step(
+          'Run Tint end-to-end tests',
+          [tools_run, 'tests', '--tint',
+           build_path.join('tint'), '--verbose'])
+
+      api.step('Run Tint end-to-end tests for SPIR-V IR backend', [
+          tools_run, 'tests', '--tint',
+          build_path.join('tint'), '--verbose', '--format', 'spvasm', '--use-ir'
+      ])
+
+      _cmake_build(
+          '_other.cc files', api, cmake_fixed_args, build_as_other=True)
+
+      _cmake_build(
+          'disabled readers and writers',
+          api,
+          cmake_fixed_args,
+          enable_readers_and_writers=False)
+
+
+def GenTests(api):
+  yield api.test(
+      'linux',
+      api.reclient.properties(),
+      api.platform('linux', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='linux', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'linux_remoteexec',
+      api.reclient.properties(),
+      api.properties(clang=True, enable_remoteexec=True),
+      api.platform('linux', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='linux', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'linux_asan',
+      api.reclient.properties(),
+      api.properties(asan=True),
+      api.platform('linux', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='linux', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'linux_ubsan',
+      api.reclient.properties(),
+      api.properties(ubsan=True),
+      api.platform('linux', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='linux', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'mac',
+      api.reclient.properties(),
+      api.platform('mac', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='mac', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'mac_remoteexec',
+      api.reclient.properties(),
+      api.properties(clang=True, enable_remoteexec=True),
+      api.platform('mac', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='mac', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'win',
+      api.reclient.properties(),
+      api.platform('win', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='win', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'win_clang',
+      api.reclient.properties(),
+      api.platform('win', 64),
+      api.properties(clang=True),
+      api.buildbucket.ci_build(
+          project='dawn', builder='win', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'win_remoteexec',
+      api.reclient.properties(),
+      api.platform('win', 64),
+      api.properties(clang=True, enable_remoteexec=True),
+      api.buildbucket.ci_build(
+          project='dawn', builder='win', git_repo=DAWN_REPO),
+  )
