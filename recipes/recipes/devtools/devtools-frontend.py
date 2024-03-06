@@ -3,11 +3,22 @@
 # found in the LICENSE file.
 
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from functools import cached_property
+from google.protobuf import timestamp_pb2
+from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  common as common_pb2,  # go/pyformat-break
+  invocation as invocation_pb2,  #
+  resultdb as resultdb_pb2,  #
+  test_result as test_result_pb2,  #
+)
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 from recipe_engine.recipe_api import InfraFailure, StepFailure
+
+import re
 
 DEPS = [
     'builder_group',
@@ -30,6 +41,7 @@ DEPS = [
     'recipe_engine/resultdb',
     'recipe_engine/step',
     'recipe_engine/swarming',
+    'v8_orchestrator',
 ]
 
 PROPERTIES = {
@@ -63,36 +75,93 @@ PROPERTIES = {
             default=False),
 }
 
+FLAKE_DETECTION_MAX_TESTS = 20
 
 class Results():
 
-  def __init__(self, infra_failures=None, test_failures=None):
+  def __init__(self, infra_failures=None, task_failures=None,
+               exonerated_failures=None):
     self.infra_failures = infra_failures or []
-    self.test_failures = test_failures or []
+    self.task_failures = task_failures or []
+    self.exonerated_failures = exonerated_failures or []
 
   def __add__(self, result):
     return Results(
         self.infra_failures + result.infra_failures,
-        self.test_failures + result.test_failures,
+        self.task_failures + result.task_failures,
+        self.exonerated_failures + result.exonerated_failures,
     )
+
+  def exonerable(self):
+    """True if the result contains only test failures.
+    Infra failures are not exonerable."""
+    return bool(self.task_failures and not self.infra_failures)
+
+  def can_exonerate(self):
+    """True if this result can exonerate other results."""
+    return not bool(self.task_failures or self.infra_failures)
 
   def add_infra_failure(self, failure):
     self.infra_failures.append(failure)
 
   def add_test_failure(self, failure):
-    self.test_failures.append(failure)
+    self.task_failures.append(failure)
 
   def raise_on_failure(self):
     """
     Prioritize test failures in order to be able to close the tree even if we
     have infra failures.
     """
-    if self.test_failures:
-      raise StepFailure(', '.join(self.test_failures))
+    if self.task_failures:
+      raise StepFailure(', '.join(self.task_failures))
 
     if self.infra_failures:
       raise InfraFailure(', '.join(self.infra_failures))
 
+  def raw_result(self):
+    self.raise_on_failure()
+    summary = None
+    if self.exonerated_failures:
+      summary = 'Flaky tests exonerated: ' + ', '.join(self.exonerated_failures)
+    return result_pb2.RawResult(
+        summary_markdown=summary,
+        status=common_pb.SUCCESS,
+    )
+
+class NoOpExonerator:
+  def __init__(self, runner):
+    self.runner = runner
+    self.api = runner.api
+    # Used to indicate that no task was triggered; may contain a failure if the
+    # reason for not triggering qualifies as such
+    self.skip_result = None
+
+  def trigger(self, test_names):
+    pass
+
+  def process_results(self):
+    pass
+
+class RerunExonerator(NoOpExonerator):
+  def trigger(self, test_names):
+    owned_tests = test_names.get(self.runner.test_type_tag)
+    if not owned_tests:
+      self.skip_result = Results()
+      return
+    if len(owned_tests) > FLAKE_DETECTION_MAX_TESTS:
+      self.skip_result = Results()
+      self.skip_result.add_test_failure('Too many failures')
+      self.api.step.empty('Too many tests to check for flakes')
+      return
+    self.runner.step_name += ' (rerun)'
+    self.runner.prepare_filtered_rerun(owned_tests)
+    self.runner.trigger()
+
+  def process_results(self):
+    if self.skip_result:
+      self.runner.results += self.skip_result
+      return
+    self.runner.process_results()
 
 class DevToolsTests(ABC):
 
@@ -104,6 +173,22 @@ class DevToolsTests(ABC):
     self.output_dir = self.api.path.mkdtemp()
     self.tasks = []
     self.coverage = coverage
+    self.env = {}
+    self.extra_args = []
+    # Used to accumulate results from the rerun and the original run
+    self.results = Results()
+
+  @property
+  @abstractmethod
+  def test_type_tag(self):
+    """
+    The tag that identifies the type of tests we are running. This is used to
+    identify the tests that we want to rerun in case of flakiness.
+    """
+
+  @cached_property
+  def exonerator(self):
+    return RerunExonerator(self)
 
   def skip(self):
     return False
@@ -131,44 +216,80 @@ class DevToolsTests(ABC):
       self.api.resultdb.include_invocations(
         [i[len('invocations/'):] for i in task.get_invocation_names()])
 
-  @abstractmethod
+  def prepare_filtered_rerun(self, test_names):
+    self.extra_args = [
+      f'--mocha-grep="{self.test_names_to_grep_string(test_names)}"',
+    ]
+
+  def test_names_to_grep_string(self, names):
+    return '|'.join([
+        self.test_name_to_grep_string(name) for name in names
+      ])
+
+  def test_name_to_grep_string(self, name):
+    return name.replace('/', ' ')
+
   def trigger(self):
-    """
-    Triggers the command(s) we want to run on Swarming tasks.
-    """
+    with self.api.step.nest(f'Trigger {self.step_name}'):
+      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
+          step_name=self.step_name,
+          cas_digest=self.cas_digest,
+          task_output_dir=self.output_dir,
+          rdb_test_type=self.test_type_tag,
+          commands=self.construct_commands(),
+          env=self.construct_env(),
+      )
+
+  def process_results(self):
+    new_results = self._process_results()
+    if self.results.exonerable() and new_results.can_exonerate():
+      new_results.exonerated_failures = self.results.task_failures
+      self.results.task_failures = []
+    self.results += new_results
 
   @abstractmethod
-  def process_results(self):
+  def _process_results(self):
     """
     Collects the tasks with '_collect_tasks' and does any extra things we want
     to do after the collection. Returns a list of the failures as strings
     (empty list if there are no failures).
     """
 
+  def trigger_exoneration(self, test_names):
+    self.exonerator.trigger(test_names)
+
+  def process_exoneration_results(self):
+    self.exonerator.process_results()
+
+  def construct_env(self):
+    return self.env
+
+  @abstractmethod
+  def construct_commands(self):
+    """
+    Returns a list of commands to be run in the swarming tasks.
+    """
+
 
 class UnitTests(DevToolsTests):
+  @property
+  def test_type_tag(self):
+    return 'unit_tests'
 
-  def trigger(self):
+  def construct_commands(self):
     # TODO(liviurau) Use shuffle on unit tests after runner fix.
     shuffle = []  #['--shuffle'] if self.api.devtools.is_shuffled_run() else []
-    with self.api.step.nest(f'Trigger {self.step_name}'):
-      command = [
-          self.api.path.join('scripts', 'test', 'run_unittests.py'),
-          '--target=' + self.builder_config,
-          '--swarming-output-file',
-          '${ISOLATED_OUTDIR}',
-      ]
-      if self.coverage:
-        command.append('--coverage')
-      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
-          step_name=self.step_name,
-          cas_digest=self.cas_digest,
-          task_output_dir=self.output_dir,
-          rdb_wrapped=True,
-          commands=[command + shuffle],
-      )
+    command = [
+        self.api.path.join('scripts', 'test', 'run_unittests.py'),
+        '--target=' + self.builder_config,
+        '--swarming-output-file',
+        '${ISOLATED_OUTDIR}',
+    ]
+    if self.coverage:
+      command.append('--coverage')
+    return [command + shuffle]
 
-  def process_results(self):
+  def _process_results(self):
     with self.api.step.nest(self.step_name):
       result = self.collect()
       if not result.infra_failures:
@@ -186,8 +307,17 @@ class UnitTests(DevToolsTests):
         'copy unit tests coverage data', coverage_data_dir,
         self.api.path.join(self.api.path['checkout'], 'karma-coverage'))
 
+  def prepare_filtered_rerun(self, test_names):
+    self.env = {
+      'MOCHA_FGREP': self.test_names_to_grep_string(test_names),
+    }
+
+
 
 class InteractionsTests(DevToolsTests):
+  @property
+  def test_type_tag(self):
+    return 'interactions_tests'
 
   def __init__(self,
                api,
@@ -207,14 +337,13 @@ class InteractionsTests(DevToolsTests):
       if presentation.status != self.api.step.SUCCESS:
         if presentation.status == self.api.step.EXCEPTION:
           return Results(infra_failures=[f'Infra Failure in {self.step_name}'])
-        return Results(test_failures=[f'Failure in {self.step_name}'])
+        return Results(task_failures=[f'Failure in {self.step_name}'])
       return Results()
 
     return super().collect()
 
-  def trigger(self):
-    with self.api.step.nest(f'Trigger {self.step_name}'):
-      command = [
+  def construct_commands(self):
+    command = [
           self.api.path.join('third_party', 'node', 'node.py'),
           "--output",
           self.api.path.join('scripts', 'test', 'run_test_suite.js'),
@@ -224,27 +353,24 @@ class InteractionsTests(DevToolsTests):
           "--target=" + self.builder_config,
           '--swarming-output-file',
           '${ISOLATED_OUTDIR}',
-      ]
-      if self.coverage:
-        command.append('--coverage')
-      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
-          step_name=self.step_name,
-          cas_digest=self.cas_digest,
-          task_output_dir=self.output_dir,
-          rdb_wrapped=True,
-          env={
-              "FORCE_UPDATE_ALL_GOLDENS":
-                  'True',
-              "THROW_AFTER_GOLDENS_UPDATE":
-                  'True',
-              "HTML_OUTPUT_FILE":
-                  self.api.path.join('${ISOLATED_OUTDIR}',
-                                     'interactions_failure_screenshots.html'),
-          },
-          commands=[command],
-      )
+      ] + self.extra_args
+    if self.coverage:
+      command.append('--coverage')
+    return [command]
 
-  def process_results(self):
+  def construct_env(self):
+    env = {
+          "FORCE_UPDATE_ALL_GOLDENS": 'True',
+          "THROW_AFTER_GOLDENS_UPDATE": 'True',
+          "HTML_OUTPUT_FILE": self.api.path.join(
+              '${ISOLATED_OUTDIR}',
+              'interactions_failure_screenshots.html'
+          ),
+      }
+    env.update(self.env)
+    return env
+
+  def _process_results(self):
     with self.api.step.nest(self.step_name):
       with self.api.devtools.collect_screenshots_on_trybot(self.bucket):
         result = self.collect()
@@ -277,47 +403,67 @@ class InteractionsTests(DevToolsTests):
         self.api.path.join(self.api.path['checkout'], 'test', 'interactions',
                            'goldens'))
 
+  def test_name_to_grep_string(self, name):
+    name = re.sub(r'^interactions/.*: ', '', name)
+    return super().test_name_to_grep_string(name)
 
 class E2ETests(DevToolsTests):
-  def __init__(self, api, cas_digest, builder_config, coverage, step_name, divider):
+  @property
+  def test_type_tag(self):
+    prefix = 'shuffled_' if self.api.devtools.is_shuffled_run() else ''
+    return prefix + 'e2e_tests'
+
+  def __init__(self, api, cas_digest, builder_config, coverage, step_name,
+               divider):
     super().__init__(api, cas_digest, builder_config, coverage, step_name)
     self.divider = divider
 
   def skip(self):
     return self.api.devtools.is_debug(self.builder_config)
 
-  def trigger(self):
-    with self.api.step.nest(f'Trigger {self.step_name}'):
-      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
-          step_name=self.step_name,
-          cas_digest=self.cas_digest,
-          commands=self.divider.commands,
-          rdb_wrapped=True,
-          env={
-              "HTML_OUTPUT_FILE":
-                  self.api.path.join('${ISOLATED_OUTDIR}',
-                                     'e2e_failure_screenshots.html'),
-          },
-      )
+  def construct_commands(self):
+    return [cmd + self.extra_args for cmd in self.divider.commands]
 
-  def process_results(self):
+  def _process_results(self):
     with self.api.step.nest(self.step_name):
       return self.collect()
 
+  def test_name_to_grep_string(self, name):
+    name = re.sub(r'^e2e/.*: ', '', name)
+    return super().test_name_to_grep_string(name)
+
+  def trigger_exoneration(self, test_names):
+    self.divider = E2ETestDivider(self.api, self.builder_config, shard_count=1)
+    return super().trigger_exoneration(test_names)
+
 
 class RepeatE2EShuffledTests(E2ETests):
+  @cached_property
+  def exonerator(self):
+    return NoOpExonerator(self)
+
   def skip(self):
     return super().skip() or (not self.api.devtools.is_shuffled_run())
 
+  @property
+  def test_type_tag(self):
+    return 'shuffled_repeat_e2e_tests'
+
 
 class PerformanceTests(DevToolsTests):
+  @cached_property
+  def exonerator(self):
+    return NoOpExonerator(self)
+
+  @property
+  def test_type_tag(self):
+    return 'perf_tests'
 
   def skip(self):
     return not self.api.properties.get("perf_benchmarks", False)
 
-  def trigger(self):
-    with self.api.step.nest(f'Trigger {self.step_name}'):
-      command = [
+  def construct_commands(self):
+    return [[
           self.api.path.join('third_party', 'node', 'node.py'),
           "--output",
           self.api.path.join('scripts', 'test', 'run_test_suite.js'),
@@ -327,16 +473,9 @@ class PerformanceTests(DevToolsTests):
           "--target=" + self.builder_config,
           '--swarming-output-file',
           '${ISOLATED_OUTDIR}',
-      ]
-      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
-          step_name=self.step_name,
-          cas_digest=self.cas_digest,
-          task_output_dir=self.output_dir,
-          rdb_wrapped=True,
-          commands=[command],
-      )
+      ]]
 
-  def process_results(self):
+  def _process_results(self):
     with self.api.step.nest(self.step_name):
       result = self.collect()
       if not result.infra_failures:
@@ -354,14 +493,16 @@ class PerformanceTests(DevToolsTests):
         self.api.path.join(self.api.path['checkout'], 'perf-data'))
 
 class E2ETestDivider:
-  def __init__(self, api, builder_config):
+  def __init__(self, api, builder_config, shard_count=4):
     self.api = api
     self.builder_config = builder_config
+    self.shard_count = shard_count
 
   @cached_property
   def commands(self):
     return self.api.devtools.divided_e2e_commands(
-        builder_config=self.builder_config
+        builder_config=self.builder_config,
+        shards=self.shard_count,
     )
 
 
@@ -385,12 +526,13 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
                           'Unit Tests'),
         InteractionsTests(api, cas_digest, builder_config, coverage,
                           'Interactions Tests'),
-        PerformanceTests(api, cas_digest, builder_config, coverage,
-                          'Performance Tests'),
         E2ETests(api, cas_digest, builder_config, coverage,
                           'E2E Tests', divider),
+        PerformanceTests(api, cas_digest, builder_config, coverage,
+                          'Performance Tests'),
         RepeatE2EShuffledTests(api, cas_digest, builder_config, coverage,
                           'Repeat E2E Tests', divider),
+
     ]
     tests = [t for t in tests if not t.skip()]
 
@@ -403,7 +545,17 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       with api.step.nest('Linting'):
         run_lint_check(api)
 
-    all_results = sum((t.process_results() for t in tests), Results())
+    for t in tests:
+      t.process_results()
+
+    with api.step.nest('Flake exonaration attempt'):
+      test_names = failed_tests_names(api)
+
+      for t in tests:
+        t.trigger_exoneration(test_names)
+        t.include_invocations()
+      for t in tests:
+        t.process_exoneration_results()
 
     if coverage:
       with api.step.nest('Coverage'):
@@ -413,8 +565,27 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       with api.step.nest('Publish performance benchmarks'):
         publish_performance_benchmarks(api)
 
-    all_results.raise_on_failure()
+    results = sum([t.results for t in tests], Results())
+    return results.raw_result()
 
+def failed_tests_names(api):
+  unexpected_results = api.resultdb.query(
+    inv_ids=[api.resultdb.current_invocation.replace('invocations/', '')],
+    variants_with_unexpected_results=True,
+    tr_fields=['testId', 'tags'],
+  )
+
+  def tag_value(result, tag):
+    return next(t for t in result.tags if t.key == tag).value
+
+  test_names = defaultdict(set)
+
+  for inv in unexpected_results.values():
+    for result in inv.test_results:
+      test_type = tag_value(result, 'test_type')
+      test_names[test_type].add(result.test_id)
+
+  return test_names
 
 def lint_script_exists(api, name):
   script_file = api.path['checkout'].join('scripts', 'test', name)
@@ -665,6 +836,36 @@ def GenTests(api):
           'state': 'COMPLETED (SUCCESS)',
       }]
   }
+
+  invocation = invocation_pb2.Invocation(
+      state=invocation_pb2.Invocation.FINALIZED,
+      realm='devtools:ci',
+      create_time=timestamp_pb2.Timestamp(seconds=1658269605),
+      finalize_time=timestamp_pb2.Timestamp(seconds=1658269605),
+  )
+
+  def test_result(test_id, test_type):
+    return test_result_pb2.TestResult(
+        test_id=test_id,
+        name=f'name {test_id}',
+        expected=False,
+        status=test_result_pb2.FAIL,
+        tags=[ common_pb2.StringPair(
+            key="test_type",
+            value=test_type,
+        )],
+    )
+
+  def resultdb_query(step_name, *results):
+    return api.resultdb.query({
+        'task-example.swarmingserver.appspot.com-some-task-id':
+        api.resultdb.Invocation(
+            proto=invocation,
+            test_results=results,
+        )},
+        step_name=step_name,
+    )
+
   yield api.test(
       'failed parallel builder on E2E',
       api.builder_group.for_current('tryserver.devtools-frontend'),
@@ -684,13 +885,107 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data2)),
       api.post_process(post_process.MustRun, 'archive'),
       api.post_process(post_process.MustRun, 'Trigger Tests.Trigger E2E Tests'),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          'Failure in E2E Tests (shard #0), Failure in' +
-          ' E2E Tests (shard #1)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
+      resultdb_query(
+          'Flake exonaration attempt.rdb query',
+          test_result('e2e/file1: etest1', 'e2e_tests'),
+          test_result('e2e/file2: etest2', 'e2e_tests'),
+      ),
+      api.step_data(
+          'Flake exonaration attempt.Trigger E2E Tests (rerun).divide test run',
+          api.raw_io.stream_output_text(
+              'node1 runner1 config1 pattern1',
+              stream='stdout')),
+      api.step_data(
+          'Flake exonaration attempt.E2E Tests (rerun).E2E Tests (rerun) shards'
+          ' results.E2E Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data1),
+      ),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Failure in E2E Tests (shard #0), Failure in E2E Tests (shard #1), '
+          'Failure in E2E Tests (rerun) (shard #0)'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'failed parallel builder on E2E with exonerated tests',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='parallel_linux'),
+      api.step_data(
+          'Trigger Tests.Trigger E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node1 runner1 config1 pattern1\nnode2 runner2 config2 pattern2',
+              stream='stdout')),
+      api.step_data(
+          'E2E Tests.E2E Tests shards results.' +
+          'E2E Tests (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data1)),
+      api.step_data(
+          'E2E Tests.E2E Tests shards results.' +
+          'E2E Tests (Shard #1) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data2)),
+      api.post_process(post_process.MustRun, 'archive'),
+      api.post_process(post_process.MustRun, 'Trigger Tests.Trigger E2E Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests'),
+      api.post_process(post_process.MustRun, 'Interactions Tests'),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      resultdb_query(
+          'Flake exonaration attempt.rdb query',
+          test_result('e2e/file1: e/test/1', 'e2e_tests'),
+          test_result('e2e/file2: e/test/2', 'e2e_tests'),
+      ),
+      api.step_data(
+          'Flake exonaration attempt.Trigger E2E Tests (rerun).divide test run',
+          api.raw_io.stream_output_text(
+              'node1 rerunner1 config1 pattern1',
+              stream='stdout')),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Flaky tests exonerated: Failure in E2E Tests (shard #0), Failure in'
+          ' E2E Tests (shard #1)'),
+      api.post_process(post_process.DropExpectation),
+      status='SUCCESS',
+  )
+
+  yield api.test(
+      'failed parallel builder on E2E with exonerations limit reached',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      try_build(builder='parallel_linux'),
+      api.step_data(
+          'Trigger Tests.Trigger E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node1 runner1 config1 pattern1\nnode2 runner2 config2 pattern2',
+              stream='stdout')),
+      api.step_data(
+          'E2E Tests.E2E Tests shards results.' +
+          'E2E Tests (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data1)),
+      api.step_data(
+          'E2E Tests.E2E Tests shards results.' +
+          'E2E Tests (Shard #1) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data2)),
+      api.post_process(post_process.MustRun, 'archive'),
+      api.post_process(post_process.MustRun, 'Trigger Tests.Trigger E2E Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests'),
+      api.post_process(post_process.MustRun, 'Interactions Tests'),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      resultdb_query(
+          'Flake exonaration attempt.rdb query',
+          *[
+              test_result(f'e2e/file1: e/test/{i}', 'e2e_tests')
+              for i in range(FLAKE_DETECTION_MAX_TESTS + 1)
+          ],
+      ),
+      api.post_process(post_process.DoesNotRun, 'Flake exonaration attempt.'
+          'Trigger E2E Tests (rerun).divide test run'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'Failure in E2E Tests (shard #0), Failure in E2E Tests (shard #1), '
+          'Too many failures'),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
@@ -793,10 +1088,22 @@ def GenTests(api):
           'results.Interactions Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.SummaryMarkdown,
-                       'Failure in Interactions Tests'),
+                       'Failure in Interactions Tests, Failure in Interactions '
+                       'Tests (rerun)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
+      resultdb_query(
+          'Flake exonaration attempt.rdb query',
+          test_result('interactions/file1: unit1', 'interactions_tests'),
+          test_result('interactions/file2: unit2', 'interactions_tests'),
+      ),
+      api.step_data(
+          'Flake exonaration attempt.Interactions Tests (rerun).Interactions '
+          'Tests (rerun) shards results.Interactions Tests (rerun) (Shard #0) '
+          'on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data),
+      ),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
@@ -845,10 +1152,21 @@ def GenTests(api):
           'shards results.Unit Tests (Shard #0) on Ubuntu-22.04',
           api.chromium_swarming.summary(None, data)),
       api.post_process(post_process.SummaryMarkdown,
-                       'Failure in Unit Tests (shard #0)'),
+          'Failure in Unit Tests (shard #0), Failure in Unit Tests (rerun) '
+          '(shard #0)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'E2E Tests'),
+      resultdb_query(
+          'Flake exonaration attempt.rdb query',
+          test_result('unit1', 'unit_tests'),
+          test_result('unit2', 'unit_tests'),
+      ),
+      api.step_data(
+          'Flake exonaration attempt.Unit Tests (rerun).Unit Tests (rerun) '
+          'shards results.Unit Tests (rerun) (Shard #0) on Ubuntu-22.04',
+          api.chromium_swarming.summary(None, data),
+      ),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
   )
@@ -918,10 +1236,9 @@ def GenTests(api):
           api.chromium_swarming.summary(None, data2)),
       api.post_process(
           post_process.SummaryMarkdown,
-          'Failure in Unit Tests (shard #0), Failure in Interactions' +
-          ' Tests (shard #0), Failure in Performance Tests' +
-          ' (shard #0), Failure in E2E Tests (shard #0),' +
-          ' Failure in E2E Tests (shard #1)'),
+          'Failure in Unit Tests (shard #0), Failure in Interactions Tests '
+          '(shard #0), Failure in E2E Tests (shard #0), Failure in E2E Tests '
+          '(shard #1), Failure in Performance Tests (shard #0)'),
       api.post_process(post_process.MustRun, 'Unit Tests'),
       api.post_process(post_process.MustRun, 'Interactions Tests'),
       api.post_process(post_process.MustRun, 'Performance Tests'),

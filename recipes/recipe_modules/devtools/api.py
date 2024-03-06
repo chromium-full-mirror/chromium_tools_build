@@ -125,14 +125,15 @@ class DevToolsAPI(recipe_api.RecipeApi):
         iterations = [split_command.pop(0)]
       config = split_command[2]
       file_pattern = split_command[3]
-      modified_commands.append(iterations + [
+      modified_command = iterations + [
           self.m.path.join('third_party', 'node', 'node.py'), "--output",
           self.m.path.join('scripts', 'test', 'run_test_suite.js'),
           f"--test-suite-path={Path('gen/test/e2e')}",
           f"--test-suite-source-dir={Path('test/e2e')}",
           "--test-server-type='hosted-mode'", "--target=" +
-          builder_config, config, file_pattern
-      ])
+          builder_config, config
+      ] + ([file_pattern] if shuffle or shards > 1 else [])
+      modified_commands.append(modified_command)
 
     return modified_commands
 
@@ -143,7 +144,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
                                   task_output_dir=None,
                                   env=None,
                                   args=None,
-                                  rdb_wrapped=False):
+                                  rdb_test_type=None):
     args = list(args or [])
     tasks = []
     if not env:
@@ -169,9 +170,13 @@ class DevToolsAPI(recipe_api.RecipeApi):
       task_slice = task_slice.with_dimensions(**task_dimensions)
       task.request = task.request.with_slice(0, task_slice)
 
-      if rdb_wrapped:
+      if rdb_test_type:
         request = task.request.with_resultdb()
-        wrapped_cmd = self.m.v8_tests.resultdb.wrap(self.m, full_command)
+        wrapped_cmd = self.m.v8_tests.resultdb.wrap(
+            self.m,
+            full_command,
+            base_tags=[('test_type', rdb_test_type)],
+        )
         request_slice = request[0].with_command(wrapped_cmd)
         task.request = request.with_slice(0, request_slice)
 
