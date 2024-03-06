@@ -203,7 +203,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     Args:
       build_dir: The absolute path to the build output directory, e.g.
-                 [slave-build]/src/out/Release
+                 [cache]/builder/src/out/Release
       update_properties: The properties from the bot_update step (containing
                          commit information)
       gs_bucket: Name of the google storage bucket to upload to
@@ -821,7 +821,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     Args:
       build_dir: The absolute path to the build output directory, e.g.
-                 [slave-build]/src/out/Release
+                 [cache]/builder/src/out/Release
       update_properties: The properties from the bot_update step (containing
                          commit information).
       custom_vars: Dict of custom string substitution for gcs paths.
@@ -942,7 +942,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     Args:
       build_dir: The absolute path to the build output directory, e.g.
-                 [slave-build]/src/out/Release
+                 [cache]/builder/src/out/Release
       update_properties: The properties from the bot_update step (containing
                          commit information).
       archive_data: An instance of
@@ -1294,7 +1294,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     Args:
       build_dir: The absolute path to the build output directory, e.g.
-                 [slave-build]/src/out/Release
+                 [cache]/builder/src/out/Release
       update_properties: The properties from the bot_update step (containing
                          commit information).
       custom_vars: Dict of custom string substitution for value used in
