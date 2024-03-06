@@ -32,40 +32,44 @@ FLAKY_FAILURES = ['SomeOtherTest.FLAKY_Baz']
 
 TIMEOUT_MESSAGE = 'Killed (timed out).'
 
-RELOAD_ERRORS = r"""
-C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:381: Failure
+_CHECKOUT_PATH = '/b/s/w/ir/cache/builder'
+
+RELOAD_ERRORS = f"""
+{_CHECKOUT_PATH}/chrome/browser/navigation_controller_unittest.cc:381: Failure
 Value of: -1
 Expected: contents->controller()->GetPendingEntryIndex()
 Which is: 0
 
 """
 
-SPDY_ERRORS = r"""
-C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:439: Failure
+SPDY_ERRORS = f"""
+{_CHECKOUT_PATH}/chrome/browser/navigation_controller_unittest.cc:439: Failure
 Value of: -1
 Expected: contents->controller()->GetPendingEntryIndex()
 Which is: 0
 
 """
 
-SWITCH_ERRORS = r"""
-C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:615: Failure
+SWITCH_ERRORS = f"""
+{_CHECKOUT_PATH}/chrome/browser/navigation_controller_unittest.cc:615: Failure
 Value of: -1
 Expected: contents->controller()->GetPendingEntryIndex()
 Which is: 0
 
-C:\b\slave\chrome-release-snappy\build\chrome\browser\navigation_controller_unittest.cc:617: Failure
+{_CHECKOUT_PATH}/chrome/browser/navigation_controller_unittest.cc:617: Failure
 Value of: contents->controller()->GetPendingEntry()
   Actual: true
 Expected: false
 
 """
 
-TIMEOUT_ERRORS = ('[61613:263:0531/042613:2887943745568888:ERROR:/b/slave'
-'/chromium-rel-mac-builder/build/src/chrome/browser/extensions'
-'/extension_error_reporter.cc(56)] Extension error: Could not load extension '
-'from \'extensions/api_test/geolocation/no_permission\'. Manifest file is '
-'missing or unreadable.')
+TIMEOUT_ERRORS = (
+    f'[61613:263:0531/042613:2887943745568888:ERROR:{_CHECKOUT_PATH}'
+    '/src/chrome/browser/extensions/extension_error_reporter.cc(56)]'
+    ' Extension error: Could not load extension '
+    'from \'extensions/api_test/geolocation/no_permission\'. Manifest file is '
+    'missing or unreadable.'
+)
 
 MOREBAD_ERRORS = """
 Value of: entry->page_type()
@@ -99,15 +103,15 @@ TEST_DATA = f"""
 [----------] 1 test from BadTest
 [ RUN      ] BadTest.TimesOut
 {TIMEOUT_ERRORS}
-[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for BadTest.TimesOut
+[0531/042642:ERROR:{_CHECKOUT_PATH}/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for BadTest.TimesOut
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
-[61613:19971:0531/042642:2887973024284693:INFO:/b/slave/chromium-rel-mac-builder/build/src/chrome/browser/browser_main.cc(285)] Handling shutdown for signal 15.
+[61613:19971:0531/042642:2887973024284693:INFO:{_CHECKOUT_PATH}/src/chrome/browser/browser_main.cc(285)] Handling shutdown for signal 15.
 
 [----------] 1 test from MoreBadTest
 [ RUN      ] MoreBadTest.TimesOutAndFails
 {MOREBAD_ERRORS}
-[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for MoreBadTest.TimesOutAndFails
+[0531/042642:ERROR:{_CHECKOUT_PATH}/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for MoreBadTest.TimesOutAndFails
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
 [  FAILED  ] MoreBadTest.TimesOutAndFails (31000 ms)
@@ -267,10 +271,10 @@ Note: This is test shard 1 of 30.
 [----------] 1 test from BadTest
 [ RUN      ] BadTest.TimesOut
 {TIMEOUT_ERRORS}
-[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for BadTest.TimesOut
+[0531/042642:ERROR:{_CHECKOUT_PATH}/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for BadTest.TimesOut
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
-[61613:19971:0531/042642:2887973024284693:INFO:/b/slave/chromium-rel-mac-builder/build/src/chrome/browser/browser_main.cc(285)] Handling shutdown for signal 15.
+[61613:19971:0531/042642:2887973024284693:INFO:{_CHECKOUT_PATH}/src/chrome/browser/browser_main.cc(285)] Handling shutdown for signal 15.
 
 [----------] 4 tests from SomeOtherTest
 [ RUN      ] SomeOtherTest.SwitchTypes
@@ -323,7 +327,7 @@ Note: This is test shard 13 of 30.
 [----------] 1 test from MoreBadTest
 [ RUN      ] MoreBadTest.TimesOutAndFails
 {MOREBAD_ERRORS}
-[0531/042642:ERROR:/b/slave/chromium-rel-mac-builder/build/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for MoreBadTest.TimesOutAndFails
+[0531/042642:ERROR:{_CHECKOUT_PATH}/src/chrome/test/test_launcher/out_of_proc_test_runner.cc(79)] Test timeout (30000 ms) exceeded for MoreBadTest.TimesOutAndFails
 Handling SIGTERM.
 Successfully wrote to shutdown pipe, resetting signal handler.
 [  FAILED  ] MoreBadTest.TimesOutAndFails (31000 ms)
