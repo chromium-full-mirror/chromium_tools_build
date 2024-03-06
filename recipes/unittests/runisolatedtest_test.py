@@ -66,10 +66,6 @@ class TestAll(unittest.TestCase):
         'build/src/out/Release/base_unittests',
         '--gtest_print_time',
         '--gtest_output=xml:build/gtest-results/base_unittests.xml',
-        '--total-slave',
-        '1',
-        '--slave-index',
-        '2',
         '--gtest_filter=Junk',
     ]
     expected = [
@@ -82,10 +78,6 @@ class TestAll(unittest.TestCase):
             '--',
             '--no-cr',
             '--gtest_output=xml:build/gtest-results/base_unittests.xml',
-            '--shards',
-            '1',
-            '--index',
-            '2',
             '--gtest_filter=Junk',
         ],
     ]

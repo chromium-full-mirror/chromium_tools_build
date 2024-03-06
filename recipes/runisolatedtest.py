@@ -98,17 +98,9 @@ def run_test_isolated(isolate_script, test_exe, original_command):
   # Start setting the test specific options.
   isolate_command.append('--')
   isolate_command.append('--no-cr')
-  original_command = original_command[:]
-  while original_command:
-    item = original_command.pop(0)
-    if item == '--total-slave':
-      isolate_command.extend(['--shards', original_command.pop(0)])
-    elif item == '--slave-index':
-      isolate_command.extend(['--index', original_command.pop(0)])
-    elif item.startswith(('--gtest_filter',
-                          '--gtest_output',
-                          '--test-launcher')):
-      isolate_command.append(item)
+  for arg in original_command:
+    if arg.startswith(('--gtest_filter', '--gtest_output', '--test-launcher')):
+      isolate_command.append(arg)
 
   return run_command(isolate_command)
 
