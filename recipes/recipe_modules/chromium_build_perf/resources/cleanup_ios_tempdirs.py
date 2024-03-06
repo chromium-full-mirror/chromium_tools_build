@@ -6,16 +6,29 @@
 """
 
 import glob
+import os
 import shutil
 import sys
 
 
+# tempfile.gettempdir() doesn't return system tempdir from recipe.
+# hardcoding the glob pattern starting with /var/folders.
+patterns = [
+    '/var/folders/**/com.apple.CoreSimulator.SimDevice.*',
+    '/var/folders/**/*IBTOOLD*',
+    '/var/folders/**/ibtoold*',
+]
+
 def main():
-  # tempfile.gettempdir() doesn't return system tempdir from recipe.
-  # hardcoding the glob pattern starting with /var/folders.
-  for d in glob.iglob('/var/folders/**/com.apple.CoreSimulator.SimDevice.*', recursive=True):
-    print('Removing ' + d)
-    shutil.rmtree(d)
+  for p in patterns:
+    for d in glob.iglob(p, recursive=True):
+      print('Removing ' + d)
+      # Since shutil.rmtree() gets stuck on named pipe, it needs to use
+      # os.remove(). https://github.com/python/cpython/issues/116401
+      if os.path.isdir(d):
+        shutil.rmtree(d)
+      else:
+        os.remove(d)
 
 
 if '__main__' == __name__:
