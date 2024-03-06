@@ -43,14 +43,11 @@ def GenTests(api):
       'build_archive_url',
       api.properties(
           parent_buildername='example_buildername',
-          parentname='example_buildername',
           buildnumber=123,
           build_archive_url='https://example/url'),
       api.post_process(StepCommandContains, 'extract build', [
           '--build-archive-url',
           'https://example/url',
-          '--parent-builder-name',
-          'example_buildername',
       ]),
       api.post_process(DropExpectation),
   )

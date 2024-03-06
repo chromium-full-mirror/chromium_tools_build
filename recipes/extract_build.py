@@ -62,22 +62,11 @@ def GetBuildUrl(options, build_revision):
 
   base_filename, version_suffix = bot_utils.GetZipFileNames(build_revision)
 
-  replace_dict = {
-      'base_filename': base_filename,
-      'parentname': options.parent_builder_name,
-      'parentslavename': options.parent_slave_name,
-      'parent_builddir': options.parent_build_dir,
-  }
-  # If builddir isn't specified, assume buildbot used the builder name
-  # as the root folder for the build.
-  if not replace_dict.get('parent_builddir') and replace_dict.get('parentname'):
-    replace_dict['parent_builddir'] = replace_dict.get('parentname', '')
   url = options.build_url
   if url[-4:] != '.zip':  # assume filename not specified
     # Append the filename to the base URL. First strip any trailing slashes.
     url = url.rstrip('/')
-    url = '%s/%s' % (url, '%(base_filename)s.zip')
-  url = url % replace_dict
+    url = f'{url}/{base_filename}.zip'
   archive_name = url.split('/')[-1]
   versioned_url = url.replace('.zip', version_suffix + '.zip')
   return versioned_url, archive_name
@@ -100,9 +89,7 @@ def real_main(options):
 
   src_dir = os.path.dirname(abs_build_dir)
   if not options.build_revision and not options.build_archive_url:
-    build_revision = bot_utils.GetBuildRevisions(
-        src_dir, revision_dir=options.revision_dir
-    )
+    build_revision = bot_utils.GetBuildRevisions(src_dir)
   else:
     build_revision = options.build_revision
   url, archive_name = GetBuildUrl(options, build_revision)
@@ -170,17 +157,6 @@ def main():
   )
   option_parser.add_option('--build-dir', help='ignored')
   option_parser.add_option(
-      '--parent-build-dir',
-      help='Path to build directory on parent buildbot '
-      'builder.'
-  )
-  option_parser.add_option(
-      '--parent-builder-name', help='Name of parent buildbot builder.'
-  )
-  option_parser.add_option(
-      '--parent-slave-name', help='Name of parent buildbot slave.'
-  )
-  option_parser.add_option(
       '--build-url', help='Base url where to find the build to extract'
   )
   option_parser.add_option(
@@ -215,18 +191,10 @@ def main():
     print('--gsutil-py-path must be specified')
     return 1
 
-  if not options.parent_build_dir:
-    options.parent_build_dir = options.build_properties.get('parent_builddir')
-  if not options.parent_builder_name:
-    options.parent_builder_name = options.build_properties.get('parentname')
-  if not options.parent_slave_name:
-    options.parent_slave_name = options.build_properties.get('parentslavename')
   if not options.build_url:
     options.build_url = options.build_properties.get('build_url')
   if not options.target:
     options.target = options.build_properties.get('target', 'Release')
-  if not options.revision_dir:
-    options.revision_dir = options.build_properties.get('revision_dir')
   options.src_dir = (
       options.build_properties.get('extract_build_src_dir') or options.src_dir
   )

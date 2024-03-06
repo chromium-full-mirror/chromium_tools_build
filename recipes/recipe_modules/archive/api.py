@@ -405,17 +405,6 @@ class ArchiveApi(recipe_api.RecipeApi):
       if build_revision:
         args.extend(['--build_revision', build_revision])
 
-    properties = (
-        ('parent_builddir', '--parent-build-dir'),
-        ('parentname', '--parent-builder-name'),
-        ('parentslavename', '--parent-slave-name'),
-        ('webkit_dir', '--webkit-dir'),
-        ('revision_dir', '--revision-dir'),
-    )
-    for property_name, switch_name in properties:
-      if self.m.properties.get(property_name):
-        args.extend([switch_name, self.m.properties[property_name]])
-
     cmd = [
         'python3',
         self.repo_resource('recipes', 'extract_build.py'),
