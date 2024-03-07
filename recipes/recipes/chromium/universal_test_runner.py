@@ -24,6 +24,7 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (
 DEPS = [
     'chromium',
     'chromium_checkout',
+    'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
     'gn',
@@ -77,6 +78,11 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   test_runner = api.chromium_tests.create_test_runner(tests)
   with api.chromium_tests.wrap_chromium_tests(tests):
     api.chromium_tests.configure_swarming(True)
+    # Lower pri for faster turn-around time in debugging. The UTR shouldn't
+    # get so much use that it affects CI/CQ traffic substantially. But we can
+    # check for sure using the UTR-specific tag below, and reassess if needed.
+    api.chromium_swarming.default_priority = 20
+    api.chromium_swarming.add_default_tag('is_utr:1')
     return test_runner()
 
 
