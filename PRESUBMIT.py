@@ -167,7 +167,6 @@ _PY3_8_FILES = (
     'recipes/recipes/android/sdk_packager.resources/parse_sdkmanager_list_test.py',
     'recipes/recipes/android/sdk_packager.resources/parse_sdkmanager_list.py',
     'recipes/recipes/chromium_rts/create_model.resources/integration_tests.py',
-    'recipes/recipes/dawn.resources/hash_testcases.py',
     'recipes/recipes/flakiness/generate_builder_test_data.resources/query_test.py',
     'recipes/recipes/flakiness/generate_builder_test_data.resources/query.py',
     'recipes/recipes/swarming/deterministic_build.resources/move.py',
