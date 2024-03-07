@@ -363,7 +363,8 @@ def RunSteps(api,
           'disabled readers and writers',
           api,
           cmake_fixed_args,
-          enable_readers_and_writers=False)
+          enable_readers_and_writers=False,
+          targets=['tint_cmd_tint_cmd'])
 
 
 def GenTests(api):
