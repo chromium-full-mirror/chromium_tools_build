@@ -1408,8 +1408,6 @@ class SwarmingApi(recipe_api.RecipeApi):
         2. How many attempts we've now made to get task data.
 
     Uses the 'get_states' endpoint on the swarming server."""
-    # TODO(gbeaty) Sorting can be removed when python2 support is removed
-    task_sets = sorted(task_sets)
     cmd = [
         'python3',
         self.resource('wait_for_finished_task_set.py'),

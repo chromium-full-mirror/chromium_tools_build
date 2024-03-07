@@ -6,7 +6,6 @@ from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
 from recipe_engine import post_process
-import collections
 import textwrap
 
 DEPS = [
@@ -59,24 +58,19 @@ def _limitSize(message_list, char_limit=450):
   return message_list
 
 
-# Escape characters that markdown inteprets as some kind of formatting
 # Make sure backslash is escaped first so that backslashes added to escape other
 # characters are not themselves escaped
-_MARK_DOWN_TRANSLATION_TABLE = collections.OrderedDict([
-    (c, '\\' + c) for c in '\\`*_{}[]()#+-.!'
-])
-# markdown represents line breaks 2 spaces
-# replacing the \n with \n\n because \n gets replaced with an empty space.
-# This way it will work on both markdown and plain text.
-_MARK_DOWN_TRANSLATION_TABLE['\n'] = '\n\n'
+_MARKDOWN_TRANSLATION_TABLE = str.maketrans(
+    # Escape characters that markdown inteprets as some kind of formatting
+    {c: '\\' + c for c in '\\`*_{}[]()#+-.!'}
+    # markdown represents line breaks 2 spaces
+    # replacing the \n with \n\n because \n gets replaced with an empty space.
+    # This way it will work on both markdown and plain text.
+    | {'\n': '\n\n'})
 
 
 def _translateTextToMarkdown(s):
-  # TODO(gbeaty) When we're fully on python3, use s.translate to do all the
-  # replacements in one pass
-  for old, new in _MARK_DOWN_TRANSLATION_TABLE.items():
-    s = s.replace(old, new)
-  return s
+  return s.translate(_MARKDOWN_TRANSLATION_TABLE)
 
 
 def _createSummaryMarkdown(step_json):
