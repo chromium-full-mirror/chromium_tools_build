@@ -1831,8 +1831,6 @@ def _archive_layout_test_results(api,
       buildername,
       '--gs-bucket',
       f'gs://{gcs_bucket}',
-      '--staging-dir',
-      api.path['cache'].join('chrome_staging'),
   ]
   if swarm_task_ids:
     cmd.extend(['--task-ids', ','.join(swarm_task_ids)])

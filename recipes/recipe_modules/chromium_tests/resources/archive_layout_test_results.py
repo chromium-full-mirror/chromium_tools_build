@@ -33,9 +33,7 @@ sys.path.extend([
     os.path.join(ROOT_DIR, 'scripts'),
 ])
 
-from common import chromium_utils
 import bot_utils
-import build_directory
 
 
 def maybe_archive_results_html(args):
@@ -173,11 +171,6 @@ def _ParseArgs():
       help='The Google Storage bucket to upload to.')
   parser.add_argument(
       '--gs-acl', help='The access policy for Google Storage files.')
-  parser.add_argument(
-      '--staging-dir',
-      help='Directory to use for staging the archives. '
-      'Default behavior is to automatically detect '
-      'slave\'s build directory.')
   parser.add_argument('--task-ids', help='Task ids used in this test step.')
   bot_utils_callback = bot_utils.AddArgs(parser)
 
