@@ -1,4 +1,4 @@
-# scripts/slave/goma
+# recipes/goma
 
 This directory contains goma-related protobuf to be uploaded with
 `infra.libs.bigquery.helper.send_rows`.
