@@ -21,9 +21,6 @@ import bot_utils
 class MockOptions:
   build_properties = {}
   build_archive_url = None
-  parent_builder_name = 'Builder'
-  parent_slave_name = 'slave'
-  parent_build_dir = '/b/foo'
 
 
 class ExtractBuildTest(unittest.TestCase):
