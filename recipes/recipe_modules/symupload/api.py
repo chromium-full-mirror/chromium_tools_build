@@ -155,7 +155,7 @@ class SymuploadApi(recipe_api.RecipeApi):
     """
     Args:
       build_dir: The absolute path to the build output directory, e.g.
-                 [slave-build]/src/out/Release.
+                 [cache]/builder/src/out/Release.
       config_file_path: (str) Absolute path to a config file to utilize
                         instead of the recipe_module property. The format of
                         the file must be the same as the structure of
