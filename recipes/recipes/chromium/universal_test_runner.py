@@ -191,10 +191,13 @@ def create_tests(
 
   isolate_tests = [test for test in tests if test.isolate_target]
   skylab_tests = [test for test in tests if test.is_skylabtest]
-  if isolate_tests or skylab_tests:
+
+  # TODO(crbug.com/41492686): add multiple target support for mb.py isolate
+  # command like there is for mb.py gen
+  def isolate_target(target):
     mb_args = ['--no-build']
     mb_args.append(build_dir)
-    mb_args.extend([test.target_name for test in isolate_tests + skylab_tests])
+    mb_args.append(target)
     # Pass an empty builder_id to prevent gn_args from getting reapplied. They
     # should have been set in the mb gen or should not be overwritten
     api.chromium.run_mb_cmd(
@@ -203,6 +206,10 @@ def create_tests(
         builder_id=None,
         additional_args=mb_args,
     )
+
+  for target in [t.isolate_target for t in isolate_tests
+                ] + [t.target_name for t in skylab_tests]:
+    isolate_target(target)
   if isolate_tests:
     api.chromium_tests.isolate_tests(
         builder_config, isolate_tests, '', '', build_dir=build_dir)
@@ -574,6 +581,59 @@ solutions = [
           'No tests selected for running',
       ),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'multiple_tests',
+      ctbc_properties(),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }, {
+                      'name': 'unit_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.properties(
+          test_names=['browser_tests', 'unit_tests'],
+          checkout_path='[CACHE]/src',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          bypass_gclient=True,
+      ),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] unit_tests'),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       ['-m', 'fake-group', '-b', 'fake-tester']),
+      api.post_process(post_process.StepCommandContains, 'isolate',
+                       ['browser_tests']),
+      api.post_process(post_process.StepCommandContains, 'isolate (2)',
+                       ['unit_tests']),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.MustRun, 'unit_tests'),
       api.post_process(post_process.DropExpectation),
   )
 
