@@ -932,7 +932,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     # These properties are specified on every bot, so pass them down
     # unconditionally.
     full_args.append('--builder-name=%s' % self.m.buildbucket.builder_name)
-    full_args.append('--slave-name=%s' % self.m.properties['bot_id'])
     if builder_group is not None:
       full_args.append('--builder-group=%s' % builder_group)
     # A couple of the recipes contain tests which don't specify a buildnumber,

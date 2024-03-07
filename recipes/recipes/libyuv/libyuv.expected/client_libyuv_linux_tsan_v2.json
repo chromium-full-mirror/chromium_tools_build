@@ -1390,7 +1390,6 @@
       "Release",
       "--no-xvfb",
       "--builder-name=Linux Tsan v2",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "--enable-tsan",
       "libyuv_unittest",

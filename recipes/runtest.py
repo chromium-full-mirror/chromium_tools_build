@@ -460,10 +460,6 @@ def _MainLinux(options, args, extra_env):
     raise chromium_utils.MissingArgument('Usage: %s' % USAGE)
 
   build_dir = os.path.normpath(os.path.abspath(options.build_dir))
-  if options.slave_name:
-    slave_name = options.slave_name
-  else:
-    slave_name = bot_utils.SlaveBuildName(build_dir)
   bin_dir = os.path.join(build_dir, options.target)
 
   test_exe = args[0]
@@ -524,7 +520,7 @@ def _MainLinux(options, args, extra_env):
         'devtools_perf_test_wrapper' in test_exe
     )
     if start_xvfb:
-      xvfb.StartVirtualX(slave_name, bin_dir)
+      xvfb.StartVirtualX(bin_dir)
 
     if _UsingGtestJson(options):
       json_file_name = log_processor.PrepareJSONFile(
@@ -553,7 +549,7 @@ def _MainLinux(options, args, extra_env):
     )
   finally:
     if start_xvfb:
-      xvfb.StopVirtualX(slave_name)
+      xvfb.StopVirtualX()
     if _UsingGtestJson(options):
       log_processor.ProcessJSONFile(options.build_dir)
 
@@ -808,11 +804,6 @@ def main():
       '--builder-name',
       default=None,
       help='The name of the builder running this script.'
-  )
-  option_parser.add_option(
-      '--slave-name',
-      default=None,
-      help='The name of the slave running this script.'
   )
   option_parser.add_option(
       '--build-number',

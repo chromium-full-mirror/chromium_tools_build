@@ -1390,7 +1390,6 @@
       "Release",
       "--no-xvfb",
       "--builder-name=Linux Asan",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "--enable-asan",
       "--enable-lsan",

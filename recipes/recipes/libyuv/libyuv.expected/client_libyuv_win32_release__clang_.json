@@ -1430,7 +1430,6 @@
       "--target",
       "Release",
       "--builder-name=Win32 Release (Clang)",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "libyuv_unittest.exe",
       "--undefok=no-sandbox"

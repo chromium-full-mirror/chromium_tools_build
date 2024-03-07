@@ -1450,7 +1450,6 @@
       "Release",
       "--no-xvfb",
       "--builder-name=linux_ubsan",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "libyuv_unittest",
       "--undefok=no-sandbox"

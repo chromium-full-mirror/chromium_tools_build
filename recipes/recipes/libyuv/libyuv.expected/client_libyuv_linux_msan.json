@@ -1390,7 +1390,6 @@
       "Release",
       "--no-xvfb",
       "--builder-name=Linux MSan",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "--enable-msan",
       "libyuv_unittest",

@@ -58,7 +58,6 @@ def GenTests(api):
           '--no-xvfb',
           '--test-type=base_unittests',
           '--builder-name=test_buildername',
-          '--slave-name=test_bot_id',
           '--build-number=123',
           'base_unittests',
       ]),

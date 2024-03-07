@@ -1749,7 +1749,6 @@
       "--test-launcher-summary-output",
       "[CLEANUP]/tmp_tmp_1",
       "--builder-name=linux-swangle-try-tot-swiftshader-x64",
-      "--slave-name=test_bot",
       "--builder-group=chromium.swangle",
       "--build-number=571",
       "angle_end2end_tests"

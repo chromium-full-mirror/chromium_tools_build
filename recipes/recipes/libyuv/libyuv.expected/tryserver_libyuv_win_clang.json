@@ -1490,7 +1490,6 @@
       "--target",
       "Debug",
       "--builder-name=win_clang",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "libyuv_unittest.exe",
       "--undefok=no-sandbox"

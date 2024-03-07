@@ -49,26 +49,20 @@ def main():
       '--target', default='Release', help='build target (Debug or Release)'
   )
   option_parser.add_option('--build-dir', help='Chromium build directory')
-  option_parser.add_option(
-      '--bot-name', help='The name of the bot running this script.'
-  )
 
   options, args = option_parser.parse_args()
 
   if len(args) == 0:
     raise Exception("Provide command to run")
-  bot_name = options.bot_name
-  if bot_name is None:
-    raise Exception("bot name must be provided")
 
   bin_dir = os.path.join(options.build_dir, options.target)
 
-  xvfb.StartVirtualX(bot_name, bin_dir)
+  xvfb.StartVirtualX(bin_dir)
   try:
     # Run the desired command with DISPLAY set
     subprocess.check_call(args)
   finally:
-    xvfb.StopVirtualX(bot_name)
+    xvfb.StopVirtualX()
   return 0
 
 

@@ -770,7 +770,6 @@
       "--test-launcher-summary-output",
       "[CLEANUP]\\tmp_tmp_1",
       "--builder-name=fake-tester",
-      "--slave-name=test_bot",
       "--builder-group=fake-group",
       "--build-number=571",
       "aura_unittests.exe"
@@ -904,7 +903,6 @@
       "--test-launcher-summary-output",
       "[CLEANUP]\\tmp_tmp_2",
       "--builder-name=fake-tester",
-      "--slave-name=test_bot",
       "--builder-group=fake-group",
       "--build-number=571",
       "browser_tests.exe",

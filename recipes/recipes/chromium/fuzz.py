@@ -520,7 +520,6 @@ def RunSteps(api):
           # X environment
           withxvfb_path = api.repo_resource('recipes', 'withxvfb.py')
           withxvfb_args = ['--target', api.chromium.c.build_config_fs]
-          withxvfb_args.append('--bot-name=%s' % api.m.properties['bot_id'])
           withxvfb_args.append('--build-dir=%s' % build_dir)
 
           api.step(

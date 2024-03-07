@@ -1490,7 +1490,6 @@
       "--target",
       "Release_x64",
       "--builder-name=win_x64_clang_rel",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "libyuv_unittest.exe",
       "--undefok=no-sandbox"

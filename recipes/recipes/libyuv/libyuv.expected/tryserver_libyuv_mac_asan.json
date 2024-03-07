@@ -1498,7 +1498,6 @@
       "--target",
       "Release",
       "--builder-name=mac_asan",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "--enable-asan",
       "libyuv_unittest",

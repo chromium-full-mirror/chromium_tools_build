@@ -1498,7 +1498,6 @@
       "--target",
       "Debug",
       "--builder-name=mac",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "libyuv_unittest",
       "--undefok=no-sandbox"

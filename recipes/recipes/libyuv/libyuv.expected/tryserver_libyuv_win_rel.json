@@ -308,7 +308,6 @@
       "--target",
       "Release",
       "--builder-name=win_rel",
-      "--slave-name=bot_id",
       "--build-number=1337",
       "libyuv_unittest.exe",
       "--undefok=no-sandbox"

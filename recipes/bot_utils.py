@@ -85,13 +85,6 @@ def GetZipFileNames(build_revision):
   return base_name, version_suffix
 
 
-def SlaveBuildName(chrome_dir):
-  """Extracts the build name of this slave (e.g., 'chrome-release') from the
-  leaf subdir of its build directory.
-  """
-  return os.path.basename(_SlaveBaseDir(chrome_dir))
-
-
 def _SlaveBaseDir(chrome_dir):
   """Finds the full path to the build slave's base directory (e.g.
   'c:/b/chrome/chrome-release').  This is assumed to be the parent of the
