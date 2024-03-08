@@ -214,9 +214,7 @@ def create_tests(
     api.chromium_tests.isolate_tests(
         builder_config, isolate_tests, '', '', build_dir=build_dir)
 
-  if skylab_tests:
-    api.chromium_tests.prepare_artifact_for_skylab(
-        builder_config, skylab_tests, phase='')
+  # TODO(crbug.com/41492686): Prepare skylab artifacts
   return None, tests
 
 
@@ -1124,80 +1122,5 @@ target_os=['os']
       api.post_process(post_process.DoesNotRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.DoesNotRun, 'browser_tests'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  SKYLAB_ISOLATE_TEXT = """
-    {'variables': {'command': ['bin/run_lacros_smoke_tast_tests',
-                            '--logs-dir=${ISOLATED_OUTDIR}'],
-                'files': ['../../.vpython',
-                          'bin/run_vaapi_unittest',
-                          'resources.pak',
-                          'resources.pak.info',
-                          './chrome',
-                          '../../testing/buildbot/filters',
-                          'gen/third_party',
-                          '../../testing/buildbot/filters',
-                          'bin/lacros_fyi_tast_tests.filter'
-                            ]}}
-  """
-
-  yield api.test(
-      'skylab_test',
-      ctbc_properties(
-          builder_spec=ctbc.BuilderSpec.create(
-              gclient_config='chromium',
-              chromium_config='chromium',
-              skylab_gs_bucket='chrome-test-builds',
-          ),),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'skylab_tests': [{
-                      'name': 'lacros-test',
-                      'cros_board': 'volteer',
-                      'lacros_gcs_path': 'lacros_gcs_path',
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['lacros-test'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          build_dir='fake_root/fake_out/Debug',
-          bypass_gclient=True,
-      ),
-      api.path.exists(
-          Path(RootBasePath(), 'fake_root/fake_out/Debug/lacros-test.isolate'),
-          api.path['start_dir'].join('squashfs', 'squashfs-tools',
-                                     'mksquashfs'),
-      ),
-      api.step_data(
-          'prepare skylab tests.collect runtime deps for lacros-test.read '
-          'isolate file', api.file.read_text(SKYLAB_ISOLATE_TEXT)),
-      api.skylab.mock_wait_on_suites('lacros-test', 1),
-      api.override_step_data(
-          'lacros-test results',
-          stdout=api.raw_io.output_text(
-              api.test_utils.rdb_results(
-                  'lacros-test', passing_tests=['Test.One']))),
-      api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'generate_build_files'),
-      api.post_process(post_process.MustRun,
-                       'test_pre_run.lacros-test.schedule'),
-      api.post_process(post_process.MustRun, 'lacros-test'),
-      api.post_process(
-          post_process.MustRun,
-          'prepare skylab tests.collect runtime deps for lacros-test'),
-      api.post_process(post_process.StepCommandContains, 'compile',
-                       ['fake_root/fake_out/Debug', 'lacros-test']),
-      api.post_process(
-          post_process.StepCommandContains,
-          'prepare skylab tests.collect runtime deps for lacros-test.read '
-          'isolate file', ['fake_root/fake_out/Debug/lacros-test.isolate']),
       api.post_process(post_process.DropExpectation),
   )
