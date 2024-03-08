@@ -272,14 +272,6 @@ _AddBuildSpec('linux-builder-perf-pgo', 'linux', bisect_archive_build=True)
 _AddBuildSpec(
     'chromecast-linux-builder-perf', 'linux', bisect_archive_build=True)
 
-_AddIsolatedTestSpec(
-    'android-go-perf', 'android', 'android-builder-perf', target_bits=32)
-_AddIsolatedTestSpec(
-    'android-go_webview-perf',
-    'android',
-    'android-builder-perf',
-    target_bits=32)
-
 _AddIsolatedTestSpec('android-pixel2-perf', 'android',
                      'android_arm64-builder-perf')
 _AddIsolatedTestSpec('android-pixel2_webview-perf', 'android',
@@ -343,11 +335,6 @@ _AddPinpointTestSpec('mac-10_12_laptop_low_end-perf', 'mac', 'mac-builder-perf')
 
 # Pinpoint-only bots
 # android
-_AddPinpointTestSpec(
-    'android-go-perf-pgo',
-    'android',
-    'android-builder-perf-pgo',
-    target_bits=32)
 _AddPinpointTestSpec('android-pixel2-perf-pgo', 'android',
                      'android_arm64-builder-perf-pgo')
 _AddPinpointTestSpec('android-pixel2_webview-perf-pgo', 'android',

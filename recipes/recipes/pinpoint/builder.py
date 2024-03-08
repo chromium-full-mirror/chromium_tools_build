@@ -101,10 +101,12 @@ def GenTests(api):
       'builder': 'Android Compile Perf',
   }
   targets_spec = ('chromium.perf.pinpoint', {
-      'android-go-perf': {
+      'android-go-wembley-perf': {
           'isolated_scripts': [{
-              'isolate_name': 'performance_test_suite_android_clank_chrome',
-              'name': 'performance_test_suite',
+              'isolate_name':
+                  'performance_test_suite_android_clank_trichrome_bundle',
+              'name':
+                  'performance_test_suite',
           },],
       },
   })
