@@ -8,10 +8,12 @@ DEPS = [
     'chromium',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'recipe_engine/path',
 ]
 
 
 def RunSteps(api):
+  api.path['checkout'] = api.path['cache'].join('builder')
   api.chromium.set_config('chromium')
   api.chromium_tests.find_swarming_command_lines('chromium')
 

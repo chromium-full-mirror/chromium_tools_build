@@ -8,7 +8,7 @@ from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
 
 from recipe_engine import post_process
-from recipe_engine.config_types import Path, BasePath
+from recipe_engine.config_types import Path
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
@@ -43,11 +43,23 @@ DEPS = [
 PROPERTIES = InputProperties
 
 
-class RootBasePath(BasePath):
-  """A base path for the root of the filesystem."""
+try:  # pragma: no cover
+  # BUG(329113288) - old-style path types
+  #
+  # Note that the old and new paths are not covered simultaneously, so both have
+  # to be nocover in order to allow a non-trivial roll rather than a manual one.
+  # Once the upstream change which deletes the BasePath type and adds
+  # api.path.cast_to_path land, this whole block and the OLD_PATH_TYPE==True
+  # block in the body of configure_build can be deleted.
+  from recipe_engine.config_types import BasePath
+  class RootBasePath(BasePath):
+    """A base path for the root of the filesystem."""
 
-  def resolve(self, test_enabled: bool) -> str:
-    return ''
+    def resolve(self, test_enabled: bool) -> str:
+      return ''
+  OLD_PATH_TYPE = True
+except ImportError:  # pragma: no cover
+  OLD_PATH_TYPE = False
 
 
 def RunSteps(api: RecipeApi, properties: InputProperties):
@@ -262,9 +274,18 @@ def configure_build(
   api.path['checkout'] = api.path.abs_to_path(checkout_dir)
   api.chromium_checkout.checkout_dir = api.path['cache']
 
-  build_dir = build_dir or api.path.join(api.path['checkout'], 'out',
-                                         api.chromium.c.build_config_fs)
-  build_path = Path(RootBasePath(), build_dir)
+  if OLD_PATH_TYPE:  # pragma: no cover
+    # see comment in import block at top of this file.
+    build_dir = build_dir or api.path.join(api.path['checkout'], 'out',
+                                           api.chromium.c.build_config_fs)
+    build_path = Path(RootBasePath(), build_dir)
+  else:  # pragma: no cover
+    if build_dir:
+      build_path = api.path.cast_to_path(build_dir)
+    else:
+      build_path = api.path['checkout'].join(
+          'out', api.chromium.c.build_config_fs)
+
   api.chromium.output_dir = build_path
   return (compiling_builder_id, compiling_builder_config, api.path['checkout'],
           build_path)
@@ -875,7 +896,7 @@ target_os=['os']
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
           disable_code_coverage=True,
-          build_dir='fake_root/fake_out/Debug',
+          build_dir='/fake_root/fake_out/Debug',
           bypass_gclient=True,
       ),
       api.post_process(post_process.MustRun, 'compile'),
@@ -884,12 +905,12 @@ target_os=['os']
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.StepCommandContains, 'compile',
-                       ['fake_root/fake_out/Debug', 'browser_tests']),
+                       ['/fake_root/fake_out/Debug', 'browser_tests']),
       api.post_process(
           post_process.StepCommandContains, 'isolate tests',
-          ['fake_root/fake_out/Debug/browser_tests.isolated.gen.json']),
+          ['/fake_root/fake_out/Debug/browser_tests.isolated.gen.json']),
       api.post_process(post_process.StepCommandContains, 'find command lines',
-                       ['fake_root/fake_out/Debug']),
+                       ['/fake_root/fake_out/Debug']),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.DropExpectation),
   )
