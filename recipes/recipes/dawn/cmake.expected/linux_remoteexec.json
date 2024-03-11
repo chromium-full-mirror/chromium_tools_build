@@ -3796,7 +3796,7 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-j",
       "160",
-      "all"
+      "tint_cmd_tint_cmd"
     ],
     "env": {
       "PLATFORM": "linux",

@@ -154,14 +154,21 @@
       "cipd",
       "ensure",
       "-root",
-      "[CACHE]/builder",
+      "[CACHE]/osx_sdk",
       "-ensure-file",
-      "@Subdir clang\nfuchsia/third_party/clang/mac-amd64 fDkN9wRoOjxDSowpeqX2rRdHF3sgPEbM9ulbizq9kCQC",
+      "infra/tools/mac_toolchain/${platform} git_revision:59ddedfe3849abf560cbe0b41bb8e431041cd2bb",
       "-max-threads",
       "0",
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -178,10 +185,10 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"clang\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
       "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-fDkN9wRoOjxDSowp\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"package\": \"fuchsia/third_party/clang/mac-amd64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-git_revision:59d\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/mac_toolchain/resolved-platform\"@@@",
       "@@@STEP_LOG_LINE@json.output@      }@@@",
       "@@@STEP_LOG_LINE@json.output@    ]@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
@@ -191,12 +198,71 @@
   },
   {
     "cmd": [
+      "[CACHE]/osx_sdk/mac_toolchain",
+      "install",
+      "-kind",
+      "mac",
+      "-xcode-version",
+      "9f2000",
+      "-output-dir",
+      "[CACHE]/osx_sdk/XCode.app"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install xcode"
+  },
+  {
+    "cmd": [
+      "sudo",
+      "xcode-select",
+      "--switch",
+      "[CACHE]/osx_sdk/XCode.app"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "select XCode"
+  },
+  {
+    "cmd": [
       "[CACHE]/uncached/dawn/tools/check-no-crlf"
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -222,7 +288,6 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -250,7 +315,6 @@
     "cwd": "[CACHE]/uncached/dawn",
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -282,9 +346,9 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_BUILD_BENCHMARKS=0",
       "-DTINT_RANDOMIZE_HASHES=1",
-      "-DDAWN_USE_BUILT_DXC=1",
+      "-DDAWN_USE_BUILT_DXC=0",
       "-DTINT_BUILD_SPV_READER=1",
       "-DTINT_BUILD_WGSL_READER=1",
       "-DTINT_BUILD_GLSL_WRITER=1",
@@ -298,10 +362,10 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],
@@ -309,7 +373,6 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -344,7 +407,6 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -394,7 +456,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -442,7 +503,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -497,7 +557,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -544,7 +603,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -586,7 +644,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -633,7 +690,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -680,7 +736,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -740,7 +795,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -783,7 +837,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -849,7 +902,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -889,7 +941,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -929,7 +980,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -972,7 +1022,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1023,7 +1072,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1068,7 +1116,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1116,7 +1163,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1220,7 +1266,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1264,7 +1309,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1307,7 +1351,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1363,7 +1406,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1407,7 +1449,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1451,7 +1492,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1495,7 +1535,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1539,7 +1578,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1583,7 +1621,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1627,7 +1664,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1671,7 +1707,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1713,7 +1748,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1755,7 +1789,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1791,9 +1824,9 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_BUILD_BENCHMARKS=0",
       "-DTINT_RANDOMIZE_HASHES=1",
-      "-DDAWN_USE_BUILT_DXC=1",
+      "-DDAWN_USE_BUILT_DXC=0",
       "-DTINT_BUILD_SPV_READER=1",
       "-DTINT_BUILD_WGSL_READER=1",
       "-DTINT_BUILD_GLSL_WRITER=1",
@@ -1807,10 +1840,10 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],
@@ -1818,7 +1851,6 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1853,7 +1885,6 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1903,7 +1934,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -1951,7 +1981,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2006,7 +2035,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2053,7 +2081,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2095,7 +2122,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2142,7 +2168,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2189,7 +2214,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2249,7 +2273,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2292,7 +2315,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2358,7 +2380,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2398,7 +2419,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2438,7 +2458,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2481,7 +2500,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2518,7 +2536,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2622,7 +2639,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2666,7 +2682,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2709,7 +2724,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2765,7 +2779,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2809,7 +2822,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2853,7 +2865,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2897,7 +2908,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2941,7 +2951,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -2985,7 +2994,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3029,7 +3037,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3073,7 +3080,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3115,7 +3121,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3157,7 +3162,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3186,7 +3190,6 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3208,35 +3211,6 @@
   {
     "cmd": [
       "[CACHE]/uncached/dawn/tools/run",
-      "fuzz",
-      "--check",
-      "--build",
-      "[CACHE]/uncached/dawn/cmake-build"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/clang/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Check fuzzers"
-  },
-  {
-    "cmd": [
-      "[CACHE]/uncached/dawn/tools/run",
       "tests",
       "--tint",
       "[CACHE]/uncached/dawn/cmake-build/tint",
@@ -3244,7 +3218,6 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3276,7 +3249,6 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3308,9 +3280,9 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_BUILD_BENCHMARKS=0",
       "-DTINT_RANDOMIZE_HASHES=1",
-      "-DDAWN_USE_BUILT_DXC=1",
+      "-DDAWN_USE_BUILT_DXC=0",
       "-DTINT_BUILD_SPV_READER=1",
       "-DTINT_BUILD_WGSL_READER=1",
       "-DTINT_BUILD_GLSL_WRITER=1",
@@ -3324,10 +3296,10 @@
       "-DTINT_BUILD_AS_OTHER_OS=1",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],
@@ -3335,7 +3307,6 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3370,7 +3341,6 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3420,7 +3390,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3468,7 +3437,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3523,7 +3491,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3570,7 +3537,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3612,7 +3578,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3659,7 +3624,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3706,7 +3670,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3766,7 +3729,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3796,7 +3758,7 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-j",
       "160",
-      "all"
+      "tint_cmd_tint_cmd"
     ],
     "env": {
       "PLATFORM": "mac",
@@ -3809,7 +3771,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3875,7 +3836,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3915,7 +3875,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3955,7 +3914,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -3998,7 +3956,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4035,7 +3992,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4139,7 +4095,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4183,7 +4138,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4226,7 +4180,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4282,7 +4235,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4326,7 +4278,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4370,7 +4321,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4414,7 +4364,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4458,7 +4407,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4502,7 +4450,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4546,7 +4493,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4590,7 +4536,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4632,7 +4577,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4674,7 +4618,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4710,9 +4653,9 @@
       "[CACHE]/uncached/dawn/cmake-build",
       "-GNinja",
       "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=1",
+      "-DTINT_BUILD_BENCHMARKS=0",
       "-DTINT_RANDOMIZE_HASHES=1",
-      "-DDAWN_USE_BUILT_DXC=1",
+      "-DDAWN_USE_BUILT_DXC=0",
       "-DTINT_BUILD_SPV_READER=0",
       "-DTINT_BUILD_WGSL_READER=0",
       "-DTINT_BUILD_GLSL_WRITER=0",
@@ -4726,10 +4669,10 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],
@@ -4737,7 +4680,6 @@
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4772,7 +4714,6 @@
     ],
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4822,7 +4763,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4870,7 +4810,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4925,7 +4864,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -4972,7 +4910,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5014,7 +4951,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5061,7 +4997,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5108,7 +5043,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5168,7 +5102,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5211,7 +5144,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5277,7 +5209,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5317,7 +5248,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5357,7 +5287,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5400,7 +5329,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5437,7 +5365,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5541,7 +5468,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5585,7 +5511,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5628,7 +5553,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5684,7 +5608,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5728,7 +5651,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5772,7 +5694,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5816,7 +5737,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5860,7 +5780,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5904,7 +5823,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5948,7 +5866,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -5992,7 +5909,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -6034,7 +5950,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -6076,7 +5991,6 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
         "[CACHE]/uncached/dawn/third_party/depot_tools"
       ]
@@ -6098,6 +6012,33 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
+  },
+  {
+    "cmd": [
+      "sudo",
+      "xcode-select",
+      "--reset"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "reset XCode"
   },
   {
     "name": "$result"

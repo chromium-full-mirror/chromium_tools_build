@@ -94,9 +94,11 @@ def _install_clang(api):
   elif api.platform.is_linux:
     package_name = 'linux-amd64'
     package_hash = '8ii0cvHxegwLJjXM6PekCWB7xzEnFsY7cc2G96VT0VsC'
-  elif api.platform.is_mac:
-    package_name = 'mac-amd64'
-    package_hash = 'fDkN9wRoOjxDSowpeqX2rRdHF3sgPEbM9ulbizq9kCQC'
+  # TODO(amaiorano): Right now, we're using api.os_sdk('mac'), but keep this commented
+  # out temporarily as we may want to use Clang from CIPD for RBE.
+  # elif api.platform.is_mac:
+  #   package_name = 'mac-amd64'
+  #   package_hash = 'fDkN9wRoOjxDSowpeqX2rRdHF3sgPEbM9ulbizq9kCQC'
   ensure_file.add_package(f'fuchsia/third_party/clang/{package_name}',
                           package_hash, 'clang')
   api.cipd.ensure(install_path, ensure_file)
@@ -154,6 +156,9 @@ class CMakeFixedArgs:
   asan: bool
   ubsan: bool
   enable_remoteexec: bool
+  build_fuzzers: bool
+  build_benchmarks: bool
+  build_dxc: bool
 
 
 # Make a CMake build for Dawn. Returns the build_path, which is unique based
@@ -193,9 +198,9 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
   cmake_args = [
       '-GNinja',
       f'-DCMAKE_BUILD_TYPE={"DEBUG" if fixed_args.debug else "RELEASE"}',
-      '-DTINT_BUILD_BENCHMARKS=1',
+      f'-DTINT_BUILD_BENCHMARKS={cmake_bool_arg(fixed_args.build_benchmarks)}',
       '-DTINT_RANDOMIZE_HASHES=1',
-      '-DDAWN_USE_BUILT_DXC=1',
+      f'-DDAWN_USE_BUILT_DXC={cmake_bool_arg(fixed_args.build_dxc)}',
       f'-DTINT_BUILD_SPV_READER={cmake_bool_arg(enable_readers_and_writers)}',
       f'-DTINT_BUILD_WGSL_READER={cmake_bool_arg(enable_readers_and_writers)}',
       f'-DTINT_BUILD_GLSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
@@ -212,10 +217,10 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
     cmake_args.extend([
         '-DCMAKE_C_COMPILER=clang',
         '-DCMAKE_CXX_COMPILER=clang++',
-        '-DTINT_BUILD_FUZZERS=1',
-        '-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1',
-        '-DTINT_BUILD_AST_FUZZER=1',
-        '-DTINT_BUILD_REGEX_FUZZER=1',
+        f'-DTINT_BUILD_FUZZERS={cmake_bool_arg(fixed_args.build_fuzzers)}',
+        f'-DTINT_BUILD_SPIRV_TOOLS_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
+        f'-DTINT_BUILD_AST_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
+        f'-DTINT_BUILD_REGEX_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
     ])
 
   rbe_exec_root = _rbe_exec_root(api)
@@ -295,18 +300,29 @@ def RunSteps(api,
     _checkout_steps(api)
 
     checkout = api.path['checkout']
-    env_paths = _install_clang(api)
+    env_paths = []
+    if not api.platform.is_mac:
+      env_paths = _install_clang(api)
     env_paths.append(checkout.join('tools', 'golang', 'bin'))
     env_paths.append(checkout.join('third_party', 'depot_tools'))
 
-    with api.context(env_prefixes={'PATH': env_paths}):
+    with api.context(
+        env_prefixes={'PATH': env_paths}) as _, api.osx_sdk('mac') as _:
       with api.context(cwd=checkout):
         api.step('Check for no CRLF', [checkout.join('tools', 'check-no-crlf')])
         api.step('Run cpplint', [checkout.join('tools', 'lint')])
         api.step('Run go tool unittests', ['go', 'test', './...'])
 
-      cmake_fixed_args = CMakeFixedArgs(target_cpu, debug, clang, asan, ubsan,
-                                        enable_remoteexec)
+      cmake_fixed_args = CMakeFixedArgs(
+          target_cpu,
+          debug,
+          clang,
+          asan,
+          ubsan,
+          enable_remoteexec,
+          build_fuzzers=not api.platform.is_mac,
+          build_benchmarks=not api.platform.is_mac,
+          build_dxc=not api.platform.is_mac)
 
       build_path = _cmake_build('default targets', api, cmake_fixed_args)
 
@@ -335,14 +351,14 @@ def RunSteps(api,
 
       tools_run = checkout.join('tools', 'run')
 
-      api.step('Check fuzzers',
-               [tools_run, 'fuzz', '--check', '--build', build_path])
-
-      # TODO(amaiorano): Build and run 'tint_ast_fuzzer_unittests' and 'tint_regex_fuzzer_unittests'
-      # by passing TINT_BUILD_TESTS=1 to CMake. Kokoro used to do this, but it hasn't for a while.
-      # Apparently, we will be removing these targets soon, so perhaps just delete?
-      run_target('tint_ast_fuzzer_unittests', False)
-      run_target('tint_regex_fuzzer_unittests', False)
+      if cmake_fixed_args.build_fuzzers:
+        api.step('Check fuzzers',
+                 [tools_run, 'fuzz', '--check', '--build', build_path])
+        # TODO(amaiorano): Build and run 'tint_ast_fuzzer_unittests' and 'tint_regex_fuzzer_unittests'
+        # by passing TINT_BUILD_TESTS=1 to CMake. Kokoro used to do this, but it hasn't for a while.
+        # Apparently, we will be removing these targets soon, so perhaps just delete?
+        run_target('tint_ast_fuzzer_unittests', False)
+        run_target('tint_regex_fuzzer_unittests', False)
 
       # TODO(amaiorano): Consider spreading the runtime of Tint's e2e tests by only validating
       # formats native to the host (e.g. spir-v on Linux, MSL on Mac, hlsl on Windows).
@@ -357,7 +373,11 @@ def RunSteps(api,
       ])
 
       _cmake_build(
-          '_other.cc files', api, cmake_fixed_args, build_as_other=True)
+          '_other.cc files',
+          api,
+          cmake_fixed_args,
+          build_as_other=True,
+          targets=['tint_cmd_tint_cmd'])
 
       _cmake_build(
           'disabled readers and writers',

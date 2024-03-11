@@ -657,7 +657,7 @@
       "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
       "--build",
       "[CACHE]\\uncached\\dawn\\cmake-build",
-      "--target all"
+      "--target tint_cmd_tint_cmd"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"

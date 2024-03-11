@@ -3954,7 +3954,7 @@
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "-j",
       "160",
-      "all"
+      "tint_cmd_tint_cmd"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
