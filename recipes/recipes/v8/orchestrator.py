@@ -51,6 +51,8 @@ BUILD_CANCELED_SUMMARY = 'Build was canceled.'
 BUILD_WRONGLY_CANCELED_SUMMARY = (
     'Compilator was canceled before the parent orchestrator was canceled.')
 
+EXONERATE_FLAKES_MAX = 3
+
 
 def orchestrator_steps(api, compilator_name):
   v8 = api.v8_tests
@@ -101,9 +103,15 @@ def orchestrator_steps(api, compilator_name):
   v8.isolated_tests = dict(comp_props['swarm_hashes'])
   test_results = v8.runtests(tests)
 
+  status = common_pb.SUCCESS
+  summary_markdown = None
   if test_results.has_failures:
-    # Let tryjobs fail for failures only.
-    raise api.step.StepFailure('Failures in tryjob.')
+    status = common_pb.FAILURE
+    summary_markdown = 'Failures in tryjob.'
+  elif len(test_results.flakes) > EXONERATE_FLAKES_MAX:
+    status = common_pb.FAILURE
+    summary_markdown = 'Too many flakes in tryjob.'
+  return result_pb2.RawResult(status=status, summary_markdown=summary_markdown)
 
 
 def RunSteps(api, compilator_name):
@@ -174,6 +182,18 @@ def GenTests(api):
       api.step_data('Check', api.v8_tests.one_failure()),
       api.post_process(MustRun, 'Check'),
       api.post_process(MustRun, 'Test262'),
+      api.post_process(ResultReason, 'Failures in tryjob.'),
+      status='FAILURE',
+  )
+
+  yield test(
+      'too_many_flakes',
+      subbuild_data(output_properties),
+      api.step_data('Check', api.v8_tests.flakes(count=4)),
+      api.post_process(MustRun, 'Check'),
+      api.post_process(MustRun, 'Test262'),
+      api.post_process(ResultReason, 'Too many flakes in tryjob.'),
+      api.post_process(DropExpectation),
       status='FAILURE',
   )
 

@@ -227,7 +227,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
         'test_total': 1,
     })
 
-  def one_flake(self, num_fuzz=False):
+  def flakes(self, count, num_fuzz=False):
     if num_fuzz:
       framework_name = 'num_fuzzer'
       variant = None
@@ -237,53 +237,48 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       variant = 'stress'
       variant_flags = None
 
+    default_result = {
+        'flags': [],
+        'result': 'FAIL',
+        'expected': ['PASS', 'SLOW'],
+        'duration': 3,
+        'variant': variant,
+        'variant_flags': variant_flags,
+        'random_seed': 123,
+        'run': 1,
+        'stdout': 'Some output.',
+        'stderr': 'Some errput.',
+        'crash_type': 'Some crash type.',
+        'crash_state': 'Some crash state.',
+        'name': 'suite-name/dir/test-name',
+        'command': 'd8 test.js',
+        'exit_code': 1,
+        'shard_id': 1,
+        'shard_count': 2,
+        'framework_name': framework_name,
+    }
+
+    results = []
+    for index in range(count):
+      name = f'suite-name/dir/test-name-{index}'
+      results.append(dict(default_result, name=name))
+      results.append(dict(
+          default_result,
+          name=name,
+          result='PASS',
+          stderr='',
+          exit_code=0,
+          duration=10))
+
     return self.m.json.output({
-        'results': [
-            {
-                'flags': [],
-                'result': 'FAIL',
-                'expected': ['PASS', 'SLOW'],
-                'duration': 3,
-                'variant': variant,
-                'variant_flags': variant_flags,
-                'random_seed': 123,
-                'run': 1,
-                'stdout': 'Some output.',
-                'stderr': 'Some errput.',
-                'crash_type': 'Some crash type.',
-                'crash_state': 'Some crash state.',
-                'name': 'suite-name/dir/test-name',
-                'command': 'd8 test.js',
-                'exit_code': 1,
-                'shard_id': 1,
-                'shard_count': 2,
-                'framework_name': framework_name,
-            },
-            {
-                'flags': [],
-                'result': 'PASS',
-                'expected': ['PASS', 'SLOW'],
-                'duration': 10,
-                'variant': variant,
-                'variant_flags': variant_flags,
-                'random_seed': 123,
-                'run': 2,
-                'stdout': 'Some output.',
-                'stderr': '',
-                'crash_type': 'Some crash type.',
-                'crash_state': 'Some crash state.',
-                'name': 'suite-name/dir/test-name',
-                'command': 'd8 test.js',
-                'exit_code': 0,
-                'shard_id': 1,
-                'shard_count': 2,
-                'framework_name': framework_name,
-            },
-        ],
+        'results': results,
         'slowest_tests': V8TestApi.TOP_TESTS(),
         'tags': [],
-        'test_total': 2,
+        'test_total': len(results),
     })
+
+  def one_flake(self, num_fuzz=False):
+    return self.flakes(1, num_fuzz=num_fuzz)
 
   def infra_failure(self):
     return self.m.json.output({
