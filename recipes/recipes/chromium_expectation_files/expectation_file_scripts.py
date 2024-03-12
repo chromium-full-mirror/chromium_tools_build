@@ -197,7 +197,7 @@ def _UploadCL(api, script_invocation, bugs, cmdline):
       message,
       upload_args=upload_args,
       name='upload cl',
-      stdout=api.raw_io.output_text(),
+      stdout=api.raw_io.output_text(name='stdout', add_output_log=True),
       raise_on_failure=False)
   # Upload succeeded, we're done.
   if not result.retcode:
