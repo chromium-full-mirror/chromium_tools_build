@@ -85,43 +85,6 @@ def GetZipFileNames(build_revision):
   return base_name, version_suffix
 
 
-def _SlaveBaseDir(chrome_dir):
-  """Finds the full path to the build slave's base directory (e.g.
-  'c:/b/chrome/chrome-release').  This is assumed to be the parent of the
-  shallowest 'build' directory in the chrome_dir path.
-
-  Raises chromium_utils.PathNotFound if there is no such directory.
-  """
-  result = ''
-  prev_dir = ''
-  curr_dir = chrome_dir
-  while prev_dir != curr_dir:
-    (parent, leaf) = os.path.split(curr_dir)
-    if leaf == 'build':
-      # Remember this one and keep looking for something shallower.
-      result = parent
-    if leaf == 'slave':
-      # We are too deep, stop now.
-      break
-    prev_dir = curr_dir
-    curr_dir = parent
-  if not result:
-    raise chromium_utils.PathNotFound(
-        'Unable to find slave base dir above %s' % chrome_dir
-    )
-  return result
-
-
-def GetStagingDir(start_dir):
-  """Creates a chrome_staging dir in the starting directory. and returns its
-  full path.
-  """
-  start_dir = os.path.abspath(start_dir)
-  staging_dir = os.path.join(_SlaveBaseDir(start_dir), 'chrome_staging')
-  chromium_utils.MaybeMakeDirectory(staging_dir)
-  return staging_dir
-
-
 def _GSUtilSetup():
   # Get the path to the gsutil script.
   if _ARGS_GSUTIL_PY_PATH:

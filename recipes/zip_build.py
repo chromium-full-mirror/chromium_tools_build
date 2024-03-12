@@ -366,9 +366,7 @@ def Archive(options):
   build_dir = build_directory.GetBuildOutputDirectory(options.src_dir)
   build_dir = os.path.abspath(os.path.join(build_dir, options.target))
 
-  staging_dir = (
-      options.staging_dir or bot_utils.GetStagingDir(options.src_dir)
-  )
+  staging_dir = options.staging_dir
   if not os.path.exists(staging_dir):
     os.makedirs(staging_dir)
   chromium_utils.MakeParentDirectoriesWorldReadable(staging_dir)
@@ -566,9 +564,7 @@ def AddOptions(option_parser):
   )
   option_parser.add_option(
       '--staging-dir',
-      help='Directory to use for staging the archives. '
-      'Default behavior is to automatically detect '
-      'slave\'s build directory.'
+      help='Directory to use for staging the archives. This flag is required'
   )
   option_parser.add_option(
       '--gsutil-py-path', help='Specify path to gsutil.py script.'
@@ -583,6 +579,9 @@ def main(argv):
   options, args = option_parser.parse_args(argv)
   if not options.gsutil_py_path:
     print('--gsutil-py-path must be specified')
+    return 1
+  if not options.staging_dir:
+    print('--staging-dir must be specified')
     return 1
 
   if not options.slave_name:
