@@ -41,12 +41,11 @@ OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 GN_PROPERTIES = [
     'cast_allow_developer_certificate', 'have_ffmpeg', 'have_libsdl2',
     'have_libopus', 'have_libvpx', 'is_debug', 'is_asan', 'is_tsan', 'is_gcc',
-    'target_cpu', 'sysroot_platform', 'sysroot', 'target_sysroot_dir',
-    'use_coverage'
+    'target_cpu', 'sysroot', 'use_coverage'
 ]
 
 # List of dimensions used for starting swarming on ARM64.
-SWARMING_DIMENSIONS = {'cpu': 'arm64', 'os': 'Ubuntu-20.04'}
+SWARMING_DIMENSIONS = {'cpu': 'arm64', 'os': 'Ubuntu-22'}
 
 # LUCI pool information.
 FLEX_TRY_POOL = 'luci.flex.try'
@@ -110,8 +109,6 @@ def GetHostToolLabel(platform):
   """
   if platform.is_linux and platform.bits == 64:
     return 'linux64'
-  if platform.is_mac:
-    return 'mac'
   raise ValueError('unknown or unsupported platform')  # pragma: no cover
 
 
@@ -516,14 +513,13 @@ def RunSteps(api):
 
   is_ci = api.properties.get('is_ci', False)
   with api.context(cwd=paths.checkout_path, env=env):
-    host_tool_label = GetHostToolLabel(api.platform)
-
     # Populate Code coverage tool with the set of files that changed.
     use_coverage = api.properties.get('use_coverage', False)
     if use_coverage:
       with api.step.nest('initialize code coverage') as coverage_step:
         coverage_step.status = api.step.SUCCESS
         try:
+          host_tool_label = GetHostToolLabel(api.platform)
           SetCodeCoverageConstants(api, paths.checkout_path, host_tool_label)
 
           # Only continuous integration bots run full-repo coverage--trybots
@@ -590,7 +586,7 @@ def GenTests(api):
       tests: Generated API tests to be used to verify usage.
   """
   yield api.test(
-      'linux64_coverage_debug',
+      'linux_x64_coverage',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
@@ -605,7 +601,7 @@ def GenTests(api):
           retcode=0),
   )
   yield api.test(
-      'linux64_coverage_debug_no_profdata_does_fail_bot',
+      'linux_x64_coverage_no_profdata_does_fail_bot',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
@@ -621,7 +617,7 @@ def GenTests(api):
       api.expect_status('FAILURE'),
   )
   yield api.test(
-      'linux64_coverage_debug_no_profraw_does_fail_bot',
+      'linux_x64_coverage_no_profraw_does_fail_bot',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
@@ -632,13 +628,13 @@ def GenTests(api):
       api.expect_status('FAILURE'),
   )
   yield api.test(
-      'linux64_coverage_debug_failed_coverage_init',
+      'linux_x64_coverage_failed_coverage_init',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, is_asan=True, use_coverage=True),
   )
   yield api.test(
-      'linux64_coverage_debug_full_repo_coverage',
+      'linux_x64_coverage_full_repo_coverage',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'ci'),
       api.properties(
@@ -654,37 +650,37 @@ def GenTests(api):
           retcode=0),
   )
   yield api.test(
-      'linux64_debug',
+      'linux_x64',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, is_asan=True),
   )
   yield api.test(
-      'linux64_tsan',
+      'linux_x64_tsan_rel',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_tsan=True),
   )
   yield api.test(
-      'linux64_debug_gcc',
+      'linux_x64_msan_rel',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=True, is_asan=False, is_gcc=True),
+      api.properties(is_msan=True),
   )
   yield api.test(
-      'mac_debug',
-      api.platform('mac', 64),
+      'linux_x64_gcc',
+      api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=True),
+      api.properties(is_debug=True, is_gcc=True),
   )
-  yield api.test('linux_arm64_debug', api.platform('linux', 64),
+  yield api.test('linux_arm64', api.platform('linux', 64),
                  api.buildbucket.try_build('openscreen', 'try'),
                  api.properties(is_debug=True, target_cpu='arm64'))
-  yield api.test('linux_arm64_debug_ci', api.platform('linux', 64),
+  yield api.test('linux_arm64_ci', api.platform('linux', 64),
                  api.buildbucket.try_build('openscreen', 'ci'),
                  api.properties(is_debug=True, target_cpu='arm64', is_ci=True))
   yield api.test(
-      'linux_arm64_cast_debug', api.platform('linux', 64),
+      'linux_arm64_cast_receiver', api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
           is_debug=True,
@@ -694,22 +690,13 @@ def GenTests(api):
           have_libsdl2=True,
           have_libopus=True,
           have_libvpx=True))
-  yield api.test(
-      'linux_arm64_cast_debug_ci', api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'ci'),
-      api.properties(
-          is_debug=True,
-          target_cpu='arm64',
-          cast_allow_developer_certificate=True,
-          is_ci=True))
-
   failed_result = api.swarming.task_result(
       id='0',
       name=UNIT_TEST_BINARY_NAME,
       state=api.swarming.TaskState.COMPLETED,
       failure=True)
   yield api.test(
-      'linux_arm64_debug_with_collect_COMPLETED_and_failed',
+      'linux_arm64_with_collect_COMPLETED_and_failed',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, target_cpu='arm64'),
@@ -723,7 +710,7 @@ def GenTests(api):
       name=UNIT_TEST_BINARY_NAME,
       state=api.swarming.TaskState.TIMED_OUT)
   yield api.test(
-      'linux_arm64_debug_with_collect_TIMED_OUT',
+      'linux_arm64_with_collect_TIMED_OUT',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, target_cpu='arm64'),
@@ -735,11 +722,23 @@ def GenTests(api):
   died_result = api.swarming.task_result(
       id='0', name=UNIT_TEST_BINARY_NAME, state=api.swarming.TaskState.BOT_DIED)
   yield api.test(
-      'linux_arm64_debug_with_collect_BOT_DIED',
+      'linux_arm64_with_collect_BOT_DIED',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, target_cpu='arm64'),
       api.override_step_data('collect unit tests',
                              api.swarming.collect([died_result])),
       api.expect_status('INFRA_FAILURE'),
+  )
+  yield api.test(
+      'mac_x64',
+      api.platform('mac', 64),
+      api.buildbucket.try_build('openscreen', 'try'),
+      api.properties(is_debug=True),
+  )
+  yield api.test(
+      'win_x64',
+      api.platform('win', 64),
+      api.buildbucket.try_build('openscreen', 'try'),
+      api.properties(is_debug=True),
   )

@@ -454,7 +454,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"unit tests\", \"priority\": \"200\", \"realm\": \"openscreen:try\", \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"./out/Default/openscreen_unittests\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"arm64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-20.04\"}, {\"key\": \"pool\", \"value\": \"luci.flex.try\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"unit tests\", \"priority\": \"200\", \"realm\": \"openscreen:try\", \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"./out/Default/openscreen_unittests\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"arm64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22\"}, {\"key\": \"pool\", \"value\": \"luci.flex.try\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -516,7 +516,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-20.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-22\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -549,7 +549,7 @@
       "-server",
       "https://example.swarmingserver.appspot.com",
       "-json-input",
-      "{\"requests\": [{\"name\": \"e2e tests\", \"priority\": \"200\", \"realm\": \"openscreen:try\", \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"./out/Default/e2e_tests\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"arm64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-20.04\"}, {\"key\": \"pool\", \"value\": \"luci.flex.try\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
+      "{\"requests\": [{\"name\": \"e2e tests\", \"priority\": \"200\", \"realm\": \"openscreen:try\", \"service_account\": \"\", \"task_slices\": [{\"expiration_secs\": \"300\", \"properties\": {\"cas_input_root\": {\"cas_instance\": \"projects/example-cas-server/instances/default_instance\", \"digest\": {\"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\", \"size_bytes\": \"0\"}}, \"command\": [\"./out/Default/e2e_tests\"], \"containment\": {\"containment_type\": \"NONE\"}, \"dimensions\": [{\"key\": \"cpu\", \"value\": \"arm64\"}, {\"key\": \"os\", \"value\": \"Ubuntu-22\"}, {\"key\": \"pool\", \"value\": \"luci.flex.try\"}], \"env\": [], \"env_prefixes\": [], \"execution_timeout_secs\": \"1200\", \"grace_period_secs\": \"30\", \"idempotent\": false, \"io_timeout_secs\": \"60\", \"outputs\": [], \"relative_cwd\": \"\"}, \"wait_for_capacity\": false}]}]}",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -611,7 +611,7 @@
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"os\",@@@",
-      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-20.04\"@@@",
+      "@@@STEP_LOG_LINE@json.input@                \"value\": \"Ubuntu-22\"@@@",
       "@@@STEP_LOG_LINE@json.input@              },@@@",
       "@@@STEP_LOG_LINE@json.input@              {@@@",
       "@@@STEP_LOG_LINE@json.input@                \"key\": \"pool\",@@@",
@@ -689,12 +689,11 @@
       "@@@STEP_LOG_LINE@json.output@        }@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
       "@@@STEP_LOG_LINE@json.output@      \"duration\": 62.35,@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"exit_code\": \"1\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"name\": \"openscreen_unittests\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"resultdb_info\": {@@@",
       "@@@STEP_LOG_LINE@json.output@        \"invocation\": \"invocations/some-inv-name\"@@@",
       "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"state\": \"COMPLETED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"state\": \"BOT_DIED\",@@@",
       "@@@STEP_LOG_LINE@json.output@      \"task_id\": \"0\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
@@ -702,20 +701,13 @@
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@task stdout+stderr: openscreen_unittests@hello world!@@@",
       "@@@STEP_LOG_END@task stdout+stderr: openscreen_unittests@@@",
-      "@@@STEP_LINK@task cas outputs: openscreen_unittests@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "unit tests failure",
-    "~followup_annotations": [
-      "@@@STEP_FAILURE@@@"
+      "@@@STEP_LINK@task cas outputs: openscreen_unittests@https://cas-viewer.appspot.com/projects/example-project/instances/default_instance/blobs/24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca/73/tree@@@",
+      "@@@STEP_EXCEPTION@@@"
     ]
   },
   {
     "failure": {
-      "failure": {},
-      "humanReason": "unit tests failure"
+      "humanReason": "The bot running this task died"
     },
     "name": "$result"
   }
