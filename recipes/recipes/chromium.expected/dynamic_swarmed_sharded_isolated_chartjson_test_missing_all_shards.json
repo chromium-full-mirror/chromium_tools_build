@@ -25,7 +25,7 @@
       "https://example.swarmingserver.appspot.com",
       "-task-summary-python",
       "-task-output-stdout",
-      "all",
+      "console",
       "-verbose",
       "-requests-json",
       "{\"tasks\": [{\"task_id\": \"0\"}, {\"task_id\": \"1\"}]}"

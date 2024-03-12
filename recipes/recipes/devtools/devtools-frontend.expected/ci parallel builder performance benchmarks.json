@@ -927,7 +927,7 @@
       "https://example.swarmingserver.appspot.com",
       "-task-summary-python",
       "-task-output-stdout",
-      "all",
+      "console",
       "-verbose",
       "-requests-json",
       "{\"tasks\": [{\"task_id\": \"0\"}]}"
@@ -1015,7 +1015,7 @@
       "https://example.swarmingserver.appspot.com",
       "-task-summary-python",
       "-task-output-stdout",
-      "all",
+      "console",
       "-verbose",
       "-requests-json",
       "{\"tasks\": [{\"task_id\": \"1\"}]}"
@@ -1103,7 +1103,7 @@
       "https://example.swarmingserver.appspot.com",
       "-task-summary-python",
       "-task-output-stdout",
-      "all",
+      "console",
       "-verbose",
       "-requests-json",
       "{\"tasks\": [{\"task_id\": \"2\"}]}"
@@ -1191,7 +1191,7 @@
       "https://example.swarmingserver.appspot.com",
       "-task-summary-python",
       "-task-output-stdout",
-      "all",
+      "console",
       "-verbose",
       "-requests-json",
       "{\"tasks\": [{\"task_id\": \"3\"}]}"

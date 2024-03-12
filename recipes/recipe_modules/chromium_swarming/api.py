@@ -182,7 +182,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     # triggers.
     self._task_test_data_id_offset = 0
 
-    self._task_output_stdout = 'all'
+    self._task_output_stdout = 'console'
 
     # Path to the chromium source directory containing merge scripts.
     self._path_to_merge_scripts = None
