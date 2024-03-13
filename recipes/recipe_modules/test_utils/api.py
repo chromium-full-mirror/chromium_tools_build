@@ -183,22 +183,6 @@ class TestUtilsApi(recipe_api.RecipeApi):
       ])
     return r
 
-  def _suite_exceed_allowed_failure_rate(self, suite, suffix: str) -> bool:
-    """A helper to check if test failures exceed suite's expectation.
-
-    Args:
-        suite: steps.Test object
-        suffix: string suffix designating test variant to pay attention to
-    Returns:
-        A boolean value indicating whether the number of test failures exceeds
-          the allowed failure rate.
-    """
-    if not suite.spec.allowed_failure_percentage:
-      return True
-    return (len(suite.deterministic_failures(suffix)) /
-            len(suite.get_rdb_results(suffix).all_tests)
-           ) * 100 > suite.spec.allowed_failure_percentage
-
   def _retrieve_bad_results(self, suites, suffix):
     """Extract invalid and failed suites from a list of suites.
 
@@ -216,7 +200,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
       if not t.has_valid_results(suffix):
         invalid_results.append(t)
       elif t.deterministic_failures(suffix) and t not in failed_test_suites:
-        if not self._suite_exceed_allowed_failure_rate(t, suffix):
+        if not t.exceed_allowed_failure_rate(suffix):
           s = self.m.step.empty(f'Skip the failure of {t.name}')
           step_text = ('Allowed failure percentage: '
                        f'{t.spec.allowed_failure_percentage}%\n')
@@ -818,8 +802,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     _allowed_failing_suites = [
         x.name
-        for x in test_suites
-        if not self._suite_exceed_allowed_failure_rate(x, suffix)
+        for x in failed_test_suites
+        if not x.exceed_allowed_failure_rate(suffix)
     ]
     if retry_failed_shards and self._should_abort_retry(
         rdb_results, allowed_failing_suites=_allowed_failing_suites):

@@ -695,6 +695,21 @@ class AbstractTest(abc.ABC):
     # Remove the tests that failed wo patch
     return True, test_failures - ignored_failures
 
+  def exceed_allowed_failure_rate(self, suffix: str) -> bool:
+    """A helper to check if test failures exceed suite's expectation.
+
+    Args:
+        suffix: string suffix designating test variant to pay attention to
+    Returns:
+        A boolean value indicating whether the number of test failures exceeds
+          the allowed failure rate.
+    """
+    if not self.spec.allowed_failure_percentage:
+      return True
+    return (len(self.deterministic_failures(suffix)) /
+            len(self.get_rdb_results(suffix).all_tests)
+           ) * 100 > self.spec.allowed_failure_percentage
+
 
 @attrs()
 class TestSpec(AbstractTestSpec):
