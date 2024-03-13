@@ -477,7 +477,9 @@ def Archive(options):
 
 def AddOptions(option_parser):
   option_parser.add_option(
-      '--target', help='build target to archive (Debug or Release)'
+      '--target',
+      help='build target to archive (Debug or Release)',
+      default='Release',
   )
   option_parser.add_option(
       '--src-dir',
@@ -584,14 +586,6 @@ def main(argv):
     print('--staging-dir must be specified')
     return 1
 
-  if not options.slave_name:
-    options.slave_name = options.build_properties.get('slavename')
-  if not options.target:
-    options.target = options.build_properties.get('target', 'Release')
-  if not options.build_url:
-    options.build_url = options.build_properties.get('build_url', '')
-  if not options.gs_acl:
-    options.gs_acl = options.build_properties.get('gs_acl')
   if options.strip_files:
     options.strip_files = options.strip_files.split(',')
   # When option_parser is passed argv as a list, it can return the caller as

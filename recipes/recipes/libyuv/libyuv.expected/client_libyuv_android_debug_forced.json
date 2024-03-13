@@ -1368,8 +1368,6 @@
       "gs://chromium-libyuv/client.libyuv/Android Debug",
       "--build_revision",
       "acd0dbe7aa79f567dca274c02470e1319f739b36",
-      "--build-properties",
-      "{\"BUILD_CONFIG\": \"Debug\", \"bot_id\": \"bot_id\", \"builder_group\": \"client.libyuv\", \"buildername\": \"Android Debug\", \"buildnumber\": 1337, \"recipe\": \"libyuv/libyuv\", \"slavename\": \"bot_id\"}",
       "--json-urls",
       "/path/to/tmp/json"
     ],

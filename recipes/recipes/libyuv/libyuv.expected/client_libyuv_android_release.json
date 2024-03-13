@@ -1368,8 +1368,6 @@
       "gs://chromium-libyuv/client.libyuv/Android Release",
       "--build_revision",
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "--build-properties",
-      "{\"BUILD_CONFIG\": \"Release\", \"bot_id\": \"bot_id\", \"builder_group\": \"client.libyuv\", \"buildername\": \"Android Release\", \"buildnumber\": 1337, \"recipe\": \"libyuv/libyuv\", \"slavename\": \"bot_id\"}",
       "--json-urls",
       "/path/to/tmp/json"
     ],
