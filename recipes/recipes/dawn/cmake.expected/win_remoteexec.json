@@ -198,39 +198,17 @@
     ]
   },
   {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\check-no-crlf"
-    ],
-    "cwd": "[CACHE]\\uncached\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Check for no CRLF"
+    "cmd": [],
+    "name": "Read Windows SDK environment"
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\lint"
+      "python3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "[CACHE]\\uncached\\dawn\\build\\win_toolchain.json",
+      "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
     },
@@ -253,15 +231,30 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run cpplint"
+    "name": "Read Windows SDK environment.read build/win_toolchain.json",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"path\": \"win_toolchain\\\\vs_files\\\\version_hash\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"runtime_dirs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"win_toolchain\\\\vs_files\\\\version_hash\\\\sys64\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"win_toolchain\\\\vs_files\\\\version_hash\\\\sys32\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"win_toolchain\\\\vs_files\\\\version_hash\\\\sysarm64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ],@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"wdk\": \"win_toolchain\\\\vs_files\\\\version_hash\\\\wdk\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"win_sdk\": \"win_toolchain\\\\vs_files\\\\version_hash\\\\Windows Kits\\\\10\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
   },
   {
     "cmd": [
-      "go",
-      "test",
-      "./..."
+      "python3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\SetEnv.x64.json",
+      "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
     },
@@ -284,7 +277,38 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run go tool unittests"
+    "name": "Read Windows SDK environment.read SetEnv.x64.json",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"env\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"PATH\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      [@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"Windows Kits\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"10\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"bin\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"version\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"x64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      ]@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Read Windows SDK environment.Display env and env_prefixes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@stdout@env:@@@",
+      "@@@STEP_LOG_LINE@stdout@WINDOWSSDKDIR=win_toolchain\\vs_files\\version_hash\\Windows Kits\\10@@@",
+      "@@@STEP_LOG_LINE@stdout@WDK_DIR=win_toolchain\\vs_files\\version_hash\\wdk@@@",
+      "@@@STEP_LOG_LINE@stdout@@@@",
+      "@@@STEP_LOG_LINE@stdout@env_prefixes:@@@",
+      "@@@STEP_LOG_LINE@stdout@PATH=win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64,win_toolchain\\vs_files\\version_hash\\sys64,win_toolchain\\vs_files\\version_hash\\sys32,win_toolchain\\vs_files\\version_hash\\sysarm64,win_toolchain\\vs_files\\version_hash@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
   },
   {
     "cmd": [],
@@ -292,7 +316,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -315,20 +339,27 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\uncached\\dawn\\third_party\\ninja",
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -363,10 +394,17 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -410,10 +448,17 @@
       "--version"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -461,10 +506,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -510,10 +562,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -566,10 +625,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -614,10 +680,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -657,10 +730,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -705,10 +785,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -753,10 +840,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -814,10 +908,17 @@
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -858,10 +959,17 @@
       "RBE_exec_strategy": "remote",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
       "RBE_server_address": "pipe://reproxy.pipe",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -925,10 +1033,17 @@
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -966,10 +1081,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1007,10 +1129,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1051,10 +1180,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1103,10 +1239,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1149,10 +1292,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1198,10 +1348,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1303,10 +1460,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1348,10 +1512,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1392,10 +1563,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1449,10 +1627,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1494,10 +1679,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1539,10 +1731,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1584,10 +1783,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1629,10 +1835,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1674,10 +1887,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1719,10 +1939,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1764,10 +1991,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1807,10 +2041,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1850,10 +2091,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1883,7 +2131,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -1906,20 +2154,27 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\uncached\\dawn\\third_party\\ninja",
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -1954,10 +2209,17 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2005,10 +2267,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2054,10 +2323,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2110,10 +2386,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2158,10 +2441,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2201,10 +2491,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2249,10 +2546,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2297,10 +2601,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2358,10 +2669,17 @@
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2402,10 +2720,17 @@
       "RBE_exec_strategy": "remote",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
       "RBE_server_address": "pipe://reproxy.pipe",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2469,10 +2794,17 @@
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2510,10 +2842,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2551,10 +2890,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2595,10 +2941,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2633,10 +2986,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2738,10 +3098,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2783,10 +3150,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2827,10 +3201,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2884,10 +3265,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2929,10 +3317,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -2974,10 +3369,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3019,10 +3421,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3064,10 +3473,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3109,10 +3525,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3154,10 +3577,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3199,10 +3629,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3242,10 +3679,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3285,10 +3729,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3317,10 +3768,17 @@
       "[CACHE]\\uncached\\dawn\\cmake-build\\tint_unittests"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3342,49 +3800,29 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\run",
-      "fuzz",
-      "--check",
-      "--build",
-      "[CACHE]\\uncached\\dawn\\cmake-build"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Check fuzzers"
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\run",
+      "bash",
+      "--",
+      "./tools/run",
       "tests",
       "--tint",
-      "[CACHE]\\uncached\\dawn\\cmake-build\\tint",
-      "--verbose"
+      "cmake-build/tint.exe",
+      "--verbose",
+      "--format",
+      "wgsl,spvasm,msl,hlsl,glsl"
     ],
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3406,20 +3844,30 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\run",
+      "bash",
+      "--",
+      "./tools/run",
       "tests",
       "--tint",
-      "[CACHE]\\uncached\\dawn\\cmake-build\\tint",
+      "cmake-build/tint.exe",
       "--verbose",
       "--format",
       "spvasm",
       "--use-ir"
     ],
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3441,11 +3889,11 @@
   },
   {
     "cmd": [],
-    "name": "CMake build _other.cc files"
+    "name": "CMake build disabled readers and writers"
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -3455,33 +3903,40 @@
       "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_USE_BUILT_DXC=1",
-      "-DTINT_BUILD_SPV_READER=1",
-      "-DTINT_BUILD_WGSL_READER=1",
-      "-DTINT_BUILD_GLSL_WRITER=1",
-      "-DTINT_BUILD_HLSL_WRITER=1",
-      "-DTINT_BUILD_MSL_WRITER=1",
-      "-DTINT_BUILD_SPV_WRITER=1",
-      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DTINT_BUILD_SPV_READER=0",
+      "-DTINT_BUILD_WGSL_READER=0",
+      "-DTINT_BUILD_GLSL_WRITER=0",
+      "-DTINT_BUILD_HLSL_WRITER=0",
+      "-DTINT_BUILD_MSL_WRITER=0",
+      "-DTINT_BUILD_SPV_WRITER=0",
+      "-DTINT_BUILD_WGSL_WRITER=0",
       "-DDAWN_ENABLE_ASAN=0",
       "-DDAWN_ENABLE_UBSAN=0",
       "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=1",
+      "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\uncached\\dawn\\third_party\\ninja",
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3499,7 +3954,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.CMake generate step for _other.cc files",
+    "name": "CMake build disabled readers and writers.CMake generate step for disabled readers and writers",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -3516,10 +3971,17 @@
       "/path/to/tmp/"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3538,14 +4000,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.",
+    "name": "CMake build disabled readers and writers.",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "CMake build _other.cc files.preprocess for reclient",
+    "name": "CMake build disabled readers and writers.preprocess for reclient",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -3567,10 +4029,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3594,7 +4063,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -3616,10 +4085,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3643,14 +4119,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.gclient check if rbe_instance var exists",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.gclient check if rbe_instance var exists",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "CMake build _other.cc files.preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -3672,10 +4148,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3694,7 +4177,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.list reclient_cfgs dir",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.list reclient_cfgs dir",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@listdir@[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang/rewrapper_windows.cfg@@@",
@@ -3720,10 +4203,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3742,7 +4232,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.reclient cache directory",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.reclient cache directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -3763,10 +4253,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3785,7 +4282,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.list reclient cache directory",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.list reclient cache directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_END@listdir@@@"
@@ -3811,10 +4308,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3833,7 +4337,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.start cloudtail: reproxy.exe.INFO",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.start cloudtail: reproxy.exe.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
@@ -3859,10 +4363,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3881,7 +4392,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
@@ -3920,10 +4431,17 @@
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3942,7 +4460,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.preprocess for reclient.start reproxy via bootstrap",
+    "name": "CMake build disabled readers and writers.preprocess for reclient.start reproxy via bootstrap",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -3964,10 +4482,17 @@
       "RBE_exec_strategy": "remote",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
       "RBE_server_address": "pipe://reproxy.pipe",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -3985,14 +4510,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.Compile _other.cc files",
+    "name": "CMake build disabled readers and writers.Compile disabled readers and writers",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "CMake build _other.cc files.postprocess for reclient",
+    "name": "CMake build disabled readers and writers.postprocess for reclient",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -4031,10 +4556,17 @@
       "RBE_use_application_default_credentials": "false",
       "RBE_use_gce_credentials": "true",
       "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -4053,7 +4585,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.postprocess for reclient.shutdown reproxy via bootstrap",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.shutdown reproxy via bootstrap",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -4072,10 +4604,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -4094,7 +4633,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.postprocess for reclient.stop cloudtail",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -4113,10 +4652,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -4135,7 +4681,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.postprocess for reclient.stop cloudtail (2)",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail (2)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -4157,10 +4703,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -4179,7 +4732,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.postprocess for reclient.load rbe_metrics.pb",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.load rbe_metrics.pb",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -4195,10 +4748,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -4217,7 +4777,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload RBE metrics to BigQuery",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload RBE metrics to BigQuery",
     "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:27.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -4300,1445 +4860,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.gzip reproxy RPL",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
-      "----",
-      "cp",
-      "[TMP_BASE]\\reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.gsutil upload reproxy RPL",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CLEANUP]\\reclient_log_tmp_3"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.list reclient log directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy.rpl@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\rewrapper.INFO@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "/path/to/tmp/"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
-      "/path/to/tmp/"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
-      "/path/to/tmp/"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "fake tar contents",
-      "[TMP_BASE]\\reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.create reclient log tar",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]\\resources\\gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]\\gsutil.py",
-      "----",
-      "cp",
-      "[TMP_BASE]\\reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.upload logs.gsutil upload reclient logs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\perform_health_check.py",
-      "--reclient-log-dir",
-      "[CLEANUP]\\reclient_log_tmp_3",
-      "--build-exit-status",
-      "-1"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.perform reclient health check",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "rmtree",
-      "[CLEANUP]\\reclient_log_tmp_3"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.postprocess for reclient.cleanup reclient log dir",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "CMake build disabled readers and writers"
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
-      "-S",
-      "[CACHE]\\uncached\\dawn",
-      "-B",
-      "[CACHE]\\uncached\\dawn\\cmake-build",
-      "-GNinja",
-      "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=1",
-      "-DTINT_RANDOMIZE_HASHES=1",
-      "-DDAWN_USE_BUILT_DXC=1",
-      "-DTINT_BUILD_SPV_READER=0",
-      "-DTINT_BUILD_WGSL_READER=0",
-      "-DTINT_BUILD_GLSL_WRITER=0",
-      "-DTINT_BUILD_HLSL_WRITER=0",
-      "-DTINT_BUILD_MSL_WRITER=0",
-      "-DTINT_BUILD_SPV_WRITER=0",
-      "-DTINT_BUILD_WGSL_WRITER=0",
-      "-DDAWN_ENABLE_ASAN=0",
-      "-DDAWN_ENABLE_UBSAN=0",
-      "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=0",
-      "-DCMAKE_C_COMPILER=clang",
-      "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1",
-      "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg",
-      "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]\\uncached\\dawn\\buildtools\\reclient\\rewrapper;-cfg=[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg"
-    ],
-    "cwd": "[CACHE]\\uncached\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\uncached\\dawn\\third_party\\ninja",
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.CMake generate step for disabled readers and writers",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg",
-      "/path/to/tmp/"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "CMake build disabled readers and writers.preprocess for reclient",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]\\gclient.py",
-      "getdep",
-      "--var",
-      "download_remoteexec_cfg"
-    ],
-    "cwd": "[CACHE]\\uncached\\dawn",
-    "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "env_suffixes": {
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.gclient check if download_remoteexec_cfg var exists",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]\\gclient.py",
-      "getdep",
-      "--var",
-      "rbe_instance"
-    ],
-    "cwd": "[CACHE]\\uncached\\dawn",
-    "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/win/8945511751514863184",
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "env_suffixes": {
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.gclient check if rbe_instance var exists",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "CMake build disabled readers and writers.preprocess for reclient.install reclient_cfgs (already run by DEPS hook)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs",
-      "--recursive"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.list reclient_cfgs dir",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\chromium-browser-clang/rewrapper_windows.cfg@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]\\uncached\\dawn\\buildtools\\reclient_cfgs\\reproxy.cfg@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CACHE]\\builder\\reclient\\deps\\win"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.reclient cache directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CACHE]\\builder\\reclient\\deps\\win"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.list reclient cache directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
-      "start",
-      "--cloudtail-path",
-      "cloudtail.exe",
-      "--cloudtail-project-id",
-      "goma-logs",
-      "--cloudtail-log-path",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy.exe.INFO",
-      "--pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.start cloudtail: reproxy.exe.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
-      "start",
-      "--cloudtail-path",
-      "cloudtail.exe",
-      "--cloudtail-project-id",
-      "goma-logs",
-      "--cloudtail-log-path",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.INFO",
-      "--pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.start cloudtail: reproxy-gomaip.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\bootstrap.exe"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
-      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
-      "PLATFORM": "windows",
-      "RBE_automatic_auth": "false",
-      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win",
-      "RBE_deps_cache_max_mb": "256",
-      "RBE_enable_deps_cache": "true",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_fail_early_min_action_count": "4000",
-      "RBE_fail_early_min_fallback_ratio": "0.5",
-      "RBE_fast_log_collection": "true",
-      "RBE_grpc_keepalive_permit_without_stream": "false",
-      "RBE_grpc_keepalive_time": "30s",
-      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
-      "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_4",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
-      "RBE_re_proxy": "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\reproxy.exe",
-      "RBE_server_address": "pipe://reproxy.pipe",
-      "RBE_service": "remotebuildexecution.googleapis.com:443",
-      "RBE_use_application_default_credentials": "false",
-      "RBE_use_gce_credentials": "true",
-      "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.preprocess for reclient.start reproxy via bootstrap",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\third_party\\ninja\\ninja",
-      "-C",
-      "[CACHE]\\uncached\\dawn\\cmake-build",
-      "-j",
-      "160",
-      "tint_cmd_tint_cmd"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_exec_strategy": "remote",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_server_address": "pipe://reproxy.pipe",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.Compile disabled readers and writers",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "CMake build disabled readers and writers.postprocess for reclient",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\bootstrap.exe",
-      "-shutdown"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
-      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
-      "PLATFORM": "windows",
-      "RBE_automatic_auth": "false",
-      "RBE_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_deps_cache_dir": "[CACHE]\\builder\\reclient\\deps\\win",
-      "RBE_deps_cache_max_mb": "256",
-      "RBE_enable_deps_cache": "true",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_fail_early_min_action_count": "4000",
-      "RBE_fail_early_min_fallback_ratio": "0.5",
-      "RBE_fast_log_collection": "true",
-      "RBE_grpc_keepalive_permit_without_stream": "false",
-      "RBE_grpc_keepalive_time": "30s",
-      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
-      "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]\\reclient_log_tmp_4",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_proxy_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
-      "RBE_re_proxy": "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\reproxy.exe",
-      "RBE_server_address": "pipe://reproxy.pipe",
-      "RBE_service": "remotebuildexecution.googleapis.com:443",
-      "RBE_use_application_default_credentials": "false",
-      "RBE_use_gce_credentials": "true",
-      "RBE_use_unified_uploads": "true",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.shutdown reproxy via bootstrap",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
-      "stop",
-      "--killed-pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy.exe.INFO.pid"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\cloudtail_wrapper.py",
-      "stop",
-      "--killed-pid-file",
-      "[TMP_BASE]\\cloudtail_reproxy-gomaip.INFO.pid"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]\\reclient_log_tmp_4\\rbe_metrics.pb",
-      "/path/to/tmp/"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.load rbe_metrics.pb",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]\\cipd_tool\\infra\\tools\\bqupload\\5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8\\bqupload",
-      "goma-logs.rbe_metrics.builds"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.upload RBE metrics to BigQuery",
-    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:30.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:30.500Z\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"flags\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"abc\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"def\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"bar\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"other\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"int64_value\": \"7\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"some\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"bool_value\": true@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"stats\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"CPU\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"MEM\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"event_times\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"from\": \"2022-07-19T22:26:45Z\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"to\": \"2022-07-21T02:13:25Z\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"test\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"double_value\": 1.1@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@    ]@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@}@@@",
-      "@@@STEP_LOG_END@rbe_metrics@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]\\resources\\generate_rpl_gzip.py",
-      "--reclient-log-dir",
-      "[CLEANUP]\\reclient_log_tmp_4",
-      "--output-gzip-path",
-      "[TMP_BASE]\\reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
-      "PLATFORM": "windows",
-      "RBE_canonicalize_working_dir": "False",
-      "RBE_exec_root": "[CACHE]",
-      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
-    },
-    "env_prefixes": {
-      "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -5771,8 +4903,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
+      "[TMP_BASE]\\reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -5780,10 +4912,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -5805,7 +4944,7 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.gsutil upload reproxy RPL",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz@@@"
     ]
   },
   {
@@ -5816,7 +4955,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CLEANUP]\\reclient_log_tmp_4"
+      "[CLEANUP]\\reclient_log_tmp_3"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -5824,10 +4963,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -5849,11 +4995,11 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.list reclient log directory",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_4\\reproxy.INFO@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_4\\reproxy.rpl@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_4\\reproxy_stderr.log@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_4\\rewrapper.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy.rpl@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log@@@",
+      "@@@STEP_LOG_LINE@listdir@[CLEANUP]\\reclient_log_tmp_3\\rewrapper.INFO@@@",
       "@@@STEP_LOG_END@listdir@@@"
     ]
   },
@@ -5872,7 +5018,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
       "/path/to/tmp/"
     ],
     "env": {
@@ -5881,10 +5027,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -5903,7 +5056,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
     ]
@@ -5917,8 +5070,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/[CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
+      "[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -5926,10 +5079,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -5948,10 +5108,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/[CLEANUP]\\reclient_log_tmp_4\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
     ]
   },
   {
@@ -5962,7 +5122,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy.INFO",
+      "[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
       "/path/to/tmp/"
     ],
     "env": {
@@ -5971,10 +5131,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -5993,7 +5160,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_4\\reproxy.INFO",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
     ]
@@ -6007,8 +5174,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/[CLEANUP]\\reclient_log_tmp_4\\reproxy.INFO"
+      "[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -6016,10 +5183,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -6038,10 +5212,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_4\\reproxy.INFO",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/[CLEANUP]\\reclient_log_tmp_4\\reproxy.INFO@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy.INFO@@@"
     ]
   },
   {
@@ -6052,7 +5226,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy_stderr.log",
+      "[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
       "/path/to/tmp/"
     ],
     "env": {
@@ -6061,10 +5235,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -6083,7 +5264,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_4\\reproxy_stderr.log",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.read [CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@"
     ]
@@ -6097,8 +5278,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]\\reclient_log_tmp_4\\reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/[CLEANUP]\\reclient_log_tmp_4\\reproxy_stderr.log"
+      "[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -6106,10 +5287,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -6128,10 +5316,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_4\\reproxy_stderr.log",
+    "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload [CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/[CLEANUP]\\reclient_log_tmp_4\\reproxy_stderr.log@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/[CLEANUP]\\reclient_log_tmp_3\\reproxy_stderr.log@@@"
     ]
   },
   {
@@ -6143,7 +5331,7 @@
       "/path/to/tmp/json",
       "copy",
       "fake tar contents",
-      "[TMP_BASE]\\reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
+      "[TMP_BASE]\\reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -6151,10 +5339,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -6187,8 +5382,8 @@
       "RECIPE_REPO[depot_tools]\\gsutil.py",
       "----",
       "cp",
-      "[TMP_BASE]\\reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
+      "[TMP_BASE]\\reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz",
+      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -6196,10 +5391,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -6221,7 +5423,7 @@
     "name": "CMake build disabled readers and writers.postprocess for reclient.upload logs.gsutil upload reclient logs",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz@@@"
     ]
   },
   {
@@ -6229,7 +5431,7 @@
       "python3",
       "RECIPE_MODULE[build::reclient]\\resources\\perform_health_check.py",
       "--reclient-log-dir",
-      "[CLEANUP]\\reclient_log_tmp_4",
+      "[CLEANUP]\\reclient_log_tmp_3",
       "--build-exit-status",
       "-1"
     ],
@@ -6239,10 +5441,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -6274,7 +5483,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CLEANUP]\\reclient_log_tmp_4"
+      "[CLEANUP]\\reclient_log_tmp_3"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
@@ -6282,10 +5491,17 @@
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
       "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
-      "RBE_v": "2"
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -6308,6 +5524,38 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
+  },
+  {
+    "cmd": [
+      "taskkill.exe",
+      "/f",
+      "/t",
+      "/im",
+      "mspdbsrv.exe"
+    ],
+    "env": {
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Kill mspdbsrv (if running)"
   },
   {
     "name": "$result"

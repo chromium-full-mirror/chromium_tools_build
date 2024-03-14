@@ -198,39 +198,17 @@
     ]
   },
   {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\check-no-crlf"
-    ],
-    "cwd": "[CACHE]\\uncached\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Check for no CRLF"
+    "cmd": [],
+    "name": "Read Windows SDK environment"
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\lint"
+      "python3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "[CACHE]\\uncached\\dawn\\build\\win_toolchain.json",
+      "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
     },
@@ -253,15 +231,30 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run cpplint"
+    "name": "Read Windows SDK environment.read build/win_toolchain.json",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"path\": \"win_toolchain\\\\vs_files\\\\version_hash\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"runtime_dirs\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"win_toolchain\\\\vs_files\\\\version_hash\\\\sys64\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"win_toolchain\\\\vs_files\\\\version_hash\\\\sys32\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"win_toolchain\\\\vs_files\\\\version_hash\\\\sysarm64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ],@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"wdk\": \"win_toolchain\\\\vs_files\\\\version_hash\\\\wdk\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"win_sdk\": \"win_toolchain\\\\vs_files\\\\version_hash\\\\Windows Kits\\\\10\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
   },
   {
     "cmd": [
-      "go",
-      "test",
-      "./..."
+      "python3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\SetEnv.x64.json",
+      "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
     },
@@ -284,7 +277,38 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Run go tool unittests"
+    "name": "Read Windows SDK environment.read SetEnv.x64.json",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"env\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"PATH\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      [@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"Windows Kits\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"10\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"bin\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"version\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"x64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      ]@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Read Windows SDK environment.Display env and env_prefixes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@stdout@env:@@@",
+      "@@@STEP_LOG_LINE@stdout@WINDOWSSDKDIR=win_toolchain\\vs_files\\version_hash\\Windows Kits\\10@@@",
+      "@@@STEP_LOG_LINE@stdout@WDK_DIR=win_toolchain\\vs_files\\version_hash\\wdk@@@",
+      "@@@STEP_LOG_LINE@stdout@@@@",
+      "@@@STEP_LOG_LINE@stdout@env_prefixes:@@@",
+      "@@@STEP_LOG_LINE@stdout@PATH=win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64,win_toolchain\\vs_files\\version_hash\\sys64,win_toolchain\\vs_files\\version_hash\\sys32,win_toolchain\\vs_files\\version_hash\\sysarm64,win_toolchain\\vs_files\\version_hash@@@",
+      "@@@STEP_LOG_END@stdout@@@"
+    ]
   },
   {
     "cmd": [],
@@ -292,7 +316,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -315,18 +339,25 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1"
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\uncached\\dawn\\third_party\\ninja",
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -351,16 +382,25 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "--build",
       "[CACHE]\\uncached\\dawn\\cmake-build",
-      "--target all"
+      "--parallel",
+      "--target",
+      "all"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -389,7 +429,7 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -412,18 +452,25 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1"
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\uncached\\dawn\\third_party\\ninja",
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -448,16 +495,25 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "--build",
       "[CACHE]\\uncached\\dawn\\cmake-build",
-      "--target dawn.node"
+      "--parallel",
+      "--target",
+      "dawn.node"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -485,10 +541,17 @@
       "[CACHE]\\uncached\\dawn\\cmake-build\\tint_unittests"
     ],
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -510,49 +573,29 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\run",
-      "fuzz",
-      "--check",
-      "--build",
-      "[CACHE]\\uncached\\dawn\\cmake-build"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Check fuzzers"
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\run",
+      "bash",
+      "--",
+      "./tools/run",
       "tests",
       "--tint",
-      "[CACHE]\\uncached\\dawn\\cmake-build\\tint",
-      "--verbose"
+      "cmake-build/tint.exe",
+      "--verbose",
+      "--format",
+      "wgsl,spvasm,msl,hlsl,glsl"
     ],
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -574,20 +617,30 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\run",
+      "bash",
+      "--",
+      "./tools/run",
       "tests",
       "--tint",
-      "[CACHE]\\uncached\\dawn\\cmake-build\\tint",
+      "cmake-build/tint.exe",
       "--verbose",
       "--format",
       "spvasm",
       "--use-ir"
     ],
+    "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -609,108 +662,11 @@
   },
   {
     "cmd": [],
-    "name": "CMake build _other.cc files"
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
-      "-S",
-      "[CACHE]\\uncached\\dawn",
-      "-B",
-      "[CACHE]\\uncached\\dawn\\cmake-build",
-      "-GNinja",
-      "-DCMAKE_BUILD_TYPE=RELEASE",
-      "-DTINT_BUILD_BENCHMARKS=1",
-      "-DTINT_RANDOMIZE_HASHES=1",
-      "-DDAWN_USE_BUILT_DXC=1",
-      "-DTINT_BUILD_SPV_READER=1",
-      "-DTINT_BUILD_WGSL_READER=1",
-      "-DTINT_BUILD_GLSL_WRITER=1",
-      "-DTINT_BUILD_HLSL_WRITER=1",
-      "-DTINT_BUILD_MSL_WRITER=1",
-      "-DTINT_BUILD_SPV_WRITER=1",
-      "-DTINT_BUILD_WGSL_WRITER=1",
-      "-DDAWN_ENABLE_ASAN=0",
-      "-DDAWN_ENABLE_UBSAN=0",
-      "-DDAWN_BUILD_NODE_BINDINGS=0",
-      "-DTINT_BUILD_AS_OTHER_OS=1",
-      "-DCMAKE_C_COMPILER=clang",
-      "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1"
-    ],
-    "cwd": "[CACHE]\\uncached\\dawn",
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\uncached\\dawn\\third_party\\ninja",
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.CMake generate step for _other.cc files",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
-      "--build",
-      "[CACHE]\\uncached\\dawn\\cmake-build",
-      "--target tint_cmd_tint_cmd"
-    ],
-    "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]\\builder\\clang/bin",
-        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
-        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "CMake build _other.cc files.Compile _other.cc files",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "CMake build disabled readers and writers"
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "-S",
       "[CACHE]\\uncached\\dawn",
       "-B",
@@ -733,18 +689,25 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=1",
-      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=1",
-      "-DTINT_BUILD_AST_FUZZER=1",
-      "-DTINT_BUILD_REGEX_FUZZER=1"
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
-      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
     },
     "env_prefixes": {
       "PATH": [
         "[CACHE]\\uncached\\dawn\\third_party\\ninja",
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
         "[CACHE]\\builder\\clang/bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
@@ -769,10 +732,54 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\tools\\cmake\\bin\\cmake",
+      "[CACHE]\\uncached\\dawn\\tools\\cmake-win32\\bin\\cmake",
       "--build",
       "[CACHE]\\uncached\\dawn\\cmake-build",
-      "--target tint_cmd_tint_cmd"
+      "--parallel",
+      "--target",
+      "tint_cmd_tint_cmd"
+    ],
+    "env": {
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
+        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.Compile disabled readers and writers",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "taskkill.exe",
+      "/f",
+      "/t",
+      "/im",
+      "mspdbsrv.exe"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain"
@@ -796,10 +803,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "CMake build disabled readers and writers.Compile disabled readers and writers",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
+    "name": "Kill mspdbsrv (if running)"
   },
   {
     "name": "$result"

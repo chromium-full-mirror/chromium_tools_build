@@ -277,7 +277,7 @@
       "-B",
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "-GNinja",
-      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DCMAKE_BUILD_TYPE=DEBUG",
       "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_USE_BUILT_DXC=1",
@@ -382,7 +382,7 @@
       "-B",
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "-GNinja",
-      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DCMAKE_BUILD_TYPE=DEBUG",
       "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_USE_BUILT_DXC=1",
@@ -519,7 +519,7 @@
       "cmake-build/tint.exe",
       "--verbose",
       "--format",
-      "wgsl,spvasm,msl,hlsl,glsl"
+      "wgsl,spvasm,msl,hlsl"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
@@ -608,7 +608,7 @@
       "-B",
       "[CACHE]\\uncached\\dawn\\cmake-build",
       "-GNinja",
-      "-DCMAKE_BUILD_TYPE=RELEASE",
+      "-DCMAKE_BUILD_TYPE=DEBUG",
       "-DTINT_BUILD_BENCHMARKS=1",
       "-DTINT_RANDOMIZE_HASHES=1",
       "-DDAWN_USE_BUILT_DXC=1",

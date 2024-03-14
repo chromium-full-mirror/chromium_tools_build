@@ -106,6 +106,74 @@ def _install_clang(api):
   return env_paths
 
 
+@contextmanager
+def windows_sdk(api):
+  """Sets up environment for MSVC usage"""
+  if not api.platform.is_win:
+    yield
+    return
+
+  try:
+    with api.step.nest('Read Windows SDK environment'):
+      toolchain_data = api.json.read(
+          'read build/win_toolchain.json',
+          api.path['checkout'].join('build', 'win_toolchain.json'),
+          step_test_data=lambda: api.json.test_api.output({
+              'win_sdk':
+                  'win_toolchain\\vs_files\\version_hash\\Windows Kits\\10',
+              'path':
+                  'win_toolchain\\vs_files\\version_hash',
+              'runtime_dirs': [
+                  'win_toolchain\\vs_files\\version_hash\\sys64',
+                  'win_toolchain\\vs_files\\version_hash\\sys32',
+                  'win_toolchain\\vs_files\\version_hash\\sysarm64',
+              ],
+              'wdk':
+                  'win_toolchain\\vs_files\\version_hash\\wdk',
+          })).json.output
+
+      arch_data = api.json.read(
+          'read SetEnv.x64.json',
+          api.path.join(toolchain_data['win_sdk'], 'bin', 'SetEnv.x64.json'),
+          step_test_data=lambda: api.json.test_api.output({
+              'env': {
+                  'PATH': [['Windows Kits', '10', 'bin', 'version', 'x64']],
+              },
+          })).json.output
+
+      env_prefixes = {}
+      for k in arch_data['env']:
+        env_prefixes[k] = [
+            api.path.join(*([toolchain_data['path']] + e))
+            for e in arch_data['env'][k]
+        ]
+
+      env = {
+          'WINDOWSSDKDIR': toolchain_data['win_sdk'],
+          'WDK_DIR': toolchain_data['wdk']
+      }
+      env_prefixes['PATH'] += toolchain_data['runtime_dirs'] + [
+          toolchain_data['path']
+      ]
+      # Echo what we've parsed
+      log_text = 'env:\n' + '\n'.join([
+          f'{k}={v}' for (k, v) in env.items()
+      ]) + '\n\nenv_prefixes:\n' + '\n'.join(
+          [f'{k}={",".join(v)}' for (k, v) in env_prefixes.items()])
+      api.step.empty('Display env and env_prefixes', log_text=log_text)
+
+    with api.context(env=env, env_prefixes=env_prefixes):
+      yield
+  finally:
+    # cl.exe automatically starts background mspdbsrv.exe daemon which
+    # needs to be manually stopped so Swarming can tidy up after itself.
+    api.step(
+        'Kill mspdbsrv (if running)',
+        ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+        raise_on_failure=False,
+        ok_ret='any')
+
+
 def _rbe_host_platform_name(api):
   if api.platform.is_win:
     return 'windows'
@@ -244,7 +312,9 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
 
   build_path = checkout.join(outdir_name)
   ninja_path = checkout.join('third_party', 'ninja')
-  cmake_path = checkout.join('tools', 'cmake', 'bin', 'cmake')
+  cmake_path = checkout.join('tools',
+                             'cmake-win32' if api.platform.is_win else 'cmake',
+                             'bin', 'cmake')
 
   with api.context(cwd=checkout, env_prefixes={'PATH': [ninja_path]}):
     api.step(
@@ -277,8 +347,13 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
         api.step(step_desc, ninja_cmd)
   else:
     # Regular cmake build
-    cmake_build_cmd = [cmake_path, '--build', build_path
-                      ] + [f'--target {t}' for t in targets]
+    def gen_targets():
+      for t in targets:
+        yield '--target'
+        yield t
+
+    cmake_build_cmd = [cmake_path, '--build', build_path, '--parallel'] + list(
+        gen_targets())
     with api.context(env=build_env_vars):
       api.step(step_desc, cmake_build_cmd)
   return build_path
@@ -301,17 +376,28 @@ def RunSteps(api,
 
     checkout = api.path['checkout']
     env_paths = []
-    if not api.platform.is_mac:
+    if clang and not api.platform.is_mac:
       env_paths = _install_clang(api)
     env_paths.append(checkout.join('tools', 'golang', 'bin'))
     env_paths.append(checkout.join('third_party', 'depot_tools'))
 
-    with api.context(
-        env_prefixes={'PATH': env_paths}) as _, api.osx_sdk('mac') as _:
+    with api.context(env_prefixes={'PATH': env_paths}) as _, \
+        api.osx_sdk('mac') as _, \
+        windows_sdk(api) as _:
+
+      # Run shell scripts with bash on Windows
+      shell_wrapper = ('bash', '--') if api.platform.is_win else ()
+
       with api.context(cwd=checkout):
-        api.step('Check for no CRLF', [checkout.join('tools', 'check-no-crlf')])
-        api.step('Run cpplint', [checkout.join('tools', 'lint')])
-        api.step('Run go tool unittests', ['go', 'test', './...'])
+        # Run these checks only on Linux, no need to check on Win/Mac
+        if api.platform.is_linux:
+          api.step(
+              'Check for no CRLF', ['./tools/check-no-crlf'],
+              wrapper=shell_wrapper)
+          api.step('Run cpplint', ['./tools/lint'], wrapper=shell_wrapper)
+          api.step(
+              'Run go tool unittests', ['go', 'test', './...'],
+              wrapper=shell_wrapper)
 
       cmake_fixed_args = CMakeFixedArgs(
           target_cpu,
@@ -320,11 +406,16 @@ def RunSteps(api,
           asan,
           ubsan,
           enable_remoteexec,
-          build_fuzzers=not api.platform.is_mac,
+          # Only build and test fuzzers on Linux
+          build_fuzzers=api.platform.is_linux,
+          # Skip benchmarks on Mac to speed up the build
           build_benchmarks=not api.platform.is_mac,
+          # Skip dxc on Mac to speed up the build
           build_dxc=not api.platform.is_mac)
 
       build_path = _cmake_build('default targets', api, cmake_fixed_args)
+      rel_build_path = str(api.path.relpath(build_path,
+                                            checkout)).replace('\\', '/')
 
       _cmake_build(
           'default targets with dawn.node enabled',
@@ -349,35 +440,49 @@ def RunSteps(api,
 
       run_target('tint_unittests', True)
 
-      tools_run = checkout.join('tools', 'run')
-
       if cmake_fixed_args.build_fuzzers:
-        api.step('Check fuzzers',
-                 [tools_run, 'fuzz', '--check', '--build', build_path])
+        with api.context(cwd=checkout):
+          api.step(
+              'Check fuzzers',
+              ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
+              wrapper=shell_wrapper)
         # TODO(amaiorano): Build and run 'tint_ast_fuzzer_unittests' and 'tint_regex_fuzzer_unittests'
         # by passing TINT_BUILD_TESTS=1 to CMake. Kokoro used to do this, but it hasn't for a while.
         # Apparently, we will be removing these targets soon, so perhaps just delete?
         run_target('tint_ast_fuzzer_unittests', False)
         run_target('tint_regex_fuzzer_unittests', False)
 
-      # TODO(amaiorano): Consider spreading the runtime of Tint's e2e tests by only validating
-      # formats native to the host (e.g. spir-v on Linux, MSL on Mac, hlsl on Windows).
-      api.step(
-          'Run Tint end-to-end tests',
-          [tools_run, 'tests', '--tint',
-           build_path.join('tint'), '--verbose'])
+      with api.context(cwd=checkout):
+        tint_exe = f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
 
-      api.step('Run Tint end-to-end tests for SPIR-V IR backend', [
-          tools_run, 'tests', '--tint',
-          build_path.join('tint'), '--verbose', '--format', 'spvasm', '--use-ir'
-      ])
+        # TODO(crbug.com/tint/2034): Add back glsl once we fix the ~7x slowdown in Windows Debug builds
+        if api.platform.is_win and debug:
+          e2e_test_formats = 'wgsl,spvasm,msl,hlsl'
+        else:
+          e2e_test_formats = 'wgsl,spvasm,msl,hlsl,glsl'
+        api.step(
+            'Run Tint end-to-end tests', [
+                './tools/run', 'tests', '--tint', tint_exe, '--verbose',
+                '--format', e2e_test_formats
+            ],
+            wrapper=shell_wrapper)
 
-      _cmake_build(
-          '_other.cc files',
-          api,
-          cmake_fixed_args,
-          build_as_other=True,
-          targets=['tint_cmd_tint_cmd'])
+        api.step(
+            'Run Tint end-to-end tests for SPIR-V IR backend', [
+                './tools/run', 'tests', '--tint', tint_exe, '--verbose',
+                '--format', 'spvasm', '--use-ir'
+            ],
+            wrapper=shell_wrapper)
+
+      # Skip building 'other' on Windows as we hit _CRT_SECURE_NO_WARNINGS related to
+      # std::getenv, and it's not worth fixing.
+      if not api.platform.is_win:
+        _cmake_build(
+            '_other.cc files',
+            api,
+            cmake_fixed_args,
+            build_as_other=True,
+            targets=['tint_cmd_tint_cmd'])
 
       _cmake_build(
           'disabled readers and writers',
@@ -438,6 +543,14 @@ def GenTests(api):
       'win',
       api.reclient.properties(),
       api.platform('win', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='win', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'win_debug',
+      api.reclient.properties(),
+      api.platform('win', 64),
+      api.properties(debug=True),
       api.buildbucket.ci_build(
           project='dawn', builder='win', git_repo=DAWN_REPO),
   )
