@@ -28,6 +28,8 @@ from common import chromium_utils
 import bot_utils
 import build_directory
 
+_GS_PROTOCOL_PREFIX = 'gs://'
+
 # Mojo JS bindings path relative to the build directory.
 MOJO_BINDINGS_PATH = 'gen/mojo/public/js/mojo_bindings.js'
 
@@ -452,27 +454,23 @@ def Archive(options):
   # without downloading tarballs.
   revision_file = WriteRevisionFile(staging_dir, build_revision)
 
-  urls = {}
-  if options.build_url.startswith('gs://'):
-    zip_url = UploadToGoogleStorage(
-        versioned_file, revision_file, options.build_url, options.gs_acl,
-        options.gsutil_py_path
-    )
+  return versioned_file, revision_file
 
-    storage_url = (
-        'https://storage.cloud.google.com/%s/%s' %
-        (options.build_url[len('gs://'):], os.path.basename(versioned_file))
-    )
-    urls['storage_url'] = storage_url
-  else:
-    staging_path = (
-        os.path.splitdrive(versioned_file)[1].replace(os.path.sep, '/')
-    )
-    zip_url = 'http://' + options.slave_name + staging_path
 
-  urls['zip_url'] = zip_url
-
-  return urls
+def Upload(options, versioned_file, revision_file):
+  zip_url = UploadToGoogleStorage(
+      versioned_file, revision_file, options.build_url, options.gs_acl,
+      options.gsutil_py_path
+  )
+  return {
+      'storage_url':
+          'https://storage.cloud.google.com/%s/%s' % (
+              options.build_url[len(_GS_PROTOCOL_PREFIX):],
+              os.path.basename(versioned_file)
+          ),
+      'zip_url':
+          zip_url,
+  }
 
 
 def AddOptions(option_parser):
@@ -509,7 +507,6 @@ def AddOptions(option_parser):
       help='Only includes include file list'
       'and regex whitelist match provided'
   )
-  option_parser.add_option('--slave-name', help='Name of the buildbot slave.')
   option_parser.add_option(
       '--revision-dir',
       help='Directory path that shall be used to decide '
@@ -585,6 +582,15 @@ def main(argv):
   if not options.staging_dir:
     print('--staging-dir must be specified')
     return 1
+  if not options.build_url:
+    print('--build-url must be specified')
+    return 1
+  if not options.build_url.startswith(_GS_PROTOCOL_PREFIX):
+    print(
+        f'value for --build-url must start with "{_GS_PROTOCOL_PREFIX}",'
+        f' got "{options.build_url}"'
+    )
+    return 1
 
   if options.strip_files:
     options.strip_files = options.strip_files.split(',')
@@ -594,7 +600,8 @@ def main(argv):
   if args[1:]:
     print('Warning -- unknown arguments' % args[1:])
 
-  urls = Archive(options)
+  versioned_file, revision_file = Archive(options)
+  urls = Upload(options, versioned_file, revision_file)
   if options.json_urls:  # we need to dump json
     with open(options.json_urls, 'w') as json_file:
       json.dump(urls, json_file)

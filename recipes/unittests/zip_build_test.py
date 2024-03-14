@@ -30,7 +30,7 @@ def _setup_testdir(testdir):
   options.target = 'Debug'
   options.src_dir = os.path.join(testdir, 'src')
   options.staging_dir = os.path.join(testdir, 'staging')
-  options.slave_name = 'ipsum'
+  options.build_url = 'gs://fake-gs-bucket'
   options.build_revision = 'dolor'
 
   build_dir = _build_dir(options)
@@ -76,10 +76,7 @@ class TestWriteRevisionFile(unittest.TestCase):
     options = _setup_testdir(tempdir)
     try:
       # Create archive.
-      urls = zip_build.Archive(options)
-      self.assertTrue('zip_url' in urls)
-      zip_filename = urls['zip_url'].rsplit('/', 1)[1]
-      zip_filepath = os.path.join(options.staging_dir, zip_filename)
+      zip_filepath, _ = zip_build.Archive(options)
       self.assertTrue(os.path.exists(zip_filepath))
       # Extract archive.
       unzip_dir = os.path.join(tempdir, 'unzip')
