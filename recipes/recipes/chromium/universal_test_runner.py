@@ -191,10 +191,15 @@ def create_tests(
       got_revisions,
       api.path['checkout'],
       targets_spec_dir=api.path['checkout'].join('testing', 'buildbot'))
-  tests = [test for test in targets_config.all_tests if test.name in test_names]
-  if not tests:
-    raise api.step.StepFailure('No tests selected for running')
 
+  def _get_matching_test(requested_test_name):
+    for t in targets_config.all_tests:
+      if requested_test_name in (t.name, t.canonical_name):
+        return t
+    raise api.step.StepFailure(
+        f'No suites on the bot matched the request for {requested_test_name}')
+
+  tests = [_get_matching_test(n) for n in test_names]
   if should_build:
     raw_result = compile_targets(api, tests, builder_id, preserve_gn_args,
                                  build_dir)
@@ -597,7 +602,7 @@ solutions = [
       ),
       api.post_process(
           post_process.SummaryMarkdown,
-          'No tests selected for running',
+          'No suites on the bot matched the request for non_existant_test',
       ),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
