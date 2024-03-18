@@ -161,7 +161,6 @@ def RunSteps(api):
       ','.join([
           'sshrimp@google.com',
           'gatong@google.com',
-          'estaab@google.com',
       ]),
       '--send-email',
   ]
