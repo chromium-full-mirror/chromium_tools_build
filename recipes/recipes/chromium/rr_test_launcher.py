@@ -13,8 +13,10 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation,
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 DEPS = [
+    'builder_group',
     'chromium',
     'chromium_checkout',
+    'chromium_tests',
     'depot_tools/gclient',
     'depot_tools/tryserver',
     'recipe_engine/context',
@@ -32,9 +34,13 @@ def RunSteps(api):
 
   api.context(cwd=api.path['checkout'])
   api.chromium.set_config('chromium')
-  raw_result = api.chromium.compile(
-      targets=['blink_web_tests', 'blink_wpt_tests', 'chrome_wpt_tests'],
-      use_reclient=True)
+  api.chromium.output_dir = api.path['checkout'].join(
+      'out', api.chromium.c.build_config_fs)
+  raw_result = api.chromium_tests.run_mb_and_compile(
+      api.chromium.get_builder_id(),
+      ['blink_web_tests', 'blink_wpt_tests', 'chrome_wpt_tests'],
+      isolated_targets=[],
+      name_suffix='')
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -50,6 +56,7 @@ def RunSteps(api):
 def GenTests(api):
   yield api.test(
       'happy_path_run_web_test',
+      api.builder_group.for_current('chromium.fyi'),
       api.post_process(StepCommandRE, 'run web tests', [
           '.*/third_party/blink/tools/run_web_tests.py',
           '-t',
@@ -62,6 +69,7 @@ def GenTests(api):
 
   yield api.test(
       'run_with_failure',
+      api.builder_group.for_current('chromium.fyi'),
       api.step_data('run web tests', retcode=1),
       api.post_process(StepFailure, 'run web tests'),
       api.expect_status('FAILURE'),
@@ -71,6 +79,7 @@ def GenTests(api):
 
   yield api.test(
       'compile_with_failure',
+      api.builder_group.for_current('chromium.fyi'),
       api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(DropExpectation),
