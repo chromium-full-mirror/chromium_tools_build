@@ -18,11 +18,8 @@ message InputProperties {
 
   // Targets to compile without patch
 
-  // When this field is absent, the Compilator will compile (with patch) all
-  // targets affected by the patch.
-  // When this field is populated, the Compilator will compile these targets
-  // without a patch.
-  repeated string swarming_targets = 2;
+  reserved "swarming_targets";
+  reserved 2;
 
   // When this field is absent, the Compilator will compile (with patch) all
   // targets affected by the patch.
@@ -31,7 +28,8 @@ message InputProperties {
   // This could be both or either swarming or skylab tests
   repeated string test_targets = 6;
 
-  reserved 7; // skip_tests
+  reserved "skip_tests";
+  reserved 7;
 
   // Sets which revision to check out for the dependency
   // Maps dependency repo's path name (like 'src/v8') to revision
