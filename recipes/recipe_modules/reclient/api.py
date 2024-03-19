@@ -156,6 +156,8 @@ class ReclientApi(recipe_api.RecipeApi):
     self._disable_bq_upload = props.disable_bq_upload
     self._reclient_version = None
     self._download_remoteexec_cfg_hook_vars_used = None
+    self._automatic_auth = False
+    self._use_gce_credentials = True
 
     if self._test_data.enabled:
       self._hostname = 'fakevm999-m9'
@@ -313,6 +315,22 @@ class ReclientApi(recipe_api.RecipeApi):
   @property
   def _ensure_verified(self):
     return self._props.ensure_verified
+
+  @property
+  def automatic_auth(self):
+    return self._automatic_auth
+
+  @automatic_auth.setter
+  def automatic_auth(self, val):
+    self._automatic_auth = val
+
+  @property
+  def use_gce_credentials(self):
+    return self._use_gce_credentials
+
+  @use_gce_credentials.setter
+  def use_gce_credentials(self, val):
+    self._use_gce_credentials = val
 
   def _get_platform_exe_name(self, exe_name):
     if self.m.platform.is_win:
@@ -482,6 +500,8 @@ class ReclientApi(recipe_api.RecipeApi):
     """
     reproxy_bin_path = self._get_reclient_exe_path('reproxy')
     enable_crash_dump = 'true' if self._scandeps_server else 'false'
+    automatic_auth = 'true' if self._automatic_auth else 'false'
+    use_gce_credentials = 'true' if self._use_gce_credentials else 'false'
     env = {
         'RBE_instance': self.instance,
         'RBE_log_format': _REPROXY_LOG_FORMAT,
@@ -493,8 +513,8 @@ class ReclientApi(recipe_api.RecipeApi):
         'RBE_server_address': self.server_address,
         'RBE_fast_log_collection': 'true',
         'RBE_use_application_default_credentials': 'false',
-        'RBE_automatic_auth': 'false',
-        'RBE_use_gce_credentials': 'true',
+        'RBE_automatic_auth': automatic_auth,
+        'RBE_use_gce_credentials': use_gce_credentials,
         'RBE_fail_early_min_action_count': 4000,
         'RBE_fail_early_min_fallback_ratio': 0.5,
         'RBE_deps_cache_dir': reclient_cache_dir,

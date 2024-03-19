@@ -71,6 +71,10 @@ def RunSteps(api):
   _ = api.reclient.rewrapper_path
   _ = api.reclient.metrics_project
   _ = api.reclient.jobs
+  api.reclient.automatic_auth = False
+  _ = api.reclient.automatic_auth
+  api.reclient.use_gce_credentials = False
+  _ = api.reclient.use_gce_credentials
 
 
 def MakeTestRBEStats(num_records=0,
