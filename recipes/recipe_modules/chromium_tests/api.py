@@ -2169,8 +2169,35 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
 
-  def determine_compilation_targets(self, builder_id, builder_config,
-                                    affected_files, targets_config):
+  def determine_compilation_targets(
+      self,
+      builder_id: chromium.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+      affected_files: Iterable[str],
+      targets_config: targets_config_module.TargetsConfig,
+      *,
+      skip_analysis_reasons: Iterable[str] | None = None,
+  ) -> tuple[list[str], list[str]]:
+    """Determine the targets to build.
+
+    Args:
+      builder_id: A BuilderId for identifying a builder.
+      builder_config: A BuilderConfig for accessing the static builder
+        configuration.
+      affected_files: The files that are modified by the CL being tested, if
+        any.
+      targets_config: The TargetsConfig providing the configured targets for the
+        builder.
+      skip_analysis_reasons: Reasons to skip analysis. If set to a non-empty
+        value, then instead of executing analyze, all configured targets will be
+        returned and an empty step will be emitted indicating why analyze wasn't
+        executed.
+
+    Returns:
+      A tuple of
+      * Targets that should be built for tests that are to be run
+      * Additional targets that should be built
+    """
     tests = targets_config.all_tests
     compile_targets = targets_config.compile_targets
     test_targets = sorted(set(self._all_compile_targets(tests)))
@@ -2178,7 +2205,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # Use analyze to determine the compile targets that are affected by the CL.
     # Use this to prune the relevant compile targets and test targets.
     if self.m.tryserver.is_tryserver:
-      skip_analysis_reasons = list(
+      skip_analysis_reasons = list(skip_analysis_reasons or [])
+      skip_analysis_reasons.extend(
           self.m.chromium_bootstrap.skip_analysis_reasons)
       skip_analysis_logs = {}
 
@@ -2229,12 +2257,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if task_output_stdout:
       self.m.chromium_swarming.task_output_stdout = task_output_stdout
 
-  def build_affected_targets(self,
-                             builder_id,
-                             builder_config,
-                             root_solution_revision=None,
-                             isolate_output_files_for_coverage=False,
-                             additional_compile_targets=None):
+  def build_affected_targets(
+      self,
+      builder_id: chromium.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+      *,
+      root_solution_revision: str | None = None,
+      isolate_output_files_for_coverage: bool = False,
+      additional_compile_targets: Iterable[str] = None,
+      skip_analysis_reasons: Iterable[str] | None = None,
+  ):
     """Builds targets affected by change.
 
     Args:
@@ -2246,10 +2278,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         binaries and other required code coverage output files to one hash. If
         code_coverage.instrument sets skipping_coverage to True, then this
         kwarg will be overriden to be False.
-      additional_compile_targets (List[str]): Additional compile targets
-        specified recipe-side. This field is intended for recipes to add
-        targets needed for recipe functionality and not for configuring builder
-        outputs (which should be specified src-side in waterfalls.pyl).
+      additional_compile_targets: Additional compile targets specified
+        recipe-side. This field is intended for recipes to add targets needed
+        for recipe functionality and not for configuring builder outputs (which
+        should be specified src-side in waterfalls.pyl).
+      skip_analysis_reasons: Reasons to skip analysis. If set to a non-empty
+        value, then instead of executing analyze, all configured targets will be
+        returned and an empty step will be emitted indicating why analyze wasn't
+        executed.
 
     Returns:
       A Tuple of
@@ -2291,7 +2327,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       tests = targets_config.all_tests
 
     test_targets, compile_targets = self.determine_compilation_targets(
-        builder_id, builder_config, affected_files, targets_config)
+        builder_id,
+        builder_config,
+        affected_files,
+        targets_config,
+        skip_analysis_reasons=skip_analysis_reasons)
 
     # Compiles and isolates test suites.
     raw_result = result_pb2.RawResult(status=common_pb.SUCCESS)

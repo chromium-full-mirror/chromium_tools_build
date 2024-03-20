@@ -127,7 +127,9 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         'orchestrator': {
             'builder_name': self.m.buildbucket.builder_name,
             'builder_group': self.m.builder_group.for_current,
-        }
+        },
+        'skip_analysis_reasons':
+            list(self.m.chromium_bootstrap.skip_analysis_reasons),
     }
 
     # When this enabled, triggered compilators will not be automatically

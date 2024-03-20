@@ -110,7 +110,8 @@ def compilator_steps(api, properties):
           orch_builder_id,
           orch_builder_config,
           isolate_output_files_for_coverage=True,
-          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME])
+          additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME],
+          skip_analysis_reasons=properties.skip_analysis_reasons)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
       bot_update_step = task.bot_update_step
@@ -1186,5 +1187,34 @@ def GenTests(api):
           'compile (with patch)',
           ['browser_tests'],
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'skip_analysis_reasons',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+          tags=api.buildbucket.tags(
+              cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'),
+      ),
+      api.platform.name('linux'),
+      api.path.exists(api.path['checkout'].join('out', 'Release',
+                                                'browser_tests')),
+      ctbc_properties(),
+      api.properties(
+          InputProperties(
+              orchestrator=InputProperties.Orchestrator(
+                  builder_name='fake-orchestrator',
+                  builder_group='fake-try-group'),
+              skip_analysis_reasons=[
+                  'fake-reason1',
+                  'fake-reason2',
+              ])),
+      override_test_spec(),
+      api.cv(run_mode='FULL_RUN'),
+      api.post_check(post_process.StepTextContains, 'analyze',
+                     ['skipping analyze', 'fake-reason1', 'fake-reason2']),
       api.post_process(post_process.DropExpectation),
   )

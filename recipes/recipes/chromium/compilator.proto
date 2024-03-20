@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.compilator;
 
-// Next ID: 8
+// Next ID: 9
 message InputProperties {
   message Orchestrator {
     string builder_name = 1;
@@ -15,6 +15,10 @@ message InputProperties {
 
   // Orchestrator builder that triggered this Compilator build
   Orchestrator orchestrator = 1;
+
+  // When set, the compilator will skip performing analysis and include the
+  // reasons in the placeholder step that is emitted instead.
+  repeated string skip_analysis_reasons = 8;
 
   // Targets to compile without patch
 
