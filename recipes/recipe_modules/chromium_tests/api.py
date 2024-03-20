@@ -1501,6 +1501,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     properties['buildername'] = self.m.buildbucket.builder_name
     properties['buildnumber'] = self.m.buildbucket.build.number
     properties['bot_id'] = self.m.swarming.bot_id
+    # TODO(gbeaty) Audit scripts and remove/update this as necessary
     properties['slavename'] = self.m.swarming.bot_id
     # TODO(gbeaty) Audit scripts and remove/update this as necessary
     properties['mastername'] = self.m.builder_group.for_current

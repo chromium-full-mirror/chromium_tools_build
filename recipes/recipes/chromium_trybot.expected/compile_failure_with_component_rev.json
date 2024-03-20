@@ -1003,7 +1003,7 @@
     },
     "name": "lookup GN args",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_goma = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_goma = true<br/>goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@"
     ]
   },
   {

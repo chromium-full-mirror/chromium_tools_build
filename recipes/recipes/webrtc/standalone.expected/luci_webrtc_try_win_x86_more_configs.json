@@ -554,7 +554,7 @@
     },
     "name": "lookup GN args",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@"
     ]
   },
   {
@@ -2046,7 +2046,7 @@
     },
     "name": "lookup GN args (2)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@"
     ]
   },
   {
@@ -3417,7 +3417,7 @@
     },
     "name": "lookup GN args (3)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@"
     ]
   },
   {
@@ -5640,7 +5640,7 @@
     },
     "name": "lookup GN args (4)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/build/slave/cache/goma_client\"@@@"
+      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true<br/>goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@"
     ]
   },
   {

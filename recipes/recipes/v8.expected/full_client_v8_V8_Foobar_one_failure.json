@@ -276,7 +276,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -324,7 +324,7 @@
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@bot_default@@@",
       "@@@STEP_LOG_LINE@swarming-targets-file.txt@test262@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
@@ -800,7 +800,7 @@
       "@@@STEP_LOG_LINE@test-name@Variant: default@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",
       "@@@STEP_LOG_LINE@test-name@GN arguments:@@@",
-      "@@@STEP_LOG_LINE@test-name@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@test-name@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@test-name@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@test-name@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@test-name@@@@",

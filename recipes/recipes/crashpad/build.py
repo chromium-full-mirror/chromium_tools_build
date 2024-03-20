@@ -38,7 +38,7 @@ PROPERTIES = {
 
 
 def RunSteps(api, config, target_os, target_cpu):
-  """Generates the sequence of steps that will be run by the slave."""
+  """Generates the sequence of steps that will be run by the builder."""
   api.gclient.set_config('crashpad')
 
   env = {}
@@ -150,7 +150,7 @@ def RunSteps(api, config, target_os, target_cpu):
     #
     # Two build directories are generated, one for x86 and one for x64, which
     # allows testing a), b), and c). As the bot time is dominated by machine
-    # setup and build time, we do not separate these onto separate slaves.
+    # setup and build time, we do not separate these onto separate machines.
     # Additionally, they're all on the same physical machine currently, so
     # there's no upside in parallelism.
 

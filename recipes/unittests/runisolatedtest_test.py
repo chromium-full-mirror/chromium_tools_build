@@ -11,8 +11,6 @@ import tempfile
 import unittest
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-# Keep the presubmit check happy by adding scripts/ to sys.path instead of
-# scripts/slave/.
 sys.path.insert(0, os.path.dirname(os.path.dirname(BASE_PATH)))
 
 from recipes import runisolatedtest

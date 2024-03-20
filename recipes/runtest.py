@@ -5,8 +5,9 @@
 
 """A tool used to run a Chrome test executable and process the output.
 
-This script is used by the buildbot slaves. It must be run from the outer
-build directory, e.g. chrome-release/build/.
+This script is used by builders running tests locally. It must be run
+from the directory where the checkout occurs (i.e. the directory that
+contains src for a chromium checkout).
 
 For a list of command-line options, call this script with '--help'.
 """

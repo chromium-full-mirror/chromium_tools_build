@@ -196,8 +196,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     additional_configs = additional_configs or []
 
-    # TODO: crbug.com/358481 . The build_config should probably be a property
-    # passed in from the slave config, but that doesn't exist today, so we
+    # TODO: crbug.com/358481 . The build_config should probably be a property,
+    # but that doesn't exist today, so we
     # need a lookup mechanism to map bot name to build_config.
     builder_id = self.get_builder_id()
     group_dict = builders_dict.get(builder_id.group, {})
@@ -1445,7 +1445,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     name = name or 'lookup GN args'
     additional_args = ['--recursive' if recursive else '--quiet']
-    lookup_test_data = ('goma_dir = "/b/build/slave/cache/goma_client"\n'
+    lookup_test_data = ('goma_dir = "/b/s/w/ir/cache/goma_client"\n'
                         'target_cpu = "x86"\n')
     if use_goma:
       lookup_test_data += 'use_goma = true\n'

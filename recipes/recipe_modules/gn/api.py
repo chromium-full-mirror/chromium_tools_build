@@ -33,10 +33,9 @@ class GnApi(recipe_api.RecipeApi):
     """
     args_file_path = build_dir.join('args.gn')
     step_name = step_name or self._DEFAULT_STEP_NAME
-    fake_args = (
-        'goma_dir = "/b/build/slave/cache/goma_client"\n'
-        'target_cpu = "x86"\n'
-        'use_goma = true\n')
+    fake_args = ('goma_dir = "/b/s/w/ir/cache/goma_client"\n'
+                 'target_cpu = "x86"\n'
+                 'use_goma = true\n')
     args = self.m.file.read_text(step_name, args_file_path, fake_args)
     return args, self.m.step.active_result
 

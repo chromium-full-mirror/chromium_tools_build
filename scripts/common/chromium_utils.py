@@ -918,8 +918,6 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
         break
     print(threading.currentThread(), 'TimedFlush: Finished')
 
-  # TODO(all): nsylvain's CommandRunner in buildbot_slave is based on this
-  # method.  Update it when changes are introduced here.
   def ProcessRead(proc, writefh, parser_func=None, filter_obj=None,
                   log_event=None, debug=False):
     writefh.flush()

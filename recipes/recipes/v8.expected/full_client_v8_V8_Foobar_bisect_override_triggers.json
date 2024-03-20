@@ -276,7 +276,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -319,7 +319,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
       "@@@STEP_LOG_END@json.output[failure_summary]@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
@@ -454,7 +454,7 @@
       "@@@STEP_LOG_LINE@fast@Variant: default@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@GN arguments:@@@",
-      "@@@STEP_LOG_LINE@fast@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@fast@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@fast@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@fast@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
@@ -483,7 +483,7 @@
       "@@@STEP_LOG_LINE@slow@Variant: default@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@GN arguments:@@@",
-      "@@@STEP_LOG_LINE@slow@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@slow@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@slow@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@slow@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
@@ -835,7 +835,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -878,7 +878,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
       "@@@STEP_LOG_END@json.output[failure_summary]@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
@@ -1223,7 +1223,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -1266,7 +1266,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
       "@@@STEP_LOG_END@json.output[failure_summary]@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
@@ -1403,7 +1403,7 @@
       "@@@STEP_LOG_LINE@fast@Variant: default@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
       "@@@STEP_LOG_LINE@fast@GN arguments:@@@",
-      "@@@STEP_LOG_LINE@fast@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@fast@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@fast@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@fast@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@fast@@@@",
@@ -1432,7 +1432,7 @@
       "@@@STEP_LOG_LINE@slow@Variant: default@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_LINE@slow@GN arguments:@@@",
-      "@@@STEP_LOG_LINE@slow@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@slow@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@slow@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@slow@use_remoteexec = true@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
@@ -1627,7 +1627,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_END@gn_args@@@"
     ]
   },
@@ -1670,7 +1670,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
       "@@@STEP_LOG_END@json.output[failure_summary]@@@",
-      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/build/slave/cache/goma_client\"@@@",
+      "@@@STEP_LOG_LINE@gn_args@goma_dir = \"/b/s/w/ir/cache/goma_client\"@@@",
       "@@@STEP_LOG_LINE@gn_args@target_cpu = \"x86\"@@@",
       "@@@STEP_LOG_LINE@gn_args@use_remoteexec = true@@@",
       "@@@STEP_LOG_END@gn_args@@@"
