@@ -6,13 +6,8 @@ from recipe_engine import post_process
 from PB.recipe_modules.build.chromium_orchestrator.properties import (
     InputProperties)
 
-from google.protobuf import timestamp_pb2
-
-from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.build.chromium_orchestrator.api import (
     COMPILATOR_SWARMING_TASK_COLLECT_STEP)
 from RECIPE_MODULES.build.chromium_orchestrator.api import (
@@ -1916,5 +1911,36 @@ def GenTests(api):
           'read test spec (fake-group.json)',
           ['[CLEANUP]/src/testing/buildbot/fake-group.json'],
       ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'propagate-properties-to-compilator',
+      get_try_build(),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                      propagate_properties_to_compilator=True,
+                  ),
+          }),
+      api.code_coverage(use_clang_coverage=True),
+      api.chromium_orchestrator.override_compilator_build_proto_fetch(),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          is_compile_phase=False),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester',
+      ),
+      api.post_process(
+          post_process.LogContains, 'trigger compilator (with patch)',
+          'request',
+          ['$build/chromium_tests_builder_config', '$build/code_coverage']),
       api.post_process(post_process.DropExpectation),
   )

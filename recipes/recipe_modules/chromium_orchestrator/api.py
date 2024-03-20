@@ -2,22 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import re
+
 from google.protobuf.json_format import MessageToDict
-from google.protobuf.json_format import ParseDict
-from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
+from recipe_engine.engine_types import thaw
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
-from PB.go.chromium.org.luci.buildbucket.proto \
-  import builds_service as builds_service_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
-from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.chromium_tests.api import (
     ALL_TEST_BINARIES_ISOLATE_NAME)
-from RECIPE_MODULES.build.code_coverage import constants
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 
 COMPILATOR_SWARMING_TASK_COLLECT_STEP = (
     'wait for compilator swarming task cleanup overhead')
@@ -61,6 +57,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.compilator = properties.compilator
     self.compilator_watcher_git_revision = (
         properties.compilator_watcher_git_revision)
+    self._propagate_properties_to_compilator = (
+        properties.propagate_properties_to_compilator)
 
     self.compilator_watcher_pkg = None
 
@@ -132,15 +130,43 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             list(self.m.chromium_bootstrap.skip_analysis_reasons),
     }
 
+    # Forward on any non-recipe_engine recipe module properties. The
+    # recipe_engine module properties are often synthesized based on the current
+    # build, so shouldn't be forwarded. For non-module properties, it is more
+    # likely that the property would actually be consumed by something besides
+    # the compilator recipe (led, bootstrapper), and therefore more likely to
+    # have unexpected effects, so we should be more selective.
+    if self._propagate_properties_to_compilator:
+      # (?!recipe_engine) - negative lookahead of recipe_engine
+      recipe_module_property_re = re.compile(r'\$(?!recipe_engine)[^/]+/[^/]+')
+      should_forward_by_property = {
+          # This property is used during compilation so should be forwarded
+          'xcode_build_version': True,
+          # This property is for the orchestrator and wouldn't be used by the
+          # compilator
+          '$build/chromium_orchestrator': False,
+          # This property is set by the bootstrapper and intended only for the
+          # build that it was set for
+          '$build/chromium_bootstrap': False,
+          # This is used for tests, the compilator runs any local tests
+          'recipe_engine/resultdb/test_presentation': True,
+      }
+      for p, value in self.m.properties.items():
+        should_forward = should_forward_by_property.get(p, None)
+        if should_forward is None:
+          should_forward = recipe_module_property_re.fullmatch(p)
+        if should_forward:
+          compilator_properties[p] = thaw(value)
+
+    compilator_properties.update(self.m.cq.props_for_child_build)
+    self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)
+
     # When this enabled, triggered compilators will not be automatically
     # canceled when the parent orchestrators are canceled.
     self.disable_auto_compilator_cancels = (
         'chromium.compilator_can_outlive_parent'
         in self.m.buildbucket.build.input.experiments)
 
-    # Pass in any input props
-    compilator_properties.update(self.m.cq.props_for_child_build)
-    self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)
     build = self._trigger_compilator(
         'trigger compilator (with patch)',
         compilator_properties,
