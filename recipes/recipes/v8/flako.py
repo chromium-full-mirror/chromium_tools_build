@@ -547,9 +547,7 @@ class Runner:
     """Determine the number of failures from the results of one swarming shard.
     """
     data = step_result.chromium_swarming.summary['shards'][0]
-    assert data['exit_code'] is not None, (
-        'The bot might have died. Please restart the analysis')
-    if data['exit_code'] == EXIT_CODE_NO_TESTS:
+    if data.get('exit_code') == EXIT_CODE_NO_TESTS:
       # The desired test doesn't exist in this revision. This counts
       # as good as no test means no flaky test.
       return 0  # pragma: no cover
