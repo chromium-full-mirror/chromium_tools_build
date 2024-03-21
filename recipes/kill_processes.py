@@ -7,6 +7,7 @@
 
 Only works on Windows."""
 
+import json
 import optparse
 import os
 import re
@@ -33,7 +34,7 @@ def KillAll(process_names, must_die=True):
   # If we allow any processes to continue after trying to kill them, return
   # now.
   if not must_die:
-    return True
+    return True, killed_processes
 
   # Give our processes time to exit.
   for _ in range(60):
@@ -43,7 +44,7 @@ def KillAll(process_names, must_die=True):
 
   # We require that all processes we tried to kill must be killed.  Let's
   # verify that.
-  return not AnyProcessExists(killed_processes)
+  return not AnyProcessExists(killed_processes), killed_processes
 
 
 def ProcessExists(process_name):
@@ -88,7 +89,7 @@ def KillByPid(pid):
 
 def KillProcessesUsingCurrentDirectory(handle_exe):
   if not os.path.exists(handle_exe):
-    return False
+    return []
   try:
     Log('running %s to look for running processes' % handle_exe)
     handle = subprocess.Popen([handle_exe,
@@ -98,7 +99,7 @@ def KillProcessesUsingCurrentDirectory(handle_exe):
                               stderr=subprocess.PIPE)
   except WindowsError as e:  # pylint: disable=E0602
     print(e)
-    return False
+    return []
   stdout, stderr = handle.communicate()
 
   # Do a basic sanity check to make sure the tool is working fine.
@@ -106,7 +107,7 @@ def KillProcessesUsingCurrentDirectory(handle_exe):
                 'Non-existant Process' not in stdout and
                 'No matching handles found' not in stdout):
     Log('Error running handle.exe: ' + repr((stdout, stderr)))
-    return False
+    return []
 
   pid_list = []
   for line in stdout.splitlines():  # pylint: disable=E1103
@@ -133,7 +134,7 @@ def KillProcessesUsingCurrentDirectory(handle_exe):
       break
     time.sleep(1)
 
-  return True
+  return pid_list
 
 
 # rdpclip.exe is part of Remote Desktop.  It has a bug that sometimes causes
@@ -238,19 +239,36 @@ def main():
     usage='%prog [options]')
   parser.add_option('--handle_exe', default=handle_exe_default,
                     help='The path to handle.exe. Defaults to %default.')
+  parser.add_option(
+      '--json-output',
+      help='Path to a file to output json indicating what processes were killed'
+  )
   (options, args) = parser.parse_args()
 
+  if not options.json_output:
+    parser.error('--json-output must be passed')
   if args:
     parser.error('Unknown arguments passed in, %s' % args)
 
+  processes_killed_by_name = []
+
   # Kill all lingering processes.  It's okay if these aren't killed or end up
   # reappearing.
-  KillAll(lingering_processes, must_die=False)
-  KillProcessesUsingCurrentDirectory(options.handle_exe)
+  _, killed_processes = KillAll(lingering_processes, must_die=False)
+  processes_killed_by_name.extend(killed_processes)
+  pid_killed_processes = KillProcessesUsingCurrentDirectory(options.handle_exe)
 
   # Kill all regular processes.  We must guarantee that these are killed since
   # we exit with an error code if they're not.
-  if KillAll(processes, must_die=True):
+  success, killed_processes = KillAll(processes, must_die=True)
+  if success:
+    processes_killed_by_name.extend(killed_processes)
+    results = {
+        'processes_killed_by_name': sorted(processes_killed_by_name),
+        'num_processes_killed_by_pid': len(pid_killed_processes),
+    }
+    with open(options.json_output, 'w') as f:
+      json.dump(results, f)
     return 0
 
   # Some processes were not killed, exit with non-zero status.

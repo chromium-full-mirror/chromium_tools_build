@@ -2,7 +2,9 @@
   {
     "cmd": [
       "python3",
-      "RECIPE_REPO[build]\\recipes\\kill_processes.py"
+      "RECIPE_REPO[build]\\recipes\\kill_processes.py",
+      "--json-output",
+      "/path/to/tmp/json"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -20,7 +22,15 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "taskkill"
+    "name": "taskkill",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"num_processes_killed_by_pid\": 0,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"processes_killed_by_name\": []@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@chromium.taskkill@{\"num_processes_killed_by_pid\": 0, \"processes_killed_by_name\": []}@@@"
+    ]
   },
   {
     "cmd": [],

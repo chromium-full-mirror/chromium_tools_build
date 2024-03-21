@@ -1654,11 +1654,27 @@ class ChromiumApi(recipe_api.RecipeApi):
       raise
 
   def taskkill(self):
-    self.m.step(
-        'taskkill',
-        ['python3',
-         self.repo_resource('recipes', 'kill_processes.py')],
+
+    def step_test_data():
+      results = {
+          'processes_killed_by_name': [],
+          'num_processes_killed_by_pid': 0,
+      }
+      return self.m.json.test_api.output(results)
+
+    result = self.m.step(
+        'taskkill', [
+            'python3',
+            self.repo_resource('recipes', 'kill_processes.py'),
+            '--json-output',
+            self.m.json.output(),
+        ],
+        step_test_data=step_test_data,
         infra_step=True)
+    # TODO: crbug.com/329723063 - Once this property has been set on builds for
+    # some reasonable amount of time, if processes aren't actually being killed
+    # by this function, this function can be removed
+    result.presentation.properties['chromium.taskkill'] = result.json.output
 
   def get_build_target_arch(self):
     return {
