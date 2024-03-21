@@ -38,6 +38,7 @@
       "--refs",
       "refs/heads/main"
     ],
+    "cwd": "[CACHE]/builder",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/android_aarch64/8945511751514863184",
       "GIT_BACKENDINFO": "1",
@@ -115,7 +116,7 @@
       "RECIPE_REPO[depot_tools]/gclient.py",
       "runhooks"
     ],
-    "cwd": "[START_DIR]/boringssl",
+    "cwd": "[CACHE]/builder",
     "env": {
       "DEPOT_TOOLS_REPORT_BUILD": "boringssl/ci/android_aarch64/8945511751514863184"
     },
@@ -146,17 +147,17 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[START_DIR]/boringssl/build"
+      "[CACHE]/builder/boringssl/build"
     ],
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "infra_step": true,
@@ -184,17 +185,17 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[START_DIR]/boringssl/build"
+      "[CACHE]/builder/boringssl/build"
     ],
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "infra_step": true,
@@ -214,24 +215,24 @@
   },
   {
     "cmd": [
-      "[START_DIR]/boringssl/util/bot/cmake-linux64/bin/cmake",
+      "[CACHE]/builder/boringssl/util/bot/cmake-linux64/bin/cmake",
       "-GNinja",
       "-DANDROID_ABI=arm64-v8a",
       "-DANDROID_PLATFORM=android-21",
-      "-DCMAKE_MAKE_PROGRAM=[START_DIR]/boringssl/util/bot/ninja/ninja",
-      "-DCMAKE_TOOLCHAIN_FILE=[START_DIR]/boringssl/util/bot/android_ndk/build/cmake/android.toolchain.cmake",
-      "[START_DIR]/boringssl"
+      "-DCMAKE_MAKE_PROGRAM=[CACHE]/builder/boringssl/util/bot/ninja/ninja",
+      "-DCMAKE_TOOLCHAIN_FILE=[CACHE]/builder/boringssl/util/bot/android_ndk/build/cmake/android.toolchain.cmake",
+      "[CACHE]/builder/boringssl"
     ],
-    "cwd": "[START_DIR]/boringssl/build",
+    "cwd": "[CACHE]/builder/boringssl/build",
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "luci_context": {
@@ -250,19 +251,19 @@
   },
   {
     "cmd": [
-      "[START_DIR]/boringssl/util/bot/ninja/ninja",
+      "[CACHE]/builder/boringssl/util/bot/ninja/ninja",
       "-C",
-      "[START_DIR]/boringssl/build"
+      "[CACHE]/builder/boringssl/build"
     ],
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "luci_context": {
@@ -283,18 +284,18 @@
     "cmd": [
       "go",
       "run",
-      "[START_DIR]/boringssl/util/check_filenames.go"
+      "[CACHE]/builder/boringssl/util/check_filenames.go"
     ],
-    "cwd": "[START_DIR]/boringssl",
+    "cwd": "[CACHE]/builder/boringssl",
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "luci_context": {
@@ -319,19 +320,19 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[START_DIR]/boringssl/util/go_tests.txt",
+      "[CACHE]/builder/boringssl/util/go_tests.txt",
       "/path/to/tmp/"
     ],
-    "cwd": "[START_DIR]/boringssl",
+    "cwd": "[CACHE]/builder/boringssl",
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "infra_step": true,
@@ -362,16 +363,16 @@
       "./util/ar",
       "./util/fipstools/delocate"
     ],
-    "cwd": "[START_DIR]/boringssl",
+    "cwd": "[CACHE]/builder/boringssl",
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "luci_context": {
@@ -394,24 +395,24 @@
       "run",
       "util/run_android_tests.go",
       "-build-dir",
-      "[START_DIR]/boringssl/build",
+      "[CACHE]/builder/boringssl/build",
       "-adb",
-      "[START_DIR]/boringssl/util/bot/android_sdk/public/platform-tools/adb",
+      "[CACHE]/builder/boringssl/util/bot/android_sdk/public/platform-tools/adb",
       "-suite",
       "unit",
       "-all-tests-args",
       ""
     ],
-    "cwd": "[START_DIR]/boringssl",
+    "cwd": "[CACHE]/builder/boringssl",
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "luci_context": {
@@ -434,24 +435,24 @@
       "run",
       "util/run_android_tests.go",
       "-build-dir",
-      "[START_DIR]/boringssl/build",
+      "[CACHE]/builder/boringssl/build",
       "-adb",
-      "[START_DIR]/boringssl/util/bot/android_sdk/public/platform-tools/adb",
+      "[CACHE]/builder/boringssl/util/bot/android_sdk/public/platform-tools/adb",
       "-suite",
       "ssl",
       "-runner-args",
       "-pipe -num-workers 1"
     ],
-    "cwd": "[START_DIR]/boringssl",
+    "cwd": "[CACHE]/builder/boringssl",
     "env": {
       "GOCACHE": "[CACHE]/gocache",
       "GOFLAGS": "-mod=readonly",
       "GOPATH": "[CACHE]/gopath",
-      "GOROOT": "[START_DIR]/boringssl/util/bot/golang"
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
     },
     "env_prefixes": {
       "PATH": [
-        "[START_DIR]/boringssl/util/bot/golang/bin"
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
       ]
     },
     "luci_context": {

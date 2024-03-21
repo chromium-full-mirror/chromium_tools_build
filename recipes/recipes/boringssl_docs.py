@@ -22,11 +22,13 @@ DEPS = [
 def RunSteps(api):
   # Sync and pull in everything.
   api.gclient.set_config('boringssl')
-  api.bot_update.ensure_checkout()
-  api.gclient.runhooks()
+  cache_dir = api.path['cache'].join('builder')
+  with api.context(cwd=cache_dir):
+    api.bot_update.ensure_checkout()
+    api.gclient.runhooks()
 
   # Set up paths.
-  util = api.path['checkout'].join('util')
+  util = cache_dir.join('boringssl', 'util')
   goroot = util.join('bot', 'golang')
   output = api.path.mkdtemp('boringssl-docs')
 

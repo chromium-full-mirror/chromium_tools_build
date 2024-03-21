@@ -146,9 +146,8 @@ class _Config:
     ret.update(self.gclient_vars)
     return ret
 
-  def get_target_cmake_args(self, path, ninja_path, platform):
-    checkout = path['checkout']
-    bot_utils = checkout.join('util', 'bot')
+  def get_target_cmake_args(self, src, ninja_path, platform):
+    bot_utils = src.join('util', 'bot')
     args = {'CMAKE_MAKE_PROGRAM': ninja_path}
     if self.clang:
       if platform.is_win:
@@ -225,11 +224,13 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
   if config.android:
     api.gclient.c.target_os.add('android')
   api.gclient.c.solutions[0].custom_vars = config.get_gclient_vars(api.platform)
-  api.bot_update.ensure_checkout()
-  api.gclient.runhooks()
+  cache_dir = api.path['cache'].join('builder')
+  with api.context(cwd=cache_dir):
+    api.bot_update.ensure_checkout()
+    api.gclient.runhooks()
 
   # Set up paths.
-  src = api.path['checkout']
+  src = cache_dir.join('boringssl')
   bot_utils = src.join('util', 'bot')
   goroot = bot_utils.join('golang')
   adb_path = bot_utils.join('android_sdk', 'public', 'platform-tools', 'adb')
@@ -273,7 +274,7 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
     cmake = cmake_dir.join('bin', 'cmake' + _GetHostExeSuffix(api.platform))
     cmake_args = _GetHostCMakeArgs(api.platform, bot_utils)
     cmake_args.update(
-        config.get_target_cmake_args(api.path, ninja_path, api.platform))
+        config.get_target_cmake_args(src, ninja_path, api.platform))
     with api.context(cwd=build_dir):
       api.step(
           'cmake', msvc_prefix + [cmake, '-GNinja'] +
@@ -438,7 +439,8 @@ def GenTests(api):
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
       mock_go_tests,
-      api.path.exists(api.path['checkout'].join('util', 'bot', 'cmake')),
+      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
+                                             'bot', 'cmake')),
   )
 
   yield api.test(
