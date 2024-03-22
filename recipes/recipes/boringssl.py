@@ -255,17 +255,16 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
   # Disable modifications to go.mod so missing entries are treated as an error
   # instead.
   env['GOFLAGS'] = '-mod=readonly'
-
-  # Check pregenerated files.
-  if check_pregenerated_files and api.path.exists(
-      src.join('util', 'pregenerate')):
-    with api.context(cwd=src):
-      api.step('check pregenerated files',
-               ['go', 'run', './util/pregenerate', '-check'])
-
   with api.context(
       env=env,
       env_prefixes=env_prefixes), api.osx_sdk('ios'), _CleanupMSVC(api):
+    # Check pregenerated files.
+    if check_pregenerated_files and api.path.exists(
+        src.join('util', 'pregenerate')):
+      with api.context(cwd=src):
+        api.step('check pregenerated files',
+                 ['go', 'run', './util/pregenerate', '-check'])
+
     # CMake is stateful, so do a clean build. BoringSSL builds quickly enough
     # that this isn't a concern.
     api.file.rmtree('clean', build_dir)

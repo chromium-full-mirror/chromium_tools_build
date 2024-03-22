@@ -147,6 +147,17 @@
       "-check"
     ],
     "cwd": "[CACHE]/builder/boringssl",
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "boringssl:ci"
