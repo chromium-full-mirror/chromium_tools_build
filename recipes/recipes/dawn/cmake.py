@@ -370,6 +370,12 @@ def RunSteps(api,
   if api.platform.is_win:
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
         api.path['cache'].join('win_toolchain'))
+  if asan:
+    # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.
+    # See https://github.com/google/sanitizers/wiki/AddressSanitizerContainerOverflow#false-positives
+    env['ASAN_OPTIONS'] = 'detect_container_overflow=0'
+  if ubsan:
+    env['UBSAN_OPTIONS'] = 'print_stacktrace=1:halt_on_error=1'
 
   with api.context(env=env):
     _checkout_steps(api)
@@ -427,16 +433,7 @@ def RunSteps(api,
       def run_target(target, must_exist):
         target_path = build_path.join(target)
         if must_exist or api.path.exists(target_path):
-          run_target_env = {}
-          if asan:
-            # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.
-            # See https://github.com/google/sanitizers/wiki/AddressSanitizerContainerOverflow#false-positives
-            run_target_env['ASAN_OPTIONS'] = 'detect_container_overflow=0'
-          if ubsan:
-            run_target_env[
-                'UBSAN_OPTIONS'] = 'print_stacktrace=1:halt_on_error=1'
-          with api.context(env=run_target_env):
-            api.step(f'Run {target}', [target_path])
+          api.step(f'Run {target}', [target_path])
 
       run_target('tint_unittests', True)
 

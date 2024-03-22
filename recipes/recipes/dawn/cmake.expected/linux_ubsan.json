@@ -11,6 +11,9 @@
       "0o777",
       "[CACHE]/uncached"
     ],
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -57,7 +60,8 @@
       "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
       "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet",
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -128,7 +132,8 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
     },
     "env_suffixes": {
       "PATH": [
@@ -154,6 +159,9 @@
       "./tools/check-no-crlf"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -179,6 +187,9 @@
       "./tools/lint"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -206,6 +217,9 @@
       "./..."
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -255,6 +269,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -288,6 +305,9 @@
       "--target",
       "all"
     ],
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -340,6 +360,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -373,6 +396,9 @@
       "--target",
       "dawn.node"
     ],
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -432,6 +458,9 @@
       "cmake-build"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -463,6 +492,9 @@
       "wgsl,spvasm,msl,hlsl,glsl"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -495,6 +527,9 @@
       "--use-ir"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -544,6 +579,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=1"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -577,6 +615,9 @@
       "--target",
       "tint_cmd_tint_cmd"
     ],
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -629,6 +670,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -662,6 +706,9 @@
       "--target",
       "tint_cmd_tint_cmd"
     ],
+    "env": {
+      "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",

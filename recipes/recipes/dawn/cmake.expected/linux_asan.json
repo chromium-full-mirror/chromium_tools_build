@@ -11,6 +11,9 @@
       "0o777",
       "[CACHE]/uncached"
     ],
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -48,6 +51,7 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
@@ -128,6 +132,7 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184"
     },
     "env_suffixes": {
@@ -154,6 +159,9 @@
       "./tools/check-no-crlf"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -179,6 +187,9 @@
       "./tools/lint"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -206,6 +217,9 @@
       "./..."
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -255,6 +269,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -288,6 +305,9 @@
       "--target",
       "all"
     ],
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -340,6 +360,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -373,6 +396,9 @@
       "--target",
       "dawn.node"
     ],
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -432,6 +458,9 @@
       "cmake-build"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -463,6 +492,9 @@
       "wgsl,spvasm,msl,hlsl,glsl"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -495,6 +527,9 @@
       "--use-ir"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -544,6 +579,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=1"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -577,6 +615,9 @@
       "--target",
       "tint_cmd_tint_cmd"
     ],
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
@@ -629,6 +670,9 @@
       "-DTINT_BUILD_AS_OTHER_OS=0"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
@@ -662,6 +706,9 @@
       "--target",
       "tint_cmd_tint_cmd"
     ],
+    "env": {
+      "ASAN_OPTIONS": "detect_container_overflow=0"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/tools/golang/bin",
