@@ -27,14 +27,17 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'code_coverage',
     'gn',
     'test_utils',
     'skylab',
     'depot_tools/gclient',
+    'depot_tools/git',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -81,7 +84,8 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
                                    properties.got_revisions,
                                    compiling_builder_id,
                                    compiling_builder_config, should_build,
-                                   properties.preserve_gn_args)
+                                   properties.preserve_gn_args,
+                                   properties.builder_recipe)
   if raw_result and raw_result.status != common_pb2.SUCCESS:
     return raw_result
   if not should_test:
@@ -170,6 +174,7 @@ def create_tests(
     builder_config: ctbc.BuilderConfig,
     should_build: bool,
     preserve_gn_args: bool,
+    builder_recipe: str,
 ) -> tuple[result_pb2.RawResult, Iterable[Test]]:
   """Creates the test objects for the provided builder/test names
 
@@ -185,6 +190,7 @@ def create_tests(
       should_build: Bool controlling whether the tests should be compiled
       preserve_gn_args: Bool whether to have the recipe overwrite the gn args
         with the builder_id's gn args
+      builder_recipe: The recipe normally run by the requested builder
   """
   targets_config = api.chromium_tests.create_targets_config(
       builder_config,
@@ -202,7 +208,7 @@ def create_tests(
   tests = [_get_matching_test(n) for n in test_names]
   if should_build:
     raw_result = compile_targets(api, tests, builder_id, preserve_gn_args,
-                                 build_dir)
+                                 build_dir, builder_recipe)
     if raw_result.status != common_pb2.SUCCESS:
       return raw_result, None
 
@@ -302,6 +308,7 @@ def compile_targets(
     builder_id: chromium.BuilderId,
     preserve_gn_args: bool,
     build_dir: str,
+    builder_recipe: str,
 ) -> result_pb2.RawResult:
   """Builds the test targets
 
@@ -312,11 +319,17 @@ def compile_targets(
       preserve_gn_args: Bool whether to have the recipe overwrite the gn args
         with the builder_id's gn args
       build_dir: Path to the directory to use for building
+      builder_recipe: The recipe normally run by the requested builder
   """
   targets = list(itertools.chain(*[t.compile_targets() for t in tests]))
 
   # Remove duplicate targets.
   targets = sorted(set(targets))
+
+  # Only recipes that support try should handle changed files
+  if (api.code_coverage.using_coverage and
+      builder_recipe in ('chromium/orchestrator', 'chromium_trybot')):
+    handle_code_coverage(api)
 
   if preserve_gn_args:
     api.gn.gen(build_dir, 'gn_gen')
@@ -347,6 +360,36 @@ def compile_targets(
       return result_pb2.RawResult(status=step_result.presentation.status)
   return api.chromium.compile(
       targets, skip_log_upload=True, target_output_dir=build_dir)
+
+
+def handle_code_coverage(api: RecipeApi):
+  with api.context(cwd=api.path['checkout']):
+    step_result = api.git(
+        'rev-parse',
+        '--abbrev-ref',
+        '--symbolic-full-name',
+        '@{u}',
+        name='git rev-parse upstream',
+        stdout=api.raw_io.output(),
+        step_test_data=lambda: api.raw_io.test_api.stream_output('origin/main\n'
+                                                                ))
+    branch_upstream_name = step_result.stdout.decode('utf-8').strip()
+    step_result = api.git(
+        '-c',
+        'core.quotePath=false',
+        'diff',
+        '--merge-base',
+        '--name-only',
+        branch_upstream_name,
+        name='git diff to instrument',
+        stdout=api.raw_io.output(),
+        step_test_data=lambda: api.raw_io.test_api.stream_output('foo.cc'))
+  paths = [p.decode('utf-8') for p in step_result.stdout.splitlines()]
+  paths.sort()
+  if api.platform.is_win:
+    paths = [path.replace('\\', '/') for path in paths]
+  api.code_coverage.src_dir = api.chromium_checkout.src_dir
+  api.code_coverage.instrument(paths)
 
 
 def get_remote_compile_options(api, build_dir) -> bool:
@@ -435,7 +478,6 @@ def GenTests(api: RecipeTestApi):
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=False,
       ),
       api.path.exists(api.path['cache'].join('.gclient')),
@@ -519,7 +561,6 @@ solutions = [
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=True,
       ),
       api.post_process(post_process.MustRun, 'browser_tests'),
@@ -561,7 +602,6 @@ solutions = [
           checkout_path='checkout',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
       ),
       api.post_process(
           post_process.SummaryMarkdownRE,
@@ -597,7 +637,6 @@ solutions = [
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=True,
       ),
       api.post_process(
@@ -662,6 +701,49 @@ solutions = [
   )
 
   yield api.test(
+      'code_coverage',
+      ctbc_properties(),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          bucket='try',
+      ),
+      api.platform('win', 32),
+      api.code_coverage(use_clang_coverage=True),
+      api.properties(
+          test_names=['browser_tests'],
+          checkout_path='[CACHE]\\src',
+          build_dir='[CACHE]\\src\\out\\Release',
+          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+          preserve_gn_args=False,
+          bypass_gclient=True,
+          builder_recipe='chromium_trybot'),
+      api.post_process(post_process.MustRun, 'lookup GN args'),
+      api.step_data(
+          'lookup GN args',
+          stdout=api.raw_io.output_text(
+              'coverage_instrumentation_input_file = "files_to_instrument.txt"')
+      ),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'reclient',
       ctbc_properties(),
       api.chromium_tests.read_targets_spec(
@@ -688,7 +770,6 @@ solutions = [
           build_dir='[CACHE]/src/out/Release',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=True,
       ),
       api.step_data('read GN args',
@@ -725,7 +806,6 @@ solutions = [
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=False,
           output_properties_file='checkout/output_properties.json'),
       api.path.exists(api.path['cache'].join('src', '.gclient')),
@@ -787,7 +867,6 @@ target_os=['os']
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=False,
       ),
       api.path.exists(api.path['cache'].join('.gclient')),
@@ -824,7 +903,6 @@ solutions = [
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=False,
           output_properties_file='checkout/output_properties.json'),
       api.path.exists(api.path['cache'].join('src', '.gclient')),
@@ -867,7 +945,6 @@ target_os=['os']
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           bypass_gclient=False,
       ),
       api.expect_exception('FileNotFoundError'),
@@ -900,7 +977,6 @@ target_os=['os']
           checkout_path='[CACHE]/src',
           run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
           preserve_gn_args=False,
-          disable_code_coverage=True,
           build_dir='/fake_root/fake_out/Debug',
           bypass_gclient=True,
       ),
