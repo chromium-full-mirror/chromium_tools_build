@@ -184,7 +184,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_debug=true target_cpu=\"arm64\""
+      "--args=is_component_build=false is_debug=true target_cpu=\"arm64\""
     ],
     "cwd": "[START_DIR]/openscreen",
     "luci_context": {

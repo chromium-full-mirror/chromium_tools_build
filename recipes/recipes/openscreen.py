@@ -40,8 +40,8 @@ OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 
 GN_PROPERTIES = [
     'cast_allow_developer_certificate', 'have_ffmpeg', 'have_libsdl2',
-    'have_libopus', 'have_libvpx', 'is_debug', 'is_asan', 'is_tsan', 'is_gcc',
-    'target_cpu', 'sysroot', 'use_coverage'
+    'have_libopus', 'have_libvpx', 'is_component_build', 'is_debug', 'is_asan',
+    'is_tsan', 'is_gcc', 'target_cpu', 'sysroot', 'use_coverage'
 ]
 
 # List of dimensions used for starting swarming on ARM64.
@@ -159,22 +159,18 @@ def GetChangedFiles(api, checkout_path):
   return files
 
 
-def FormatGnArg(properties, key):
-  """Takes a specific key and formats the key and value pair as
-     a valid gn argument.
+def FormatGnArg(arg, value):
+  """Takes a specific arg and value and formats them as a valid gn argument.
 
   Args:
-      properties (dict of str=>str): Recipe API properties to combine for GN.
-      key (str): API property name to grab from Recipe API dictionary.
+      arg (str): GN arg name.
+      value (any): GN arg value.
 
   Returns:
       str: Formatted key value pair as GN argument
   """
-  value = properties.get(key, None)
-  if value:
-    format_string = '{}="{}"' if isinstance(value, str) else '{}={}'
-    return format_string.format(key, value).lower()
-  return ""
+  format_string = '{}="{}"' if isinstance(value, str) else '{}={}'
+  return format_string.format(arg, value).lower()
 
 
 def FormatGnArgs(properties):
@@ -186,9 +182,10 @@ def FormatGnArgs(properties):
   Returns:
       str: formatted GN arguments.
   """
-  mapper = lambda key: FormatGnArg(properties, key)
-  return ' '.join([arg for arg in map(mapper, GN_PROPERTIES) if arg])
-
+  return ' '.join([
+      FormatGnArg(arg, properties[arg])
+      for arg in [p for p in GN_PROPERTIES if properties.get(p, None) != None]
+  ])
 
 def UploadOpenscreenTestFilesToCas(api, paths):
   """Pushes files up to RBE-CAS server storage.
@@ -673,17 +670,25 @@ def GenTests(api):
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(is_debug=True, is_gcc=True),
   )
-  yield api.test('linux_arm64', api.platform('linux', 64),
-                 api.buildbucket.try_build('openscreen', 'try'),
-                 api.properties(is_debug=True, target_cpu='arm64'))
-  yield api.test('linux_arm64_ci', api.platform('linux', 64),
-                 api.buildbucket.try_build('openscreen', 'ci'),
-                 api.properties(is_debug=True, target_cpu='arm64', is_ci=True))
+  yield api.test(
+      'linux_arm64', api.platform('linux', 64),
+      api.buildbucket.try_build('openscreen', 'try'),
+      api.properties(
+          is_debug=True, is_component_build=False, target_cpu='arm64'))
+  yield api.test(
+      'linux_arm64_ci', api.platform('linux', 64),
+      api.buildbucket.try_build('openscreen', 'ci'),
+      api.properties(
+          is_debug=True,
+          is_component_build=False,
+          target_cpu='arm64',
+          is_ci=True))
   yield api.test(
       'linux_arm64_cast_receiver', api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
       api.properties(
           is_debug=True,
+          is_component_build=False,
           target_cpu='arm64',
           cast_allow_developer_certificate=True,
           have_ffmpeg=True,
@@ -699,7 +704,8 @@ def GenTests(api):
       'linux_arm64_with_collect_COMPLETED_and_failed',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=True, target_cpu='arm64'),
+      api.properties(
+          is_debug=True, is_component_build=False, target_cpu='arm64'),
       api.override_step_data('collect unit tests',
                              api.swarming.collect([failed_result])),
       api.expect_status('FAILURE'),
@@ -713,7 +719,8 @@ def GenTests(api):
       'linux_arm64_with_collect_TIMED_OUT',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=True, target_cpu='arm64'),
+      api.properties(
+          is_debug=True, is_component_build=False, target_cpu='arm64'),
       api.override_step_data('collect unit tests',
                              api.swarming.collect([timeout_result])),
       api.expect_status('FAILURE'),
@@ -725,7 +732,8 @@ def GenTests(api):
       'linux_arm64_with_collect_BOT_DIED',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=True, target_cpu='arm64'),
+      api.properties(
+          is_debug=True, is_component_build=False, target_cpu='arm64'),
       api.override_step_data('collect unit tests',
                              api.swarming.collect([died_result])),
       api.expect_status('INFRA_FAILURE'),
