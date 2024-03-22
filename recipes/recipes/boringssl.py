@@ -34,6 +34,10 @@ PROPERTIES = {
             default=False,
             kind=bool,
             help='whether to run the check_imported_libraries script'),
+    'check_pregenerated_files':
+        Property(
+            default=True, kind=bool,
+            help='whether to check pregenerated files'),
     'check_stack':
         Property(
             default=False,
@@ -198,9 +202,9 @@ def _CleanupMSVC(api):
           ok_ret='any')
 
 
-def RunSteps(api, android, check_imported_libraries, check_stack, clang,
-             cmake_args, gclient_vars, msvc_target, runner_args, run_ssl_tests,
-             run_unit_tests, sde):
+def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
+             check_stack, clang, cmake_args, gclient_vars, msvc_target,
+             runner_args, run_ssl_tests, run_unit_tests, sde):
   # Use keyword arguments to avoid accidentally mixing them.
   config = _Config(
       android=android,
@@ -251,6 +255,14 @@ def RunSteps(api, android, check_imported_libraries, check_stack, clang,
   # Disable modifications to go.mod so missing entries are treated as an error
   # instead.
   env['GOFLAGS'] = '-mod=readonly'
+
+  # Check pregenerated files.
+  if check_pregenerated_files and api.path.exists(
+      src.join('util', 'pregenerate')):
+    with api.context(cwd=src):
+      api.step('check pregenerated files',
+               ['go', 'run', './util/pregenerate', '-check'])
+
   with api.context(
       env=env,
       env_prefixes=env_prefixes), api.osx_sdk('ios'), _CleanupMSVC(api):
@@ -441,6 +453,25 @@ def GenTests(api):
       mock_go_tests,
       api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
                                              'bot', 'cmake')),
+  )
+
+  yield api.test(
+      'check_pregenerated_files',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
+                                             'pregenerate')),
+      mock_go_tests,
+  )
+
+  yield api.test(
+      'check_pregenerated_files_failed',
+      api.platform('linux', 64),
+      _CIBuild(api, 'linux'),
+      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
+                                             'pregenerate')),
+      api.override_step_data('check pregenerated files', retcode=1),
+      api.expect_status('FAILURE'),
   )
 
   yield api.test(
