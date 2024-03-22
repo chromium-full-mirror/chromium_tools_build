@@ -261,9 +261,14 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
     # Check pregenerated files.
     if check_pregenerated_files and api.path.exists(
         src.join('util', 'pregenerate')):
+      cmd = ['go', 'run', './util/pregenerate', '-check']
+      if api.platform.is_win:
+        cmd += [
+            '-perl',
+            bot_utils.join('perl-win32', 'perl', 'bin', 'perl.exe')
+        ]
       with api.context(cwd=src):
-        api.step('check pregenerated files',
-                 ['go', 'run', './util/pregenerate', '-check'])
+        api.step('check pregenerated files', cmd)
 
     # CMake is stateful, so do a clean build. BoringSSL builds quickly enough
     # that this isn't a concern.
@@ -464,9 +469,30 @@ def GenTests(api):
   )
 
   yield api.test(
+      'check_pregenerated_files_win',
+      api.platform('win', 64),
+      _CIBuild(api, 'win64'),
+      api.properties(msvc_target='x64'),
+      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
+                                             'pregenerate')),
+      mock_go_tests,
+  )
+
+  yield api.test(
       'check_pregenerated_files_failed',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
+      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
+                                             'pregenerate')),
+      api.override_step_data('check pregenerated files', retcode=1),
+      api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'check_pregenerated_files_failed_win',
+      api.platform('win', 64),
+      _CIBuild(api, 'win64'),
+      api.properties(msvc_target='x64'),
       api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
                                              'pregenerate')),
       api.override_step_data('check pregenerated files', retcode=1),
