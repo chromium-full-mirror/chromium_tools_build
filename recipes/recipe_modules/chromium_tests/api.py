@@ -13,6 +13,7 @@ from urllib.parse import urlencode
 
 from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api, step_data
+from recipe_engine.config_types import Path
 
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.build.archive import properties as arch_prop
@@ -23,7 +24,6 @@ from PB.go.chromium.org.luci.buildbucket.proto \
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.attr_utils import attrib, mapping, sequence, attrs
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 
 from . import generators, steps
 from . import targets_config as targets_config_module
@@ -124,7 +124,10 @@ class Task:
   # Holds state on build properties. Used to pass state between methods.
   bot_update_step = attrib(step_data.StepData)
 
-  # A list of paths (strings) affected by the CL, relative to the checkout.
+  # The root directory of the checkout.
+  root_dir = attrib(Path)
+
+  # A list of paths (strings) affected by the CL, relative to root_dir.
   affected_files = attrib(sequence[str])
 
   # How to execute each test in 'tests' which runs on swarming.
@@ -211,6 +214,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   _COMPUTE_PRECOMMIT_DETAILS = object()
 
+  def _get_targets_spec_dir(self, builder_config: ctbc.BuilderConfig) -> Path:
+    if builder_config.targets_spec_directory:
+      return self.m.chromium_checkout.checkout_dir.join(
+          builder_config.targets_spec_directory)
+    return self.m.chromium.c.targets_spec_dir
+
   def create_targets_config(self,
                             builder_config,
                             got_revisions,
@@ -244,9 +253,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Returns: TargetsConfig for current builder
     """
     if not targets_spec_dir:
-      if builder_config.targets_spec_directory:
-        targets_spec_dir = self.m.chromium_checkout.checkout_dir.join(
-            builder_config.targets_spec_directory)
+      targets_spec_dir = self._get_targets_spec_dir(builder_config)
 
     # The scripts_compile_targets is indirected through a function so that we
     # don't execute unnecessary steps if there are no scripts that need to be
@@ -377,10 +384,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                            test_names_to_skip))
     return tuple(spec.get_test(self) for spec in test_specs)
 
-  def read_targets_spec(self, targets_spec_file, targets_spec_dir=None):
-    if not targets_spec_dir:
-      targets_spec_dir = self.m.chromium.c.targets_spec_dir
-
+  def read_targets_spec(self, targets_spec_file: str, targets_spec_dir: Path):
     targets_spec_path = targets_spec_dir.join(targets_spec_file)
     try:
       spec_result = self.m.json.read(
@@ -919,17 +923,35 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         chrome_version = str(ref[len('refs/tags/'):])
     return chrome_version
 
-  def _get_affected_spec_files(self, affected_files, builder_config):
-    """Returns any files in the CL that affects the builder's testing specs."""
+  def _get_affected_spec_files(
+      self,
+      root_dir: Path,
+      affected_files: Iterable[str],
+      builder_config: ctbc.BuilderConfig,
+      targets_spec_dir: Path,
+  ) -> set[str]:
+    """Returns any files in the CL that affects the builder's testing specs.
+
+    Args:
+      root_dir: The directory which the affected files paths are relative to.
+        For checking out chromium, this will be the src directory.
+      affected_Files: Paths of files that are affected by the CL being tested,
+        relative to root_dir.
+      builder_config: A BuilderConfig object for the currently executing
+        builder.
+      targets_spec_dir: The directory containing the targets spec files for the
+        builder.
+
+    Returns:
+      A set of absolute file paths of the targets spec files that are affected
+      by the CL being tested.
+    """
     absolute_affected_files = set(
-        str(self.m.chromium.c.CHECKOUT_PATH.join(f)).replace(
-            '/', self.m.path.sep) for f in affected_files)
-    absolute_affected_files = set(
-        map(self.m.path.abspath, absolute_affected_files))
+        str(root_dir.join(f)).replace('/', self.m.path.sep)
+        for f in affected_files)
     absolute_spec_files = set(
-        str(self.m.chromium.c.targets_spec_dir.join(f))
+        str(targets_spec_dir.join(f))
         for f in builder_config.targets_spec_files.values())
-    absolute_spec_files = set(map(self.m.path.abspath, absolute_spec_files))
     return absolute_spec_files & absolute_affected_files
 
   def _get_builders_to_trigger(self, builder_id, builder_config):
@@ -1340,19 +1362,37 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         swarm_hashes_property_name='swarm_hashes',
     )
 
-  def should_skip_without_patch(self, builder_config, affected_files,
-                                targets_spec_dir):
+  def should_skip_without_patch(
+      self,
+      builder_config: ctbc.BuilderConfig,
+      root_dir: Path,
+      affected_files: Iterable[str],
+      targets_spec_dir: Path,
+  ) -> bool:
     """Determine whether the without patch steps should be skipped.
 
     If the without patch steps should be skipped, a no-op step will be
     output to indicate why it's being skipped.
 
-    Returns: Whether or not the without patch steps should be skipped.
+    Args:
+      builder_config: A BuilderConfig object for the currently executing
+        builder.
+      root_dir: The directory which the affected files paths are relative to.
+        For checking out chromium, this will be the src directory.
+      affected_Files: Paths of files that are affected by the CL being tested,
+        relative to root_dir.
+      targets_spec_dir: The directory containing the targets spec files for the
+        builder.
+
+    Returns:
+      Whether or not the without patch steps should be skipped.
     """
     reasons = []
     logs = {}
-    affected_spec_files = self._get_affected_spec_files(affected_files,
-                                                        builder_config)
+    affected_spec_files = self._get_affected_spec_files(root_dir,
+                                                        affected_files,
+                                                        builder_config,
+                                                        targets_spec_dir)
     if affected_spec_files:
       reasons.append('test specs that are consumed by the builder '
                      'are also affected by the CL')
@@ -1439,7 +1479,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         return None, invalid_test_suites or []
 
       # Also exit if there are failures but we shouldn't deapply the patch
-      if self.should_skip_without_patch(task.builder_config,
+      if self.should_skip_without_patch(task.builder_config, task.root_dir,
                                         task.affected_files,
                                         self.m.chromium.c.targets_spec_dir):
         self.summarize_test_failures(task.test_suites)
@@ -2174,6 +2214,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self,
       builder_id: chromium.BuilderId,
       builder_config: ctbc.BuilderConfig,
+      root_dir: Path,
       affected_files: Iterable[str],
       targets_config: targets_config_module.TargetsConfig,
       *,
@@ -2185,6 +2226,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_id: A BuilderId for identifying a builder.
       builder_config: A BuilderConfig for accessing the static builder
         configuration.
+      root_dir: The directory which the affected files paths are relative to.
+        For checking out chromium, this will be the src directory.
       affected_files: The files that are modified by the CL being tested, if
         any.
       targets_config: The TargetsConfig providing the configured targets for the
@@ -2212,7 +2255,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       skip_analysis_logs = {}
 
       affected_spec_files = self._get_affected_spec_files(
-          affected_files, builder_config)
+          root_dir, affected_files, builder_config,
+          self._get_targets_spec_dir(builder_config))
       # If any of the spec files that we used for determining the targets/tests
       # is affected, skip doing analysis, just build/test all of them
       if affected_spec_files:
@@ -2327,9 +2371,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if not builder_config.is_compile_only:
       tests = targets_config.all_tests
 
+    root_dir = self.m.chromium_checkout.checkout_dir.join(
+        bot_update_step.json.output['root'])
+
     test_targets, compile_targets = self.determine_compilation_targets(
         builder_id,
         builder_config,
+        root_dir,
         affected_files,
         targets_config,
         skip_analysis_reasons=skip_analysis_reasons)
@@ -2373,7 +2421,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests = []
 
-    return raw_result, Task(builder_config, tests, bot_update_step,
+    return raw_result, Task(builder_config, tests, bot_update_step, root_dir,
                             affected_files, execution_info)
 
   def get_first_tag(self, key):

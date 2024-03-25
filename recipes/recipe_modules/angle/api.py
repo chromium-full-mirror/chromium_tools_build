@@ -137,8 +137,8 @@ class ANGLEApi(recipe_api.RecipeApi):
             report_via_property=True)
         test_targets, compile_targets = (
             self.m.chromium_tests.determine_compilation_targets(
-                self._builder_id, self._builder_config, affected_files,
-                targets_config))
+                self._builder_id, self._builder_config, self.m.path['checkout'],
+                affected_files, targets_config))
 
         compile_targets = sorted(list(set(test_targets)))
         tests = self.m.chromium_tests.tests_in_compile_targets(

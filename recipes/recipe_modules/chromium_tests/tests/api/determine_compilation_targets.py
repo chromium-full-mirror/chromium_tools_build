@@ -8,6 +8,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
+    'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
     'recipe_engine/platform',
@@ -20,10 +21,13 @@ def RunSteps(api):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   api.chromium_tests.configure_build(builder_config)
-  _, targets_config = api.chromium_tests.prepare_checkout(builder_config)
+  bot_update_step, targets_config = api.chromium_tests.prepare_checkout(
+      builder_config)
+  root_dir = api.chromium_checkout.checkout_dir.join(
+      bot_update_step.json.output['root'])
   affected_files = api.properties['affected_files']
   api.chromium_tests.determine_compilation_targets(builder_id, builder_config,
-                                                   affected_files,
+                                                   root_dir, affected_files,
                                                    targets_config)
 
 

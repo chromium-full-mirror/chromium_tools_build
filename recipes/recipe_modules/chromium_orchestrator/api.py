@@ -303,7 +303,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # Exit without retry without patch if there were invalid tests or
     # (without patch) should be skipped
     if invalid_test_suites or self.m.chromium_tests.should_skip_without_patch(
-        builder_config, affected_files,
+        builder_config, self.m.chromium_checkout.src_dir, affected_files,
         self.m.chromium_checkout.src_dir.join(
             comp_output.src_side_test_spec_dir)):
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
