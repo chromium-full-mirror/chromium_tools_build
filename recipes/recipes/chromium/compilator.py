@@ -118,7 +118,9 @@ def compilator_steps(api, properties):
 
       # In case a without patch build is needed later, output the needed
       # deps override
-      patch_root = bot_update_step.json.output['patch_root']
+      # In case this is a win bot, convert the double backwards slashes to a
+      # forward slash.
+      patch_root = bot_update_step.json.output['patch_root'].replace('\\', '/')
       if patch_root != bot_update_step.json.output['root']:
         deps_overrides = {}
         deps_revision_dict = bot_update_step.json.output['manifest'][patch_root]
