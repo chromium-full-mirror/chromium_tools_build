@@ -2,19 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import attr
+# TODO(gbeaty) This file doesn't make sense, there's no clear
+# distinction between the test cases of this file and trybot_steps.py.
+# It would make sense to merge them into a single file or into separate
+# files with a more cohesive groupings of test cases.
+
 import re
 
-from google.protobuf import json_format
-
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
-
-from PB.recipe_engine import result as result_pb2
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium_tests import steps
 
 DEPS = [
     'chromium',
@@ -35,86 +32,11 @@ DEPS = [
     'test_utils',
 ]
 
-PROPERTIES = {
-    'fail_calculate_tests': Property(default=False, kind=bool),
-    'fail_mb_and_compile': Property(default=False, kind=bool),
-    'expected_jsonish_result': Property(default=None),
-}
 
-
-def RunSteps(api, fail_calculate_tests, fail_mb_and_compile,
-             expected_jsonish_result):
-  assert api.tryserver.is_tryserver
-  _, builder_config = api.chromium_tests_builder_config.lookup_builder()
-
-  api.chromium_tests.configure_build(builder_config)
-  api.chromium_swarming.configure_swarming(
-      'chromium',
-      precommit=True,
-      # Fake path to make tests pass.
-      path_to_merge_scripts=api.path['start_dir'].join('checkout',
-                                                       'merge_scripts'))
-
-  update_step, _ = api.chromium_tests.prepare_checkout(builder_config)
-
-  kwargs = {}
-  if api.properties.get('shards'):
-    kwargs['shards'] = api.properties['shards']
-  if api.properties.get('retry_only_failed_tests'):
-    kwargs['retry_only_failed_tests'] = (
-        api.properties['retry_only_failed_tests'])
-
-  test_specs = [steps.SwarmingGTestTestSpec.create('base_unittests', **kwargs)]
-
-  if api.properties.get('use_custom_dimensions', False):
-    api.chromium_swarming.set_default_dimension('os', 'Windows-11-19045')
-  else:
-    api.chromium_swarming.set_default_dimension('os', 'Linux')
-
-  affected_files = api.properties.get('affected_files', [])
-
-  retry_failed_shards = api.properties.get('retry_failed_shards', False)
-
-  # Allows testing the scenario where there are multiple test suites.
-  for t in api.properties.get('additional_gtest_targets', []):
-    test_specs.append(steps.SwarmingGTestTestSpec.create(t))
-
-  tests = [s.get_test(api.chromium_tests) for s in test_specs]
-
-  # Override build_affected_targets to run the desired test, in the desired
-  # configuration.
-  def config_override(builder_id, builder_config, **kwargs):
-    builder_config = attr.evolve(
-        builder_config, retry_failed_shards=retry_failed_shards)
-    task = api.chromium_tests.Task(builder_config, tests, update_step,
-                                   affected_files)
-    raw_result = result_pb2.RawResult(status=common_pb.SUCCESS)
-    if fail_calculate_tests:
-      raw_result.summary_markdown = (
-          'Compile step failed from "build_affected_targets".')
-      raw_result.status = common_pb.FAILURE
-    return raw_result, task
-
-  api.chromium_tests.build_affected_targets = config_override
-
-  def compile_override(*args, **kwargs):
-    return result_pb2.RawResult(
-        status=common_pb.FAILURE,
-        summary_markdown='Compile step failed from "run_mb_and_compile".'
-    )
-
-  if fail_mb_and_compile:
-    api.chromium_tests.run_mb_and_compile = compile_override
-
+def RunSteps(api):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
-  result = api.chromium_tests.trybot_steps(builder_id, builder_config)
-  if expected_jsonish_result is not None:
-    api.assertions.assertDictEqual(
-        expected_jsonish_result,
-        api.json.loads(json_format.MessageToJson(result)))
-
-  return result
+  return api.chromium_tests.trybot_steps(builder_id, builder_config)
 
 
 def GenTests(api):
@@ -128,13 +50,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.override_step_data(
           'base_unittests (with patch)',
           api.chromium_swarming.canned_summary_output(
@@ -146,7 +79,7 @@ def GenTests(api):
   )
 
   yield api.test(
-      'calculate_tests_compile_failure',
+      'compile_failure',
       api.platform('linux', 64),
       api.chromium.try_build(
           builder_group='fake-try-group',
@@ -157,35 +90,55 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(fail_calculate_tests=True),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.step_data('compile (with patch)', retcode=1),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReason,
-                       'Compile step failed from "build_affected_targets".'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'run_mb_and_compile_failure',
+      'without_patch_compile_failure',
       api.platform('linux', 64),
       api.chromium.try_build(
           builder_group='fake-try-group',
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          fail_mb_and_compile=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
+      api.step_data('compile (without patch)', retcode=1),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReason,
-                       'Compile step failed from "run_mb_and_compile".'),
+      api.post_check(post_process.MustRun, 'clobber'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -201,10 +154,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
@@ -227,10 +188,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       # Initial tests & retry shards with patch produce invalid results.
       api.override_step_data(
@@ -273,10 +242,18 @@ def GenTests(api):
               },
           }),
       ),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.override_step_data(
           'base_unittests (with patch)',
@@ -304,11 +281,6 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          }),
       # Initial tests & retry shards with patch produce invalid results.
       api.override_step_data('bot_update', retcode=1),
       api.post_process(post_process.PropertiesDoNotContain, 'do_not_retry'),
@@ -327,13 +299,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -358,13 +341,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -387,10 +381,19 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          shards=20,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                          'shards': 20,
+                      },
+                  }],
+              },
           }),
       api.post_check(
           api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
@@ -420,10 +423,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          shards=1,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.post_check(
           api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
@@ -456,10 +467,19 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          shards=20,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                          'shards': 20,
+                      },
+                  }],
+              },
           }),
       api.post_check(
           api.swarming.check_triggered_request, 'test_pre_run (with patch)' +
@@ -494,13 +514,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
       api.post_check(
@@ -527,13 +558,20 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          retry_failed_shards=True,
-          retry_only_failed_tests=True,
-      ),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'retry_only_failed_tests': True,
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests',
           'with patch',
@@ -569,12 +607,20 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          shards=10,
-          retry_failed_shards=True,
-          retry_only_failed_tests=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'retry_only_failed_tests': True,
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                          'shards': 10,
+                      },
+                  }],
+              },
           }),
       # Initial tests & retry shards with patch produce invalid results.
       api.override_step_data(
@@ -608,7 +654,10 @@ def GenTests(api):
 
   # If one shard fails or expires, retry shards with patch should retry just
   # that failed/expired shard.
-  for failure_type in ['failed', 'expired']:
+  for failure_type, build_status in (
+      ('failed', 'FAILURE'),
+      ('expired', 'INFRA_FAILURE'),
+  ):
     test_name = 'retry_shards_with_patch_wait_for_task_' + failure_type
 
     # This 'with patch' swarming summary contains two shards. First succeeds,
@@ -671,12 +720,19 @@ def GenTests(api):
                                 builder_group='fake-group',
                                 builder='fake-builder',
                             ).assemble()),
-        api.properties(
-            retry_failed_shards=True,
-            shards=2,
-            swarm_hashes={
-                'base_unittests':
-                    'ffffffffffffffffffffffffffffffffffffffff/size',
+        api.chromium_tests.read_targets_spec(
+            'fake-group', {
+                'fake-builder': {
+                    'gtest_tests': [{
+                        'test': 'base_unittests',
+                        'swarming': {
+                            'dimensions': {
+                                'os': 'Linux',
+                            },
+                            'shards': 2,
+                        },
+                    }],
+                },
             }),
         # Override 'with patch' collect step output.
         api.override_step_data(
@@ -708,8 +764,7 @@ def GenTests(api):
         # We should emit a link for shard#1
         api.post_check(has_shard_1_link),
         api.post_process(post_process.DropExpectation),
-        api.expect_status(
-            'INFRA_FAILURE' if failure_type == 'expired' else 'FAILURE'),
+        api.expect_status(build_status),
     )
 
   yield api.test(
@@ -724,11 +779,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          use_custom_dimensions=True,
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Windows-11-19045',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests',
@@ -750,10 +812,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
@@ -781,16 +851,23 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
       api.post_process(post_process.DropExpectation),
   )
-
 
   yield api.test(
       'findit_step_layer_flakiness_retry_shards',
@@ -804,10 +881,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
@@ -832,11 +917,18 @@ def GenTests(api):
                                 builder_group='fake-group',
                                 builder='fake-builder',
                             ).assemble()),
-        api.properties(
-            retry_failed_shards=True,
-            swarm_hashes={
-                'base_unittests':
-                    'ffffffffffffffffffffffffffffffffffffffff/size',
+        api.chromium_tests.read_targets_spec(
+            'fake-group', {
+                'fake-builder': {
+                    'gtest_tests': [{
+                        'test': 'base_unittests',
+                        'swarming': {
+                            'dimensions': {
+                                'os': 'Linux',
+                            },
+                        },
+                    }],
+                },
             }),
         api.override_step_data(
             'base_unittests (with patch)',
@@ -872,17 +964,28 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
-      api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -893,14 +996,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          shards=20,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                          'shards': 20,
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test0', 'Test1', 'Test2']),
@@ -922,13 +1035,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -947,13 +1071,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -972,13 +1107,24 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-      }),
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -1001,14 +1147,25 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          affected_files=['testing/buildbot/fake-group.json'],
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.tryserver.get_files_affected_by_patch(
+          ['testing/buildbot/fake-group.json']),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One']),
@@ -1029,14 +1186,23 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          affected_files=['testing/buildbot/chromium.linux.json'],
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+          ctbc_api.properties_assembler_for_try_builder(
+              retry_failed_shards=False).with_mirrored_builder(
+                  builder_group='fake-group',
+                  builder='fake-builder',
+              ).assemble()),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.override_step_data(
           'base_unittests (with patch)',
@@ -1062,10 +1228,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
@@ -1095,17 +1269,18 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          expected_jsonish_result={
-              'status':
-                  'FAILURE',
-              'summaryMarkdown':
-                  ('1 Test Suite(s) failed.\n\n**base_unittests** failed '
-                   'because of:\n\n- Test.One'),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
+              },
           }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests',
@@ -1117,8 +1292,12 @@ def GenTests(api):
           failures=['Test.One', 'Test.Three']),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'without patch', failures=['Test.Three']),
-      api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
+      api.post_check(
+          post_process.SummaryMarkdown,
+          ('1 Test Suite(s) failed.\n\n**base_unittests** failed because of:'
+           '\n\n- Test.One')),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -1133,16 +1312,24 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          **{
-              '$build/test_utils': {
-                  'should_exonerate_flaky_failures': True,
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
               },
           }),
+      api.properties(**{
+          '$build/test_utils': {
+              'should_exonerate_flaky_failures': True,
+          },
+      }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.luci_analysis.query_failure_rate_results([
@@ -1177,16 +1364,24 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          **{
-              '$build/test_utils': {
-                  'should_exonerate_flaky_failures': True,
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
               },
           }),
+      api.properties(**{
+          '$build/test_utils': {
+              'should_exonerate_flaky_failures': True,
+          },
+      }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -1222,16 +1417,24 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          **{
-              '$build/test_utils': {
-                  'should_exonerate_flaky_failures': True,
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
               },
           }),
+      api.properties(**{
+          '$build/test_utils': {
+              'should_exonerate_flaky_failures': True,
+          },
+      }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One', 'Test.Two']),
       api.chromium_tests.gen_swarming_and_rdb_results(
@@ -1273,16 +1476,24 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          **{
-              '$build/test_utils': {
-                  'should_exonerate_flaky_failures': True,
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
               },
           }),
+      api.properties(**{
+          '$build/test_utils': {
+              'should_exonerate_flaky_failures': True,
+          },
+      }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['Test.One', 'Test.Two']),
       api.luci_analysis.query_failure_rate_results([
@@ -1322,16 +1533,24 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/size',
-          },
-          **{
-              '$build/test_utils': {
-                  'should_exonerate_flaky_failures': True,
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
               },
           }),
+      api.properties(**{
+          '$build/test_utils': {
+              'should_exonerate_flaky_failures': True,
+          },
+      }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests',
           'with patch',
@@ -1400,22 +1619,38 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          retry_failed_shards=True,
-          additional_gtest_targets=['component_unittests', 'url_unittests'],
-          swarm_hashes={
-              'base_unittests':
-                  'ffffffffffffffffffffffffffffffffffffffff/size',
-              'component_unittests':
-                  'cccccccccccccccccccccccccccccccccccccccc/size',
-              'url_unittests':
-                  'dddddddddddddddddddddddddddddddddddddddd/size',
-          },
-          **{
-              '$build/test_utils': {
-                  'should_exonerate_flaky_failures': True,
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-builder': {
+                  'gtest_tests': [{
+                      'test': 'base_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }, {
+                      'test': 'component_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }, {
+                      'test': 'url_unittests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      },
+                  }],
               },
           }),
+      api.properties(**{
+          '$build/test_utils': {
+              'should_exonerate_flaky_failures': True,
+          },
+      }),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'base_unittests', 'with patch', failures=['BaseTest.One']),
       api.chromium_tests.gen_swarming_and_rdb_results(
