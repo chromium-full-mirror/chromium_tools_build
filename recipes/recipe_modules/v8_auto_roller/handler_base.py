@@ -28,10 +28,12 @@ class RollHandler(ABC):
           cl_manager.abandon_active_cls(self.get_subject())
           commons.discard_local_changes(self.api)
           changes = self.apply_changes()
+          commit_msg_lines = (self.commit_msg_lines(changes) +
+                              self.commit_msg_footers())
           cl_link = cl_manager.upload_cl(
               subject=self.get_subject(),
               upload_flags=self.upload_flags(),
-              commit_msg_lines=self.commit_msg_lines(changes),
+              commit_msg_lines=commit_msg_lines,
               add=self.add_new_files,
           )
           if cl_link:
@@ -72,6 +74,9 @@ class RollHandler(ABC):
   def commit_msg_lines(self, changes):
     pass  # pragma: no cover
 
+  def commit_msg_footers(self):
+    footers = self.config.get('commit_msg_footers', [])
+    return [''] + footers if footers else []
 
 class DummyRollHandler(RollHandler):
 
@@ -94,3 +99,6 @@ class DummyRollHandler(RollHandler):
 
   def commit_msg_lines(self, _):
     return ['dummy']
+
+  def commit_msg_footers(self):
+    return ['', 'Key: dummy']

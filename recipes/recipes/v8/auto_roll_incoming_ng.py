@@ -39,6 +39,8 @@ PROPERTIES = {
                 reviewers=List(str),
                 # Add extra log entries to the commit message.
                 show_commit_log=Single(bool),
+                # List of footers added to the commit message.
+                commit_msg_footers=Single(list, empty_val=None),
             )),
 }
 

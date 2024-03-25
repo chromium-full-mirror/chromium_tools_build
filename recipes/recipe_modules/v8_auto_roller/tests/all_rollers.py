@@ -64,6 +64,7 @@ def RunSteps(api):
       'subject': 'dummy roll',
       'reviewers': ['piedone@punto.it'],
       'show_commit_log': True,
+      'commit_msg_footers': ['Also-Do: This', 'Also-Do: That'],
       'dependency_version_sources': {
           'mock-skip-chromium-roll': 'tip_of_tree',
       },
