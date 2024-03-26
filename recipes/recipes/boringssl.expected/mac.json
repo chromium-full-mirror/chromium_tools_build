@@ -174,12 +174,46 @@
   },
   {
     "cmd": [
+      "sw_vers",
+      "-productVersion"
+    ],
+    "env": {
+      "GOCACHE": "[CACHE]/gocache",
+      "GOFLAGS": "-mod=readonly",
+      "GOPATH": "[CACHE]/gopath",
+      "GOROOT": "[CACHE]/builder/boringssl/util/bot/golang"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/boringssl/util/bot/golang/bin"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "boringssl:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "find macOS version",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Running on '14.4'.@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]/osx_sdk/mac_toolchain",
       "install",
       "-kind",
       "ios",
       "-xcode-version",
-      "9f2000",
+      "14c18",
       "-output-dir",
       "[CACHE]/osx_sdk/XCode.app"
     ],

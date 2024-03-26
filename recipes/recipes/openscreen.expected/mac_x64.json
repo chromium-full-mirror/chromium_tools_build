@@ -222,12 +222,36 @@
   },
   {
     "cmd": [
+      "sw_vers",
+      "-productVersion"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "find macOS version",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Running on '14.4'.@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]/osx_sdk/mac_toolchain",
       "install",
       "-kind",
       "mac",
       "-xcode-version",
-      "9f2000",
+      "14c18",
       "-output-dir",
       "[CACHE]/osx_sdk/XCode.app"
     ],
