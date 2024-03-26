@@ -1636,7 +1636,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         'isolate-everything',
         builder_id,
         phase=phase,
-        use_goma=True,
         additional_args=args)
 
   @contextlib.contextmanager

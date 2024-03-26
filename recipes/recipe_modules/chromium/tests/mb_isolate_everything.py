@@ -25,7 +25,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandRE, 'generate .isolate files', [
           'python3', '-u', r'.*/tools/mb/mb\.py', 'isolate-everything', '-m',
           'test-group', '-b', 'test-builder', '--config-file',
-          r'.*/tools/mb/mb_config\.pyl', '--goma-dir', '.*', '//out/Release'
+          r'.*/tools/mb/mb_config\.pyl', '//out/Release'
       ]),
       api.post_process(post_process.DropExpectation),
   )
