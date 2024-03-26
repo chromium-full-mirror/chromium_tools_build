@@ -444,11 +444,66 @@ def GenTests(api: RecipeTestApi):
             builder='fake-tester',
         ).assemble())
 
+  def boilerplate_properties(
+      test_names=None,
+      checkout_path='[CACHE]/src',
+      run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      preserve_gn_args=False,
+      build_dir=None,
+      bypass_gclient=True,
+      builder_recipe='chromium',
+      output_properties_file='checkout/output_properties.json'):
+    if not test_names:
+      test_names = ['browser_tests']
+    return api.properties(
+        test_names=test_names,
+        checkout_path=checkout_path,
+        run_type=run_type,
+        preserve_gn_args=preserve_gn_args,
+        build_dir=build_dir,
+        bypass_gclient=bypass_gclient,
+        builder_recipe=builder_recipe,
+        output_properties_file=output_properties_file,
+    )
+
+  def boilerplate(
+      target_spec=None,
+      build=None,
+      **kwargs,
+  ):
+    return sum([
+        boilerplate_properties(**kwargs),
+        ctbc_properties(
+            builder_spec=ctbc.BuilderSpec.create(
+                gclient_config='chromium',
+                chromium_config='chromium',
+            )),
+        api.chromium_tests.read_targets_spec(
+            'fake-group', target_spec or {
+                'fake-tester': {
+                    'gtest_tests': [{
+                        'name': 'browser_tests',
+                        'swarming': {
+                            'dimensions': {
+                                'os': 'Linux',
+                                'pool': 'fake-pool',
+                            },
+                        },
+                    }],
+                },
+            }),
+        build or api.chromium.generic_build(
+            builder_group='fake-group',
+            builder='fake-tester',
+        ),
+    ], api.empty_test_data())
+
   yield api.test(
       'basic',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
+      boilerplate(
+          preserve_gn_args=False,
+          bypass_gclient=False,
+          target_spec={
               'fake-tester': {
                   'gtest_tests': [{
                       'name': 'browser_tests',
@@ -467,18 +522,8 @@ def GenTests(api: RecipeTestApi):
                           },
                       },
                   }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=False,
+              }
+          },
       ),
       api.path.exists(api.path['cache'].join('.gclient')),
       api.step_data(
@@ -522,53 +567,34 @@ solutions = [
 
   yield api.test(
       'child_tester',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-                  'fake-tester':
-                      ctbc.BuilderSpec.create(
-                          execution_mode=ctbc.TEST,
-                          parent_buildername='fake-builder',
-                          parent_builder_group='fake-group',
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
+      boilerplate(
+          build=api.chromium_tests_builder_config.ci_build(
+              builder_group='fake-group',
+              builder='fake-tester',
+              builder_db=ctbc.BuilderDatabase.create({
+                  'fake-group': {
+                      'fake-builder':
+                          ctbc.BuilderSpec.create(
+                              chromium_config='chromium',
+                              gclient_config='chromium',
+                          ),
+                      'fake-tester':
+                          ctbc.BuilderSpec.create(
+                              execution_mode=ctbc.TEST,
+                              parent_buildername='fake-builder',
+                              parent_builder_group='fake-group',
+                              chromium_config='chromium',
+                              gclient_config='chromium',
+                          ),
+                  },
+              }))),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'unsupported_child_testers',
+      boilerplate_properties(),
       api.chromium_tests_builder_config.ci_build(
           builder_group='fake-group',
           builder='fake-grandchild-tester',
@@ -597,12 +623,6 @@ solutions = [
                       ),
               },
           })),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='checkout',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-      ),
       api.post_process(
           post_process.SummaryMarkdownRE,
           'Unsupported UTR invocation for builder fake-grandchild-tester.*',
@@ -613,32 +633,7 @@ solutions = [
 
   yield api.test(
       'no_tests',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['non_existant_test'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
+      boilerplate(test_names=['non_existant_test']),
       api.post_process(
           post_process.SummaryMarkdown,
           'No suites on the bot matched the request for non_existant_test',
@@ -649,9 +644,9 @@ solutions = [
 
   yield api.test(
       'multiple_tests',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
+      boilerplate(
+          test_names=['browser_tests', 'unit_tests'],
+          target_spec={
               'fake-tester': {
                   'gtest_tests': [{
                       'name': 'browser_tests',
@@ -672,17 +667,6 @@ solutions = [
                   }],
               },
           }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests', 'unit_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.MustRun,
@@ -702,36 +686,18 @@ solutions = [
 
   yield api.test(
       'code_coverage',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          bucket='try',
+      boilerplate(
+          checkout_path='[CACHE]\\src',
+          build_dir='[CACHE]\\src\\out\\Release',
+          builder_recipe='chromium_trybot',
+          build=api.chromium.generic_build(
+              builder_group='fake-group',
+              builder='fake-tester',
+              bucket='try',
+          ),
       ),
       api.platform('win', 32),
       api.code_coverage(use_clang_coverage=True),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]\\src',
-          build_dir='[CACHE]\\src\\out\\Release',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-          builder_recipe='chromium_trybot'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
       api.step_data(
           'lookup GN args',
@@ -745,33 +711,7 @@ solutions = [
 
   yield api.test(
       'reclient',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          build_dir='[CACHE]/src/out/Release',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
+      boilerplate(),
       api.step_data('read GN args',
                     api.raw_io.output_text('use_remoteexec = true')),
       api.post_process(post_process.MustRun, 'reclient compile'),
@@ -792,6 +732,10 @@ solutions = [
 
   yield api.test(
       'bad_gclient',
+      boilerplate_properties(
+          preserve_gn_args=False,
+          bypass_gclient=False,
+      ),
       ctbc_properties(
           builder_spec=ctbc.BuilderSpec.create(
               gclient_config='ios',
@@ -801,13 +745,6 @@ solutions = [
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=False,
-          output_properties_file='checkout/output_properties.json'),
       api.path.exists(api.path['cache'].join('src', '.gclient')),
       api.step_data(
           'read gclient',
@@ -839,33 +776,7 @@ target_os=['os']
 
   yield api.test(
       'gclient_above_src',
-      ctbc_properties(
-          builder_spec=ctbc.BuilderSpec.create(
-              gclient_config='chromium',
-              chromium_config='chromium',
-          )),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      boilerplate(
           preserve_gn_args=False,
           bypass_gclient=False,
       ),
@@ -889,6 +800,7 @@ solutions = [
 
   yield api.test(
       'src_not_in_gclient',
+      boilerplate_properties(bypass_gclient=False),
       ctbc_properties(
           builder_spec=ctbc.BuilderSpec.create(
               gclient_config='ios',
@@ -898,13 +810,6 @@ solutions = [
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=False,
-          output_properties_file='checkout/output_properties.json'),
       api.path.exists(api.path['cache'].join('src', '.gclient')),
       api.step_data(
           'read gclient',
@@ -931,6 +836,7 @@ target_os=['os']
 
   yield api.test(
       'missing_gclient',
+      boilerplate_properties(bypass_gclient=False),
       ctbc_properties(
           builder_spec=ctbc.BuilderSpec.create(
               gclient_config='chromium',
@@ -940,46 +846,13 @@ target_os=['os']
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=False,
-      ),
       api.expect_exception('FileNotFoundError'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'changed_build_dir',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          build_dir='/fake_root/fake_out/Debug',
-          bypass_gclient=True,
-      ),
+      boilerplate(build_dir='/fake_root/fake_out/Debug'),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
@@ -998,33 +871,7 @@ target_os=['os']
 
   yield api.test(
       'no_compile_targets',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'test': None,
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
+      boilerplate(),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.MustRun,
@@ -1037,32 +884,7 @@ target_os=['os']
 
   yield api.test(
       'failed_test',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
+      boilerplate(),
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', '', failures=['Test.One']),
       api.post_process(post_process.MustRun, 'compile'),
@@ -1079,31 +901,7 @@ target_os=['os']
   yield api.test(
       'failed_build',
       ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
+      boilerplate(),
       api.override_step_data('compile', retcode=1),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.DoesNotRun,
@@ -1114,32 +912,7 @@ target_os=['os']
 
   yield api.test(
       'preserve_gn_args',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          preserve_gn_args=True,
-          bypass_gclient=True,
-      ),
+      boilerplate(preserve_gn_args=True),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.MustRun,
@@ -1155,31 +928,7 @@ target_os=['os']
 
   yield api.test(
       'skip_build',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_RUN,
-          bypass_gclient=True,
-      ),
+      boilerplate(run_type=InputProperties.RunType.RUN_TYPE_RUN),
       api.post_process(post_process.DoesNotRun, 'compile'),
       api.post_process(post_process.DoesNotRun, 'generate_build_files'),
       api.post_process(post_process.MustRun, 'isolate'),
@@ -1191,32 +940,7 @@ target_os=['os']
 
   yield api.test(
       'skip_test',
-      ctbc_properties(),
-      api.chromium_tests.read_targets_spec(
-          'fake-group', {
-              'fake-tester': {
-                  'gtest_tests': [{
-                      'name': 'browser_tests',
-                      'swarming': {
-                          'dimensions': {
-                              'os': 'Linux',
-                              'pool': 'fake-pool',
-                          },
-                      },
-                  }],
-              },
-          }),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.properties(
-          test_names=['browser_tests'],
-          checkout_path='[CACHE]/src',
-          run_type=InputProperties.RunType.RUN_TYPE_COMPILE,
-          preserve_gn_args=False,
-          bypass_gclient=True,
-      ),
+      boilerplate(run_type=InputProperties.RunType.RUN_TYPE_COMPILE),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
