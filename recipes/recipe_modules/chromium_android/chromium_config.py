@@ -16,7 +16,8 @@ def base_config(c):
   if c.HOST_PLATFORM != 'linux':  # pragma: no cover
     raise recipe_config.BadConf('Can only build android on linux.')
 
-@CONFIG_CTX(includes=['base_config', 'default_compiler', 'goma'])
+
+@CONFIG_CTX(includes=['base_config', 'default_compiler'])
 def main_builder(c):
   if c.TARGET_ARCH != 'arm':  # pragma: no cover
     raise recipe_config.BadConf(
@@ -31,7 +32,8 @@ def main_builder_mb(_):
 def main_builder_rel_mb(_):
   pass
 
-@CONFIG_CTX(includes=['base_config', 'clang', 'goma'])
+
+@CONFIG_CTX(includes=['base_config', 'clang'])
 def clang_builder(c):
   c.runtests.enable_asan = True
 
@@ -41,7 +43,7 @@ def clang_builder_mb(_):
 
 
 @CONFIG_CTX(
-    includes=['base_config', 'default_compiler', 'goma'],
+    includes=['base_config', 'default_compiler'],
     config_vars={
         'TARGET_ARCH': 'riscv64',
         'TARGET_BITS': 64
@@ -57,8 +59,9 @@ def riscv64_builder_mb(_):
   pass
 
 
-@CONFIG_CTX(includes=['base_config', 'default_compiler', 'goma'],
-            config_vars={'TARGET_ARCH': 'intel'})
+@CONFIG_CTX(
+    includes=['base_config', 'default_compiler'],
+    config_vars={'TARGET_ARCH': 'intel'})
 def x86_builder(c):
   if c.TARGET_ARCH != 'intel':  # pragma: no cover
     raise recipe_config.BadConf(
@@ -68,8 +71,10 @@ def x86_builder(c):
 def x86_builder_mb(_):
   pass
 
-@CONFIG_CTX(includes=['base_config', 'default_compiler', 'goma'],
-            config_vars={'TARGET_ARCH': 'mipsel'})
+
+@CONFIG_CTX(
+    includes=['base_config', 'default_compiler'],
+    config_vars={'TARGET_ARCH': 'mipsel'})
 def mipsel_builder(c):
   if c.TARGET_ARCH != 'mipsel':  # pragma: no cover
     raise recipe_config.BadConf('I dunno what to put in a mips builder!')
@@ -129,8 +134,13 @@ def arm_l_builder_lto(c):  # pragma: no cover
 def arm_l_builder_rel(_):  # pragma: no cover
   pass
 
-@CONFIG_CTX(includes=['base_config', 'default_compiler', 'goma'],
-            config_vars={'TARGET_ARCH': 'intel', 'TARGET_BITS': 64})
+
+@CONFIG_CTX(
+    includes=['base_config', 'default_compiler'],
+    config_vars={
+        'TARGET_ARCH': 'intel',
+        'TARGET_BITS': 64
+    })
 def x64_builder(c):
   if c.TARGET_ARCH != 'intel' or c.TARGET_BITS != 64:
     raise recipe_config.BadConf(
@@ -141,8 +151,10 @@ def x64_builder(c):
 def x64_builder_mb(_):
   pass
 
-@CONFIG_CTX(includes=['base_config', 'default_compiler', 'goma'],
-            config_vars={'TARGET_BITS': 64})
+
+@CONFIG_CTX(
+    includes=['base_config', 'default_compiler'],
+    config_vars={'TARGET_BITS': 64})
 def arm64_builder(_):
   pass
 
