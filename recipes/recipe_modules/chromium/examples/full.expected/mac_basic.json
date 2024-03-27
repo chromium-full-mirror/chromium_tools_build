@@ -655,7 +655,7 @@
       "--build-exit-status",
       "0",
       "--ninja-log-compiler",
-      "clang"
+      "goma-clang"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
