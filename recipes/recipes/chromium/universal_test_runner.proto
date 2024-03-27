@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.universal_test_runner;
 
-// Next ID: 11
+// Next ID: 12
 message InputProperties {
   // Required, the directory where chromium is checked out not including the src
   // dir
@@ -41,9 +41,13 @@ message InputProperties {
   reserved "disable_code_coverage";
   reserved 7;
 
-  // Where to write properties for the next potential run. A json representation
-  // of this proto will be written to output_properties_file if the recipe
-  // determines a rerun with new properties can be run.
+  // Where to write properties for the next potential runs. Each options will
+  // be a string representing what the user should see mapped to alterations
+  // to this input proto that should be used for the next run when selected.
+  // An empty set of proto implies there is not change and no reason to rerun
+  // and should instead abort.
+  // The first option should be the default to use as well as the option to use
+  // when a --forced run is desired.
   string output_properties_file = 8;
 
   // Skip checking .gclient mismatches
@@ -52,4 +56,7 @@ message InputProperties {
   // The recipe being run by the builder. The 'recipe' input property gets
   // overwritten by the recipe so this property needs to provide this info
   string builder_recipe = 10;
+
+  // Skip checking gn arg mismatches
+  bool bypass_gn_args = 11;
 }

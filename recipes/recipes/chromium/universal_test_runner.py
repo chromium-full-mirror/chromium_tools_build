@@ -76,8 +76,25 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   if not properties.bypass_gclient:
     error_message = check_gclient(api)
     if error_message:
-      rerun_props = InputProperties(bypass_gclient=True)
-      return create_rerun_result(api, rerun_props, error_message,
+      rerun_options = [('yes', InputProperties(bypass_gclient=True)),
+                       ('no', InputProperties())]
+      return create_rerun_result(api, rerun_options, error_message,
+                                 properties.output_properties_file)
+  if not properties.bypass_gn_args:
+    error_message = check_gn_args(api, build_path, compiling_builder_id)
+    if error_message:
+      rerun_options = [('continue',
+                        InputProperties(
+                            bypass_gclient=properties.bypass_gclient,
+                            bypass_gn_args=True,
+                            preserve_gn_args=True)),
+                       ('overwrite',
+                        InputProperties(
+                            bypass_gclient=properties.bypass_gclient,
+                            bypass_gn_args=True,
+                            preserve_gn_args=False)),
+                       ('abort', InputProperties())]
+      return create_rerun_result(api, rerun_options, error_message,
                                  properties.output_properties_file)
 
   got_revisions = generate_got_revisions_map(api)
@@ -164,6 +181,36 @@ def check_gclient(api: RecipeApi) -> str:
   if mismatch_messages:
     error_info = ('Caution: your .gclient file and the builder\'s mismatches in'
                   ' the following way(s):\n' + '\n'.join(mismatch_messages))
+  return error_info
+
+
+def check_gn_args(api: RecipeApi, build_dir: Path,
+                  builder_id: chromium.BuilderId):
+  builder_gn_args = api.chromium.mb_lookup(
+      builder_id, recursive=True, name='lookup_builder_gn_args')
+  builder_gn_args = api.gn.parse_gn_args(builder_gn_args)
+
+  current_gn_args, _ = api.gn.read_args(build_dir)
+  current_gn_args = api.gn.parse_gn_args(current_gn_args)
+
+  mismatch_messages = []
+  for arg in current_gn_args:
+    if arg not in builder_gn_args:
+      mismatch_messages.append(
+          f'- {arg} in current build dir is not used by the builder')
+    elif builder_gn_args[arg] != current_gn_args[arg]:
+      mismatch_messages.append(
+          f'- {arg} in current build ({current_gn_args[arg]}) does not match '
+          f'builder value ({builder_gn_args[arg]})')
+  for arg in builder_gn_args:
+    if arg not in current_gn_args:
+      mismatch_messages.append(
+          f'- {arg} in used by the builder is absent in the current build dir')
+  error_info = ''
+  if mismatch_messages:
+    error_info = ('Caution: your build\'s gn args and the builder\'s '
+                  'mismatches in the following way(s):\n' +
+                  '\n'.join(mismatch_messages))
   return error_info
 
 
@@ -426,32 +473,40 @@ def get_remote_compile_options(api, build_dir) -> bool:
   return use_reclient
 
 
-def create_rerun_result(api: RecipeApi, rerun_properties: InputProperties,
+def create_rerun_result(api: RecipeApi, \
+                        rerun_options: list[tuple[str, InputProperties]],
                         info: str,
                         output_properties_file: str) -> result_pb2.RawResult:
   """Create a result for retriggering the recipe
 
-  Writes the provided properties and creates a RawResult meant for the CLI to
+  Writes the provided rerun options and creates a RawResult meant for the CLI to
   retrigger the recipe. The presence of rerun_properties should indicate to the
   CLI that the recipe can be invoked again differently for a different result.
   The info will be included in the RawResult meant to provide additional
-  information to the user e.g. a prompt asking if gclient args from the builder
-  are not set locally.
+  information to the user (e.g. if gclient args from the builder are not set
+  locally).
 
   Args:
       api: Recipe API object.
-      rerun_properties: InputProperties that should overwrite properties on the
-        next run
+      rerun_options: A list of strings and input properties. These strings
+        will be presented to the user as options and the corresponding input
+        properties fed back to the recipe when selected. An entry with empty
+        input properties will signal the recipe should not be reinvoked for that
+        prompt selection.
       info: Information string that the user should see
-      output_properties_file: Where the rerun_properties should be written
+      output_properties_file: Where the rerun_options should be written
   Returns:
     A RawResult that should be returned to trigger a rerun
   """
   if output_properties_file:
+    output = []
+    for prompt, properties in rerun_options:
+      output.append((prompt,
+                     json_format.MessageToDict(
+                         message=properties, preserving_proto_field_name=True)))
     api.file.write_json(
-        'write output_properties_file', output_properties_file,
-        json_format.MessageToDict(
-            message=rerun_properties, preserving_proto_field_name=True))
+        f'write output_properties_file {output_properties_file}.json',
+        output_properties_file, output)
   return result_pb2.RawResult(status=common_pb2.FAILURE, summary_markdown=info)
 
 
@@ -476,6 +531,7 @@ def GenTests(api: RecipeTestApi):
       preserve_gn_args=False,
       build_dir=None,
       bypass_gclient=True,
+      bypass_gn_args=True,
       builder_recipe='chromium',
       output_properties_file='checkout/output_properties.json'):
     if not test_names:
@@ -487,6 +543,7 @@ def GenTests(api: RecipeTestApi):
         preserve_gn_args=preserve_gn_args,
         build_dir=build_dir,
         bypass_gclient=bypass_gclient,
+        bypass_gn_args=bypass_gn_args,
         builder_recipe=builder_recipe,
         output_properties_file=output_properties_file,
     )
@@ -872,6 +929,39 @@ target_os=['os']
           builder='fake-tester',
       ),
       api.expect_exception('FileNotFoundError'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'bad_gn_args',
+      boilerplate_properties(
+          bypass_gn_args=False, build_dir='[CACHE]/src/out/Release'),
+      ctbc_properties(
+          builder_spec=ctbc.BuilderSpec.create(
+              gclient_config='chromium',
+              chromium_config='chromium',
+          )),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.step_data(
+          'lookup_builder_gn_args',
+          stdout=api.raw_io.output_text('a = "1"\n'
+                                        'c = true\n'
+                                        'd = true')),
+      api.step_data('read GN args',
+                    api.raw_io.output_text('b="2"\n'
+                                           'c=false\n'
+                                           'd=true')),
+      api.post_process(
+          post_process.ResultReason,
+          'Caution: your build\'s gn args and the builder\'s mismatches in the '
+          'following way(s):\n'
+          '- b in current build dir is not used by the builder\n'
+          '- c in current build (false) does not match builder value (true)\n'
+          '- a in used by the builder is absent in the current build dir'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
