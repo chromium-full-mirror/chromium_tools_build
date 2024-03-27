@@ -11,8 +11,6 @@
       "fake-try-builder",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
       "-v",
       "//out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": []}",
@@ -78,13 +76,12 @@
       "/path/to/tmp/json",
       "--failure_output",
       "/path/to/tmp/",
-      "--no_prune_venv",
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/Release",
       "-j",
-      "80",
+      "160",
       "base_unittests",
       "browser_tests",
       "chrome"
@@ -92,7 +89,9 @@
     "cwd": "[CACHE]/builder/src",
     "env": {
       "CHROME_HEADLESS": "1",
-      "GOMA_USE_LOCAL": "false"
+      "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
       "realm": {

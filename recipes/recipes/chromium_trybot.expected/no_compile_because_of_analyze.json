@@ -11,8 +11,6 @@
       "fake-try-builder",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--goma-dir",
-      "[CACHE]/goma/client",
       "-v",
       "//out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": [\"base_unittests\"]}",
