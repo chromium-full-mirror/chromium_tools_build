@@ -41,11 +41,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           compiler=Single(str, required=False),
           mode=Single(str, required=False),
           goma_dir=Single(Path, required=False),
-          goma_client_type=Single(str, required=False),
-          goma_use_local=Single(bool, empty_val=False, required=False),
-          show_ninja_stats=Single(bool, empty_val=False, required=False),
-          goma_hermetic=Single(str, required=False),
-          goma_failfast=Single(bool, empty_val=False, required=False),
           prune_venv=Single(bool, empty_val=False, required=False),
           reclient_deps_cache_by_step=Single(
               bool, empty_val=False, required=False),
@@ -245,24 +240,6 @@ def mb_no_luci_auth(c):
 @config_ctx(group='builder')
 def ninja(c):
   c.build_dir = c.CHECKOUT_PATH.join('out')
-
-
-@config_ctx()
-def goma_failfast(c):
-  c.compile_py.goma_failfast = True
-
-
-@config_ctx()
-def goma_canary(c):
-  c.compile_py.goma_client_type = 'candidate'
-  c.compile_py.goma_hermetic = 'error'
-  c.compile_py.goma_failfast = True
-  c.compile_py.show_ninja_stats = True
-
-
-@config_ctx()
-def goma_use_local(c):
-  c.compile_py.goma_use_local = True
 
 
 @config_ctx()

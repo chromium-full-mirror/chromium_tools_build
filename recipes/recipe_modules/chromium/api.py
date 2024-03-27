@@ -504,12 +504,6 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     self.m.goma.start(goma_env)
 
-    if not self.c.compile_py.goma_use_local and not self.m.platform.is_mac:
-      # Do not allow goma to invoke local compiler.
-      # However, it is disabled on mac because GOMA_USE_LOCAL=false makes mac
-      # builders hangs. Please see crbug.com/1056935.
-      ninja_env['GOMA_USE_LOCAL'] = 'false'
-
     build_exit_status = -1
     try:
       ninja_result = self._run_ninja(ninja_command, name, ninja_env, **kwargs)
@@ -770,35 +764,11 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     command = [str(self.ninja_path), '-C', target_output_dir]
 
-    if self.c.compile_py.show_ninja_stats:
-      command.extend(['-d', 'stats'])
-
     if self.c.compile_py.build_args:
       command.extend(self.c.compile_py.build_args)
 
     if use_goma_module:
       goma_env = ninja_env.copy()
-      goma_env['GOMA_CACHE_DIR'] = self.m.goma.default_cache_path
-
-      # Enable goma DepsCache
-      goma_env['GOMA_DEPS_CACHE_FILE'] = "goma_deps_cache"
-
-      if self.c.compile_py.goma_hermetic:
-        goma_env['GOMA_HERMETIC'] = self.c.compile_py.goma_hermetic
-
-      if (self.m.tryserver.is_tryserver or self.c.compile_py.goma_failfast):
-        # We rely on goma to meet cycle time goals on the tryserver. It's better
-        # to fail early.
-        goma_env['GOMA_FAIL_FAST'] = 'true'
-      else:
-        goma_env['GOMA_ALLOWED_NETWORK_ERROR_DURATION'] = '1800'
-      # TODO(tikuta): Remove this and let goma module set '-j'
-      #               inside build_with_goma.
-      # The right way to configure goma jobs number is in cr-buildbucket.cfg.
-      # See also doc for goma.jobs.
-      command += ['-j', self.m.goma.jobs]
-      if self.m.goma.debug:
-        ninja_env['GOMA_DUMP'] = '1'
 
     if use_reclient:
       command += ['-j', self.m.reclient.jobs]

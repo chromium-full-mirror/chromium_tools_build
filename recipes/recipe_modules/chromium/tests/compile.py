@@ -135,28 +135,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'goma_canary',
-      api.properties(chromium_apply_config=['goma_canary']),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'goma_custom_jobs_debug',
-      api.goma(jobs=500, debug=True),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.StepCommandContains, 'compile', [
-          '-j',
-          '500',
-      ]),
-      api.post_process(post_process.StepEnvContains, 'compile',
-                       {'GOMA_DUMP': '1'}),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'clang_tot',
       api.properties(chromium_apply_config=['clang_tot']),
       api.post_process(post_process.StepCommandContains, 'clang_revision',

@@ -23,7 +23,7 @@ def RunSteps(api):
   use_goma_module = api.properties.get('use_goma_module', False)
   use_reclient = api.properties.get('use_reclient', False)
   out_dir = api.properties.get('out_dir', None)
-  failfast = api.properties.get('failfast', False)
+
   configs = api.properties.get('configs', [])
   assert api.chromium.build_properties == None
 
@@ -33,9 +33,6 @@ def RunSteps(api):
     api.chromium_tests.configure_build(builder_config)
 
     api.chromium.get_build_target_arch()
-
-    if failfast:
-      api.chromium.apply_config('goma_failfast')
 
     for config in configs:
       api.chromium.apply_config(config)
@@ -196,7 +193,6 @@ def GenTests(api):
       api.properties(
           out_dir='/tmp',
           use_goma_module=True,
-          failfast=True,
       ),
       api.step_data('compile', retcode=1),
       api.step_data(
@@ -272,7 +268,6 @@ def GenTests(api):
       api.properties(
           out_dir='/tmp',
           use_goma_module=True,
-          failfast=True,
       ),
       api.step_data('preprocess_for_goma.start_goma', retcode=1),
       api.step_data(
@@ -301,7 +296,6 @@ def GenTests(api):
       api.properties(
           out_dir='/tmp',
           use_goma_module=True,
-          failfast=True,
       ),
       api.step_data('preprocess_for_goma.start_goma', retcode=1),
       api.step_data(
