@@ -338,7 +338,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     root_solution_revision = (root_solution_revision or
                               self.m.properties.get('root_solution_revision'))
     update_step = self.m.chromium_checkout.ensure_checkout(
-        builder_config,
+        clobber=builder_config.clobber,
         set_output_commit=set_output_commit,
         root_solution_revision=root_solution_revision,
         **kwargs)
