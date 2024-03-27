@@ -20,12 +20,9 @@ def RunSteps(api):
   api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   use_remoteexec = api.properties.get('use_remoteexec', False)
-  use_goma = not use_remoteexec
 
   api.chromium.run_gn(
-      use_goma=use_goma,
-      gn_path=api.properties.get('gn_path'),
-      use_reclient=use_remoteexec)
+      gn_path=api.properties.get('gn_path'), use_reclient=use_remoteexec)
 
 
 def GenTests(api):
@@ -37,8 +34,7 @@ def GenTests(api):
       ]),
       api.post_process(StepCommandContains, 'gn', [
           '//out/Release',
-          '--args=is_debug=false target_cpu="x64" '
-          'use_goma=true goma_dir="None"',
+          '--args=is_debug=false target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
   )
@@ -58,8 +54,7 @@ def GenTests(api):
       api.properties(target_platform='mac'),
       api.post_process(StepCommandContains, 'gn', [
           '//out/Release',
-          '--args=is_clang=true is_debug=false target_cpu="x64" '
-          'use_goma=true goma_dir="None"',
+          '--args=is_clang=true is_debug=false target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
   )
@@ -69,8 +64,7 @@ def GenTests(api):
       api.properties(target_platform='android'),
       api.post_process(StepCommandContains, 'gn', [
           '//out/Release',
-          '--args=is_debug=false target_os="android" target_cpu="x64" '
-          'use_goma=true goma_dir="None"',
+          '--args=is_debug=false target_os="android" target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
   )
@@ -80,8 +74,7 @@ def GenTests(api):
       api.properties(build_config='Debug'),
       api.post_process(StepCommandContains, 'gn', [
           '//out/Debug',
-          '--args=is_debug=true target_cpu="x64" '
-          'use_goma=true goma_dir="None"',
+          '--args=is_debug=true target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
   )

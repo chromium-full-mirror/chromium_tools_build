@@ -1115,13 +1115,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         self.m.gclient.runhooks(**kwargs)
 
   @_with_chromium_layout
-  def run_gn(self,
-             use_goma=False,
-             gn_path=None,
-             build_dir=None,
-             use_reclient=False,
-             **kwargs):
-    assert not use_goma or not use_reclient
+  def run_gn(self, gn_path=None, build_dir=None, use_reclient=False, **kwargs):
     if not gn_path:
       gn_path = self.m.depot_tools.gn_py_path
 
@@ -1156,18 +1150,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       gn_args.append('target_cpu="%s"' % gn_cpu)
 
     gn_env = self.get_env()
-    # TODO: crbug.com/395784.
-    # Consider getting the flags to use via the project_generator config
-    # and/or modifying the goma config to modify the gn flags directly,
-    # rather than setting the gn_args flags via a parameter passed to
-    # run_gn(). We shouldn't have *three* different mechanisms to control
-    # what args to use.
-    if use_goma:
-      gn_args.append('use_goma=true')
-      gn_args.append('goma_dir="%s"' % self.c.compile_py.goma_dir)
-
-      # Do not allow goma to invoke local compiler.
-      gn_env['GOMA_USE_LOCAL'] = 'false'
 
     if use_reclient:
       gn_args.append('use_remoteexec=true')
