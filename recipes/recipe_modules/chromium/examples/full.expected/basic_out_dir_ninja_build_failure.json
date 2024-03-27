@@ -664,7 +664,7 @@
       "--build-exit-status",
       "1",
       "--ninja-log-compiler",
-      "goma"
+      "unknown"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
