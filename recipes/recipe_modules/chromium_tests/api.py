@@ -504,6 +504,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                mb_phase=None,
                                mb_config_path=None,
                                mb_recursive_lookup=True,
+                               mb_write_ide_json=False,
                                override_execution_mode=None,
                                isolate_output_files_for_coverage=False):
     """Runs compile and related steps for given builder.
@@ -534,6 +535,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       mb_recursive_lookup - A boolean indicating whether the lookup operation
         should recursively expand any included files. If False, then the lookup
         output will contain the include statement.
+      mb_write_ide_json - A boolean indicating if mb should have gn generate
+        a large JSON file containing target information for the project.
       override_execution_mode - An optional override to change the execution
         mode.
       isolate_output_files_for_coverage: Whether to also upload all test
@@ -596,6 +599,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         mb_phase=mb_phase,
         mb_config_path=mb_config_path,
         mb_recursive_lookup=mb_recursive_lookup,
+        mb_write_ide_json=mb_write_ide_json,
         android_version_code=android_version_code,
         android_version_name=android_version_name)
 
@@ -1128,6 +1132,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                          mb_phase=None,
                          mb_config_path=None,
                          mb_recursive_lookup=False,
+                         mb_write_ide_json=False,
                          android_version_code=None,
                          android_version_name=None):
     with self.m.chromium.guard_compile(suffix=name_suffix):
@@ -1139,6 +1144,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             isolated_targets=isolated_targets,
             name='generate_build_files%s' % name_suffix,
             recursive_lookup=mb_recursive_lookup,
+            write_ide_json=mb_write_ide_json,
             android_version_code=android_version_code,
             android_version_name=android_version_name)
         use_reclient = self._use_reclient(gn_args)

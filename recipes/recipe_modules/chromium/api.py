@@ -1307,6 +1307,7 @@ class ChromiumApi(recipe_api.RecipeApi):
              gn_args_location=None,
              gn_args_max_text_lines=None,
              recursive_lookup=False,
+             write_ide_json=False,
              **kwargs):
     """Generate the build files in the source tree.
 
@@ -1331,6 +1332,8 @@ class ChromiumApi(recipe_api.RecipeApi):
         in the step_text when using the default behavior for displaying GN args.
       recursive_lookup: Whether the lookup of the GN arguments should
         recursively expand imported args files.
+      write_ide_json: A boolean indicating if mb should have gn generate
+        a large JSON file containing target information for the project.
 
     Returns:
       The content of the args.gn file.
@@ -1362,6 +1365,9 @@ class ChromiumApi(recipe_api.RecipeApi):
       # TODO(dpranke): Change the MB flag to '--isolate-targets-file', maybe?
       data = '\n'.join(sorted_isolated_targets) + '\n'
       mb_args += ['--swarming-targets-file', self.m.raw_io.input_text(data)]
+
+    if write_ide_json:
+      mb_args += ['--write-ide-json']
 
     mb_args.extend(self._mb_build_dir_args(build_dir))
 

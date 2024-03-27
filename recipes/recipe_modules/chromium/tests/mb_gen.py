@@ -42,6 +42,7 @@ def RunSteps(api):
       isolated_targets=['base_unittests_run'],
       android_version_code=3,
       android_version_name='example',
+      write_ide_json=api.properties.get('mb_write_ide_json', False),
   )
 
 
@@ -181,5 +182,13 @@ def GenTests(api):
       api.properties(chromium_apply_config=['mb', 'mb_no_luci_auth']),
       api.post_process(_StepCommandNotContains, 'generate_build_files',
                        '--luci-auth'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'mb_write_ide_json',
+      api.properties(chromium_apply_config=['mb'], mb_write_ide_json=True),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       ['--write-ide-json']),
       api.post_process(post_process.DropExpectation),
   )
