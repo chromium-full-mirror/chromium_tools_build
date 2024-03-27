@@ -12,7 +12,7 @@ class GnApi(recipe_api.RecipeApi):
 
   _DEFAULT_STEP_NAME = 'read GN args'
   _ARG_RE = re.compile('\s*(\w+)\s*=\s*(\S+)')
-  _NON_LOCAL_ARGS = frozenset(['goma_dir', 'target_sysroot'])
+  _NON_LOCAL_ARGS = frozenset(['target_sysroot'])
   _DEFAULT_MAX_TEXT_LINES = 15
 
   DEFAULT = constants.DEFAULT
@@ -33,9 +33,7 @@ class GnApi(recipe_api.RecipeApi):
     """
     args_file_path = build_dir.join('args.gn')
     step_name = step_name or self._DEFAULT_STEP_NAME
-    fake_args = ('goma_dir = "/b/s/w/ir/cache/goma_client"\n'
-                 'target_cpu = "x86"\n'
-                 'use_goma = true\n')
+    fake_args = 'target_cpu = "x86"\n'
     args = self.m.file.read_text(step_name, args_file_path, fake_args)
     return args, self.m.step.active_result
 

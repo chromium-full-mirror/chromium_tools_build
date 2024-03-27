@@ -11,10 +11,8 @@ DEPS = [
     'recipe_engine/raw_io',
 ]
 
-_DEFAULT_ARGS = (
-    'goma_dir = "/b/build/slave/cache/goma_client"\n'
-    'target_cpu = "x86"\n'
-    'use_goma = true\n')
+_DEFAULT_ARGS = ('target_cpu = "x86"\n'
+                 'target_sysroot = "/sysroot/"\n')
 
 def _test_args(api, args=None):
   args = args or _DEFAULT_ARGS
@@ -34,9 +32,7 @@ def GenTests(api):
       'basic',
       _test_args(api),
       api.post_process(post_process.StepTextContains, 'read GN args',
-                       [('target_cpu = "x86"<br/>'
-                         'use_goma = true<br/>'),
-                        'goma_dir = "/b/build/slave/cache/goma_client"']),
+                       ['target_cpu = "x86"']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -45,8 +41,7 @@ def GenTests(api):
       _test_args(api),
       api.properties(location=api.gn.LOGS),
       api.post_process(post_process.LogContains, 'read GN args', 'gn_args', [
-          ('target_cpu = "x86"\n'
-           'use_goma = true\n'), 'goma_dir = "/b/build/slave/cache/goma_client"'
+          'target_cpu = "x86"',
       ]),
       api.post_process(post_process.DropExpectation),
   )
@@ -76,13 +71,9 @@ def GenTests(api):
   yield api.test(
       'args_with_imports',
       _test_args(api, ('import("//build/args/headless.gn")\n'
-                       'goma_dir = "/b/build/slave/cache/goma_client"\n'
-                       'target_cpu = "x86"\n'
-                       'use_goma = true\n')),
+                       'target_cpu = "x86"\n')),
       api.post_process(post_process.StepTextContains, 'read GN args',
                        [('import("//build/args/headless.gn")<br/>'
-                         'target_cpu = "x86"<br/>'
-                         'use_goma = true<br/>'),
-                        'goma_dir = "/b/build/slave/cache/goma_client"']),
+                         'target_cpu = "x86"')]),
       api.post_process(post_process.DropExpectation),
   )
