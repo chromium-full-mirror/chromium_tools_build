@@ -4,7 +4,6 @@
 
 DEPS = [
     'chromium',
-    'goma',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -70,15 +69,6 @@ def GenTests(api):
   yield api.test(
       'infra_failure',
       api.chromium.generic_build(builder_group='test_group'),
-      api.override_step_data('compile', retcode=2),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'infra_failure_without_goma',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.properties(use_goma=False),
       api.override_step_data('compile', retcode=2),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.DropExpectation),
