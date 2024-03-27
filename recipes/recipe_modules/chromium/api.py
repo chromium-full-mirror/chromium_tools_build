@@ -44,7 +44,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     # TODO(yueshe@) - migrate this property to xcode module once downstream
     # no longer sets this property
     self._xcode_build_version = input_properties.xcode_build_version
-    self._goma_cache_silo = input_properties.goma_cache_silo
 
   @property
   def xcode_build_version(self):

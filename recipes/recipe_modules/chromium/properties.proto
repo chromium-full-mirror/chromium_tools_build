@@ -12,6 +12,6 @@ message InputProperties {
   // mac_toolchain.enabled is set to true.
   string xcode_build_version = 1;
 
-  // Whether to set RBE_cache_silo environment to run gomacc.
-  bool goma_cache_silo = 2;
+  reserved 2;
+  reserved "goma_cache_silo";
 }
