@@ -59,7 +59,7 @@
       "-p",
       "parent_buildername=\"V8 Foobar - builder\"",
       "-p",
-      "parent_gn_args=[\"goma_dir = \\\"/b/s/w/ir/cache/goma_client\\\"\", \"target_cpu = \\\"x86\\\"\", \"use_remoteexec = true\"]",
+      "parent_gn_args=[\"target_cpu = \\\"x86\\\"\", \"use_remoteexec = true\"]",
       "-p",
       "parent_got_revision=\"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"",
       "-p",
@@ -102,7 +102,6 @@
       "@@@STEP_LOG_LINE@proto.output@            \"parent_build\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@proto.output@            \"parent_buildername\": \"V8 Foobar - builder\",@@@",
       "@@@STEP_LOG_LINE@proto.output@            \"parent_gn_args\": [@@@",
-      "@@@STEP_LOG_LINE@proto.output@              \"goma_dir = \\\"/b/s/w/ir/cache/goma_client\\\"\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"target_cpu = \\\"x86\\\"\",@@@",
       "@@@STEP_LOG_LINE@proto.output@              \"use_remoteexec = true\"@@@",
       "@@@STEP_LOG_LINE@proto.output@            ],@@@",
@@ -139,7 +138,7 @@
       }
     },
     "name": "trigger v8/ci/V8 Foobar.led launch",
-    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"ci\",\n          \"builder\": \"V8 Foobar\",\n          \"project\": \"v8\"\n        },\n        \"input\": {\n          \"properties\": {\n            \"newest_gitiles_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n            \"oldest_gitiles_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n            \"parent_build\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\",\n            \"parent_buildername\": \"V8 Foobar - builder\",\n            \"parent_gn_args\": [\n              \"goma_dir = \\\"/b/s/w/ir/cache/goma_client\\\"\",\n              \"target_cpu = \\\"x86\\\"\",\n              \"use_remoteexec = true\"\n            ],\n            \"parent_got_revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\",\n            \"parent_got_revision_cp\": \"refs/heads/main@{#50110}\",\n            \"revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"ci\",\n          \"builder\": \"V8 Foobar\",\n          \"project\": \"v8\"\n        },\n        \"input\": {\n          \"properties\": {\n            \"newest_gitiles_revision\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\n            \"oldest_gitiles_revision\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n            \"parent_build\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\",\n            \"parent_buildername\": \"V8 Foobar - builder\",\n            \"parent_gn_args\": [\n              \"target_cpu = \\\"x86\\\"\",\n              \"use_remoteexec = true\"\n            ],\n            \"parent_got_revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\",\n            \"parent_got_revision_cp\": \"refs/heads/main@{#50110}\",\n            \"revision\": \"deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\"\n          }\n        }\n      }\n    }\n  }\n}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",

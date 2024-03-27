@@ -17,7 +17,6 @@ DEPS = [
     'build',
     'builder_group',
     'gn',
-    'goma',
     'reclient',
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',

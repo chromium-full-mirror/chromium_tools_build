@@ -19,8 +19,8 @@ DEPS = [
     'siso',
 ]
 
+
 def RunSteps(api):
-  use_goma_module = api.properties.get('use_goma_module', False)
   use_reclient = api.properties.get('use_reclient', False)
   out_dir = api.properties.get('out_dir', None)
 
@@ -43,16 +43,12 @@ def RunSteps(api):
 
     api.chromium.mb_gen(
         builder_id,
-        use_goma=True,
         mb_config_path=mb_config_path,
         android_version_code=3,
         android_version_name="example")
 
     return api.chromium.compile(
-        targets=['All'],
-        out_dir=out_dir,
-        use_goma_module=use_goma_module,
-        use_reclient=use_reclient)
+        targets=['All'], out_dir=out_dir, use_reclient=use_reclient)
 
 
 def GenTests(api):
@@ -90,25 +86,6 @@ def GenTests(api):
       api.properties(
           out_dir='/tmp',
           mb_config_path='/custom/config.pyl',
-      ),
-  )
-
-  yield api.test(
-      'basic_out_dir_with_goma_module',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          use_goma_module=True,
-          out_dir='/tmp',
       ),
   )
 
@@ -161,53 +138,6 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
-  yield api.test(
-      'basic_no_out_dir_with_goma_module',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(use_goma_module=True),
-  )
-
-  yield api.test(
-      'basic_out_dir_goma_module_build_failure',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          out_dir='/tmp',
-          use_goma_module=True,
-      ),
-      api.step_data('compile', retcode=1),
-      api.step_data(
-          'postprocess_for_goma.goma_jsonstatus',
-          api.json.output(
-              data={
-                  'notice': [{
-                      'infra_status': {
-                          'ping_status_code': 200,
-                          'num_user_error': 1,
-                      },
-                  },],
-              })),
-      api.expect_status('INFRA_FAILURE'),
-  )
 
   yield api.test(
       'basic_out_dir_ninja_build_failure',
@@ -242,72 +172,11 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(
-          out_dir='/tmp',
-          use_goma_module=True,
-      ),
+      api.properties(out_dir='/tmp',),
       api.override_step_data(
           'compile confirm no-op',
           stdout=api.raw_io.output_text("ninja explain: chrome is dirty\n")),
       api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'basic_out_dir_goma_module_start_failure',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          out_dir='/tmp',
-          use_goma_module=True,
-      ),
-      api.step_data('preprocess_for_goma.start_goma', retcode=1),
-      api.step_data(
-          'preprocess_for_goma.goma_jsonstatus',
-          api.json.output(data={
-              'notice': [{
-                  "compile_error": "COMPILER_PROXY_UNREACHABLE",
-              },],
-          })),
-      api.expect_status('INFRA_FAILURE'),
-  )
-
-  yield api.test(
-      'basic_out_dir_goma_module_ping_failure',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          out_dir='/tmp',
-          use_goma_module=True,
-      ),
-      api.step_data('preprocess_for_goma.start_goma', retcode=1),
-      api.step_data(
-          'preprocess_for_goma.goma_jsonstatus',
-          api.json.output(data={
-              'notice': [{
-                  'infra_status': {
-                      'ping_status_code': 408,
-                  },
-              },],
-          })),
-      api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(

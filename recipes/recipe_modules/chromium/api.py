@@ -377,9 +377,6 @@ class ChromiumApi(recipe_api.RecipeApi):
             '--failure_output',
             failure_output,
         ]
-        if kwargs.get('no_prune_venv'):
-          kwargs.pop('no_prune_venv')
-          cmd.append('--no_prune_venv')
         cmd.append('--')
         cmd.extend(ninja_command)
         with self.m.context(env=ninja_env):
@@ -463,60 +460,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     return CompileResult(
         failure_summary='No dependency issues found',
         retcode=ninja_step_result.exc_result.retcode)
-
-  def _run_ninja_with_goma(self,
-                           ninja_command,
-                           ninja_env,
-                           name=None,
-                           ninja_log_outdir=None,
-                           ninja_log_compiler=None,
-                           goma_env=None,
-                           **kwargs):
-    """
-    Run ninja with goma.
-    This function start goma, call _run_ninja and stop goma using goma module.
-
-    Args:
-      ninja_command: Command used for build.
-                     This is sent as part of log.
-                     (e.g. ['ninja', '-C', 'out/Release'])
-      ninja_env: Environment for ninja.
-      name: Name of compile step.
-      ninja_log_outdir: Directory of ninja log. (e.g. "out/Release")
-      ninja_log_compiler: Compiler used in ninja. (e.g. "clang")
-      goma_env: Environment controlling goma behavior.
-
-    Returns:
-      A named tuple with the fields
-        - failure_summary: string of the error that occurred during the step,
-        - retcode: return code of the step
-
-    Raises:
-      - InfraFailure when an unexpected goma failure occurs
-    """
-    # TODO(martiniss): This is a terrible hack and needs to be removed. See
-    # https://crbug.com/984451 for more information
-    if not self.c.compile_py.prune_venv and not self.m.siso.enabled:
-      kwargs['no_prune_venv'] = True
-
-    build_exit_status = None
-
-    self.m.goma.start(goma_env)
-
-    build_exit_status = -1
-    try:
-      ninja_result = self._run_ninja(ninja_command, name, ninja_env, **kwargs)
-      build_exit_status = ninja_result.retcode
-
-    finally:
-      if not self.m.runtime.in_global_shutdown:
-        self.m.goma.stop(
-            ninja_log_outdir=ninja_log_outdir,
-            ninja_log_compiler=ninja_log_compiler,
-            ninja_log_command=ninja_command,
-            build_exit_status=build_exit_status,
-            build_step_name=name)
-    return ninja_result
 
   def _run_ninja_with_reclient(self,
                                ninja_command,
@@ -689,15 +632,12 @@ class ChromiumApi(recipe_api.RecipeApi):
     with self.m.context(env=ninja_env, cwd=self.m.path['checkout']):
       self.m.step(name='cleandead', cmd=command)
 
-  # TODO(tikuta): Remove use_goma_module.
-  # Decrease the number of ways configuring with or without goma.
   @_with_chromium_layout
   def compile(self,
               targets=None,
               name=None,
               out_dir=None,
               target=None,
-              use_goma_module=False,
               use_reclient=False,
               target_output_dir=None,
               **kwargs):
@@ -713,20 +653,14 @@ class ChromiumApi(recipe_api.RecipeApi):
       out_dir: Output directory for the compile.
       target: Custom config name to use in the output directory (defaults to
         "Release" or "Debug").
-      use_goma_module (bool): If True, use the goma recipe module.
       use_reclient (bool): If True, use reclient as the remote compiler.
       target_output_dir (BasePath): Path to the directory to be compiled.
 
     Returns:
       A RawResult object with the compile step's status and failure message
-
-    Raises:
-      - InfraFailure when goma failure occurs
     """
     targets = targets or self.c.compile_py.default_targets.as_jsonish()
     assert isinstance(targets, (list, tuple)), type(targets)
-    assert not (use_goma_module and use_reclient
-               ), 'goma and reclient cannot be enabled at the same time'
 
     if self.c.use_gyp_env and self.c.gyp_env.GYP_DEFINES.get('clang', 0) == 1:
       # Get the Clang revision before compiling.
@@ -766,9 +700,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     if self.c.compile_py.build_args:
       command.extend(self.c.compile_py.build_args)
 
-    if use_goma_module:
-      goma_env = ninja_env.copy()
-
     if use_reclient:
       command += ['-j', self.m.reclient.jobs]
 
@@ -778,89 +709,29 @@ class ChromiumApi(recipe_api.RecipeApi):
     assert 'env' not in kwargs
     assert 'cwd' not in kwargs
 
-    try:
-      with self.m.context(cwd=self.m.context.cwd or self.m.path['checkout']):
-        if use_goma_module:
-          ninja_result = self._run_ninja_with_goma(
-              ninja_command=command,
-              ninja_env=ninja_env,
-              name=name or 'compile',
-              goma_env=goma_env,
-              ninja_log_outdir=target_output_dir,
-              ninja_log_compiler=self.c.compile_py.compiler or 'goma',
-              **kwargs)
-        elif use_reclient:
-          ninja_result = self._run_ninja_with_reclient(
-              ninja_command=command,
-              ninja_env=ninja_env,
-              name=name or 'compile',
-              **kwargs)
-        else:
-          ninja_result = self._run_ninja_without_remote(
-              ninja_command=command,
-              ninja_log_outdir=target_output_dir,
-              name=name or 'compile',
-              ninja_env=ninja_env,
-              **kwargs)
-    except self.m.step.StepFailure as ex:
-      # If there is an infra failure raised at this point that means
-      # goma did not get to start, so no need to handle it
-      if ex.retcode != 1 or not use_goma_module:
-        raise ex
-      # Goma failure
-      return self._handle_goma_failures(ex.reason)
+    with self.m.context(cwd=self.m.context.cwd or self.m.path['checkout']):
+      if use_reclient:
+        ninja_result = self._run_ninja_with_reclient(
+            ninja_command=command,
+            ninja_env=ninja_env,
+            name=name or 'compile',
+            **kwargs)
+      else:
+        ninja_result = self._run_ninja_without_remote(
+            ninja_command=command,
+            ninja_log_outdir=target_output_dir,
+            name=name or 'compile',
+            ninja_env=ninja_env,
+            **kwargs)
 
     if ninja_result.retcode:
       failure_summary = self._format_failures(
           ninja_result.failure_summary, name or 'compile',
           'More information in raw_io.output_text[failure_summary]')
-      if use_goma_module:
-        # It's possible for the StepFailure of the compile step to have
-        # a goma failure, so to avoid the message getting repeated it
-        # will be handled here
-        return self._handle_goma_failures(failure_summary)
       return result_pb2.RawResult(
           status=common_pb.FAILURE, summary_markdown=failure_summary)
     return result_pb2.RawResult(status=common_pb.SUCCESS)
 
-  def _handle_goma_failures(self, failure_summary):
-    failure_result_code = ''
-
-    json_status = self.m.goma.jsonstatus['notice'][0]
-
-    if not json_status.get('infra_status'):
-      failure_result_code = 'GOMA_SETUP_FAILURE'
-    elif json_status['infra_status']['ping_status_code'] != 200:
-      failure_result_code = 'GOMA_PING_FAILURE'
-    elif json_status['infra_status'].get('num_user_error', 0) > 0:
-      failure_result_code = 'GOMA_BUILD_ERROR'
-
-    if failure_result_code:
-      assert len(failure_result_code) <= 20
-      # FIXME(yyanagisawa): mark the active step exception on goma error.
-      #
-      # This is workaround to make goma error recognized as infra exception.
-      # 1. even if self.m.step.InfraFailure is raised, the step is not shown
-      #    as EXCEPTION step in milo.  We need to make status EXCEPTION to
-      #    make the step annotated as STEP_EXCEPTION. (crbug.com/856914)
-      # 2. I believe it natural to mark compile step exception but we cannot.
-      #    since this step is executed after compile step, it is recognized as
-      #    finalized step, and we cannot edit such a step.  Let us touch
-      #    active result instead.
-      #    However, if we pick the active step, the last step of
-      #    'postprocess_goma' would be chosen, and it is confusing.
-      #    Let us create a fake step to represent the case.
-      #    It might be better than both not showing exception and marking
-      #    'stop cloudtail' as exception.
-      fake_step = self.m.step('infra status', [])
-      fake_step.presentation.status = self.m.step.EXCEPTION
-      fake_step.presentation.step_text = failure_result_code
-      props = fake_step.presentation.properties
-      props['extra_result_code'] = [failure_result_code]
-      raise self.m.step.InfraFailure('Infra compile failure: %s' %
-                                     failure_summary)
-    return result_pb2.RawResult(
-        status=common_pb.FAILURE, summary_markdown=failure_summary)
 
   @_with_chromium_layout
   def runtest(self,
@@ -968,10 +839,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       clang_revision = step_result.json.output['clang_revision']
       step_result.presentation.properties['clang_revision'] = clang_revision
     return clang_revision
-
-  def ensure_goma(self, client_type='release'):
-    self.c.compile_py.goma_dir = self.m.goma.ensure_goma(
-        client_type=client_type)
 
   def get_mac_toolchain_installer(self):
     assert self.c.mac_toolchain.installer_cipd_package
@@ -1187,7 +1054,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                  mb_config_path=None,
                  chromium_config=None,
                  phase=None,
-                 use_goma=False,
                  android_version_code=None,
                  android_version_name=None,
                  additional_args=None,
@@ -1208,8 +1074,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         will be used.
       chromium_config: The chromium config object to use. If not provided,
         self.c will be used.
-      use_goma: Whether goma is needed or not. If use_goma=True but not yet
-        installed, it will run ensure_goma to install goma client.
       additional_args: Any args to the mb script besides those for setting the
         group, builder and the path to the config file.
       **kwargs: Additional arguments to be forwarded onto the python API.
@@ -1241,19 +1105,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     if phase is not None:
       args += ['--phase', str(phase)]
 
-    # self.c instead of chromium_config is not a mistake here, if we have
-    # already ensured goma, we don't need to do it for this config object
-    goma_dir = self.c.compile_py.goma_dir
-    # TODO(gbeaty): remove this weird goma fallback or cover it
-    if use_goma and not goma_dir:  # pragma: no cover
-      # This method defaults to use_goma=True, which doesn't necessarily
-      # match build-side configuration. However, MB is configured
-      # src-side, and so it might be actually using goma.
-      self.ensure_goma()
-      goma_dir = self.c.compile_py.goma_dir
-    if goma_dir:
-      args += ['--goma-dir', goma_dir]
-
     if android_version_code:
       args += ['--android-version-code=%s' % android_version_code]
     if android_version_name:
@@ -1272,14 +1123,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     # This runs with an almost-bare env being passed along, so we get a clean
     # environment without any GYP_DEFINES being present to cause confusion.
     env = self.get_env()
-
-    if use_goma:
-      # Do not allow goma to invoke local compiler.
-      # GOMA_USE_LOCAL is passed to gomacc from ninja.
-      # And in windows, env var for ninja is specified in `gn gen` step.
-      # We don't need to disallow local compile,
-      # but we want to utilize remote cpu resource more.
-      env['GOMA_USE_LOCAL'] = 'false'
 
     env.update(self.m.context.env)
 
@@ -1354,7 +1197,6 @@ class ChromiumApi(recipe_api.RecipeApi):
                 recursive=False,
                 chromium_config=None,
                 phase=None,
-                use_goma=False,
                 use_reclient=True,
                 android_version_code=None,
                 android_version_name=None,
@@ -1396,11 +1238,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     name = name or 'lookup GN args'
     additional_args = ['--recursive' if recursive else '--quiet']
-    lookup_test_data = ('goma_dir = "/b/s/w/ir/cache/goma_client"\n'
-                        'target_cpu = "x86"\n')
-    if use_goma:
-      lookup_test_data += 'use_goma = true\n'
-    elif use_reclient:
+    lookup_test_data = 'target_cpu = "x86"\n'
+    if use_reclient:
       lookup_test_data += 'use_remoteexec = true\n'
     result = self.run_mb_cmd(
         name,
@@ -1410,7 +1249,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         mb_config_path=mb_config_path,
         chromium_config=chromium_config,
         phase=phase,
-        use_goma=use_goma,
         android_version_code=android_version_code,
         android_version_name=android_version_name,
         additional_args=additional_args,
@@ -1432,7 +1270,6 @@ class ChromiumApi(recipe_api.RecipeApi):
             mb_config_path=mb_config_path,
             chromium_config=chromium_config,
             phase=phase,
-            use_goma=use_goma,
             android_version_code=android_version_code,
             android_version_name=android_version_name,
             additional_args=additional_args,
@@ -1461,7 +1298,6 @@ class ChromiumApi(recipe_api.RecipeApi):
              name=None,
              mb_path=None,
              mb_config_path=None,
-             use_goma=False,
              use_reclient=True,
              isolated_targets=None,
              build_dir=None,
@@ -1507,7 +1343,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         mb_path=mb_path,
         mb_config_path=mb_config_path,
         phase=phase,
-        use_goma=use_goma,
         use_reclient=use_reclient,
         recursive=recursive_lookup,
         android_version_code=android_version_code,
@@ -1540,7 +1375,6 @@ class ChromiumApi(recipe_api.RecipeApi):
             mb_path=mb_path,
             mb_config_path=mb_config_path,
             phase=phase,
-            use_goma=use_goma,
             android_version_code=android_version_code,
             android_version_name=android_version_name,
             additional_args=mb_args,
@@ -1560,7 +1394,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           mb_path=mb_path,
           mb_config_path=mb_config_path,
           phase=phase,
-          use_goma=use_goma,
           android_version_code=android_version_code,
           android_version_name=android_version_name,
           additional_args=mb_args,

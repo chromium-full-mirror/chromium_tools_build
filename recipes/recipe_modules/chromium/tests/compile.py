@@ -17,12 +17,8 @@ from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
 import textwrap
 
-PROPERTIES = {
-  'use_goma': Property(default=True, kind=bool),
-}
 
-
-def RunSteps(api, use_goma):
+def RunSteps(api):
   api.chromium.set_config(
       api.properties.get('chromium_config', 'chromium_clang'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
@@ -33,9 +29,7 @@ def RunSteps(api, use_goma):
 
   api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
-  api.chromium.ensure_goma()
-  return api.chromium.compile(
-      targets=api.properties.get('targets'), use_goma_module=use_goma)
+  return api.chromium.compile(targets=api.properties.get('targets'))
 
 
 def GenTests(api):
@@ -221,17 +215,6 @@ def GenTests(api):
           #### More information in raw_io.output_text[failure_summary]
           """).strip()),
       api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'cancel-during-compile',
-      api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
-                                                'process_crashreports.py')),
-      api.runtime.global_shutdown_on_step('compile'),
-      api.post_check(post_process.DoesNotRun, 'process clang crashes'),
-      api.post_check(post_process.DoesNotRun, 'postprocess_for_goma'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('CANCELED'),
   )
 
   yield api.test(
