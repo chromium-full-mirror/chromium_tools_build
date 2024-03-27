@@ -80,8 +80,10 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
       return create_rerun_result(api, rerun_props, error_message,
                                  properties.output_properties_file)
 
+  got_revisions = generate_got_revisions_map(api)
+
   raw_result, tests = create_tests(api, build_path, properties.test_names,
-                                   properties.got_revisions,
+                                   got_revisions,
                                    compiling_builder_id,
                                    compiling_builder_config, should_build,
                                    properties.preserve_gn_args,
@@ -301,6 +303,29 @@ def configure_build(
   return (compiling_builder_id, compiling_builder_config, api.path['checkout'],
           build_path)
 
+
+def generate_got_revisions_map(api):
+  """Generates a minimalistic got_revisions mapping.
+
+  got_revisions is a dict normally returned by gclient/bot_update recipe
+  modules and subsequently referenced throughout the Chromium recipe. Since the
+  UTR runs on developer workstations, we want to avoid modifying or mucking
+  about with the local checkout as much as we can. To that end, this returns a
+  very basic got_revisions map that includes only the keys that normally point
+  to the chromium/src.git revision.
+
+  The rev these keys point to is the local HEAD. Note that if the checkout
+  contains any local commits, this rev will be unique to the checkout.
+  """
+  result = api.git('rev-parse', 'HEAD', stdout=api.raw_io.output())
+  rev = result.stdout.decode('utf-8').strip()
+  return {
+      # See the substitutions in recipe_modules/chromium_tests/generators.py
+      # for what got_* revision keys might be used.
+      'got_cr_revision': rev,
+      'got_revision': rev,
+      'got_src_revision': rev,
+  }
 
 def compile_targets(
     api: RecipeApi,

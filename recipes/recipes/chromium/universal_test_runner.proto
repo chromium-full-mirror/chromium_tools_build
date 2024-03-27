@@ -18,8 +18,8 @@ message InputProperties {
   // the tests to be run on the builder
   repeated string test_names = 2;
 
-  // Optional map of revisions received during gclient sync
-  map<string, string> got_revisions = 3;
+  reserved "got_revisions";
+  reserved 3;
 
   // The build_dir to use either containing the binary to run or where it is to
   // be compiled
