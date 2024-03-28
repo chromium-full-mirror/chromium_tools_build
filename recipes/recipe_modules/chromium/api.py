@@ -313,6 +313,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                  name=None,
                  ninja_env=None,
                  siso_args=None,
+                 skip_log_upload=False,
                  **kwargs):
     """
     Run ninja with given command and env.
@@ -324,6 +325,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       name: Name of compile step.
       ninja_env: Environment for ninja.
       siso_args: Siso specific arguments.
+      skip_log_upload: When true skip log uploading.
 
     Returns:
       A named tuple with the fields
@@ -367,6 +369,7 @@ class ChromiumApi(recipe_api.RecipeApi):
             siso_args=siso_args,
             name=name,
             step_test_data=step_test_data,
+            skip_log_upload=skip_log_upload,
             **kwargs)
       else:
         cmd = [
@@ -437,6 +440,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           step_test_data=noop_step_test_data,
           stdout=self.m.raw_io.output_text(),
           post_step_func=check_noop,
+          skip_log_upload=skip_log_upload,
           **kwargs)
     else:
       with self.m.context(env=ninja_env):
@@ -465,6 +469,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                ninja_command,
                                ninja_env,
                                name=None,
+                               skip_log_upload=False,
                                **kwargs):
     """
     Run ninja with reclient.
@@ -476,6 +481,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                      (e.g. ['ninja', '-C', 'out/Release'])
       ninja_env: Environment for ninja.
       name: Name of the compile step.
+      skip_log_upload: When true skip log uploading.
 
     Returns:
       A named tuple with the fields
@@ -485,10 +491,15 @@ class ChromiumApi(recipe_api.RecipeApi):
     Raises:
       - InfraFailure when an unexpected reclient failure occurs
     """
-    with self.m.reclient.process(
-        name, ninja_command,
-        self.c.compile_py.reclient_deps_cache_by_step) as p:
-      ninja_result = self._run_ninja(ninja_command, name, ninja_env, **kwargs)
+    with self.m.reclient.process(name, ninja_command,
+                                 self.c.compile_py.reclient_deps_cache_by_step,
+                                 skip_log_upload) as p:
+      ninja_result = self._run_ninja(
+          ninja_command,
+          name,
+          ninja_env,
+          skip_log_upload=skip_log_upload,
+          **kwargs)
       p.build_exit_status = ninja_result.retcode
     return ninja_result
 

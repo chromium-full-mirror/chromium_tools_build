@@ -30,6 +30,7 @@ DEPS = [
     'code_coverage',
     'gn',
     'test_utils',
+    'reclient',
     'skylab',
     'depot_tools/gclient',
     'depot_tools/git',
@@ -414,24 +415,14 @@ def compile_targets(
 
   use_reclient = get_remote_compile_options(api, build_dir)
 
-  # TODO(crbug.com/41492686): Remove if/when chromium.compile
-  # can support developers' machines
   if use_reclient:
-    with api.context(cwd=api.path['checkout']):
-      # Ignore the builder job count and use a high number. This isn't run by
-      # builders and more likely someone actively waiting for results
-      step_result = api.step(
-          name='reclient compile',
-          cmd=[
-              'ninja_reclient.py',
-              '-C',
-              api.path.relpath(build_dir, api.path['checkout']),
-              '-j',
-              '1000',
-          ] + targets)
-      return result_pb2.RawResult(status=step_result.presentation.status)
+    api.reclient.use_gce_credentials = False
+    api.reclient.automatic_auth = True
   return api.chromium.compile(
-      targets, skip_log_upload=True, target_output_dir=build_dir)
+      targets,
+      skip_log_upload=True,
+      target_output_dir=str(build_dir),
+      use_reclient=use_reclient)
 
 
 def handle_code_coverage(api: RecipeApi):
@@ -796,18 +787,62 @@ solutions = [
       boilerplate(),
       api.step_data('read GN args',
                     api.raw_io.output_text('use_remoteexec = true')),
-      api.post_process(post_process.MustRun, 'reclient compile'),
       api.post_process(post_process.MustRun, 'isolate'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
-      api.post_process(post_process.StepCommandContains, 'reclient compile', [
-          'ninja_reclient.py', '-C', 'out/Release', '-j', '1000',
-          'browser_tests'
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '[CACHE]/src/third_party/ninja/ninja', '-C',
+          '[CACHE]/src/out/Release', '-j', '160', 'browser_tests'
       ]),
       api.post_process(post_process.StepCommandContains, 'isolate',
                        ['browser_tests']),
       api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(
+          post_process.MustRun,
+          'postprocess for reclient.shutdown reproxy via bootstrap'),
+      api.post_process(post_process.DoesNotRun,
+                       'postprocess for reclient.stop cloudtail'),
+      api.post_process(post_process.DoesNotRun,
+                       'preprocess for reclient.start cloudtail: reproxy.INFO'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'siso',
+      boilerplate(),
+      api.properties(
+          **{
+              '$build/siso': {
+                  'configs': ['builder'],
+                  'enable_cloud_profiler': True,
+                  'enable_cloud_trace': True,
+                  'experiments': [],
+                  'project': 'rbe-chromium-untrusted'
+              },
+          }),
+      api.step_data(
+          'read GN args',
+          api.raw_io.output_text('use_remoteexec = true\nuse_siso: true')),
+      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'lookup GN args'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '[CACHE]/src/third_party/siso/siso',
+          'ninja',
+      ]),
+      api.post_process(post_process.StepCommandDoesNotContain, 'compile', [
+          '--enable_cloud_logging',
+      ]),
+      api.post_process(post_process.StepCommandContains, 'isolate',
+                       ['browser_tests']),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.DoesNotRun,
+                       'postprocess for reclient.stop cloudtail'),
+      api.post_process(post_process.DoesNotRun,
+                       'preprocess for reclient.start cloudtail: reproxy.INFO'),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

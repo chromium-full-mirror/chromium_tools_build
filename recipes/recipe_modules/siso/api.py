@@ -42,6 +42,7 @@ class SisoApi(recipe_api.RecipeApi):
                 name=None,
                 siso_args=None,
                 post_step_func=None,
+                skip_log_upload=False,
                 **kwargs):
     """Run the ninja command with siso.
 
@@ -52,6 +53,7 @@ class SisoApi(recipe_api.RecipeApi):
           name: Name of compile step.
           siso_args: siso arguments.
           post_step_func: a function that runs on the step result.
+          skip_log_upload: When true skip log.
 
         Returns:
           step_data.StepData of the build step.
@@ -66,12 +68,13 @@ class SisoApi(recipe_api.RecipeApi):
     cmd = [
         self.siso_path,
         'ninja',
-        '--enable_cloud_logging',
         '--project',
         self._props.project,
         '--job_id',
         self.m.buildbucket.build.id,
     ]
+    if not skip_log_upload:
+      cmd.append('--enable_cloud_logging')
     if self._props.reapi_address:
       cmd.extend([
           '--reapi_address',
@@ -82,9 +85,9 @@ class SisoApi(recipe_api.RecipeApi):
           '--reapi_instance',
           self._props.reapi_instance,
       ])
-    if self._props.enable_cloud_profiler:
+    if self._props.enable_cloud_profiler and not skip_log_upload:
       cmd.append('--enable_cloud_profiler')
-    if self._props.enable_cloud_trace:
+    if self._props.enable_cloud_trace and not skip_log_upload:
       cmd.append('--enable_cloud_trace')
     if len(self._props.configs) > 0:
       cmd.extend([
@@ -114,41 +117,42 @@ class SisoApi(recipe_api.RecipeApi):
           post_step_func(step_result)
         return step_result
     finally:
-      with self.m.step.nest('upload siso reports') as s:
-        s.step_text = name
-        now = self.m.time.utcnow()
-        report_foldername = 'reports.%s.%s' % (now.strftime('%Y%m%dT%H%M%SZ'),
-                                               self.m.uuid.random())
-        gs_foldername = '%s/siso/%s' % (now.date().strftime('%Y/%m/%d'),
-                                        report_foldername)
-        for file in [
-            # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
-            # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
-            'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
-            'siso_build.pprof',
-            'siso_explain',
-            'siso_metrics.json',
-            'siso_output',
-            'siso_trace.json',
-            '.siso_config',
-            '.siso_deps',
-            '.siso_filegroups',
-            '.siso_fs_state',
-            '.siso_fs_state.0',
-        ]:
-          abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
-          if not self.m.path.exists(abs_path):
-            continue
-          gs_filename = '%s/%s' % (gs_foldername, file)
-          # Allow failure to not block the build.
-          self.m.gsutil.upload(
-              abs_path,
-              _GS_BUCKET,
-              gs_filename,
-              # Set text/plain for browser to detect the file type.
-              metadata={'Content-Type': 'text/plain; charset=utf-8'},
-              name='upload ' + file,
-              ok_ret=('any'))
+      if not skip_log_upload:
+        with self.m.step.nest('upload siso reports') as s:
+          s.step_text = name
+          now = self.m.time.utcnow()
+          report_foldername = 'reports.%s.%s' % (now.strftime('%Y%m%dT%H%M%SZ'),
+                                                 self.m.uuid.random())
+          gs_foldername = '%s/siso/%s' % (now.date().strftime('%Y/%m/%d'),
+                                          report_foldername)
+          for file in [
+              # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
+              # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
+              'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
+              'siso_build.pprof',
+              'siso_explain',
+              'siso_metrics.json',
+              'siso_output',
+              'siso_trace.json',
+              '.siso_config',
+              '.siso_deps',
+              '.siso_filegroups',
+              '.siso_fs_state',
+              '.siso_fs_state.0',
+          ]:
+            abs_path = self.m.path.abspath(self.m.path.join(ninja_dir, file))
+            if not self.m.path.exists(abs_path):
+              continue
+            gs_filename = '%s/%s' % (gs_foldername, file)
+            # Allow failure to not block the build.
+            self.m.gsutil.upload(
+                abs_path,
+                _GS_BUCKET,
+                gs_filename,
+                # Set text/plain for browser to detect the file type.
+                metadata={'Content-Type': 'text/plain; charset=utf-8'},
+                name='upload ' + file,
+                ok_ret=('any'))
 
   def _assert_ninja_command(self, ninja_command):
     """Check ninja_command runs ninja
