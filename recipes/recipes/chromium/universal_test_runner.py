@@ -81,7 +81,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
                        ('no', InputProperties())]
       return create_rerun_result(api, rerun_options, error_message,
                                  properties.output_properties_file)
-  if not properties.bypass_gn_args:
+  if api.path.exists(build_path) and not properties.bypass_gn_args:
     error_message = check_gn_args(api, build_path, compiling_builder_id)
     if error_message:
       rerun_options = [('continue',
@@ -980,6 +980,7 @@ target_os=['os']
           builder_group='fake-group',
           builder='fake-tester',
       ),
+      api.path.exists(api.path['cache'].join('src/out/Release')),
       api.step_data(
           'lookup_builder_gn_args',
           stdout=api.raw_io.output_text('a = "1"\n'
