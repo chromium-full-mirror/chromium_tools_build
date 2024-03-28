@@ -457,9 +457,7 @@
       "--ninja-log-command-file",
       "[\"[CACHE]/builder/v8/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/v8/out/build\"]",
       "--build-exit-status",
-      "0",
-      "--ninja-log-compiler",
-      "unknown"
+      "0"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {

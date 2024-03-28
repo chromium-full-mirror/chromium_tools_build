@@ -456,9 +456,7 @@
       "--ninja-log-command-file",
       "[\"[START_DIR]/src/third_party/ninja/ninja\", \"-C\", \"[START_DIR]/src/out/Release\"]",
       "--build-exit-status",
-      "0",
-      "--ninja-log-compiler",
-      "unknown"
+      "0"
     ],
     "cwd": "[START_DIR]/src",
     "env": {

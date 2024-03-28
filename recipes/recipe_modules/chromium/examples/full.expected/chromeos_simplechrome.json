@@ -574,9 +574,7 @@
       "--ninja-log-command-file",
       "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"/tmp/Release\", \"All\"]",
       "--build-exit-status",
-      "0",
-      "--ninja-log-compiler",
-      "goma"
+      "0"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

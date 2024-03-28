@@ -279,9 +279,7 @@
       "--ninja-log-command-file",
       "[\"[CACHE]\\\\builder\\\\src\\\\third_party\\\\ninja\\\\ninja\", \"-C\", \"[CACHE]\\\\builder\\\\src\\\\out\\\\Release_x64\"]",
       "--build-exit-status",
-      "0",
-      "--ninja-log-compiler",
-      "unknown"
+      "0"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {

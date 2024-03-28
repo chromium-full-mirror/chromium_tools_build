@@ -276,9 +276,7 @@
       "--ninja-log-command-file",
       "[\"[CACHE]/builder/devtools-frontend/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/devtools-frontend/out/Debug\"]",
       "--build-exit-status",
-      "1",
-      "--ninja-log-compiler",
-      "unknown"
+      "1"
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
     "env": {
