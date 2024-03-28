@@ -24,22 +24,6 @@ DEPS = [
     'recipe_engine/step',
 ]
 
-BUILDERS = freeze({
-    'chromium-lkgr-finder': {
-        'project': 'chromium',
-        'repo': 'https://chromium.googlesource.com/chromium/src',
-        'ref': 'refs/heads/lkgr',
-        'lkgr_status_gs_path': 'chromium-v8/chromium-lkgr-status',
-    },
-    'V8 lkgr finder': {
-        'project': 'v8',
-        'repo': 'https://chromium.googlesource.com/v8/v8',
-        'ref': 'refs/heads/lkgr',
-        'lkgr_status_gs_path': 'chromium-v8/lkgr-status',
-        # 10x9 h is the allowed lag in low commit periods (e.g. weekends)
-        'allowed_lag': 9,
-    },
-})
 
 PROPERTIES = {
     'project':
@@ -84,17 +68,6 @@ PROPERTIES = {
 
 def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
              src_ref):
-  # TODO(jbudorick): Remove old_botconfig once the three builders above
-  # are explicitly setting their desired properties.
-  old_botconfig = BUILDERS.get(api.buildbucket.builder_name)
-  if old_botconfig:
-    project = project or old_botconfig.get('project')
-    repo = repo or old_botconfig.get('repo')
-    ref = ref or old_botconfig.get('ref')
-    lkgr_status_gs_path = (
-        lkgr_status_gs_path or old_botconfig.get('lkgr_status_gs_path'))
-    allowed_lag = allowed_lag or old_botconfig.get('allowed_lag')
-
   if not project or not repo or not ref:
     api.step.empty(
         'configuration missing',
@@ -202,23 +175,26 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
 
 def GenTests(api):
 
-  def test_props(buildername):
+  def test_build(buildername):
     return (api.buildbucket.generic_build(builder=buildername))
 
-  def test_props_and_data(buildername):
-    return (test_props(buildername) + api.step_data(
+  def test_build_and_data(buildername):
+    return (test_build(buildername) + api.step_data(
         'read lkgr from ref',
         api.gitiles.make_commit_test_data('deadbeef1', 'Commit1')))
 
-  for buildername, botconfig in BUILDERS.items():
-    yield api.test(
-        botconfig['project'],
-        test_props_and_data(buildername),
-    )
+  def test_props(**additional_props):
+    return api.properties(
+        project='custom',
+        repo='https://custom.googlesource.com/src',
+        ref='refs/heads/lkgr',
+        lkgr_status_gs_path='custom/lkgr-status',
+        **additional_props)
 
   yield api.test(
       'v8_experimental',
-      test_props_and_data('V8 lkgr finder'),
+      test_build_and_data('V8 lkgr finder'),
+      test_props(),
       api.runtime(is_experimental=True),
   )
 
@@ -229,13 +205,9 @@ def GenTests(api):
   ]:
     yield api.test(
         'custom_properties' + suffix,
-        test_props_and_data('custom-lkgr-finder'),
+        test_build_and_data('custom-lkgr-finder'),
         api.step_data('calculate custom lkgr', retcode=retcode),
-        api.properties(
-            project='custom',
-            repo='https://custom.googlesource.com/src',
-            ref='refs/heads/lkgr',
-            lkgr_status_gs_path='custom/lkgr-status'),
+        test_props(),
         api.post_process(post_process.MustRun, 'calculate custom lkgr'),
         api.post_process(post_process.StatusCodeIn, retcode),
         api.expect_status(status),
@@ -243,19 +215,23 @@ def GenTests(api):
 
   yield api.test(
       'missing_all_properties',
-      test_props('missing-lkgr-finder'),
+      test_build('missing-lkgr-finder'),
       api.post_process(post_process.MustRun, 'configuration missing'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )
 
   yield api.test(
+      'allowed_lag',
+      test_build_and_data('allowed_lag'),
+      test_props(allowed_lag=4),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'custom_config',
-      test_props_and_data('custom-configuration'),
-      api.properties(
-          project='custom',
-          repo='https://custom.googlesource.com/src',
-          ref='refs/heads/lkgr',
+      test_build_and_data('custom-configuration'),
+      test_props(
           src_ref='refs/heads/main',
           config={
               'project': 'custom',

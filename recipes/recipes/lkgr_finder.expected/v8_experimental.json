@@ -108,7 +108,7 @@
       "--json-file",
       "/path/to/tmp/json",
       "--url",
-      "https://chromium.googlesource.com/v8/v8/+/refs/heads/lkgr",
+      "https://custom.googlesource.com/src/+/refs/heads/lkgr",
       "--format",
       "json"
     ],
@@ -182,7 +182,7 @@
       ".vpython3",
       "-m",
       "infra.services.lkgr_finder",
-      "--project=v8",
+      "--project=custom",
       "--verbose",
       "--read-from-file",
       "97ab2f7d6e7bab812309e05884bdeeaef11962f7",
@@ -190,7 +190,6 @@
       "/path/to/tmp/",
       "--workdir",
       "[CACHE]/builder/lw",
-      "--allowed-lag=9",
       "--html",
       "/path/to/tmp/"
     ],
@@ -207,7 +206,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "calculate v8 lkgr"
+    "name": "calculate custom lkgr"
   },
   {
     "cmd": [],
@@ -221,7 +220,7 @@
       "--path",
       "[CACHE]/builder/workdir",
       "--url",
-      "https://chromium.googlesource.com/v8/v8"
+      "https://custom.googlesource.com/src"
     ],
     "luci_context": {
       "realm": {
@@ -244,7 +243,7 @@
       "populate",
       "-c",
       "[CACHE]/git",
-      "https://chromium.googlesource.com/v8/v8"
+      "https://custom.googlesource.com/src"
     ],
     "cwd": "[CACHE]/builder/workdir",
     "env": {
@@ -273,7 +272,7 @@
       "--quiet",
       "--cache-dir",
       "[CACHE]/git",
-      "https://chromium.googlesource.com/v8/v8"
+      "https://custom.googlesource.com/src"
     ],
     "cwd": "[CACHE]/builder/workdir",
     "env": {
