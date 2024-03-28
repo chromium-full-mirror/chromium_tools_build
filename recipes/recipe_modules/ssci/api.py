@@ -44,6 +44,9 @@ class SsciAPI(recipe_api.RecipeApi):
     self.ssci_tool = CIPDPkg(
         ensure_version=props.ssci_version or "latest",
         pkg_path="infra_internal/tools/ssci")
+    self.ssci_uploader = CIPDPkg(
+        ensure_version=props.ssci_uploader_version or "latest",
+        pkg_path="infra_internal/tools/security/ssci_uploader/${platform}")
 
   def _get_product_version(self, chrome_version):
     """
@@ -148,7 +151,8 @@ class SsciAPI(recipe_api.RecipeApi):
     the package version.
     """
     for cipd_tool in [
-        self.depbot, self.bqupload, self.partybot, self.ssci_tool
+        self.depbot, self.bqupload, self.partybot, self.ssci_tool,
+        self.ssci_uploader
     ]:
       cipd_tool.tool_path = self.m.cipd.ensure_tool(cipd_tool.pkg_path,
                                                     cipd_tool.ensure_version)

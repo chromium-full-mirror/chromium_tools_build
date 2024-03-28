@@ -32,4 +32,7 @@ message InputProperties {
 
   // Whether to generate a minimal version of the SPDX file
   bool minimal_spdx = 9;
+
+  // version of the SSCI uploader CIPD binary to use.
+  string ssci_uploader_version = 10;
 }
