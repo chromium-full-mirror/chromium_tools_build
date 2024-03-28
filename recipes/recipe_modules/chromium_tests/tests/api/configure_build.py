@@ -141,7 +141,7 @@ def GenTests(api):
                   gclient_config='chromium',
                   chromium_config='chromium',
                   chromium_config_kwargs={
-                      'TARGET_PLATFORM': 'mac',
+                      'TARGET_PLATFORM': 'ios',
                   },
               ),
           ).assemble()),
