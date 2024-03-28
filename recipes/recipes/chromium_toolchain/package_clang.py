@@ -109,7 +109,7 @@ GCS_BUCKET_PROD = 'chromium-browser-toolchain-prod'
 def RunSteps(api, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
 
-  api.chromium_checkout.ensure_checkout(clobber=bot_config.clobber)
+  api.chromium_checkout.ensure_checkout(bot_config)
 
   api.step('update win toolchain', [
       'python3', api.path['checkout'].join('build', 'vs_toolchain.py'), 'update'

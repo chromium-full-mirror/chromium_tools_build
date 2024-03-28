@@ -4,8 +4,9 @@
 
 import copy
 
-from recipe_engine import recipe_api, step_data
+from recipe_engine import recipe_api
 
+from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.depot_tools.gclient import api as gclient
 
@@ -91,22 +92,14 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       files[i] = files[i].replace('\\', '/')
     return files
 
-  def ensure_checkout(
-      self,
-      *,
-      timeout: int | None = None,
-      **kwargs,
-  ) -> step_data.StepData:
+  def ensure_checkout(self, bot_config=None, timeout=None, **kwargs):
     """Wrapper for bot_update.ensure_checkout with chromium-specific additions.
 
     Args:
-      timeout: Timeout in seconds for bot_update.ensure_checkout. If the timeout
-        value is set on this module's properties, this will be ignored.
-      **kwargs: Keyword arguments to forward on to bot_update.ensure_checkout.
-        The following arguments have overridden defaults:
-        * no_fetch_tags: True
+      timeout: (seconds) for tiemout of bot_update.ensure_checkout.
     """
     kwargs.setdefault('no_fetch_tags', True)
+    bot_config = bot_config or chromium.BuilderSpec.create()
 
     if self.m.platform.is_win:
       self.m.chromium.taskkill()
@@ -124,7 +117,10 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
       with self.m.context(cwd=self.checkout_dir):
         update_step = self.m.bot_update.ensure_checkout(
-            gclient_config=gclient_config, timeout=timeout, **kwargs)
+            gclient_config=gclient_config,
+            clobber=bot_config.clobber,
+            timeout=timeout,
+            **kwargs)
 
       assert update_step.json.output['did_run']
       # HACK(dnj): Remove after 'crbug.com/398105' has landed

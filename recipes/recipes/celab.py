@@ -228,7 +228,7 @@ def _CheckoutChromiumRepo(api):
     builder_config = ctbc.BuilderSpec.create(**builder_config)
 
     api.chromium_tests.configure_build(builder_config)
-    api.chromium_checkout.ensure_checkout(clobber=builder_config.clobber)
+    api.chromium_checkout.ensure_checkout(builder_config)
     api.chromium.runhooks()
 
   return api.path['checkout']
