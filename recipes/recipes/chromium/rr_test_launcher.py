@@ -10,77 +10,104 @@ traces to GCS.
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
                                         LogContains, ResultReason,
                                         StepCommandRE, StepFailure, StepSuccess)
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (common as common_pb2,
+                                                       resultdb as resultdb_pb2,
+                                                       test_result as
+                                                       test_result_pb2)
 
 DEPS = [
     'builder_group',
     'chromium',
-    'chromium_checkout',
     'chromium_tests',
-    'depot_tools/gclient',
-    'depot_tools/tryserver',
+    'flaky_reproducer',
+    'isolate',
+    'recipe_engine/cas',
     'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/json',
     'recipe_engine/path',
-    'recipe_engine/properties',
+    'recipe_engine/resultdb',
     'recipe_engine/step',
+    'recipe_engine/swarming',
 ]
 
 
 def RunSteps(api):
+  # TODO(jiesheng): Replace the current example build id and test id with top
+  # 10 flaky tests from LUCI analysis.
+  task_id, test_name = (
+      api.flaky_reproducer.query_resultdb_for_task_id_and_test_name(
+          build_id="8752378832772530417",
+          test_id='ninja://:blink_wpt_tests/external/wpt/css/'
+          'css-transforms/z-index-does-not-apply.html'))
 
-  api.gclient.set_config('chromium_skip_wpr_archives_download')
-  api.chromium_checkout.ensure_checkout()
-  api.gclient.runhooks()
+  test_binary_path = api.flaky_reproducer.get_test_binary(task_id)
+  task_config = api.flaky_reproducer.get_test_binary_swarming_task_config(
+      test_binary_path)
+  api.cas.download('download test binary', task_config.cas_input_root,
+                   api.path['cleanup'])
+  runner_dir = api.path['cleanup'].join('rr_tool_runner')
+  # TODO(jiesheng): Add a new script to run test repeatedly, then select, and
+  # upload record traces here with the isolation file.
+  api.isolate.write_isolate_file(runner_dir, ['./'])
+  repacked_cas = api.isolate.isolate('new test binary', runner_dir)
 
-  api.context(cwd=api.path['checkout'])
-  api.chromium.set_config('chromium')
-  api.chromium.output_dir = api.path['checkout'].join(
-      'out', api.chromium.c.build_config_fs)
-  raw_result = api.chromium_tests.run_mb_and_compile(
-      api.chromium.get_builder_id(),
-      ['blink_web_tests', 'blink_wpt_tests', 'chrome_wpt_tests'],
-      isolated_targets=[],
-      name_suffix='')
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
+  # Trigger reproducing job in swarming.
+  # TODO(jiesheng): Replace the hard-coded test command with the triggering
+  # command of the new script.
+  command = [
+      'vpython3', 'third_party/blink/tools/run_web_tests.py', '-t', 'Release',
+      '--no-retry-failures', test_name
+  ]
 
-  cmd = [api.path['checkout'].join('third_party/blink/tools/run_web_tests.py')]
-  # Use one test for reference now.
-  cmd.extend([
-      '-t', 'Release', '--no-retry-failures',
-      'external/wpt/css/css-transforms/z-index-does-not-apply.html'
-  ])
-  api.step(name='run web tests', cmd=cmd, raise_on_failure=True)
+  request = (api.swarming.task_request().
+      with_name("rr tool runner for {0}".format(test_name)).
+      with_priority(200))
+
+  dimensions = task_config.dimensions
+  dimensions['pool'] = 'chromium.tests.rr'
+  # TODO(jiesheng): Attach the rr tool in cipd onto the task.
+  request_slice = (request[0].
+      with_command(command).
+      with_cas_input_root(repacked_cas).
+      with_dimensions(**dimensions).
+      with_execution_timeout_secs(1800).
+      with_io_timeout_secs(1800).
+      with_expiration_secs(1800))
+  request = request.with_slice(0, request_slice)
+
+  swarming_tasks = [api.swarming.trigger("rr tool runner", [request])[0]]
+  api.swarming.collect(
+      'collect rr tool runner results',
+      swarming_tasks,
+      output_dir=api.path.mkdtemp())
 
 
 def GenTests(api):
+  query_test_results = resultdb_pb2.QueryTestResultsResponse(
+      test_results=[
+          test_result_pb2.TestResult(
+              test_id=('ninja://:blink_wpt_tests/external/wpt/'
+                       'css/css-transforms/z-index-does-not-apply.html'),
+              name=('invocations/task-example.swarmingserver.appspot.com'
+                    '-task1/result-1'),
+              expected=False,
+              tags=[
+                  common_pb2.StringPair(
+                      key="test_name", value="MockUnitTests.FailTest"),
+              ],
+          ),
+      ],)
   yield api.test(
-      'happy_path_run_web_test',
+      'happy_path',
       api.builder_group.for_current('chromium.fyi'),
-      api.post_process(StepCommandRE, 'run web tests', [
-          '.*/third_party/blink/tools/run_web_tests.py',
-          '-t',
-          'Release',
-          '--no-retry-failures',
-          'external/wpt/css/css-transforms/z-index-does-not-apply.html',
-      ]),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
-      'run_with_failure',
-      api.builder_group.for_current('chromium.fyi'),
-      api.step_data('run web tests', retcode=1),
-      api.post_process(StepFailure, 'run web tests'),
-      api.expect_status('FAILURE'),
-      api.post_process(ResultReason, 'Step(\'run web tests\') (retcode: 1)'),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
-      'compile_with_failure',
-      api.builder_group.for_current('chromium.fyi'),
-      api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
+      api.resultdb.query_test_results(query_test_results),
+      api.step_data(
+          'get_test_binary from task1',
+          api.json.output_stream(
+              api.json.loads(
+                  api.flaky_reproducer.get_test_data(
+                      'gtest_task_request.json')))),
       api.post_process(DropExpectation),
   )
