@@ -50,6 +50,11 @@ class BuilderDetails:
   builder_group = attrib(str)
   builder_spec = attrib(BuilderSpec, default=_DEFAULT_SPEC)
 
+  def __attrs_post_init__(self):
+    assert (self.builder_spec.chromium_config is not None and
+            self.builder_spec.gclient_config is not None
+           ), 'builder_spec must set both chromium_config and gclient_config'
+
   # Private fields, controlled by the properties assemblers and cannot be
   # set by the caller
   execution_mode = attrib(enum(_ExecutionMode.values()))

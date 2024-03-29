@@ -100,6 +100,13 @@ class BuilderSpec:
   # An optional buildername of the bot's parent builder
   parent_buildername = attrib(str, default=None)
 
+  # NOTE on chromium_config and builder_config
+  # These two fields must be set in order to run the chromium family of recipes.
+  # This is not enforced on this type however because that would pointlessly
+  # increase the verbosity of test cases that won't be running the checkout or
+  # compile code but still need a builder config (almost everything needs a
+  # builder config).
+
   # The name of the config to use for the chromium recipe module
   chromium_config = attrib(str, default=None)
   # The names of additional configs to apply for the chromium recipe module
