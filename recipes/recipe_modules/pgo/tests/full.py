@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 from recipe_engine import post_process
-from recipe_engine.recipe_api import RecipeApi
-from recipe_engine.recipe_test_api import RecipeTestApi
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
                                                        test_result_pb2)
@@ -34,11 +32,10 @@ DEPS = [
 ]
 
 
-def RunSteps(api: RecipeApi):
+def RunSteps(api):
   api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
 
   use_lacros = api.properties.get('use_lacros', False)
-  use_android = api.properties.get('use_android', False)
   if use_lacros:
     builders = builder_db.BuilderDatabase.create({
         'chrome.pgo': {
@@ -59,25 +56,6 @@ def RunSteps(api: RecipeApi):
             builder_id,
         ])
     api.path.mock_add_paths('/b/some/random/path/llvm-profdata')
-  elif use_android:
-    builders = builder_db.BuilderDatabase.create({
-        'chrome.pgo': {
-            'android-arm64-pgo':
-                builder_spec.BuilderSpec.create(
-                    gclient_config="chromium",
-                    gclient_apply_config=["android"],
-                    chromium_config="android",
-                    chromium_config_kwargs={
-                        'TARGET_PLATFORM': 'android',
-                    })
-        },
-    })
-    builder_id = BuilderId.create_for_group('chrome.pgo', 'android-arm64-pgo')
-    builder_config = builder_config_module.BuilderConfig.create(
-        builders, builder_ids=[
-            builder_id,
-        ])
-    #api.path.mock_add_paths('/b/some/random/path/llvm-profdata')
   else:
     builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
     )
@@ -104,22 +82,20 @@ def RunSteps(api: RecipeApi):
     unexpected_failing_tests = set([])
     all_tests = []
     for test_name in api.properties.get('benchmark_failures', []):
-      # This allows specifying only certain specs contain failed tests.
-      if test_name.startswith(test.name):
-        individual_test = RDBPerIndividualTestResults.create(
-            test_id='',  # This is not used in create.
-            test_results=[
-                test_result_pb2.TestResult(
-                    test_id=f'ninja://chromium/tests:browser_tests/{test_name}',
-                    expected=False,
-                    status=test_result_pb2.FAIL,
-                )
-            ],
-            test_id_prefix='',
-            invocation_id=('task-chromium-swarm.appspot.com-5e052f4430ead411'),
-        )
-        unexpected_failing_tests.add(individual_test)
-        all_tests.append(individual_test)
+      individual_test = RDBPerIndividualTestResults.create(
+          test_id=test_name,
+          test_results=[
+              test_result_pb2.TestResult(
+                  test_id='ninja://chromium/tests:browser_tests/t1',
+                  expected=False,
+                  status=test_result_pb2.FAIL,
+              )
+          ],
+          test_id_prefix='',
+          invocation_id=('task-chromium-swarm.appspot.com-5e052f4430ead411'),
+      )
+      unexpected_failing_tests.add(individual_test)
+      all_tests.append(individual_test)
     # Preprocessing for test
     test.update_rdb_results(
         '',
@@ -137,7 +113,7 @@ def RunSteps(api: RecipeApi):
   _ = api.pgo.using_pgo
 
 
-def GenTests(api: RecipeTestApi):
+def GenTests(api):
 
   yield api.test(
       'merged profdata does not exist',
@@ -171,8 +147,8 @@ def GenTests(api: RecipeTestApi):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              'performance_test_suite\\performance_test_suite.profdata',
-              'different_test_suite\\different_test_suite.profdata'
+              'performance_test_suite\\\\performance_test_suite.profdata',
+              'different_test_suite\\\\different_test_suite.profdata'
           ])),
       api.post_process(post_process.MustRunRE, 'ensure profile dir for .*'),
       api.post_process(
@@ -212,8 +188,8 @@ def GenTests(api: RecipeTestApi):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              'performance_test_suite\\performance_test_suite.profdata',
-              'different_test_suite\\different_test_suite.profdata'
+              'performance_test_suite\\\\performance_test_suite.profdata',
+              'different_test_suite\\\\different_test_suite.profdata'
           ])),
       api.post_process(post_process.MustRunRE, 'ensure profile dir for .*'),
       api.post_process(
@@ -382,7 +358,7 @@ def GenTests(api: RecipeTestApi):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir(
-              ['performance_test_suite\\performance_test_suite.profdata'])),
+              ['performance_test_suite/performance_test_suite.profdata'])),
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
@@ -400,10 +376,8 @@ def GenTests(api: RecipeTestApi):
       api.override_step_data(
           'validate benchmark results and profile data.searching for '
           'profdata files',
-          api.file.listdir([
-              'performance_test_suite\\performance_test_suite.profdata',
-              'different_test_suite\\different_test_suite.profdata'
-          ])),
+          api.file.listdir(
+              ['performance_test_suite/performance_test_suite.profdata'])),
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
@@ -412,95 +386,17 @@ def GenTests(api: RecipeTestApi):
   )
 
   yield api.test(
-      'failed 1 benchmark test',
+      'failed benchmark test',
       api.chromium.generic_build(
           builder_group='chromium.perf', builder='win64-builder-perf'),
       api.pgo(use_pgo=True),
       api.platform('win', 64),
-      api.properties(
-          mock_merged_profdata=True,
-          benchmark_failures=['performance_test_suite.test1']),
+      api.properties(mock_merged_profdata=False, benchmark_failures=['test1']),
       api.override_step_data(
           'validate benchmark results and profile data.searching for '
           'profdata files',
-          api.file.listdir([
-              'performance_test_suite\\performance_test_suite.profdata',
-              'different_test_suite\\different_test_suite.profdata'
-          ])),
-      api.post_process(
-          post_process.MustRun, 'validate benchmark results and profile data.'
-          'searching for profdata files'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'failed 1 benchmark test (android-arm64-pgo)',
-      api.chromium.generic_build(
-          builder_group='chrome.pgo', builder='android-arm64-pgo'),
-      api.pgo(use_pgo=True),
-      api.platform('linux', 64, arch='arm'),
-      api.properties(
-          use_android=True,
-          mock_merged_profdata=True,
-          benchmark_failures=['performance_test_suite.test1']),
-      api.override_step_data(
-          'validate benchmark results and profile data.searching for '
-          'profdata files',
-          api.file.listdir([
-              'performance_test_suite/performance_test_suite.profdata',
-              'different_test_suite/different_test_suite.profdata'
-          ])),
-      api.post_process(
-          post_process.MustRun, 'validate benchmark results and profile data.'
-          'searching for profdata files'),
-      api.expect_status('SUCCESS'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'failed multiple stories from same benchmark test',
-      api.chromium.generic_build(
-          builder_group='chromium.perf', builder='win64-builder-perf'),
-      api.pgo(use_pgo=True),
-      api.platform('win', 64),
-      api.properties(
-          mock_merged_profdata=True,
-          benchmark_failures=[
-              'performance_test_suite.test1', 'performance_test_suite.test2'
-          ]),
-      api.override_step_data(
-          'validate benchmark results and profile data.searching for '
-          'profdata files',
-          api.file.listdir([
-              'performance_test_suite\\performance_test_suite.profdata',
-              'different_test_suite\\different_test_suite.profdata'
-          ])),
-      api.post_process(
-          post_process.MustRun, 'validate benchmark results and profile data.'
-          'searching for profdata files'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'failed multiple different benchmark test',
-      api.chromium.generic_build(
-          builder_group='chromium.perf', builder='win64-builder-perf'),
-      api.pgo(use_pgo=True),
-      api.platform('win', 64),
-      api.properties(
-          mock_merged_profdata=True,
-          benchmark_failures=[
-              'performance_test_suite.test1', 'different_test_suite.test1'
-          ]),
-      api.override_step_data(
-          'validate benchmark results and profile data.searching for '
-          'profdata files',
-          api.file.listdir([
-              'performance_test_suite\\performance_test_suite.profdata',
-              'different_test_suite\\different_test_suite.profdata'
-          ])),
+          api.file.listdir(
+              ['performance_test_suite/performance_test_suite.profdata'])),
       api.post_process(
           post_process.MustRun, 'validate benchmark results and profile data.'
           'searching for profdata files'),
@@ -519,8 +415,8 @@ def GenTests(api: RecipeTestApi):
           'validate benchmark results and profile data.searching for '
           'profdata files',
           api.file.listdir([
-              'performance_test_suite\\performance_test_suite.profdata',
-              'different_test_suite\\different_test_suite.profdata'
+              'performance_test_suite\\\\performance_test_suite.profdata',
+              'different_test_suite\\\\different_test_suite.profdata'
           ])),
       api.post_process(post_process.DropExpectation),
   ) + api.post_process(post_process.DoesNotRunRE,
