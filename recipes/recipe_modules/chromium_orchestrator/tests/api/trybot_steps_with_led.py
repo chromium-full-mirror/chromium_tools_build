@@ -6,7 +6,8 @@ from recipe_engine import post_process
 from PB.recipe_modules.build.chromium_orchestrator.properties import (
     InputProperties)
 from PB.infra.chromium import chromium_bootstrap
-from PB.go.chromium.org.luci.swarming.proto.api import swarming as swarming_pb
+from PB.go.chromium.org.luci.swarming.proto.api_v2 import (
+    swarming as swarming_pb)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 DEPS = [

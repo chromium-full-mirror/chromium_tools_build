@@ -8,7 +8,8 @@ import re
 from recipe_engine import post_process, recipe_api
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from PB.go.chromium.org.luci.swarming.proto.api import swarming as swarming_pb
+from PB.go.chromium.org.luci.swarming.proto.api_v2 import (
+    swarming as swarming_pb)
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc

@@ -5,7 +5,8 @@
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
-from PB.go.chromium.org.luci.swarming.proto.api import swarming as swarming_pb
+from PB.go.chromium.org.luci.swarming.proto.api_v2 import (
+    swarming as swarming_pb)
 from PB.infra.chromium import chromium_bootstrap
 
 DEPS = [
