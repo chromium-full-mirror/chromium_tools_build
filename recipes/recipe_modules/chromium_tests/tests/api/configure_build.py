@@ -21,17 +21,14 @@ DEPS = [
 PROPERTIES = {
     'test_only': Property(kind=bool, default=None),
     'expected_gclient_vars': Property(kind=Dict(), default={}),
-    'has_checkout': Property(kind=bool, default=None),
 }
 
 
-def RunSteps(api, test_only, expected_gclient_vars, has_checkout):
+def RunSteps(api, test_only, expected_gclient_vars):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   kwargs = {}
   if test_only is not None:
     kwargs['test_only'] = test_only
-  if has_checkout is not None:
-    kwargs['has_checkout'] = has_checkout
   api.chromium_tests.configure_build(builder_config, **kwargs)
   for k, v in expected_gclient_vars.items():
     api.assertions.assertEqual(v, api.gclient.c.solutions[0].custom_vars.get(k))
@@ -197,21 +194,5 @@ def GenTests(api):
               ),
           ).assemble()),
       api.properties(test_only=True),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'test-no-checkout',
-      api.platform('linux', 64),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-orchestrator',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-orchestrator',
-          ).assemble()),
-      api.properties(has_checkout=False),
       api.post_process(post_process.DropExpectation),
   )

@@ -82,8 +82,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       # build_dir is the full path to the "out" directory. Actual
       # gn/ninja/compile artifacts are located in
       # build_dir.join(build_config_fs).
-      #
-      # Only set if CHECKOUT_PATH is non-None.
       build_dir=Single(Path),
       cros_sdk=ConfigGroup(
           external=Single(bool, empty_val=True, required=False),
@@ -91,7 +89,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       ),
       runtests=ConfigGroup(
           enable_memcheck=Single(bool, empty_val=False, required=False),
-          # Only set if CHECKOUT_PATH is non-None.
           memory_tests_runner=Single(Path),
           enable_asan=Single(bool, empty_val=False, required=False),
           enable_lsan=Single(bool, empty_val=False, required=False),
@@ -99,14 +96,12 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           enable_tsan=Single(bool, empty_val=False, required=False),
           run_asan_test=Single(bool, required=False),
       ),
-      # The directory where targets spec files will be read for the builder.
-      # Only set if CHECKOUT_PATH is non-None.
+      # The directory where targets spec files will be read for the builder
       targets_spec_dir=Single(Path),
       # Path to the analyze config file used for configuring ignores/exclusions
       # for analyze (e.g. //testing/buildbot/trybot_analyze_config.json). If not
       # provided, then trybot_analyze_config.json in targets_spec_dir will be
       # used.
-      # Only set if CHECKOUT_PATH is non-None.
       analyze_config_path=Single(Path, required=False),
       use_tot_clang=Single(bool, empty_val=False, required=False),
 
@@ -122,8 +117,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       TARGET_BITS=Static(check(TARGET_BITS, HOST_TARGET_BITS)),
       TARGET_CROS_BOARDS=Static(TARGET_CROS_BOARDS),
       CROS_BOARDS_WITH_QEMU_IMAGES=Static(CROS_BOARDS_WITH_QEMU_IMAGES),
-      # NOTE: CHECKOUT_PATH may be None if this build is running in a context
-      # which does not do a checkout, such as the orchestrator recipes.
       CHECKOUT_PATH=Static(CHECKOUT_PATH),
       TEST_ONLY=Static(TEST_ONLY),
       gn_args=List(str),
@@ -206,15 +199,14 @@ def BASE(c):
       # Windows requires x64 builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
-  if c.CHECKOUT_PATH:
-    c.targets_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
-    c.analyze_config_path = c.CHECKOUT_PATH.join('testing', 'buildbot',
-                                                 'trybot_analyze_config.json')
-    # Test runner memory tools that are not compile-time based.
+  c.targets_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
+  c.analyze_config_path = c.CHECKOUT_PATH.join('testing', 'buildbot',
+                                               'trybot_analyze_config.json')
+  # Test runner memory tools that are not compile-time based.
 
-    ext = 'bat' if c.HOST_PLATFORM == 'win' else 'sh'
-    c.runtests.memory_tests_runner = c.CHECKOUT_PATH.join(
-        'tools', 'valgrind', 'chrome_tests.' + ext)
+  ext = 'bat' if c.HOST_PLATFORM == 'win' else 'sh'
+  c.runtests.memory_tests_runner = c.CHECKOUT_PATH.join(
+      'tools', 'valgrind', 'chrome_tests.'+ext)
 
   if c.HOST_PLATFORM == 'mac':
     c.mac_toolchain.installer_cipd_package = (
@@ -247,8 +239,7 @@ def mb_no_luci_auth(c):
 
 @config_ctx(group='builder')
 def ninja(c):
-  if c.CHECKOUT_PATH:
-    c.build_dir = c.CHECKOUT_PATH.join('out')
+  c.build_dir = c.CHECKOUT_PATH.join('out')
 
 
 @config_ctx()
@@ -569,12 +560,11 @@ def android_asan(_):
 
 @config_ctx()
 def android_common(c):
-  if c.CHECKOUT_PATH:
-    c.env.PATH.extend([
-        c.CHECKOUT_PATH.join('third_party', 'android_sdk', 'public',
-                             'platform-tools'),
-        c.CHECKOUT_PATH.join('build', 'android')
-    ])
+  c.env.PATH.extend([
+      c.CHECKOUT_PATH.join('third_party', 'android_sdk', 'public',
+                           'platform-tools'),
+      c.CHECKOUT_PATH.join('build', 'android')
+  ])
 
 
 @config_ctx(includes=['ninja', 'clang', 'goma'])
