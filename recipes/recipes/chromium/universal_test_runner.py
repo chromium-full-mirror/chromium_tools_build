@@ -161,27 +161,39 @@ def check_gclient(api: RecipeApi) -> str:
   if 'rbe_instance' in current_custom_vars:
     mismatch_messages.append('- rbe_instance has been set in the .gclient file')
 
-  if len(api.gclient.c.solutions) > 0:
-    for builder_custom_var in api.gclient.c.solutions[0].custom_vars:
-      if (builder_custom_var not in current_custom_vars or
-          not current_custom_vars.get(builder_custom_var, {})):
-        mismatch_messages.append(
-            f'- custom_var {builder_custom_var} is not set in the local '
-            '.gclient file')
+  # Are there any Chrome/Chromium builders with >1 gclient solution?
+  if len(api.gclient.c.solutions) != 1:  # pragma: no cover
+    raise api.step.StepFailure(
+        'Unsupported UTR invocation for this builder. Please file a general '
+        "infra bug via https://g.co/bugatrooper if you're seeing this, and "
+        'provide your full cmd-line invocation.')
+
+  builder_cfg = api.gclient.c.solutions[0]
+  for builder_custom_var, builder_val in builder_cfg.custom_vars.items():
+    assignment_snippet = f'`"{builder_custom_var}": "{builder_val}"`'
+    if (builder_custom_var not in current_custom_vars or
+        builder_val != str(current_custom_vars[builder_custom_var])):
+      mismatch_messages.append(
+          f'- custom_var {builder_custom_var} has mismatched value in the '
+          f'local .gclient file. Set it to: {assignment_snippet}')
 
   current_target_os = gclient_config.get('target_os', [])
   builder_target_os = api.gclient.c.target_os
-  for os in builder_target_os:
-    if os not in current_target_os:
-      mismatch_messages.append(
-          f'- target_os in builder config ({os}) is not in the local '
-          f'.gclient file ({str(current_target_os)})')
+  missing_os = list(set(builder_target_os) - set(current_target_os))
+  target_os_snippet = (
+      '`target_os = [%s]`' %
+      ', '.join(f'"{os}"' for os in current_target_os + missing_os))
+  if missing_os:
+    mismatch_messages.append(
+        f'- target_os in builder config `"{missing_os}"` is not in the local '
+        f'.gclient file. Set it to: {target_os_snippet}')
 
   # TODO(crbug.com/41492686): Check custom_deps
   error_info = ''
   if mismatch_messages:
     error_info = ('Caution: your .gclient file and the builder\'s mismatches in'
-                  ' the following way(s):\n' + '\n'.join(mismatch_messages))
+                  ' the following way(s). Please run "gclient sync" after '
+                  'resolving these:\n' + '\n'.join(mismatch_messages))
   return error_info
 
 
@@ -879,12 +891,13 @@ target_os=['os']
       api.post_process(
           post_process.ResultReason,
           'Caution: your .gclient file and the builder\'s mismatches in the '
-          'following way(s):\n'
+          'following way(s). Please run "gclient sync" after resolving these:\n'
           '- rbe_instance has been set in the .gclient file\n'
-          '- custom_var checkout_telemetry_dependencies is not set in the '
-          'local .gclient file\n'
-          '- target_os in builder config (ios) is not in the local .gclient '
-          'file ([\'os\'])'),
+          '- custom_var checkout_telemetry_dependencies has mismatched value '
+          'in the local .gclient file. Set it to: '
+          '`"checkout_telemetry_dependencies": "True"`\n'
+          '- target_os in builder config `"[\'ios\']"` is not in the local '
+          '.gclient file. Set it to: `target_os = ["os", "ios"]`'),
       api.post_process(post_process.StepCommandContains, 'read gclient',
                        ['[CACHE]/src/.gclient']),
       api.expect_status('FAILURE'),
