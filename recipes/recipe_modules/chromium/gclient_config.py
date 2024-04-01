@@ -206,6 +206,11 @@ def fuchsia_workstation_perf_images(c):
 
 
 @CONFIG_CTX()
+def mac(c):
+  c.target_os.add('mac')
+
+
+@CONFIG_CTX()
 def win(c):
   c.target_os.add('win')
 
