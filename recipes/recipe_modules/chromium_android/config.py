@@ -31,7 +31,8 @@ def BaseConfig(CHECKOUT_PATH, INTERNAL=False, REPO_NAME=None, REPO_URL=None,
       managed=Single(bool, required=False, empty_val=True),
       extra_deploy_opts=List(inner_type=str),
       tests=List(inner_type=str),
-      cr_build_android=Static(CHECKOUT_PATH.join('build', 'android')),
+      cr_build_android=Static(
+          CHECKOUT_PATH.join('build', 'android') if CHECKOUT_PATH else None),
       test_runner=Single(Path),
       resource_sizes=Single(Path),
       gclient_custom_deps=Dict(value_type=(str, type(None))),
@@ -56,9 +57,10 @@ config_ctx = config_item_context(BaseConfig)
 @config_ctx(is_root=True)
 def base_config(c):
   c.internal_dir_name = 'clank'
-  c.test_runner = c.CHECKOUT_PATH.join('build', 'android', 'test_runner.py')
-  c.resource_sizes = c.CHECKOUT_PATH.join(
-      'build', 'android', 'resource_sizes.py')
+  if c.CHECKOUT_PATH:
+    c.test_runner = c.CHECKOUT_PATH.join('build', 'android', 'test_runner.py')
+    c.resource_sizes = c.CHECKOUT_PATH.join('build', 'android',
+                                            'resource_sizes.py')
 
 @config_ctx()
 def main_builder(_):
