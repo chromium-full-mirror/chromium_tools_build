@@ -108,7 +108,7 @@ def RunSteps(api):
     # line numbers. Otherwise, line numbers would be relative to origin/main,
     # which may be synced to include changes subsequent to the actual patch.
     api.chromium_checkout.ensure_checkout(
-        config, gerrit_no_rebase_patch_ref=True)
+        clobber=config.clobber, gerrit_no_rebase_patch_ref=True)
 
     api.chromium.runhooks(name='runhooks (with patch)')
 

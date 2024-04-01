@@ -409,7 +409,8 @@ def batched(iterable):
 
 def RunSteps(api):
   builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
-  checkout_results = api.chromium_checkout.ensure_checkout(bot_config)
+  checkout_results = api.chromium_checkout.ensure_checkout(
+      clobber=bot_config.clobber)
 
   api.chromium.ensure_toolchains()
   api.chromium.runhooks()
