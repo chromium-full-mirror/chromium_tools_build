@@ -15,8 +15,6 @@ from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api, step_data
 from recipe_engine.config_types import Path
 
-from recipe_engine.engine_types import thaw
-
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.build.archive import properties as arch_prop
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -170,7 +168,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     presentation = self.m.step.active_result.presentation
     presentation.logs.setdefault('stdout', []).append(message)
 
-  def configure_build(self, builder_config, test_only=False, has_checkout=True):
+  def configure_build(self, builder_config, test_only=False):
     """Configure the modules that will be used by chromium_tests code.
 
     Args:
@@ -181,42 +179,35 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         inapplicable validation is disabled. By default, the compilation
         validation is skipped only if the builder config's
         execution_mode is TEST.
-      has_checkout - If this builder has a checkout AT ALL. In particular,
-        the orchestrator builders do not. If this is False, then
-        CHECKOUT_PATH will be set to 'None'. Configs which use
-        CHECKOUT_PATH will need to have appropriate conditionality on this.
     """
     test_only = test_only or builder_config.execution_mode == ctbc.TEST
-    full_config_kwargs = thaw(builder_config.chromium_config_kwargs)
-    full_config_kwargs['TEST_ONLY'] = test_only
-    if not has_checkout:
-      full_config_kwargs['CHECKOUT_PATH'] = None
-    self.m.chromium.set_config(builder_config.chromium_config,
-                               **full_config_kwargs)
+    self.m.chromium.set_config(
+        builder_config.chromium_config,
+        TEST_ONLY=test_only,
+        **builder_config.chromium_config_kwargs)
 
-    if has_checkout:
-      self.m.gclient.set_config(builder_config.gclient_config)
+    self.m.gclient.set_config(builder_config.gclient_config)
 
     if builder_config.android_config:
       self.m.chromium_android.configure_from_properties(
-          builder_config.android_config, **full_config_kwargs)
+          builder_config.android_config,
+          **builder_config.chromium_config_kwargs)
 
     for c in builder_config.chromium_apply_config:
       self.m.chromium.apply_config(c)
 
-    if has_checkout:
-      for c in builder_config.gclient_apply_config:
-        self.m.gclient.apply_config(c)
+    for c in builder_config.gclient_apply_config:
+      self.m.gclient.apply_config(c)
 
-      if (self.m.chromium.c.TARGET_CROS_BOARDS or
-          self.m.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES):
-        gclient_solution = self.m.gclient.c.solutions[0]
-        if self.m.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES:
-          gclient_solution.custom_vars['cros_boards_with_qemu_images'] = (
-              self.m.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES)
-        if self.m.chromium.c.TARGET_CROS_BOARDS:
-          gclient_solution.custom_vars['cros_boards'] = (
-              self.m.chromium.c.TARGET_CROS_BOARDS)
+    if (self.m.chromium.c.TARGET_CROS_BOARDS or
+        self.m.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES):
+      gclient_solution = self.m.gclient.c.solutions[0]
+      if self.m.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES:
+        gclient_solution.custom_vars['cros_boards_with_qemu_images'] = (
+            self.m.chromium.c.CROS_BOARDS_WITH_QEMU_IMAGES)
+      if self.m.chromium.c.TARGET_CROS_BOARDS:
+        gclient_solution.custom_vars['cros_boards'] = (
+            self.m.chromium.c.TARGET_CROS_BOARDS)
 
     for c in builder_config.android_apply_config:
       self.m.chromium_android.apply_config(c)
