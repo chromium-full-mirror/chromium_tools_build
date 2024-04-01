@@ -29,7 +29,7 @@ _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
 # Builders want to detect the build system switch and clean up the build
 # directory.
 # The file content is either "ninja" or "siso".
-# TODO: b/277863839 - Remove this logic after Siso migration.
+# TODO: b/315393741 - Remove this logic after Siso migration.
 _LAST_BUILD_SYSTEM = 'LAST_BUILD_SYSTEM.txt'
 
 
@@ -585,7 +585,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     this build. ("ninja" or "siso")
     If the build system is different from the recorded one during the next
     build, it cleans the output directory.
-    TODO: b/277863839 - Remove this logic after Siso rollout.
+    TODO: b/315393741 - Remove this logic after Siso rollout.
     """
     should_clean = False
     guard_path = self.m.chromium.output_dir.join(_CR_COMPILE_GUARD_NAME)
