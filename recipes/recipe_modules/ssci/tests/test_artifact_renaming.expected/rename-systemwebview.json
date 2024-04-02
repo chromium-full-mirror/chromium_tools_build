@@ -870,8 +870,8 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
-      "-json-list=true",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_uploader/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/ssci_uploader",
+      "-json_array=true",
       "-column",
       "builder=\"myproject/mybucket/mybuilder\"",
       "-column",
@@ -881,6 +881,7 @@
       "-column",
       "target=\"//clank/android_webview:system_webview_google_bundle_apks\"",
       "project.dataset.table",
+      "ArtifactBigQueryRow",
       "out/Release/artifacts.json"
     ],
     "luci_context": {
@@ -934,8 +935,8 @@
   },
   {
     "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
-      "-json-list=true",
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/ssci_uploader/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/ssci_uploader",
+      "-json_array=true",
       "-column",
       "builder=\"myproject/mybucket/mybuilder\"",
       "-column",
@@ -945,6 +946,7 @@
       "-column",
       "target=\"//clank/android_webview:system_webview_google_bundle_apks\"",
       "project.dataset.table",
+      "LibraryBigQueryRow",
       "out/Release/libs.json"
     ],
     "luci_context": {

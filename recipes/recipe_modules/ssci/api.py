@@ -22,8 +22,8 @@ class SsciAPI(recipe_api.RecipeApi):
   def __init__(self, props, **kwargs):
     super().__init__(**kwargs)
 
-    self.bq_art_table = props.bq_artifact_table or "ssci-dev.depbot.artifacts"
-    self.bq_lib_table = props.bq_library_table or "ssci-dev.depbot.libraries"
+    self.bq_art_table = props.bq_artifact_table or "projects/ssci-dev/datasets/depbot/tables/artifacts"
+    self.bq_lib_table = props.bq_library_table or "projects/ssci-dev/datasets/depbot/tables/libraries"
     self.targets = props.targets
     self.bq_thirdparty_table = props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
     # Proto3 defaults boolean fields to False
@@ -60,13 +60,17 @@ class SsciAPI(recipe_api.RecipeApi):
     # This case is handled by the SSCI tool which will fetch the git hash instead.
     return self.m.buildbucket.gitiles_commit.id[:6]
 
-  def _upload_collected_data(self,
-                             data_name,
-                             bq_args,
-                             file_to_upload,
-                             gcs_file_name,
-                             sbom_folder,
-                             sbom_bucket="chrome-sbom"):
+  def _upload_collected_data(
+      self,
+      data_name,
+      bq_args,
+      file_to_upload,
+      gcs_file_name,
+      sbom_folder,
+      sbom_bucket="chrome-sbom",
+      # TODO: b/326007424 - Deprecate and move all calls
+      # to the new more performant API.
+      use_bq_write_api=False):
     """
     Uploads collected data to both BigQuery and GCS. The BigQuery upload can be flaky
     so a failure in this step should not cause the SBOM generation to fail. The data
@@ -82,14 +86,19 @@ class SsciAPI(recipe_api.RecipeApi):
       gcs_file_name: What to call the uploaded GCS file
       sbom_folder: A folder prefix to use when uploading
       sbom_bucket: Bucket that should be used for data upload
+      use_bq_write_api: Use the new BigQuery write API.
     """
     step_name = f"upload {data_name} to BigQuery"
     # TODO(dlf): crbug/324078360 - poor streaming insert performance.
     bq_step_timeout = 60
     try:
+      bq_tool = [self.bqupload.tool_path, "-json-list=true"]
+      if use_bq_write_api:
+        bq_tool = [self.ssci_uploader.tool_path, "-json_array=true"]
+
       self.m.step(
-          step_name, [self.bqupload.tool_path, "-json-list=true"] + bq_args +
-          [file_to_upload],
+          step_name,
+          bq_tool + bq_args + [file_to_upload],
           timeout=bq_step_timeout)
     except self.m.step.StepFailure:
       pass
@@ -196,17 +205,22 @@ class SsciAPI(recipe_api.RecipeApi):
 
     with self.m.step.nest('target specific steps for %s' % display_name):
 
-      for data_name, bq_table, data_file in [
-          ("artifacts", self.bq_art_table, artifact_file),
-          ("libraries", self.bq_lib_table, library_file)
+      for data_name, bq_table, proto_name, data_file in [
+          ("artifacts", self.bq_art_table, "ArtifactBigQueryRow",
+           artifact_file),
+          ("libraries", self.bq_lib_table, "LibraryBigQueryRow", library_file)
       ]:
         # Renames the files so they align with their generated SBOMs.
         # eg. SystemWebViewStable.apk.libraries.json
         filename = self._make_filename_from_target(
             entry_point_name, f"{filename_postfix or ''}.{data_name}")
-        self._upload_collected_data(data_name,
-                                    extra_depbot_columns + [bq_table],
-                                    data_file, filename, sbom_folder)
+        self._upload_collected_data(
+            data_name,
+            extra_depbot_columns + [bq_table, proto_name],
+            data_file,
+            filename,
+            sbom_folder,
+            use_bq_write_api=True)
 
       # Combines the recipe name with the DepBot target as the product name.
       final_artifact_name = self._make_filename_from_target(
