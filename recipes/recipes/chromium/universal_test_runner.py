@@ -273,28 +273,15 @@ def create_tests(
                                  build_dir, builder_recipe)
     if raw_result.status != common_pb2.SUCCESS:
       return raw_result, None
+  skylab_tests = [test for test in tests if test.is_skylabtest]
+  if not should_build or preserve_gn_args or skylab_tests:
+    # When compiling, "mb.py gen" will produce the *.isolate files for us. In
+    # all other instances, we need to ask mb.py to do so specifically. Do so
+    # for *all* possible targets. This shouldn't take much longer, and
+    # simplifies things a bit.
+    api.chromium.mb_isolate_everything(None)
 
   isolate_tests = [test for test in tests if test.isolate_target]
-  skylab_tests = [test for test in tests if test.is_skylabtest]
-
-  # TODO(crbug.com/41492686): add multiple target support for mb.py isolate
-  # command like there is for mb.py gen
-  def isolate_target(target):
-    mb_args = ['--no-build']
-    mb_args.append(build_dir)
-    mb_args.append(target)
-    # Pass an empty builder_id to prevent gn_args from getting reapplied. They
-    # should have been set in the mb gen or should not be overwritten
-    api.chromium.run_mb_cmd(
-        'isolate',
-        'isolate',
-        builder_id=None,
-        additional_args=mb_args,
-    )
-
-  for target in [t.isolate_target for t in isolate_tests
-                ] + [t.target_name for t in skylab_tests]:
-    isolate_target(target)
   if isolate_tests:
     api.chromium_tests.isolate_tests(
         builder_config, isolate_tests, '', '', build_dir=build_dir)
@@ -419,11 +406,13 @@ def compile_targets(
   if preserve_gn_args:
     api.gn.gen(build_dir, 'gn_gen')
   else:
+    tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
     api.chromium.mb_gen(
         builder_id,
         name='generate_build_files',
         recursive_lookup=True,
-        build_dir=build_dir)
+        build_dir=build_dir,
+        isolated_targets=tests_to_isolate)
 
   use_reclient = get_remote_compile_options(api, build_dir)
 
@@ -624,14 +613,12 @@ solutions = [
 ]
 """)),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.StepCommandContains, 'compile',
                        ['[CACHE]/src/out/Release', 'browser_tests']),
-      api.post_process(post_process.StepCommandContains, 'isolate',
-                       ['browser_tests']),
       api.post_process(
           post_process.StepCommandContains, 'isolate tests',
           ['[CACHE]/src/out/Release/browser_tests.isolated.gen.json']),
@@ -753,17 +740,13 @@ solutions = [
               },
           }),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] unit_tests'),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        ['-m', 'fake-group', '-b', 'fake-tester']),
-      api.post_process(post_process.StepCommandContains, 'isolate',
-                       ['browser_tests']),
-      api.post_process(post_process.StepCommandContains, 'isolate (2)',
-                       ['unit_tests']),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.MustRun, 'unit_tests'),
       api.post_process(post_process.DropExpectation),
@@ -799,7 +782,7 @@ solutions = [
       boilerplate(),
       api.step_data('read GN args',
                     api.raw_io.output_text('use_remoteexec = true')),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
@@ -807,8 +790,6 @@ solutions = [
           '[CACHE]/src/third_party/ninja/ninja', '-C',
           '[CACHE]/src/out/Release', '-j', '160', 'browser_tests'
       ]),
-      api.post_process(post_process.StepCommandContains, 'isolate',
-                       ['browser_tests']),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(
           post_process.MustRun,
@@ -837,7 +818,7 @@ solutions = [
       api.step_data(
           'read GN args',
           api.raw_io.output_text('use_remoteexec = true\nuse_siso: true')),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
@@ -848,8 +829,6 @@ solutions = [
       api.post_process(post_process.StepCommandDoesNotContain, 'compile', [
           '--enable_cloud_logging',
       ]),
-      api.post_process(post_process.StepCommandContains, 'isolate',
-                       ['browser_tests']),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.DoesNotRun,
                        'postprocess for reclient.stop cloudtail'),
@@ -1018,7 +997,7 @@ target_os=['os']
       'changed_build_dir',
       boilerplate(build_dir='/fake_root/fake_out/Debug'),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun, 'lookup GN args'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
@@ -1037,7 +1016,7 @@ target_os=['os']
       'no_compile_targets',
       boilerplate(),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
@@ -1052,7 +1031,7 @@ target_os=['os']
       api.chromium_tests.gen_swarming_and_rdb_results(
           'browser_tests', '', failures=['Test.One']),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
@@ -1078,13 +1057,12 @@ target_os=['os']
       'preserve_gn_args',
       boilerplate(preserve_gn_args=True),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'generate .isolate files'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.MustRun, 'gn_gen'),
       api.post_process(post_process.DoesNotRun, 'generate_build_files'),
-      api.post_process(post_process.StepCommandDoesNotContain, 'isolate',
-                       ['-m', 'fake-group', '-b', 'fake-tester']),
       api.post_process(post_process.DoesNotRun, 'lookup GN args'),
       api.post_process(post_process.MustRun, 'browser_tests'),
       api.post_process(post_process.DropExpectation),
@@ -1095,7 +1073,7 @@ target_os=['os']
       boilerplate(run_type=InputProperties.RunType.RUN_TYPE_RUN),
       api.post_process(post_process.DoesNotRun, 'compile'),
       api.post_process(post_process.DoesNotRun, 'generate_build_files'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.MustRun,
                        'test_pre_run.[trigger] browser_tests'),
       api.post_process(post_process.MustRun, 'browser_tests'),
@@ -1106,7 +1084,7 @@ target_os=['os']
       'skip_test',
       boilerplate(run_type=InputProperties.RunType.RUN_TYPE_COMPILE),
       api.post_process(post_process.MustRun, 'compile'),
-      api.post_process(post_process.MustRun, 'isolate'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',
                        ['-m', 'fake-group', '-b', 'fake-tester']),
       api.post_process(post_process.DoesNotRun,
