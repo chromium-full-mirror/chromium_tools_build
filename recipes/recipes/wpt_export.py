@@ -11,11 +11,15 @@ pull requests.
 See: //docs/testing/web_platform_tests.md (https://goo.gl/rSRGmZ)
 """
 
+from PB.go.chromium.org.luci.buildbucket.proto import common
+from PB.recipe_engine.result import RawResult
+
 DEPS = [
     'chromium',
     'depot_tools/bot_update',
     'depot_tools/gclient',
     'infra/cloudkms',
+    'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/step',
 ]
@@ -39,9 +43,21 @@ def RunSteps(api):
 
   script = api.path['checkout'].join('third_party', 'blink', 'tools',
                                      'wpt_export.py')
-  args = ['--credentials-json', creds, '--surface-failures-to-gerrit']
+  summary_path = api.path.mkstemp()
+  args = [
+      '--credentials-json',
+      creds,
+      '--surface-failures-to-gerrit',
+      '--summary-markdown',
+      str(summary_path),
+  ]
   cmd = ['vpython3', script] + args
   api.step('Export Chromium commits and in-flight CLs to WPT', cmd)
+  summary_contents = api.file.read_text(
+      'read summary of PRs modified',
+      summary_path,
+      test_data='No pull requests modified.\n')
+  return RawResult(status=common.SUCCESS, summary_markdown=summary_contents)
 
 
 # Run `./recipes.py test train` to update wpt-export.json file.

@@ -221,11 +221,32 @@
       "[START_DIR]/src/third_party/blink/tools/wpt_export.py",
       "--credentials-json",
       "[CLEANUP]/wpt-import-export.json",
-      "--surface-failures-to-gerrit"
+      "--surface-failures-to-gerrit",
+      "--summary-markdown",
+      "[CLEANUP]/tmp_tmp_1"
     ],
     "name": "Export Chromium commits and in-flight CLs to WPT"
   },
   {
-    "name": "$result"
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/tmp_tmp_1",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "name": "read summary of PRs modified",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@tmp_tmp_1@No pull requests modified.@@@",
+      "@@@STEP_LOG_END@tmp_tmp_1@@@"
+    ]
+  },
+  {
+    "name": "$result",
+    "summaryMarkdown": "No pull requests modified.\n"
   }
 ]
