@@ -57,8 +57,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     self.compilator = properties.compilator
     self.compilator_watcher_git_revision = (
         properties.compilator_watcher_git_revision)
-    self._propagate_properties_to_compilator = (
-        properties.propagate_properties_to_compilator)
 
     self.compilator_watcher_pkg = None
 
@@ -136,27 +134,27 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # likely that the property would actually be consumed by something besides
     # the compilator recipe (led, bootstrapper), and therefore more likely to
     # have unexpected effects, so we should be more selective.
-    if self._propagate_properties_to_compilator:
-      # (?!recipe_engine) - negative lookahead of recipe_engine
-      recipe_module_property_re = re.compile(r'\$(?!recipe_engine)[^/]+/[^/]+')
-      should_forward_by_property = {
-          # This property is used during compilation so should be forwarded
-          'xcode_build_version': True,
-          # This property is for the orchestrator and wouldn't be used by the
-          # compilator
-          '$build/chromium_orchestrator': False,
-          # This property is set by the bootstrapper and intended only for the
-          # build that it was set for
-          '$build/chromium_bootstrap': False,
-          # This is used for tests, the compilator runs any local tests
-          'recipe_engine/resultdb/test_presentation': True,
-      }
-      for p, value in self.m.properties.items():
-        should_forward = should_forward_by_property.get(p, None)
-        if should_forward is None:
-          should_forward = recipe_module_property_re.fullmatch(p)
-        if should_forward:
-          compilator_properties[p] = thaw(value)
+
+    # (?!recipe_engine) - negative lookahead of recipe_engine
+    recipe_module_property_re = re.compile(r'\$(?!recipe_engine)[^/]+/[^/]+')
+    should_forward_by_property = {
+        # This property is used during compilation so should be forwarded
+        'xcode_build_version': True,
+        # This property is for the orchestrator and wouldn't be used by the
+        # compilator
+        '$build/chromium_orchestrator': False,
+        # This property is set by the bootstrapper and intended only for the
+        # build that it was set for
+        '$build/chromium_bootstrap': False,
+        # This is used for tests, the compilator runs any local tests
+        'recipe_engine/resultdb/test_presentation': True,
+    }
+    for p, value in self.m.properties.items():
+      should_forward = should_forward_by_property.get(p, None)
+      if should_forward is None:
+        should_forward = recipe_module_property_re.fullmatch(p)
+      if should_forward:
+        compilator_properties[p] = thaw(value)
 
     compilator_properties.update(self.m.cq.props_for_child_build)
     self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)

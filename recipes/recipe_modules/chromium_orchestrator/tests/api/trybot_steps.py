@@ -1924,7 +1924,6 @@ def GenTests(api):
                   InputProperties(
                       compilator='fake-compilator',
                       compilator_watcher_git_revision='e841fc',
-                      propagate_properties_to_compilator=True,
                   ),
           }),
       api.code_coverage(use_clang_coverage=True),

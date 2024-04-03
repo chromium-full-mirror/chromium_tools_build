@@ -14,26 +14,6 @@ message InputProperties {
   // git revision is for repo https://chromium.googlesource.com/infra/infra
   string compilator_watcher_git_revision = 2;
 
-  // Whether the orchestrator should propagate all necessary input properties to
-  // the compilator
-  //
-  // The default behavior of the orchestrator/compilator is that the
-  // orchestrator will set a handful of properties that are specific to the
-  // current build (orchestrator property to identify the orchestrator, cq
-  // properties, trigger properties for the bootstrapper). The orchestrator
-  // relied on the builder definition of the compilator to set any other
-  // properties necessary for building.
-  //
-  // Given that compilators are more implementation details of the orchestrator
-  // than part of the interface, it would be more desirable to have the
-  // properties configured on the orchestrator, which more closely aligns with
-  // configuring the runtime behavior of non-orchestrator try builders. With
-  // this field set to true, for a fixed set of properties known to be used by
-  // the compilator, the orchestrator's value of the property will be propogated
-  // to the compilator along with the values that the orchestrator would
-  // normally set.
-  //
-  // TODO: crbug.com/327554081 - Once all orchestrators are setting this to
-  // true, this behavior should be made default and this field can be removed.
-  bool propagate_properties_to_compilator = 3;
+  reserved 3;
+  reserved "propagate_properties_to_compilator";
 }
