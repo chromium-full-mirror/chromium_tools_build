@@ -199,26 +199,42 @@ def check_gclient(api: RecipeApi) -> str:
 
 def check_gn_args(api: RecipeApi, build_dir: Path,
                   builder_id: chromium.BuilderId):
+
+  def get_imports(args):
+    return [l.strip() for l in args.splitlines() if l.startswith('import(')]
+
   builder_gn_args = api.chromium.mb_lookup(
-      builder_id, recursive=True, name='lookup_builder_gn_args')
+      builder_id, recursive=False, name='lookup_builder_gn_args')
+  builder_imports = get_imports(builder_gn_args)
   builder_gn_args = api.gn.parse_gn_args(builder_gn_args)
 
   current_gn_args, _ = api.gn.read_args(build_dir)
+  current_imports = get_imports(current_gn_args)
   current_gn_args = api.gn.parse_gn_args(current_gn_args)
 
   mismatch_messages = []
   for arg in current_gn_args:
     if arg not in builder_gn_args:
       mismatch_messages.append(
-          f'- {arg} in current build dir is not used by the builder')
+          f'- `{arg}` in current build dir is not set by the builder')
     elif builder_gn_args[arg] != current_gn_args[arg]:
       mismatch_messages.append(
-          f'- {arg} in current build ({current_gn_args[arg]}) does not match '
-          f'builder value ({builder_gn_args[arg]})')
+          f'- `{arg}` in current build (`{current_gn_args[arg]}`) does not match '
+          f'builder value (`{builder_gn_args[arg]}`)')
   for arg in builder_gn_args:
     if arg not in current_gn_args:
       mismatch_messages.append(
-          f'- {arg} in used by the builder is absent in the current build dir')
+          f'- `{arg}` set by the builder is absent in the current build dir')
+
+  for missing_import in set(builder_imports) - set(current_imports):
+    mismatch_messages.append(
+        f'- `{missing_import}` used by the builder is absent in the '
+        'current build dir')
+  for missing_import in set(current_imports) - set(builder_imports):
+    mismatch_messages.append(
+        f'- `{missing_import}` in current build dir is not used by the '
+        'builder')
+
   error_info = ''
   if mismatch_messages:
     error_info = ('Caution: your build\'s gn args and the builder\'s '
@@ -975,20 +991,28 @@ target_os=['os']
       api.path.exists(api.path['cache'].join('src/out/Release')),
       api.step_data(
           'lookup_builder_gn_args',
-          stdout=api.raw_io.output_text('a = "1"\n'
+          stdout=api.raw_io.output_text('import("//builder.args")\n'
+                                        'a = "1"\n'
                                         'c = true\n'
                                         'd = true')),
-      api.step_data('read GN args',
-                    api.raw_io.output_text('b="2"\n'
-                                           'c=false\n'
-                                           'd=true')),
+      api.step_data(
+          'read GN args',
+          api.raw_io.output_text('import("//local.args")\n'
+                                 'b="2"\n'
+                                 'c=false\n'
+                                 'd=true')),
       api.post_process(
           post_process.ResultReason,
           'Caution: your build\'s gn args and the builder\'s mismatches in the '
           'following way(s):\n'
-          '- b in current build dir is not used by the builder\n'
-          '- c in current build (false) does not match builder value (true)\n'
-          '- a in used by the builder is absent in the current build dir'),
+          '- `b` in current build dir is not set by the builder\n'
+          '- `c` in current build (`false`) does not match builder value '
+          '(`true`)\n'
+          '- `a` set by the builder is absent in the current build dir\n'
+          '- `import("//builder.args")` used by the builder is absent in the '
+          'current build dir\n'
+          '- `import("//local.args")` in current build dir is not used by the '
+          'builder'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
