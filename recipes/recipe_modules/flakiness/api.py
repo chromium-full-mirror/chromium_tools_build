@@ -507,28 +507,38 @@ class FlakinessApi(recipe_api.RecipeApi):
     # new_tests is a dict of Test object to list of test names (test filter).
     # If exists, the TestDefinition's filter list should be updated to store
     # the list of tests.
-    new_tests = {}
-    for test_obj in test_objects:
-      # There are two types of suffixes: with patch, retry with patch.
-      # We're not determining new tests anymore - the new ones are already
-      # defined for us by ResultDB. Whether it's retried or not, we just need
-      # to find the corresponding test objects, so we'll use with patch.
-      suffix = 'with patch'
-      test_suite_results = test_obj.get_rdb_results(suffix)
-      vh = test_suite_results.variant_hash
+    def join_tuple(t) -> str:
+      return ' '.join(t)
 
-      for test in test_suite_results.all_tests:
-        if (test.test_id, vh) in new_test_tuples:
-          # Test object in list of new tests already, so update the filter.
-          # Otherwise create a new one.
-          test_filter, duration_milliseconds = new_tests.setdefault(
-              test_obj, ([], 0))
-          test_filter.append(test.test_name)
-          # duration_milliseconds can default to 0 for our calculations because
-          # it's only calculated if duration values are reported to ResultDB.
-          test_duration_ms = test.duration_milliseconds or 0
-          duration_milliseconds += test_duration_ms
-          new_tests[test_obj] = (test_filter, duration_milliseconds)
+    new_tests = {}
+    not_found = []
+    with self.m.step.nest('mapping new tests to test objects') as p:
+      p.logs['new_test_tuples'] = '\n'.join(map(join_tuple, new_test_tuples))
+      for test_obj in test_objects:
+        # There are two types of suffixes: with patch, retry with patch.
+        # We're not determining new tests anymore - the new ones are already
+        # defined for us by ResultDB. Whether it's retried or not, we just need
+        # to find the corresponding test objects, so we'll use with patch.
+        suffix = 'with patch'
+        test_suite_results = test_obj.get_rdb_results(suffix)
+        vh = test_suite_results.variant_hash
+
+        for test in test_suite_results.all_tests:
+          if (test.test_id, vh) in new_test_tuples:
+            # Test object in list of new tests already, so update the filter.
+            # Otherwise create a new one.
+            test_filter, duration_milliseconds = new_tests.setdefault(
+                test_obj, ([], 0))
+            test_filter.append(test.test_name)
+            # duration_milliseconds can default to 0 for our calculations because
+            # it's only calculated if duration values are reported to ResultDB.
+            test_duration_ms = test.duration_milliseconds or 0
+            duration_milliseconds += test_duration_ms
+            new_tests[test_obj] = (test_filter, duration_milliseconds)
+          else:
+            not_found.append((test.test_id, vh))
+      if not_found:
+        p.logs['not_found'] = '\n'.join(map(join_tuple, not_found))
 
     return new_tests
 
