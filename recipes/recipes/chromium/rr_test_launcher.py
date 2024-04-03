@@ -23,6 +23,7 @@ DEPS = [
     'flaky_reproducer',
     'isolate',
     'recipe_engine/cas',
+    'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -67,10 +68,12 @@ def RunSteps(api):
 
   dimensions = task_config.dimensions
   dimensions['pool'] = 'chromium.tests.rr'
-  # TODO(jiesheng): Attach the rr tool in cipd onto the task.
+  ensure_file = api.cipd.EnsureFile()
+  ensure_file.add_package('infra/3pp/tools/rr/${platform}', 'latest', 'rr_tool')
   request_slice = (request[0].
       with_command(command).
       with_cas_input_root(repacked_cas).
+      with_cipd_ensure_file(ensure_file).
       with_dimensions(**dimensions).
       with_execution_timeout_secs(1800).
       with_io_timeout_secs(1800).
