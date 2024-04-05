@@ -55,7 +55,6 @@ def RunSteps(api):
   api.path.mock_add_paths(
       api.profiles.profile_dir().join('overall-merged.profdata'))
   api.chromium_swarming.set_default_dimension('os', 'Linux')
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
   return api.chromium_orchestrator.trybot_steps()
 
 
