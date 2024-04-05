@@ -101,6 +101,7 @@ def cronet_builder(c):
   c.gn_args.append('media_use_ffmpeg=false')
   c.gn_args.append('use_thin_lto=false')
   c.gn_args.append('enable_resource_allowlist_generation=false')
+  c.gn_args.append('enable_rust=false')
 
   c.compile_py.default_targets=[
       'cronet_package',
