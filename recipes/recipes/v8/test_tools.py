@@ -8,7 +8,7 @@ Useful for tests that run too long for presubmit or that require
 dependencies and need docker.
 """
 
-from recipe_engine.post_process import Filter
+from recipe_engine.post_process import DropExpectation, Filter
 
 DEPS = [
   'chromium',
@@ -39,7 +39,7 @@ def RunSteps(api):
       'node:10',
     ]
     with api.context(cwd=fuzzer_dir):
-      api.docker.login()
+      api.docker.login(infra_step=True)
       api.docker(
           *(docker_cmd + ['npm', 'install']),
           step_name='npm install'
@@ -55,4 +55,11 @@ def GenTests(api):
       'basic',
       api.post_process(Filter('js-fuzzer.npm install', 'js-fuzzer.npm test')),
       status='SUCCESS',
+  )
+
+  yield api.test(
+      'login failure',
+      api.override_step_data('js-fuzzer.docker login', retcode=1),
+      api.post_process(DropExpectation),
+      status='INFRA_FAILURE',
   )
