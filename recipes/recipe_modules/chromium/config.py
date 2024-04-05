@@ -276,16 +276,6 @@ def default_compiler(c):
     _clang_common(c)
 
 
-@config_ctx(deps=['compiler', 'builder'], group='distributor')
-def goma(c):
-  if not c.compile_py.compiler:
-    c.compile_py.compiler = 'goma'
-  elif c.compile_py.compiler == 'clang':
-    c.compile_py.compiler = 'goma-clang'
-  else:  # pragma: no cover
-    raise BadConf('goma config doesn\'t understand %s' % c.compile_py.compiler)
-
-
 @config_ctx()
 def dcheck(c, invert=False):
   c.gn_args.append('dcheck_always_on=%s' % str(not invert).lower())
@@ -392,13 +382,13 @@ def chromium_no_goma(c):
   c.compile_py.default_targets = ['all']
 
 
-@config_ctx(includes=['ninja', 'default_compiler', 'goma'])
+@config_ctx(includes=['ninja', 'default_compiler'])
 def chromium(c):
   c.compile_py.default_targets = ['all']
   c.cros_sdk.external = True
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma'])
+@config_ctx(includes=['ninja', 'clang'])
 def chromium_win_clang(c):
   fastbuild(c, final=False)  # final=False so win_clang_asan can override it.
 
@@ -418,7 +408,7 @@ def chromium_win_clang_official_tot(_):
   pass
 
 
-@config_ctx(includes=['win_asan', 'goma'])
+@config_ctx(includes=['win_asan'])
 def chromium_win_clang_asan(_):
   pass
 
@@ -459,12 +449,12 @@ def clang_tot_linux_asan(_):
   pass
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma', 'clobber', 'ubsan'])
+@config_ctx(includes=['ninja', 'clang', 'clobber', 'ubsan'])
 def chromium_linux_ubsan(_):
   pass
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma', 'clobber', 'ubsan_vptr'])
+@config_ctx(includes=['ninja', 'clang', 'clobber', 'ubsan_vptr'])
 def chromium_linux_ubsan_vptr(_):
   pass
 
@@ -512,48 +502,48 @@ def chromium_win_asan(c):
   c.runtests.run_asan_test = True
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma', 'asan'])
+@config_ctx(includes=['ninja', 'clang', 'asan'])
 def chromium_asan(c):  # pragma: no cover
   # Used by some bots in chromium_tests/chromium_fuzz.py.
   del c
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma', 'msan'])
+@config_ctx(includes=['ninja', 'clang', 'msan'])
 def chromium_msan(c):
   c.compile_py.default_targets = ['all']
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma', 'tsan2'])
+@config_ctx(includes=['ninja', 'clang', 'tsan2'])
 def chromium_tsan2(c):
   c.compile_py.default_targets = ['all']
 
 
-@config_ctx(includes=['ninja', 'default_compiler', 'goma'])
+@config_ctx(includes=['ninja', 'default_compiler'])
 def chromium_chromeos(c):  # pragma: no cover
   c.compile_py.default_targets = ['all']
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma'])
+@config_ctx(includes=['ninja', 'clang'])
 def chromium_chromeos_clang(c):  # pragma: no cover
   c.compile_py.default_targets = ['all']
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma'])
+@config_ctx(includes=['ninja', 'clang'])
 def chromium_clang(c):
   c.compile_py.default_targets = ['all']
 
 
-@config_ctx(includes=['android_common', 'ninja', 'default_compiler', 'goma'])
+@config_ctx(includes=['android_common', 'ninja', 'default_compiler'])
 def android(_):
   pass
 
 
-@config_ctx(includes=['android_common', 'ninja', 'clang', 'goma'])
+@config_ctx(includes=['android_common', 'ninja', 'clang'])
 def android_clang(_):
   pass
 
 
-@config_ctx(includes=['android_common', 'ninja', 'clang', 'goma', 'asan'])
+@config_ctx(includes=['android_common', 'ninja', 'clang', 'asan'])
 def android_asan(_):
   pass
 
@@ -567,7 +557,7 @@ def android_common(c):
   ])
 
 
-@config_ctx(includes=['ninja', 'clang', 'goma'])
+@config_ctx(includes=['ninja', 'clang'])
 def codesearch(c):
   # -k 0 prevents stopping on errors, so the compile step tries to do as much as
   # possible.
