@@ -271,7 +271,7 @@ def GenTests(api):
   )
 
   chartjson_build_properties = (
-      '{"bot_id": "test_bot", "builder_group": "fake-group", '
+      '{"builder_group": "fake-group", '
       '"got_angle_revision": "fac9503c46405f77757b9a728eb85b8d7bc6080c", '
       '"got_angle_revision_cp": "refs/heads/main@{#297276}", '
       '"got_buildtools_revision": "f0319a328b2809876916353cb994259692140934", '
@@ -287,15 +287,7 @@ def GenTests(api):
       '"got_v8_revision": "801ada225ddc271c132c3a35f03975671d43e399", '
       '"got_v8_revision_cp": "refs/heads/main@{#43426}", '
       '"got_webrtc_revision": "0f90628433546e61d9268596da93418c623137f4", '
-      '"got_webrtc_revision_cp": "refs/heads/main@{#120644}", '
-      '"parent_build_id": 1337, '
-      '"parent_builder_group": "fake-group", '
-      '"parent_buildername": "fake-builder", '
-      '"perf_builder_name_alias": "test-perf-id", '
-      '"recipe": "chromium_tests:tests/steps/swarming_isolated_script_test", '
-      '"results_url": "https://example/url", '
-      '"swarm_hashes": {"base_unittests": '
-      '"ffffffffffffffffffffffffffffffffffffffff/size"}}')
+      '"got_webrtc_revision_cp": "refs/heads/main@{#120644}"}')
 
   yield api.test(
       'chartjson',
@@ -355,7 +347,7 @@ def GenTests(api):
   )
 
   histograms_custom_revisions = (
-      '{"bot_id": "test_bot", "builder_group": "fake-group", '
+      '{"builder_group": "fake-group", '
       '"got_angle_revision": "fac9503c46405f77757b9a728eb85b8d7bc6080c", '
       '"got_angle_revision_cp": "refs/heads/main@{#297276}", '
       '"got_buildtools_revision": "f0319a328b2809876916353cb994259692140934", '
@@ -371,15 +363,7 @@ def GenTests(api):
       '"got_v8_revision": "ffffffffffffffffffffffffffffffffffffffff", '
       '"got_v8_revision_cp": "refs/heads/main@{#43426}", '
       '"got_webrtc_revision": "ffffffffffffffffffffffffffffffffffffffff", '
-      '"got_webrtc_revision_cp": "refs/heads/main@{#120644}", '
-      '"parent_build_id": 1337, '
-      '"parent_builder_group": "fake-group", '
-      '"parent_buildername": "fake-builder", '
-      '"perf_builder_name_alias": "test-perf-id", '
-      '"recipe": "chromium_tests:tests/steps/swarming_isolated_script_test", '
-      '"results_url": "https://example/url", '
-      '"swarm_hashes": {"base_unittests": '
-      '"ffffffffffffffffffffffffffffffffffffffff/size"}}')
+      '"got_webrtc_revision_cp": "refs/heads/main@{#120644}"}')
 
   yield api.test(
       'histograms_LUCI_missing_perf_dashboard_machine_group_property',

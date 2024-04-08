@@ -47,6 +47,12 @@ _BUILDER_GROUP_SWARMING_PRIORITIES = collections.defaultdict(
 # Path to the location based tags file.
 _LOCATION_TAGS_FILE = '../../testing/location_tags.json'
 
+# Build properties used by merge scripts.
+_ALLOWED_BUILD_PROPERTIES = [
+    "builder_group", "build_number", "buildnumber", "builder_name",
+    "buildername", "chromium_revision", "got_revision_cp", "got_v8_revision",
+    "got_webrtc_revision", "got_revision", "perf_dashboard_machine_group"
+]
 
 def _text_for_task(task):
   lines = []
@@ -1320,10 +1326,10 @@ class SwarmingApi(recipe_api.RecipeApi):
     build_properties = None
     if task.build_properties:
       build_properties = dict(task.build_properties)
-      # exclude any recipe-engine-controlling properties (starting with $)
+      # Only include properties in the allowlist to trim down the size of build properties blob.
       build_properties.update((k, v)
                               for k, v in self.m.properties.thaw().items()
-                              if not k.startswith('$'))
+                              if k in _ALLOWED_BUILD_PROPERTIES)
 
     # This script still exists here, since there are many clients which depend
     # on this module which don't necessarily have a chromium checkout (it's hard

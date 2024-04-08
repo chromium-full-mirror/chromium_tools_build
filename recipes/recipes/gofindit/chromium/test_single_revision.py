@@ -97,7 +97,6 @@ def RunSteps(api, properties):
       suffix = 'bisection'
       with api.chromium_tests.wrap_chromium_tests(tests=step_tests):
         api.test_utils.run_tests_once(step_tests, suffix)
-
       test_results = fetch_test_results(api, properties.tests_to_run,
                                         step_tests, suffix)
       run_succeeded = True
@@ -131,8 +130,8 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
                                           run_all):
   """Returns the step tests and compile targets.
 
-  The step tests will be set with the test filter to run only the tests_to_run.
-  """
+    The step tests will be set with the test filter to run only the tests_to_run.
+    """
   test_names_by_test_suite = {}
   for test_to_run in tests_to_run:
     test_names = test_names_by_test_suite.setdefault(
@@ -144,12 +143,15 @@ def compute_step_test_and_compile_targets(api, targets_config, tests_to_run,
   for test in targets_config.all_tests:
     if test.canonical_name in test_names_by_test_suite:
       # Only runs tests presented in tests_to_run.
-      test_options = steps.TestOptions.create(retry_limit=0)
+      test_options = steps.TestOptions.create(retry_limit=0, run_disabled=True)
       if not run_all:
         test_filter = test_names_by_test_suite[test.canonical_name]
         test_options = attr.evolve(test_options, test_filter=test_filter)
-        nshards = len(tests_to_run) // 10 + 1
-        test.spec = attr.evolve(test.spec, shards=nshards)
+        # Customise the number of shards only when the number of tests to run is less than 100.
+        # Otherwise, use the default number of shards. This is to avoid creating too many shards.
+        if len(test_filter) < 100:
+          nshards = len(test_filter) // 10 + 1
+          test.spec = attr.evolve(test.spec, shards=nshards)
       test.test_options = test_options
 
       resultdb = test.spec.resultdb
