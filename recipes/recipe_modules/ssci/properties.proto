@@ -35,4 +35,7 @@ message InputProperties {
 
   // version of the SSCI uploader CIPD binary to use.
   string ssci_uploader_version = 10;
+
+  // enable the uploading of data collected from the various SSCI binaries.
+  bool enable_upload_collected_data = 11;
 }

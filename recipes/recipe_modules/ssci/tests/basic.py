@@ -110,6 +110,7 @@ def GenTests(api):
                   "bq_artifact_table": "project.dataset.table",
                   "bq_library_table": "project.dataset.table",
                   "bq_thirdparty_table": "project.dataset.table",
+                  "enable_upload_collected_data": True,
                   "minimal_spdx": True,
               }
           }), api.post_process(post_process.DropExpectation))
@@ -127,11 +128,31 @@ def GenTests(api):
                   "bq_artifact_table": "project.dataset.table",
                   "bq_library_table": "project.dataset.table",
                   "bq_thirdparty_table": "project.dataset.table",
+                  "enable_upload_collected_data": True,
                   "minimal_spdx": True,
               }
           }),
       api.post_process(post_process.MustRun,
                        "SSCI collection.SBOM's generated"),
+      api.post_process(post_process.DropExpectation))
+
+  yield api.test(
+      'collected_data_upload_disabled',
+      api.buildbucket.ci_build(
+          project='myproject', bucket='mybucket', builder='mybuilder'),
+      api.properties(
+          **{
+              '$build/ssci': {
+                  "bq_artifact_table": "project.dataset.table",
+                  "bq_library_table": "project.dataset.table",
+                  "bq_thirdparty_table": "project.dataset.table",
+                  "enable_upload_collected_data": False,
+                  "minimal_spdx": True,
+              }
+          }),
+      api.post_process(
+          post_process.DoesNotRun,
+          "SSCI collection.upload third party dependencies to BigQuery"),
       api.post_process(post_process.DropExpectation))
 
   yield api.test(

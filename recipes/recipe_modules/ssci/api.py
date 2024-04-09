@@ -31,6 +31,7 @@ class SsciAPI(recipe_api.RecipeApi):
     self.generated_sbom_artifacts = {}
     self.execution_id = ""
     self.build_platform = None
+    self.enable_upload_collected_data = props.enable_upload_collected_data
 
     # Used to store CIPD package information for each of the tools used
     self.bqupload = CIPDPkg(
@@ -88,6 +89,13 @@ class SsciAPI(recipe_api.RecipeApi):
       sbom_bucket: Bucket that should be used for data upload
       use_bq_write_api: Use the new BigQuery write API.
     """
+
+    # The time taken to upload artifacts can vary dramatically
+    # and slow builds down, it's best for now to enable the flag
+    # as needed in the builder properties.
+    if not self.enable_upload_collected_data:
+      return
+
     step_name = f"upload {data_name} to BigQuery"
     # TODO(dlf): crbug/324078360 - poor streaming insert performance.
     bq_step_timeout = 60
