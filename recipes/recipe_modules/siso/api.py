@@ -117,7 +117,7 @@ class SisoApi(recipe_api.RecipeApi):
           post_step_func(step_result)
         return step_result
     finally:
-      if not skip_log_upload:
+      if not self.m.runtime.in_global_shutdown and not skip_log_upload:
         with self.m.step.nest('upload siso reports') as s:
           s.step_text = name
           now = self.m.time.utcnow()
