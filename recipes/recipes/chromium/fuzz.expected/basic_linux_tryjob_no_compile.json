@@ -613,7 +613,7 @@
     },
     "name": "read filter exclusion spec",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: Path([CHECKOUT], 'testing', 'buildbot', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'testing', 'buildbot', 'trybot_analyze_config.json')@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",

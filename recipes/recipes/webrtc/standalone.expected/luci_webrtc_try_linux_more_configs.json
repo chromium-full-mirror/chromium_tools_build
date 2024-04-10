@@ -428,7 +428,7 @@
     },
     "name": "read filter exclusion spec",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: Path([CHECKOUT], 'infra', 'specs', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
@@ -1879,7 +1879,7 @@
     },
     "name": "read filter exclusion spec (2)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: Path([CHECKOUT], 'infra', 'specs', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
@@ -3243,7 +3243,7 @@
     },
     "name": "read filter exclusion spec (3)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: Path([CHECKOUT], 'infra', 'specs', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
@@ -5474,7 +5474,7 @@
     },
     "name": "read filter exclusion spec (4)",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: Path([CHECKOUT], 'infra', 'specs', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",

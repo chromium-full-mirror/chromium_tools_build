@@ -4,7 +4,7 @@
       "python3",
       "RECIPE_REPO[build]/recipes/zip_build.py",
       "--target",
-      "/Release/out",
+      "[CACHE]/builder/src/Release/out",
       "--gsutil-py-path",
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "--staging-dir",

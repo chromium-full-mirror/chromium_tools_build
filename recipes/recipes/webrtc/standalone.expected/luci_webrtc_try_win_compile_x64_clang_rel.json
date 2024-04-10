@@ -446,7 +446,7 @@
     },
     "name": "read filter exclusion spec",
     "~followup_annotations": [
-      "@@@STEP_TEXT@path: Path([CHECKOUT], 'infra', 'specs', 'trybot_analyze_config.json')@@@",
+      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
@@ -738,7 +738,7 @@
     "name": "preprocess for reclient.list reclient_cfgs dir",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]\\builder\\src\\buildtools\\reclient_cfgs\\chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]\\builder\\src\\buildtools\\reclient_cfgs\\chromium-browser-clang\\rewrapper_windows.cfg@@@",
       "@@@STEP_LOG_LINE@listdir@[CACHE]\\builder\\src\\buildtools\\reclient_cfgs\\reproxy.cfg@@@",
       "@@@STEP_LOG_END@listdir@@@"
     ]

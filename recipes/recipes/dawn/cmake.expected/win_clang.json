@@ -214,7 +214,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -260,7 +260,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -358,7 +358,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -401,7 +401,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -471,7 +471,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -514,7 +514,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -552,7 +552,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -596,7 +596,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -641,7 +641,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -708,7 +708,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -751,7 +751,7 @@
         "win_toolchain\\vs_files\\version_hash\\sys32",
         "win_toolchain\\vs_files\\version_hash\\sysarm64",
         "win_toolchain\\vs_files\\version_hash",
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
@@ -786,7 +786,7 @@
     },
     "env_prefixes": {
       "PATH": [
-        "[CACHE]\\builder\\clang/bin",
+        "[CACHE]\\builder\\clang\\bin",
         "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
         "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
       ]
