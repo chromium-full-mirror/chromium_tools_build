@@ -214,6 +214,6 @@
   },
   {
     "name": "$result",
-    "summaryMarkdown": "#### There are 0 error(s), 0 warning(s), and 0 notifications(s). Here are the errors:"
+    "summaryMarkdown": "#### There are 0 error(s), 0 warning(s), and 0 notifications(s)."
   }
 ]
