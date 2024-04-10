@@ -1,5 +1,6 @@
 bpastene@chromium.org
 gbeaty@chromium.org
 kimstephanie@google.com
+sshrimp@google.com
 
 per-file fuzz.py=file:fuzz.expected/OWNERS

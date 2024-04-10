@@ -5,5 +5,6 @@
 gbeaty@chromium.org
 kimstephanie@google.com
 linxinan@chromium.org
+sshrimp@google.com
 
 per-file v8*/**=file:v8/v8:main:/INFRA_OWNERS
