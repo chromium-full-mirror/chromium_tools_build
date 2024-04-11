@@ -296,7 +296,7 @@ def get_deps(api, repo_url, name):
 
 def get_key_mapper(autoroller_config, source_deps, target_deps):
   """Override keys between destination (key) and source (value) based on recipe
-  config."""
+  config (custom mapping) and deps values (automatic mapping)."""
   custom_mapping = autoroller_config.get('deps_key_mapping', {})
 
   source_mappings = set(custom_mapping.values())
@@ -315,7 +315,26 @@ def get_key_mapper(autoroller_config, source_deps, target_deps):
       f'but a custom mapping exists: {", ".join(list(extra_targets))}. The '
       f'following deps are available: {", ".join(list(target_dep_names))}.')
 
-  return lambda key: custom_mapping.get(key, key)
+  # Automatic mapping
+  source_names_by_location = {
+      value.split('@', 1)[0]: name for name, value in source_deps.items()
+  }
+  target_names_by_location = {
+      value.split('@', 1)[0]: name for name, value in target_deps.items()
+  }
+  source_locations = set(source_names_by_location.keys())
+  target_locations = set(target_names_by_location.keys())
+  common_locations = source_locations & target_locations
+
+  automatic_mapping = {
+      target_names_by_location[loc]: source_names_by_location[loc]
+      for loc in common_locations
+  }
+
+  # Prefer custom mappings over automatic mappings
+  name_mappings = {**automatic_mapping, **custom_mapping}
+
+  return lambda key: name_mappings.get(key, key)
 
 
 def get_recent_instance_id(api, package_name):
