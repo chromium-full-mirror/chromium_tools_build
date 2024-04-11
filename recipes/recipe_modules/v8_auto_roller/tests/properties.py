@@ -28,6 +28,7 @@ PROPERTIES = {
             kind=ConfigGroup(
                 excludes=Single(list, empty_val=None),
                 includes=Single(list, empty_val=None),
+                deps_key_mapping=Dict(value_type=str),
             )),
 }
 
@@ -53,85 +54,77 @@ def RunSteps(api, autoroller_config):
 
 
 def GenTests(api):
-  icu_v8_deps = "v8/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"
-  icu_chromium_deps = "src/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"
+  def test(name, autoroller_config, chromium_deps, v8_deps, *expectations):
+    return api.test(
+        name,
+        api.properties(autoroller_config=autoroller_config),
 
-  yield api.test(
+        api.override_step_data(
+            'Find updated deps.gclient get v8 deps',
+            api.raw_io.stream_output_text(v8_deps, stream='stdout'),
+        ),
+        api.override_step_data(
+            'Find updated deps.gclient get src deps',
+            api.raw_io.stream_output_text(chromium_deps, stream='stdout'),
+        ),
+
+        *expectations,
+        api.post_process(DropExpectation),
+    )
+
+  # includes / excludes
+  ie_v8_deps = "v8/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"
+  ie_chromium_deps = "src/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"
+
+  yield test(
       'includes_icu_valid',
-
-      api.properties(autoroller_config={
-          'includes': ['third_party/icu'],
-      }),
-
-      api.override_step_data(
-        'Find updated deps.gclient get v8 deps',
-        api.raw_io.stream_output_text(icu_v8_deps, stream='stdout'),
-      ),
-      api.override_step_data(
-        'Find updated deps.gclient get src deps',
-        api.raw_io.stream_output_text(icu_chromium_deps, stream='stdout'),
-      ),
-
+      {'includes': ['third_party/icu']},
+      ie_chromium_deps, ie_v8_deps,
       api.post_process(MustRun, 'Update trusted deps.gclient setdep third_party_icu'),
-      api.post_process(DropExpectation),
   )
 
-  yield api.test(
+  yield test(
       'includes_invalid_dep',
-
-      api.properties(autoroller_config={
-          'includes': ['v8/third_party/icu'],
-      }),
-
-      api.override_step_data(
-        'Find updated deps.gclient get v8 deps',
-        api.raw_io.stream_output_text(icu_v8_deps, stream='stdout'),
-      ),
-      api.override_step_data(
-        'Find updated deps.gclient get src deps',
-        api.raw_io.stream_output_text(icu_chromium_deps, stream='stdout'),
-      ),
-
+      {'includes': ['v8/third_party/icu']},
+      ie_chromium_deps, ie_v8_deps,
       api.expect_exception('AssertionError'),
-      api.post_process(DropExpectation),
   )
 
-  yield api.test(
+  yield test(
       'excludes_icu_valid',
-
-      api.properties(autoroller_config={
-          'excludes': ['third_party/icu'],
-      }),
-
-      api.override_step_data(
-        'Find updated deps.gclient get v8 deps',
-        api.raw_io.stream_output_text(icu_v8_deps, stream='stdout'),
-      ),
-      api.override_step_data(
-        'Find updated deps.gclient get src deps',
-        api.raw_io.stream_output_text(icu_chromium_deps, stream='stdout'),
-      ),
-
+      {'excludes': ['third_party/icu']},
+      ie_chromium_deps, ie_v8_deps,
       api.post_process(DoesNotRun, 'Update trusted deps.gclient setdep third_party_icu'),
-      api.post_process(DropExpectation),
   )
 
-  yield api.test(
+  yield test(
       'excludes_invalid_dep',
-
-      api.properties(autoroller_config={
-          'excludes': ['v8/third_party/icu'],
-      }),
-
-      api.override_step_data(
-        'Find updated deps.gclient get v8 deps',
-        api.raw_io.stream_output_text(icu_v8_deps, stream='stdout'),
-      ),
-      api.override_step_data(
-        'Find updated deps.gclient get src deps',
-        api.raw_io.stream_output_text(icu_chromium_deps, stream='stdout'),
-      ),
-
+      {'excludes': ['v8/third_party/icu']},
+      ie_chromium_deps, ie_v8_deps,
       api.expect_exception('AssertionError'),
-      api.post_process(DropExpectation),
+  )
+
+  # deps_key_mapping
+  dkm_v8_deps = "v8/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"
+  dkm_chromium_deps = "src/3rd_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"
+
+  yield test(
+      'deps_key_mapping_valid',
+      {'deps_key_mapping': {'third_party/icu': '3rd_party/icu'}},
+      dkm_chromium_deps, dkm_v8_deps,
+      api.post_process(MustRun, 'Update trusted deps.gclient setdep third_party_icu'),
+  )
+
+  yield test(
+      'deps_key_mapping_invalid_source',
+      {'deps_key_mapping': {'third_party/icu': '4th_party/icu'}},
+      dkm_chromium_deps, dkm_v8_deps,
+      api.expect_exception('AssertionError'),
+  )
+
+  yield test(
+      'deps_key_mapping_invalid_target',
+      {'deps_key_mapping': {'fourth_party/icu': '3rd_party/icu'}},
+      dkm_chromium_deps, dkm_v8_deps,
+      api.expect_exception('AssertionError'),
   )

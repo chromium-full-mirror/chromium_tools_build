@@ -21,7 +21,7 @@ DEPS = [
 RETSAM = 'retsam'[::-1]
 
 V8_DEPS = """v8: https://chromium.googlesource.com/v8/v8.git
-v8/buildtools-mapped: https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762
+v8/buildtools: https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762
 src/tools/luci-go:infra/tools/luci/isolate/${platform}: https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9
 src/ninja:infra/3pp/tools/ninja/${platform}: https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.3
 src/mock-skip-chromium-roll: mock/skip-chromium-roll.git@1
@@ -67,9 +67,6 @@ def RunSteps(api):
       'commit_msg_footers': ['Also-Do: This', 'Also-Do: That'],
       'dependency_version_sources': {
           'mock-skip-chromium-roll': 'tip_of_tree',
-      },
-      'deps_key_mapping': {
-          'buildtools-mapped': 'buildtools',
       },
   }
 

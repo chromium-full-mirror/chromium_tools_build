@@ -344,7 +344,7 @@
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_TEXT@5fd66957f08bb752dca714a591c84587c9d70762@@@",
       "@@@STEP_LOG_LINE@deps@{@@@",
-      "@@@STEP_LOG_LINE@deps@  \"buildtools-mapped\": \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\",@@@",
+      "@@@STEP_LOG_LINE@deps@  \"buildtools\": \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\",@@@",
       "@@@STEP_LOG_LINE@deps@  \"mock-package-latest:mock/package-latest\": \"https://chrome-infra-packages.appspot.com/mock/package-latest@6fd66957f08bb752dca714a591c84587c9d70763\",@@@",
       "@@@STEP_LOG_LINE@deps@  \"mock-package-without-latest-ref:mock/package-without-latest-ref\": \"https://chrome-infra-packages.appspot.com/mock/package-without-latest-ref@7fd66957f08bb752dca714a591c84587c9d70764\",@@@",
       "@@@STEP_LOG_LINE@deps@  \"mock-set-dep-failing\": \"mock/set-dep-failing.git@1\",@@@",

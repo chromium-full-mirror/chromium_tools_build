@@ -120,29 +120,10 @@ def get_dep_updates(api, autoroller_config):
   target = commons.get_targeted_solution(api)
   target_deps = get_deps(api, target.url, target.name)
 
-  custom_mapping = autoroller_config.get('deps_key_mapping', {})
-  key_mapper = get_key_mapper(custom_mapping)
+  key_mapper = get_key_mapper(autoroller_config, chromium_deps, target_deps)
 
   target_dep_names = sorted(target_deps.keys())
-
-  # Filter rolled deps based on includes and excludes params
-  excludes = autoroller_config.get('excludes')
-  includes = autoroller_config.get('includes')
-  assert excludes is None or includes is None, (
-      'Either excludes or includes can be declared, not both.')
-  assert excludes is None or all(e in target_dep_names for e in excludes), (
-      'At least one excluded dep does not exist. Found '
-      f'{", ".join(target_dep_names)}')
-  assert includes is None or all(i in target_dep_names for i in includes), (
-      'At least one included dep does not exist. Found '
-      f'{", ".join(target_dep_names)}')
-
-  target_dep_names = [
-      k for k in target_dep_names if excludes is None or k not in excludes
-  ]
-  target_dep_names = [
-      k for k in target_dep_names if includes is None or k in includes
-  ]
+  target_dep_names = filter_deps(autoroller_config, target_dep_names)
 
   trusted_updates = []
   untrusted_updates = []
@@ -234,6 +215,29 @@ def get_dep_updates(api, autoroller_config):
   return trusted_updates, untrusted_updates, failed_deps
 
 
+def filter_deps(autoroller_config, dep_names):
+  excludes = autoroller_config.get('excludes')
+  includes = autoroller_config.get('includes')
+
+  assert excludes is None or includes is None, (
+      'Either excludes or includes can be declared, not both.')
+  assert excludes is None or all(e in dep_names for e in excludes), (
+      'At least one excluded dep does not exist. Found '
+      f'{", ".join(dep_names)}')
+  assert includes is None or all(i in dep_names for i in includes), (
+      'At least one included dep does not exist. Found '
+      f'{", ".join(dep_names)}')
+
+  dep_names = [
+      dn for dn in dep_names if excludes is None or dn not in excludes
+  ]
+  dep_names = [
+      dn for dn in dep_names if includes is None or dn in includes
+  ]
+
+  return dep_names
+
+
 def handle_failed_deps(api, failed_deps):
   if not failed_deps:
     return
@@ -290,9 +294,27 @@ def get_deps(api, repo_url, name):
   return deps
 
 
-def get_key_mapper(custom_mapping):
+def get_key_mapper(autoroller_config, source_deps, target_deps):
   """Override keys between destination (key) and source (value) based on recipe
   config."""
+  custom_mapping = autoroller_config.get('deps_key_mapping', {})
+
+  source_mappings = set(custom_mapping.values())
+  source_dep_names = set(source_deps.keys())
+  extra_sources = source_mappings - source_dep_names
+  assert not extra_sources, (
+      f'The following dependencies cannot be found in the source repository, '
+      f'but a custom mapping exists: {", ".join(list(extra_sources))}. The '
+      f'following deps are available: {", ".join(list(source_dep_names))}.')
+
+  target_mappings = set(custom_mapping.keys())
+  target_dep_names = set(target_deps.keys())
+  extra_targets = target_mappings - target_dep_names
+  assert not extra_targets, (
+      f'The following dependencies cannot be found in the target repository, '
+      f'but a custom mapping exists: {", ".join(list(extra_targets))}. The '
+      f'following deps are available: {", ".join(list(target_dep_names))}.')
+
   return lambda key: custom_mapping.get(key, key)
 
 
