@@ -29,11 +29,17 @@ DEPS = [
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/swarming',
-    'depot_tools/gclient',
     'depot_tools/bot_update',
+    'depot_tools/gclient',
+    'depot_tools/gerrit',
+    'depot_tools/gitiles',
     'depot_tools/tryserver',
 ]
 
+GITILES_CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
+GERRIT_HOST = 'chromium-review.googlesource.com'
+GERRIT_URL = 'https://' + GERRIT_HOST
+GERRIT_CHROMIUM_SRC_PROJECT = 'chromium/src'
 
 # If present in a CL description, will override the existing default builders
 # with a custom list. Format is expected to be:
@@ -41,21 +47,38 @@ DEPS = [
 # For example: "luci.chromium.try:some-builder"
 BUILDER_FOOTER = 'Led-Recipes-Tester-Builder'
 
+# When creating a chromium/src.git CL, the following are the options of files
+# to modify in the CL depending on how extensive we want the testing to be in
+# the subsequent chromium.try led builds.
+# Touching `DEPS` causes analyze to compile and test all targets.
+FILE_TO_TRIGGER_EXTENSIVE_TESTING = 'DEPS'
+# Touching `chrome/test/base/interactive_test_utils.cc` results in just
+# interactive_ui_tests being built and run. This is a relatively fast, but still
+# swarmed w/ multiple shards, test suite. This fast verification is used for
+# "upstream-only-changes" on the assumption that no upstream code would (should)
+# have variable effects based on WHICH test suite is executed, so we just need
+# to pick SOME test suite.
+FILE_TO_TRIGGER_SHORT_TESTING = 'chrome/test/base/interactive_test_utils.cc'
 
 @attrs()
 class BuilderToTrigger:
   # The buildbucket v1 style name of the builder
   name = attrib(str)
   # The key of the CL to use when triggering the builder
-  cl_key = attrib(enum(['fast', 'slow']), default='slow')
+  file_to_change = attrib(
+      enum([FILE_TO_TRIGGER_EXTENSIVE_TESTING, FILE_TO_TRIGGER_SHORT_TESTING]),
+      default=FILE_TO_TRIGGER_EXTENSIVE_TESTING)
 
 
 DEFAULT_BUILDERS = (
-    BuilderToTrigger('luci.chromium.try:chromium_presubmit', cl_key='fast'),
+    BuilderToTrigger(
+        'luci.chromium.try:chromium_presubmit',
+        file_to_change=FILE_TO_TRIGGER_SHORT_TESTING),
     BuilderToTrigger('luci.chromium.try:linux-rel'),
-    BuilderToTrigger('luci.chromium.try:win-rel', cl_key='fast'),
+    BuilderToTrigger(
+        'luci.chromium.try:win-rel',
+        file_to_change=FILE_TO_TRIGGER_SHORT_TESTING),
 )
-
 
 @attrs()
 class FilesToIgnore:
@@ -135,28 +158,6 @@ FILES_TO_ALWAYS_IGNORE = (
     ),
 )
 
-# CL to use when testing a recipe which touches chromium source.
-# The first level of keys is the bucket of the builder. The second level of keys
-# is the type of CL: 'fast' or 'slow', with the value being the CL to use.
-
-# The slow CLs touch `DEPS` which causes analyze to compile and test all
-# targets.
-
-# The fast CLs touch `chrome/test/base/interactive_test_utils.cc`, resulting
-# in just interactive_ui_tests being built and run. This is a relatively
-# fast, but still swarmed w/ multiple shards, test suite. This fast
-# verification is used for "upstream-only-changes" on the assumption that no
-# upstream code would (should) have variable effects based on WHICH test
-# suite is executed, so we just need to pick SOME test suite.
-CHROMIUM_SRC_TEST_CLS = {
-    'luci.chromium.try': {
-        'slow':
-            'https://chromium-review.googlesource.com/c/chromium/src/+/1286761',
-        'fast':
-            'https://chromium-review.googlesource.com/c/chromium/src/+/3299047',
-    },
-}
-
 
 def _get_recipe(led_builder):
   build_proto = led_builder.result.buildbucket.bbagent_args.build
@@ -179,7 +180,7 @@ def _process_footer_builders(api, builders):
     raise api.step.StepFailure(step_name, result)
 
   buckets = set(b.split(':', 1)[0] for b in builders)
-  unknown_buckets = set(b for b in buckets if b not in CHROMIUM_SRC_TEST_CLS)
+  unknown_buckets = set(b for b in buckets if b != 'luci.chromium.try')
   if unknown_buckets:
     step_name = 'unknown buckets'
     result = api.step(step_name, [])
@@ -364,9 +365,9 @@ def _determine_affected_recipes(api, affected_files, recipes, recipes_py_path,
   return set(affected_recipes)
 
 
-def _get_cl_category_to_trigger(affected_files, affected_recipes, builder,
-                                recipe, recipes_cfg_path):
-  """Calculates the chromium testing CL for the current CL.
+def _get_filepath_to_change(affected_files, affected_recipes, builder, recipe,
+                            recipes_cfg_path):
+  """Returns the chromium/src.git filepath to modify for the Chromium CL.
 
   Args:
     affected_files - The set of files affected by the CL.
@@ -377,60 +378,97 @@ def _get_cl_category_to_trigger(affected_files, affected_recipes, builder,
       recipes.cfg file.
 
   Returns:
-    None if nothing should be triggered. A CL category for indexing
-    into CHROMIUM_SRC_TEST_CLS to get the CL to trigger.
+    None if nothing should be triggered. Otherwise the chromium/src filepath
+    to modify.
   """
   if recipe in affected_recipes:
-    return builder.cl_key
+    return builder.file_to_change
 
   if str(recipes_cfg_path) in affected_files:
-    return 'fast'
+    return FILE_TO_TRIGGER_SHORT_TESTING
 
   return None
 
 
-def _test_builder(api, affected_files, affected_recipes, builder, led_builder,
-                  recipes_cfg_path):
+def _create_cl(api, file_path):
+  """Creates a chromium/src.git CL via Gerrit's REST API.
+
+  Will append whitespace to the end of the file.
+
+  Args:
+    api - The recipe API object.
+    file_path - File path in chromium/src.git to change.
+
+  Returns:
+    Full URL of the Gerrit CL.
+  """
+  old_contents = api.gitiles.download_file(GITILES_CHROMIUM_SRC_URL, file_path)
+  # Add the whitespace to the end of the file, since adding it add the top might
+  # make some copyright header detection checks fail.
+  new_contents = old_contents + '\n'
+  new_contents_by_file_path = {file_path: new_contents}
+  commit_msg_lines = [
+      'Test commit; testing a recipe CL',
+      '',
+      'This CL was uploaded for the purposes of testing a recipe CL on',
+      'Chromium trybots. If this CL is more than 24 hours old, feel free',
+      'to abandon it.',
+      '',
+      f'Created for {api.tryserver.gerrit_change_review_url}',
+      f'Created by https://ci.chromium.org/ui/b/{api.buildbucket.build.id}',
+      '',
+      'Bug: None',
+      # 'Commit: false' to prevent someone from accidentally submitting the CL.
+      'Commit: false',
+      '',
+  ]
+  change_info = api.gerrit.update_files(
+      GERRIT_URL,
+      GERRIT_CHROMIUM_SRC_PROJECT,
+      'main',
+      new_contents_by_file_path,
+      '\n'.join(commit_msg_lines),
+      params=['work_in_progress=true', 'notify=NONE'])
+  change_num = int(change_info['_number'])
+  return f'{GERRIT_URL}/c/{GERRIT_CHROMIUM_SRC_PROJECT}/+/{change_num}'
+
+
+def _abandon_cl(api, cl):
+  """Abandons a chromium/src.git CL via Gerrit's REST API.
+
+  Args:
+    api - The recipe API object.
+    cl - Gerrit URL of the chromium/src.git CL to abandon.
+  """
+  change_num = cl.split('/')[-1]
+  api.gerrit.abandon_change(
+      GERRIT_URL, change_num, name=f'abandon {change_num}')
+
+
+def _test_builder(api, builder, led_builder, cl):
   """Try running a builder with the patched recipe.
 
   Args:
     api - The recipe API object.
-    presentation - The step presentation for the top-level step for the
-      builder.
-    affected_files - The set of files affected by the change.
-    affected_recipes - The set of recipes affected by the change.
     builder - The name of the builder to test.
     led_builder - The led job definition for the builder. It must
       already have had its recipe bundle modified.
-    recipes_cfg_path - A Path object identifying the location of the
-      recipes.cfg file.
+    cl - Gerrit URL for the chromium/src.git CL to run the Chromium tryjob on.
 
   Raises:
     InfraFailure if any of the led calls fail.
     StepFailure if the triggered task failed.
   """
   with api.step.nest('test {}'.format(builder.name)) as presentation:
-    cl_key = _get_cl_category_to_trigger(affected_files, affected_recipes,
-                                         builder, _get_recipe(led_builder),
-                                         recipes_cfg_path)
-    if not cl_key:
-      presentation.step_text = (
-          '\nNot running a tryjob for {!r}. The CL does not affect the '
-          '{!r} recipe and the CL does not affect recipes.cfg'.format(
-              builder.name, _get_recipe(led_builder)))
-      return
-
     with api.step.nest('trigger'), api.context(infra_steps=True):
       # FIXME: We should check if the recipe we're testing tests patches to
       # chromium/src. For now just assume this works.
-      bucket = builder.name.split(':', 1)[0]
-      cl = CHROMIUM_SRC_TEST_CLS[bucket][cl_key]
       ir = led_builder.then('edit-cr-cl', cl)
       # TODO(gbeaty) Once the recipe engine no longer supports annotations and
       # nest step presentation is reflected in the UI before it's closed, we can
       # just update the nest step's presentation
       step_result = api.step.active_result
-      step_result.presentation.links['Test CL ({})'.format(cl_key)] = cl
+      step_result.presentation.links['Test CL'] = cl
       presentation.links.update(step_result.presentation.links)
 
       # We used to set `is_experimental` to true, but the chromium recipe
@@ -494,6 +532,7 @@ def RunSteps(api):
 
   api.swarming.ensure_client()
 
+  cls_by_filepath = {}
   futures = []
   for builder in builders_to_trigger:
     # Edit the recipe bundle in the main greenlet so that it is serialized to
@@ -507,13 +546,35 @@ def RunSteps(api):
       with api.context(cwd=repo_path):
         led_builder = led_builders[builder.name]
         led_builder = led_builder.then('edit-recipe-bundle')
-    futures.append(
-        api.futures.spawn_immediate(_test_builder, api, affected_files,
-                                    affected_recipes, builder, led_builder,
-                                    recipes_cfg_path))
 
-  for f in api.futures.wait(futures):
-    f.result()
+    file_path = _get_filepath_to_change(affected_files, affected_recipes,
+                                        builder, _get_recipe(led_builder),
+                                        recipes_cfg_path)
+    if not file_path:
+      with api.step.nest('test {}'.format(builder.name)) as presentation:
+        presentation.step_text = (
+            '\nNot running a tryjob for {!r}. The CL does not affect the '
+            '{!r} recipe and the CL does not affect recipes.cfg'.format(
+                builder.name, _get_recipe(led_builder)))
+        continue
+
+    cl = cls_by_filepath.get(file_path)
+    if not cl:
+      cl = _create_cl(api, file_path)
+      cls_by_filepath[file_path] = cl
+
+    futures.append(
+        api.futures.spawn_immediate(_test_builder, api, builder, led_builder,
+                                    cl))
+
+  try:
+    for f in api.futures.wait(futures):
+      f.result()
+  finally:
+    # Try to avoid leaving lingering CLs on Gerrit. Hopefully we can clean
+    # everything up in time if the build's been cancelled.
+    for cl in cls_by_filepath.values():
+      _abandon_cl(api, cl)
 
 
 def GenTests(api):
@@ -604,11 +665,27 @@ def GenTests(api):
       path = str(api.path['cache'].join('builder', 'baz', *rel_path.split('/')))
       check(path in input_files)
 
+  def gitiles_curl(skip_extensive=False, skip_short=False):
+    all_data = api.empty_test_data()
+    if not skip_extensive:
+      all_data += api.step_data(
+          f'fetch main:{FILE_TO_TRIGGER_EXTENSIVE_TESTING}',
+          api.gitiles.make_encoded_file('foobar'))
+    if not skip_short:
+      all_data += api.step_data(f'fetch main:{FILE_TO_TRIGGER_SHORT_TESTING}',
+                                api.gitiles.make_encoded_file('foobar'))
+    return all_data
+
   yield api.test(
       'basic',
       gerrit_change(),
+      gitiles_curl(),
       affected_recipes(RECIPE),
       default_builders(),
+      api.override_step_data(
+          'gerrit create change at (chromium/src main)',
+          api.gerrit.update_files_response_data(change_number=11235813)),
+      api.post_check(post_process.MustRun, 'gerrit abandon 11235813'),
   )
 
   def builder_config_path(p):
@@ -617,6 +694,7 @@ def GenTests(api):
   yield api.test(
       'per_builder_config_ignored',
       gerrit_change(),
+      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -638,6 +716,7 @@ def GenTests(api):
   yield api.test(
       'recipe_test_ignored',
       gerrit_change(),
+      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -656,6 +735,7 @@ def GenTests(api):
   yield api.test(
       'owners_files_ignored',
       gerrit_change(),
+      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -674,6 +754,7 @@ def GenTests(api):
   yield api.test(
       'src_side_migration_files_ignored',
       gerrit_change(),
+      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -690,6 +771,7 @@ def GenTests(api):
   yield api.test(
       'presubmit_scripts_ignored',
       gerrit_change(),
+      gitiles_curl(),
       affected_recipes(RECIPE),
       affected_files(
           'recipes/foo.py',
@@ -722,6 +804,7 @@ def GenTests(api):
   yield api.test(
       'recipe_roller',
       gerrit_change(),
+      gitiles_curl(skip_extensive=True),
       affected_files(
           'random/file.py',
           'infra/config/recipes.cfg',
@@ -732,6 +815,7 @@ def GenTests(api):
   yield api.test(
       'manual_roll_with_changes',
       gerrit_change(),
+      gitiles_curl(skip_extensive=True),
       affected_files(
           'random/file.py',
           'infra/config/recipes.cfg',
@@ -800,6 +884,7 @@ def GenTests(api):
   yield api.test(
       'footer_builder',
       gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
+      gitiles_curl(skip_short=True),
       affected_recipes(RECIPE),
       default_builders(),
       api.post_check(post_process.DoesNotRun,
@@ -810,6 +895,7 @@ def GenTests(api):
   yield api.test(
       'per_builder_config_not_ignored_for_footer_builders',
       gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
+      gitiles_curl(skip_short=True),
       affected_recipes(RECIPE),
       affected_files(
           builder_config_path('builders/chromium.py'),
