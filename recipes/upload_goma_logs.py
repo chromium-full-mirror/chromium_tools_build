@@ -13,11 +13,18 @@ import json
 import os
 import sys
 
+import goma_bq_utils
 import goma_utils
 
 
 def main():
-  parser = argparse.ArgumentParser(description='Upload build related logs')
+  parser = argparse.ArgumentParser(description='Upload goma related logs')
+  parser.add_argument(
+      '--upload-compiler-proxy-info',
+      action='store_true',
+      help='If set, the script will upload the latest '
+      'compiler_proxy.INFO.'
+  )
   parser.add_argument(
       '--log-url-json-file',
       help='If set, the script will write url of uploaded '
@@ -45,6 +52,24 @@ def main():
       metavar='EXIT_STATUS',
       help='build command exit status.'
   )
+  parser.add_argument(
+      '--goma-stats-file',
+      metavar='FILENAME',
+      help='Filename of a GomaStats binary protobuf. '
+      'If empty or non-existing file, it will report error '
+      'to chrome infra monitoring system.'
+  )
+  parser.add_argument(
+      '--goma-counterz-file',
+      help='Filename of a CounterzStats binary protobuf. '
+      'If empty or non-existing file, it will report error '
+      'to chrome infra monitoring system.'
+  )
+  parser.add_argument(
+      '--goma-crash-report-id-file',
+      metavar='FILENAME',
+      help='Filename that has a crash report id.'
+  )
 
   parser.add_argument(
       '--json-status',
@@ -58,6 +83,39 @@ def main():
       help='Specify path to gsutil.py script in depot_tools.'
   )
 
+  # Arguments set to os.environ
+  parser.add_argument(
+      '--buildbot-buildername', default='unknown', help='buildbot buildername'
+  )
+
+  # For CompileEvents.
+  parser.add_argument(
+      '--build-id', default=0, type=int, help='unique ID of the current build'
+  )
+  parser.add_argument(
+      '--build-step-name', default='', help='step name of the current build'
+  )
+  parser.add_argument(
+      '--bqupload-path',
+      default='',
+      metavar='FILENAME',
+      help='Specify bqupload command path. '
+      'Or, not upload CompileEvents to BigQuery.'
+  )
+
+  # Builder ID.
+  parser.add_argument(
+      '--builder-id-json',
+      default='',
+      metavar='FILENAME',
+      help='path to Builder ID json file'
+  )
+
+  # From Runtime API.
+  parser.add_argument(
+      '--is-experimental', action='store_true', help='True if experimental'
+  )
+
   args = parser.parse_args()
 
   override_gsutil = None
@@ -66,6 +124,21 @@ def main():
     override_gsutil = ['python3', args.gsutil_py_path, '--']
 
   viewer_urls = {}
+
+  builder_id = {}
+  if args.builder_id_json:
+    with open(args.builder_id_json) as f:
+      builder_id = json.load(f)
+
+  if args.upload_compiler_proxy_info:
+    viewer_url = goma_utils.UploadGomaCompilerProxyInfo(
+        builder=args.buildbot_buildername,
+        builder_id=builder_id,
+        is_experimental=args.is_experimental,
+        override_gsutil=override_gsutil
+    )
+    if viewer_url is not None:
+      viewer_urls['compiler_proxy_log'] = viewer_url
 
   ninja_log_command = '(unknown)'
   if args.ninja_log_command_file:
@@ -89,6 +162,13 @@ def main():
   if args.log_url_json_file:
     with open(args.log_url_json_file, 'w') as f:
       f.write(json.dumps(viewer_urls))
+
+  if args.goma_stats_file and args.bqupload_path:
+    goma_bq_utils.SendCompileEvent(
+        args.goma_stats_file, args.goma_counterz_file, args.json_status,
+        args.build_exit_status, args.goma_crash_report_id_file, args.build_id,
+        args.build_step_name, args.bqupload_path,
+    )
 
   return 0
 
