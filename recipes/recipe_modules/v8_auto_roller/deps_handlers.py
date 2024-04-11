@@ -129,7 +129,13 @@ def get_dep_updates(api, autoroller_config):
   excludes = autoroller_config.get('excludes')
   includes = autoroller_config.get('includes')
   assert excludes is None or includes is None, (
-      "Either excludes or includes can be declared, not both.")
+      'Either excludes or includes can be declared, not both.')
+  assert excludes is None or all(e in target_dep_names for e in excludes), (
+      'At least one excluded dep does not exist. Found '
+      f'{", ".join(target_dep_names)}')
+  assert includes is None or all(i in target_dep_names for i in includes), (
+      'At least one included dep does not exist. Found '
+      f'{", ".join(target_dep_names)}')
 
   target_dep_names = [
       k for k in target_dep_names if excludes is None or k not in excludes

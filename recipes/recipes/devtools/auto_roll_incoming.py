@@ -15,11 +15,6 @@ DEPS = [
 
 CONFIG = {
     "subject": "Update DevTools DEPS",
-    "excludes": [
-        # `esbuild` is manually rolled; Chromium pulls our version from
-        # devtools-frontend.
-        "third_party/esbuild:infra/3pp/tools/esbuild/${platform}",
-    ],
     "reviewers": [
         "devtools-waterfall-sheriff-onduty@rotations.google.com",
     ],
