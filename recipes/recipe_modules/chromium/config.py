@@ -56,8 +56,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       use_gyp_env=Single(bool, empty_val=True, required=False),
       env=ConfigGroup(
           PATH=List(Path),
-          GOMA_RPC_EXTRA_PARAMS=Single(str, required=False),
-          GOMA_ARBITRARY_TOOLCHAIN_SUPPORT=Single(str, required=False),
           FORCE_MAC_TOOLCHAIN=Single(int, required=False),
           FORCE_MAC_SDK_MIN=Single(str, required=False),
       ),
@@ -393,7 +391,7 @@ def chromium_win_clang(c):
   fastbuild(c, final=False)  # final=False so win_clang_asan can override it.
 
 
-@config_ctx(includes=['ninja', 'clang', 'clang_tot'])  # No goma.
+@config_ctx(includes=['ninja', 'clang', 'clang_tot'])
 def chromium_win_clang_tot(c):
   fastbuild(c)
 
@@ -413,12 +411,12 @@ def chromium_win_clang_asan(_):
   pass
 
 
-@config_ctx(includes=['win_asan', 'clang_tot'])  # No goma.
+@config_ctx(includes=['win_asan', 'clang_tot'])
 def chromium_win_clang_asan_tot(_):
   pass
 
 
-@config_ctx(includes=['ninja', 'clang', 'clang_tot'])  # No goma.
+@config_ctx(includes=['ninja', 'clang', 'clang_tot'])
 def clang_tot_linux(_):
   pass
 
@@ -426,7 +424,7 @@ def clang_tot_linux(_):
 # mac_toolchain causes the bots to download system Xcode. The clang tot
 # bots need system Xcode to build clang; hermetic Xcode isn't sufficient.
 @config_ctx(includes=['ninja', 'clang', 'clang_tot',
-                      'mac_toolchain'])  # No goma.
+                      'mac_toolchain'])
 def clang_tot_mac(c):
   fastbuild(c, final=False)  # final=False so clang_tot_mac_asan can override.
 
@@ -439,7 +437,7 @@ def clang_tot_mac(c):
   c.env.FORCE_MAC_TOOLCHAIN = 1
 
 
-@config_ctx(includes=['ninja', 'clang', 'clang_tot'])  # No goma.
+@config_ctx(includes=['ninja', 'clang', 'clang_tot'])
 def clang_tot_ios(c):
   fastbuild(c, final=False)  # final=False so clang_tot_mac_asan can override.
 
