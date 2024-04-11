@@ -54,31 +54,6 @@ class GomaUtilTest(unittest.TestCase):
         GetLogFileTimestamp('gomacc.host.user.log.INFO.20060102-150405.123456')
     )
 
-  def testGetListOfGomaccInfoAfterCompilerProxyStartNoGomaccInfo(self):
-    self.createInfoLog(
-        'compiler_proxy', datetime.datetime(2021, 1, 2, 15, 4, 5)
-    )
-    gomacc_infos = goma_utils.GetListOfGomaccInfoAfterCompilerProxyStart()
-    self.assertEquals([], gomacc_infos)
-
-  def testGetListOfGomaccInfoAfterCompilerProxyStart(self):
-    self.createInfoLog(
-        'compiler_proxy', datetime.datetime(2021, 1, 2, 15, 4, 5)
-    )
-    gomacc_log = self.createInfoLog(
-        'gomacc', datetime.datetime(2021, 1, 2, 15, 4, 6)
-    )
-    gomacc_infos = goma_utils.GetListOfGomaccInfoAfterCompilerProxyStart()
-    self.assertEquals([gomacc_log], gomacc_infos)
-
-  def testGetListOfGomaccInfoAfterCompilerProxyStartOldGomaccInfo(self):
-    self.createInfoLog(
-        'compiler_proxy', datetime.datetime(2021, 1, 2, 15, 4, 5)
-    )
-    self.createInfoLog('gomacc', datetime.datetime(2021, 1, 2, 15, 4, 4))
-    gomacc_infos = goma_utils.GetListOfGomaccInfoAfterCompilerProxyStart()
-    self.assertEquals([], gomacc_infos)
-
   def testUploadToGomaLogGS(self):
     file_path = os.path.join(self._tmp_dir, 'file')
     with open(file_path, 'w') as f:
