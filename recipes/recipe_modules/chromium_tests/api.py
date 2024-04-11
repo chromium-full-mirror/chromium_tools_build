@@ -1170,8 +1170,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         try:
           self.m.chromium.cleandead()
         except self.m.step.StepFailure:
-          self.m.file.rmtree('remove output dir' + name_suffix,
-                             self.m.chromium.output_dir)
+          self.m.gn.clean(self.m.chromium.output_dir,
+                          'gn clean output dir' + name_suffix)
           clean_step_presentation = self.m.step.active_result.presentation
           clean_step_presentation.step_text = 'reason: cleandead unsuccessful'
 
