@@ -156,7 +156,7 @@ def _UploadCL(api, script_invocation, bugs, cmdline):
   status = api.git(
       'status',
       '--porcelain',
-      stdout=api.raw_io.output_text(),
+      stdout=api.raw_io.output_text(name='stdout', add_output_log=True),
       step_test_data=status_step_test_data)
   found_modification = False
   for line in status.stdout.splitlines():
