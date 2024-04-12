@@ -98,7 +98,8 @@ class ChromiumMegaCqApi(recipe_api.RecipeApi):
               bucket=self.m.buildbucket.build.builder.bucket,
               priority=self.m.buildbucket.swarming_priority + 10,
               tags=self.m.buildbucket.tags(**tags),
-              properties=self.m.cv.props_for_child_build)
+              properties=self.m.cv.props_for_child_build,
+              as_shadow_if_parent_is_led=True)
           req.scheduling_timeout.FromSeconds(per_build_expiration_s)
           req.execution_timeout.FromSeconds(per_build_timeout_s)
           return req
