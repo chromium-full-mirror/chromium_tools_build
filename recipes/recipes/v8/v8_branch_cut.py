@@ -75,7 +75,7 @@ def update_infra_config(api, definitions):
         api.v8.git_output('commit', '-am', 'Branch cut')
         api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--send-mail')
         issue = get_issue(api)
-        parent_step.presentation.links[issue] = issue
+        parent_step.links[issue] = issue
 
 
 def version(version_text):
@@ -115,7 +115,7 @@ def update_branch_version(api, latest_version):
         api.v8.update_version_cl(branch_ref, version_at_branch_head,
                 push_account=PUSH_ACCOUNT, extra_edits=update_gn)
         issue = get_issue(api)
-        parent_step.presentation.links[issue] = issue
+        parent_step.links[issue] = issue
 
 
 def update_main_version(api):
@@ -128,7 +128,7 @@ def update_main_version(api):
         api.v8.update_version_cl(branch_ref, version_at_branch_head,
                 push_account=PUSH_ACCOUNT)
         issue = get_issue(api)
-        parent_step.presentation.links[issue] = issue
+        parent_step.links[issue] = issue
 
 def get_issue(api):
     issue = api.v8.git_output('cl', 'issue')

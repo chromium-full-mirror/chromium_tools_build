@@ -31,7 +31,7 @@ class V8RollWatcherApi(recipe_api.RecipeApi):
 
 def process_cl(api, roller, cl):
   with api.step.nest(f'Checking CL {cl.number}') as parent_step:
-    parent_step.presentation.links.update(cl.presentation_links)
+    parent_step.links.update(cl.presentation_links)
     if cl.has_blocking_failures():
       run_failure_recovery(api, roller, cl)
     else:

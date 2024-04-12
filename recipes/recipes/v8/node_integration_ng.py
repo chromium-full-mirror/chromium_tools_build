@@ -133,7 +133,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
         args=['-a', 'public-read'],
       )
 
-      parent.presentation.links['download'] = (
+      parent.links['download'] = (
           ARCHIVE_LINK % (api.platform.name, archive_name))
 
     if triggers:

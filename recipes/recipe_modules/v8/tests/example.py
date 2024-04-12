@@ -6,7 +6,7 @@ from recipe_engine import post_process
 
 DEPS = [
     'recipe_engine/buildbucket',
-    'recipe_engine/json',
+    'recipe_engine/file',
     'recipe_engine/properties',
     'recipe_engine/runtime',
     'v8',
@@ -52,7 +52,7 @@ def GenTests(api):
 def _job_exists(api, builder_name):
   return api.step_data(
       'trigger.read jobs json',
-      api.json.output({
+      api.file.read_json({
           'jobs': [{
               'jobRef': {
                   'job': builder_name,

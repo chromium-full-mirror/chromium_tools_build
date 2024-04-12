@@ -181,7 +181,7 @@ def with_wrapper_step(func):
     wrapper_step_name = func.__name__.replace('_', ' ')
     with api.step.nest(wrapper_step_name) as step:
       if version_profile_trackers:
-        step.presentation.logs['profile trackers'] = [
+        step.logs['profile trackers'] = [
             t.presentation for t in version_profile_trackers
         ]
       return func(*args, **kwargs)

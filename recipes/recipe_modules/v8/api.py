@@ -205,11 +205,11 @@ class ProdTrigger(Trigger):
         stdin=self.api.json.input(input_data),
         stdout=self.api.json.output(leak_to=jobs_file),
     )
-    response = self.api.json.read(
+    response = self.api.file.read_json(
         "read jobs json",
         jobs_file,
-        step_test_data=lambda: self.api.json.test_api.output({'jobs': []})
-    ).json.output
+        test_data={'jobs': []},
+    )
     return set(job['jobRef']['job'] for job in response['jobs'])
 
 
@@ -852,9 +852,9 @@ class V8Api(recipe_api.RecipeApi):
   @cached_property
   def build_config(self):
     build_config_path = self.build_output_dir.join('v8_build_config.json')
-    return self.m.json.read(
+    return self.m.file.read_json(
         'read build config', build_config_path,
-        step_test_data=self.test_api.example_build_config).json.output
+        test_data=self.test_api.example_build_config())
 
   def get_build_type(self):
     """Returns the given build type: 'debug' if gn args is_debug or

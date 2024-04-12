@@ -189,7 +189,7 @@ def make_archive(api,
           name='upload json',
       )
 
-    parent.presentation.links['download'] = (
+    parent.links['download'] = (
         ARCHIVE_LINK % (gs_path_suffix, archive_name))
     return version, None
 

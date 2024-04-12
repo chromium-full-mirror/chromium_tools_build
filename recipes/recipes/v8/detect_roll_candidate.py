@@ -87,7 +87,7 @@ def get_next_v8_revision(api, last_v8_revision):
         'refs/tags/*',
     ).split('\n')
     revision, reason = choose_revision_to_roll(ref_lines, last_version)
-    parent.presentation.step_text = reason
+    parent.step_text = reason
     return revision or last_v8_revision
 
 

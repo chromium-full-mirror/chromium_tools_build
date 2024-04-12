@@ -6,7 +6,6 @@ from recipe_engine import post_process
 
 DEPS = [
     'recipe_engine/file',
-    'recipe_engine/json',
     'recipe_engine/step',
     'v8',
 ]
@@ -41,7 +40,7 @@ def GenTests(api):
       builder_group, builder_name, target_cpu, is_debug, gs_link, public_link):
     return (api.v8.test(builder_group, builder_name) + api.step_data(
         'Code coverage.read build config',
-        api.json.output({
+        api.file.read_json({
             'DEBUG_defined': is_debug,
             'target_cpu': target_cpu
         })) + api.post_process(

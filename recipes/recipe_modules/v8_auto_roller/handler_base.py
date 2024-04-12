@@ -24,7 +24,7 @@ class RollHandler(ABC):
     with self.api.step.nest(f'Update {self.name()} deps') as step:
       try:
         with self.roll_contex():
-          step.presentation.step_text = self.summary()
+          step.step_text = self.summary()
           cl_manager.abandon_active_cls(self.get_subject())
           commons.discard_local_changes(self.api)
           changes = self.apply_changes()
@@ -37,7 +37,7 @@ class RollHandler(ABC):
               add=self.add_new_files,
           )
           if cl_link:
-            step.presentation.links['CL'] = cl_link
+            step.links['CL'] = cl_link
             self.module.summary.append(self.summary())
       except Exception as e:
         failed = self.api.step.empty('Roll failed')

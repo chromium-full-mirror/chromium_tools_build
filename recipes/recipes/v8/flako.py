@@ -521,7 +521,7 @@ class Runner:
         num_failures = self.check_num_flakes(offset)
         if (self.repro_only and num_failures or
             num_failures >= MIN_FLAKE_THRESHOLD):
-          parent.presentation.step_text = 'successfully reproduced flaky test'
+          parent.step_text = 'successfully reproduced flaky test'
           return True
         if self.num_shards < MAX_SWARMING_SHARDS:
           # First double the swarming shards until reaching the maximum.
@@ -529,7 +529,7 @@ class Runner:
         else:
           self.multiplier *= 2
         if i == self.max_calibration_attempts - 1:
-          parent.presentation.step_text = 'failed to reproduce the flaky test'
+          parent.step_text = 'failed to reproduce the flaky test'
     return False
 
   def _default_task_pass_test_data(self):
@@ -651,7 +651,7 @@ class Runner:
           # shards? E.g. when doubling from 4 to 8, maybe 5 was enough and
           # should be used throughout.
           break
-      parent.presentation.step_text = f'{num_failures} failures'
+      parent.step_text = f'{num_failures} failures'
       return num_failures
 
 

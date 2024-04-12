@@ -124,7 +124,7 @@ def check_branch(api, branch, max_gap_seconds, now):
     commits_not_rolled = get_commits_not_rolled(api, last_rolled_revision,
                                                 v8_branch)
     commit_times = [commit_time(commit, now) for commit in commits_not_rolled]
-    step.presentation.step_text = '; '.join(str(c) for c in commit_times)
+    step.step_text = '; '.join(str(c) for c in commit_times)
 
     overdue_commits = [
         ct for ct in commit_times if ct.is_overdue(max_gap_seconds)

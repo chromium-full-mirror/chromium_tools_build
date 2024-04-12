@@ -123,12 +123,12 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
 
   def example_build_config(self):
     """Fake config file with build information as written by V8's BUILD.gn."""
-    return self.m.json.output({
+    return {
       "dcheck_always_on": False,
       "is_debug": False,
       "target_cpu": "x64",
       "v8_target_cpu": "x64",
-    })
+    }
 
   def test_spec_in_checkout(self, buildername, test_spec, testername=None):
     """Simulates having a test specification in the checkout (i.e. on a
