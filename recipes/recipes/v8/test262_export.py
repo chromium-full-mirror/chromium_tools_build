@@ -35,7 +35,7 @@ def RunSteps(api):
 
   api.v8.checkout()
 
-  creds_file = api.path['cleanup'].join('test262.json')
+  creds_file = api.path.cleanup_dir.join('test262.json')
   is_approver = api.properties.get('approver', False)
   creds_name = APPROVER_CREDS_NAME if is_approver else EXPORTER_CREDS_NAME
   api.cloudkms.decrypt(
@@ -45,7 +45,7 @@ def RunSteps(api):
   )
   patch_gerrit_credentials(api, creds_file)
 
-  checkout_root = api.path['cache'].join('builder')
+  checkout_root = api.path.cache_dir.join('builder')
   chromium_path = checkout_root.join('src')
   blink_tools_path = chromium_path.join('third_party', 'blink', 'tools')
 

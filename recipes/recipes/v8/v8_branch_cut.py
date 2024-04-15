@@ -31,7 +31,7 @@ def RunSteps(api):
     api.gclient.set_config('v8')
     api.v8.checkout(with_branch_heads=True)
 
-    with api.context(cwd=api.path['checkout']), api.depot_tools.on_path():
+    with api.context(cwd=api.path.checkout_dir), api.depot_tools.on_path():
         branches = api.v8.latest_branches()
         assert branches, "No branches found!"
         last_version = branches[0]
@@ -67,7 +67,7 @@ def update_infra_config(api, definitions):
         api.v8.git_output('clean', '-ffd')
         api.v8.git_output('checkout', '-b', 'branch_cut_update')
         api.v8.git_output('branch', '--set-upstream-to=origin/infra/config')
-        definitions_path = api.path['checkout'].join('definitions.star')
+        definitions_path = api.path.checkout_dir.join('definitions.star')
         api.file.write_text('Write branch defintions', definitions_path,
                                 definitions)
         api.step('Lucicfg format', ['lucicfg', 'format'])
@@ -135,7 +135,7 @@ def get_issue(api):
     return re.search('\((.*)\)', issue).group(1)
 
 def update_gn(api):
-    toggle_path = api.path['checkout'].join("gni", "release_branch_toggle.gni")
+    toggle_path = api.path.checkout_dir.join("gni", "release_branch_toggle.gni")
     build_gn_content = api.file.read_text('Read release_branch_toggle.gni',
             toggle_path)
     MAIN_LINE = 'v8_is_on_release_branch = false'

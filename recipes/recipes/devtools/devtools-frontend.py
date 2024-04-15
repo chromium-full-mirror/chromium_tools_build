@@ -302,10 +302,10 @@ class UnitTests(DevToolsTests):
     coverage_data_dir = self.output_dir / shard_output_dir / 'karma-coverage'
     self.api.file.rmtree(
         'remove coverage files if they exist',
-        self.api.path.join(self.api.path['checkout'], 'karma-coverage'))
+        self.api.path.join(self.api.path.checkout_dir, 'karma-coverage'))
     self.api.file.copytree(
         'copy unit tests coverage data', coverage_data_dir,
-        self.api.path.join(self.api.path['checkout'], 'karma-coverage'))
+        self.api.path.join(self.api.path.checkout_dir, 'karma-coverage'))
 
   def prepare_filtered_rerun(self, test_names):
     self.env = {
@@ -386,21 +386,21 @@ class InteractionsTests(DevToolsTests):
         self.output_dir / shard_output_dir / 'interactions-coverage')
     self.api.file.rmtree(
         'remove coverage files if they exist',
-        self.api.path.join(self.api.path['checkout'], 'interactions-coverage'))
+        self.api.path.join(self.api.path.checkout_dir, 'interactions-coverage'))
     self.api.file.copytree(
         'copy interaction tests coverage data', coverage_data_dir,
-        self.api.path.join(self.api.path['checkout'], 'interactions-coverage'))
+        self.api.path.join(self.api.path.checkout_dir, 'interactions-coverage'))
 
   def copy_golden_snapshots(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
     golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
     self.api.file.rmtree(
         'remove previous goldens',
-        self.api.path.join(self.api.path['checkout'], 'test', 'interactions',
+        self.api.path.join(self.api.path.checkout_dir, 'test', 'interactions',
                            'goldens'))
     self.api.file.copytree(
         'copy golden snapshots', golden_snapshots_dir,
-        self.api.path.join(self.api.path['checkout'], 'test', 'interactions',
+        self.api.path.join(self.api.path.checkout_dir, 'test', 'interactions',
                            'goldens'))
 
   def test_name_to_grep_string(self, name):
@@ -487,10 +487,10 @@ class PerformanceTests(DevToolsTests):
     perf_data_dir = (self.output_dir / shard_output_dir / 'perf-data')
     self.api.file.rmtree(
         'remove perf data file if it exists',
-        self.api.path.join(self.api.path['checkout'], 'perf-data'))
+        self.api.path.join(self.api.path.checkout_dir, 'perf-data'))
     self.api.file.copytree(
         'copy interaction tests coverage data', perf_data_dir,
-        self.api.path.join(self.api.path['checkout'], 'perf-data'))
+        self.api.path.join(self.api.path.checkout_dir, 'perf-data'))
 
 class E2ETestDivider:
   def __init__(self, api, builder_config, shard_count=4):
@@ -588,7 +588,7 @@ def failed_tests_names(api):
   return test_names
 
 def lint_script_exists(api, name):
-  script_file = api.path['checkout'].join('scripts', 'test', name)
+  script_file = api.path.checkout_dir.join('scripts', 'test', name)
   return api.path.exists(script_file)
 
 def run_lint_check(api):
@@ -600,7 +600,7 @@ def run_lint_check(api):
                                'run_lint_check_css.js')
 
 def publish_performance_benchmarks(api):
-  report_file = api.path['checkout'].join('perf-data', 'devtools-perf.json')
+  report_file = api.path.checkout_dir.join('perf-data', 'devtools-perf.json')
   if not api.path.exists(report_file):
     return
   #TODO(andoli) publish coverage data in skia perf
@@ -634,7 +634,7 @@ def publish_coverage_points(api):
 
   dimensions = ["lines", "statements", "functions", "branches"]
 
-  report_file = api.path['checkout'].join('karma-coverage',
+  report_file = api.path.checkout_dir.join('karma-coverage',
                                           'coverage-summary.json')
 
   summary = api.file.read_json(
@@ -645,7 +645,7 @@ def publish_coverage_points(api):
       for dim in dimensions
   ])
 
-  with api.context(cwd=api.path['checkout']):
+  with api.context(cwd=api.path.checkout_dir):
     git_revision = api.bot_update.last_returned_properties['got_revision']
 
     commit_count = api.git(
@@ -713,7 +713,7 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(builder_config='Debug'),
-      api.path.exists(api.path['checkout'].join(
+      api.path.exists(api.path.checkout_dir.join(
           'karma-coverage',
           'coverage-summary.json',
       )),
@@ -751,7 +751,7 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(perf_benchmarks=True, builder_config='Debug'),
-      api.path.exists(api.path['checkout'].join(
+      api.path.exists(api.path.checkout_dir.join(
           'perf-data',
           'devtools-perf.json',
       )),

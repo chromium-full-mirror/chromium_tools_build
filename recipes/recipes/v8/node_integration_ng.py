@@ -90,14 +90,14 @@ def RunSteps(api, is_debug, triggers, v8_tot):
       api.gclient.c.revisions['node-ci'] = revision
 
     # Check out.
-    with api.context(cwd=api.path['cache'].join('builder')):
+    with api.context(cwd=api.path.cache_dir.join('builder')):
       update_step = api.bot_update.ensure_checkout()
       assert update_step.json.output['did_run']
 
     api.chromium.runhooks()
 
   with api.step.nest('build'):
-    depot_tools_path = api.path['checkout'].join('third_party', 'depot_tools')
+    depot_tools_path = api.path.checkout_dir.join('third_party', 'depot_tools')
     with api.context(env_prefixes={'PATH': [depot_tools_path]}):
       api.chromium.run_gn(use_reclient=True)
       raw_result = api.chromium.compile(use_reclient=True)
@@ -117,7 +117,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     with api.step.nest('archive') as parent:
       archive_name = ('node-%s-rel-%s-%s.zip' %
                       (api.platform.name, revision_number, revision))
-      zip_file = api.path['cleanup'].join(archive_name)
+      zip_file = api.path.cleanup_dir.join(archive_name)
 
       # Zip build.
       package = api.zip.make_package(build_output_path, zip_file)
@@ -149,7 +149,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
 
   # Run tests.
   has_flakes = False
-  with api.context(cwd=api.path['checkout'].join('node')):
+  with api.context(cwd=api.path.checkout_dir.join('node')):
     run_cctest = lambda step_name: api.step(
         step_name, [build_output_path.join('node_cctest')])
     has_flakes |= run_with_retry(api, 'run cctest', run_cctest)

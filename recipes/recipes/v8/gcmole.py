@@ -26,13 +26,13 @@ def RunSteps(api):
   api.v8.checkout()
   api.v8.runhooks()
 
-  depot_tools_path = api.path['checkout'].join('third_party', 'depot_tools')
+  depot_tools_path = api.path.checkout_dir.join('third_party', 'depot_tools')
   with api.context(env_prefixes={'PATH': [depot_tools_path]}):
     api.git('branch', '-D', 'gcmole_update', ok_ret='any')
     api.git('clean', '-ffd')
     api.git('new-branch', 'gcmole_update')
 
-    gcmole_root = api.path['checkout'].join('tools', 'gcmole')
+    gcmole_root = api.path.checkout_dir.join('tools', 'gcmole')
     api.step('Build gcmole', [gcmole_root.join('bootstrap.sh')])
     api.step('Package gcmole', [gcmole_root.join('package.sh')])
 

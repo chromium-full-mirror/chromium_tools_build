@@ -25,7 +25,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   @contextmanager
   def depot_on_path(self):
-    depot_tools_path = self.m.path['checkout'].join('third_party')
+    depot_tools_path = self.m.path.checkout_dir.join('third_party')
     with self.m.context(env_prefixes={'PATH': [depot_tools_path]}):
       yield
 
@@ -36,7 +36,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
       dir_to_clean = 'Debug'
     else:
       return
-    path_to_clean = self.m.path['checkout'].join('out', dir_to_clean)
+    path_to_clean = self.m.path.checkout_dir.join('out', dir_to_clean)
     self.m.file.rmtree('clean outdir', path_to_clean)
 
   def is_debug(self, builder_config):
@@ -47,14 +47,14 @@ class DevToolsAPI(recipe_api.RecipeApi):
     self.run_node_script(step_name, script, args, wrapper=rdb_wrapper)
 
   def run_node_script(self, step_name, script, args=None, **kwargs):
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       sc_path = self.m.path.join('third_party', 'node', 'node.py')
       node_args = ['--output', self.m.path.join('scripts', 'test', script)]
       node_args.extend(args or [])
       self.m.step(step_name, ["vpython3", "-u", sc_path] + node_args, **kwargs)
 
   def run_python_script(self, step_name, script, args=None, **kwargs):
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       sc_path = self.m.path.join('scripts', 'test', script)
       args = args or []
       return self.m.step(step_name, ["vpython3", "-u", sc_path] + args,
@@ -97,7 +97,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
     }
 
   def archive_to_cas(self):
-    return self.m.cas.archive('archive', self.m.path['checkout'])
+    return self.m.cas.archive('archive', self.m.path.checkout_dir)
 
   def divided_e2e_commands(self,
                            builder_config,
@@ -254,12 +254,12 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   @contextmanager
   def _in_builder_cache(self):
-    cache_dir = self.m.path['cache'].join('builder')
+    cache_dir = self.m.path.cache_dir.join('builder')
     with self.m.context(cwd=cache_dir):
       yield
 
   # TODO(liviurau): remove this temp hack after devtools refactoring that
   # involve .gitignore are done
   def _git_clean(self):
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       self.m.git('clean', '-xf', '--', 'front_end')

@@ -60,7 +60,7 @@ class DEPSRollHandler(RollHandler, ABC):
     return [update for update in self.updates if self.set_dep(update)]
 
   def set_dep(self, update):
-    with self.api.context(cwd=self.api.path['checkout']):
+    with self.api.context(cwd=self.api.path.checkout_dir):
       clean_name = update.name.replace('/', '_')
       step_result = self.api.gclient(
           f'setdep {clean_name}',

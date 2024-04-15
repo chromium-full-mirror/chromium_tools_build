@@ -25,7 +25,7 @@ class CLManager:
     Returns the URL to the uploaded CL, or None if no CL was uploaded.
     """
     # Check for a difference. If no deps changed, the diff is empty.
-    with self.api.context(cwd=self.api.path['checkout']):
+    with self.api.context(cwd=self.api.path.checkout_dir):
       step_result = self.api.git(
           'status',
           '-s',
@@ -50,7 +50,7 @@ class CLManager:
 
     kwargs = {'stdout': self.api.raw_io.output_text()}
     with self.api.context(
-        cwd=self.api.path['checkout'],
+        cwd=self.api.path.checkout_dir,
         env_prefixes={'PATH': [self.api.v8.depot_tools_path]}):
       self.api.git(*args, **kwargs)
       self.api.git('show')

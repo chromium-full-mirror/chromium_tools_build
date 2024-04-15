@@ -198,7 +198,7 @@ class ProdTrigger(Trigger):
         'scheduler.Scheduler.GetJobs'
     ]
     input_data = {"project": "v8"}
-    jobs_file = self.api.path['tmp_base'].join('jobs.json')
+    jobs_file = self.api.path.tmp_base_dir.join('jobs.json')
     self.api.step(
         "get V8 jobs",
         args,
@@ -360,8 +360,8 @@ class V8Api(recipe_api.RecipeApi):
 
     Returns: List of paths to test roots.
     """
-    result = [self.m.path['checkout']]
-    custom_deps_dir = self.m.path['checkout'].join('custom_deps')
+    result = [self.m.path.checkout_dir]
+    custom_deps_dir = self.m.path.checkout_dir.join('custom_deps')
     self.m.file.ensure_directory('ensure custom_deps dir', custom_deps_dir)
     for path in self.m.file.listdir('list test roots', custom_deps_dir):
       if self.m.path.exists(path.join('infra', 'testing', 'builders.pyl')):
@@ -482,7 +482,7 @@ class V8Api(recipe_api.RecipeApi):
     if self.m.reclient.instance:
       self.m.reclient.use_download_remoteexec_cfg_hook(solution)
 
-    self.checkout_root = self.m.path['cache'].join('builder')
+    self.checkout_root = self.m.path.cache_dir.join('builder')
     self.m.file.ensure_directory(
         'ensure builder cache dir', self.checkout_root)
     with self.m.context(cwd=self.checkout_root):
@@ -611,7 +611,7 @@ class V8Api(recipe_api.RecipeApi):
     """
     output_dir = self.m.chromium.output_dir
     if out_dir:
-      output_dir = self.m.path['checkout'].join(
+      output_dir = self.m.path.checkout_dir.join(
           out_dir, self.m.chromium.c.build_config_fs)
 
     # Special handling for 'perf' target, since perf tests are going to be
@@ -749,7 +749,7 @@ class V8Api(recipe_api.RecipeApi):
 
         mb_config_path = (
             mb_config_path or
-            self.m.path['checkout'].join(*mb_config_rel_path.split('/')))
+            self.m.path.checkout_dir.join(*mb_config_rel_path.split('/')))
 
         gn_args = self.m.chromium.mb_gen(
             self.m.chromium.get_builder_id(),
@@ -819,14 +819,14 @@ class V8Api(recipe_api.RecipeApi):
     """Returns path to depot_tools pinned in the V8 checkout."""
     assert 'checkout' in self.m.path, (
         "Pinned depot_tools is not available before checkout has been created")
-    return self.m.path['checkout'].join('third_party', 'depot_tools')
+    return self.m.path.checkout_dir.join('third_party', 'depot_tools')
 
   @property
   def ninja_path(self):
     """Returns path to ninja pinned in the V8 checkout."""
     assert 'checkout' in self.m.path, (
         "Pinned ninja is not available before checkout has been created")
-    return self.m.path['checkout'].join('third_party', 'ninja')
+    return self.m.path.checkout_dir.join('third_party', 'ninja')
 
   def _get_default_archive(self):
     return 'gs://chromium-v8/archives/%s/%s' % (
@@ -907,14 +907,14 @@ class V8Api(recipe_api.RecipeApi):
     if self.bot_config.get('coverage') != 'llvm':
       yield
     else:
-      profile_path = self.m.path['cleanup'].join('profraw')
+      profile_path = self.m.path.cleanup_dir.join('profraw')
       profile_template = profile_path.join('default-%%9m.profraw')
       try:
         with self.m.context(env={'LLVM_PROFILE_FILE': profile_template}):
           yield
       finally:
         with self.m.step.nest('Code coverage') as parent_presentation:
-          with self.m.context(cwd=self.m.path['checkout']):
+          with self.m.context(cwd=self.m.path.checkout_dir):
             profiles = self.find_profiles(profile_path)
             total_profile = self.merge_profiles(profiles)
             report_dir = self.create_report(total_profile)
@@ -934,12 +934,12 @@ class V8Api(recipe_api.RecipeApi):
 
   def llvm_tool(self, name):
     """Returns an absolute path to an llvm tool in the V8 checkout."""
-    return self.m.path['checkout'].join(
+    return self.m.path.checkout_dir.join(
         'third_party', 'llvm-build', 'Release+Asserts', 'bin', name)
 
   def merge_profiles(self, profiles):
     """Merges multiple raw profiles and returns a path to the total profile."""
-    output_dir = self.m.path['cleanup'].join('profdata')
+    output_dir = self.m.path.cleanup_dir.join('profdata')
     total_profile = output_dir.join('total.profdata')
     self.m.file.ensure_directory('Ensure output directory', output_dir)
 
@@ -953,7 +953,7 @@ class V8Api(recipe_api.RecipeApi):
 
   def create_report(self, total_profile):
     """Creates an html coverage report for a merged profile."""
-    report_dir = self.m.path['cleanup'].join('report')
+    report_dir = self.m.path.cleanup_dir.join('report')
     self.m.file.ensure_directory('Ensure report directory', report_dir)
 
     cmd = [
@@ -1164,7 +1164,7 @@ class V8Api(recipe_api.RecipeApi):
         trigger_props = {}
         self._copy_property(self.m.properties, trigger_props, 'revision')
         trigger_props.update(properties)
-        self.m.cq.record_triggered_builds(*self.trigger.buildbucket(
+        self.m.cv.record_triggered_builds(*self.trigger.buildbucket(
             [(builder_name,
               dict(
                   trigger_props,
@@ -1303,7 +1303,7 @@ class V8Api(recipe_api.RecipeApi):
 
   def read_version_file(self, ref, step_name_desc):
     """Read and return the version-file content at a paricular ref."""
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       return self.m.git(
           'show', f'{ref}:{self.VERSION_FILE}',
           name=f'Check {step_name_desc} version file',
@@ -1391,7 +1391,7 @@ class V8Api(recipe_api.RecipeApi):
     # Write file to disk.
     self.m.file.write_text(
         'Increment version',
-        self.m.path['checkout'].join(self.m.v8.VERSION_FILE),
+        self.m.path.checkout_dir.join(self.m.v8.VERSION_FILE),
         latest_version_file,
     )
 

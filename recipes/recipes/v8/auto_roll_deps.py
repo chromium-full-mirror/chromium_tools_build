@@ -158,7 +158,7 @@ def RunSteps(api):
     if not cq_commits:
       api.v8.checkout()
       with api.context(
-          cwd=api.path['checkout'],
+          cwd=api.path.checkout_dir,
           env_prefixes={'PATH': [api.v8.depot_tools_path]}):
         if api.runtime.is_experimental:
           api.step('fake resubmit to CQ', cmd=None)
@@ -189,7 +189,7 @@ def RunSteps(api):
     api.step.active_result.presentation.status = api.step.WARNING
     return
 
-  with api.context(cwd=api.path['checkout'].join('v8'),
+  with api.context(cwd=api.path.checkout_dir.join('v8'),
                    env={'DEPOT_TOOLS_UPDATE': '0'},
                    env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)
@@ -205,7 +205,7 @@ def RunSteps(api):
           'roll deps',
           api.v8.checkout_root.join(
               'v8', 'tools', 'release', 'auto_roll.py'),
-          ['--chromium', api.path['checkout'],
+          ['--chromium', api.path.checkout_dir,
            '--author', push_account,
            '--reviewer', 'hablich@chromium.org,'
                          'vahl@chromium.org,'
@@ -213,7 +213,7 @@ def RunSteps(api):
            '--roll',
            '--last-roll', last_v8_revision,
            '--revision', next_v8_revision,
-           '--work-dir', api.path['cache'].join(safe_buildername, 'workdir')],
+           '--work-dir', api.path.cache_dir.join(safe_buildername, 'workdir')],
       )
 
 

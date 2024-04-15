@@ -108,7 +108,7 @@ def make_archive(api,
     file_list_test_data = [str(build_dir.join(f)) for f in files]
     file_list = api.v8.python(
         'filter build files',
-        api.path['checkout'].join('tools', 'release', 'filter_build_files.py'),
+        api.path.checkout_dir.join('tools', 'release', 'filter_build_files.py'),
         [
           '--dir', build_dir,
           '--platform', api.chromium.c.TARGET_PLATFORM,
@@ -120,7 +120,7 @@ def make_archive(api,
     ).json.output
 
     # Zip build.
-    zip_file = api.path['cleanup'].join('archive.zip')
+    zip_file = api.path.cleanup_dir.join('archive.zip')
     package = api.zip.make_package(build_dir, zip_file)
     for f in file_list:
       package.add_file(api.path.abs_to_path(f))

@@ -23,11 +23,11 @@ def RunSteps(api):
   api.v8.checkout()
   api.v8.runhooks()
   with api.context(
-      cwd=api.path['checkout'],
+      cwd=api.path.checkout_dir,
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.v8.vpython(
         'Presubmit',
-        api.path['checkout'].join('tools', 'v8_presubmit.py'),
+        api.path.checkout_dir.join('tools', 'v8_presubmit.py'),
         ['--no-linter-cache'],
         wrapper=('rdb', 'stream', '--'),
     )

@@ -138,7 +138,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
     that's supposed to trigger a tester.
     """
     return (
-        self.m.path.exists(self.m.path['cache'].join(
+        self.m.path.exists(self.m.path.cache_dir.join(
             'builder', 'v8', 'infra', 'testing', 'builders.pyl')) +
         self.step_data(
             'initialization.read test spec (v8)',

@@ -96,7 +96,7 @@ def RunSteps(api):
   api.v8.checkout()
 
   last_v8_revision = get_last_v8_revision(api)
-  with api.context(cwd=api.path['checkout'],
+  with api.context(cwd=api.path.checkout_dir,
                    env={'DEPOT_TOOLS_UPDATE': '0'},
                    env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)

@@ -339,8 +339,8 @@ class V8Test(BaseTest):
       '--json-test-results',
       self.api.json.output(add_json_log=False),
     ]
-    script = self.api.path['checkout'].join('tools', 'run-tests.py')
-    with self.api.context(cwd=self.api.path['checkout'], env=env):
+    script = self.api.path.checkout_dir.join('tools', 'run-tests.py')
+    with self.api.context(cwd=self.api.path.checkout_dir, env=env):
       try:
         self.api.step(
           test['name'] + self.test_step_config.step_name_suffix,
@@ -533,7 +533,7 @@ class V8SwarmingTest(V8Test):
     # Shim script's own arguments.
     args = [
         '--temp-root-dir',
-        self.api.path['tmp_base'],
+        self.api.path.tmp_base_dir,
         '--merged-test-output',
         json_output,
         '--warnings-json',

@@ -22,14 +22,14 @@ class Test262ImportHandler(RollHandler):
     return 'test262 import'
 
   def apply_changes(self):
-    creds = self.api.path['cleanup'].join(CREDS_NAME + '.json')
+    creds = self.api.path.cleanup_dir.join(CREDS_NAME + '.json')
     self.api.cloudkms.decrypt(
         KMS_CRYPTO_KEY,
         self.module.repo_resource('recipes', 'recipes',
                                   'v8', 'assets', CREDS_NAME),
         creds,
     )
-    checkout_root = self.api.path['cache'].join('builder')
+    checkout_root = self.api.path.cache_dir.join('builder')
     chromium_path = checkout_root.join('src')
     blink_tools_path = chromium_path.join('third_party', 'blink', 'tools')
 

@@ -17,7 +17,7 @@ def roll_origin_line(api):
 
 def discard_local_changes(api):
   with api.context(
-      cwd=api.path['checkout'],
+      cwd=api.path.checkout_dir,
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.git('checkout', '-f', 'origin/main')
     api.git('branch', '-D', 'roll', ok_ret='any')

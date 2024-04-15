@@ -48,7 +48,7 @@ class RollHandler(ABC):
   @contextmanager
   def roll_contex(self):
     with self.api.context(
-        cwd=self.api.path['checkout']), self.api.depot_tools.on_path():
+        cwd=self.api.path.checkout_dir), self.api.depot_tools.on_path():
       yield
 
   @abstractmethod

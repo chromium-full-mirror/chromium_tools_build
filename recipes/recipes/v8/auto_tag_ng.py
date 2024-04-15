@@ -68,7 +68,7 @@ def RunSteps(api):
   api.v8.checkout(with_branch_heads=True)
 
   with api.context(
-      cwd=api.path['checkout'],
+      cwd=api.path.checkout_dir,
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.v8.git_output('fetch', 'origin', '--prune')
 

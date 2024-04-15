@@ -66,7 +66,7 @@ def PushRef(api, repo, hsh):
   api.gclient.set_config('v8')
   api.v8.checkout()
 
-  with api.context(cwd=api.path['checkout']):
+  with api.context(cwd=api.path.checkout_dir):
     api.git('update-ref', CANARY_REF, hsh)
     api.git('push', repo, '-f', '%s:%s' % (CANARY_REF, CANARY_REF))
 

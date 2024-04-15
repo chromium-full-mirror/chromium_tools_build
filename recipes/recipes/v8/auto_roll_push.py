@@ -21,7 +21,7 @@ def RunSteps(api):
   api.gclient.set_config('v8')
   api.v8.checkout()
 
-  with api.context(cwd=api.path['checkout']):
+  with api.context(cwd=api.path.checkout_dir):
     safe_buildername = ''.join(
       c if c.isalnum() else '_' for c in api.buildbucket.builder_name)
     push_arg = ['--push']
@@ -31,11 +31,11 @@ def RunSteps(api):
         'v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com')
     api.v8.python(
         'push candidate',
-        api.path['checkout'].join('tools', 'release', 'auto_push.py'),
+        api.path.checkout_dir.join('tools', 'release', 'auto_push.py'),
         push_arg + [
          '--author', push_account,
          '--reviewer', push_account,
-         '--work-dir', api.path['cache'].join(safe_buildername, 'workdir')],
+         '--work-dir', api.path.cache_dir.join(safe_buildername, 'workdir')],
       )
 
 

@@ -29,7 +29,7 @@ def RunSteps(api):
 
   # Run node tests for js-fuzzer using the node docker image.
   with api.step.nest('js-fuzzer'):
-    fuzzer_dir = api.path['checkout'].join('tools', 'clusterfuzz', 'js_fuzzer')
+    fuzzer_dir = api.path.checkout_dir.join('tools', 'clusterfuzz', 'js_fuzzer')
     docker_cmd = [
       'run',
       '--rm',
