@@ -156,8 +156,8 @@ class ReclientApi(recipe_api.RecipeApi):
     self._disable_bq_upload = props.disable_bq_upload
     self._reclient_version = None
     self._download_remoteexec_cfg_hook_vars_used = None
-    self._automatic_auth = False
-    self._use_gce_credentials = True
+    self._experimental_credentials_helper = None
+    self._experimental_credentials_helper_args = None
 
     if self._test_data.enabled:
       self._hostname = 'fakevm999-m9'
@@ -317,20 +317,20 @@ class ReclientApi(recipe_api.RecipeApi):
     return self._props.ensure_verified
 
   @property
-  def automatic_auth(self):
-    return self._automatic_auth
+  def experimental_credentials_helper(self):
+    return self._experimental_credentials_helper
 
-  @automatic_auth.setter
-  def automatic_auth(self, val):
-    self._automatic_auth = val
+  @experimental_credentials_helper.setter
+  def experimental_credentials_helper(self, val):
+    self._experimental_credentials_helper = val
 
   @property
-  def use_gce_credentials(self):
-    return self._use_gce_credentials
+  def experimental_credentials_helper_args(self):
+    return self._experimental_credentials_helper_args
 
-  @use_gce_credentials.setter
-  def use_gce_credentials(self, val):
-    self._use_gce_credentials = val
+  @experimental_credentials_helper_args.setter
+  def experimental_credentials_helper_args(self, val):
+    self._experimental_credentials_helper_args = val
 
   def _get_platform_exe_name(self, exe_name):
     if self.m.platform.is_win:
@@ -510,8 +510,8 @@ class ReclientApi(recipe_api.RecipeApi):
     """
     reproxy_bin_path = self._get_reclient_exe_path('reproxy')
     enable_crash_dump = 'true' if self._scandeps_server else 'false'
-    automatic_auth = 'true' if self._automatic_auth else 'false'
-    use_gce_credentials = 'true' if self._use_gce_credentials else 'false'
+    use_gce_credentials = ('false'
+                           if self._experimental_credentials_helper else 'true')
     env = {
         'RBE_instance': self.instance,
         'RBE_log_format': _REPROXY_LOG_FORMAT,
@@ -523,7 +523,7 @@ class ReclientApi(recipe_api.RecipeApi):
         'RBE_server_address': self.server_address,
         'RBE_fast_log_collection': 'true',
         'RBE_use_application_default_credentials': 'false',
-        'RBE_automatic_auth': automatic_auth,
+        'RBE_automatic_auth': 'false',
         'RBE_use_gce_credentials': use_gce_credentials,
         'RBE_fail_early_min_action_count': 4000,
         'RBE_fail_early_min_fallback_ratio': 0.5,
@@ -537,6 +537,11 @@ class ReclientApi(recipe_api.RecipeApi):
         'GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP': enable_crash_dump,
         'GOMA_DEPS_CACHE_TABLE_THRESHOLD': 40000,
     }
+
+    if self._experimental_credentials_helper:
+      env['RBE_experimental_credentials_helper'] = self._experimental_credentials_helper
+    if self._experimental_credentials_helper_args:
+      env['RBE_experimental_credentials_helper_args'] = self._experimental_credentials_helper_args
 
     if self.metrics_project:
       env['RBE_metrics_project'] = self.metrics_project

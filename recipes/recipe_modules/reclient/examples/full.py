@@ -60,6 +60,15 @@ def RunSteps(api):
   api.assertions.assertEqual(api.reclient.cache_silo, "foobar")
   api.reclient.cache_silo = tmp
 
+  api.reclient.experimental_credentials_helper = 'luci-auth'
+  api.reclient.experimental_credentials_helper_args = ' '.join([
+      'token',
+      '-scopes-context',
+      '-json-output=-',
+      '-json-format=reclient',
+      '-lifetime=5m',
+  ])
+
   ninja_command = ['ninja', '-C', 'out/Release']
   deps_cache_by_step = api.properties.get('deps_cache_by_step', False)
   with api.reclient.process(
@@ -71,10 +80,8 @@ def RunSteps(api):
   _ = api.reclient.rewrapper_path
   _ = api.reclient.metrics_project
   _ = api.reclient.jobs
-  api.reclient.automatic_auth = False
-  _ = api.reclient.automatic_auth
-  api.reclient.use_gce_credentials = False
-  _ = api.reclient.use_gce_credentials
+  _ = api.reclient.experimental_credentials_helper
+  _ = api.reclient.experimental_credentials_helper_args
 
 
 def MakeTestRBEStats(num_records=0,

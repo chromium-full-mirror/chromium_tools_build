@@ -433,8 +433,14 @@ def compile_targets(
   use_reclient = get_remote_compile_options(api, build_dir)
 
   if use_reclient:
-    api.reclient.use_gce_credentials = False
-    api.reclient.automatic_auth = True
+    api.reclient.experimental_credentials_helper = 'luci-auth'
+    api.reclient.experimental_credentials_helper_args = ' '.join([
+        'token',
+        '-scopes-context',
+        '-json-output=-',
+        '-json-format=reclient',
+        '-lifetime=5m',
+    ])
   return api.chromium.compile(
       targets,
       skip_log_upload=True,
