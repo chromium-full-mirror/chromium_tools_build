@@ -106,7 +106,7 @@ class GerritCL:
             include_experimental=True,
         ),
         limit=100,
-        fields=['tags.*,steps.*'],
+        fields=['tags,steps'],
         report_build=False,
     )
     return [BBBuild(b) for b in bb_builds]
