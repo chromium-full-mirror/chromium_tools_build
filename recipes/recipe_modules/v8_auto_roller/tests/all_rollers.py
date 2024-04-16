@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DoesNotRunRE, DropExpectation)
+from recipe_engine.post_process import (DoesNotRunRE, DropExpectation, MustRun)
 
 DEPS = [
     'recipe_engine/buildbucket',
@@ -89,6 +89,13 @@ def RunSteps(api):
 
 
 def GenTests(api):
+  MOCK_DEP_REFS_MAIN = [
+    ('3', 'mock-skip-chromium-roll (main)'),
+    ('deadbeef', 'mock-tot-rolled (main)'),
+    ('4', 'tools_clang (main)'),
+    ('5', 'tools_clang-reviewed (main)'),
+  ]
+
   yield api.test('default') + api.override_step_data(
       'Update test262 import deps.Update Test262 status file.',
       api.raw_io.stream_output_text('range 1..3'),
@@ -118,16 +125,14 @@ def GenTests(api):
           api.raw_io.stream_output_text(
               f'deadbeef\trefs/heads/{RETSAM}', stream='stdout'),
       ) + api.override_step_data(
-          'Find updated deps.look up mock-skip-chromium-roll (main)',
-          api.raw_io.stream_output_text('3\trefs/heads/main', stream='stdout'),
-      ) + api.override_step_data(
-          'Find updated deps.look up mock-tot-rolled (main)',
-          api.raw_io.stream_output_text(
-              'deadbeef\trefs/heads/main', stream='stdout'),
-      ) + api.override_step_data(
           'Update trusted deps.gclient setdep mock-set-dep-failing',
           retcode=1,
-      )
+      ) + sum([
+        api.override_step_data(
+            f'Find updated deps.look up {repo}',
+            api.raw_io.stream_output_text(
+                f'{rev}\trefs/heads/main', stream='stdout'),
+      ) for rev, repo in MOCK_DEP_REFS_MAIN], api.empty_test_data())
 
   yield api.test('not pin update') + api.override_step_data(
       'Update test262 import deps.Update Test262 status file.',
@@ -174,4 +179,16 @@ def GenTests(api):
       'Find updated deps.gclient get src deps',
       api.raw_io.stream_output_text(
           'src/mock-changed-location: bar/changed-location@2', stream='stdout'),
+  ) + api.post_process(
+      MustRun,
+      "Find updated deps.dep mock-changed-location has changed repo from foo/changed-location to bar/changed-location",
   ) + api.post_process(DropExpectation)
+
+  yield api.test(
+      'no tip of tree',
+      status='INFRA_FAILURE',
+  ) + api.override_step_data(
+      'Find updated deps.gclient get dummy deps',
+      api.raw_io.stream_output_text(
+        'v8/icu: https://example.com/repo.git@version', stream='stdout'),
+  ) + api.expect_exception('AssertionError') + api.post_process(DropExpectation)

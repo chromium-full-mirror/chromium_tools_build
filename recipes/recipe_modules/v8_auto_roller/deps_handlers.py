@@ -4,9 +4,13 @@
 
 from . import commons
 from .handler_base import RollHandler
-from abc import ABC
 
+from abc import ABC
+from dataclasses import dataclass
+from functools import cached_property
 import re
+from typing import Dict, List, Literal, Optional
+
 
 # The following dependencies are trusted - if new deps are added, their projects
 # need to be BCID L3 (http://go/bcid-ladder#level-3) compliant.
@@ -110,114 +114,203 @@ class DepUpdate:
     self.commit_msg_lines = commit_msg_lines
 
 
+@dataclass
+class ChromiumDep:
+  name: str
+  location: str
+  version: str
+
+
+@dataclass
+class TargetDep:
+  name: str
+  location: str
+  version: str
+
+  api: any
+  config: Dict[Literal['dependency_version_sources'], Dict[str, str]]
+  chromium_dep_by_location: Dict[str, ChromiumDep]
+
+  def __repr__(self) -> str:
+    trusted_label = 'trusted' if self.is_trusted else 'reviewed'
+    next_version = self.next_version if not self.has_changed_location else None
+    return (
+        f"{self.name} @ {self.version} → "
+        f"{self.source_system} @ {next_version} ({trusted_label}) from "
+        f"{self.location}"
+    )
+
+  @cached_property
+  def is_trusted(self) -> bool:
+    trusted_origin = self.canonical_location in TRUSTED_ORIGIN_DEPS
+    from_chromium = self.source_system == 'chromium'
+    return trusted_origin or from_chromium
+
+  @cached_property
+  def is_cipd(self) -> bool:
+    return self.location.startswith(CIPD_DEP_URL_PREFIX)
+
+  @cached_property
+  def canonical_location(self) -> str:
+    return canonical_location(self.location)
+
+  @cached_property
+  def source_system(self) -> Literal['cipd', 'chromium', 'tip_of_tree']:
+    manual_sources = self.config.get('dependency_version_sources', {})
+
+    if self.name in manual_sources:
+      return manual_sources.get(self.name)
+
+    if self.canonical_location in self.chromium_dep_by_location:
+      return 'chromium'
+
+    if self.is_cipd:
+      return 'cipd'
+
+    return 'tip_of_tree'
+
+  @cached_property
+  def has_changed_location(self) -> bool:
+    chromium_location = self.chromium_location
+    if not chromium_location or chromium_location == self.canonical_location:
+      return False
+
+    return True
+
+  @cached_property
+  def chromium_location(self) -> Optional[str]:
+    chromium_locations_by_name = {
+        dep.name: location
+        for location, dep in self.chromium_dep_by_location.items()
+    }
+
+    return chromium_locations_by_name.get(self.name)
+
+  @cached_property
+  def next_version(self) -> str:
+    if self.source_system == 'chromium':
+      chromium_dep = self.chromium_dep_by_location[self.canonical_location]
+      return chromium_dep.version
+
+    if self.source_system == 'cipd':
+      cipd_name = self.location[len(CIPD_DEP_URL_PREFIX):]
+      return get_recent_instance_id(self.api, cipd_name)
+
+    assert self.source_system == 'tip_of_tree', (
+        f'Invalid source system {self.source_system}')
+
+    return get_tot_revision(self.api, self.name, self.location)
+
+
 def get_dep_updates(api, autoroller_config):
-  chromium_deps = get_deps(
-      api,
-      'https://chromium.googlesource.com/chromium/src',
-      'src',
-  )
-
-  target = commons.get_targeted_solution(api)
-  target_deps = get_deps(api, target.url, target.name)
-
-  key_mapper = get_key_mapper(chromium_deps, target_deps)
-
-  target_dep_names = sorted(target_deps.keys())
-  target_dep_names = filter_deps(autoroller_config, target_dep_names)
+  chromium_dep_by_location = get_chromium_deps_by_location(api)
+  target_deps = get_target_deps(api, autoroller_config, chromium_dep_by_location)
 
   trusted_updates = []
   untrusted_updates = []
   failed_deps = []
-  for target_name in target_dep_names:
-    source_name = key_mapper(target_name)
-
-    target_value = target_deps[target_name]
-    target_location, target_version = target_value.split('@', 1)
-    clean_target_location = re.sub(r'\.git$', '', target_location)
-
-    is_cipd_dep = target_location.startswith(CIPD_DEP_URL_PREFIX)
-
-    chromium_value = chromium_deps.get(source_name)
-
-    # Determine the recent version and if it can be trusted
-    next_version = None
-    is_trusted = clean_target_location in TRUSTED_ORIGIN_DEPS
-    sources = autoroller_config.get('dependency_version_sources', {})
-    version_source = get_dependency_version_source(sources, target_name,
-                                                   bool(chromium_value),
-                                                   is_cipd_dep)
-
-    if version_source == 'chromium':
-      chromium_location, chromium_version = chromium_value.split('@', 1)
-
-      # Do not roll the dependency if the location has changed: The gclient tool
-      # does not have commands that allow overriding the repo, hence we'll need
-      # to make changes like this manually. However, this should not block
-      # updating other DEPS and creating roll CL, hence just create a failing
-      # step and continue.
-      if target_location != chromium_location:
-        message = (
-            f'dep {target_name} has changed repo from {target_location} to '
-            f'{chromium_location}')
-        step_result = api.step(message, cmd=None)
-        step_result.presentation.status = api.step.FAILURE
-        failed_deps.append(target_name)
-        continue
-
-      next_version = chromium_version
-      # We trust this roll since we assume all referenced dependencies in
-      # chromium to be trusted.
-      is_trusted = True
-
-    if version_source == 'cipd':
-      cipd_name = target_location[len(CIPD_DEP_URL_PREFIX):]
-      next_version = get_recent_instance_id(api, cipd_name)
-
-    if version_source == 'tip_of_tree':
-      next_version = get_tot_revision(api, target_name, target_location)
-
-    if not next_version:
-      api.step.active_result.presentation.status = 'FAILURE'
+  for target_dep in target_deps:
+    if target_dep.has_changed_location:
+      # If the name of the dependency is available in chromium as well, but with
+      # a different location, we assume that the location has changed. This
+      # needs to be fixed manually as the gclient tool does not have commands
+      # that allow overrideing the repository.
+      # NOTE: The check does not cover dependencies which have a different name,
+      # but had the same location in the past.
+      message = (
+          f'dep {target_dep.name} has changed repo from {target_dep.location} '
+          f'to {target_dep.chromium_location}')
+      step_result = api.step(message, cmd=None)
+      step_result.presentation.status = api.step.FAILURE
+      failed_deps.append(target_dep.name)
       continue
 
-    api.step.active_result.presentation.step_text += next_version
+    version = target_dep.version
+    next_version = target_dep.next_version
 
     # Update target dependency if changes exist
-    if target_version == next_version:
+    if version == next_version:
       continue
 
     # Construct commit message lines
     commit_msg_lines = []
-    if is_cipd_dep:
+    if target_dep.is_cipd:
       # Unfortunately CIPD does not provide a way to generate a link that
       # lists all versions from v8_rev to new_ver. Even just creating a link
       # to a list of versions of a DEP is complicated as package name can
       # contain ${platform}, which can usually be resolved to multiple
       # distinct packages.
-      path, _ = target_name.split(':')
-      commit_msg_lines.append(CIPD_LOG_TEMPLATE %
-                              (path, target_version, next_version))
+      path, _ = target_dep.name.split(':')
+      commit_msg_lines.append(CIPD_LOG_TEMPLATE % (path, version, next_version))
     else:
-      params = (target_name, clean_target_location, target_version[:7],
+      params = (target_dep.name, target_dep.canonical_location, version[:7],
                 next_version[:7])
       commit_msg_lines.append(GIT_LOG_TEMPLATE % params)
       if autoroller_config['show_commit_log']:
         commit_msg_lines.extend(
-            commit_messages_log_entries(api, clean_target_location,
-                                        target_version, next_version))
-    (trusted_updates if is_trusted else untrusted_updates).append(
-        DepUpdate(
-            name=target_name,
-            next_version=next_version,
-            commit_msg_lines=commit_msg_lines,
-        ))
+            commit_messages_log_entries(api, target_dep.canonical_location,
+                                        version, next_version))
+
+    dep_update = DepUpdate(
+        name=target_dep.name,
+        next_version=next_version,
+        commit_msg_lines=commit_msg_lines,
+    )
+    if target_dep.is_trusted:
+      trusted_updates.append(dep_update)
+    else:
+      untrusted_updates.append(dep_update)
 
   return trusted_updates, untrusted_updates, failed_deps
 
 
-def filter_deps(autoroller_config, dep_names):
+def get_chromium_deps_by_location(api) -> Dict[str, ChromiumDep]:
+  chromium_dep_by_name = get_deps(
+      api,
+      'https://chromium.googlesource.com/chromium/src',
+      'src',
+  )
+  result = {}
+  for name, entry in chromium_dep_by_name.items():
+    location, version = get_location_version(entry)
+    clean_location = canonical_location(location)
+    chromium_dep = ChromiumDep(name, location, version)
+    result[clean_location] = chromium_dep
+
+  return result
+
+
+def get_target_deps(
+    api, autoroller_config, chromium_dep_by_location) -> List[TargetDep]:
+  target = commons.get_targeted_solution(api)
+  target_dep_entry_by_name = get_deps(api, target.url, target.name)
+
+  target_deps = []
+  for name, dep_entry in target_dep_entry_by_name.items():
+    location, version = get_location_version(dep_entry)
+    target_deps.append(TargetDep(
+        name,
+        location,
+        version,
+        api,
+        autoroller_config,
+        chromium_dep_by_location,
+    ))
+
+  target_deps = filter_deps(autoroller_config, target_deps)
+  target_deps = sorted(target_deps, key=lambda dep: dep.name)
+
+  api.step.active_result.presentation.logs['filtered deps'] = [
+      repr(td) for td in target_deps
+  ]
+
+  return target_deps
+
+
+def filter_deps(autoroller_config, dependencies):
   excludes = autoroller_config.get('excludes')
   includes = autoroller_config.get('includes')
+  dep_names = {d.name for d in dependencies}
 
   assert excludes is None or includes is None, (
       'Either excludes or includes can be declared, not both.')
@@ -228,14 +321,22 @@ def filter_deps(autoroller_config, dep_names):
       'At least one included dep does not exist. Found '
       f'{", ".join(dep_names)}')
 
-  dep_names = [
-      dn for dn in dep_names if excludes is None or dn not in excludes
+  dependencies = [
+      d for d in dependencies if excludes is None or d.name not in excludes
   ]
-  dep_names = [
-      dn for dn in dep_names if includes is None or dn in includes
+  dependencies = [
+      d for d in dependencies if includes is None or d.name in includes
   ]
 
-  return dep_names
+  return dependencies
+
+
+def canonical_location(name):
+  return re.sub(r'\.git$', '', name)
+
+
+def get_location_version(entry):
+  return entry.split('@', 1)
 
 
 def handle_failed_deps(api, failed_deps):
@@ -294,27 +395,6 @@ def get_deps(api, repo_url, name):
   return deps
 
 
-def get_key_mapper(source_deps, target_deps):
-  """Override keys between destination (key) and source (value) based on
-  the dependency's location."""
-  source_names_by_location = {
-      value.split('@', 1)[0]: name for name, value in source_deps.items()
-  }
-  target_names_by_location = {
-      value.split('@', 1)[0]: name for name, value in target_deps.items()
-  }
-  source_locations = set(source_names_by_location.keys())
-  target_locations = set(target_names_by_location.keys())
-  common_locations = source_locations & target_locations
-
-  automatic_mapping = {
-      target_names_by_location[loc]: source_names_by_location[loc]
-      for loc in common_locations
-  }
-
-  return lambda key: automatic_mapping.get(key, key)
-
-
 def get_recent_instance_id(api, package_name):
   """Returns the latest uploaded cipd instance id for a package.
 
@@ -348,6 +428,8 @@ def get_tot_revision(api, name, target_loc):
     head = ls_remote(branch).split('\t')[0]
     if head:
       return head
+
+  assert False, f'Cannot determine revision for {name} at {target_loc}.'
 
 
 def get_commit_log(api, repo, commit):
@@ -393,22 +475,3 @@ def commit_messages_log_entries(api, repo, from_commit, to_commit):
   return [
       get_commit_log(api, repo, c) for c in commits[:MAX_COMMIT_LOG_ENTRIES]
   ] + ellipse
-
-
-def get_dependency_version_source(sources, dependency_name, is_chromium_dep,
-                                  is_cipd_dep):
-  source = sources.get(dependency_name, 'auto')
-
-  # If a specific version source is defined, the specific source should be used
-  if source != 'auto':
-    return source
-
-  # Otherwise, the roller tries to update the dependency from the following
-  # sources: 1. chromium/src, 2. cipd, 3. tip of tree
-  if is_chromium_dep:
-    return 'chromium'
-
-  if is_cipd_dep:
-    return 'cipd'
-
-  return 'tip_of_tree'
