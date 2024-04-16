@@ -263,6 +263,19 @@ BUILDERS = freeze({
                     upload_directory='asan',
                     archive_prefix='centipede',
                 ),
+            'Centipede High End Upload Linux ASan':
+                FuzzEngineSpec.create(
+                    chromium_config='chromium_clang',
+                    chromium_apply_config=['clobber'],
+                    chromium_config_kwargs={
+                        'BUILD_CONFIG': 'Release',
+                        'TARGET_PLATFORM': 'linux',
+                        'TARGET_BITS': 64,
+                    },
+                    upload_bucket='chromium-browser-centipede',
+                    upload_directory='asan',
+                    archive_prefix='centipede-high-end',
+                ),
         },
     },
     'tryserver.chromium.linux': {
