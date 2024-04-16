@@ -28,7 +28,6 @@ PROPERTIES = {
             kind=ConfigGroup(
                 excludes=Single(list, empty_val=None),
                 includes=Single(list, empty_val=None),
-                deps_key_mapping=Dict(value_type=str),
             )),
 }
 
@@ -101,30 +100,5 @@ def GenTests(api):
       'excludes_invalid_dep',
       {'excludes': ['v8/third_party/icu']},
       ie_chromium_deps, ie_v8_deps,
-      api.expect_exception('AssertionError'),
-  )
-
-  # deps_key_mapping
-  dkm_v8_deps = "v8/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"
-  dkm_chromium_deps = "src/3rd_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"
-
-  yield test(
-      'deps_key_mapping_valid',
-      {'deps_key_mapping': {'third_party/icu': '3rd_party/icu'}},
-      dkm_chromium_deps, dkm_v8_deps,
-      api.post_process(MustRun, 'Update trusted deps.gclient setdep third_party_icu'),
-  )
-
-  yield test(
-      'deps_key_mapping_invalid_source',
-      {'deps_key_mapping': {'third_party/icu': '4th_party/icu'}},
-      dkm_chromium_deps, dkm_v8_deps,
-      api.expect_exception('AssertionError'),
-  )
-
-  yield test(
-      'deps_key_mapping_invalid_target',
-      {'deps_key_mapping': {'fourth_party/icu': '3rd_party/icu'}},
-      dkm_chromium_deps, dkm_v8_deps,
       api.expect_exception('AssertionError'),
   )

@@ -32,9 +32,6 @@ PROPERTIES = {
                 # List of (target side) dependencies to be included when rolling
                 # with the current config
                 includes=Single(list, empty_val=None),
-                # Mapping between the dependency name in the target project and
-                # the name in the source project
-                deps_key_mapping=Dict(value_type=str),
                 # List of reviewers of rolling CLs requiring a manual review
                 reviewers=List(str),
                 # Add extra log entries to the commit message.

@@ -120,7 +120,7 @@ def get_dep_updates(api, autoroller_config):
   target = commons.get_targeted_solution(api)
   target_deps = get_deps(api, target.url, target.name)
 
-  key_mapper = get_key_mapper(autoroller_config, chromium_deps, target_deps)
+  key_mapper = get_key_mapper(chromium_deps, target_deps)
 
   target_dep_names = sorted(target_deps.keys())
   target_dep_names = filter_deps(autoroller_config, target_dep_names)
@@ -294,28 +294,9 @@ def get_deps(api, repo_url, name):
   return deps
 
 
-def get_key_mapper(autoroller_config, source_deps, target_deps):
-  """Override keys between destination (key) and source (value) based on recipe
-  config (custom mapping) and deps values (automatic mapping)."""
-  custom_mapping = autoroller_config.get('deps_key_mapping', {})
-
-  source_mappings = set(custom_mapping.values())
-  source_dep_names = set(source_deps.keys())
-  extra_sources = source_mappings - source_dep_names
-  assert not extra_sources, (
-      f'The following dependencies cannot be found in the source repository, '
-      f'but a custom mapping exists: {", ".join(list(extra_sources))}. The '
-      f'following deps are available: {", ".join(list(source_dep_names))}.')
-
-  target_mappings = set(custom_mapping.keys())
-  target_dep_names = set(target_deps.keys())
-  extra_targets = target_mappings - target_dep_names
-  assert not extra_targets, (
-      f'The following dependencies cannot be found in the target repository, '
-      f'but a custom mapping exists: {", ".join(list(extra_targets))}. The '
-      f'following deps are available: {", ".join(list(target_dep_names))}.')
-
-  # Automatic mapping
+def get_key_mapper(source_deps, target_deps):
+  """Override keys between destination (key) and source (value) based on
+  the dependency's location."""
   source_names_by_location = {
       value.split('@', 1)[0]: name for name, value in source_deps.items()
   }
@@ -331,10 +312,7 @@ def get_key_mapper(autoroller_config, source_deps, target_deps):
       for loc in common_locations
   }
 
-  # Prefer custom mappings over automatic mappings
-  name_mappings = {**automatic_mapping, **custom_mapping}
-
-  return lambda key: name_mappings.get(key, key)
+  return lambda key: automatic_mapping.get(key, key)
 
 
 def get_recent_instance_id(api, package_name):

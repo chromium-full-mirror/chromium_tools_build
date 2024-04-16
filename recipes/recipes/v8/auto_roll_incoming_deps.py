@@ -61,9 +61,6 @@ PROPERTIES = {
                 #     },
                 #     ...
                 dependency_version_sources=Dict(value_type=str),
-                # Mapping between the dependency name in the target project and
-                # the name in the source project
-                deps_key_mapping=Dict(value_type=str),
                 # Flag for rolling trusted and untrusted deps
                 regular_deps_roller=Single(
                     bool, empty_val=True, required=False),
