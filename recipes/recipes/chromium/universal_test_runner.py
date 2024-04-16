@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Triggers building and running tests for the Universal Test Runner"""
 
+import attr
 import itertools
 from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
@@ -17,7 +18,8 @@ from PB.recipes.build.chromium.universal_test_runner import InputProperties
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium_tests.steps import Test
+from RECIPE_MODULES.build.chromium_tests.steps import (
+    Test, SwarmingIsolatedScriptTest)
 from RECIPE_MODULES.build.chromium_tests_builder_config import (
     builder_config as builder_config_module)
 
@@ -284,6 +286,13 @@ def create_tests(
         f'No suites on the bot matched the request for {requested_test_name}')
 
   tests = [_get_matching_test(n) for n in test_names]
+
+  # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
+  # ci builders that would point to gcs dirs that devs do not have access to.
+  # Remove when layout tests can be archived
+  for test in tests:
+    if isinstance(test, SwarmingIsolatedScriptTest):
+      test.spec = attr.evolve(test.spec, results_handler_name=None)
   if should_build:
     raw_result = compile_targets(api, tests, builder_id, preserve_gn_args,
                                  build_dir, builder_recipe)
@@ -656,6 +665,30 @@ solutions = [
           post_process.StepCommandDoesNotContain, 'isolate tests',
           ['fake_root/fake_out/Debug/not_run_test.isolated.gen.json']),
       api.post_process(post_process.DoesNotRun, 'not_run_test'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'SwarmingIsolatedScriptTest_skips_upload',
+      boilerplate(
+          test_names=['fake-script-test'],
+          target_spec={
+              'fake-tester': {
+                  'isolated_scripts': [{
+                      'name': 'fake-script-test',
+                      'script': 'fake-script',
+                      'results_handler': 'layout tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      }
+                  }],
+              }
+          },
+      ),
+      api.post_process(post_process.DoesNotRun,
+                       'archive results for fake-script-test'),
       api.post_process(post_process.DropExpectation),
   )
 
