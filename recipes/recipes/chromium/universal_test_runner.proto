@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipes.build.chromium.universal_test_runner;
 
-// Next ID: 12
+// Next ID: 8
 message InputProperties {
   // Required, the directory where chromium is checked out not including the src
   // dir
@@ -18,12 +18,9 @@ message InputProperties {
   // the tests to be run on the builder
   repeated string test_names = 2;
 
-  reserved "got_revisions";
-  reserved 3;
-
   // The build_dir to use either containing the binary to run or where it is to
   // be compiled
-  string build_dir = 4;
+  string build_dir = 3;
 
   enum RunType {
     RUN_TYPE_RUN = 0;
@@ -32,14 +29,7 @@ message InputProperties {
   }
 
   // Whether or not the recipe should attempt to build and/or build the tests
-  RunType run_type = 5;
-
-  // When true the gn args in the build dir will be preserved. Otherwise
-  // the builder gn args will overwrite the file
-  bool preserve_gn_args = 6;
-
-  reserved "disable_code_coverage";
-  reserved 7;
+  RunType run_type = 4;
 
   // Where to write properties for the next potential runs. Each options will
   // be a string representing what the user should see mapped to alterations
@@ -48,15 +38,33 @@ message InputProperties {
   // and should instead abort.
   // The first option should be the default to use as well as the option to use
   // when a --forced run is desired.
-  string output_properties_file = 8;
+  string output_properties_file = 5;
 
-  // Skip checking .gclient mismatches
-  bool bypass_gclient = 9;
+  // Next ID: 6
+  message RerunOptions {
+    // Skip checking .gclient mismatches
+    bool bypass_gclient = 1;
+
+    // Skip checking gn arg mismatches
+    bool bypass_gn_args = 2;
+
+    // When true the gn args in the build dir will be preserved. Otherwise
+    // the builder gn args will overwrite the file. If code coverage is active
+    // and the user chooses to instrument everything, the
+    // coverage_instrumentation_input_file arg will still be removed
+    bool preserve_gn_args = 3;
+
+    // Skip checking for an upstream branch
+    bool bypass_branch_check = 4;
+
+    // How to proceed if the bypass_branch_check is bypassed
+    bool skip_instrumentation = 5;
+  }
 
   // The recipe being run by the builder. The 'recipe' input property gets
   // overwritten by the recipe so this property needs to provide this info
-  string builder_recipe = 10;
+  string builder_recipe = 6;
 
-  // Skip checking gn arg mismatches
-  bool bypass_gn_args = 11;
+  // Options that are used to re-invoke the recipe
+  RerunOptions rerun_options = 7;
 }

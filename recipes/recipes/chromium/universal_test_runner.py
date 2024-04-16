@@ -4,6 +4,7 @@
 """Triggers building and running tests for the Universal Test Runner"""
 
 import attr
+import copy
 import itertools
 from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
@@ -76,38 +77,15 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
    build_path) = configure_build(api, properties.checkout_path,
                                  properties.build_dir, should_build)
 
-  if not properties.bypass_gclient:
-    error_message = check_gclient(api)
-    if error_message:
-      rerun_options = [('yes', InputProperties(bypass_gclient=True)),
-                       ('no', InputProperties())]
-      return create_rerun_result(api, rerun_options, error_message,
-                                 properties.output_properties_file)
-  if api.path.exists(build_path) and not properties.bypass_gn_args:
-    error_message = check_gn_args(api, build_path, compiling_builder_id)
-    if error_message:
-      rerun_options = [('continue',
-                        InputProperties(
-                            bypass_gclient=properties.bypass_gclient,
-                            bypass_gn_args=True,
-                            preserve_gn_args=True)),
-                       ('overwrite',
-                        InputProperties(
-                            bypass_gclient=properties.bypass_gclient,
-                            bypass_gn_args=True,
-                            preserve_gn_args=False)),
-                       ('abort', InputProperties())]
-      return create_rerun_result(api, rerun_options, error_message,
-                                 properties.output_properties_file)
+  result = prerun_checks(api, properties, build_path, compiling_builder_id)
+  if result != None:
+    return result
 
   got_revisions = generate_got_revisions_map(api)
 
-  raw_result, tests = create_tests(api, build_path, properties.test_names,
-                                   got_revisions,
+  raw_result, tests = create_tests(api, properties, build_path, got_revisions,
                                    compiling_builder_id,
-                                   compiling_builder_config, should_build,
-                                   properties.preserve_gn_args,
-                                   properties.builder_recipe)
+                                   compiling_builder_config, should_build)
   if raw_result and raw_result.status != common_pb2.SUCCESS:
     return raw_result
   if not should_test:
@@ -122,6 +100,61 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
     api.chromium_swarming.default_priority = 20
     api.chromium_swarming.add_default_tag('is_utr:1')
     return test_runner()
+
+
+def prerun_checks(
+    api: RecipeApi, properties: InputProperties, build_path: Path,
+    compiling_builder_id: chromium.BuilderId) -> result_pb2.RawResult:
+  # TODO(crbug.com/41492686): Combine these checks so they can be prompted in
+  # one interation of the recipe invocations
+  def create_prompt_option(prompt: str, **kwargs):
+    if not kwargs:
+      return (prompt, InputProperties())
+    rerun_properties = copy.deepcopy(properties.rerun_options)
+    update = InputProperties.RerunOptions(**kwargs)
+    rerun_properties.MergeFrom(update)
+    return (prompt, update)
+
+  if not properties.rerun_options.bypass_gclient:
+    error_message = check_gclient(api)
+    if error_message:
+      rerun_options = [
+          create_prompt_option('yes', bypass_gclient=True),
+          create_prompt_option('no')
+      ]
+      return create_rerun_result(api, rerun_options, error_message,
+                                 properties.output_properties_file)
+  if api.path.exists(
+      build_path) and not properties.rerun_options.bypass_gn_args:
+    error_message = check_gn_args(api, build_path, compiling_builder_id)
+    if error_message:
+      rerun_options = [
+          create_prompt_option(
+              'continue', bypass_gn_args=True, preserve_gn_args=True),
+          create_prompt_option(
+              'overwrite', bypass_gn_args=True, preserve_gn_args=False),
+          create_prompt_option('abort')
+      ]
+      return create_rerun_result(api, rerun_options, error_message,
+                                 properties.output_properties_file)
+  if (not properties.rerun_options.bypass_branch_check and
+      api.code_coverage.using_coverage and properties.builder_recipe
+      in ('chromium/orchestrator', 'chromium_trybot')):
+    error_message = check_upstream_branch(api)
+    if error_message:
+      rerun_options = [
+          create_prompt_option(
+              'instrument everything',
+              bypass_branch_check=True,
+              skip_instrumentation=False),
+          create_prompt_option(
+              'skip instrumentation',
+              bypass_branch_check=True,
+              skip_instrumentation=True),
+          create_prompt_option('abort')
+      ]
+      return create_rerun_result(api, rerun_options, error_message,
+                                 properties.output_properties_file)
 
 
 def get_gclient_config(api: RecipeApi):
@@ -146,6 +179,14 @@ def get_gclient_config(api: RecipeApi):
 
 
 def check_gclient(api: RecipeApi) -> str:
+  """Check if the .gclient file is acceptable to use for the selected builder
+
+  Args:
+      api: Recipe API object.
+  Returns:
+      A string that represents the error or an empty string when there is no
+      warning
+  """
   mismatch_messages = []
   gclient_config = get_gclient_config(api)
   solution = [
@@ -200,7 +241,17 @@ def check_gclient(api: RecipeApi) -> str:
 
 
 def check_gn_args(api: RecipeApi, build_dir: Path,
-                  builder_id: chromium.BuilderId):
+                  builder_id: chromium.BuilderId) -> str:
+  """Check if the gn.arg file is acceptable to use for the selected builder
+
+  Args:
+      api: Recipe API object.
+      build_dir: Path to the build dir being used
+      builder_id: The BuilderId for the builder being run
+  Returns:
+      A string that represents the error or an empty string when there is no
+      warning
+  """
 
   def get_imports(args):
     return [l.strip() for l in args.splitlines() if l.startswith('import(')]
@@ -245,16 +296,39 @@ def check_gn_args(api: RecipeApi, build_dir: Path,
   return error_info
 
 
+def check_upstream_branch(api: RecipeApi):
+  """Check if the current branch has an upstream branch for diffing against
+
+  Args:
+      api: Recipe API object.
+  Returns:
+      A string that represents the error or an empty string when there is no
+      warning
+  """
+  if get_upstream_branch(api).retcode != 0:
+    return 'Caution: failed to get an upstream branch from the current checkout'
+
+
+def get_upstream_branch(api: RecipeApi):
+  return api.git(
+      'rev-parse',
+      '--abbrev-ref',
+      '--symbolic-full-name',
+      '@{u}',
+      name='check upstream branch',
+      stdout=api.raw_io.output(),
+      raise_on_failure=False,
+      step_test_data=lambda: api.raw_io.test_api.stream_output('origin/main\n'))
+
+
 def create_tests(
     api: RecipeApi,
+    properties: InputProperties,
     build_dir: Path,
-    test_names: Iterable[str],
     got_revisions: Mapping[str, str],
     builder_id: chromium.BuilderId,
     builder_config: ctbc.BuilderConfig,
     should_build: bool,
-    preserve_gn_args: bool,
-    builder_recipe: str,
 ) -> tuple[result_pb2.RawResult, Iterable[Test]]:
   """Creates the test objects for the provided builder/test names
 
@@ -268,10 +342,10 @@ def create_tests(
       builder_config: A BuilderConfig with the configuration for the builder
         being reproduced
       should_build: Bool controlling whether the tests should be compiled
-      preserve_gn_args: Bool whether to have the recipe overwrite the gn args
-        with the builder_id's gn args
-      builder_recipe: The recipe normally run by the requested builder
   """
+  test_names = properties.test_names
+  preserve_gn_args = properties.rerun_options.preserve_gn_args
+  builder_recipe = properties.builder_recipe
   targets_config = api.chromium_tests.create_targets_config(
       builder_config,
       got_revisions,
@@ -294,8 +368,8 @@ def create_tests(
     if isinstance(test, SwarmingIsolatedScriptTest):
       test.spec = attr.evolve(test.spec, results_handler_name=None)
   if should_build:
-    raw_result = compile_targets(api, tests, builder_id, preserve_gn_args,
-                                 build_dir, builder_recipe)
+    raw_result = compile_targets(api, properties, tests, builder_id,
+                                 preserve_gn_args, build_dir, builder_recipe)
     if raw_result.status != common_pb2.SUCCESS:
       return raw_result, None
   skylab_tests = [test for test in tests if test.is_skylabtest]
@@ -401,6 +475,7 @@ def generate_got_revisions_map(api):
 
 def compile_targets(
     api: RecipeApi,
+    properties: InputProperties,
     tests: Iterable[Test],
     builder_id: chromium.BuilderId,
     preserve_gn_args: bool,
@@ -411,6 +486,7 @@ def compile_targets(
 
   Args:
       api: Recipe API object.
+      properties: InputProperties given to the recipe
       tests: Iterable of test objects to be compiled
       builder_id: The ID of the builder to compile for
       preserve_gn_args: Bool whether to have the recipe overwrite the gn args
@@ -426,7 +502,8 @@ def compile_targets(
   # Only recipes that support try should handle changed files
   if (api.code_coverage.using_coverage and
       builder_recipe in ('chromium/orchestrator', 'chromium_trybot')):
-    handle_code_coverage(api)
+    preserve_gn_args = handle_code_coverage(api, build_dir, properties,
+                                            builder_id)
 
   if preserve_gn_args:
     api.gn.gen(build_dir, 'gn_gen')
@@ -457,34 +534,69 @@ def compile_targets(
       use_reclient=use_reclient)
 
 
-def handle_code_coverage(api: RecipeApi):
-  with api.context(cwd=api.path['checkout']):
-    step_result = api.git(
-        'rev-parse',
-        '--abbrev-ref',
-        '--symbolic-full-name',
-        '@{u}',
-        name='git rev-parse upstream',
-        stdout=api.raw_io.output(),
-        step_test_data=lambda: api.raw_io.test_api.stream_output('origin/main\n'
-                                                                ))
-    branch_upstream_name = step_result.stdout.decode('utf-8').strip()
-    step_result = api.git(
-        '-c',
-        'core.quotePath=false',
-        'diff',
-        '--merge-base',
-        '--name-only',
-        branch_upstream_name,
-        name='git diff to instrument',
-        stdout=api.raw_io.output(),
-        step_test_data=lambda: api.raw_io.test_api.stream_output('foo.cc'))
-  paths = [p.decode('utf-8') for p in step_result.stdout.splitlines()]
-  paths.sort()
-  if api.platform.is_win:
-    paths = [path.replace('\\', '/') for path in paths]
+def handle_code_coverage(
+    api: RecipeApi,
+    build_dir: Path,
+    properties: InputProperties,
+    builder_id: chromium.BuilderId,
+) -> bool:
+  """Handles code coverage for runs using try builders
+
+  Based on the input properties (bypass_branch_check and skip_instrumentation)
+  this will either:
+    - Instrument everything by removing the coverage_instrumentation_input_file
+    when bypass_branch_check is true and skip_instrumentation is false
+    - Instrument nothing by creating an empty instrumentation file when
+    bypass_branch_check is true and skip_instrumentation is true
+    - Instrument only the changed files when bypass_branch_check is false
+
+  Args:
+      api: Recipe API object.
+      build_dir: Path to the directory to use for building
+      properties: InputProperties given to the recipe
+      builder_id: The ID of the builder to get tests from
+  Returns:
+      A boolean for whether or not the gn args need to be preserved or the
+      builder's gn args can overwrite them
+  """
+  # If we're bypassing the branch check and not skipping instrumentation
+  # then remove the gn arg to instrument everything
+  if properties.rerun_options.bypass_branch_check and not properties.rerun_options.skip_instrumentation:
+    if not properties.rerun_options.preserve_gn_args:
+      gn_args = api.chromium.mb_lookup(
+          builder_id,
+          recursive=False,
+          name='lookup_builder_gn_args_for_code_coverage')
+    else:
+      gn_args, _ = api.gn.read_args(build_dir)
+    api.file.write_text(
+        'remove coverage_instrumentation_input_file gn arg',
+        build_dir.join('args.gn'), '\n'.join(
+            arg for arg in gn_args.split('\n')
+            if not arg.startswith('coverage_instrumentation_input_file')))
+    return True
+  paths = []
+  if not properties.rerun_options.skip_instrumentation:
+    with api.context(cwd=api.path['checkout']):
+      step_result = get_upstream_branch(api)
+      branch_upstream_name = step_result.stdout.decode('utf-8').strip()
+      step_result = api.git(
+          '-c',
+          'core.quotePath=false',
+          'diff',
+          '--merge-base',
+          '--name-only',
+          branch_upstream_name,
+          name='git diff to instrument',
+          stdout=api.raw_io.output(),
+          step_test_data=lambda: api.raw_io.test_api.stream_output('foo.cc'))
+    paths = [p.decode('utf-8') for p in step_result.stdout.splitlines()]
+    paths.sort()
+    if api.platform.is_win:
+      paths = [path.replace('\\', '/') for path in paths]
   api.code_coverage.src_dir = api.chromium_checkout.src_dir
   api.code_coverage.instrument(paths)
+  return properties.rerun_options.preserve_gn_args
 
 
 def get_remote_compile_options(api, build_dir) -> bool:
@@ -497,7 +609,7 @@ def get_remote_compile_options(api, build_dir) -> bool:
 
 
 def create_rerun_result(api: RecipeApi, \
-                        rerun_options: list[tuple[str, InputProperties]],
+                        rerun_options: list[tuple[str, InputProperties.RerunOptions]],
                         info: str,
                         output_properties_file: str) -> result_pb2.RawResult:
   """Create a result for retriggering the recipe
@@ -528,7 +640,7 @@ def create_rerun_result(api: RecipeApi, \
                      json_format.MessageToDict(
                          message=properties, preserving_proto_field_name=True)))
     api.file.write_json(
-        f'write output_properties_file {output_properties_file}.json',
+        f'write output_properties_file {output_properties_file}',
         output_properties_file, output)
   return result_pb2.RawResult(status=common_pb2.FAILURE, summary_markdown=info)
 
@@ -556,20 +668,26 @@ def GenTests(api: RecipeTestApi):
       bypass_gclient=True,
       bypass_gn_args=True,
       builder_recipe='chromium',
-      output_properties_file='checkout/output_properties.json'):
+      output_properties_file='checkout/output_properties.json',
+      bypass_branch_check=False,
+      skip_instrumentation=False,
+  ):
     if not test_names:
       test_names = ['browser_tests']
     return api.properties(
         test_names=test_names,
         checkout_path=checkout_path,
         run_type=run_type,
-        preserve_gn_args=preserve_gn_args,
         build_dir=build_dir,
-        bypass_gclient=bypass_gclient,
-        bypass_gn_args=bypass_gn_args,
         builder_recipe=builder_recipe,
         output_properties_file=output_properties_file,
-    )
+        rerun_options=InputProperties.RerunOptions(
+            bypass_gclient=bypass_gclient,
+            bypass_gn_args=bypass_gn_args,
+            preserve_gn_args=preserve_gn_args,
+            bypass_branch_check=bypass_branch_check,
+            skip_instrumentation=skip_instrumentation,
+        ))
 
   def boilerplate(
       target_spec=None,
@@ -828,6 +946,133 @@ solutions = [
               'coverage_instrumentation_input_file = "files_to_instrument.txt"')
       ),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'code_coverage_no_upstream',
+      ctbc_properties(),
+      boilerplate_properties(
+          checkout_path='[CACHE]\\src',
+          build_dir='[CACHE]\\src\\out\\Release',
+          builder_recipe='chromium_trybot',
+          output_properties_file='[CACHE]\\out.json'),
+      api.chromium.generic_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+      ),
+      api.platform('win', 32),
+      api.code_coverage(use_clang_coverage=True),
+      api.step_data(
+          'check upstream branch',
+          retcode=1,
+      ),
+      api.post_process(
+          post_process.ResultReason,
+          'Caution: failed to get an upstream branch from the current checkout'
+      ),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'code_coverage_skip_instrument',
+      boilerplate(
+          checkout_path='[CACHE]\\src',
+          build_dir='[CACHE]\\src\\out\\Release',
+          builder_recipe='chromium_trybot',
+          build=api.chromium.generic_build(
+              builder_group='fake-group',
+              builder='fake-tester',
+              bucket='try',
+          ),
+          bypass_branch_check=True,
+          skip_instrumentation=True,
+      ),
+      api.platform('win', 32),
+      api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.MustRun, 'lookup GN args'),
+      api.step_data(
+          'lookup GN args',
+          stdout=api.raw_io.output_text(
+              'coverage_instrumentation_input_file = "files_to_instrument.txt"')
+      ),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'code_coverage_instrument_everything_user_gn_args',
+      boilerplate(
+          checkout_path='[CACHE]\\src',
+          build_dir='[CACHE]\\src\\out\\Release',
+          builder_recipe='chromium_trybot',
+          build=api.chromium.generic_build(
+              builder_group='fake-group',
+              builder='fake-tester',
+              bucket='try',
+          ),
+          bypass_branch_check=True,
+          skip_instrumentation=False,
+          preserve_gn_args=True,
+      ),
+      api.platform('win', 32),
+      api.code_coverage(use_clang_coverage=True),
+      api.step_data(
+          'read GN args',
+          api.raw_io.output_text('coverage_instrumentation_input_file = '
+                                 '".code-coverage/files_to_instrument.txt"\n'
+                                 'use_remoteexec = true')),
+      api.post_process(post_process.MustRun,
+                       'remove coverage_instrumentation_input_file gn arg'),
+      api.post_process(post_process.StepCommandContains,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['use_remoteexec = true']),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['coverage_instrumentation_input_file']),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'code_coverage_instrument_everything_builder_gn_args',
+      boilerplate(
+          checkout_path='[CACHE]\\src',
+          build_dir='[CACHE]\\src\\out\\Release',
+          builder_recipe='chromium_trybot',
+          build=api.chromium.generic_build(
+              builder_group='fake-group',
+              builder='fake-tester',
+              bucket='try',
+          ),
+          bypass_branch_check=True,
+          skip_instrumentation=False,
+          preserve_gn_args=False,
+      ),
+      api.platform('win', 32),
+      api.code_coverage(use_clang_coverage=True),
+      api.step_data(
+          'read GN args',
+          api.raw_io.output_text('coverage_instrumentation_input_file = '
+                                 '".code-coverage/files_to_instrument.txt"\n'
+                                 'b = true')),
+      api.step_data(
+          'lookup_builder_gn_args_for_code_coverage',
+          stdout=api.raw_io.output_text(
+              'coverage_instrumentation_input_file = '
+              '".code-coverage/files_to_instrument.txt"\n'
+              'b = true')),
+      api.post_process(post_process.MustRun,
+                       'remove coverage_instrumentation_input_file gn arg'),
+      api.post_process(post_process.StepCommandContains,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['b = true']),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['coverage_instrumentation_input_file']),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
