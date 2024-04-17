@@ -32,10 +32,10 @@ class TestRunnerTest(unittest.TestCase):
   @patch('subprocess.Popen')
   @patch('logging.info')
   @patch('os.chdir')
-  def test_run_test(self, mock_chdir, mock_logging, mock_popen):
+  def test_run_test_cmd(self, mock_chdir, mock_logging, mock_popen):
     mock_popen.return_value.wait.return_value = 0
     cmd = ['./exec', '--args']
-    test_runner.run_test(cmd, cwd='out\\Release_x64')
+    test_runner.run_cmd(cmd, cwd='out\\Release_x64')
     mock_logging.assert_called_once_with('Running %r in %r', cmd,
                                          'out\\Release_x64')
     mock_popen.assert_called_once_with(cmd)
@@ -47,7 +47,7 @@ class TestRunnerTest(unittest.TestCase):
   def test_run_with_failure_test(self, mock_chdir, mock_logging, mock_popen):
     mock_popen.return_value.__enter__.return_value.wait.return_value = 1
     cmd = ['./exec', '--args']
-    ret = test_runner.run_test(cmd, cwd='out\\Release_x64')
+    ret = test_runner.run_cmd(cmd, cwd='out\\Release_x64')
     mock_popen.assert_called_once_with(cmd)
     self.assertEqual(ret, 1)
     self.assertEqual(mock_chdir.call_count, 2)

@@ -10,6 +10,7 @@ import os
 import sys
 
 MAX_RUNS = 5
+TRACE_DIR_PREFIX = 'trace_dir_'
 
 
 def parse_args(args):
@@ -26,7 +27,7 @@ def parse_args(args):
   return parser.parse_args(args)
 
 
-def run_test(cmd, cwd=None):
+def run_cmd(cmd, cwd=None):
   """Run command locally.
 
   Args:
@@ -52,13 +53,16 @@ def main(args):
     raise Exception("No test input for this test runner")
 
   for test_name in args.test_names:
-    # TODO(jiesheng): Replace the hard-coded test command based on test type.
-    cmd = [
-        'vpython3', 'third_party/blink/tools/run_web_tests.py', '-t', 'Release',
-        '--no-retry-failures', test_name
-    ]
-    for _ in range(MAX_RUNS):
-      run_test(cmd, '../')
+    for i in range(MAX_RUNS):
+      # TODO(jiesheng): Replace the hard-coded test command based on test type.
+      trace_dir_name = TRACE_DIR_PREFIX + str(i)
+      cmd = [
+          'vpython3', 'third_party/blink/tools/run_web_tests.py', '-t',
+          'Release', '--no-retry-failures',
+          '--wrapper=rr_tool/bin/rr record --output-trace-dir={0}'.format(
+              trace_dir_name), test_name
+      ]
+      run_cmd(cmd, '../')
 
   # TODO(jiesheng): Select one pass and all failure traces, upload those
   # traces here with the source code and generate the final report back to
