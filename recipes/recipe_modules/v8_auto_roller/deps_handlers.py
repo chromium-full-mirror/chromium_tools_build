@@ -106,12 +106,11 @@ class UntrustedRollHandler(DEPSRollHandler):
         super().commit_msg_lines(changes), self.config['reviewers'])
 
 
+@dataclass
 class DepUpdate:
-
-  def __init__(self, name, next_version, commit_msg_lines):
-    self.name = name
-    self.next_version = next_version
-    self.commit_msg_lines = commit_msg_lines
+  name: str
+  next_version: str
+  commit_msg_lines: str
 
 
 @dataclass
@@ -140,21 +139,21 @@ class TargetDep:
         f"{self.location}"
     )
 
-  @cached_property
+  @property
   def is_trusted(self) -> bool:
     trusted_origin = self.canonical_location in TRUSTED_ORIGIN_DEPS
     from_chromium = self.source_system == 'chromium'
     return trusted_origin or from_chromium
 
-  @cached_property
+  @property
   def is_cipd(self) -> bool:
     return self.location.startswith(CIPD_DEP_URL_PREFIX)
 
-  @cached_property
+  @property
   def canonical_location(self) -> str:
     return canonical_location(self.location)
 
-  @cached_property
+  @property
   def source_system(self) -> Literal['cipd', 'chromium', 'tip_of_tree']:
     manual_sources = self.config.get('dependency_version_sources', {})
 
@@ -169,15 +168,12 @@ class TargetDep:
 
     return 'tip_of_tree'
 
-  @cached_property
+  @property
   def has_changed_location(self) -> bool:
     chromium_location = self.chromium_location
-    if not chromium_location or chromium_location == self.canonical_location:
-      return False
+    return chromium_location and chromium_location != self.canonical_location
 
-    return True
-
-  @cached_property
+  @property
   def chromium_location(self) -> Optional[str]:
     chromium_locations_by_name = {
         dep.name: location
@@ -186,20 +182,58 @@ class TargetDep:
 
     return chromium_locations_by_name.get(self.name)
 
-  @cached_property
+  @property
   def next_version(self) -> str:
-    if self.source_system == 'chromium':
+    source = self.source_system
+
+    if source == 'chromium':
       chromium_dep = self.chromium_dep_by_location[self.canonical_location]
       return chromium_dep.version
 
-    if self.source_system == 'cipd':
-      cipd_name = self.location[len(CIPD_DEP_URL_PREFIX):]
-      return get_recent_instance_id(self.api, cipd_name)
+    if source == 'cipd':
+      return self.recent_cipd_version
 
+    assert source == 'tip_of_tree', f'Invalid source system {source}'
+
+    return self.tip_of_tree_version
+
+  @cached_property
+  def recent_cipd_version(self):
+    assert self.source_system == 'cipd', (
+        f'Cannot determine cipd version, dependency is rolled from '
+        f'{self.source_system}.')
+
+    # If a ref named `latest` is used in cipd, prefer this instance. Otherwise
+    # select the most recently uploaded instance.
+    cipd_name = self.location[len(CIPD_DEP_URL_PREFIX):]
+    instances = self.api.cipd.instances(cipd_name, 0)
+    for instance in instances:
+      if instance.refs and 'latest' in instance.refs:
+        return instance.pin.instance_id
+
+    return instances[0].pin.instance_id
+
+  @cached_property
+  def tip_of_tree_version(self):
     assert self.source_system == 'tip_of_tree', (
-        f'Invalid source system {self.source_system}')
+        f'Cannot determine version from tip of tree, dependency is rolled from '
+        f'{self.source_system}.')
 
-    return get_tot_revision(self.api, self.name, self.location)
+    # Fallback to the deprecated naming scheme still used by some deps, if there
+    # is no head for the main branch.
+    for branch in ['main', RETSAM]:
+      head_revision = self.api.git(
+          'ls-remote',
+          self.location,
+          f'refs/heads/{branch}',
+          name=f'look up {self.name.replace("/", "_")} ({branch})',
+          stdout=self.api.raw_io.output_text(),
+      ).stdout.strip().split('\t')[0]
+      if head_revision:
+          return head_revision
+
+    assert False, (
+        f'Cannot determine revision for {self.name} at {self.location}.')
 
 
 def get_dep_updates(api, autoroller_config):
@@ -393,43 +427,6 @@ def get_deps(api, repo_url, name):
   step_result.presentation.logs['deps'] = api.json.dumps(
       deps, indent=2).splitlines()
   return deps
-
-
-def get_recent_instance_id(api, package_name):
-  """Returns the latest uploaded cipd instance id for a package.
-
-  If a ref named `latest` is used, prefer this instance. Otherwise select the
-  most recently uploaded instance.
-  """
-  instances = api.cipd.instances(package_name, 0)
-
-  for instance in instances:
-    if instance.refs and 'latest' in instance.refs:
-      return instance.pin.instance_id
-
-  return instances[0].pin.instance_id
-
-
-def get_tot_revision(api, name, target_loc):
-
-  def ls_remote(branch):
-    step_result = api.git(
-        'ls-remote',
-        target_loc,
-        f'refs/heads/{branch}',
-        name=f'look up {name.replace("/", "_")} ({branch})',
-        stdout=api.raw_io.output_text(),
-    )
-    return step_result.stdout.strip()
-
-  # Fallback to the deprecated naming scheme still used by some deps, if there
-  # is no head for the main branch
-  for branch in ['main', RETSAM]:
-    head = ls_remote(branch).split('\t')[0]
-    if head:
-      return head
-
-  assert False, f'Cannot determine revision for {name} at {target_loc}.'
 
 
 def get_commit_log(api, repo, commit):
