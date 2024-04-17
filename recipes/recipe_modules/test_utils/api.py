@@ -1049,8 +1049,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     step_result = self.m.step.empty('record test suite statuses')
     step_result.presentation.properties['test_status'] = {}
     for test_suite in test_suites:
-      step_result.presentation.properties['test_status'][
-          test_suite.name] = test_suite.get_status(suffix)
+      if test_suite.is_enabled:
+        step_result.presentation.properties['test_status'][
+            test_suite.name] = test_suite.get_status(suffix)
 
 
 class TestGroup:

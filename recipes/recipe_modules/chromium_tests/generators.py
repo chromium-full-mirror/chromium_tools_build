@@ -96,8 +96,7 @@ class Generator:
       test_spec = self._handle_resultdb(raw_test_spec, test_spec)
       test_spec = self._handle_experimental(raw_test_spec, test_spec)
       test_spec = self._handle_ci_only(raw_test_spec, test_spec)
-      test_spec = self._handle_skip_test(raw_test_spec, test_spec,
-                                         test_names_to_skip)
+      test_spec = self._handle_skip_test(test_spec, test_names_to_skip)
       yield test_spec
 
   def _handle_resultdb(
@@ -165,14 +164,12 @@ class Generator:
 
   def _handle_skip_test(
       self,
-      raw_test_spec: _RawTestSpec,
       test_spec: steps.AbstractTestSpec,
       test_names_to_skip: Container[str],
   ) -> steps.AbstractTestSpec:
     """Handle tests that are being skipped because of previous successs
 
     Args:
-      * raw_spec - The source-side spec dictionary describing the test.
       * test_spec - The TestSpec instance for the test.
       * test_names_to_skip - Names of tests that should be disabled
 
@@ -182,7 +179,7 @@ class Generator:
       object is used to prevent that test from running while still providing
       steps.
     """
-    if raw_test_spec.get('name') in test_names_to_skip:
+    if test_spec.get_test(self._chromium_tests_api).name in test_names_to_skip:
       return steps.SuccessReuseTestSpec.create(test_spec)
     return test_spec
 
