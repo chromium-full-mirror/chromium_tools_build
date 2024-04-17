@@ -332,5 +332,8 @@ def CheckPatchFormatted(input_api, output_api):
   # TODO(https://crbug.com/979330) If clang-format is fixed for non-chromium
   # repos, remove check_clang_format=False so that proto files can be formatted
   return input_api.canned_checks.CheckPatchFormatted(
-      input_api, output_api, check_clang_format=False
+      input_api,
+      output_api,
+      check_clang_format=False,
+      result_factory=output_api.PresubmitError,
   )
