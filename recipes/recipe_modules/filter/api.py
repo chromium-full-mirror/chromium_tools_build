@@ -254,6 +254,8 @@ class FilterApi(recipe_api.RecipeApi):
       return test_targets, compile_targets
 
     step_result.presentation.step_text = 'No compile necessary'
+    step_result.presentation.properties['no_compile'] = sorted(
+        test_targets + additional_compile_targets)
     return [], []
 
   def analyze(
