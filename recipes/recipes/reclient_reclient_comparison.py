@@ -252,7 +252,7 @@ def RunSteps(api):
   config_name, recipe_config = _get_config(api.buildbucket.builder_name)
 
   # Set up a named cache so runhooks doesn't redownload everything on each run.
-  solution_path = api.path['cache'].join('builder')
+  solution_path = api.path.cache_dir.join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):

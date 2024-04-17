@@ -122,7 +122,8 @@ def RunSteps(api, properties):
   api.chromium_checkout.ensure_checkout(clobber=bot_config.clobber)
 
   api.step('update win toolchain', [
-      'python3', api.path['checkout'].join('build', 'vs_toolchain.py'), 'update'
+      'python3',
+      api.path.checkout_dir.join('build', 'vs_toolchain.py'), 'update'
   ])
 
   with api.osx_sdk('ios'):
@@ -130,8 +131,8 @@ def RunSteps(api, properties):
       args = ['--upload']
       # TODO: specify --revision as package_clang.py does.
       api.step('package rust', [
-          'python3', api.path['checkout'].join('tools', 'rust',
-                                               'package_rust.py')
+          'python3',
+          api.path.checkout_dir.join('tools', 'rust', 'package_rust.py')
       ] + args)
 
 

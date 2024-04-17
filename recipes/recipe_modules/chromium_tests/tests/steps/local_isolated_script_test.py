@@ -26,7 +26,7 @@ DEPS = [
 
 def RunSteps(api):
   test_name = api.properties.get('test_name') or 'base_unittests'
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   isolate_profile_data = api.properties.get('isolate_profile_data', False)
 

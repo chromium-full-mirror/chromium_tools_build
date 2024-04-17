@@ -9,7 +9,7 @@ class ChromiumCheckoutTestApi(recipe_test_api.RecipeTestApi):
 
   @property
   def checkout_dir(self):
-    return self.m.path['cache'].join('builder')
+    return self.m.path.cache_dir.join('builder')
 
   @property
   def src_dir(self):

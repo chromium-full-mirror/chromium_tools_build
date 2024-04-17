@@ -112,7 +112,8 @@ def RunSteps(api, properties):
   api.chromium_checkout.ensure_checkout(clobber=bot_config.clobber)
 
   api.step('update win toolchain', [
-      'python3', api.path['checkout'].join('build', 'vs_toolchain.py'), 'update'
+      'python3',
+      api.path.checkout_dir.join('build', 'vs_toolchain.py'), 'update'
   ])
 
   with api.osx_sdk('ios'):
@@ -126,8 +127,8 @@ def RunSteps(api, properties):
       if properties.llvm_revision:
         args += ['--revision', properties.llvm_revision]
       api.step('package clang', [
-          'python3', api.path['checkout'].join('tools', 'clang', 'scripts',
-                                               'package.py')
+          'python3',
+          api.path.checkout_dir.join('tools', 'clang', 'scripts', 'package.py')
       ] + args)
 
 

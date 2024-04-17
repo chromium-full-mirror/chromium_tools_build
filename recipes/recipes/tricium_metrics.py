@@ -29,7 +29,7 @@ DEPS = [
 
 def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
                         commit_message):
-  packages_dir = api.path['cleanup'].join('packages')
+  packages_dir = api.path.cleanup_dir.join('packages')
   test = bool(api.tryserver.get_footer('Tricium-Test'))
   pkg = 'infra/tricium/legacy_functions/metrics/linux-amd64'
   if test:
@@ -41,9 +41,8 @@ def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
     api.cipd.ensure(packages_dir, ensure_file)
 
   metrics = packages_dir.join('metrics')
-  out_dir = api.path['cleanup'].join('out')
-  enums_path = api.path.join('tools', 'metrics', 'histograms',
-                             'enums.xml')
+  out_dir = api.path.cleanup_dir.join('out')
+  enums_path = api.path.join('tools', 'metrics', 'histograms', 'enums.xml')
   api.step('metrics', [
       metrics, '-input', src_dir, '-output', out_dir, '-previous', prev_dir,
       '-patch', patch_path, '-enums', enums_path, '-message', commit_message,
@@ -104,7 +103,7 @@ def RunSteps(api):
         return
 
       # Put last version of changed files in temporary directory.
-      prev_dir = api.path['cleanup'].join('previous', 'src')
+      prev_dir = api.path.cleanup_dir.join('previous', 'src')
       for path in metrics_paths:
         prev_dir_path = prev_dir.join(path)
         api.file.ensure_directory('create_directories',
@@ -121,7 +120,7 @@ def RunSteps(api):
           api.step('touch an empty file', ['touch', prev_dir_path])
 
       # Get the diff itself, with paths formatted as Tricium analyzer expects.
-      patch_path = api.path['cleanup'].join('tricium_generated_diff.patch')
+      patch_path = api.path.cleanup_dir.join('tricium_generated_diff.patch')
       diff_arg_list = [
           'diff', 'FETCH_HEAD~', 'FETCH_HEAD', '--output=' + str(patch_path),
           '--'
@@ -156,9 +155,9 @@ def GenTests(api):
           api.raw_io.stream_output('\n'.join(affected_files)))
 
     if auto_exist_files:
-      test_data += api.path.exists(
-          *
-          [api.path['cache'].join('builder', 'src', x) for x in affected_files])
+      test_data += api.path.exists(*[
+          api.path.cache_dir.join('builder', 'src', x) for x in affected_files
+      ])
 
     return test_data
 

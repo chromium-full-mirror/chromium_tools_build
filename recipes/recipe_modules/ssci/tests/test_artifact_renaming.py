@@ -14,9 +14,9 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.ssci.run(
-      src_dir=api.path.abspath(api.path['checkout']),
+      src_dir=api.path.abspath(api.path.checkout_dir),
       build_dir='out/Release',
       targets=["SystemWebViewGoogle.apk"],
       sbom_filename_postfix="Stable",

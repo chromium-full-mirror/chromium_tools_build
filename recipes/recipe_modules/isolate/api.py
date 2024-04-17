@@ -261,7 +261,7 @@ class IsolateApi(recipe_api.RecipeApi):
     output = self.m.path.join(t, TARBALL_NAME)
     self.m.step('create tarball', [
         'python3',
-        self.m.path.join(self.m.path['checkout'], 'tools', 'determinism',
+        self.m.path.join(self.m.path.checkout_dir, 'tools', 'determinism',
                          'create_diffs_tarball.py'),
         '--first-build-dir',
         first_dir,
@@ -281,7 +281,7 @@ class IsolateApi(recipe_api.RecipeApi):
     """Compare the artifacts from 2 builds."""
     cmd = [
         'python3',
-        self.m.path.join(self.m.path['checkout'], 'tools', 'determinism',
+        self.m.path.join(self.m.path.checkout_dir, 'tools', 'determinism',
                          'compare_build_artifacts.py'),
         '--first-build-dir',
         first_dir,
@@ -292,11 +292,11 @@ class IsolateApi(recipe_api.RecipeApi):
         '--json-output',
         self.m.json.output(),
         '--ninja-path',
-        self.m.path['checkout'].join('third_party', 'ninja', 'ninja'),
+        self.m.path.checkout_dir.join('third_party', 'ninja', 'ninja'),
         '--use-isolate-files',
     ]
     try:
-      with self.m.context(cwd=self.m.path['start_dir']):
+      with self.m.context(cwd=self.m.path.start_dir):
         step_result = self.m.step(
             'compare_build_artifacts',
             cmd,
@@ -361,10 +361,10 @@ class IsolateApi(recipe_api.RecipeApi):
                 str(
                     self.m.path.relpath(
                         '%s/%s.isolate' % (build_dir, isolate_target_name),
-                        self.m.path['checkout'],
+                        self.m.path.checkout_dir,
                     )),
             ],
-            'dir': str(self.m.path['checkout']),
+            'dir': str(self.m.path.checkout_dir),
             'version': 1,
         },
         indent=2,

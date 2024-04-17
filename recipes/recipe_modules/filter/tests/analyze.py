@@ -22,14 +22,14 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   for c in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(c)
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   # We convert these kwargs in analyze_kwargs from checkout-relative paths to
-  # Path objects by joining them to api.path['checkout']
+  # Path objects by joining them to api.path.checkout_dir
   kwargs = dict(api.properties.get('analyze_kwargs', {}))
   for k in ('mb_path', 'mb_config_path', 'build_output_dir'):
     if (val := kwargs.get(k)) is not None:
-      kwargs[k] = api.path['checkout'].join(*val)
+      kwargs[k] = api.path.checkout_dir.join(*val)
 
   affected_test_targets, affected_compile_targets = (
       api.filter.analyze(

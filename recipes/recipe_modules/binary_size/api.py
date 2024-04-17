@@ -262,7 +262,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
           self.m.bot_update.deapply_patch(bot_update_step)
 
-        with self.m.context(cwd=self.m.path['checkout']):
+        with self.m.context(cwd=self.m.path.checkout_dir):
           suffix = ' (without patch)'
 
           self.m.chromium.runhooks(name='runhooks' + suffix)
@@ -284,7 +284,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
               suffix=suffix, patch=True)
         self.m.chromium.runhooks(name='runhooks' + suffix)
 
-      with self.m.context(cwd=self.m.path['checkout']):
+      with self.m.context(cwd=self.m.path.checkout_dir):
         size_results_path = staging_dir.join('size_results.json')
 
         diff_func(author, review_subject, review_url, without_results_dir,
@@ -311,7 +311,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       staging_dir: Staging directory to pass input files and retrieve output
         size analysis files (e.g., .size and size JSON files).
     """
-    generator_script = self.m.path['checkout'].join(
+    generator_script = self.m.path.checkout_dir.join(
         'tools', 'binary_size', 'generate_commit_size_analysis.py')
     cmd = [generator_script]
     cmd += [
@@ -329,13 +329,13 @@ class BinarySizeApi(recipe_api.RecipeApi):
       staging_dir: Staging directory to pass input files and retrieve output
         size analysis files (e.g., .size and size JSON files).
     """
-    generator_script = self.m.path['checkout'].join(
-        'build', 'fuchsia', 'binary_sizes.py')
+    generator_script = self.m.path.checkout_dir.join('build', 'fuchsia',
+                                                     'binary_sizes.py')
     cmd = [generator_script]
     cmd += ['--build-out-dir', self.m.chromium.output_dir]
 
-    size_path = self.m.path['checkout'].join('tools', 'fuchsia', 'size_tests',
-                                             'fyi_sizes.json')
+    size_path = self.m.path.checkout_dir.join('tools', 'fuchsia', 'size_tests',
+                                              'fyi_sizes.json')
     cmd += ['--sizes-path', size_path]
 
     output_file = self.m.chromium.output_dir.join('plugin.json')
@@ -490,7 +490,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
   def _create_diffs_android(self, author, review_subject, review_url,
                             before_dir, after_dir, results_path, staging_dir):
-    checker_script = self.m.path['checkout'].join(
+    checker_script = self.m.path.checkout_dir.join(
         'tools', 'binary_size', 'trybot_commit_size_checker.py')
 
     with self.m.context(env={'PYTHONUNBUFFERED': '1'}):
@@ -510,8 +510,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
   def _create_diffs_fuchsia(self, author, review_subject, review_url,
                             before_dir, after_dir, results_path, staging_dir):
-    checker_script = self.m.path['checkout'].join(
-        'build', 'fuchsia', 'binary_size_differ.py')
+    checker_script = self.m.path.checkout_dir.join('build', 'fuchsia',
+                                                   'binary_size_differ.py')
     with self.m.context(env={'PYTHONUNBUFFERED': '1'}):
       cmd = [checker_script]
       cmd += ['--before-dir', before_dir]

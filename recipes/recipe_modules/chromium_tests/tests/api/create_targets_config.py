@@ -72,7 +72,7 @@ FAKE_TARGETS_SPEC = {
 
 def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
              skip_tests):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)

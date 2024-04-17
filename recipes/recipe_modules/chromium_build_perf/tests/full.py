@@ -28,7 +28,7 @@ def RunSteps(api):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   api.chromium_build_perf.build_with_ninja('all', with_remote_cache=True)
   api.chromium_build_perf.build_with_ninja('all', with_remote_cache=False)

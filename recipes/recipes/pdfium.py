@@ -175,7 +175,7 @@ def _is_reclient_enabled(api, msvc):
 
 
 def _checkout_step(api, target_os, reclient_enabled):
-  solution_path = api.path['cache'].join('builder')
+  solution_path = api.path.cache_dir.join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
@@ -227,7 +227,7 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
   enable_reclient = _is_reclient_enabled(api, msvc)
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
-  checkout = api.path['checkout']
+  checkout = api.path.checkout_dir
   gn_cmd = api.depot_tools.gn_py_path
 
   # Prepare the arguments to pass in.
@@ -290,8 +290,8 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
 
 def _build_steps(api, clang, msvc, out_dir):
   enable_reclient = _is_reclient_enabled(api, msvc)
-  debug_path = api.path['checkout'].join('out', out_dir)
-  ninja_path = api.path['checkout'].join('third_party', 'ninja', 'ninja')
+  debug_path = api.path.checkout_dir.join('out', out_dir)
+  ninja_path = api.path.checkout_dir.join('third_party', 'ninja', 'ninja')
   ninja_cmd = [ninja_path, '-C', debug_path]
   if enable_reclient:
     ninja_cmd.extend(['-j', api.reclient.jobs])
@@ -392,8 +392,8 @@ class _ResultDb:
     self.api = api
     self.base_variant = base_variant
 
-    self.result_adapter_path = str(self.api.path['checkout'].join(
-        'tools', 'resultdb', 'result_adapter'))
+    self.result_adapter_path = str(
+        self.api.path.checkout_dir.join('tools', 'resultdb', 'result_adapter'))
     if self.api.platform.is_win:
       self.result_adapter_path += '.exe'
 
@@ -478,7 +478,7 @@ class _Swarming:
     if self.test_inputs_digest:
       return
 
-    checkout_path = self.api.path['checkout']
+    checkout_path = self.api.path.checkout_dir
 
     test_inputs = self.api.file.read_json(
         'read test inputs list',
@@ -671,7 +671,7 @@ class _TestRunner:
 
   @property
   def _local_root_dir(self):
-    return self.api.path['checkout']
+    return self.api.path.checkout_dir
 
   def _join_root_dir(self, *paths):
     if self.swarming:
@@ -979,7 +979,7 @@ def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
     # buildbot sets 'clobber' to the empty string which evaluates to false if
     # checked directly. Instead, check using the 'in' keyword.
     if 'clobber' in api.properties:
-      api.file.rmtree('clobber', api.path['checkout'].join('out', out_dir))
+      api.file.rmtree('clobber', api.path.checkout_dir.join('out', out_dir))
 
     build_config = _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu,
                                   clang, msvc, rel, component, target_os,

@@ -38,7 +38,7 @@ def RunSteps(api):
     })
     api.chromium.set_config('chromium')
     # Fake path, as the real one depends on having done a chromium checkout.
-    api.profiles.src_dir = api.path['start_dir']
+    api.profiles.src_dir = api.path.start_dir
 
     _, builder_config = api.chromium_tests_builder_config.lookup_builder()
     api.chromium_tests.configure_build(builder_config)

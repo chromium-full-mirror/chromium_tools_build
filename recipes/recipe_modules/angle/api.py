@@ -43,7 +43,7 @@ class ANGLEApi(recipe_api.RecipeApi):
     stepdata = self.m.step(
         'get commit position', [
             'python3',
-            self.m.path.join(self.m.path['checkout'], 'src', 'commit_id.py'),
+            self.m.path.join(self.m.path.checkout_dir, 'src', 'commit_id.py'),
             'position',
         ],
         stdout=self.m.raw_io.output_text(add_output_log=True))
@@ -53,7 +53,7 @@ class ANGLEApi(recipe_api.RecipeApi):
 
   def _checkout(self):
     # Checkout angle and its dependencies (specified in DEPS) using gclient.
-    solution_path = self.m.path['cache'].join('builder')
+    solution_path = self.m.path.cache_dir.join('builder')
     self.m.file.ensure_directory('init cache if not exists', solution_path)
     with self.m.context(cwd=solution_path):
       if self.m.reclient.instance:
@@ -93,7 +93,7 @@ class ANGLEApi(recipe_api.RecipeApi):
     self.m.step(step_name, cmd)
 
   def _trace_tests(self):
-    checkout = self.m.path['checkout']
+    checkout = self.m.path.checkout_dir
     with self.m.context(cwd=checkout):
       self._run_trace_tests(checkout, '*/ES2_Vulkan_SwiftShader',
                             'GLES 2.0 trace tests')
@@ -120,7 +120,7 @@ class ANGLEApi(recipe_api.RecipeApi):
         return raw_result
     else:
       assert (test_mode == 'compile_and_test')
-      script_dir = self.m.path.join(self.m.path['checkout'], 'testing',
+      script_dir = self.m.path.join(self.m.path.checkout_dir, 'testing',
                                     'merge_scripts')
       self.m.chromium_swarming.configure_swarming(
           'angle',
@@ -128,17 +128,17 @@ class ANGLEApi(recipe_api.RecipeApi):
           path_to_merge_scripts=script_dir)
       targets_config = self.m.chromium_tests.create_targets_config(
           self._builder_config, update_step.presentation.properties,
-          self.m.path['checkout'])
+          self.m.path.checkout_dir)
 
       if self.m.tryserver.is_tryserver:
         affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
             relative_to='angle/',
-            cwd=self.m.path['checkout'],
+            cwd=self.m.path.checkout_dir,
             report_via_property=True)
         test_targets, compile_targets = (
             self.m.chromium_tests.determine_compilation_targets(
-                self._builder_id, self._builder_config, self.m.path['checkout'],
-                affected_files, targets_config))
+                self._builder_id, self._builder_config,
+                self.m.path.checkout_dir, affected_files, targets_config))
 
         compile_targets = sorted(list(set(test_targets)))
         tests = self.m.chromium_tests.tests_in_compile_targets(
@@ -160,7 +160,7 @@ class ANGLEApi(recipe_api.RecipeApi):
       self.m.chromium_tests.set_swarming_test_execution_info(
           tests, self.m.chromium_tests.find_swarming_command_lines(""),
           self.m.path.relpath(self.m.chromium.output_dir,
-                              self.m.path['checkout']))
+                              self.m.path.checkout_dir))
       # ANGLE marks entire failing shards as invalid. We retry them here.
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests(tests, "", retry_invalid_shards=True))

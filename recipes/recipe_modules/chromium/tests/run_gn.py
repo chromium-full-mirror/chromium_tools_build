@@ -17,7 +17,7 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       BUILD_CONFIG=api.properties.get('build_config', 'Release'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   use_remoteexec = api.properties.get('use_remoteexec', False)
 

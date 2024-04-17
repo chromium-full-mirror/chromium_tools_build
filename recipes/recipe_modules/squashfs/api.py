@@ -8,7 +8,7 @@ from recipe_engine import recipe_api
 class SquashfsApi(recipe_api.RecipeApi):
 
   def _get_squashfs_path(self):
-    squashfs_dir = self.m.path['start_dir'].join('squashfs')
+    squashfs_dir = self.m.path.start_dir.join('squashfs')
     ensure_file = self.m.cipd.EnsureFile().add_package(
         'infra/3pp/tools/squashfs/linux-amd64',
         '97pLXFMaDo0YFKrWyL_wfrZHyTNXM9iO6T_uRHkMkrQC')

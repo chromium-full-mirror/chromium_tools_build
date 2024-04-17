@@ -109,7 +109,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         'TARGET_BITS':
             (32 if self.m.platform.name == 'win' else self.m.platform.bits),
         'BUILD_CONFIG': self.m.properties.get('build_config', 'Release'),
-        'CHECKOUT_PATH': self.m.path['checkout'],
+        'CHECKOUT_PATH': self.m.path.checkout_dir,
         'TEST_ONLY': False,
     }
 
@@ -141,7 +141,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @property
   def ninja_path(self):
-    return self.m.path['checkout'].join('third_party', 'ninja', 'ninja')
+    return self.m.path.checkout_dir.join('third_party', 'ninja', 'ninja')
 
   def get_version(self):
     """Returns a dictionary describing the version.
@@ -151,8 +151,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     { 'MAJOR'": '51', 'MINOR': '0', 'BUILD': '2704', 'PATCH': '0' }
     """
     if self._version is None:
-      self._version = self.get_version_from_file(self.m.path['checkout'].join(
-          'chrome', 'VERSION'))
+      self._version = self.get_version_from_file(
+          self.m.path.checkout_dir.join('chrome', 'VERSION'))
     return self._version
 
   def get_version_from_file(self, version_file_path, step_name='get version'):
@@ -401,7 +401,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     finally:
       if not self.m.runtime.in_global_shutdown:
-        clang_crashreports_script = self.m.path['checkout'].join(
+        clang_crashreports_script = self.m.path.checkout_dir.join(
             'tools', 'clang', 'scripts', 'process_crashreports.py')
         if self.m.path.exists(clang_crashreports_script):
           source = '%s-%s' % (self.m.builder_group.for_current,
@@ -635,7 +635,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     if out_dir is None:
       out_dir = 'out'
-    target_output_dir = self.m.path.join(self.m.path['checkout'], out_dir,
+    target_output_dir = self.m.path.join(self.m.path.checkout_dir, out_dir,
                                          target or self.c.build_config_fs)
     target_output_dir = self.m.path.abspath(target_output_dir)
 
@@ -643,7 +643,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if self.m.siso.enabled:
       command = [str(self.m.siso.siso_path), 'ninja']
     command += ['-C', target_output_dir, '-t', 'cleandead']
-    with self.m.context(env=ninja_env, cwd=self.m.path['checkout']):
+    with self.m.context(env=ninja_env, cwd=self.m.path.checkout_dir):
       self.m.step(name='cleandead', cmd=command)
 
   @_with_chromium_layout
@@ -705,7 +705,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       out_dir = 'out'
 
     if not target_output_dir:
-      target_output_dir = self.m.path.join(self.m.path['checkout'], out_dir,
+      target_output_dir = self.m.path.join(self.m.path.checkout_dir, out_dir,
                                            target or self.c.build_config_fs)
       target_output_dir = self.m.path.abspath(target_output_dir)
 
@@ -723,7 +723,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     assert 'env' not in kwargs
     assert 'cwd' not in kwargs
 
-    with self.m.context(cwd=self.m.context.cwd or self.m.path['checkout']):
+    with self.m.context(cwd=self.m.context.cwd or self.m.path.checkout_dir):
       if use_reclient:
         ninja_result = self._run_ninja_with_reclient(
             ninja_command=command,
@@ -822,9 +822,9 @@ class ChromiumApi(recipe_api.RecipeApi):
     runtest_path = self.repo_resource('recipes', 'runtest.py')
     # We need this, as otherwise runtest.py fails due to expecting the cwd to
     # be the checkout, when instead it's kitchen-workdir. We also can't use
-    # self.m.path['checkout'] since that has an extra '/src' added onto it
+    # self.m.path.checkout_dir since that has an extra '/src' added onto it
     # compared to what runtest.py expects.
-    with self.m.context(cwd=self.m.path['cache'].join('builder')):
+    with self.m.context(cwd=self.m.path.cache_dir.join('builder')):
       resultdb = kwargs.pop('resultdb', None)
       cmd = ['python3', runtest_path] + full_args
       if resultdb:
@@ -839,7 +839,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   def get_clang_version(self, **kwargs):
     with self.m.context(env=self.get_env()):
       args = [
-          '--src-dir', self.m.path['checkout'], '--output-json',
+          '--src-dir', self.m.path.checkout_dir, '--output-json',
           self.m.json.output()
       ]
       if self.c.use_tot_clang:
@@ -859,7 +859,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     assert self.c.mac_toolchain.installer_version
     assert self.c.mac_toolchain.installer_cmd
 
-    cipd_root = self.m.path['start_dir']
+    cipd_root = self.m.path.start_dir
     cipd_pkg = self.c.mac_toolchain.installer_cipd_package
     pkg_version = self.c.mac_toolchain.installer_version
     cmd = self.c.mac_toolchain.installer_cmd
@@ -875,7 +875,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     This is to expose any lingering dependencies on the old cache.
     """
-    old_cache = self.m.path['checkout'].join(
+    old_cache = self.m.path.checkout_dir.join(
         'build', '%s_files' % self.m.chromium.c.TARGET_PLATFORM)
     self.m.file.rmtree('delete deprecated Xcode cache', old_cache)
 
@@ -899,8 +899,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     kind = self.c.mac_toolchain.kind or self.c.TARGET_PLATFORM
     # TODO(sergeyberezin): for LUCI migration, this must be a requested named
     # cache. Make sure it exists, to avoid downloading Xcode on every build.
-    xcode_app_path = self.m.path['cache'].join('xcode_%s_%s.app' %
-                                               (kind, xcode_build_version))
+    xcode_app_path = self.m.path.cache_dir.join('xcode_%s_%s.app' %
+                                                (kind, xcode_build_version))
 
     with self.m.step.nest('ensure xcode') as step_result:
       step_result.presentation.step_text = (
@@ -960,7 +960,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       # to let runhooks proceed safely.
       # TODO(b/256012263): Remove this when the fix has been merged into m108.
       with self.m.step.nest('workaround for read-only //build/cros_cache/ dir'):
-        cros_cache = self.m.path['checkout'].join('build', 'cros_cache')
+        cros_cache = self.m.path.checkout_dir.join('build', 'cros_cache')
         if self.m.path.exists(cros_cache):
           self.m.step('chmod cros_cache', ['chmod', '-R', '744', cros_cache])
           self.m.file.rmtree('clobber cros_cache', cros_cache)
@@ -1038,7 +1038,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     cmd = [
         gn_path,
-        '--root=%s' % str(self.m.path['checkout']),
+        '--root=%s' % str(self.m.path.checkout_dir),
         'gen',
         build_dir,
         '--args=%s' % ' '.join(gn_args),
@@ -1046,7 +1046,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if str(gn_path).endswith('.py'):
       cmd = ['python3'] + cmd
     with self.m.context(
-        cwd=kwargs.get('cwd', self.m.path['checkout']), env=gn_env):
+        cwd=kwargs.get('cwd', self.m.path.checkout_dir), env=gn_env):
       self.m.step(name='gn', cmd=cmd, **kwargs)
 
   def _mb_isolate_map_file_args(self):
@@ -1094,7 +1094,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     chromium_config = chromium_config or self.c
 
-    mb_path = mb_path or self.m.path['checkout'].join('tools', 'mb')
+    mb_path = mb_path or self.m.path.checkout_dir.join('tools', 'mb')
     mb_config_path = (
         mb_config_path or chromium_config.project_generator.config_path or
         self.m.path.join(mb_path, 'mb_config.pyl'))
@@ -1142,7 +1142,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     with self.m.context(
         # TODO(phajdan.jr): get cwd from context, not kwargs.
-        cwd=kwargs.get('cwd', self.m.path['checkout']),
+        cwd=kwargs.get('cwd', self.m.path.checkout_dir),
         env=env):
       return self.m.step(name, cmd, **kwargs)
 

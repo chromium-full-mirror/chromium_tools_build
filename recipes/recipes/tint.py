@@ -31,7 +31,7 @@ TINT_REPO = "https://dawn.googlesource.com/tint"
 
 
 def _checkout_steps(api):
-  solution_path = api.path['cache'].join('builder')
+  solution_path = api.path.cache_dir.join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
@@ -65,7 +65,7 @@ def _gn_gen_builds(api, target_cpu, debug, clang, out_dir):
   """calls 'gn gen'"""
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
-  checkout = api.path['checkout']
+  checkout = api.path.checkout_dir
   gn_cmd = api.depot_tools.gn_py_path
 
   # Prepare the arguments to pass in.
@@ -100,8 +100,8 @@ def _gn_gen_builds(api, target_cpu, debug, clang, out_dir):
 
 
 def _build_steps(api, out_dir, clang, *targets):
-  debug_path = api.path['checkout'].join('out', out_dir)
-  ninja_path = api.path['checkout'].join('third_party', 'ninja', 'ninja')
+  debug_path = api.path.checkout_dir.join('out', out_dir)
+  ninja_path = api.path.checkout_dir.join('third_party', 'ninja', 'ninja')
 
   ninja_cmd = [ninja_path, '-C', debug_path]
   if _use_reclient(api, clang):
@@ -117,7 +117,7 @@ def _build_steps(api, out_dir, clang, *targets):
 
 
 def _run_unittests(api, out_dir):
-  test_path = api.path['checkout'].join('out', out_dir, 'tint_unittests')
+  test_path = api.path.checkout_dir.join('out', out_dir, 'tint_unittests')
   api.step('Run the Tint unittests', [test_path])
 
 
@@ -125,7 +125,7 @@ def RunSteps(api, target_cpu, debug, clang):
   env = {}
   if api.platform.is_win:
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path['cache'].join('win_toolchain'))
+        api.path.cache_dir.join('win_toolchain'))
 
   with api.context(env=env):
     _checkout_steps(api)

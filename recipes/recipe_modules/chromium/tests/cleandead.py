@@ -17,7 +17,7 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium_clang'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   return api.chromium.cleandead()
 
 

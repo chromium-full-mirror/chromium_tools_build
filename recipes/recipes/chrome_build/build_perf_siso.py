@@ -65,7 +65,7 @@ def _run_builds(api, target, phase, step_name_suffix=None):
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
-  solution_path = api.path['cache'].join('builder')
+  solution_path = api.path.cache_dir.join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(

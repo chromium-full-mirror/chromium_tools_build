@@ -34,7 +34,7 @@ def RunSteps(api, target_cpu):
   api.gclient.runhooks()
 
   # 2. Build
-  build_out_dir = api.path['checkout'].join('out')
+  build_out_dir = api.path.checkout_dir.join('out')
   build_target = 'Release'
   build_dir = build_out_dir.join(build_target)
 
@@ -56,12 +56,12 @@ def RunSteps(api, target_cpu):
         name='gn',
         cmd=[
             'python3', api.depot_tools.gn_py_path,
-            '--root=%s' % str(api.path['checkout']), 'gen', build_dir,
+            '--root=%s' % str(api.path.checkout_dir), 'gen', build_dir,
             '--args=%s' % ' '.join(gn_args)
         ])
 
     # 2-2. ninja
-    ninja_path = api.path['checkout'].join('third_party', 'ninja', 'ninja')
+    ninja_path = api.path.checkout_dir.join('third_party', 'ninja', 'ninja')
     api.step('build', [ninja_path, '-C', build_dir])
 
     # 3. Run test
@@ -71,9 +71,10 @@ def RunSteps(api, target_cpu):
       api.step(
           name='tests',
           cmd=[
-              'python3', api.path['checkout'].join('build', 'run_unittest.py'),
-              '--build-dir', build_out_dir, '--target', build_target,
-              '--non-stop'
+              'python3',
+              api.path.checkout_dir.join('build',
+                                         'run_unittest.py'), '--build-dir',
+              build_out_dir, '--target', build_target, '--non-stop'
           ])
 
   # 4. Create archive.
@@ -83,15 +84,16 @@ def RunSteps(api, target_cpu):
   api.step(
       name='archive',
       cmd=[
-          'python3', api.path['checkout'].join('build', 'archive.py'),
-          '--platform', platform, '--build_dir', build_out_dir, '--target_dir',
-          build_target, '--dist_dir', api.path['tmp_base']
+          'python3',
+          api.path.checkout_dir.join('build', 'archive.py'), '--platform',
+          platform, '--build_dir', build_out_dir, '--target_dir', build_target,
+          '--dist_dir', api.path.tmp_base_dir
       ])
 
   # 5. Build CIPD package.
   # archive.py creates goma-<platform>/ in out/Release.
   root = build_out_dir.join(build_target, 'goma-%s' % platform)
-  pkg_file = api.path['tmp_base'].join('package.cipd')
+  pkg_file = api.path.tmp_base_dir.join('package.cipd')
   tag = '${platform}' if target_cpu != 'arm64' else platform
   pkg_name = 'infra/goma/client/' + tag
   api.cipd.build(root, pkg_file, pkg_name, install_mode='copy')

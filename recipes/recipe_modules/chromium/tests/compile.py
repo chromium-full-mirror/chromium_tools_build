@@ -26,7 +26,7 @@ def RunSteps(api):
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   return api.chromium.compile(targets=api.properties.get('targets'))
 
@@ -36,8 +36,9 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.chromium.generic_build(builder_group='test_group'),
-      api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
-                                                'process_crashreports.py')),
+      api.path.exists(
+          api.path.checkout_dir.join('tools', 'clang', 'scripts',
+                                     'process_crashreports.py')),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
       api.post_process(post_process.DropExpectation),
@@ -59,8 +60,9 @@ def GenTests(api):
       'compile_fail',
       api.chromium.generic_build(builder_group='test_group'),
       api.step_data('compile', retcode=1),
-      api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
-                                                'process_crashreports.py')),
+      api.path.exists(
+          api.path.checkout_dir.join('tools', 'clang', 'scripts',
+                                     'process_crashreports.py')),
       api.post_process(post_process.MustRun, 'process clang crashes'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
@@ -211,8 +213,9 @@ def GenTests(api):
       'siso',
       api.chromium.generic_build(builder_group='test_group'),
       api.siso.properties(),
-      api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
-                                                'process_crashreports.py')),
+      api.path.exists(
+          api.path.checkout_dir.join('tools', 'clang', 'scripts',
+                                     'process_crashreports.py')),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
       api.post_process(post_process.DropExpectation),
@@ -222,8 +225,9 @@ def GenTests(api):
       'siso_noop_failure',
       api.chromium.generic_build(builder_group='test_group'),
       api.siso.properties(),
-      api.path.exists(api.path['checkout'].join('tools', 'clang', 'scripts',
-                                                'process_crashreports.py')),
+      api.path.exists(
+          api.path.checkout_dir.join('tools', 'clang', 'scripts',
+                                     'process_crashreports.py')),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.step_data(
           'compile confirm no-op',

@@ -33,7 +33,8 @@ def RunSteps(api):
 
   update_step = api.chromium_checkout.ensure_checkout()
   targets_config = api.chromium_tests.create_targets_config(
-      builder_config, update_step.presentation.properties, api.path['checkout'])
+      builder_config, update_step.presentation.properties,
+      api.path.checkout_dir)
 
   api.chromium_swarming.configure_swarming(
       'webrtc', precommit=api.tryserver.is_tryserver)

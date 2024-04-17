@@ -33,7 +33,7 @@ _BQ_UPLOAD_STEP_NAME = 'postprocess for reclient.upload RBE metrics to BigQuery'
 
 def RunSteps(api):
   if 'enable_deps_hook' in api.properties:
-    src_cfg = api.gclient.make_config(CACHE_DIR=api.path['cache'].join('git'))
+    src_cfg = api.gclient.make_config(CACHE_DIR=api.path.cache_dir.join('git'))
     soln = src_cfg.solutions.add()
     soln.name = 'src'
     soln.url = 'https://chromium.googlesource.com/chromium/src.git'
@@ -45,15 +45,15 @@ def RunSteps(api):
         soln.custom_vars["rbe_instance"],
         'projects/test-rbe-project/instances/default_instance')
 
-  api.path['checkout'] = api.path['tmp_base'].join('checkout')
+  api.path.checkout_dir = api.path.tmp_base_dir.join('checkout')
 
   # Verify that checkout_dir can be overridden...
-  api.reclient.reclient_dir = api.path['cleanup']
-  api.assertions.assertEqual(api.reclient.reclient_dir, api.path['cleanup'])
+  api.reclient.reclient_dir = api.path.cleanup_dir
+  api.assertions.assertEqual(api.reclient.reclient_dir, api.path.cleanup_dir)
   # ... and that it defaults to checkout when not set.
   api.reclient.reclient_dir = None
   api.assertions.assertEqual(api.reclient.reclient_dir,
-                             api.path['checkout'].join('buildtools'))
+                             api.path.checkout_dir.join('buildtools'))
   # Verify that cache silo can be overridden.
   tmp = api.reclient.cache_silo
   api.reclient.cache_silo = "foobar"

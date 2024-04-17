@@ -14,7 +14,7 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.chromium.mb_isolate_everything(
       chromium.BuilderId.create_for_group('test-group', 'test-builder'))
 

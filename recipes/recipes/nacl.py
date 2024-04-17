@@ -153,8 +153,8 @@ def TriggerHardwareTests(api, got_revision, checkout_path,
   isolated_files = [
       FileInfo(checkout_path, 'native_client', True),
       FileInfo(compiled_sources_path, 'native_client/between_builders', True),
-      FileInfo(api.path['start_dir'].join('third_party'), 'third_party', True),
-      FileInfo(api.path['start_dir'].join('testing'), 'testing', True),
+      FileInfo(api.path.start_dir.join('third_party'), 'third_party', True),
+      FileInfo(api.path.start_dir.join('testing'), 'testing', True),
       # The ARM bots need the linux_arm toolchain.
       FileInfo(
           checkout_path.join('toolchain', 'linux_x86'),
@@ -197,7 +197,7 @@ def TriggerHardwareTests(api, got_revision, checkout_path,
 
 def RunSteps(api):
   got_revision = CheckoutSteps(api)
-  checkout_path = api.path['start_dir'].join('native_client')
+  checkout_path = api.path.start_dir.join('native_client')
   compiled_sources_path = api.path.mkdtemp('between_builders')
   AnnotatedStepsSteps(api, got_revision, checkout_path, compiled_sources_path)
   if api.buildbucket.builder_name in swarming_dimensions:

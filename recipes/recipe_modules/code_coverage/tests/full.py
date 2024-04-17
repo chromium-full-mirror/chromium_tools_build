@@ -37,9 +37,9 @@ def RunSteps(api):
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(builder_config)
   # Fake path.
-  api.profiles.src_dir = api.path['start_dir']
-  api.code_coverage.src_dir = api.path['start_dir']
-  api.path['checkout'] = api.path['start_dir']
+  api.profiles.src_dir = api.path.start_dir
+  api.code_coverage.src_dir = api.path.start_dir
+  api.path.checkout_dir = api.path.start_dir
 
   if api.tryserver.is_tryserver:
     api.code_coverage.instrument(
@@ -77,8 +77,8 @@ def RunSteps(api):
       steps.SwarmingIsolatedScriptTestSpec.create(
           'blink_web_tests',
           merge=chromium_swarming.MergeScript.create(
-              script=api.path['start_dir'].join('coverage', 'tests',
-                                                'merge_blink_web_tests.py'),
+              script=api.path.start_dir.join('coverage', 'tests',
+                                             'merge_blink_web_tests.py'),
               args=['random', 'args'],
           )),
       steps.SwarmingIsolatedScriptTestSpec.create(

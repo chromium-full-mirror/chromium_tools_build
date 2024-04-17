@@ -33,7 +33,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   use_lacros = api.properties.get('use_lacros', False)
   if use_lacros:
@@ -64,7 +64,7 @@ def RunSteps(api):
   api.pgo.configure_llvm_tooling_path(builder_id, is_cros=use_lacros)
 
   # Fake path.
-  api.profiles.src_dir = api.path['start_dir']
+  api.profiles.src_dir = api.path.start_dir
 
   if api.properties.get('mock_merged_profdata', True):
     api.path.mock_add_paths(

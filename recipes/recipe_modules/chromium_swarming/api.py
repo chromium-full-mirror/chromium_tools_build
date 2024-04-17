@@ -1385,7 +1385,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         self.m.buildbucket.build.input.experiments):
       kwargs.setdefault('ok_ret', 'any')
     with self.m.swarming.on_path():
-      with self.m.context(cwd=self.m.path['start_dir']):
+      with self.m.context(cwd=self.m.path.start_dir):
         cmd = [
             'python3',
             self.resource('collect_task.py'),

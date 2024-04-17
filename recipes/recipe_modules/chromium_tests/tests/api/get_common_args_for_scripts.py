@@ -14,15 +14,15 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
   api.step(
       'sample script',
       [
-          'python3', api.path['checkout'].join('testing', 'scripts',
-                                               'example.py')
+          'python3',
+          api.path.checkout_dir.join('testing', 'scripts', 'example.py')
       ] + api.chromium_tests.get_common_args_for_scripts(),
   )
 

@@ -188,7 +188,7 @@ def _RunStepsInternal(api):
         infra_step=False)
 
   if api.properties.get('runhooks'):
-    with api.context(cwd=api.path['checkout']):
+    with api.context(cwd=api.path.checkout_dir):
       api.gclient.runhooks()
 
   presubmit_args = [
@@ -279,7 +279,7 @@ def RunSteps(api):
   # on special infra/config branch, which is typically orphan.
   if api.tryserver.gerrit_change_target_ref == 'refs/heads/infra/config':
     safe_buildername += '_infra_config'
-  cwd = api.path['cache'].join('builder', safe_buildername)
+  cwd = api.path.cache_dir.join('builder', safe_buildername)
   api.file.ensure_directory('ensure builder cache dir', cwd)
 
   with api.context(cwd=cwd):

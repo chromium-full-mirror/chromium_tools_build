@@ -183,7 +183,7 @@ class FilterApi(recipe_api.RecipeApi):
       return self.m.step(
           'analyze', [
               'python3',
-              self.m.path['checkout'].join('build', 'gyp_chromium'),
+              self.m.path.checkout_dir.join('build', 'gyp_chromium'),
               '--analyzer',
               self.m.json.input(analyze_input),
               self.m.json.output(),

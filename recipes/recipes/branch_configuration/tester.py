@@ -123,13 +123,13 @@ def RunSteps(api, properties):
   gclient_config.repo_path_map[s.url] = (s.name, 'HEAD')
 
   with api.chromium_bootstrap.update_gclient_config(gclient_config) as callback:
-    with api.context(cwd=api.path['cache'].join('builder')):
+    with api.context(cwd=api.path.cache_dir.join('builder')):
       update_result = api.bot_update.ensure_checkout(
           patch=True, gclient_config=gclient_config)
     callback(update_result.json.output['manifest'])
 
-  repo_path = api.path['cache'].join('builder',
-                                     update_result.json.output['root'])
+  repo_path = api.path.cache_dir.join('builder',
+                                      update_result.json.output['root'])
 
   bad_branch_configs = []
   with api.context(cwd=repo_path):

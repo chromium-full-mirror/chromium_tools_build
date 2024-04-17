@@ -42,11 +42,11 @@ def RunSteps(api):
   target_dir = "release"
   build_dir = out_dir + "/" + target_dir
   gn_path = api.depot_tools.gn_py_path
-  cipd_root = api.path['start_dir'].join('cipd')
+  cipd_root = api.path.start_dir.join('cipd')
   db_path = api.path.mkdtemp('codeql_dbs')
   with api.context(
-      cwd=api.path['checkout'], env_suffixes={'PATH': [cipd_root]}):
-    codeql_root = api.path['start_dir'].join('codeql')
+      cwd=api.path.checkout_dir, env_suffixes={'PATH': [cipd_root]}):
+    codeql_root = api.path.start_dir.join('codeql')
     # If we end up needing to change this version frequently, consider changing
     # this to use an input property to set the version instead of hardcoding it
     # here.
@@ -59,14 +59,14 @@ def RunSteps(api):
         ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
     api.chromium.compile(
         use_reclient=True, targets=["all"], out_dir=out_dir, target=target_dir)
-    codeql_script_path = api.path['checkout'].join('tools', 'codeql',
-                                                   'index_target.py')
+    codeql_script_path = api.path.checkout_dir.join('tools', 'codeql',
+                                                    'index_target.py')
     api.step("index_target.py", [
         'vpython3', codeql_script_path, '--out_path', build_dir, '--db_path',
         db_path, '--codeql_binary_path', codeql_path, '--gn_path', gn_path
     ])
 
-    zip_out_dir = api.path['start_dir'].join('codeql_output')
+    zip_out_dir = api.path.start_dir.join('codeql_output')
     api.step("mkdir codeql_output", ['mkdir', zip_out_dir])
     cur_date = api.time.utcnow()
     TEST_DATA = ['chrome']

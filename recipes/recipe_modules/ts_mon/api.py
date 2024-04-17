@@ -16,7 +16,7 @@ class TSMonApi(recipe_api.RecipeApi):
     if self._send_ts_mon_pkg_path:
       return
 
-    self._send_ts_mon_pkg_path = self.m.path['start_dir'].join(
+    self._send_ts_mon_pkg_path = self.m.path.start_dir.join(
         'send_ts_mon_values')
     self.m.cipd.ensure(
         self._send_ts_mon_pkg_path,

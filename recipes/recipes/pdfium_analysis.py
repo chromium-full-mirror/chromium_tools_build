@@ -51,7 +51,7 @@ def RunSteps(api):
   # rebased on origin/main. BotUpdateApi.ensure_checkout() by default
   # prevents rebasing and ensures the correct line numbers.
   api.bot_update.ensure_checkout()
-  input_dir = api.path['checkout']
+  input_dir = api.path.checkout_dir
   affected_files = [
       f for f in GetChangedFiles(api, input_dir)
       if 'third_party/' not in f and api.path.exists(input_dir.join(f))
@@ -68,7 +68,7 @@ def GenTests(api):
 
   def test_data(affected_files):
     existing_files = [
-        api.path['start_dir'].join('pdfium', x) for x in affected_files
+        api.path.start_dir.join('pdfium', x) for x in affected_files
     ]
     return sum([
         api.buildbucket.try_build(

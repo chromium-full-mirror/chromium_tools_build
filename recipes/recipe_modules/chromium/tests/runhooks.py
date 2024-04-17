@@ -19,7 +19,7 @@ def RunSteps(api):
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
   api.chromium.apply_config('mb')
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   api.chromium.runhooks()
 
@@ -49,7 +49,7 @@ def GenTests(api):
   yield api.test(
       'clobber_cros_cache_bug',
       api.properties(clobber='1'),
-      api.path.exists(api.path['checkout'].join('build', 'cros_cache')),
+      api.path.exists(api.path.checkout_dir.join('build', 'cros_cache')),
       api.post_process(post_process.DropExpectation),
   )
 

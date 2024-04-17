@@ -42,7 +42,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     # can end up in cached goma keys/objects; mounting the named cache to an
     # alternate location could result in goma cache bloating.
     if not self._checkout_dir:
-      self._checkout_dir = self.m.path['cache'].join('builder')
+      self._checkout_dir = self.m.path.cache_dir.join('builder')
     return self._checkout_dir
 
   @checkout_dir.setter

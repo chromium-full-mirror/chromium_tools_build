@@ -71,16 +71,18 @@ def RunSteps(api):
   env.update({'USE_RECLIENT': '1'})
   api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
-  cache_dir = api.path['cache'].join('builder')
+  cache_dir = api.path.cache_dir.join('builder')
   sync_dir = cache_dir.join('emscripten-releases')
   api.file.ensure_directory('Ensure sync dir', sync_dir)
   build_dir = cache_dir.join('emscripten-releases', 'build')
-  install_dir = api.path['start_dir'].join('install')
-  dir_flags = ['--sync-dir=%s' % sync_dir,
-               '--build-dir=%s' % build_dir,
-               '--prebuilt-dir=%s' % sync_dir,
-               '--v8-dir=%s' % cache_dir.join('v8'),
-               '--install-dir=%s' % install_dir]
+  install_dir = api.path.start_dir.join('install')
+  dir_flags = [
+      '--sync-dir=%s' % sync_dir,
+      '--build-dir=%s' % build_dir,
+      '--prebuilt-dir=%s' % sync_dir,
+      '--v8-dir=%s' % cache_dir.join('v8'),
+      '--install-dir=%s' % install_dir
+  ]
 
   with api.osx_sdk('mac'):
     api.file.ensure_directory('Ensure install dir', install_dir)

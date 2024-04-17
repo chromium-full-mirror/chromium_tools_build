@@ -67,7 +67,7 @@ def RunSteps(api, properties):
 
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
-  checkout_root = api.path['cache'].join('builder')
+  checkout_root = api.path.cache_dir.join('builder')
 
   with api.context(cwd=checkout_root):
     update_result = api.bot_update.ensure_checkout(patch=True)
@@ -349,8 +349,8 @@ def GenTests(api):
       # Setup mb config GN args test data
       if builder_data.migrated:
         # Builder already migrated
-        test_steps += api.path.exists(api.path['cache'].join(
-            'builder', 'src').join(path_in_repo))
+        test_steps += api.path.exists(
+            api.path.cache_dir.join('builder', 'src').join(path_in_repo))
         test_steps += api.post_process(
             post_process.StepTextEquals,
             f'verify {bucket}/{builder}/gn-args.json',

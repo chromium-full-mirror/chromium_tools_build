@@ -152,7 +152,7 @@ class PgoApi(recipe_api.RecipeApi):
           platform += '-' + arch_def
 
     commit = 'none'
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       # timestamp from git commit HEAD. under the hood invokes
       # `git show --format=%at -s`, where %at=author date, UNIX timestamp
       timestamp = str(self.m.git.get_timestamp(test_data='1587876258'))

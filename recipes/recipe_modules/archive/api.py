@@ -55,14 +55,14 @@ class ArchiveApi(recipe_api.RecipeApi):
     """Returns a step invoking zip_build.py to zip up a Chromium build.
        If build_url is specified, also uploads the build."""
     if not src_dir:
-      src_dir = self.m.path['checkout']
+      src_dir = self.m.path.checkout_dir
     args = [
         '--target',
         target,
         '--gsutil-py-path',
         self.m.depot_tools.gsutil_py_path,
         '--staging-dir',
-        self.m.path['cache'].join('chrome_staging'),
+        self.m.path.cache_dir.join('chrome_staging'),
         '--src-dir',
         src_dir,
     ]
@@ -243,17 +243,17 @@ class ArchiveApi(recipe_api.RecipeApi):
       if commit_position:
         gs_metadata[GS_COMMIT_POSITION_KEY] = commit_position
     build_git_commit = self._get_git_commit(update_properties, primary_project)
-    staging_dir = self.m.path['cleanup'].join('chrome_staging')
+    staging_dir = self.m.path.cleanup_dir.join('chrome_staging')
     self.m.file.ensure_directory('create staging_dir', staging_dir)
 
     lzma_sdk_args = []
     can_fetch_7zip = self.m.platform.is_mac or (self.m.platform.is_linux and
                                                 self.m.platform.arch == "intel"
                                                 and self.m.platform.bits == 64)
-    if self.m.path.exists(self.m.path['checkout']) and self.m.platform.is_win:
+    if self.m.path.exists(self.m.path.checkout_dir) and self.m.platform.is_win:
       lzma_sdk_args = [
-          self.m.path['checkout'].join('third_party', 'lzma_sdk', 'bin',
-                                       'win64')
+          self.m.path.checkout_dir.join('third_party', 'lzma_sdk', 'bin',
+                                        'win64')
       ]
     elif can_fetch_7zip:
       cipd_pkg = 'infra/3pp/tools/7z/${platform}'
@@ -262,8 +262,8 @@ class ArchiveApi(recipe_api.RecipeApi):
       ]
 
     llvm_tools_to_copy = ['llvm-symbolizer', 'sancov']
-    llvm_bin_dir = self.m.path['checkout'].join('third_party', 'llvm-build',
-                                                'Release+Asserts', 'bin')
+    llvm_bin_dir = self.m.path.checkout_dir.join('third_party', 'llvm-build',
+                                                 'Release+Asserts', 'bin')
     ext = '.exe' if self.m.platform.is_win else ''
 
     for tool in llvm_tools_to_copy:
@@ -282,8 +282,8 @@ class ArchiveApi(recipe_api.RecipeApi):
         pass
 
     if not self.m.platform.is_win:
-      llvm_lib_dir = self.m.path['checkout'].join('third_party', 'llvm-build',
-                                                  'Release+Asserts', 'lib')
+      llvm_lib_dir = self.m.path.checkout_dir.join('third_party', 'llvm-build',
+                                                   'Release+Asserts', 'lib')
       libstdcplusplus_lib = 'libstdc++.so.6'
       libstdcplusplus_lib_src = self.m.path.join(llvm_lib_dir,
                                                  libstdcplusplus_lib)
@@ -387,7 +387,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     """Returns a step invoking extract_build.py to download and unzip
        a Chromium build."""
     if not src_dir:
-      src_dir = self.m.path['checkout']
+      src_dir = self.m.path.checkout_dir
     args = [
         '--gsutil-py-path',
         self.m.depot_tools.gsutil_py_path,

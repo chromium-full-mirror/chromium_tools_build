@@ -55,9 +55,9 @@ def RunSteps(api):
   api.chromium_checkout.ensure_checkout()
   api.chromium.runhooks()
   api.webrtc.run_mb(builder_id)
-  with api.context(cwd=api.path['checkout']):
+  with api.context(cwd=api.path.checkout_dir):
     args = [
-        '--root=%s' % str(api.path['checkout']),
+        '--root=%s' % str(api.path.checkout_dir),
         'refs',
         str(api.chromium.output_dir),
         '--all',

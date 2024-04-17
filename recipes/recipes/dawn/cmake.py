@@ -48,10 +48,10 @@ DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
 def _checkout_steps(api):
-  '''Checks out Dawn. After this, api.path['checkout'] returns the dawn root.'''
+  '''Checks out Dawn. After this, api.path.checkout_dir returns the dawn root.'''
   # Check out dawn into an un-cached directory in 'cache'. This seems weird,
-  # but it allows us to use api.path['cache'] as a common root for RBE.
-  solution_path = api.path['cache'].join('uncached')
+  # but it allows us to use api.path.cache_dir as a common root for RBE.
+  solution_path = api.path.cache_dir.join('uncached')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
@@ -76,7 +76,7 @@ def _checkout_steps(api):
 
 def _install_clang(api):
   # 'builder' directory is implicitly cached, so cache clang there
-  install_path = api.path['cache'].join('builder')
+  install_path = api.path.cache_dir.join('builder')
 
   env_paths = []
   # Install binaries to named cache directory mentioned in luci builder
@@ -117,7 +117,7 @@ def windows_sdk(api):
     with api.step.nest('Read Windows SDK environment'):
       toolchain_data = api.json.read(
           'read build/win_toolchain.json',
-          api.path['checkout'].join('build', 'win_toolchain.json'),
+          api.path.checkout_dir.join('build', 'win_toolchain.json'),
           step_test_data=lambda: api.json.test_api.output({
               'win_sdk':
                   'win_toolchain\\vs_files\\version_hash\\Windows Kits\\10',
@@ -212,7 +212,7 @@ def _rbe_exec_root(api):
   # We make sure to checkout Dawn and any required build inputs (e.g. clang)
   # under the cache directory (note: note everything under it is actually
   # cached).
-  return api.path['cache']
+  return api.path.cache_dir
 
 
 @dataclass
@@ -258,7 +258,7 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
   # TODO(amaiorano): Assert that host cpu is same as target cpu
   _ = fixed_args.target_cpu
 
-  checkout = api.path['checkout']
+  checkout = api.path.checkout_dir
 
   def cmake_bool_arg(v: bool):
     return "1" if v else "0"
@@ -369,7 +369,7 @@ def RunSteps(api,
   env = {}
   if api.platform.is_win:
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path['cache'].join('win_toolchain'))
+        api.path.cache_dir.join('win_toolchain'))
   if asan:
     # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.
     # See https://github.com/google/sanitizers/wiki/AddressSanitizerContainerOverflow#false-positives
@@ -380,7 +380,7 @@ def RunSteps(api,
   with api.context(env=env):
     _checkout_steps(api)
 
-    checkout = api.path['checkout']
+    checkout = api.path.checkout_dir
     env_paths = []
     if clang and not api.platform.is_mac:
       env_paths = _install_clang(api)

@@ -39,14 +39,14 @@ def RunSteps(api, properties):
       'GIT_HTTP_LOW_SPEED_TIME': '0',
   }
 
-  checkout_dir = api.path['cache'].join('builder')
+  checkout_dir = api.path.cache_dir.join('builder')
   if not api.file.glob_paths('Check for existing checkout', checkout_dir,
                              'src'):
     with api.context(cwd=checkout_dir, env=env):
       api.git('clone', '--progress', properties.source_repo, 'src')
 
-  api.path['checkout'] = checkout_dir.join('src')
-  with api.context(cwd=api.path['checkout'], env=env):
+  api.path.checkout_dir = checkout_dir.join('src')
+  with api.context(cwd=api.path.checkout_dir, env=env):
     # Discard any commits from previous runs.
     api.git('reset', '--hard', 'HEAD')
 

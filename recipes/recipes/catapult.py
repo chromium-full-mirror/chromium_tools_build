@@ -41,17 +41,21 @@ def _RemoteSteps(api, app_engine_sdk_path, properties):
   Use the test_checkout_path property in local tests to run against a local
   copy of catapult_build/build_steps.py.
   """
-  base = api.properties.get('test_checkout_path', str(api.path['checkout']))
+  base = api.properties.get('test_checkout_path', str(api.path.checkout_dir))
   script = api.path.join(base, 'catapult_build', 'build_steps.py')
   platform = properties.platform
   dashboard_only = properties.dashboard_only
   perf_issue_service_only = properties.perf_issue_service_only
   args = [
       script,
-      '--api-path-checkout', api.path['checkout'],
-      '--app-engine-sdk-pythonpath', app_engine_sdk_path,
-      '--platform', platform or api.platform.name,
-      '--platform_arch', api.platform.arch,
+      '--api-path-checkout',
+      api.path.checkout_dir,
+      '--app-engine-sdk-pythonpath',
+      app_engine_sdk_path,
+      '--platform',
+      platform or api.platform.name,
+      '--platform_arch',
+      api.platform.arch,
   ]
   if dashboard_only:
     args.append('--dashboard_only')
@@ -65,12 +69,12 @@ def RunSteps(api, properties):
 
   # The dashboard unit tests depend on Python modules in the App Engine SDK,
   # and the unit test runner script assumes that the SDK is in PYTHONPATH.
-  sdk_path = api.path['start_dir'].join('google_appengine')
+  sdk_path = api.path.start_dir.join('google_appengine')
   api.gae_sdk.fetch(api.gae_sdk.PLAT_PYTHON, sdk_path)
   app_engine_sdk_path = api.path.pathsep.join([
       '%(PYTHONPATH)s', str(sdk_path)])
 
-  packages_root = api.path['start_dir'].join('packages')
+  packages_root = api.path.start_dir.join('packages')
 
   # Install the protoc package.
   if (api.platform.name == 'mac' and api.platform.arch == 'arm'):

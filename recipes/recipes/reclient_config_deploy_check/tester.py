@@ -39,12 +39,12 @@ def RunSteps(api, properties):
   s.custom_vars['checkout_nacl'] = True  # to verify nacl config
   gclient_config.got_revision_mapping[s.name] = 'got_revision'
 
-  with api.context(cwd=api.path['cache'].join('builder')):
+  with api.context(cwd=api.path.cache_dir.join('builder')):
     update_result = api.bot_update.ensure_checkout(
         patch=True, gclient_config=gclient_config)
 
-  repo_path = api.path['cache'].join('builder',
-                                     update_result.json.output['root'])
+  repo_path = api.path.cache_dir.join('builder',
+                                      update_result.json.output['root'])
 
   bad_reclient_configs = []
   with api.context(cwd=repo_path):

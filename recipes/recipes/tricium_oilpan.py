@@ -156,9 +156,9 @@ def GenTests(api):
     ], api.empty_test_data())
 
     if affected_files:
-      test_data += api.path.exists(
-          *
-          [api.path['cache'].join('builder', 'src', x) for x in affected_files])
+      test_data += api.path.exists(*[
+          api.path.cache_dir.join('builder', 'src', x) for x in affected_files
+      ])
       test_data += api.step_data(
           'git diff to analyze patch',
           api.raw_io.stream_output('\n'.join(affected_files)))

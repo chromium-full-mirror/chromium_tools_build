@@ -24,7 +24,7 @@ def RunSteps(api):
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   kwargs = {}
   if api.properties.get('parse_gtest_output'):

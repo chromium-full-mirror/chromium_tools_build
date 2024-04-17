@@ -429,7 +429,7 @@ def RunSteps(api):
   api.chromium.runhooks()
   api.chromium.mb_gen(builder_id)
 
-  with api.context(cwd=api.path['checkout'], env=api.chromium.get_env()):
+  with api.context(cwd=api.path.checkout_dir, env=api.chromium.get_env()):
     all_fuzzers = gn_refs(api, 'calculate all_fuzzers',
                           '//testing/libfuzzer:fuzzing_engine')
     if bot_config.v8_targets_only:

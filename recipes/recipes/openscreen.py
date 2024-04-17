@@ -65,7 +65,7 @@ class RepositoryPaths:
         api (recipe_api.RecipeApi): API generated from recipe dependencies.
     """
     self.api = api
-    self.checkout_path = api.path['checkout']
+    self.checkout_path = api.path.checkout_dir
     self.output_path = self.checkout_path.join('out', BUILD_CONFIG)
     self.unit_test_binary_path = self.output_path.join(UNIT_TEST_BINARY_NAME)
     self.e2e_test_binary_path = self.output_path.join(E2E_TEST_BINARY_NAME)

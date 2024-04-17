@@ -109,7 +109,7 @@ def GenTests(api):
       generate_properties(
           runtime_properties={'is_experimental': True},
           local_checkout_dir='[CACHE]/hi'),
-      api.path.exists(api.path['cache'].join('hi', '.gclient')),
+      api.path.exists(api.path.cache_dir.join('hi', '.gclient')),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -50,7 +50,7 @@ def RunSteps(api, properties):
 
   results = []
   for script_invocation in properties.scripts:
-    with api.context(cwd=api.path['checkout']):
+    with api.context(cwd=api.path.checkout_dir):
       results.append(_RunScript(api, script_invocation))
 
   for result in results:
@@ -58,7 +58,7 @@ def RunSteps(api, properties):
 
 
 def _RunScript(api, script_invocation):
-  cmd = [api.path['checkout'].join(script_invocation.script)]
+  cmd = [api.path.checkout_dir.join(script_invocation.script)]
   cmd.extend(script_invocation.args)
   return api.step(
       name=script_invocation.step_name, cmd=cmd, raise_on_failure=False)

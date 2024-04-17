@@ -111,7 +111,7 @@ class SisoApi(recipe_api.RecipeApi):
     if len(self._props.experiments) > 0:
       env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     try:
-      with self.m.context(env=env, cwd=self.m.path['checkout']):
+      with self.m.context(env=env, cwd=self.m.path.checkout_dir):
         step_result = self.m.step(name, cmd, **kwargs)
         if post_step_func:
           post_step_func(step_result)
@@ -189,4 +189,4 @@ class SisoApi(recipe_api.RecipeApi):
 
   @property
   def siso_path(self):
-    return self.m.path['checkout'].join('third_party', 'siso', 'siso')
+    return self.m.path.checkout_dir.join('third_party', 'siso', 'siso')

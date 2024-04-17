@@ -24,7 +24,7 @@ def RunSteps(api):
       })
 
   api.symupload(
-      api.path['tmp_base'],
+      api.path.tmp_base_dir,
       experimental=api.properties.get('experimental'),
       custom_vars=api.properties.get('custom_vars'))
 
@@ -40,7 +40,7 @@ def GenTests(api):
   yield api.test(
       'basic_win',
       api.properties(target_platform='win', host_platform='win'),
-      api.path.exists(api.path['tmp_base'].join('symupload.exe')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload.exe')),
       api.symupload(input_properties),
   )
 
@@ -57,14 +57,14 @@ def GenTests(api):
                   'C:\\src\\chromium\\src\\win_toolchain\\20d5f2553f\\sys32',
               ],
           })),
-      api.path.exists(api.path['tmp_base'].join('symupload.exe')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload.exe')),
       api.symupload(input_properties),
   )
 
   yield api.test(
       'basic_linux/mac',
       api.properties(target_platform='mac', host_platform='mac'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties),
       api.post_process(post_process.DropExpectation),
   )
@@ -90,7 +90,7 @@ def GenTests(api):
       'experimental',
       api.properties(
           target_platform='linux', host_platform='linux', experimental=True),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties),
       api.post_process(post_process.DoesNotRun, 'symupload.symupload'),
       api.post_process(post_process.DoesNotRun, 'symupload.symupload_v2'),
@@ -110,7 +110,7 @@ def GenTests(api):
   yield api.test(
       'win_symupload_v2',
       api.properties(target_platform='win', host_platform='win'),
-      api.path.exists(api.path['tmp_base'].join('symupload.exe')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload.exe')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.MustRun, 'symupload.symupload_v2'),
       api.post_process(post_process.StepCommandContains,
@@ -124,7 +124,7 @@ def GenTests(api):
   yield api.test(
       'linux/mac_symupload_v2',
       api.properties(target_platform='linux', host_platform='linux'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.MustRun, 'symupload.symupload_v2'),
       api.post_process(post_process.StepCommandContains,
@@ -138,7 +138,7 @@ def GenTests(api):
   yield api.test(
       'mac_symupload_v2',
       api.properties(target_platform='mac', host_platform='mac'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.MustRun, 'symupload.symupload_v2'),
       api.post_process(post_process.StepCommandContains,
@@ -151,7 +151,7 @@ def GenTests(api):
   yield api.test(
       'check_file_glob_abs_path',
       api.properties(target_platform='linux', host_platform='linux'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.StepCommandContains,
                        'symupload.symupload_v2', [
@@ -165,7 +165,7 @@ def GenTests(api):
   yield api.test(
       'retry_symupload_v2_failure',
       api.properties(target_platform='linux', host_platform='linux'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties_v2),
       api.step_data('symupload.symupload_v2', retcode=1),
       # Check if there is a second run
@@ -181,7 +181,7 @@ def GenTests(api):
   yield api.test(
       'retry_symupload_v2_success',
       api.properties(target_platform='linux', host_platform='linux'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties_v2),
       api.step_data('symupload.symupload_v2', retcode=1),
       api.step_data('symupload.symupload_v2 (2)', retcode=1),
@@ -199,7 +199,7 @@ def GenTests(api):
   yield api.test(
       'linux/mac_symupload_v2_missing_kms_key',
       api.properties(target_platform='linux', host_platform='linux'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.StepFailure, 'symupload'),
       api.expect_status('FAILURE'),
@@ -218,10 +218,10 @@ def GenTests(api):
       'linux_symupload_v2_config_file',
       api.properties(target_platform='linux', host_platform='linux'),
       api.path.exists(
-          api.path['tmp_base'].join('symupload'),
-          api.path['cache'].join('builder', 'src-internal', 'infra',
-                                 'official_configs', 'bling',
-                                 'symupload_configs.json')),
+          api.path.tmp_base_dir.join('symupload'),
+          api.path.cache_dir.join('builder', 'src-internal', 'infra',
+                                  'official_configs', 'bling',
+                                  'symupload_configs.json')),
       api.symupload(input_properties_file),
       api.post_process(post_process.MustRun, 'symupload.symupload_v2'),
       api.post_process(post_process.StepCommandContains,
@@ -253,7 +253,7 @@ def GenTests(api):
               'kms_key_path': 'some/path',
               'kms_key_basename': 'bar'
           }),
-      api.path.exists(api.path['tmp_base'].join('symupload.exe')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload.exe')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.StepCommandContains,
                        'symupload.write encrypted api key', [
@@ -290,7 +290,7 @@ def GenTests(api):
               'base64_api_key': encoded_api_key,
               'kms_key_path': 'some/path',
           }),
-      api.path.exists(api.path['tmp_base'].join('symupload.exe')),
+      api.path.exists(api.path.tmp_base_dir.join('symupload.exe')),
       api.symupload(input_properties_v2),
       api.post_process(post_process.MustRun,
                        'symupload.Unresolved placeholder'),

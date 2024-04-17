@@ -32,7 +32,7 @@ warmed_file_name = 'warmed.txt'
 
 def RunSteps(api, properties):
   with api.chromium.chromium_layout():
-    cache_dir = api.path['cache'].join('builder')
+    cache_dir = api.path.cache_dir.join('builder')
     api.file.rmglob('delete warmed.txt', cache_dir, warmed_file_name)
 
     builder_id = chromium.BuilderId.create_for_group(

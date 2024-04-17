@@ -473,7 +473,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       return None, None
 
     version = self.m.chromium.get_version_from_file(
-        self.m.path['checkout'].join(version_file))
+        self.m.path.checkout_dir.join(version_file))
 
     chromium_config = self.m.chromium.c
     arch_id = chromium_config.TARGET_ARCH, chromium_config.TARGET_BITS
@@ -737,7 +737,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return self.set_swarming_test_execution_info(
         tests,
         command_lines,
-        self.m.path.relpath(build_dir, self.m.path['checkout']),
+        self.m.path.relpath(build_dir, self.m.path.checkout_dir),
         expose_to_properties=builder_config.expose_trigger_properties)
 
   def set_swarming_test_execution_info(self,
@@ -1161,7 +1161,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       if ('ssci.experimental' in self.m.buildbucket.build.input.experiments):
         with self.m.context(env=self.m.chromium.get_env()):
           self.m.ssci.run(
-              src_dir=self.m.path['checkout'],
+              src_dir=self.m.path.checkout_dir,
               build_dir=self.m.chromium.output_dir,
               chrome_version=self._get_chrome_version())
 
@@ -1269,7 +1269,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
       self.m.bot_update.deapply_patch(bot_update_step)
 
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       self.m.chromium.runhooks(name='runhooks (without patch)')
 
   def build_and_isolate_failing_tests(self,
@@ -1513,7 +1513,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     args.extend(['--build-config-fs', self.m.chromium.c.build_config_fs])
 
     paths = {
-        'checkout': self.m.path['checkout'],
+        'checkout': self.m.path.checkout_dir,
     }
     args.extend(['--paths', self.m.json.input(paths)])
 
@@ -1559,8 +1559,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         name='get compile targets for scripts',
         cmd=[
             'vpython3',
-            self.m.path['checkout'].join('testing', 'scripts',
-                                         'get_compile_targets.py'),
+            self.m.path.checkout_dir.join('testing', 'scripts',
+                                          'get_compile_targets.py'),
             '--output',
             self.m.json.output(),
             '--',
@@ -1862,11 +1862,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return package_transfer_reasons
 
   def archive_command_lines(self, command_lines):
-    command_lines_file = self.m.path['cleanup'].join('command_lines.json')
+    command_lines_file = self.m.path.cleanup_dir.join('command_lines.json')
     self.m.file.write_json('write command lines', command_lines_file,
                            command_lines)
     return self.m.cas.archive('archive command lines to RBE-CAS',
-                              self.m.path['cleanup'], command_lines_file)
+                              self.m.path.cleanup_dir, command_lines_file)
 
   def _archive_test_trigger_deps_digest(self):
     # Runtime files are listed relative to output dir, we upload to CAS relative
@@ -1877,7 +1877,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     #
     # Runtime files (TEST_TRIGGER_AND_COLLECT_DEPS_TARGET) are defined here:
     # https://source.chromium.org/chromium/chromium/src/+/main:infra/orchestrator/BUILD.gn
-    base_dir = self.m.path['checkout']
+    base_dir = self.m.path.checkout_dir
     output_dir = self.m.chromium.output_dir
     runtime_deps_file = self.m.chromium.output_dir.join(
         TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE)
@@ -1913,8 +1913,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def _download_command_lines(self, command_lines_digest):
     self.m.cas.download('download command lines', command_lines_digest,
-                        self.m.path['cleanup'])
-    command_lines_file = self.m.path['cleanup'].join('command_lines.json')
+                        self.m.path.cleanup_dir)
+    command_lines_file = self.m.path.cleanup_dir.join('command_lines.json')
     return self.m.file.read_json(
         'read command lines', command_lines_file, test_data={})
 
@@ -1954,7 +1954,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           ignore_input_commit=True,
           set_output_commit=False)
 
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       # NOTE: "without patch" phrase is used to keep consistency with the API
       self.m.chromium.runhooks(name='runhooks (without patch)')
 
@@ -2260,7 +2260,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       analyze_names = ['chromium'] + list(builder_config.analyze_names)
       mb_config_path = (
           self.m.chromium.c.project_generator.config_path or
-          self.m.path['checkout'].join('tools', 'mb', 'mb_config.pyl'))
+          self.m.path.checkout_dir.join('tools', 'mb', 'mb_config.pyl'))
       analyze_names.append(self.m.chromium.c.TARGET_PLATFORM)
       additional_exclusions = {
           exclusion: 'builder config additional exclusions'
@@ -2573,7 +2573,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           isolate file.
     """
     with self.m.step.nest('collect runtime deps for %s' % target) as step:
-      src_dir = self.m.path['checkout']
+      src_dir = self.m.path.checkout_dir
       build_dir = self.m.chromium.output_dir
       abs_runtime_deps = build_dir.join(target + '.isolate')
       if not self.m.path.exists(abs_runtime_deps):
@@ -2606,10 +2606,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       runtime_deps):
 
     def is_dir(rel_path):
-      return self.m.path.isdir(self.m.path['checkout'].join(rel_path))
+      return self.m.path.isdir(self.m.path.checkout_dir.join(rel_path))
 
     def is_file(rel_path):
-      return self.m.path.isfile(self.m.path['checkout'].join(rel_path))
+      return self.m.path.isfile(self.m.path.checkout_dir.join(rel_path))
 
     with self.m.step.nest('upload skylab runtime deps for %s' % target):
       #TODO(crbug/1276489): Remove below condition once we get rid of the

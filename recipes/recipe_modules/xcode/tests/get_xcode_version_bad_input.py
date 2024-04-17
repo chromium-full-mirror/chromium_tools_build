@@ -18,7 +18,7 @@ DEPS = [
 
 def RunSteps(api):
   actual_version = api.xcode.get_xcode_version(
-      api.path['cache'].join('builder'))
+      api.path.cache_dir.join('builder'))
   api.assertions.assertIsNone(actual_version)
 
 

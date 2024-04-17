@@ -11,7 +11,7 @@ DEPS = [
 ]
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.chromium_android.configure_from_properties('base_config')
   api.chromium_android.provision_devices()
 

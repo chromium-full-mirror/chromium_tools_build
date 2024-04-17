@@ -161,7 +161,7 @@ def RunSteps(api):
        "(got [] that is a {}).".format(int, str, Path, Placeholder, list)))
 
   # test that all valid argument types can be passed
-  args = [0, 'x', api.path['start_dir'], Placeholder('fake-placeholder')]
+  args = [0, 'x', api.path.start_dir, Placeholder('fake-placeholder')]
   x = CommandArgsTest(args)
   api.assertions.assertEqual(x.args, tuple(args))
 

@@ -44,9 +44,9 @@ class CronetApi(recipe_api.RecipeApi):
     if self.m.chromium.c.project_generator.tool == 'gn':  # pragma: no cover
       assert (self.m.chromium.c.HOST_PLATFORM == 'linux' and
               self.m.chromium.c.HOST_BITS == 64)
-      gn_path = self.m.path['checkout'].join('buildtools', 'linux64', 'gn')
+      gn_path = self.m.path.checkout_dir.join('buildtools', 'linux64', 'gn')
       if not self.m.path.exists(gn_path):
-        gn_path = self.m.path['checkout'].join('third_party', 'gn', 'gn')
+        gn_path = self.m.path.checkout_dir.join('third_party', 'gn', 'gn')
       self.m.chromium.run_gn(use_reclient=use_reclient, gn_path=gn_path)
     elif self.m.chromium.c.project_generator.tool == 'mb':
       self.m.chromium.mb_gen(builder_id, use_reclient=use_reclient)
@@ -63,16 +63,16 @@ class CronetApi(recipe_api.RecipeApi):
     return 'chromium-cronet/%s' % platform
 
   def get_default_cronet_dir(self):
-    return self.m.path['checkout'].join('out',
-                                        self.m.chromium_android.c.BUILD_CONFIG,
-                                        'cronet')
+    return self.m.path.checkout_dir.join('out',
+                                         self.m.chromium_android.c.BUILD_CONFIG,
+                                         'cronet')
 
   def generate_changelist(self, cronetdir=None):
     cronetdir = cronetdir or self.get_default_cronet_dir()
     cmd = [
         'python3',
         self.resource('generate_changelist.py'), "--git_dir",
-        self.m.path['checkout'], "--output_file",
+        self.m.path.checkout_dir, "--output_file",
         cronetdir.join('CHANGELIST')
     ]
     return self.m.step('generate changelist file', cmd)

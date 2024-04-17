@@ -40,7 +40,7 @@ def RunSteps(api):
   # coverage tools, it's probably unnecessary, but preserves the behavior from
   # when this recipe was relying on the config for Linux Builder
   api.gclient.apply_config('use_clang_coverage')
-  with api.context(cwd=api.path['cache'].join('builder')):
+  with api.context(cwd=api.path.cache_dir.join('builder')):
     api.bot_update.ensure_checkout()
   # TODO(gbeaty) If none of the hooks are downloading directories containing
   # DIR_METADATA files, then it shouldn't be necessary to run the hooks as part
@@ -49,11 +49,14 @@ def RunSteps(api):
   api.chromium.runhooks()
 
   api.step('dirmd chromium-update', [
-    api.path['checkout'].join('third_party', 'depot_tools', 'dirmd'),
-    'chromium-update',
-    '-chromium-checkout', api.path['checkout'],
-    '-bucket', DEST_BUCKET,
-    '-bucket-legacy', DEST_BUCKET_LEGACY,
+      api.path.checkout_dir.join('third_party', 'depot_tools', 'dirmd'),
+      'chromium-update',
+      '-chromium-checkout',
+      api.path.checkout_dir,
+      '-bucket',
+      DEST_BUCKET,
+      '-bucket-legacy',
+      DEST_BUCKET_LEGACY,
   ])
 
   # Use a separate command for bq write so that failures here won't affect
@@ -61,10 +64,10 @@ def RunSteps(api):
   # TODO(crbug.com/1285078) merge steps.
   bb_git_commit = api.buildbucket.gitiles_commit
   api.step('dirmd chromium-update bq write', [
-      api.path['checkout'].join('third_party', 'depot_tools', 'dirmd'),
+      api.path.checkout_dir.join('third_party', 'depot_tools', 'dirmd'),
       'chromium-update',
       '-chromium-checkout',
-      api.path['checkout'],
+      api.path.checkout_dir,
       '-bigquery-table',
       DEST_BIGQUERY_TABLE,
       '-git-host',

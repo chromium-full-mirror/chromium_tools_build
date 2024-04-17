@@ -12,7 +12,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   version = api.chromium.get_version()
   api.assertions.assertEqual(version, {

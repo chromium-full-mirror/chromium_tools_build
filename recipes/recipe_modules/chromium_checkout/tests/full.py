@@ -49,11 +49,11 @@ def RunSteps(api, ignore_input_commit, set_output_commit):
   ]
 
   # Verify that checkout_dir can be overridden
-  api.chromium_checkout.checkout_dir = api.path['cleanup']
+  api.chromium_checkout.checkout_dir = api.path.cleanup_dir
   api.assertions.assertEqual(api.chromium_checkout.checkout_dir,
-                             api.path['cleanup'])
+                             api.path.cleanup_dir)
   api.assertions.assertEqual(api.chromium_checkout.src_dir,
-                             api.path['cleanup'].join('src'))
+                             api.path.cleanup_dir.join('src'))
 
 
 def GenTests(api):
@@ -101,7 +101,7 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.platform('win', 64),
       api.post_check(verify_checkout_dir,
-                     api.path['cache'].join('builder', 'src')),
+                     api.path.cache_dir.join('builder', 'src')),
       api.post_process(StepSuccess, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
@@ -115,7 +115,7 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.platform('linux', 64),
       api.post_check(verify_checkout_dir,
-                     api.path['cache'].join('builder', 'src')),
+                     api.path.cache_dir.join('builder', 'src')),
       api.post_process(DoesNotRun, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
@@ -142,7 +142,7 @@ def GenTests(api):
       api.platform('linux', 64),
       api.properties(ignore_input_commit=True, set_output_commit=False),
       api.post_check(verify_checkout_dir,
-                     api.path['cache'].join('builder', 'src')),
+                     api.path.cache_dir.join('builder', 'src')),
       api.post_process(DoesNotRun, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),

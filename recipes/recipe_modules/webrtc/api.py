@@ -82,7 +82,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     patch_root = self.m.gclient.get_gerrit_patch_root()
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
-        relative_to=patch_root, cwd=self.m.path['checkout'])
+        relative_to=patch_root, cwd=self.m.path.checkout_dir)
 
     # The "all" and "default" rules for gn are different:
     # https://gn.googlesource.com/gn/+/main/docs/reference.md#the-all-and-default-rules
@@ -105,7 +105,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         affected_files,
         test_targets,
         additional_compile_targets=additional_targets,
-        mb_path=self.m.path['checkout'].join('tools_webrtc', 'mb'),
+        mb_path=self.m.path.checkout_dir.join('tools_webrtc', 'mb'),
         phase=phase)
 
     # Some trybots are used to calculate the binary size impact of the current
@@ -125,18 +125,18 @@ class WebRTCApi(recipe_api.RecipeApi):
     with self.m.depot_tools.on_path():
       # Video quality tools
       args_tools = [
-          self.m.path['checkout'].join('tools_webrtc',
-                                       'video_quality_toolchain', 'linux')
+          self.m.path.checkout_dir.join('tools_webrtc',
+                                        'video_quality_toolchain', 'linux')
       ]
-      script_tools = self.m.path['checkout'].join('tools_webrtc',
-                                                  'download_tools.py')
+      script_tools = self.m.path.checkout_dir.join('tools_webrtc',
+                                                   'download_tools.py')
       cmd_tools = ['vpython3', '-u', script_tools] + args_tools
       self.m.step('download video quality tools', cmd_tools)
 
       # AppRTC
       args_apprtc = [
           '--bucket=chromium-webrtc-resources', '--directory',
-          self.m.path['checkout'].join('rtc_tools', 'testing')
+          self.m.path.checkout_dir.join('rtc_tools', 'testing')
       ]
       script_apprtc = self.m.depot_tools.download_from_google_storage_path
       cmd_apprtc = ['vpython3', '-u', script_apprtc] + args_apprtc
@@ -145,8 +145,8 @@ class WebRTCApi(recipe_api.RecipeApi):
       # Golang
       args_golang = [
           '--bucket=chromium-webrtc-resources', '--directory',
-          self.m.path['checkout'].join('rtc_tools', 'testing', 'golang',
-                                       'linux')
+          self.m.path.checkout_dir.join('rtc_tools', 'testing', 'golang',
+                                        'linux')
       ]
       script_golang = self.m.depot_tools.download_from_google_storage_path
       cmd_golang = ['vpython3', '-u', script_golang] + args_golang
@@ -157,7 +157,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
   def setup_code_coverage_module(self):
     """Configure internal constants of the code_coverage module."""
-    checkout_path = self.m.path['checkout']
+    checkout_path = self.m.path.checkout_dir
     self.m.profiles.src_dir = checkout_path
     self.m.code_coverage._use_clang_coverage = True
     self.m.code_coverage.src_dir = checkout_path
@@ -189,7 +189,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         builder_id,
         use_reclient=True,
         phase=phase,
-        mb_path=self.m.path['checkout'].join('tools_webrtc', 'mb'),
+        mb_path=self.m.path.checkout_dir.join('tools_webrtc', 'mb'),
         mb_config_path=mb_config_path,
         isolated_targets=_get_isolated_targets(tests or []))
 
@@ -244,7 +244,7 @@ class WebRTCApi(recipe_api.RecipeApi):
       return self.m.chromium_tests.set_swarming_test_execution_info(
           tests, self.m.chromium_tests.find_swarming_command_lines(''),
           self.m.path.relpath(self.m.chromium.output_dir,
-                              self.m.path['checkout']))
+                              self.m.path.checkout_dir))
 
     # Tester builders only triggers swarming tests built on 'builder' bots
     # so the swarming command line needs to be retrieved from build
@@ -260,7 +260,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         _sanitize_file_name(builder_id.builder),
         _sanitize_file_name(parent_buildername))
 
-    relative_cwd = self.m.path.relpath(output_dir, self.m.path['checkout'])
+    relative_cwd = self.m.path.relpath(output_dir, self.m.path.checkout_dir)
     for test in tests:
       if test.runs_on_swarming:
         command_line = swarming_command_lines.get(test.target_name, [])
@@ -294,8 +294,8 @@ class WebRTCApi(recipe_api.RecipeApi):
     # Build the Android .aar archive and upload it to Google storage (except for
     # trybots). This should only be run on a single bot or the archive will be
     # overwritten (and it's a multi-arch build so one is enough).
-    build_script = self.m.path['checkout'].join('tools_webrtc', 'android',
-                                                'build_aar.py')
+    build_script = self.m.path.checkout_dir.join('tools_webrtc', 'android',
+                                                 'build_aar.py')
     args = ['--verbose']
     if self.m.tryserver.is_tryserver:
       # To benefit from incremental builds for speed.
@@ -303,16 +303,16 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     cmd = ['vpython3', '-u', build_script] + args
 
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       build_step_name = 'build android archive'
-      build_dir = self.m.path.join(self.m.path['checkout'], 'andriod-archive')
+      build_dir = self.m.path.join(self.m.path.checkout_dir, 'andriod-archive')
       cmd += ['--build-dir', build_dir]
       self.build_with_reclient(build_step_name, cmd)
       self.m.file.rmtree('Remove android archive dir', build_dir)
 
     if not self.m.tryserver.is_tryserver and not self.m.runtime.is_experimental:
       self.m.gsutil.upload(
-          self.m.path['checkout'].join('libwebrtc.aar'),
+          self.m.path.checkout_dir.join('libwebrtc.aar'),
           'chromium-webrtc',
           'android_archive/webrtc_android_%s.aar' % self.revision_number,
           args=['-a', 'public-read'],
@@ -322,7 +322,7 @@ class WebRTCApi(recipe_api.RecipeApi):
     # Zip and upload out/{Debug,Release}/apks/AppRTCMobile.apk
     apk_root = self.m.chromium.c.build_dir.join(
         self.m.chromium.c.build_config_fs, 'apks')
-    zip_path = self.m.path['start_dir'].join('AppRTCMobile_apk.zip')
+    zip_path = self.m.path.start_dir.join('AppRTCMobile_apk.zip')
 
     pkg = self.m.zip.make_package(apk_root, zip_path)
     pkg.add_file(apk_root.join('AppRTCMobile.apk'))

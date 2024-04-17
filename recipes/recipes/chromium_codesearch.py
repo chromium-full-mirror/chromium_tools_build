@@ -95,9 +95,10 @@ def generate_compilation_database(api, out_path, compile_commands_json_file,
                                   targets):
   try:
     step_result = api.step('generate compilation database', [
-        'python3', '-u', api.path['checkout'].join(
-            'tools', 'clang', 'scripts', 'generate_compdb.py'), '-p', out_path,
-        '-o', compile_commands_json_file
+        'python3', '-u',
+        api.path.checkout_dir.join('tools', 'clang', 'scripts',
+                                   'generate_compdb.py'), '-p', out_path, '-o',
+        compile_commands_json_file
     ] + list(targets))
   except api.step.StepFailure as e:
     raise e
@@ -105,7 +106,7 @@ def generate_compilation_database(api, out_path, compile_commands_json_file,
 
 
 def generate_gn_compilation_database(api, out_path, targets):
-  with api.context(cwd=api.path['checkout'], env=api.chromium.get_env()):
+  with api.context(cwd=api.path.checkout_dir, env=api.chromium.get_env()):
     export_compile_cmd = '--export-compile-commands'
     if targets:
       export_compile_cmd += '=' + ','.join(targets)
@@ -118,7 +119,7 @@ def generate_gn_compilation_database(api, out_path, targets):
 
 
 def generate_gn_target_list(api, out_path, gn_targets_json_file, targets=None):
-  with api.context(cwd=api.path['checkout'], env=api.chromium.get_env()):
+  with api.context(cwd=api.path.checkout_dir, env=api.chromium.get_env()):
     targets_cmd = '*'
     if targets:
       targets_cmd = ' '.join(targets)
@@ -158,7 +159,7 @@ def RunSteps(api, properties):
 
   # These values are identical to those in config.py.
   # TODO(crbug.com/1378059): Remove config.py?
-  checkout_path = api.path['cache'].join('builder', 'src')
+  checkout_path = api.path.cache_dir.join('builder', 'src')
   out_path = checkout_path.join('out', gen_repo_out_dir)
   compile_commands_json_file = out_path.join('compile_commands.json')
   gn_targets_json_file = out_path.join('gn_targets.json')
@@ -203,7 +204,7 @@ def RunSteps(api, properties):
   if api.reclient.instance:
     api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
-  checkout_dir = api.path['cache'].join('builder')
+  checkout_dir = api.path.cache_dir.join('builder')
   with api.context(cwd=checkout_dir, env={'PACKFILE_OFFLOADING': 1}):
     update_step = api.bot_update.ensure_checkout(
         root_solution_revision=properties.root_solution_revision)
@@ -213,7 +214,7 @@ def RunSteps(api, properties):
   # a new clang binary and not use the previous one downloaded by
   # api.codesearch.run_clang_tool().
   api.file.rmtree('llvm-build',
-                  api.path['checkout'].join('third_party', 'llvm-build'))
+                  api.path.checkout_dir.join('third_party', 'llvm-build'))
 
   api.chromium.set_config(
       'codesearch',
@@ -229,11 +230,11 @@ def RunSteps(api, properties):
   with api.context(env={'CHROME_HEADLESS': '1'}):
     api.chromium.runhooks(name='runhooks%s' % name_suffix)
 
-  sentinel_path = api.path['cache'].join('builder', 'cr-cs-sentinel')
+  sentinel_path = api.path.cache_dir.join('builder', 'cr-cs-sentinel')
   if api.path.exists(sentinel_path):
     # If sentinel file is present, it means last build failed to compile, so
     # remove out directory since it might be in a bad state.
-    api.file.rmtree('remove out directory', api.path['checkout'].join('out'))
+    api.file.rmtree('remove out directory', api.path.checkout_dir.join('out'))
   else:
     # Cleans up generated files. This is to prevent old generated files from
     # being left in the out directory. Note that this needs to be run *before*
@@ -281,7 +282,7 @@ def RunSteps(api, properties):
   # uploading at all.
   with api.context(
       env={
-          'KYTHE_ROOT_DIRECTORY': api.path['checkout'],
+          'KYTHE_ROOT_DIRECTORY': api.path.checkout_dir,
           'KYTHE_OUTPUT_DIRECTORY': kzip_dir,
           'KYTHE_CORPUS': corpus
       }):
@@ -315,7 +316,7 @@ def RunSteps(api, properties):
   # into this checkout. This may fail due to other builders pushing to the
   # remote repo at the same time, so we retry this 3 times before giving up.
   copy_config = {
-      api.path['checkout'].join('out', gen_repo_out_dir):
+      api.path.checkout_dir.join('out', gen_repo_out_dir):
           api.path.join(gen_repo_out_dir)
   }
   _RunStepWithRetry(
@@ -446,7 +447,7 @@ def GenTests(api):
       _sanitize_nonalpha('codesearch-gen-chromium-linux'),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.path.exists(api.path['cache'].join('builder', 'cr-cs-sentinel')),
+      api.path.exists(api.path.cache_dir.join('builder', 'cr-cs-sentinel')),
   )
 
   yield api.test(

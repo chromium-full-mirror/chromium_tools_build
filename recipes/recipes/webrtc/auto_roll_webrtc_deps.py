@@ -45,7 +45,7 @@ def RunSteps(api):
 
   api.chromium_checkout.ensure_checkout()
 
-  with api.context(cwd=api.path['checkout']):
+  with api.context(cwd=api.path.checkout_dir):
     # TODO(oprypin): Replace with api.service_account.default().get_email()
     # when https://crbug.com/846923 is resolved.
     push_account = 'chromium-webrtc-autoroll@webrtc-ci.iam.gserviceaccount.com'
@@ -87,8 +87,8 @@ def RunSteps(api):
 
     # Run the roll script. It will take care of branch creation, modifying DEPS,
     # uploading etc. It will also delete any previous roll branch.
-    script_path = api.path['checkout'].join(
-        'tools_webrtc', 'autoroller', 'roll_deps.py')
+    script_path = api.path.checkout_dir.join('tools_webrtc', 'autoroller',
+                                             'roll_deps.py')
 
     params = ['--clean', '--verbose']
     if api.runtime.is_experimental:

@@ -32,7 +32,7 @@ def RunSteps(api, properties):
   api.gclient.apply_config('android')
   api.chromium_checkout.ensure_checkout()
 
-  androidx_dir = api.path['checkout'].join('third_party', 'androidx')
+  androidx_dir = api.path.checkout_dir.join('third_party', 'androidx')
   androidx_libs_dir = androidx_dir.join('libs')
 
   api.file.ensure_directory('ensure libs dir exists', androidx_libs_dir)
@@ -83,7 +83,7 @@ def RunSteps(api, properties):
 
 
 def GenTests(api):
-  androidx_dir = api.path['checkout'].join('third_party', 'androidx')
+  androidx_dir = api.path.checkout_dir.join('third_party', 'androidx')
   androidx_sample_lib = androidx_dir.join('libs', 'androidx_dino')
 
   yield api.test(

@@ -35,7 +35,7 @@ def RunSteps(api):
   generator = generators.Generator(
       api.chromium_tests,
       update_step.presentation.properties,
-      api.path['checkout'],
+      api.path.checkout_dir,
       precommit_details=precommit_details,
   )
   test_args = generator._get_args_for_test(test_spec)

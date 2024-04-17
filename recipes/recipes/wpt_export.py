@@ -34,15 +34,15 @@ KMS_CRYPTO_KEY = (
 def RunSteps(api):
   api.gclient.set_config('chromium')
   api.bot_update.ensure_checkout()
-  creds = api.path['cleanup'].join(CREDS_NAME + '.json')
+  creds = api.path.cleanup_dir.join(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
       KMS_CRYPTO_KEY,
       api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
       creds,
   )
 
-  script = api.path['checkout'].join('third_party', 'blink', 'tools',
-                                     'wpt_export.py')
+  script = api.path.checkout_dir.join('third_party', 'blink', 'tools',
+                                      'wpt_export.py')
   summary_path = api.path.mkstemp()
   args = [
       '--credentials-json',

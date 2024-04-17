@@ -199,7 +199,7 @@ def GenTests(api):
   # Simulate running on a Monday
   current_timestamp = int(datetime.datetime(2023, 7, 3).timestamp())
 
-  autoshard_exceptions_json_path = api.path['cache'].join(
+  autoshard_exceptions_json_path = api.path.cache_dir.join(
       'builder', 'src', 'testing', 'buildbot', 'autoshard_exceptions.json')
 
   yield api.test(
@@ -417,9 +417,9 @@ def GenTests(api):
   yield api.test(
       'new autoshard exceptions path',
       api.time.seed(current_timestamp),
-      api.path.exists(api.path['cache'].join('builder', 'src', 'infra',
-                                             'config', 'targets',
-                                             'autoshard_exceptions.json')),
+      api.path.exists(
+          api.path.cache_dir.join('builder', 'src', 'infra', 'config',
+                                  'targets', 'autoshard_exceptions.json')),
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{

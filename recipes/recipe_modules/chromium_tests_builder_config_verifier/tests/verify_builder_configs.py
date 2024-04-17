@@ -28,8 +28,8 @@ _PROPS_DIR = 'props-files'
 
 def RunSteps(api, dbs):
   # We need some fake path to use as the repo path
-  repo_path = api.path['start_dir']
-  api.path['checkout'] = repo_path
+  repo_path = api.path.start_dir
+  api.path.checkout_dir = repo_path
 
   return api.chromium_tests_builder_config_verifier.verify_builder_configs(
       repo_path,

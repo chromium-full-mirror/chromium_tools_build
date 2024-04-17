@@ -145,10 +145,10 @@ def GenTests(api):
     commit_message += '\nTriciumTest'
 
     existing_files = [
-        api.path['cache'].join('builder', 'src', x) for x in affected_files
+        api.path.cache_dir.join('builder', 'src', x) for x in affected_files
     ]
-    existing_files.append(api.path['cache'].join('builder', 'src',
-                                                 *_clang_tidy_path))
+    existing_files.append(
+        api.path.cache_dir.join('builder', 'src', *_clang_tidy_path))
     return sum([
         api.chromium.try_build(
             builder_group=builder_group,

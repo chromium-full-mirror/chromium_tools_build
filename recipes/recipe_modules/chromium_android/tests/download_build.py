@@ -16,7 +16,7 @@ DEPS = [
 
 def RunSteps(api):
   api.gclient.set_config('chromium')
-  # Sets api.path['checkout'].
+  # Sets api.path.checkout_dir.
   api.bot_update.ensure_checkout()
   globs = api.properties.get('globs')
   # properties convert list to tuples.
@@ -29,7 +29,7 @@ def RunSteps(api):
 def GenTests(api):
   def check_args(check, step_odict, expected_cwd, expected_args):
     step_name = 'unzip_build_product'
-    expected_cwd = expected_cwd or api.path['checkout']
+    expected_cwd = expected_cwd or api.path.checkout_dir
     step = step_odict.get(step_name)
     check('No step named "%s"' % step_name, step)
 
@@ -47,7 +47,7 @@ def GenTests(api):
       api.post_process(check_args, expected_cwd=None, expected_args=first_args),
       api.post_process(post_process.DropExpectation),
   )
-  mock_extract_path = api.path['tmp_base'].join('bar')
+  mock_extract_path = api.path.tmp_base_dir.join('bar')
   yield api.test(
       'with extract_path',
       api.properties(extract_path=mock_extract_path),

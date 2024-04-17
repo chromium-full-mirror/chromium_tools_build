@@ -12,7 +12,7 @@ DEPS = [
 
 def RunSteps(api):
   api.gn.clean(
-      api.path['cache'] / 'builder' / 'src' / 'out' / 'Release',
+      api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
       step_name='foobar')
 
 

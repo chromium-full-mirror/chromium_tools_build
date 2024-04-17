@@ -15,7 +15,7 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.chromium_android.upload_build('test-bucket', 'test/path')
 
 

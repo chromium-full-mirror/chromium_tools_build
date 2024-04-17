@@ -80,7 +80,7 @@ def RunSteps(api, properties):
   # Set the config on the gclient module rather than just making one and passing
   # it in because deapply_patch assumes that the gclient module's config is set
   api.gclient.set_config('chromium')
-  checkout_root = api.path['cache'].join('builder')
+  checkout_root = api.path.cache_dir.join('builder')
   with api.context(cwd=checkout_root):
     update_result = api.bot_update.ensure_checkout(patch=True)
 
@@ -423,9 +423,9 @@ def GenTests(api):
         )
       if with_targets_spec_directory:
         if with_properties_file_without_patch:
-          t += api.path.exists(api.path['cache'].join('builder/src',
-                                                      builder_dir,
-                                                      'properties.json'))
+          t += api.path.exists(
+              api.path.cache_dir.join('builder/src', builder_dir,
+                                      'properties.json'))
           if with_targets_spec_directory_without_patch:
             ctbc_prop = ctbc_prop.with_targets_spec_directory(
                 f'{builder_dir}/targets')

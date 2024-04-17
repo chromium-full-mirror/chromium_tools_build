@@ -22,7 +22,7 @@ DEPS = [
 def RunSteps(api):
   # Sync and pull in everything.
   api.gclient.set_config('boringssl')
-  cache_dir = api.path['cache'].join('builder')
+  cache_dir = api.path.cache_dir.join('builder')
   with api.context(cwd=cache_dir):
     api.bot_update.ensure_checkout()
     api.gclient.runhooks()

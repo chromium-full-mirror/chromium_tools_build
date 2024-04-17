@@ -34,10 +34,10 @@ def RunSteps(api, properties):
   api.gclient.apply_config('android')
   api.chromium_checkout.ensure_checkout()
 
-  sdk_manager = api.path['checkout'].join('third_party', 'android_sdk',
-                                          'public', 'cmdline-tools', 'latest',
-                                          'bin', 'sdkmanager')
-  jdk_path = api.path['checkout'].join('third_party', 'jdk', 'current')
+  sdk_manager = api.path.checkout_dir.join('third_party', 'android_sdk',
+                                           'public', 'cmdline-tools', 'latest',
+                                           'bin', 'sdkmanager')
+  jdk_path = api.path.checkout_dir.join('third_party', 'jdk', 'current')
 
   if not api.path.exists(sdk_manager):
     summary_markdown = (
@@ -85,7 +85,7 @@ def RunSteps(api, properties):
       }
 
   for package in properties.packages:
-    cipd_yaml = api.path['checkout'].join(package.cipd_yaml)
+    cipd_yaml = api.path.checkout_dir.join(package.cipd_yaml)
     if not api.path.exists(cipd_yaml):
       summary_markdown = (
           'Unable to find yaml file for %s at path `%s`' % (
@@ -189,11 +189,11 @@ def GenTests(api):
           builder='android-sdk-packager'),
       emulator_package_properties,
       api.path.exists(
-          api.path['checkout'].join('third_party', 'android_sdk', 'public',
-                                    'cmdline-tools', 'latest', 'bin',
-                                    'sdkmanager'),
-          api.path['checkout'].join('third_party', 'android_sdk', 'public',
-                                    'emulator.yaml')),
+          api.path.checkout_dir.join('third_party', 'android_sdk', 'public',
+                                     'cmdline-tools', 'latest', 'bin',
+                                     'sdkmanager'),
+          api.path.checkout_dir.join('third_party', 'android_sdk', 'public',
+                                     'emulator.yaml')),
       package_version_steps(),
       api.post_process(post_process.MustRun,
                        'emulator in STABLE channel.install'),
@@ -224,9 +224,10 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-sdk-packager'),
       emulator_package_properties,
-      api.path.exists(api.path['checkout'].join('third_party', 'android_sdk',
-                                                'public', 'cmdline-tools',
-                                                'latest', 'bin', 'sdkmanager')),
+      api.path.exists(
+          api.path.checkout_dir.join('third_party', 'android_sdk', 'public',
+                                     'cmdline-tools', 'latest', 'bin',
+                                     'sdkmanager')),
       api.override_step_data(
           'package versions in STABLE channel.list',
           stdout=api.raw_io.output_text(
@@ -246,9 +247,10 @@ def GenTests(api):
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-sdk-packager'),
       emulator_package_properties,
-      api.path.exists(api.path['checkout'].join('third_party', 'android_sdk',
-                                                'public', 'cmdline-tools',
-                                                'latest', 'bin', 'sdkmanager')),
+      api.path.exists(
+          api.path.checkout_dir.join('third_party', 'android_sdk', 'public',
+                                     'cmdline-tools', 'latest', 'bin',
+                                     'sdkmanager')),
       package_version_steps(),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(post_process.ResultReasonRE, 'Unable to find yaml file'),

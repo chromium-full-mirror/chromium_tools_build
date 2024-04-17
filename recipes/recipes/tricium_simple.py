@@ -71,7 +71,7 @@ def GenTests(api):
 
   def test_data(affected_files):
     existing_files = [
-        api.path['cache'].join('builder', 'src', x) for x in affected_files
+        api.path.cache_dir.join('builder', 'src', x) for x in affected_files
     ]
     return sum([
         api.chromium.try_build(

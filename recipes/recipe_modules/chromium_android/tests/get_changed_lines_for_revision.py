@@ -12,7 +12,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.chromium_android.get_changed_lines_for_revision()
 
 

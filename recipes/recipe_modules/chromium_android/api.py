@@ -21,7 +21,7 @@ class AndroidApi(recipe_api.RecipeApi):
   def get_config_defaults(self):
     return {
         'REVISION': self.m.buildbucket.gitiles_commit.id,
-        'CHECKOUT_PATH': self.m.path['checkout'],
+        'CHECKOUT_PATH': self.m.path.checkout_dir,
     }
 
   @property
@@ -32,7 +32,7 @@ class AndroidApi(recipe_api.RecipeApi):
 
   @property
   def out_path(self):
-    return self.m.path['checkout'].join('out')
+    return self.m.path.checkout_dir.join('out')
 
   @property
   def known_devices_file(self):
@@ -121,7 +121,7 @@ class AndroidApi(recipe_api.RecipeApi):
     # TODO(sivachandra): Manufacture gclient spec such that it contains "src"
     # solution + repo_name solution. Then checkout will be automatically
     # correctly set by gclient.checkout
-    self.m.path['checkout'] = self.m.path['start_dir'].join('src')
+    self.m.path.checkout_dir = self.m.path.start_dir.join('src')
 
     self.m.gclient.break_locks()
     refs = self.m.properties.get('event.patchSet.ref')
@@ -139,17 +139,17 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def clean_local_files(self):
     target = self.c.BUILD_CONFIG
-    debug_info_dumps = self.m.path['checkout'].join('out', target,
-                                                    'debug_info_dumps')
-    test_logs = self.m.path['checkout'].join('out', target, 'test_logs')
-    build_product = self.m.path['checkout'].join('out', 'build_product.zip')
+    debug_info_dumps = self.m.path.checkout_dir.join('out', target,
+                                                     'debug_info_dumps')
+    test_logs = self.m.path.checkout_dir.join('out', target, 'test_logs')
+    build_product = self.m.path.checkout_dir.join('out', 'build_product.zip')
     cmd = [
         'vpython3',
         self.resource('clean_local_files.py'),
         debug_info_dumps,
         test_logs,
         build_product,
-        self.m.path['checkout'],
+        self.m.path.checkout_dir,
     ]
     self.m.step('clean local files', cmd, infra_step=True)
 
@@ -162,16 +162,16 @@ class AndroidApi(recipe_api.RecipeApi):
     if self.c.REPO_NAME not in repos and self.c.REPO_NAME:
       repos.append(self.c.REPO_NAME)
     self.m.step('tree truth steps', [
-        self.m.path['checkout'].join('build', 'tree_truth.sh'),
-        self.m.path['checkout']
+        self.m.path.checkout_dir.join('build', 'tree_truth.sh'),
+        self.m.path.checkout_dir
     ] + repos)
 
   def upload_build(self, bucket, path):
     archive_name = 'build_product.zip'
 
-    zipfile = self.m.path['checkout'].join('out', archive_name)
+    zipfile = self.m.path.checkout_dir.join('out', archive_name)
 
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       self.make_zip_archive(
           'zip_build_product',
           archive_name,
@@ -192,10 +192,10 @@ class AndroidApi(recipe_api.RecipeApi):
         name='upload_build_product', source=zipfile, bucket=bucket, dest=path)
 
   def download_build(self, bucket, path, extract_path=None, globs=None):
-    zipfile = self.m.path['checkout'].join('out', 'build_product.zip')
+    zipfile = self.m.path.checkout_dir.join('out', 'build_product.zip')
     self.m.gsutil.download(
         name='download_build_product', bucket=bucket, source=path, dest=zipfile)
-    extract_path = extract_path or self.m.path['checkout']
+    extract_path = extract_path or self.m.path.checkout_dir
     globs = globs or []
     with self.m.context(cwd=extract_path):
       self.m.step(
@@ -206,8 +206,8 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def use_devil_adb(self):
     # TODO(crbug.com/1067294): Remove this after resolving.
-    devil_path = self.m.path['checkout'].join('third_party', 'catapult',
-                                              'devil')
+    devil_path = self.m.path.checkout_dir.join('third_party', 'catapult',
+                                               'devil')
     cmd = ['vpython3', self.resource('initialize_devil.py'), devil_path]
     self.m.step('initialize devil', cmd)
     self.m.adb.set_adb_path(
@@ -217,7 +217,7 @@ class AndroidApi(recipe_api.RecipeApi):
     # Creates a sym link to the adb executable in the home dir
     cmd = [
         'vpython3',
-        self.m.path['checkout'].join('build', 'symlink.py'),
+        self.m.path.checkout_dir.join('build', 'symlink.py'),
         '-f',
         self.m.adb.adb_path(),
         self.m.path.join('~', 'adb'),
@@ -240,7 +240,7 @@ class AndroidApi(recipe_api.RecipeApi):
       )
 
   def spawn_device_monitor(self):
-    device_monitor_script = self.m.path['checkout'].join(
+    device_monitor_script = self.m.path.checkout_dir.join(
         'third_party', 'catapult', 'devil', 'devil', 'android', 'tools',
         'device_monitor.py')
     self.m.step(
@@ -318,8 +318,8 @@ class AndroidApi(recipe_api.RecipeApi):
           results = self.m.step(
               'Host Info',
               [
-                  self.m.path['checkout'].join('testing', 'scripts',
-                                               'host_info.py')
+                  self.m.path.checkout_dir.join('testing', 'scripts',
+                                                'host_info.py')
               ] + args,
               infra_step=True,
               step_test_data=lambda: self.m.json.test_api.output({
@@ -377,9 +377,9 @@ class AndroidApi(recipe_api.RecipeApi):
   def device_recovery(self, **kwargs):
     cmd = [
         'vpython3',
-        self.m.path['checkout'].join('third_party', 'catapult', 'devil',
-                                     'devil', 'android', 'tools',
-                                     'device_recovery.py'),
+        self.m.path.checkout_dir.join('third_party', 'catapult', 'devil',
+                                      'devil', 'android', 'tools',
+                                      'device_recovery.py'),
         '--denylist-file',
         self.denylist_file,
         '--known-devices-file',
@@ -412,9 +412,10 @@ class AndroidApi(recipe_api.RecipeApi):
         result = self.m.step(
             'device_status',
             [
-                'vpython3', self.m.path['checkout'].join(
-                    'third_party', 'catapult', 'devil', 'devil', 'android',
-                    'tools', 'device_status.py')
+                'vpython3',
+                self.m.path.checkout_dir.join('third_party', 'catapult',
+                                              'devil', 'devil', 'android',
+                                              'tools', 'device_status.py')
             ] + args,
             step_test_data=lambda: self.m.json.test_api.output([{
                 "battery": {
@@ -508,13 +509,13 @@ class AndroidApi(recipe_api.RecipeApi):
                         emulators=False,
                         **kwargs):
     if self.c and self.c.use_devil_provision:
-      provision_path = self.m.path['checkout'].join('third_party', 'catapult',
-                                                    'devil', 'devil', 'android',
-                                                    'tools',
-                                                    'provision_devices.py')
+      provision_path = self.m.path.checkout_dir.join('third_party', 'catapult',
+                                                     'devil', 'devil',
+                                                     'android', 'tools',
+                                                     'provision_devices.py')
     else:
-      provision_path = self.m.path['checkout'].join('build', 'android',
-                                                    'provision_devices.py')
+      provision_path = self.m.path.checkout_dir.join('build', 'android',
+                                                     'provision_devices.py')
     cmd = [
         'vpython3',
         provision_path,
@@ -553,7 +554,7 @@ class AndroidApi(recipe_api.RecipeApi):
                       keep_data=False,
                       devices=None):
     install_cmd = [
-        self.m.path['checkout'].join('build', 'android', 'adb_install_apk.py'),
+        self.m.path.checkout_dir.join('build', 'android', 'adb_install_apk.py'),
         apk,
         '-v',
         '--denylist-file',
@@ -590,9 +591,9 @@ class AndroidApi(recipe_api.RecipeApi):
     try:
       cmd = [
           'vpython3',
-          self.m.path['checkout'].join('build', 'android', 'pylib', 'results',
-                                       'presentation',
-                                       'test_results_presentation.py'),
+          self.m.path.checkout_dir.join('build', 'android', 'pylib', 'results',
+                                        'presentation',
+                                        'test_results_presentation.py'),
           '--json-file',
           json_results_file,
           '--test-name',
@@ -626,10 +627,11 @@ class AndroidApi(recipe_api.RecipeApi):
     if self.c.logcat_bucket:
       log_path = self.m.chromium.output_dir.join('full_log')
       cmd = [
-          'vpython3', self.m.path['checkout'].join('build', 'android',
-                                                   'adb_logcat_printer.py'),
+          'vpython3',
+          self.m.path.checkout_dir.join('build', 'android',
+                                        'adb_logcat_printer.py'),
           '--output-path', log_path,
-          self.m.path['checkout'].join('out', 'logcat')
+          self.m.path.checkout_dir.join('out', 'logcat')
       ]
       self.m.step('logcat_dump', cmd, infra_step=True)
       args = []
@@ -650,9 +652,9 @@ class AndroidApi(recipe_api.RecipeApi):
           self.repo_resource('recipes', 'tee.py'),
           self.m.chromium.output_dir.join('full_log'),
           '--',
-          self.m.path['checkout'].join('build', 'android',
-                                       'adb_logcat_printer.py'),
-          self.m.path['checkout'].join('out', 'logcat'),
+          self.m.path.checkout_dir.join('build', 'android',
+                                        'adb_logcat_printer.py'),
+          self.m.path.checkout_dir.join('out', 'logcat'),
       ]
       self.m.step('logcat_dump', cmd, infra_step=True)
 
@@ -735,8 +737,8 @@ class AndroidApi(recipe_api.RecipeApi):
     self.m.step('symbolized breakpad crashes', cmd)
 
   def stack_tool_steps(self, force_latest_version=False):
-    build_dir = self.m.path['checkout'].join('out',
-                                             self.m.chromium.c.BUILD_CONFIG)
+    build_dir = self.m.path.checkout_dir.join('out',
+                                              self.m.chromium.c.BUILD_CONFIG)
     log_file = build_dir.join('full_log')
 
     target_arch = self.m.chromium.get_build_target_arch()
@@ -751,13 +753,13 @@ class AndroidApi(recipe_api.RecipeApi):
     with self.m.context(env=env):
       self.m.step(
           'stack_tool_with_logcat_dump', [
-              self.m.path['checkout'].join('third_party', 'android_platform',
-                                           'development', 'scripts', 'stack'),
+              self.m.path.checkout_dir.join('third_party', 'android_platform',
+                                            'development', 'scripts', 'stack'),
               '--arch', target_arch, '--more-info', log_file
           ],
           infra_step=True)
     tombstones_cmd = [
-        self.m.path['checkout'].join('build', 'android', 'tombstones.py'),
+        self.m.path.checkout_dir.join('build', 'android', 'tombstones.py'),
         '-a',
         '-s',
         '-w',
@@ -796,9 +798,9 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def run_bisect_script(self, extra_src='', path_to_config='', **kwargs):
     self.m.step('prepare bisect perf regression', [
-        self.m.path['checkout'].join('tools',
-                                     'prepare-bisect-perf-regression.py'), '-w',
-        self.m.path['start_dir']
+        self.m.path.checkout_dir.join(
+            'tools', 'prepare-bisect-perf-regression.py'), '-w',
+        self.m.path.start_dir
     ])
 
     args = []
@@ -807,8 +809,8 @@ class AndroidApi(recipe_api.RecipeApi):
     if path_to_config:
       args = args + ['--path_to_config', path_to_config]
     self.m.step('run bisect perf regression', [
-        self.m.path['checkout'].join('tools', 'run-bisect-perf-regression.py'),
-        '-w', self.m.path['start_dir']
+        self.m.path.checkout_dir.join('tools', 'run-bisect-perf-regression.py'),
+        '-w', self.m.path.start_dir
     ] + args, **kwargs)
 
   def run_test_suite(self,
@@ -898,7 +900,7 @@ class AndroidApi(recipe_api.RecipeApi):
 
     changed_files = self.staged_files_matching_filter('M')
     for changed_file in changed_files:
-      with self.m.context(cwd=self.m.path['checkout']):
+      with self.m.context(cwd=self.m.path.checkout_dir):
         blame = self.m.git(
             'blame',
             '-l',
@@ -928,7 +930,7 @@ class AndroidApi(recipe_api.RecipeApi):
     Returns:
       A list of file paths (strings) matching the provided |diff-filter|.
     """
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       diff = self.m.git(
           'diff',
           '--staged',

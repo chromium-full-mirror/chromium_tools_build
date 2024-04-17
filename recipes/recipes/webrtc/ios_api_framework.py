@@ -27,15 +27,15 @@ def RunSteps(api):
   api.chromium.apply_config('mac_toolchain')
   api.chromium.ensure_toolchains()
 
-  build_script = api.path['checkout'].join('tools_webrtc', 'ios',
-                                           'build_ios_libs.py')
+  build_script = api.path.checkout_dir.join('tools_webrtc', 'ios',
+                                            'build_ios_libs.py')
   cmd = ['vpython3', '-u', build_script, '--verbose']
   if not api.tryserver.is_tryserver:
     api.step('cleanup', [build_script, '-c'])
     cmd += ['-r', api.webrtc.revision_number]
   api.webrtc.build_with_reclient('build', cmd)
 
-  output_dir = api.path['checkout'].join('out_ios_libs')
+  output_dir = api.path.checkout_dir.join('out_ios_libs')
 
   api.webrtc.get_binary_sizes(
       files=['WebRTC.xcframework/ios-arm64/WebRTC.framework/WebRTC'],

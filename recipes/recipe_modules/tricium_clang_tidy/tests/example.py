@@ -21,8 +21,8 @@ DEPS = [
 ]
 
 def RunSteps(api):
-  cache_dir = api.path['cache']
-  api.path['checkout'] = cache_dir / 'builder' / 'src'
+  cache_dir = api.path.cache_dir
+  api.path.checkout_dir = cache_dir / 'builder' / 'src'
   with api.context(cwd=cache_dir):
     # file_paths should be kept in sync with the paths used in test below.
     api.tricium_clang_tidy.lint_source_files(
@@ -75,11 +75,11 @@ def GenTests(api):
     existing_files = []
     if auto_exist_files:
       existing_files += [
-          api.path['cache'].join('src', x) for x in affected_files
+          api.path.cache_dir.join('src', x) for x in affected_files
       ]
 
     if clang_tidy_exists:
-      existing_files.append(api.path['cache'].join(*_clang_tidy_path))
+      existing_files.append(api.path.cache_dir.join(*_clang_tidy_path))
 
     if existing_files:
       test_data += api.path.exists(*existing_files)

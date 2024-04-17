@@ -136,7 +136,7 @@ def _fetch_model_data(api, exec_path, duration_date_range):
     A tuple (rejections_dir, durations_dir) with path to the directories with
     rejections and durations respectively.
   """
-  data_dir = api.path['cleanup'].join('rts-suite-analysis-model-data')
+  data_dir = api.path.cleanup_dir.join('rts-suite-analysis-model-data')
   rejections_dir = data_dir.join('rejections')
   durations_dir = data_dir.join('durations')
 

@@ -159,7 +159,7 @@ class FlakinessApi(recipe_api.RecipeApi):
       return self.m.json.loads('{}')
 
     # The output dir must not exist for untar.
-    output_dir = self.m.path['cleanup'].join('flake_endorser')
+    output_dir = self.m.path.cleanup_dir.join('flake_endorser')
     self.m.tar.untar('unpack {}'.format(source), local_dest, output_dir)
 
     bucket = self.m.led.shadowed_bucket or builder.bucket

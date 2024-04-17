@@ -31,7 +31,7 @@ def RunSteps(api, props):
   if props.device:
     # Use different cache directory for RISCV to avoid interference.
     cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
-    with api.context(cwd=api.path['cache'].join(cache_name)):
+    with api.context(cwd=api.path.cache_dir.join(cache_name)):
       setup_target(
           api,
           device=props.device,
@@ -46,18 +46,17 @@ def RunSteps(api, props):
           on_virtual_machine=props.on_virtual_machine,
           manifest_branch=manifest_branch or 'master-art')
   else:
-    with api.context(cwd=api.path['cache'].join('art')):
+    with api.context(cwd=api.path.cache_dir.join('art')):
       setup_host_x86(
-        api,
-        debug=props.debug,
-        bitness=props.bitness,
-        concurrent_collector=props.concurrent_collector,
-        generational_cc=props.generational_cc,
-        heap_poisoning=props.heap_poisoning,
-        gcstress=props.gcstress,
-        cdex_level=props.cdex_level or 'none',
-        manifest_branch=manifest_branch or 'master-art'
-      )
+          api,
+          debug=props.debug,
+          bitness=props.bitness,
+          concurrent_collector=props.concurrent_collector,
+          generational_cc=props.generational_cc,
+          heap_poisoning=props.heap_poisoning,
+          gcstress=props.gcstress,
+          cdex_level=props.cdex_level or 'none',
+          manifest_branch=manifest_branch or 'master-art')
 
 def checkout(api, manifest_branch):
   # (https://crbug.com/1153114): do not attempt to update repo when

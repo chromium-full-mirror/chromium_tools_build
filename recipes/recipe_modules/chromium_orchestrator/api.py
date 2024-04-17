@@ -185,9 +185,9 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       return maybe_raw_result
 
     # TODO(crbug.com/330782554) - chromium_checkout.checkout_dir should be
-    # explicitly set as `None`, and api.path['checkout'] should remain unset.
-    self.m.chromium_checkout.checkout_dir = self.m.path['cleanup']
-    self.m.path.checkout_dir = self.m.path['cleanup']
+    # explicitly set as `None`, and api.path.checkout_dir should remain unset.
+    self.m.chromium_checkout.checkout_dir = self.m.path.cleanup_dir
+    self.m.path.checkout_dir = self.m.path.cleanup_dir
 
     self.m.cas.download(
         'download src-side deps',

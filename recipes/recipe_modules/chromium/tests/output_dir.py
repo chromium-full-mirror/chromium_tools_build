@@ -12,8 +12,8 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.chromium.output_dir = api.path['checkout']
-  api.assertions.assertEqual(api.chromium.output_dir, api.path['checkout'])
+  api.chromium.output_dir = api.path.checkout_dir
+  api.assertions.assertEqual(api.chromium.output_dir, api.path.checkout_dir)
 
 
 def GenTests(api):

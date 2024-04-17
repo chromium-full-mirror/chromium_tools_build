@@ -46,9 +46,9 @@ def RunSteps(api):
       'Chromium WPT Sync',
       name='set git config user.name')
   # LUCI sets user.email automatically.
-  api.git_cl.set_default_repo_location(api.path['checkout'])
-  blink_dir = api.path['checkout'].join('third_party', 'blink')
-  creds = api.path['cleanup'].join(CREDS_NAME + '.json')
+  api.git_cl.set_default_repo_location(api.path.checkout_dir)
+  blink_dir = api.path.checkout_dir.join('third_party', 'blink')
+  creds = api.path.cleanup_dir.join(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
       KMS_CRYPTO_KEY,
       api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),

@@ -49,8 +49,8 @@ def RunSteps(api):
   task_config = api.flaky_reproducer.get_test_binary_swarming_task_config(
       test_binary_path)
   api.cas.download('download test binary', task_config.cas_input_root,
-                   api.path['cleanup'])
-  runner_dir = api.path['cleanup'].join(RUNNER_PACKAGE_PATH)
+                   api.path.cleanup_dir)
+  runner_dir = api.path.cleanup_dir.join(RUNNER_PACKAGE_PATH)
   api.file.copytree('copy source files', api.resource('.'), runner_dir)
   api.isolate.write_isolate_file(
       runner_dir.join(TEST_BINARY_ISOLATE_FILENAME), ['../'])

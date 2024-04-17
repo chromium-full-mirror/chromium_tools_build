@@ -55,7 +55,7 @@ BUILDERS = ctbc.BuilderDatabase.create({
 
 
 def RunSteps(api):
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   # Create a nested step so that setup steps can be easily filtered out
   with api.step.nest('setup steps'):

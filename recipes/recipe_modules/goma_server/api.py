@@ -21,7 +21,7 @@ class GomaServerApi(recipe_api.RecipeApi):
       GOPATH that has build artifacts.
     """
     # set directories.
-    build_root = self.m.path['cache'].join('builder')
+    build_root = self.m.path.cache_dir.join('builder')
     goma_src_dir = build_root.join('goma_src')
     gopath_dir = build_root.join('go')
 
@@ -33,10 +33,10 @@ class GomaServerApi(recipe_api.RecipeApi):
 
     # Set up SDK
     # TODO(yyanagisawa): move sdk to cached directory when we confirm it works.
-    sdk_dir = self.m.path['start_dir'].join('sdk')
+    sdk_dir = self.m.path.start_dir.join('sdk')
     self.m.file.ensure_directory('ensure SDK directory', sdk_dir)
     self.m.step('set up SDK',
-                [self.m.path['checkout'].join('buildsetup.sh'), sdk_dir])
+                [self.m.path.checkout_dir.join('buildsetup.sh'), sdk_dir])
 
     env_prefixes = {
         'GOPATH': [gopath_dir],
@@ -45,9 +45,8 @@ class GomaServerApi(recipe_api.RecipeApi):
     env = {
         'GO111MODULE': 'on',
     }
-    with self.m.context(cwd=self.m.path['checkout'],
-                        env_prefixes=env_prefixes,
-                        env=env):
+    with self.m.context(
+        cwd=self.m.path.checkout_dir, env_prefixes=env_prefixes, env=env):
       # Set up modules.
       self.m.step('list modules',
                   ['go', 'list', '-m', 'all'])

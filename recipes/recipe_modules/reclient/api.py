@@ -214,7 +214,7 @@ class ReclientApi(recipe_api.RecipeApi):
   def reclient_dir(self):
     if self._reclient_dir:
       return self._reclient_dir
-    return self.m.path['checkout'].join('buildtools')
+    return self.m.path.checkout_dir.join('buildtools')
 
   @reclient_dir.setter
   def reclient_dir(self, value):
@@ -355,11 +355,11 @@ class ReclientApi(recipe_api.RecipeApi):
 
   @property
   def _tmp_base_dir(self):
-    return self.m.path['tmp_base']
+    return self.m.path.tmp_base_dir
 
   @property
   def base_cache_path_per_follower(self):
-    return self.m.path['cache'].join('builder').join('reclient')
+    return self.m.path.cache_dir.join('builder').join('reclient')
 
   @property
   def deps_cache_path(self):
@@ -456,7 +456,7 @@ class ReclientApi(recipe_api.RecipeApi):
                 'verification', status=status, step_text=self._mismatch)
 
   def _gclient_var_exists(self, var):
-    with self.m.context(cwd=self.m.path['checkout']):
+    with self.m.context(cwd=self.m.path.checkout_dir):
       return self.m.gclient(
           'check if %s var exists' % var, ['getdep', '--var', var],
           ok_ret='any').retcode == 0

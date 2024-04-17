@@ -15,7 +15,7 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   api.isolate.compare_build_artifacts('first_dir', 'second_dir')
 

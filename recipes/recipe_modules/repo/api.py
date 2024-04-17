@@ -48,7 +48,7 @@ class RepoApi(recipe_api.RecipeApi):
 
   def sync(self, *args, **kwargs):
     """Sync an already-init'd repo."""
-    # NOTE: This does not set self.m.path['checkout']
+    # NOTE: This does not set self.m.path.checkout_dir
     kwargs.setdefault('infra_step', True)
     if not 'name' in kwargs:
       name = 'repo sync'

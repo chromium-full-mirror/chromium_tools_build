@@ -498,12 +498,12 @@ def RunSteps(api):
   s.name = s.url.rsplit('/', 1)[-1]
   gclient_config.got_revision_mapping[s.name] = 'got_revision'
 
-  with api.context(cwd=api.path['cache'].join('builder')):
+  with api.context(cwd=api.path.cache_dir.join('builder')):
     update_result = api.bot_update.ensure_checkout(
         patch=True, gclient_config=gclient_config)
 
-  repo_path = api.path['cache'].join('builder',
-                                     update_result.json.output['root'])
+  repo_path = api.path.cache_dir.join('builder',
+                                      update_result.json.output['root'])
 
   with api.context(cwd=repo_path):
     affected_files = api.tryserver.get_files_affected_by_patch(repo_path)
@@ -656,13 +656,15 @@ def GenTests(api):
   def affected_recipes_input_files_does_not_contain(check, steps, *rel_paths):
     input_files = affected_recipes_input_files(steps)
     for rel_path in rel_paths:
-      path = str(api.path['cache'].join('builder', 'baz', *rel_path.split('/')))
+      path = str(
+          api.path.cache_dir.join('builder', 'baz', *rel_path.split('/')))
       check(path not in input_files)
 
   def affected_recipes_input_files_contains(check, steps, *rel_paths):
     input_files = affected_recipes_input_files(steps)
     for rel_path in rel_paths:
-      path = str(api.path['cache'].join('builder', 'baz', *rel_path.split('/')))
+      path = str(
+          api.path.cache_dir.join('builder', 'baz', *rel_path.split('/')))
       check(path in input_files)
 
   def gitiles_curl(skip_extensive=False, skip_short=False):

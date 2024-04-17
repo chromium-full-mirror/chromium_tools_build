@@ -22,9 +22,9 @@ def RunSteps(api):
 
   api.archive.zip_and_upload_build(
       step_name='zip build',
-      target=api.path['checkout'].join('Release', 'out'),
-      build_url=api.archive.legacy_upload_url(
-          'example_bucket', 'extra_component'),
+      target=api.path.checkout_dir.join('Release', 'out'),
+      build_url=api.archive.legacy_upload_url('example_bucket',
+                                              'extra_component'),
       build_revision='example_sha',
       package_dsym_files=True,
       exclude_files='example_exclude',

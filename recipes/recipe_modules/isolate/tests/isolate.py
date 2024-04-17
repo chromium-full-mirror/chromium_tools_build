@@ -13,7 +13,7 @@ DEPS = [
 
 def RunSteps(api):
   api.isolate.isolate('isolate',
-                      api.path['cache'] / 'builder' / 'src' / 'test.isolate')
+                      api.path.cache_dir / 'builder' / 'src' / 'test.isolate')
 
 
 def GenTests(api):

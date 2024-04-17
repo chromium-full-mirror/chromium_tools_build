@@ -806,40 +806,26 @@ def GenTests(api):
       ],
     }
   """.strip()
-  yield (
-    api.v8.test(
-        'somewhere.v8',
-        'V8 Foobar',
-        'with_test_config',
-        enable_swarming=False,
-    ) +
-    api.v8.example_test_roots('test_checkout') +
-    api.path.exists(
-        api.path['cache'].join(
-            'builder', 'v8', 'custom_deps', 'test_checkout', 'infra',
-            'testing', 'config.pyl'),
-        api.path['cache'].join(
-            'builder', 'v8', 'custom_deps', 'test_checkout', 'infra',
-            'testing', 'builders.pyl'),
-    ) +
-    api.override_step_data(
-        'initialization.read test config (test_checkout)',
-        api.v8.example_test_config(extra_test_config),
-    ) +
-    api.override_step_data(
-        'initialization.read test spec (test_checkout)',
-        api.v8.example_test_spec('V8 Foobar', extra_test_spec),
-    ) +
-    api.post_process(DoesNotRun, 'build.isolate tests') +
-    api.post_process(
-        Filter()
-            .include(
-              'initialization.read test config (test_checkout)')
-            .include(
-              'initialization.read test spec (test_checkout)')
-            .include_re(r'.*Foounit.*')
-    )
-  )
+  yield (api.v8.test(
+      'somewhere.v8',
+      'V8 Foobar',
+      'with_test_config',
+      enable_swarming=False,
+  ) + api.v8.example_test_roots('test_checkout') + api.path.exists(
+      api.path.cache_dir.join('builder', 'v8', 'custom_deps', 'test_checkout',
+                              'infra', 'testing', 'config.pyl'),
+      api.path.cache_dir.join('builder', 'v8', 'custom_deps', 'test_checkout',
+                              'infra', 'testing', 'builders.pyl'),
+  ) + api.override_step_data(
+      'initialization.read test config (test_checkout)',
+      api.v8.example_test_config(extra_test_config),
+  ) + api.override_step_data(
+      'initialization.read test spec (test_checkout)',
+      api.v8.example_test_spec('V8 Foobar', extra_test_spec),
+  ) + api.post_process(DoesNotRun, 'build.isolate tests') + api.post_process(
+      Filter().include('initialization.read test config (test_checkout)')
+      .include('initialization.read test spec (test_checkout)').include_re(
+          r'.*Foounit.*')))
 
   # Test using custom_deps and gclient_vars property.
   yield (api.v8.test(

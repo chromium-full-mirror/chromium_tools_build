@@ -37,7 +37,7 @@ DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
 def _checkout_steps(api):
-  solution_path = api.path['cache'].join('builder')
+  solution_path = api.path.cache_dir.join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
@@ -87,7 +87,7 @@ def _gn_build(flavor, api, **kwargs):
     if api.platform.is_win:
       # We need to ensure that DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT
       # is still under the exec root.
-      gn_args.append('rbe_exec_root="' + str(api.path['cache']) + '"')
+      gn_args.append('rbe_exec_root="' + str(api.path.cache_dir) + '"')
 
   # We run the end2end tests with SwiftShader, but the D3D12 backend,
   # though it would run zero tests, crashes on Windows 7.
@@ -100,7 +100,7 @@ def _gn_build(flavor, api, **kwargs):
       kwargs, sort_keys=True).encode('utf8')).hexdigest()
 
   gn_cmd = api.depot_tools.gn_py_path
-  checkout = api.path['checkout']
+  checkout = api.path.checkout_dir
   with api.context(cwd=checkout):
     api.step('gn gen', [
         'python3',
@@ -141,8 +141,8 @@ def _generate_fuzz_corpus(api, **kwargs):
     (dawn_unittests, dawn_end2end_tests) = build('dawn_unittests',
                                                  'dawn_end2end_tests')
   # Collect the traces in temporary directories.
-  testcase_dir = api.path['tmp_base'].join('testcases')
-  hashed_testcase_dir = api.path['tmp_base'].join('hashed_testcases')
+  testcase_dir = api.path.tmp_base_dir.join('testcases')
+  hashed_testcase_dir = api.path.tmp_base_dir.join('hashed_testcases')
 
   api.file.ensure_directory('mkdir {}'.format(testcase_dir), testcase_dir)
   api.file.ensure_directory('mkdir {}'.format(hashed_testcase_dir),
@@ -188,7 +188,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
   env = {}
   if api.platform.is_win:
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path['cache'].join('win_toolchain'))
+        api.path.cache_dir.join('win_toolchain'))
 
   with api.context(env=env):
     _checkout_steps(api)

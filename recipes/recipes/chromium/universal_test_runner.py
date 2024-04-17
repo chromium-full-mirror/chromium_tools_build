@@ -161,8 +161,8 @@ def get_gclient_config(api: RecipeApi):
   # TODO(crbug.com/41492686): The .gclient file can technically
   # exist in any parent dir but will normally be in the chromium
   # or chromium/src.
-  checkout_file = api.path['checkout'].join('.gclient')
-  src_file = api.path.split(api.path['checkout'])[0].join('.gclient')
+  checkout_file = api.path.checkout_dir.join('.gclient')
+  src_file = api.path.split(api.path.checkout_dir)[0].join('.gclient')
   if api.path.exists(checkout_file):
     gclient_file_path = checkout_file
   elif api.path.exists(src_file):
@@ -349,8 +349,8 @@ def create_tests(
   targets_config = api.chromium_tests.create_targets_config(
       builder_config,
       got_revisions,
-      api.path['checkout'],
-      targets_spec_dir=api.path['checkout'].join('testing', 'buildbot'))
+      api.path.checkout_dir,
+      targets_spec_dir=api.path.checkout_dir.join('testing', 'buildbot'))
 
   def _get_matching_test(requested_test_name):
     for t in targets_config.all_tests:
@@ -430,23 +430,23 @@ def configure_build(
           "infra bug via https://g.co/bugatrooper if you're seeing this.")
 
   api.chromium_tests.configure_build(builder_config, test_only=not build)
-  api.path['checkout'] = api.path.abs_to_path(checkout_dir)
-  api.chromium_checkout.checkout_dir = api.path['cache']
+  api.path.checkout_dir = api.path.abs_to_path(checkout_dir)
+  api.chromium_checkout.checkout_dir = api.path.cache_dir
 
   if OLD_PATH_TYPE:  # pragma: no cover
     # see comment in import block at top of this file.
-    build_dir = build_dir or api.path.join(api.path['checkout'], 'out',
+    build_dir = build_dir or api.path.join(api.path.checkout_dir, 'out',
                                            api.chromium.c.build_config_fs)
     build_path = Path(RootBasePath(), build_dir)
   else:  # pragma: no cover
     if build_dir:
       build_path = api.path.cast_to_path(build_dir)
     else:
-      build_path = api.path['checkout'].join(
-          'out', api.chromium.c.build_config_fs)
+      build_path = api.path.checkout_dir.join('out',
+                                              api.chromium.c.build_config_fs)
 
   api.chromium.output_dir = build_path
-  return (compiling_builder_id, compiling_builder_config, api.path['checkout'],
+  return (compiling_builder_id, compiling_builder_config, api.path.checkout_dir,
           build_path)
 
 
@@ -577,7 +577,7 @@ def handle_code_coverage(
     return True
   paths = []
   if not properties.rerun_options.skip_instrumentation:
-    with api.context(cwd=api.path['checkout']):
+    with api.context(cwd=api.path.checkout_dir):
       step_result = get_upstream_branch(api)
       branch_upstream_name = step_result.stdout.decode('utf-8').strip()
       step_result = api.git(
@@ -748,7 +748,7 @@ def GenTests(api: RecipeTestApi):
               }
           },
       ),
-      api.path.exists(api.path['cache'].join('.gclient')),
+      api.path.exists(api.path.cache_dir.join('.gclient')),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1153,7 +1153,7 @@ solutions = [
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path['cache'].join('src', '.gclient')),
+      api.path.exists(api.path.cache_dir.join('src', '.gclient')),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1189,7 +1189,7 @@ target_os=['os']
           preserve_gn_args=False,
           bypass_gclient=False,
       ),
-      api.path.exists(api.path['cache'].join('.gclient')),
+      api.path.exists(api.path.cache_dir.join('.gclient')),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1219,7 +1219,7 @@ solutions = [
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path['cache'].join('src', '.gclient')),
+      api.path.exists(api.path.cache_dir.join('src', '.gclient')),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1272,7 +1272,7 @@ target_os=['os']
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path['cache'].join('src/out/Release')),
+      api.path.exists(api.path.cache_dir.join('src/out/Release')),
       api.step_data(
           'lookup_builder_gn_args',
           stdout=api.raw_io.output_text('import("//builder.args")\n'

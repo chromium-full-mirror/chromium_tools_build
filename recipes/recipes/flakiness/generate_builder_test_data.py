@@ -67,7 +67,7 @@ def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
         builder + '_*.json',
         test_data=['[CLEANUP]/builder1_000.json'])
 
-    builder_output_folder = api.path['cleanup'].join(project, builder_bucket)
+    builder_output_folder = api.path.cleanup_dir.join(project, builder_bucket)
     api.file.ensure_directory('create dir', builder_output_folder)
     builder_output_file = builder_output_folder.join('{}.json'.format(builder))
     cmd = ['vpython3', api.resource('query.py'), 'format']
@@ -78,7 +78,7 @@ def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
 
     tar_filename = '{}.json.tar.gz'.format(builder)
     tar_gz = builder_output_folder.join(tar_filename)
-    pkg = api.tar.make_package(api.path['cleanup'], tar_gz, compression='gz')
+    pkg = api.tar.make_package(api.path.cleanup_dir, tar_gz, compression='gz')
     pkg.add_file(builder_output_file)
     pkg.tar('Create {}'.format(tar_filename))
 

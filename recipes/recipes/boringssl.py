@@ -228,7 +228,7 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
   if config.android:
     api.gclient.c.target_os.add('android')
   api.gclient.c.solutions[0].custom_vars = config.get_gclient_vars(api.platform)
-  cache_dir = api.path['cache'].join('builder')
+  cache_dir = api.path.cache_dir.join('builder')
   with api.context(cwd=cache_dir):
     api.bot_update.ensure_checkout()
     api.gclient.runhooks()
@@ -250,8 +250,8 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
   env['GOROOT'] = goroot
   env_prefixes['PATH'] = [goroot.join('bin')]
   # Point Go's module and build caches to reused cache directories.
-  env['GOCACHE'] = api.path['cache'].join('gocache')
-  env['GOPATH'] = api.path['cache'].join('gopath')
+  env['GOCACHE'] = api.path.cache_dir.join('gocache')
+  env['GOPATH'] = api.path.cache_dir.join('gopath')
   # Disable modifications to go.mod so missing entries are treated as an error
   # instead.
   env['GOFLAGS'] = '-mod=readonly'
@@ -455,16 +455,18 @@ def GenTests(api):
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
       mock_go_tests,
-      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
-                                             'bot', 'cmake')),
+      api.path.exists(
+          api.path.cache_dir.join('builder', 'boringssl', 'util', 'bot',
+                                  'cmake')),
   )
 
   yield api.test(
       'check_pregenerated_files',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
-      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
-                                             'pregenerate')),
+      api.path.exists(
+          api.path.cache_dir.join('builder', 'boringssl', 'util',
+                                  'pregenerate')),
       mock_go_tests,
   )
 
@@ -473,8 +475,9 @@ def GenTests(api):
       api.platform('win', 64),
       _CIBuild(api, 'win64'),
       api.properties(msvc_target='x64'),
-      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
-                                             'pregenerate')),
+      api.path.exists(
+          api.path.cache_dir.join('builder', 'boringssl', 'util',
+                                  'pregenerate')),
       mock_go_tests,
   )
 
@@ -482,8 +485,9 @@ def GenTests(api):
       'check_pregenerated_files_failed',
       api.platform('linux', 64),
       _CIBuild(api, 'linux'),
-      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
-                                             'pregenerate')),
+      api.path.exists(
+          api.path.cache_dir.join('builder', 'boringssl', 'util',
+                                  'pregenerate')),
       api.override_step_data('check pregenerated files', retcode=1),
       api.expect_status('FAILURE'),
   )
@@ -493,8 +497,9 @@ def GenTests(api):
       api.platform('win', 64),
       _CIBuild(api, 'win64'),
       api.properties(msvc_target='x64'),
-      api.path.exists(api.path['cache'].join('builder', 'boringssl', 'util',
-                                             'pregenerate')),
+      api.path.exists(
+          api.path.cache_dir.join('builder', 'boringssl', 'util',
+                                  'pregenerate')),
       api.override_step_data('check pregenerated files', retcode=1),
       api.expect_status('FAILURE'),
   )

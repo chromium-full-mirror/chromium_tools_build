@@ -14,7 +14,7 @@ DEPS = [
 def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('non_device_wipe_provisioning')
-  api.path['checkout'] = api.path['cache'] / 'builder' / 'src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   api.chromium_android.provision_devices(emulators=True)
 

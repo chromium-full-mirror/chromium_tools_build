@@ -315,7 +315,7 @@ def _clean_builds(api, target):
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
-  solution_path = api.path['cache'].join('builder')
+  solution_path = api.path.cache_dir.join('builder')
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   # Checkout and gclient hooks.
