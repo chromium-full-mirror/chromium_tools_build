@@ -161,14 +161,14 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.use_lkgm:
         assert not test.spec.cros_img, 'cros_img should be empty when use_lkgm is True'
         is_public = test.spec.bucket.startswith('chromiumos-')
-        lkgm_cros_img = self.get_lkgm_version(
-            test.spec.cros_board, str(self.m.chromium_checkout.src_dir),
-            is_public)
-        assert lkgm_cros_img, 'chromite build_api command not found'
-
-        cmd.extend(['--image', lkgm_cros_img])
+        cros_img = self.get_lkgm_version(test.spec.cros_board,
+                                         str(self.m.chromium_checkout.src_dir),
+                                         is_public)
+        assert cros_img, 'chromite build_api command not found'
       else:
-        cmd.extend(['--image', test.spec.cros_img])
+        cros_img = test.spec.cros_img
+
+      cmd.extend(['--image', cros_img])
 
       if test.spec.secondary_cros_board:
         boards = test.spec.secondary_cros_board.split(',')
@@ -194,7 +194,7 @@ class SkylabApi(recipe_api.RecipeApi):
           if 'fyi' in self.m.buildbucket.builder_name else QS_ACCOUNT_PROD
       ])
 
-      resultdb = self.gen_rdb_config(test)
+      resultdb = self.gen_rdb_config(test, cros_img)
       assert resultdb and resultdb.enable, ('Skylab tests should '
                                             'have resultdb enabled.')
       rdb_str = self.m.json.dumps({
@@ -345,11 +345,12 @@ class SkylabApi(recipe_api.RecipeApi):
           tr = TestRunner.create(test, shard=int(shard), **test_runner)
           test.test_runner_builds.setdefault(suffix, []).append(tr)
 
-  def gen_rdb_config(self, test):
+  def gen_rdb_config(self, test, cros_img):
     """Generate the resultDB config for SkylabTest.
 
     Args:
       test: A step.SkylabTest object.
+      cros_img: A CrOS img name to be used for tests.
 
     Returns:
       A new config of ResultDB. See chromium_tests.ResultDB.
@@ -359,7 +360,7 @@ class SkylabApi(recipe_api.RecipeApi):
     var.update({
         'device_type': test.spec.cros_board,
         'os': 'ChromeOS',
-        'cros_img': test.spec.cros_img,
+        'cros_img': cros_img,
     })
     result_format = 'gtest'
     if test.is_tast_test:
