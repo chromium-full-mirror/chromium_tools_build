@@ -13,16 +13,16 @@ from recipe_engine.engine_types import freeze
 
 from . import formatting
 
-MONORAIL_SEARCH_BUGS_TEMPLATE = 'https://bugs.chromium.org/p/v8/issues/list'
+BUGANIZER_SEARCH_BUGS_TEMPLATE = 'https://issues.chromium.org/issues'
 
-MONORAIL_FILE_BUG_DESCRIPTION = '''
+BUGANIZER_FILE_BUG_DESCRIPTION = '''\
 Failing test: {name}
 Failure link: {build_link}
 {footer}
 Suspected commit: <insert>
 '''
 
-MONORAIL_CRASH_DESCRIPTION = '''
+BUGANIZER_CRASH_DESCRIPTION = '''\
 Crash type: {crash_type}
 
 Crash state:
@@ -33,29 +33,23 @@ Error summary:
 
 Crash analysis hash: {crash_analysis_hash}'''
 
-MONORAIL_FILE_BUG_TEMPLATE = 'https://bugs.chromium.org/p/v8/issues/entry'
+BUGANIZER_FILE_BUG_TEMPLATE = f'{BUGANIZER_SEARCH_BUGS_TEMPLATE}/new'
 
 FLAKO_LINK_TEMPLATE = 'Link to Flako run: <insert>'
 
 FAILURE_BUG_DEFAULTS = {
-    'template': 'Report failing test',
     'title': 'starts failing',
     'footer': '',
-    'label': 'Hotlist-Failure',
 }
 
 FLAKE_BUG_DEFAULTS = {
-    'template': 'Report flaky test',
     'title': 'starts flaking',
     'footer': FLAKO_LINK_TEMPLATE,
-    'label': 'Hotlist-Flake',
 }
 
 FLAGFUZZ_BUG_DEFAULTS = {
-    'template': 'Report flag-fuzzer failure',
     'title': 'starts failing (flag fuzzer)',
     'footer': FLAKO_LINK_TEMPLATE,
-    'label': 'Hotlist-FlagFuzz',
 }
 
 MAX_BUG_LINKS = 5
@@ -405,31 +399,32 @@ class V8Test(BaseTest):
     for failure in failures[:MAX_BUG_LINKS]:
       link = PreparedRequest()
       ui_label = self.api.v8_tests.ui_test_label(failure.name)
-      link_params = failure.get_monorail_params(
+      link_params = failure.get_buganizer_params(
           self.api.buildbucket.build_url())
 
-      search_query = ' label:{label} -status:Fixed -status:Verified'
-      bug_description = MONORAIL_FILE_BUG_DESCRIPTION
+      search_query = ' -status:Fixed -status:Verified'
+      bug_description = BUGANIZER_FILE_BUG_DESCRIPTION
       if link_params['crash_analysis_hash']:
         search_query = '"{crash_analysis_hash}"' + search_query
-        bug_description += MONORAIL_CRASH_DESCRIPTION
+        bug_description += BUGANIZER_CRASH_DESCRIPTION
       else:
         search_query = '"{name}"' + search_query
 
       bug_search_link_params = {
           'q': search_query.format(**link_params),
-          'can': '1'
       }
 
       bug_file_link_params = {
-          'template': link_params["template"],
-          'summary': f'{link_params["name"]} {link_params["title"]}',
+          'priority': 'P1',
+          'component': 1456824,  # Chromium > Blink > JavaScript
+          'type': 'Bug',
+          'title': f'{link_params["name"]} {link_params["title"]}',
           'description': bug_description.format(**link_params),
       }
 
-      link.prepare_url(MONORAIL_SEARCH_BUGS_TEMPLATE, bug_search_link_params)
+      link.prepare_url(BUGANIZER_SEARCH_BUGS_TEMPLATE, bug_search_link_params)
       presentation.links['%s (bugs)' % ui_label] = link.url
-      link.prepare_url(MONORAIL_FILE_BUG_TEMPLATE, bug_file_link_params)
+      link.prepare_url(BUGANIZER_FILE_BUG_TEMPLATE, bug_file_link_params)
       presentation.links['%s (new)' % ui_label] = link.url
     if len(failures) > MAX_BUG_LINKS:
       presentation.step_text += (
@@ -1031,7 +1026,7 @@ class Failure:
     self.is_flaky = not all(
         x['result'] == results[0]['result'] for x in results)
 
-  def get_monorail_params(self, build_link):
+  def get_buganizer_params(self, build_link):
     if self.framework_name == 'num_fuzzer':
       link_params = FLAGFUZZ_BUG_DEFAULTS
     elif self.is_flaky:

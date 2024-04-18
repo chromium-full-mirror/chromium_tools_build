@@ -327,10 +327,10 @@
       "@@@STEP_LOG_LINE@slow@Some errput.@@@",
       "@@@STEP_LOG_LINE@slow@@@@",
       "@@@STEP_LOG_END@slow@@@",
-      "@@@STEP_LINK@fast (bugs)@https://bugs.chromium.org/p/v8/issues/list?q=%22cbc458508b157b9b332ef49f545b82c6%22+label%3AHotlist-Failure+-status%3AFixed+-status%3AVerified&can=1@@@",
-      "@@@STEP_LINK@fast (new)@https://bugs.chromium.org/p/v8/issues/entry?template=Report+failing+test&summary=suite-name%2Fdir%2Ffast+starts+failing&description=%0AFailing+test%3A+suite-name%2Fdir%2Ffast%0AFailure+link%3A+https%3A%2F%2Fcr-buildbucket.appspot.com%2Fbuild%2F8945511751514863184%0A%0ASuspected+commit%3A+%3Cinsert%3E%0A%0ACrash+type%3A+Some+crash+type.%0A%0ACrash+state%3A%0ASome+crash+state.%0A%0AError+summary%3A%0ASome+errput.%0A%0ACrash+analysis+hash%3A+cbc458508b157b9b332ef49f545b82c6@@@",
-      "@@@STEP_LINK@slow (bugs)@https://bugs.chromium.org/p/v8/issues/list?q=%22cbc458508b157b9b332ef49f545b82c6%22+label%3AHotlist-Failure+-status%3AFixed+-status%3AVerified&can=1@@@",
-      "@@@STEP_LINK@slow (new)@https://bugs.chromium.org/p/v8/issues/entry?template=Report+failing+test&summary=suite-name%2Fdir%2Fslow+starts+failing&description=%0AFailing+test%3A+suite-name%2Fdir%2Fslow%0AFailure+link%3A+https%3A%2F%2Fcr-buildbucket.appspot.com%2Fbuild%2F8945511751514863184%0A%0ASuspected+commit%3A+%3Cinsert%3E%0A%0ACrash+type%3A+Some+crash+type.%0A%0ACrash+state%3A%0ASome+crash+state.%0A%0AError+summary%3A%0ASome+errput.%0A%0ACrash+analysis+hash%3A+cbc458508b157b9b332ef49f545b82c6@@@",
+      "@@@STEP_LINK@fast (bugs)@https://issues.chromium.org/issues?q=%22cbc458508b157b9b332ef49f545b82c6%22+-status%3AFixed+-status%3AVerified@@@",
+      "@@@STEP_LINK@fast (new)@https://issues.chromium.org/issues/new?priority=P1&component=1456824&type=Bug&title=suite-name%2Fdir%2Ffast+starts+failing&description=Failing+test%3A+suite-name%2Fdir%2Ffast%0AFailure+link%3A+https%3A%2F%2Fcr-buildbucket.appspot.com%2Fbuild%2F8945511751514863184%0A%0ASuspected+commit%3A+%3Cinsert%3E%0ACrash+type%3A+Some+crash+type.%0A%0ACrash+state%3A%0ASome+crash+state.%0A%0AError+summary%3A%0ASome+errput.%0A%0ACrash+analysis+hash%3A+cbc458508b157b9b332ef49f545b82c6@@@",
+      "@@@STEP_LINK@slow (bugs)@https://issues.chromium.org/issues?q=%22cbc458508b157b9b332ef49f545b82c6%22+-status%3AFixed+-status%3AVerified@@@",
+      "@@@STEP_LINK@slow (new)@https://issues.chromium.org/issues/new?priority=P1&component=1456824&type=Bug&title=suite-name%2Fdir%2Fslow+starts+failing&description=Failing+test%3A+suite-name%2Fdir%2Fslow%0AFailure+link%3A+https%3A%2F%2Fcr-buildbucket.appspot.com%2Fbuild%2F8945511751514863184%0A%0ASuspected+commit%3A+%3Cinsert%3E%0ACrash+type%3A+Some+crash+type.%0A%0ACrash+state%3A%0ASome+crash+state.%0A%0AError+summary%3A%0ASome+errput.%0A%0ACrash+analysis+hash%3A+cbc458508b157b9b332ef49f545b82c6@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
