@@ -113,7 +113,7 @@ def prerun_checks(
     rerun_properties = copy.deepcopy(properties.rerun_options)
     update = InputProperties.RerunOptions(**kwargs)
     rerun_properties.MergeFrom(update)
-    return (prompt, update)
+    return (prompt, rerun_properties)
 
   if not properties.rerun_options.bypass_gclient:
     error_message = check_gclient(api)
@@ -972,6 +972,19 @@ solutions = [
           post_process.ResultReason,
           'Caution: failed to get an upstream branch from the current checkout'
       ),
+      api.post_process(post_process.MustRun,
+                       'write output_properties_file [CACHE]\\out.json'),
+      api.post_process(
+          post_process.StepCommandContains,
+          'write output_properties_file [CACHE]\\out.json', [
+              '[["instrument everything", '
+              '{"bypass_branch_check": true, "bypass_gclient": true, '
+              '"bypass_gn_args": true}], '
+              '["skip instrumentation", {"bypass_branch_check": true, '
+              '"bypass_gclient": true, "bypass_gn_args": true, '
+              '"skip_instrumentation": true}], '
+              '["abort", {}]]'
+          ]),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
