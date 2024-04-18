@@ -26,6 +26,7 @@ def RunSteps(api):
   api.v8_auto_roller.setup_target(
       'devtools-frontend',
       'https://chromium.googlesource.com/devtools/devtools-frontend',
+      requires_chromium_checkout=True,
   )
 
   clm = api.v8_auto_roller.build_cl_manager(bugs="none")

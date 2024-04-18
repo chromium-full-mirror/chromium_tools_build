@@ -24,6 +24,7 @@ def RunSteps(api):
   api.v8_auto_roller.setup_target(
       'v8',
       'https://chromium.googlesource.com/v8/v8',
+      requires_chromium_checkout=True,
   )
 
   clm = api.v8_auto_roller.build_cl_manager(bugs="v8:7834")

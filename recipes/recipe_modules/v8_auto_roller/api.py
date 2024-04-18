@@ -35,7 +35,12 @@ class V8AutoRoller(recipe_api.RecipeApi):
     self.summary = []
     self.failures = []
 
-  def setup_target(self, solution_name, target_url):
+  def setup_target(
+      self,
+      solution_name,
+      target_url,
+      requires_chromium_checkout=False,
+  ):
     with self.m.step.nest('Setup'):
       gclient_config = self.m.gclient.make_config()
       soln = gclient_config.solutions.add()
@@ -44,7 +49,7 @@ class V8AutoRoller(recipe_api.RecipeApi):
       soln.revision = 'HEAD'
 
       self.m.gclient.c = gclient_config
-      self.m.gclient.apply_config('chromium')
+      self._setup_chromium(requires_chromium_checkout)
 
       # Allow rolling all os deps.
       self.m.gclient.c.target_os.add('android')
@@ -54,6 +59,35 @@ class V8AutoRoller(recipe_api.RecipeApi):
       # solution defined in gclient (autoroller_config -> target_config ->
       # solution_name), and might be something else, e.g. devtools-frontend.
       self.m.v8.checkout(ignore_input_commit=True, set_output_commit=False)
+
+  def _setup_chromium(self, requires_chromium_checkout):
+    # Some builders require a chromium checkout. If that's not required, rollers
+    # usually need chromium's DEPS file. We store it at the same location as a
+    # checkout to avoid further tweakings of the process.
+    if requires_chromium_checkout:
+      self.m.gclient.apply_config('chromium')
+      return
+
+    revision = self.m.gerrit.get_gerrit_branch(
+        'https://chromium-review.googlesource.com/',
+        'chromium/src',
+        'refs/heads/main',
+        step_test_data=lambda: self.m.json.test_api.output({
+            'ref': 'refs/heads/main',
+            'revision': 'deadbeef',
+        }),
+    )
+    deps = self.m.gitiles.download_file(
+        'https://chromium.googlesource.com/chromium/src',
+        'DEPS',
+        revision,
+        step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(''),
+    )
+    chromium_path = self.m.v8.checkout_root.join('src')
+    self.m.file.ensure_directory('ensure chromium cache dir', chromium_path)
+
+    chromium_deps_file = chromium_path.join('DEPS')
+    self.m.file.write_text('Store DEPS', chromium_deps_file, deps)
 
   def build_cl_manager(self, bugs=None):
     return CLManager(self.m, bugs)

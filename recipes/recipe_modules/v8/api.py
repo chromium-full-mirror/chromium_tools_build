@@ -239,7 +239,6 @@ class V8Api(recipe_api.RecipeApi):
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.bot_config = None
-    self.checkout_root = None
     self.revision = None
     self.revision_cp = None
     self.revision_number = None
@@ -470,6 +469,12 @@ class V8Api(recipe_api.RecipeApi):
     if default_targets:
       self.m.chromium.c.compile_py.default_targets = default_targets
 
+  @cached_property
+  def checkout_root(self):
+    path = self.m.path.cache_dir.join('builder')
+    self.m.file.ensure_directory('ensure builder cache dir', path)
+    return path
+
   def checkout(self, revision=None, **kwargs):
     # Set revision for bot_update.
     revision = revision or self.m.buildbucket.gitiles_commit.id or 'HEAD'
@@ -482,9 +487,6 @@ class V8Api(recipe_api.RecipeApi):
     if self.m.reclient.instance:
       self.m.reclient.use_download_remoteexec_cfg_hook(solution)
 
-    self.checkout_root = self.m.path.cache_dir.join('builder')
-    self.m.file.ensure_directory(
-        'ensure builder cache dir', self.checkout_root)
     with self.m.context(cwd=self.checkout_root):
       update_step = self.m.bot_update.ensure_checkout(**kwargs)
 
