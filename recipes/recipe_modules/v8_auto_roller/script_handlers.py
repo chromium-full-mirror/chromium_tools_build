@@ -63,7 +63,7 @@ class ScriptedRollHandler(RollHandler):
     args = [self.resolve_arg(a) for a in self.script.args]
     self.api.step(f'Run {self.name()} script', [
         'python3', '-u',
-        self.api.path.checkout_dir.join(*self.script.exe.split('/')), *args
+        self.api.path.checkout_dir.join(self.script.exe), *args
     ])
 
   def resolve_arg(self, arg):

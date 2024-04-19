@@ -750,8 +750,7 @@ class V8Api(recipe_api.RecipeApi):
             'mb_config_path', 'infra/mb/mb_config.pyl')
 
         mb_config_path = (
-            mb_config_path or
-            self.m.path.checkout_dir.join(*mb_config_rel_path.split('/')))
+            mb_config_path or self.m.path.checkout_dir.join(mb_config_rel_path))
 
         gn_args = self.m.chromium.mb_gen(
             self.m.chromium.get_builder_id(),
