@@ -310,6 +310,8 @@ _AddIsolatedTestSpec(
     'mac',
     'mac-arm-builder-perf-pgo',
     target_arch='arm')
+_AddIsolatedTestSpec(
+    'mac-m2-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 
 _AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
 
