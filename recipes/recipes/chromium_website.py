@@ -32,8 +32,8 @@ def RunSteps(api):
     api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
-  with api.context(cwd=api.m.path['checkout']):
-    npmw_path = api.m.path['checkout'].join('npmw')
+  with api.context(cwd=api.m.path.checkout_dir):
+    npmw_path = api.m.path.checkout_dir.join('npmw')
     api.step('build', [npmw_path, 'build'])
 
     if api.m.tryserver.is_tryserver:
