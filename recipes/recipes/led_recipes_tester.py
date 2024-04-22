@@ -20,6 +20,7 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/cipd',
     'recipe_engine/context',
+    'recipe_engine/defer',
     'recipe_engine/file',
     'recipe_engine/futures',
     'recipe_engine/json',
@@ -40,6 +41,7 @@ GITILES_CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
 GERRIT_HOST = 'chromium-review.googlesource.com'
 GERRIT_URL = 'https://' + GERRIT_HOST
 GERRIT_CHROMIUM_SRC_PROJECT = 'chromium/src'
+GERRIT_TOPIC = 'led-recipes-tester'
 
 # If present in a CL description, will override the existing default builders
 # with a custom list. Format is expected to be:
@@ -411,8 +413,7 @@ def _create_cl(api, file_path):
       'Test commit; testing a recipe CL',
       '',
       'This CL was uploaded for the purposes of testing a recipe CL on',
-      'Chromium trybots. If this CL is more than 24 hours old, feel free',
-      'to abandon it.',
+      'Chromium trybots.',
       '',
       f'Created for {api.tryserver.gerrit_change_review_url}',
       f'Created by https://ci.chromium.org/ui/b/{api.buildbucket.build.id}',
@@ -428,21 +429,39 @@ def _create_cl(api, file_path):
       'main',
       new_contents_by_file_path,
       '\n'.join(commit_msg_lines),
-      params=['work_in_progress=true', 'notify=NONE'])
+      params=['work_in_progress=true', 'notify=NONE', f'topic={GERRIT_TOPIC}'])
   change_num = int(change_info['_number'])
   return f'{GERRIT_URL}/c/{GERRIT_CHROMIUM_SRC_PROJECT}/+/{change_num}'
 
 
-def _abandon_cl(api, cl):
+def _abandon_cl(api, change_num):
   """Abandons a chromium/src.git CL via Gerrit's REST API.
 
   Args:
     api - The recipe API object.
     cl - Gerrit URL of the chromium/src.git CL to abandon.
   """
-  change_num = cl.split('/')[-1]
   api.gerrit.abandon_change(
       GERRIT_URL, change_num, name=f'abandon {change_num}')
+
+
+def _abandon_old_cls(api):
+  with api.step.nest('abandon old CLs'):
+    query_params = [
+        ('status', 'open'),
+        ('topic', GERRIT_TOPIC),
+        ('age', '24h'),
+        ('author', api.buildbucket.swarming_task_service_account),
+    ]
+    changes = api.gerrit.get_changes(GERRIT_URL, query_params=query_params)
+    for change in changes:
+      # There might be a race condition with other concurrent builds trying to
+      # clean-up the same old CLs. So just swallow all errors to prevent that
+      # from crashing the build.
+      try:
+        _abandon_cl(api, change['_number'])
+      except api.step.StepFailure:
+        pass
 
 
 def _test_builder(api, builder, led_builder, cl):
@@ -567,14 +586,19 @@ def RunSteps(api):
         api.futures.spawn_immediate(_test_builder, api, builder, led_builder,
                                     cl))
 
-  try:
+  # While we wait for the led builds to finish, let's clean-up any stale
+  # CLs uploaded from prev runs of this builder that we were unable to close
+  # in their original builds (due to a build crash, for example).
+  _abandon_old_cls(api)
+
+  # Defer the resultant StepFailures from the led jobs until we've had a chance
+  # to abandon the Gerrit CLs.
+  with api.defer.context() as defer:
     for f in api.futures.wait(futures):
-      f.result()
-  finally:
-    # Try to avoid leaving lingering CLs on Gerrit. Hopefully we can clean
-    # everything up in time if the build's been cancelled.
+      defer(f.result)
     for cl in cls_by_filepath.values():
-      _abandon_cl(api, cl)
+      change_num = cl.split('/')[-1]
+      _abandon_cl(api, change_num)
 
 
 def GenTests(api):
@@ -688,6 +712,34 @@ def GenTests(api):
           'gerrit create change at (chromium/src main)',
           api.gerrit.update_files_response_data(change_number=11235813)),
       api.post_check(post_process.MustRun, 'gerrit abandon 11235813'),
+  )
+
+  yield api.test(
+      'abandon_old_cls_success',
+      gerrit_change(),
+      gitiles_curl(),
+      affected_recipes(RECIPE),
+      default_builders(),
+      api.step_data(
+          'abandon old CLs.gerrit changes',
+          api.gerrit.get_one_change_response_data(change_number=654321)),
+      api.post_check(post_process.MustRun,
+                     'abandon old CLs.gerrit abandon 654321'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'abandon_old_cls_failure',
+      gerrit_change(),
+      gitiles_curl(),
+      affected_recipes(RECIPE),
+      default_builders(),
+      api.step_data(
+          'abandon old CLs.gerrit changes',
+          api.gerrit.get_one_change_response_data(change_number=654321)),
+      # A failure to abandon an old CL shouldn't fail the build.
+      api.step_data('abandon old CLs.gerrit abandon 654321', retcode=1),
+      api.post_process(post_process.DropExpectation),
   )
 
   def builder_config_path(p):

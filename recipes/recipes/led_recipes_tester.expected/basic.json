@@ -738,13 +738,15 @@
       "--branch",
       "main",
       "--subject",
-      "Test commit; testing a recipe CL\n\nThis CL was uploaded for the purposes of testing a recipe CL on\nChromium trybots. If this CL is more than 24 hours old, feel free\nto abandon it.\n\nCreated for https://chromium-review.googlesource.com/c/456789/12\nCreated by https://ci.chromium.org/ui/b/8945511751514863184\n\nBug: None\nCommit: false\n",
+      "Test commit; testing a recipe CL\n\nThis CL was uploaded for the purposes of testing a recipe CL on\nChromium trybots.\n\nCreated for https://chromium-review.googlesource.com/c/456789/12\nCreated by https://ci.chromium.org/ui/b/8945511751514863184\n\nBug: None\nCommit: false\n",
       "--json_file",
       "/path/to/tmp/json",
       "-p",
       "work_in_progress=true",
       "-p",
-      "notify=NONE"
+      "notify=NONE",
+      "-p",
+      "topic=led-recipes-tester"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
@@ -1361,13 +1363,15 @@
       "--branch",
       "main",
       "--subject",
-      "Test commit; testing a recipe CL\n\nThis CL was uploaded for the purposes of testing a recipe CL on\nChromium trybots. If this CL is more than 24 hours old, feel free\nto abandon it.\n\nCreated for https://chromium-review.googlesource.com/c/456789/12\nCreated by https://ci.chromium.org/ui/b/8945511751514863184\n\nBug: None\nCommit: false\n",
+      "Test commit; testing a recipe CL\n\nThis CL was uploaded for the purposes of testing a recipe CL on\nChromium trybots.\n\nCreated for https://chromium-review.googlesource.com/c/456789/12\nCreated by https://ci.chromium.org/ui/b/8945511751514863184\n\nBug: None\nCommit: false\n",
       "--json_file",
       "/path/to/tmp/json",
       "-p",
       "work_in_progress=true",
       "-p",
-      "notify=NONE"
+      "notify=NONE",
+      "-p",
+      "topic=led-recipes-tester"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
@@ -2245,6 +2249,127 @@
     "name": "test luci.chromium.try:win-rel.build ends with SUCCESS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "abandon old CLs"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--verbose",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "-p",
+      "status=open",
+      "-p",
+      "topic=led-recipes-tester",
+      "-p",
+      "age=24h",
+      "-p",
+      "author=None"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "abandon old CLs.gerrit changes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"91827\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"id\": \"fully~qualified~changeid\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"chromium/src\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"status\": \"NEW\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "abandon",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--change",
+      "91827",
+      "--json_file",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "abandon old CLs.gerrit abandon 91827",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"91827\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"id\": \"fully~qualified~changeid\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"chromium/src\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"status\": \"ABANDONED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
