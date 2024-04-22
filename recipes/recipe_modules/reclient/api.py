@@ -406,6 +406,8 @@ class ReclientApi(recipe_api.RecipeApi):
                               self._get_platform_exe_name('reproxy') + '.INFO')
         self._start_cloudtail(cloudtail_project_id, log_dir,
                               'reproxy-gomaip.INFO')
+        self._start_cloudtail(cloudtail_project_id, log_dir,
+                              'reproxy_outerr.log')
 
       self._start_reproxy(deps_cache_path)
       # This will get the reclient version the first time it is run,
@@ -424,6 +426,7 @@ class ReclientApi(recipe_api.RecipeApi):
             self._stop_cloudtail(
                 self._get_platform_exe_name('reproxy') + '.INFO')
             self._stop_cloudtail('reproxy-gomaip.INFO')
+            self._stop_cloudtail('reproxy_outerr.log')
             self._upload_rbe_metrics(self._reclient_log_dir)
             if self._props.publish_trace:
               self._upload_reclient_traces(self._reclient_log_dir)

@@ -116,6 +116,27 @@
   },
   {
     "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_outerr.log",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "infra_step": true,
+    "name": "preprocess for reclient.start cloudtail: reproxy_outerr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[TMP_BASE]/checkout/buildtools/reclient/bootstrap"
     ],
     "env": {
@@ -230,6 +251,20 @@
     ],
     "infra_step": true,
     "name": "postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "infra_step": true,
+    "name": "postprocess for reclient.stop cloudtail (3)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

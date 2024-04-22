@@ -713,6 +713,52 @@
   },
   {
     "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_1/reproxy_outerr.log",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.preprocess for reclient.start cloudtail: reproxy_outerr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
@@ -950,6 +996,45 @@
       }
     },
     "name": "CMake build default targets.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.postprocess for reclient.stop cloudtail (3)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -2191,6 +2276,52 @@
   },
   {
     "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_2/reproxy_outerr.log",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.start cloudtail: reproxy_outerr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
@@ -2428,6 +2559,45 @@
       }
     },
     "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.postprocess for reclient.stop cloudtail (3)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -3651,6 +3821,52 @@
   },
   {
     "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_3/reproxy_outerr.log",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.preprocess for reclient.start cloudtail: reproxy_outerr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
@@ -3888,6 +4104,45 @@
       }
     },
     "name": "CMake build _other.cc files.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.postprocess for reclient.stop cloudtail (3)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
@@ -5024,6 +5279,52 @@
   },
   {
     "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "start",
+      "--cloudtail-path",
+      "cloudtail",
+      "--cloudtail-project-id",
+      "goma-logs",
+      "--cloudtail-log-path",
+      "[CLEANUP]/reclient_log_tmp_4/reproxy_outerr.log",
+      "--pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.start cloudtail: reproxy_outerr.log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
@@ -5261,6 +5562,45 @@
       }
     },
     "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
+      "stop",
+      "--killed-pid-file",
+      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
+    ],
+    "env": {
+      "PLATFORM": "mac",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.postprocess for reclient.stop cloudtail (3)",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]
