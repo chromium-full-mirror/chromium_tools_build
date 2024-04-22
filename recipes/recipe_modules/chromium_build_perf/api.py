@@ -26,9 +26,10 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
   def _build(
       self,
       target,
-      with_remote_cache,
+      with_remote_cache=None,
       step_name_suffix=None,
       out_sub_dir=None,
+      use_rbe=True,
   ):
     """Run a build.
 
@@ -38,6 +39,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
                              Do not use, otherwise.
           step_name_suffix: suffix of the step name.
           out_sub_dir: Custom name to use the output directory.
+          use_rbe: Whether to use remote build execution or not
 
         Returns:
           A RawResult object with the compile step's status and failure message
@@ -48,7 +50,9 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     step_name = 'Build ' + target
     env = {}
     siso_args = []
-    if with_remote_cache:
+    if not use_rbe:
+      step_name += ' without remote execution'
+    elif with_remote_cache:
       step_name += ' with remote cache'
     else:
       step_name += ' without remote cache'
@@ -64,8 +68,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
             name=step_name,
             timeout=timeout,
             target=out_sub_dir,  # target is a sub directory name at compile().
-            # always enable reclient even if it's not used.
-            use_reclient=True,
+            use_reclient=use_rbe,
             siso_args=siso_args)
       finally:
         # b/323976014: Clean up temp dirs for iOS simulators.
