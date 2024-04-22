@@ -395,11 +395,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/testing/buildbot/chromium.chromiumos.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -420,8 +423,8 @@
     "name": "read test spec (chromium.chromiumos.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/chromium.chromiumos.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@chromium.chromiumos.json@{}@@@",
+      "@@@STEP_LOG_END@chromium.chromiumos.json@@@"
     ]
   },
   {

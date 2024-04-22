@@ -431,12 +431,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
   def _check_for_undocumented_increase(self, results_path, staging_dir,
                                        allow_regressions, warning_statuses):
-    step_result = self.m.json.read(
+    result_json = self.m.file.read_json(
         constants.RESULT_JSON_STEP_NAME,
         results_path,
-        step_test_data=lambda: self.m.json.test_api.output(constants.
-                                                           TEST_RESULT_JSON))
-    result_json = step_result.json.output
+        test_data=constants.TEST_RESULT_JSON)
     # Upload files (.ndjson) to storage bucket.
     filename_map = {}
     for filename in result_json['archive_filenames']:

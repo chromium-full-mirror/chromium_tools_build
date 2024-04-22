@@ -219,11 +219,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]\\builder\\src\\infra\\specs\\tryserver.webrtc.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "infra_step": true,
     "luci_context": {
@@ -241,21 +244,21 @@
     "name": "read test spec (tryserver.webrtc.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]\\builder\\src\\infra\\specs\\tryserver.webrtc.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"win_x86_more_configs\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"gtest_tests\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"dimensions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@            \"os\": \"Windows-10\"@@@",
-      "@@@STEP_LOG_LINE@json.output@          }@@@",
-      "@@@STEP_LOG_LINE@json.output@        },@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"test\": \"dummy_test\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@{@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@  \"win_x86_more_configs\": {@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@    \"gtest_tests\": [@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@      {@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@          \"dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@            \"os\": \"Windows-10\"@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@          }@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@        },@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@        \"test\": \"dummy_test\"@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@      }@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@    ]@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@  }@@@",
+      "@@@STEP_LOG_LINE@tryserver.webrtc.json@}@@@",
+      "@@@STEP_LOG_END@tryserver.webrtc.json@@@"
     ]
   },
   {
@@ -408,12 +411,16 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]\\builder\\src\\infra\\specs\\trybot_analyze_config.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "webrtc:try"
@@ -429,12 +436,12 @@
     "name": "read filter exclusion spec",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
+      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
     ]
   },
   {
@@ -1967,12 +1974,16 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]\\builder\\src\\infra\\specs\\trybot_analyze_config.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "webrtc:try"
@@ -1988,12 +1999,12 @@
     "name": "read filter exclusion spec (2)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
+      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
     ]
   },
   {
@@ -3398,12 +3409,16 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]\\builder\\src\\infra\\specs\\trybot_analyze_config.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "webrtc:try"
@@ -3419,12 +3434,12 @@
     "name": "read filter exclusion spec (3)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
+      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
     ]
   },
   {
@@ -5696,12 +5711,16 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]\\builder\\src\\infra\\specs\\trybot_analyze_config.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "webrtc:try"
@@ -5717,12 +5736,12 @@
     "name": "read filter exclusion spec (4)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
+      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
     ]
   },
   {

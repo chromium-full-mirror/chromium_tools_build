@@ -15,7 +15,7 @@ DEPS = [
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
-    'recipe_engine/step'
+    'recipe_engine/step',
 ]
 
 BUILDERS = freeze({
@@ -123,7 +123,7 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
 
   summary_file_name = 'summary.json'
   summary_file_path = output_dir_path.join(api.platform.name, summary_file_name)
-  api.json.read('read %s' % summary_file_name, summary_file_path)
+  api.file.read_json('read %s' % summary_file_name, summary_file_path)
 
 
 def GenTests(api):

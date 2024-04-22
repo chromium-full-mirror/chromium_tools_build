@@ -9,6 +9,7 @@ from RECIPE_MODULES.build.binary_size import constants
 DEPS = [
     'binary_size',
     'filter',
+    'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -140,7 +141,7 @@ def GenTests(api):
       api.binary_size.build(),
       api.override_step_data(
           constants.RESULT_JSON_STEP_NAME,
-          api.json.output({
+          api.file.read_json({
               'status_code': 1,
               'summary': '\n!summary!',
               'archive_filenames': [],
@@ -202,7 +203,7 @@ def GenTests(api):
       api.binary_size.build(fuchsia_size_footer=True),
       api.override_step_data(
           constants.RESULT_JSON_STEP_NAME,
-          api.json.output({
+          api.file.read_json({
               'status_code': 1,
               'summary': '\n!summary!',
               'archive_filenames': [],
@@ -217,7 +218,7 @@ def GenTests(api):
       api.binary_size.build(android_size_footer=True),
       api.override_step_data(
           constants.RESULT_JSON_STEP_NAME,
-          api.json.output({
+          api.file.read_json({
               'status_code': 1,
               'summary': '\n!summary!',
               'archive_filenames': [],
@@ -233,7 +234,7 @@ def GenTests(api):
       api.binary_size.build(commit_message='Revert some change'),
       api.override_step_data(
           constants.RESULT_JSON_STEP_NAME,
-          api.json.output({
+          api.file.read_json({
               'status_code': 1,
               'summary': '\n!summary!',
               'archive_filenames': [],
@@ -248,7 +249,7 @@ def GenTests(api):
       api.binary_size.build(commit_message='Some roller change'),
       api.override_step_data(
           constants.RESULT_JSON_STEP_NAME,
-          api.json.output({
+          api.file.read_json({
               'status_code': constants.FUCHSIA_ROLLER_WARNING,
               'summary': '\n!summary!',
               'archive_filenames': [],

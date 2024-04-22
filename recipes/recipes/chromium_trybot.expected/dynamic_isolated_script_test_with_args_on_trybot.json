@@ -607,11 +607,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/testing/buildbot/fake-group.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -632,33 +635,33 @@
     "name": "read test spec (fake-group.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/fake-group.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"fake-builder\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"isolated_scripts\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"args\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"--correct-common-arg\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        ],@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"isolate_name\": \"telemetry_gpu_unittests\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"telemetry_gpu_unittests\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"non_precommit_args\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"--SHOULD-NOT-BE-PRESENT-DURING-THE-RUN\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        ],@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"precommit_args\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"--these-args-should-be-present\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"--test-machine-name=\\\"${buildername}\\\"\",@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"--build-revision=\\\"${got_revision}\\\"\"@@@",
-      "@@@STEP_LOG_LINE@json.output@        ],@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"swarming\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@          \"dimensions\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@            \"os\": \"Linux\"@@@",
-      "@@@STEP_LOG_LINE@json.output@          }@@@",
-      "@@@STEP_LOG_LINE@json.output@        }@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@fake-group.json@{@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@  \"fake-builder\": {@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@    \"isolated_scripts\": [@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@      {@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        \"args\": [@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@          \"--correct-common-arg\"@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        ],@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        \"isolate_name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        \"name\": \"telemetry_gpu_unittests\",@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        \"non_precommit_args\": [@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@          \"--SHOULD-NOT-BE-PRESENT-DURING-THE-RUN\"@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        ],@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        \"precommit_args\": [@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@          \"--these-args-should-be-present\",@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@          \"--test-machine-name=\\\"${buildername}\\\"\",@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@          \"--build-revision=\\\"${got_revision}\\\"\"@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        ],@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        \"swarming\": {@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@          \"dimensions\": {@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@            \"os\": \"Linux\"@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@          }@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@        }@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@      }@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@    ]@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@  }@@@",
+      "@@@STEP_LOG_LINE@fake-group.json@}@@@",
+      "@@@STEP_LOG_END@fake-group.json@@@"
     ]
   },
   {
@@ -696,15 +699,19 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/testing/buildbot/trybot_analyze_config.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "chromium:try"
@@ -720,12 +727,12 @@
     "name": "read filter exclusion spec",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'testing', 'buildbot', 'trybot_analyze_config.json')@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"base\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"exclusions\": []@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
+      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
+      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
     ]
   },
   {

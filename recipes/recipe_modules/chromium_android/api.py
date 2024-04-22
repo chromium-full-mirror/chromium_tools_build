@@ -297,8 +297,8 @@ class AndroidApi(recipe_api.RecipeApi):
   def non_denylisted_devices(self):
     if not self.m.path.exists(self.denylist_file):
       return self.devices
-    step_result = self.m.json.read('read_denylist_file', self.denylist_file)
-    denylisted_devices = step_result.json.output
+    denylisted_devices = self.m.file.read_json('read_denylist_file',
+                                               self.denylist_file)
     return [s for s in self.devices if s not in denylisted_devices]
 
   def device_status_check(self):

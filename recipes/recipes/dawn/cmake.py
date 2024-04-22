@@ -115,10 +115,10 @@ def windows_sdk(api):
 
   try:
     with api.step.nest('Read Windows SDK environment'):
-      toolchain_data = api.json.read(
+      toolchain_data = api.file.read_json(
           'read build/win_toolchain.json',
           api.path.checkout_dir.join('build', 'win_toolchain.json'),
-          step_test_data=lambda: api.json.test_api.output({
+          test_data={
               'win_sdk':
                   'win_toolchain\\vs_files\\version_hash\\Windows Kits\\10',
               'path':
@@ -130,16 +130,16 @@ def windows_sdk(api):
               ],
               'wdk':
                   'win_toolchain\\vs_files\\version_hash\\wdk',
-          })).json.output
+          })
 
-      arch_data = api.json.read(
+      arch_data = api.file.read_json(
           'read SetEnv.x64.json',
           api.path.join(toolchain_data['win_sdk'], 'bin', 'SetEnv.x64.json'),
-          step_test_data=lambda: api.json.test_api.output({
+          test_data={
               'env': {
                   'PATH': [['Windows Kits', '10', 'bin', 'version', 'x64']],
               },
-          })).json.output
+          })
 
       env_prefixes = {}
       for k in arch_data['env']:

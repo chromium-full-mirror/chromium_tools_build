@@ -159,11 +159,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/infra/specs/client.webrtc.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "infra_step": true,
     "luci_context": {
@@ -181,17 +184,20 @@
     "name": "read test spec (client.webrtc.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/infra/specs/client.webrtc.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@client.webrtc.json@{}@@@",
+      "@@@STEP_LOG_END@client.webrtc.json@@@"
     ]
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/infra/specs/client.webrtc.perf.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "infra_step": true,
     "luci_context": {
@@ -209,8 +215,8 @@
     "name": "read test spec (client.webrtc.perf.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/infra/specs/client.webrtc.perf.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@client.webrtc.perf.json@{}@@@",
+      "@@@STEP_LOG_END@client.webrtc.perf.json@@@"
     ]
   },
   {

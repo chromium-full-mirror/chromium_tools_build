@@ -743,15 +743,13 @@ class ArchiveApi(recipe_api.RecipeApi):
   def _read_source_side_archive_spec(self, source_side_archive_spec_path):
     if not self.m.path.exists(source_side_archive_spec_path):
       return None
-    archive_spec_result = self.m.json.read(
+    source_side_archive_spec = self.m.file.read_json(
         'read archive spec (%s)' %
         self.m.path.basename(source_side_archive_spec_path),
         source_side_archive_spec_path,
-        infra_step=True,
-        step_test_data=lambda: self.m.json.test_api.output({}))
-    archive_spec_result.presentation.step_text = ('path: %s' %
-                                                  source_side_archive_spec_path)
-    source_side_archive_spec = archive_spec_result.json.output
+        test_data={})
+    self.m.step.active_result.presentation.step_text = (
+        'path: %s' % source_side_archive_spec_path)
     return source_side_archive_spec
 
   def _get_source_side_archive_spec(self, spec_path):

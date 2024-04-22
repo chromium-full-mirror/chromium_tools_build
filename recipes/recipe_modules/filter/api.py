@@ -72,17 +72,15 @@ class FilterApi(recipe_api.RecipeApi):
     "base". Some clients may require additional analyze configs (e.g.
     chromium_tests requires "chromium" in addition to "base").
     """
-    step_result = self.m.json.read(
-      'read filter exclusion spec',
-      config_path,
-      step_test_data=lambda: self.m.json.test_api.output({
-          'base': {
-            'exclusions': [],
-          },
-        })
-      )
-    step_result.presentation.step_text = 'path: %r' % config_path
-    return step_result.json.output
+    config = self.m.file.read_json(
+        'read filter exclusion spec',
+        config_path,
+        test_data={'base': {
+            'exclusions': []
+        }},
+    )
+    self.m.step.active_result.presentation.step_text = 'path: %r' % config_path
+    return config
 
   def _get_path_matchers(
       self,

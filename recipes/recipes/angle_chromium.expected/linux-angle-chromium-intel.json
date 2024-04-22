@@ -557,11 +557,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/testing/buildbot/chromium.angle.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -582,17 +585,17 @@
     "name": "read test spec (chromium.angle.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/chromium.angle.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"linux-angle-chromium-intel\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"isolated_scripts\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"isolate_name\": \"telemetry_gpu_integration_test\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"webgl_conformance_gl_tests\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@chromium.angle.json@{@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@  \"linux-angle-chromium-intel\": {@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@    \"isolated_scripts\": [@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@      {@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@        \"isolate_name\": \"telemetry_gpu_integration_test\",@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@        \"name\": \"webgl_conformance_gl_tests\"@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@      }@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@    ]@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@  }@@@",
+      "@@@STEP_LOG_LINE@chromium.angle.json@}@@@",
+      "@@@STEP_LOG_END@chromium.angle.json@@@"
     ]
   },
   {

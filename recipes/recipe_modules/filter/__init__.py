@@ -3,15 +3,16 @@
 # found in the LICENSE file.
 
 DEPS = [
-  'chromium',
-  'depot_tools/git',
-  'depot_tools/tryserver',
-  'recipe_engine/buildbucket',
-  'recipe_engine/context',
-  'recipe_engine/json',
-  'recipe_engine/path',
-  'recipe_engine/platform',
-  'recipe_engine/properties',
-  'recipe_engine/raw_io',
-  'recipe_engine/step',
+    'chromium',
+    'depot_tools/git',
+    'depot_tools/tryserver',
+    'recipe_engine/buildbucket',
+    'recipe_engine/context',
+    'recipe_engine/file',
+    'recipe_engine/json',
+    'recipe_engine/path',
+    'recipe_engine/platform',
+    'recipe_engine/properties',
+    'recipe_engine/raw_io',
+    'recipe_engine/step',
 ]

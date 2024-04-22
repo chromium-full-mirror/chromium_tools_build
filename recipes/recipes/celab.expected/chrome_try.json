@@ -2272,12 +2272,16 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[START_DIR]\\logs\\summary.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "chrome:luci.chrome.try"
@@ -2293,13 +2297,13 @@
     "name": "test summary.parse summary",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"1st test\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"/file\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"success\": false@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@summary.json@{@@@",
+      "@@@STEP_LOG_LINE@summary.json@  \"1st test\": {@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"output\": \"/file\",@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"success\": false@@@",
+      "@@@STEP_LOG_LINE@summary.json@  }@@@",
+      "@@@STEP_LOG_LINE@summary.json@}@@@",
+      "@@@STEP_LOG_END@summary.json@@@"
     ]
   },
   {

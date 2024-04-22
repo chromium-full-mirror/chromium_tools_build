@@ -569,11 +569,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[START_DIR]/logs/summary.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "cwd": "[START_DIR]/go/src/chromium.googlesource.com/enterprise/cel/test",
     "env_suffixes": {
@@ -581,6 +584,7 @@
         "[START_DIR]/packages_tests/bin"
       ]
     },
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "celab:ci"
@@ -596,9 +600,8 @@
     "name": "find failed tests.parse summary",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
+      "@@@STEP_LOG_LINE@summary.json@\"\"@@@",
+      "@@@STEP_LOG_END@summary.json@@@"
     ]
   },
   {
@@ -674,12 +677,16 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[START_DIR]/logs/summary.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "celab:ci"
@@ -695,21 +702,21 @@
     "name": "test summary.parse summary",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"1st test\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"/some/file\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"success\": false@@@",
-      "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"2nd test\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"/other/file\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"success\": true@@@",
-      "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"3rd test\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"output\": \"/missing\",@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"success\": false@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@summary.json@{@@@",
+      "@@@STEP_LOG_LINE@summary.json@  \"1st test\": {@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"output\": \"/some/file\",@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"success\": false@@@",
+      "@@@STEP_LOG_LINE@summary.json@  },@@@",
+      "@@@STEP_LOG_LINE@summary.json@  \"2nd test\": {@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"output\": \"/other/file\",@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"success\": true@@@",
+      "@@@STEP_LOG_LINE@summary.json@  },@@@",
+      "@@@STEP_LOG_LINE@summary.json@  \"3rd test\": {@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"output\": \"/missing\",@@@",
+      "@@@STEP_LOG_LINE@summary.json@    \"success\": false@@@",
+      "@@@STEP_LOG_LINE@summary.json@  }@@@",
+      "@@@STEP_LOG_LINE@summary.json@}@@@",
+      "@@@STEP_LOG_END@summary.json@@@"
     ]
   },
   {

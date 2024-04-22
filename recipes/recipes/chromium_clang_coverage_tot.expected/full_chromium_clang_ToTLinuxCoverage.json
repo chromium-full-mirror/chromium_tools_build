@@ -471,13 +471,17 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/out/clang_tot_coverage_report/linux/summary.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder",
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "chromium:ci"
@@ -492,9 +496,8 @@
     },
     "name": "read summary.json",
     "~followup_annotations": [
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
+      "@@@STEP_LOG_LINE@summary.json@\"\"@@@",
+      "@@@STEP_LOG_END@summary.json@@@"
     ]
   },
   {

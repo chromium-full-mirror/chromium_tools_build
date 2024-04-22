@@ -27,7 +27,6 @@ DEPS = [
     'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
-    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -402,7 +401,7 @@ def _GetFailedTests(api, logs_dir):
   failed_tests = []
 
   with api.step.nest('find failed tests'):
-    tests_summary = api.json.read('parse summary', summary_path).json.output
+    tests_summary = api.file.read_json('parse summary', summary_path)
 
     if not tests_summary:
       return []
@@ -430,7 +429,7 @@ def _ParseTestSummary(api, storage_logs, logs_dir):
 
   with api.step.nest('test summary') as summary_step:
     summary_presentation = summary_step.presentation
-    tests_summary = api.json.read('parse summary', summary_path).json.output
+    tests_summary = api.file.read_json('parse summary', summary_path)
 
     if not tests_summary:
       return None
@@ -521,7 +520,7 @@ def GenTests(api):
       api.step_data('run all tests', retcode=1),
       api.step_data(
           'find failed tests.parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': False,
                   'output': '/some/file'
@@ -553,7 +552,7 @@ def GenTests(api):
       api.step_data('run all tests', retcode=0),
       api.step_data(
           'test summary.parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': True,
                   'output': '/some/file'
@@ -578,7 +577,7 @@ def GenTests(api):
       api.step_data('find failed tests.parse summary'),
       api.step_data(
           'test summary.parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': False,
                   'output': '/some/file'
@@ -608,7 +607,7 @@ def GenTests(api):
       api.step_data('run all tests', retcode=1),
       api.step_data(
           'find failed tests.parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': False,
                   'output': '/some/file'
@@ -625,7 +624,7 @@ def GenTests(api):
       api.step_data('retry failed tests', retcode=1),
       api.step_data(
           'find failed tests (2).parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': False,
                   'output': '/some/file'
@@ -633,7 +632,7 @@ def GenTests(api):
           })),
       api.step_data(
           'test summary.parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': False,
                   'output': '/some/file'
@@ -664,7 +663,7 @@ def GenTests(api):
       api.step_data('run all tests'),
       api.step_data(
           'test summary.parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': True,
                   'output': '/some/file'
@@ -690,7 +689,7 @@ def GenTests(api):
       api.step_data('run all tests', retcode=1),
       api.step_data(
           'find failed tests.parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': False,
                   'output': '/some/file'
@@ -708,7 +707,7 @@ def GenTests(api):
       api.step_data('retry failed tests', retcode=1),
       api.step_data(
           'find failed tests (2).parse summary',
-          api.json.output({
+          api.file.read_json({
               '1st test': {
                   'success': True,
                   'output': '/some/file'
@@ -732,7 +731,7 @@ def GenTests(api):
       api.step_data('find failed tests.parse summary', retcode=1),
       api.step_data('test summary.parse summary', retcode=1),
       api.post_process(DropExpectation),
-      api.expect_status('FAILURE'),
+      api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
       'windows_quick_tests',
@@ -782,10 +781,11 @@ def GenTests(api):
                              >''')),
       api.step_data(
           'test summary.parse summary',
-          api.json.output({'1st test': {
-              'success': False,
-              'output': '/file'
-          }})),
+          api.file.read_json(
+              {'1st test': {
+                  'success': False,
+                  'output': '/file'
+              }})),
   )
   yield api.test(
       'chromium_no_tests',
@@ -862,8 +862,9 @@ def GenTests(api):
                              >''')),
       api.step_data(
           'test summary.parse summary',
-          api.json.output({'1st test': {
-              'success': False,
-              'output': '/file'
-          }})),
+          api.file.read_json(
+              {'1st test': {
+                  'success': False,
+                  'output': '/file'
+              }})),
   )

@@ -636,11 +636,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/testing/buildbot/chromium.swangle.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -661,16 +664,16 @@
     "name": "read test spec (chromium.swangle.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/chromium.swangle.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"linux-swangle-tot-swiftshader-x64\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"gtest_tests\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"test\": \"angle_end2end_tests\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@chromium.swangle.json@{@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@  \"linux-swangle-tot-swiftshader-x64\": {@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@    \"gtest_tests\": [@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@      {@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@        \"test\": \"angle_end2end_tests\"@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@      }@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@    ]@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@  }@@@",
+      "@@@STEP_LOG_LINE@chromium.swangle.json@}@@@",
+      "@@@STEP_LOG_END@chromium.swangle.json@@@"
     ]
   },
   {

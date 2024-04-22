@@ -262,7 +262,7 @@ def GenTests(api):
       api.chromium_tests.read_targets_spec(*fake_targets_spec),
       api.override_step_data(
           'read filter exclusion spec',
-          api.json.output({
+          api.file.read_json({
               'base': {
                   'exclusions': ['f.*'],
               },

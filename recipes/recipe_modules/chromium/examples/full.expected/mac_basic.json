@@ -438,11 +438,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/src/testing/buildbot/fake-group.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -463,8 +466,8 @@
     "name": "read test spec (fake-group.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/fake-group.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@fake-group.json@{}@@@",
+      "@@@STEP_LOG_END@fake-group.json@@@"
     ]
   },
   {

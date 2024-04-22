@@ -490,12 +490,16 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]\\resources\\read.py",
+      "RECIPE_MODULE[recipe_engine::file]\\resources\\fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[START_DIR]\\logs\\summary.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
+    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "celab:try"
@@ -511,9 +515,8 @@
     "name": "test summary.parse summary",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
+      "@@@STEP_LOG_LINE@summary.json@\"\"@@@",
+      "@@@STEP_LOG_END@summary.json@@@"
     ]
   },
   {

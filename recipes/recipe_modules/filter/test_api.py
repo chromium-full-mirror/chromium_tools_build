@@ -49,7 +49,7 @@ class FilterTestApi(recipe_test_api.RecipeTestApi):
       config['ignores'] = ignores
     return self.override_step_data(
         'read filter exclusion spec',
-        self.m.json.output({'base': config}),
+        self.m.file.read_json({'base': config}),
     )
 
   def exclude_everything(self) -> recipe_test_api.StepTestData:

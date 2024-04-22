@@ -190,11 +190,14 @@
   },
   {
     "cmd": [
-      "python3",
+      "vpython3",
       "-u",
-      "RECIPE_MODULE[recipe_engine::json]/resources/read.py",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
       "[CACHE]/builder/angle/infra/specs/angle.json",
-      "/path/to/tmp/json"
+      "/path/to/tmp/"
     ],
     "infra_step": true,
     "luci_context": {
@@ -212,17 +215,17 @@
     "name": "read test spec (angle.json)",
     "~followup_annotations": [
       "@@@STEP_TEXT@path: [CACHE]/builder/angle/infra/specs/angle.json@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"linux-clang-builder\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"isolated_scripts\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@      {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"isolate_name\": \"basic_isolate\",@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"basic_isolate_tests\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      }@@@",
-      "@@@STEP_LOG_LINE@json.output@    ]@@@",
-      "@@@STEP_LOG_LINE@json.output@  }@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
+      "@@@STEP_LOG_LINE@angle.json@{@@@",
+      "@@@STEP_LOG_LINE@angle.json@  \"linux-clang-builder\": {@@@",
+      "@@@STEP_LOG_LINE@angle.json@    \"isolated_scripts\": [@@@",
+      "@@@STEP_LOG_LINE@angle.json@      {@@@",
+      "@@@STEP_LOG_LINE@angle.json@        \"isolate_name\": \"basic_isolate\",@@@",
+      "@@@STEP_LOG_LINE@angle.json@        \"name\": \"basic_isolate_tests\"@@@",
+      "@@@STEP_LOG_LINE@angle.json@      }@@@",
+      "@@@STEP_LOG_LINE@angle.json@    ]@@@",
+      "@@@STEP_LOG_LINE@angle.json@  }@@@",
+      "@@@STEP_LOG_LINE@angle.json@}@@@",
+      "@@@STEP_LOG_END@angle.json@@@"
     ]
   },
   {

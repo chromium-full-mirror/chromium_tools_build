@@ -42,12 +42,10 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
     # Used to be called test specs, name has stuck around for now.
     filename = '%s.json' % builder_group
 
-    return (
-        self.override_step_data(
-            '%sread test spec (%s)%s' % (
-                step_prefix or '', filename, step_suffix or ''),
-            self.m.json.output(contents))
-    )
+    return (self.override_step_data(
+        '%sread test spec (%s)%s' %
+        (step_prefix or '', filename, step_suffix or ''),
+        self.m.file.read_json(contents)))
 
   def gen_swarming_and_rdb_results(self,
                                    suite_name,

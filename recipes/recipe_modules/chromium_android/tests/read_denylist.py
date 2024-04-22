@@ -7,6 +7,7 @@ from recipe_engine.post_process import (DoesNotRun, DropExpectation,
 
 DEPS = [
     'chromium_android',
+    'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/properties',
     'recipe_engine/path',
@@ -28,7 +29,7 @@ def GenTests(api):
       'denylisted_device',
       api.properties(denylist_exists=True),
       api.override_step_data('read_denylist_file',
-                             api.json.output({'serial1': {}})),
+                             api.file.read_json({'serial1': {}})),
       api.post_process(StepSuccess, 'read_denylist_file'),
       api.post_process(StepCommandContains, 'print devices', [
           'echo',
