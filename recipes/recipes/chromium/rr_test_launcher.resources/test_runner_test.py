@@ -52,6 +52,15 @@ class TestRunnerTest(unittest.TestCase):
     self.assertEqual(ret, 1)
     self.assertEqual(mock_chdir.call_count, 2)
 
+  def test_sanitize_test_name(self):
+    test_name = r'~#%&*{}\:<>?/|"'
+    expected = '_______________'
+    self.assertEqual(test_runner.sanitize_test_name(test_name, '_'), expected)
+
+    test_name = 'test.html'
+    expected = 'test.html'
+    self.assertEqual(test_runner.sanitize_test_name(test_name, '_'), expected)
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -59,9 +59,8 @@ def RunSteps(api):
 
   # Trigger reproducing job in swarming.
   command = [
-      'vpython3',
-      'test_runner.py',
-      '--test-names={0}'.format(test_name),
+      'vpython3', 'test_runner.py', '--test-names={0}'.format(test_name),
+      '--output-dir={0}'.format('${ISOLATED_OUTDIR}')
   ]
 
   request = (api.swarming.task_request().
@@ -88,7 +87,8 @@ def RunSteps(api):
       'collect rr tool runner results',
       swarming_tasks,
       output_dir=api.path.mkdtemp())
-
+  # TODO(jiesheng): Select and upload collected traces here with the binary to
+  # the GCS.
 
 def GenTests(api):
   query_test_results = resultdb_pb2.QueryTestResultsResponse(
