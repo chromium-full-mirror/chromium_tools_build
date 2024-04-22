@@ -554,7 +554,8 @@ def GenTests(api):
       api.post_process(
           post_process.StepTextContains,
           'gtest_test (with patch)',
-          ["This test is not being run because it is marked 'ci_only'"],
+          [("This test is not being run because it is marked 'ci_only'. "
+            "Use 'Include-Ci-Only-Tests: true' to override.")],
       ),
       api.post_process(post_process.DropExpectation),
   )

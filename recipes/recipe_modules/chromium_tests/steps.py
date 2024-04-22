@@ -1337,7 +1337,8 @@ class CiOnlyTest(TestWrapper):
 
   @property
   def _disabled_message(self):
-    return ("This test is not being run because it is marked 'ci_only'"
+    return (("This test is not being run because it is marked 'ci_only'."
+             f" Use '{INCLUDE_CI_FOOTER}: true' to override.")
             if self._disabled else '')
 
   @property
