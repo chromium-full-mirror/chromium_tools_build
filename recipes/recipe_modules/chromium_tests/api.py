@@ -1263,9 +1263,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def deapply_patch(self, bot_update_step):
     assert self.m.tryserver.is_tryserver
 
-    if self.m.platform.is_win:
-      self.m.chromium.taskkill()
-
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
       self.m.bot_update.deapply_patch(bot_update_step)
 

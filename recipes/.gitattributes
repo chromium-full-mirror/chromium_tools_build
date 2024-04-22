@@ -8,7 +8,6 @@
 /extract_build.py                 recipes
 /goma_bq_utils.py                 recipes
 /goma_utils.py                    recipes
-/kill_processes.py                recipes
 /process_dumps.py                 recipes
 /results_dashboard.py             recipes
 /runisolatedtest.py               recipes

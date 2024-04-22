@@ -108,9 +108,6 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     """
     kwargs.setdefault('no_fetch_tags', True)
 
-    if self.m.platform.is_win:
-      self.m.chromium.taskkill()
-
     timeout = int(self.timeout) if self.timeout else timeout
 
     if self.m.reclient.instance:

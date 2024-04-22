@@ -102,7 +102,6 @@ def GenTests(api):
       api.platform('win', 64),
       api.post_check(verify_checkout_dir,
                      api.path.cache_dir.join('builder', 'src')),
-      api.post_process(StepSuccess, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'bot_update'),

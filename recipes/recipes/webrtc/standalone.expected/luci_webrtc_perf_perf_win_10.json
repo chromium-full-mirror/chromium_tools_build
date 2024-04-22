@@ -1,35 +1,5 @@
 [
   {
-    "cmd": [
-      "python3",
-      "RECIPE_REPO[build]\\recipes\\kill_processes.py",
-      "--json-output",
-      "/path/to/tmp/json"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:perf"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "taskkill",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"num_processes_killed_by_pid\": 0,@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"processes_killed_by_name\": []@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@SET_BUILD_PROPERTY@chromium.taskkill@{\"num_processes_killed_by_pid\": 0, \"processes_killed_by_name\": []}@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "gclient config",
     "~followup_annotations": [

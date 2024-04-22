@@ -119,9 +119,6 @@ def compilator_steps(api, custom_deps, default_targets, gclient_vars,
   v8.set_chromium_configs(clobber=False, default_targets=default_targets)
 
   with api.step.nest('initialization'):
-    if api.platform.is_win:
-      api.chromium.taskkill()
-
     v8.checkout(revision)
     api.v8_tests.set_up_swarming()
     v8.runhooks()

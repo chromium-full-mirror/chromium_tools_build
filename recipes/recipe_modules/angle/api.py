@@ -71,11 +71,9 @@ class ANGLEApi(recipe_api.RecipeApi):
     self.m.chromium.runhooks()
     return update_step
 
-  def _compile(self, toolchain, isolated_targets):
+  def _compile(self, isolated_targets):
     raw_result = self.m.chromium_tests.run_mb_and_compile(
         self._builder_id, ['all'], isolated_targets, '')
-    if self.m.platform.is_win and toolchain == 'msvc':
-      self.m.chromium.taskkill()
     return raw_result
 
   def _run_trace_tests(self, checkout, gtest_filter, step_name):
@@ -115,7 +113,7 @@ class ANGLEApi(recipe_api.RecipeApi):
     elif test_mode == 'trace_tests':
       self._trace_tests()
     elif test_mode == 'compile_only':
-      raw_result = self._compile(toolchain, None)
+      raw_result = self._compile(None)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     else:
@@ -148,7 +146,7 @@ class ANGLEApi(recipe_api.RecipeApi):
         test_targets = [t.isolate_target for t in tests if t.uses_isolate]
         compile_targets = sorted(list(set(test_targets)))
 
-      compile_step = self._compile(toolchain, compile_targets)
+      compile_step = self._compile(compile_targets)
       if compile_step.status != common_pb.SUCCESS:
         return compile_step
 

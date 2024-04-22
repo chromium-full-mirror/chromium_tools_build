@@ -126,9 +126,6 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
       api.v8_tests.set_up_swarming()
   else:
     with api.step.nest('initialization'):
-      if api.platform.is_win:
-        api.chromium.taskkill()
-
       update_step = v8.checkout(clobber=clobber_all)
 
       api.v8_tests.set_up_swarming()
@@ -1022,13 +1019,8 @@ def GenTests(api):
          api.post_process(DropExpectation))
 
   # Test windows-specific build steps.
-  yield (
-    api.v8.test(
-        'client.v8',
-        'V8 Foobar',
-        'windows',
-    ) +
-    api.platform('win', 64) +
-    api.post_process(MustRun, 'initialization.taskkill') +
-    api.post_process(DropExpectation)
-  )
+  yield (api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'windows',
+  ) + api.platform('win', 64) + api.post_process(DropExpectation))

@@ -71,7 +71,6 @@ _PY3_8_FILES = (
     'recipes/extract_build.py',
     'recipes/goma_bq_utils.py',
     'recipes/goma_utils.py',
-    'recipes/kill_processes.py',
     'recipes/recipe_modules/adb/resources/list_devices.py',
     'recipes/recipe_modules/archive/resources/batch.py',
     'recipes/recipe_modules/archive/resources/filter_build_files.py',
