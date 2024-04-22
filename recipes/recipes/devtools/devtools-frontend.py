@@ -294,7 +294,11 @@ class UnitTests(DevToolsTests):
       result = self.collect()
       if not result.infra_failures:
         if self.coverage:
-          self.copy_coverage_data()
+          try:
+            self.copy_coverage_data()
+          except self.api.step.StepFailure:
+            result.add_infra_failure(
+                f'Failed to copy coverage data from {self.step_name}')
       return result
 
   def copy_coverage_data(self):
@@ -1169,6 +1173,24 @@ def GenTests(api):
       ),
       api.post_process(post_process.DropExpectation),
       status='FAILURE',
+  )
+  yield api.test(
+      'ci failed parallel builder on unit tests karma file copy',
+      api.builder_group.for_current('tryserver.devtools-frontend'),
+      ci_build(builder='parallel_linux'),
+      api.step_data(
+          'Trigger Tests.Trigger E2E Tests.divide test run',
+          api.raw_io.stream_output_text(
+              'node runner config pattern', stream='stdout')),
+      api.step_data('Unit Tests.copy unit tests coverage data',
+                    api.file.errno('WinError 3')),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Failed to copy coverage data from Unit Tests'),
+      api.post_process(post_process.MustRun, 'Unit Tests'),
+      api.post_process(post_process.MustRun, 'Interactions Tests'),
+      api.post_process(post_process.MustRun, 'E2E Tests'),
+      api.post_process(post_process.DropExpectation),
+      status='INFRA_FAILURE',
   )
   yield api.test(
       'ci failed parallel builder on Performance tests',
