@@ -1036,24 +1036,40 @@ class Test(AbstractTest):
     # all the tests fail to pass a suffix.
     return None
 
-  def _present_rdb_results(self, step_result, rdb_results):
+  def _present_rdb_results(self,
+                           step_result,
+                           rdb_results,
+                           as_nested_step=False):
     """Add a summary of test failures tracked in RDB to the given step_result.
 
     This duplicates info present in the "Test Results" tab in the new Milo UI.
     TODO(crbug.com/1245085): Remove this if/when all users have migrated to
     the new UI.
+
+    Args:
+      step_result: Active step to display test info on.
+      rdb_results: A util.RDBPerSuiteResults instance containing the suite's
+          results.
+      as_nested_step: True if we need to treat step_result as a nested step
+          for display purposes.
     """
     if not rdb_results or not rdb_results.unexpected_failing_tests:
       return
 
     failures, failures_text = self.api.m.test_utils.limit_failures(
         sorted([t.test_name for t in rdb_results.unexpected_failing_tests]))
-    step_result.presentation.step_text += (
-        self.api.m.presentation_utils.format_step_text(
-            [['deterministic failures [caused step to fail]:', failures_text]]))
+    display_text = self.api.m.presentation_utils.format_step_text(
+        [['deterministic failures [caused step to fail]:', failures_text]])
+    if as_nested_step:
+      step_result.step_text += display_text
+    else:
+      step_result.presentation.step_text += display_text
     for failure in failures:
       results_url = self.api.get_milo_test_results_url(failure)
-      step_result.presentation.links[failure] = results_url
+      if as_nested_step:
+        step_result.links[failure] = results_url
+      else:
+        step_result.presentation.links[failure] = results_url
 
 
 class AbstractSwarmingTest(AbstractTest):
@@ -3082,9 +3098,9 @@ class SkylabTest(AbstractSkylabTest, Test):
   def tast_expr_file(self, value: str) -> None:
     self._tast_expr_file = value
 
-  def _raise_failed_step(self, suffix, step, status, failure_msg):
-    step.presentation.status = status
-    step.presentation.step_text += failure_msg
+  def _raise_failed_nested_step(self, suffix, step, status, failure_msg):
+    step.status = status
+    step.step_text += failure_msg
     self._update_failure_on_exit(suffix, True, step)
     raise self.api.m.step.StepFailure(status)
 
@@ -3118,14 +3134,14 @@ class SkylabTest(AbstractSkylabTest, Test):
         if ctp_id := self.ctp_build_ids.get(suffix):
           step.links['CTP Build'] = bb_url % ctp_id
 
-        self._raise_failed_step(
+        self._raise_failed_nested_step(
             suffix, step, self.api.m.step.EXCEPTION,
             'Test did not run or failed to report to ResultDB.'
             'Check the CTP build for details.')
 
       if rdb_results.unexpected_failing_tests:
-        step.presentation.status = self.api.m.step.FAILURE
-      self._present_rdb_results(step, rdb_results)
+        step.status = self.api.m.step.FAILURE
+      self._present_rdb_results(step, rdb_results, as_nested_step=True)
 
       # RDB may not collect all failures from test runners. E.g.
       # infra failure on one shard and did not upload its results
@@ -3139,21 +3155,19 @@ class SkylabTest(AbstractSkylabTest, Test):
         with self.api.m.step.nest(
             f'shard: #{tr.shard}', status='last') as shard_step:
           if tr.status == common_pb2.FAILURE:
-            shard_step.presentation.status = self.api.m.step.FAILURE
+            shard_step.status = self.api.m.step.FAILURE
           elif tr.status != common_pb2.SUCCESS:
-            shard_step.presentation.status = self.api.m.step.EXCEPTION
+            shard_step.status = self.api.m.step.EXCEPTION
           if tr.url:
-            shard_step.presentation.links['test results'] = (
-                f'{tr.url}/test-results')
+            shard_step.links['test results'] = (f'{tr.url}/test-results')
           if tr.log_url:
-            shard_step.presentation.links['debug log'] = tr.log_url
+            shard_step.links['debug log'] = tr.log_url
           shard_steps.append(shard_step)
 
-      if any(not s.presentation.status in
-             [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
+      if any(not s.status in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
              for s in shard_steps):
-        self._raise_failed_step(suffix, step, self.api.m.step.EXCEPTION,
-                                'Some shards were unsuccessful.')
+        self._raise_failed_nested_step(suffix, step, self.api.m.step.EXCEPTION,
+                                       'Some shards were unsuccessful.')
 
   def compile_targets(self) -> Iterable[str]:
     t = [self.spec.target_name]

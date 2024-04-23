@@ -231,11 +231,9 @@ def archive_src_side_deps(api, affected_files):
     # a `/` that the linux orchestrators need to construct Paths
     relative_test_spec_dir = relative_test_spec_dir.replace(api.path.sep, '/')
 
-    nested_step.presentation.properties['src_side_test_spec_dir'] = (
-        relative_test_spec_dir)
-    nested_step.presentation.properties['src_side_deps_digest'] = digest
-    nested_step.presentation.logs['dep paths'] = api.json.dumps(
-        dep_paths, indent=2)
+    nested_step.properties['src_side_test_spec_dir'] = (relative_test_spec_dir)
+    nested_step.properties['src_side_deps_digest'] = digest
+    nested_step.logs['dep paths'] = api.json.dumps(dep_paths, indent=2)
 
 
 def get_src_side_dep_paths(api):

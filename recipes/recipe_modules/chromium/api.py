@@ -903,9 +903,8 @@ class ChromiumApi(recipe_api.RecipeApi):
                                                 (kind, xcode_build_version))
 
     with self.m.step.nest('ensure xcode') as step_result:
-      step_result.presentation.step_text = (
-          'Ensuring Xcode version %s in %s' %
-          (xcode_build_version, xcode_app_path))
+      step_result.step_text = ('Ensuring Xcode version %s in %s' %
+                               (xcode_build_version, xcode_app_path))
 
       self.delete_old_mac_toolchain()
 

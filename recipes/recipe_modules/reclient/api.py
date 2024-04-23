@@ -292,7 +292,7 @@ class ReclientApi(recipe_api.RecipeApi):
           'PATCH': int(parts[2]),
           'HASH': parts[3],
       }
-      version_step.presentation.logs['reclient_version'] = self.m.json.dumps(
+      version_step.logs['reclient_version'] = self.m.json.dumps(
           version_dict, indent=2)
       return version_dict
 

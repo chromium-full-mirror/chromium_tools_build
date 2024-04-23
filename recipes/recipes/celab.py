@@ -408,16 +408,15 @@ def _GetFailedTests(api, logs_dir):
 
     for test in tests_summary:
       with api.step.nest(test) as test_step:
-        test_presentation = test_step.presentation
         result = tests_summary[test]
 
         if not result['success']:
-          test_presentation.status = api.step.FAILURE
+          test_step.status = api.step.FAILURE
           failed_tests.append(test)
 
         if 'output' in result:
           logs = api.file.read_text('read logs', result['output'])
-          test_presentation.logs['test.py output'] = logs.splitlines()
+          test_step.logs['test.py output'] = logs.splitlines()
 
     return failed_tests
 
@@ -428,7 +427,6 @@ def _ParseTestSummary(api, storage_logs, logs_dir):
   summary_path = logs_dir.join('summary.json')
 
   with api.step.nest('test summary') as summary_step:
-    summary_presentation = summary_step.presentation
     tests_summary = api.file.read_json('parse summary', summary_path)
 
     if not tests_summary:
@@ -437,18 +435,17 @@ def _ParseTestSummary(api, storage_logs, logs_dir):
     for test in tests_summary:
       try:
         with api.step.nest(test) as test_step:
-          test_presentation = test_step.presentation
           result = tests_summary[test]
 
-          test_presentation.status = api.step.SUCCESS
+          test_step.status = api.step.SUCCESS
 
           if not result['success']:
-            test_presentation.status = api.step.FAILURE
-            summary_presentation.status = api.step.FAILURE
+            test_step.status = api.step.FAILURE
+            summary_step.status = api.step.FAILURE
 
             if 'output' in result:
               logs = api.file.read_text('read logs', result['output'])
-              test_presentation.logs['test.py output'] = logs.splitlines()
+              test_step.logs['test.py output'] = logs.splitlines()
 
             # Upload logs if they exist (test fails after Deployment starts)
             compute_logs_dir = logs_dir.join(test)
@@ -463,9 +460,9 @@ def _ParseTestSummary(api, storage_logs, logs_dir):
               # Merge the gsutil links in the Test step.
               upload_presentation = upload_step.presentation
               for link in upload_presentation.links:
-                test_presentation.links[link] = upload_presentation.links[link]
+                test_step.links[link] = upload_presentation.links[link]
       except Exception as e:
-        summary_presentation.logs['exception %s' % test] = repr(e).splitlines()
+        summary_step.logs['exception %s' % test] = repr(e).splitlines()
 
     return tests_summary
 

@@ -1902,9 +1902,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       digest = self.m.cas.archive('archive test-trigger deps to RBE-CAS',
                                   base_dir, *dep_paths)
-      result.presentation.logs["collected test-trigger deps"] = [
-          str(x) for x in dep_paths
-      ]
+      result.logs["collected test-trigger deps"] = [str(x) for x in dep_paths]
       return digest
 
   def _download_command_lines(self, command_lines_digest):
@@ -2574,7 +2572,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       abs_runtime_deps = build_dir.join(target + '.isolate')
       if not self.m.path.exists(abs_runtime_deps):
         failure_msg = 'Failed to find the %s.isolate.' % target
-        step.presentation.status = self.m.step.FAILURE
+        step.status = self.m.step.FAILURE
         raise self.m.step.StepFailure(failure_msg)
 
       content = self.m.file.read_text('read isolate file', abs_runtime_deps)
@@ -2582,12 +2580,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         isolate_dict = eval(content.strip())
       except Exception as e:
         failure_msg = 'Failed to parse the %s.isolate' % target
-        step.presentation.status = self.m.step.FAILURE
+        step.status = self.m.step.FAILURE
         raise self.m.step.StepFailure(failure_msg) from e
 
       if len(isolate_dict.get('variables', {}).get('files', [])) == 0:
         failure_msg = 'No dependencies attached to target %s.' % target
-        step.presentation.status = self.m.step.FAILURE
+        step.status = self.m.step.FAILURE
         raise self.m.step.StepFailure(failure_msg)
 
       runtime_dict = {}
