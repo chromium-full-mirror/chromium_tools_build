@@ -38,7 +38,8 @@ src/buildtools: https://chromium.googlesource.com/chromium/buildtools.git@5fd669
 src/tools/luci-go:infra/tools/luci/isolate/${platform}: https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@git_revision:3d8f881462b1a93c7525499381fafc8a08691be7
 src/ninja:infra/3pp/tools/ninja/${platform}: https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.4
 src/mock-set-dep-failing: mock/set-dep-failing.git@2
-src/mock-skip-chromium-roll: mock/skip-chromium-roll.git@2"""
+src/mock-skip-chromium-roll: mock/skip-chromium-roll.git@2
+src/third_party/js_code_coverage:d538975c: gs://chromium-nodejs/js_code_coverage/d538975c"""
 
 
 class DummyCLManager:

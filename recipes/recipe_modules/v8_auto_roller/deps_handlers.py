@@ -154,7 +154,7 @@ class TargetDep:
     return canonical_location(self.location)
 
   @property
-  def source_system(self) -> Literal['cipd', 'chromium', 'tip_of_tree']:
+  def source_system(self) -> Literal['chromium', 'cipd', 'tip_of_tree']:
     manual_sources = self.config.get('dependency_version_sources', {})
 
     if self.name in manual_sources:
@@ -230,7 +230,7 @@ class TargetDep:
           stdout=self.api.raw_io.output_text(),
       ).stdout.strip().split('\t')[0]
       if head_revision:
-          return head_revision
+        return head_revision
 
     assert False, (
         f'Cannot determine revision for {self.name} at {self.location}.')
@@ -306,6 +306,11 @@ def get_chromium_deps_by_location(api) -> Dict[str, ChromiumDep]:
   )
   result = {}
   for name, entry in chromium_dep_by_name.items():
+    # Skip GCS dependencies
+    # TODO(336470709): Add support for rolling GCS deps
+    if entry.startswith('gs://'):
+      continue
+
     location, version = get_location_version(entry)
     clean_location = canonical_location(location)
     chromium_dep = ChromiumDep(name, location, version)
