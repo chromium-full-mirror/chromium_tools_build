@@ -103,10 +103,10 @@ class V8AutoRoller(recipe_api.RecipeApi):
     return result
 
   def regular_roll(self, autoroller_config, cl_manager):
-    with self.m.step.nest('Find updated deps'):
+    with self.m.step.nest('Find updated deps') as step_presentation:
       discard_local_changes(self.m)
       trusted_updates, untrusted_updates, failed = get_dep_updates(
-          self.m, autoroller_config)
+          self.m, step_presentation, autoroller_config)
 
     TrustedRollHandler(self, autoroller_config,
                        trusted_updates).roll(cl_manager)

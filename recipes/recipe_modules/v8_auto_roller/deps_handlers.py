@@ -236,9 +236,12 @@ class TargetDep:
         f'Cannot determine revision for {self.name} at {self.location}.')
 
 
-def get_dep_updates(api, autoroller_config):
+def get_dep_updates(api, step_presentation, autoroller_config):
   chromium_dep_by_location = get_chromium_deps_by_location(api)
-  target_deps = get_target_deps(api, autoroller_config, chromium_dep_by_location)
+
+  target_deps = get_target_deps(api, autoroller_config,
+                                chromium_dep_by_location)
+  step_presentation.logs['filtered deps'] = [repr(td) for td in target_deps]
 
   trusted_updates = []
   untrusted_updates = []
@@ -338,10 +341,6 @@ def get_target_deps(
 
   target_deps = filter_deps(autoroller_config, target_deps)
   target_deps = sorted(target_deps, key=lambda dep: dep.name)
-
-  api.step.active_result.presentation.logs['filtered deps'] = [
-      repr(td) for td in target_deps
-  ]
 
   return target_deps
 

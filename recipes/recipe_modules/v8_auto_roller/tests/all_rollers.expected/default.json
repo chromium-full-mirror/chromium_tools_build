@@ -182,7 +182,21 @@
   },
   {
     "cmd": [],
-    "name": "Find updated deps"
+    "name": "Find updated deps",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@filtered deps@buildtools @ 5fd66957f08bb752dca714a591c84587c9d70762 \u2192 chromium @ 5fd66957f08bb752dca714a591c84587c9d70762 (trusted) from https://chromium.googlesource.com/chromium/buildtools.git@@@",
+      "@@@STEP_LOG_LINE@filtered deps@mock-package-latest:mock/package-latest @ 6fd66957f08bb752dca714a591c84587c9d70763 \u2192 cipd @ resolved-instance_id-of-instance_id_1--- (reviewed) from https://chrome-infra-packages.appspot.com/mock/package-latest@@@",
+      "@@@STEP_LOG_LINE@filtered deps@mock-package-without-latest-ref:mock/package-without-latest-ref @ 7fd66957f08bb752dca714a591c84587c9d70764 \u2192 cipd @ resolved-instance_id-of-no-latest------- (reviewed) from https://chrome-infra-packages.appspot.com/mock/package-without-latest-ref@@@",
+      "@@@STEP_LOG_LINE@filtered deps@mock-set-dep-failing @ 1 \u2192 chromium @ 2 (trusted) from mock/set-dep-failing.git@@@",
+      "@@@STEP_LOG_LINE@filtered deps@mock-skip-chromium-roll @ 1 \u2192 tip_of_tree @ 3 (reviewed) from mock/skip-chromium-roll.git@@@",
+      "@@@STEP_LOG_LINE@filtered deps@mock-tot-retsam-rolled @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ deadbeef (reviewed) from https://chromium.googlesource.com/tot-retsam-rolled.git@@@",
+      "@@@STEP_LOG_LINE@filtered deps@mock-tot-rolled @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ deadbeef (reviewed) from https://chromium.googlesource.com/tot-rolled.git@@@",
+      "@@@STEP_LOG_LINE@filtered deps@ninja:infra/3pp/tools/ninja/${platform} @ version:2@1.8.2.chromium.3 \u2192 chromium @ version:2@1.8.2.chromium.4 (trusted) from https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@@@",
+      "@@@STEP_LOG_LINE@filtered deps@tools/clang @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ 4 (trusted) from https://chromium.googlesource.com/chromium/src/tools/clang@@@",
+      "@@@STEP_LOG_LINE@filtered deps@tools/clang-reviewed @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ 5 (reviewed) from https://example.com/tools/clang-reviewed.git@@@",
+      "@@@STEP_LOG_LINE@filtered deps@tools/luci-go:infra/tools/luci/isolate/${platform} @ git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9 \u2192 chromium @ git_revision:3d8f881462b1a93c7525499381fafc8a08691be7 (trusted) from https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@@@",
+      "@@@STEP_LOG_END@filtered deps@@@"
+    ]
   },
   {
     "cmd": [
@@ -480,19 +494,7 @@
     "infra_step": true,
     "name": "Find updated deps.look up tools_clang-reviewed (main)",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@filtered deps@buildtools @ 5fd66957f08bb752dca714a591c84587c9d70762 \u2192 chromium @ 5fd66957f08bb752dca714a591c84587c9d70762 (trusted) from https://chromium.googlesource.com/chromium/buildtools.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-package-latest:mock/package-latest @ 6fd66957f08bb752dca714a591c84587c9d70763 \u2192 cipd @ resolved-instance_id-of-instance_id_1--- (reviewed) from https://chrome-infra-packages.appspot.com/mock/package-latest@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-package-without-latest-ref:mock/package-without-latest-ref @ 7fd66957f08bb752dca714a591c84587c9d70764 \u2192 cipd @ resolved-instance_id-of-no-latest------- (reviewed) from https://chrome-infra-packages.appspot.com/mock/package-without-latest-ref@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-set-dep-failing @ 1 \u2192 chromium @ 2 (trusted) from mock/set-dep-failing.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-skip-chromium-roll @ 1 \u2192 tip_of_tree @ 3 (reviewed) from mock/skip-chromium-roll.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-tot-retsam-rolled @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ deadbeef (reviewed) from https://chromium.googlesource.com/tot-retsam-rolled.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-tot-rolled @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ deadbeef (reviewed) from https://chromium.googlesource.com/tot-rolled.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@ninja:infra/3pp/tools/ninja/${platform} @ version:2@1.8.2.chromium.3 \u2192 chromium @ version:2@1.8.2.chromium.4 (trusted) from https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@@@",
-      "@@@STEP_LOG_LINE@filtered deps@tools/clang @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ 4 (trusted) from https://chromium.googlesource.com/chromium/src/tools/clang@@@",
-      "@@@STEP_LOG_LINE@filtered deps@tools/clang-reviewed @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ 5 (reviewed) from https://example.com/tools/clang-reviewed.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@tools/luci-go:infra/tools/luci/isolate/${platform} @ git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9 \u2192 chromium @ git_revision:3d8f881462b1a93c7525499381fafc8a08691be7 (trusted) from https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@@@",
-      "@@@STEP_LOG_END@filtered deps@@@"
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
