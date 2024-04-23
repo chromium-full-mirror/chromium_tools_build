@@ -2062,7 +2062,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       _, invalid_suites = self._get_valid_and_invalid_results(test_suites)
       # For DEPS autoroll analysis
       if not invalid_suites:
-        self.m.cq.set_do_not_retry_build()
+        self.m.cv.set_do_not_retry_build()
 
   def determine_build_status_from_tests(self, test_suites, suffix):
     """Determines the appropriate build status based on the tests' results.
@@ -2731,14 +2731,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def find_suites_to_skip(self):
     """Returns a set of tests that has passed in the same patchset."""
-    if not self.m.cq.active or not any(
+    if not self.m.cv.active or not any(
         tag.key == 'cq_equivalent_cl_group_key'
         for tag in self.m.buildbucket.build.tags):
       return set()
 
     with self.m.step.nest(
         'check previous builds for skippable test suites') as presentation:
-      equivalent_key = self.m.cq.equivalent_cl_group_key
+      equivalent_key = self.m.cv.equivalent_cl_group_key
       bucket = self.m.buildbucket.build.builder.bucket
       predicate = builds_service_pb2.BuildPredicate(
           builder=self.m.buildbucket.build.builder,

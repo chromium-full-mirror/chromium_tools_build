@@ -15,7 +15,7 @@ DEPS = [
     'depot_tools/presubmit',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
-    'recipe_engine/cq',
+    'recipe_engine/cv',
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
@@ -202,7 +202,7 @@ def _RunStepsInternal(api):
       '--gerrit_branch', api.tryserver.gerrit_change_target_ref,
       '--gerrit_fetch',
   ]
-  if api.cq.active and api.cq.run_mode == api.cq.DRY_RUN:
+  if api.cv.active and api.cv.run_mode == api.cv.DRY_RUN:
     presubmit_args.append('--dry_run')
 
   presubmit_args.extend([
@@ -404,7 +404,7 @@ def GenTests(api):
 
   yield api.test(
       'chromium_dry_run',
-      api.cq(run_mode=api.cq.DRY_RUN),
+      api.cv(run_mode=api.cv.DRY_RUN),
       api.buildbucket.try_build(
           builder='chromium_presubmit',
           git_repo='https://chromium.googlesource.com/chromium/src'),

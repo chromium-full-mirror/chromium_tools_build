@@ -156,7 +156,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       if should_forward:
         compilator_properties[p] = thaw(value)
 
-    compilator_properties.update(self.m.cq.props_for_child_build)
+    compilator_properties.update(self.m.cv.props_for_child_build)
     self.m.chromium_bootstrap.update_trigger_properties(compilator_properties)
 
     # When this enabled, triggered compilators will not be automatically

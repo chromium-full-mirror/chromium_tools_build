@@ -33,7 +33,6 @@ DEPS = [
     'recipe_engine/cas',
     'recipe_engine/commit_position',
     'recipe_engine/context',
-    'recipe_engine/cq',
     'recipe_engine/cv',
     'recipe_engine/file',
     'recipe_engine/led',

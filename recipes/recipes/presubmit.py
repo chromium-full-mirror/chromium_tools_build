@@ -13,7 +13,7 @@ DEPS = [
     'depot_tools/presubmit',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
-    'recipe_engine/cq',
+    'recipe_engine/cv',
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
@@ -72,8 +72,8 @@ def RunSteps(api):
     api.gclient.c.target_os.add('android')
     api.gclient.c.target_os.add('linux')
 
-  if api.cq.active and api.cq.run_mode == api.cq.DRY_RUN:
-    api.cq.allow_reuse_for(*[api.cq.DRY_RUN])
+  if api.cv.active and api.cv.run_mode == api.cv.DRY_RUN:
+    api.cv.allow_reuse_for(*[api.cv.DRY_RUN])
   with api.context(cwd=cwd):
     bot_update_step = api.presubmit.prepare()
     if not api.tryserver.gerrit_change:
@@ -118,7 +118,7 @@ def GenTests(api):
           bucket='try',
           builder='chromium_presubmit',
           git_repo='https://chromium.googlesource.com/chromium/src'),
-      api.cq(run_mode=api.cq.DRY_RUN),
+      api.cv(run_mode=api.cv.DRY_RUN),
       api.step_data('presubmit', api.json.output({})),
       # TODO(yiwzhang): drop the expectation and assert this build is
       # reusable here once it becomes easier to check output properties.
@@ -131,7 +131,7 @@ def GenTests(api):
           bucket='try',
           builder='chromium_presubmit',
           git_repo='https://chromium.googlesource.com/chromium/src'),
-      api.cq(run_mode=api.cq.FULL_RUN),
+      api.cv(run_mode=api.cv.FULL_RUN),
       api.step_data('presubmit', api.json.output({})),
       # TODO(yiwzhang): drop the expectation and assert this build is *NOT*
       # reusable here once it becomes easier to check output properties.
