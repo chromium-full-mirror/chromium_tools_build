@@ -39,16 +39,16 @@ def RunSteps(api, properties):
   s.custom_vars['checkout_nacl'] = True  # to verify nacl config
   gclient_config.got_revision_mapping[s.name] = 'got_revision'
 
-  with api.context(cwd=api.path.cache_dir.join('builder')):
+  with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout(
         patch=True, gclient_config=gclient_config)
 
-  repo_path = api.path.cache_dir.join('builder',
-                                      update_result.json.output['root'])
+  repo_path = api.path.cache_dir.joinpath('builder',
+                                          update_result.json.output['root'])
 
   bad_reclient_configs = []
   with api.context(cwd=repo_path):
-    fetch_script = repo_path.join(properties.fetch_script)
+    fetch_script = repo_path / properties.fetch_script
     for p in properties.rbe_project:
       with api.step.nest(p.name):
         fetch_cmd = [fetch_script, '--rbe_project', p.name]
@@ -57,7 +57,7 @@ def RunSteps(api, properties):
 
           with api.step.nest('verify'):
             for cfg in p.cfg_file:
-              cfg = repo_path.join(cfg)
+              cfg = repo_path / cfg
               # Mock the cfg files as existing for the purposes of testing.
               if api.properties.get('mock_cfgs', False):
                 api.path.mock_add_paths(cfg)

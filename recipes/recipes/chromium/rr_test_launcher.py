@@ -50,12 +50,12 @@ def RunSteps(api):
       test_binary_path)
   api.cas.download('download test binary', task_config.cas_input_root,
                    api.path.cleanup_dir)
-  runner_dir = api.path.cleanup_dir.join(RUNNER_PACKAGE_PATH)
+  runner_dir = api.path.cleanup_dir / RUNNER_PACKAGE_PATH
   api.file.copytree('copy source files', api.resource('.'), runner_dir)
-  api.isolate.write_isolate_file(
-      runner_dir.join(TEST_BINARY_ISOLATE_FILENAME), ['../'])
-  repacked_cas = api.isolate.isolate(
-      'new test binary', runner_dir.join(TEST_BINARY_ISOLATE_FILENAME))
+  api.isolate.write_isolate_file(runner_dir / TEST_BINARY_ISOLATE_FILENAME,
+                                 ['../'])
+  repacked_cas = api.isolate.isolate('new test binary',
+                                     runner_dir / TEST_BINARY_ISOLATE_FILENAME)
 
   # Trigger reproducing job in swarming.
   command = [

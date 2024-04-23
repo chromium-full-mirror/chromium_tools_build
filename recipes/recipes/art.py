@@ -31,7 +31,7 @@ def RunSteps(api, props):
   if props.device:
     # Use different cache directory for RISCV to avoid interference.
     cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
-    with api.context(cwd=api.path.cache_dir.join(cache_name)):
+    with api.context(cwd=api.path.cache_dir / cache_name):
       setup_target(
           api,
           device=props.device,
@@ -46,7 +46,7 @@ def RunSteps(api, props):
           on_virtual_machine=props.on_virtual_machine,
           manifest_branch=manifest_branch or 'master-art')
   else:
-    with api.context(cwd=api.path.cache_dir.join('art')):
+    with api.context(cwd=api.path.cache_dir / 'art'):
       setup_host_x86(
           api,
           debug=props.debug,
@@ -130,10 +130,10 @@ def setup_host_x86(api,
       'ANDROID_BUILD_TOP':
           build_top_dir,
       'PATH':
-          str(build_top_dir.join('out', 'host', 'linux-x86', 'bin')) +
+          str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin')) +
           api.path.pathsep + str(
-              build_top_dir.join('prebuilts', 'jdk', 'jdk17', 'linux-x86',
-                                 'bin')) + api.path.pathsep + '%(PATH)s',
+              build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86',
+                                     'bin')) + api.path.pathsep + '%(PATH)s',
       'ART_TEST_RUN_TEST_2ND_ARCH':
           'false',
       'ART_TEST_KEEP_GOING':
@@ -311,13 +311,14 @@ def setup_target(api,
       'ANDROID_BUILD_TOP':
           build_top_dir,
       'ADB':
-          str(build_top_dir.join('prebuilts', 'runtime', 'adb')),
+          str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
       'PATH':
           str(
-              build_top_dir.join('prebuilts', 'jdk', 'jdk17', 'linux-x86',
-                                 'bin')) + api.path.pathsep +
+              build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86',
+                                     'bin')) + api.path.pathsep +
           # Add adb to the path.
-          str(build_top_dir.join('prebuilts', 'runtime')) + api.path.pathsep +
+          str(build_top_dir.joinpath('prebuilts', 'runtime')) +
+          api.path.pathsep +
           # Add 7z to the path.
           str(sevenz_path) + api.path.pathsep +
           # Add openssh-portable to the path.
@@ -363,7 +364,7 @@ def setup_target(api,
       'TARGET_PRODUCT':
           product,
       'ANDROID_PRODUCT_OUT':
-          build_top_dir.join('out', 'target', 'product', product),
+          build_top_dir.joinpath('out', 'target', 'product', product),
   })
 
   env.update({ 'ART_TEST_CHROOT' : chroot_dir })
@@ -377,13 +378,13 @@ def setup_target(api,
   test_env = gtest_env.copy()
   test_env.update({
       'PATH':
-          str(build_top_dir.join('out', 'host', 'linux-x86', 'bin')) +
+          str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin')) +
           api.path.pathsep + str(
-              build_top_dir.join('prebuilts', 'jdk', 'jdk17', 'linux-x86',
-                                 'bin')) + api.path.pathsep +
+              build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86',
+                                     'bin')) + api.path.pathsep +
           # Add adb in the path.
-          str(build_top_dir.join('prebuilts', 'runtime')) + api.path.pathsep +
-          '%(PATH)s'
+          str(build_top_dir.joinpath('prebuilts', 'runtime')) +
+          api.path.pathsep + '%(PATH)s'
   })
   with api.context(env=env):
     api.step(

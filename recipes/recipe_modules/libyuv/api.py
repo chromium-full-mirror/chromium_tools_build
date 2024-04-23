@@ -145,7 +145,7 @@ class LibyuvApi(recipe_api.RecipeApi):
     # Ensure old build directory isn't being used by removing it.
     self.m.file.rmtree(
         'build directory',
-        self.m.chromium.c.build_dir.join(self.m.chromium.c.build_config_fs))
+        self.m.chromium.c.build_dir / self.m.chromium.c.build_config_fs)
 
     download_url = self.m.archive.legacy_download_url(
         self.group_config.get('build_gs_bucket'),

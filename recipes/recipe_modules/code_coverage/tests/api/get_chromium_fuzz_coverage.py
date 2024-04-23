@@ -6,11 +6,16 @@ from recipe_engine import post_process
 from recipe_engine.post_process import DropExpectation
 from RECIPE_MODULES.build.chromium_tests import steps
 
-DEPS = ['code_coverage']
+DEPS = [
+    'code_coverage',
+    'recipe_engine/path',
+]
 
 
 def RunSteps(api):
-  api.code_coverage.get_chromium_fuzz_coverage('', '', '', '')
+  api.code_coverage.get_chromium_fuzz_coverage(api.path.start_dir / 'checkout',
+                                               api.path.start_dir / 'build', '',
+                                               '')
 
 
 def GenTests(api):

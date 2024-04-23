@@ -333,7 +333,7 @@ class V8Test(BaseTest):
       '--json-test-results',
       self.api.json.output(add_json_log=False),
     ]
-    script = self.api.path.checkout_dir.join('tools', 'run-tests.py')
+    script = self.api.path.checkout_dir.joinpath('tools', 'run-tests.py')
     with self.api.context(cwd=self.api.path.checkout_dir, env=env):
       try:
         self.api.step(
@@ -871,8 +871,8 @@ class V8Fuzzer(V8GenericSwarmingTest):
       super().run(test, **kwargs)
     except self.api.step.StepFailure as e:
       self.api.gsutil.upload(
-          self.output_dir.join(self.task.get_task_shard_output_dirs()[0],
-                               self.archive),
+          self.output_dir.joinpath(self.task.get_task_shard_output_dirs()[0],
+                                   self.archive),
           'chromium-v8',
           self.api.path.join('fuzzer-archives', self.archive),
       )
@@ -958,7 +958,7 @@ class V8GCMoleV3(V82PhaseGenericSwarmingTest):
       str(self.test_step_config.variants),
     ] + self.test_step_config.test_args
     for taskdir in self.task.get_task_shard_output_dirs():
-      command += ['--input', self.output_dir.join(taskdir, 'callgraph.bin')]
+      command += ['--input', self.output_dir.joinpath(taskdir, 'callgraph.bin')]
 
     self.api.step('Merge callgraphs', command)
 

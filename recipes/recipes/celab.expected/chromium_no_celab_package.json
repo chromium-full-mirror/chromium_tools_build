@@ -2019,8 +2019,8 @@
       "    compile_failure = _RunStepsChromium(api)",
       "                      ^^^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 132, in _RunStepsChromium",
-      "    version = _GetCelabVersionFromVPython(api, test_root.join('.vpython3'))",
-      "              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "    version = _GetCelabVersionFromVPython(api, test_root / '.vpython3')",
+      "              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 117, in _GetCelabVersionFromVPython",
       "    raise ValueError('Couldn\\'t find CELab version in vpython file: %s' % path)",
       "ValueError: Couldn't find CELab version in vpython file: [CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\.vpython3"

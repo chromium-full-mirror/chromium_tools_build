@@ -37,7 +37,7 @@ DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
 def _checkout_steps(api):
-  solution_path = api.path.cache_dir.join('builder')
+  solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
@@ -127,7 +127,7 @@ def _gn_build(flavor, api, **kwargs):
     else:
       api.step(desc, ninja_cmd)
 
-    return tuple(build_path.join(t) for t in targets)
+    return tuple(build_path / t for t in targets)
 
   yield build
 
@@ -141,8 +141,8 @@ def _generate_fuzz_corpus(api, **kwargs):
     (dawn_unittests, dawn_end2end_tests) = build('dawn_unittests',
                                                  'dawn_end2end_tests')
   # Collect the traces in temporary directories.
-  testcase_dir = api.path.tmp_base_dir.join('testcases')
-  hashed_testcase_dir = api.path.tmp_base_dir.join('hashed_testcases')
+  testcase_dir = api.path.tmp_base_dir / 'testcases'
+  hashed_testcase_dir = api.path.tmp_base_dir / 'hashed_testcases'
 
   api.file.ensure_directory('mkdir {}'.format(testcase_dir), testcase_dir)
   api.file.ensure_directory('mkdir {}'.format(hashed_testcase_dir),
@@ -175,7 +175,7 @@ def _generate_fuzz_corpus(api, **kwargs):
       'dawn_wire_server_and_d3d12_backend_fuzzer'
   ]:
     api.gsutil.upload(
-        hashed_testcase_dir.join('*'),
+        hashed_testcase_dir.joinpath('*'),
         'clusterfuzz-corpus',
         'libfuzzer/{}'.format(fuzzer_name),
         args=['-r', '-n'],  # recursive, no clobber
@@ -188,7 +188,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
   env = {}
   if api.platform.is_win:
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path.cache_dir.join('win_toolchain'))
+        api.path.cache_dir / 'win_toolchain')
 
   with api.context(env=env):
     _checkout_steps(api)

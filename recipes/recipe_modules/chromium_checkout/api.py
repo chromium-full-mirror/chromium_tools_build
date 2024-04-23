@@ -42,7 +42,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     # can end up in cached goma keys/objects; mounting the named cache to an
     # alternate location could result in goma cache bloating.
     if not self._checkout_dir:
-      self._checkout_dir = self.m.path.cache_dir.join('builder')
+      self._checkout_dir = self.m.path.cache_dir / 'builder'
     return self._checkout_dir
 
   @checkout_dir.setter
@@ -55,7 +55,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
   @property
   def src_dir(self):
     """Returns the path to the src checkout directory."""
-    return self.checkout_dir.join('src')
+    return self.checkout_dir / 'src'
 
   def get_files_affected_by_patch(self, relative_to='src/', cwd=None,
                                   report_via_property=False):
@@ -71,7 +71,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     assert patch_root, (
         'local path is not configured for %s' %
             self.m.tryserver.gerrit_change_repo_url)
-    cwd = cwd or self.checkout_dir.join(patch_root)
+    cwd = cwd or self.checkout_dir / patch_root
     with self.m.context(cwd=cwd):
       files = self.m.tryserver.get_files_affected_by_patch(
           patch_root,

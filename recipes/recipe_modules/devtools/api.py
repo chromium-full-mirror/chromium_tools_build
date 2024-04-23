@@ -25,7 +25,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   @contextmanager
   def depot_on_path(self):
-    depot_tools_path = self.m.path.checkout_dir.join('third_party')
+    depot_tools_path = self.m.path.checkout_dir / 'third_party'
     with self.m.context(env_prefixes={'PATH': [depot_tools_path]}):
       yield
 
@@ -36,7 +36,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
       dir_to_clean = 'Debug'
     else:
       return
-    path_to_clean = self.m.path.checkout_dir.join('out', dir_to_clean)
+    path_to_clean = self.m.path.checkout_dir.joinpath('out', dir_to_clean)
     self.m.file.rmtree('clean outdir', path_to_clean)
 
   def is_debug(self, builder_config):
@@ -207,7 +207,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
       with self.m.step.nest('upload screenshots'):
         self.m.git('add', 'test/interactions/goldens', name='stage goldens')
         tmp_dir = self.m.path.mkdtemp('screenshots')
-        patch_file = tmp_dir.join('screenshot.patch')
+        patch_file = tmp_dir / 'screenshot.patch'
         self.m.git(
             'diff',
             '--staged',
@@ -254,7 +254,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   @contextmanager
   def _in_builder_cache(self):
-    cache_dir = self.m.path.cache_dir.join('builder')
+    cache_dir = self.m.path.cache_dir / 'builder'
     with self.m.context(cwd=cache_dir):
       yield
 

@@ -14,29 +14,32 @@ DEPS = [
 def RunSteps(api):
   # Prepare files.
   temp = api.path.mkdtemp('tar-example')
-  api.step('touch a', ['touch', temp.join('a')])
-  api.step('touch b', ['touch', temp.join('b')])
-  api.file.ensure_directory('mkdirs', temp.join('sub', 'dir'))
-  api.step('touch c', ['touch', temp.join('sub', 'dir', 'c')])
+  api.step('touch a', ['touch', temp / 'a'])
+  api.step('touch b', ['touch', temp / 'b'])
+  api.file.ensure_directory('mkdirs', temp.joinpath('sub', 'dir'))
+  api.step('touch c', ['touch', temp.joinpath('sub', 'dir', 'c')])
 
   # Build tar using 'tar.directory'.
-  api.tar.directory('taring', temp, temp.join('output.tar'))
+  api.tar.directory('taring', temp, temp / 'output.tar')
 
   # Build a tar using TarPackage api.
-  package = api.tar.make_package(temp, temp.join('more.tar.gz'), 'gz')
-  package.add_file(package.root.join('a'))
-  package.add_file(package.root.join('b'))
-  package.add_directory(package.root.join('sub'))
+  package = api.tar.make_package(temp, temp / 'more.tar.gz', 'gz')
+  package.add_file(package.root / 'a')
+  package.add_file(package.root / 'b')
+  package.add_directory(package.root / 'sub')
   package.tar('taring more')
 
   # Coverage for 'output' property.
   api.step('report', ['echo', package.output])
 
   # Untar the package.
-  api.tar.untar('untaring', temp.join('output.tar'), temp.join('output'),
-                quiet=True)
+  api.tar.untar(
+      'untaring',
+      temp.joinpath('output.tar'),
+      temp.joinpath('output'),
+      quiet=True)
   # List untarped content.
-  with api.context(cwd=temp.join('output')):
+  with api.context(cwd=temp / 'output'):
     api.step('listing', ['find'])
   # Clean up.
   api.file.rmtree('cleanup', temp)

@@ -26,8 +26,8 @@ def RunSteps(api):
   with api.context(cwd=cache_dir):
     # file_paths should be kept in sync with the paths used in test below.
     api.tricium_clang_tidy.lint_source_files(
-        output_dir=cache_dir.join('out'),
-        file_paths=[cache_dir.join('src', 'path/to/some/cc/file.cpp')],
+        output_dir=cache_dir / 'out',
+        file_paths=[cache_dir.joinpath('src', 'path/to/some/cc/file.cpp')],
         is_windows=api.properties['is_windows'])
 
 
@@ -75,11 +75,11 @@ def GenTests(api):
     existing_files = []
     if auto_exist_files:
       existing_files += [
-          api.path.cache_dir.join('src', x) for x in affected_files
+          api.path.cache_dir.joinpath('src', x) for x in affected_files
       ]
 
     if clang_tidy_exists:
-      existing_files.append(api.path.cache_dir.join(*_clang_tidy_path))
+      existing_files.append(api.path.cache_dir.joinpath(*_clang_tidy_path))
 
     if existing_files:
       test_data += api.path.exists(*existing_files)

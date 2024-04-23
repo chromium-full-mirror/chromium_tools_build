@@ -53,7 +53,7 @@ def RunSteps(api, ignore_input_commit, set_output_commit):
   api.assertions.assertEqual(api.chromium_checkout.checkout_dir,
                              api.path.cleanup_dir)
   api.assertions.assertEqual(api.chromium_checkout.src_dir,
-                             api.path.cleanup_dir.join('src'))
+                             api.path.cleanup_dir / 'src')
 
 
 def GenTests(api):
@@ -61,8 +61,8 @@ def GenTests(api):
       'full_ci',
       api.platform('linux', 64),
       api.buildbucket.generic_build(),
-      api.path.exists(
-          api.chromium_checkout.src_dir.join('out/Release/browser_tests')),
+      api.path.exists(api.chromium_checkout.src_dir /
+                      'out/Release/browser_tests'),
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'bot_update'),
@@ -83,8 +83,8 @@ def GenTests(api):
       api.reclient.properties(instance='someinstance'),
       api.post_check(verify_rbe_instance,
                      'projects/someinstance/instances/default_instance'),
-      api.path.exists(
-          api.chromium_checkout.src_dir.join('out/Release/browser_tests')),
+      api.path.exists(api.chromium_checkout.src_dir /
+                      'out/Release/browser_tests'),
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'bot_update'),
@@ -101,7 +101,7 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.platform('win', 64),
       api.post_check(verify_checkout_dir,
-                     api.path.cache_dir.join('builder', 'src')),
+                     api.path.cache_dir.joinpath('builder', 'src')),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'bot_update'),
@@ -114,7 +114,7 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.platform('linux', 64),
       api.post_check(verify_checkout_dir,
-                     api.path.cache_dir.join('builder', 'src')),
+                     api.path.cache_dir.joinpath('builder', 'src')),
       api.post_process(DoesNotRun, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
@@ -141,7 +141,7 @@ def GenTests(api):
       api.platform('linux', 64),
       api.properties(ignore_input_commit=True, set_output_commit=False),
       api.post_check(verify_checkout_dir,
-                     api.path.cache_dir.join('builder', 'src')),
+                     api.path.cache_dir.joinpath('builder', 'src')),
       api.post_process(DoesNotRun, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),

@@ -342,8 +342,8 @@ def copy_path(api, path_name):
   assert path_name.startswith(
       '../../'), path_name + " is expected to start with ../../"
   relative_path = path_name[len('../../'):]
-  src = api.chromium_checkout.src_dir.join(relative_path)
-  dest = api.chromium.output_dir.join('src_root', relative_path)
+  src = api.chromium_checkout.src_dir / relative_path
+  dest = api.chromium.output_dir.joinpath('src_root', relative_path)
   src = api.path.abspath(str(src))
   dest = api.path.abspath(str(dest))
   if api.path.exists(dest):
@@ -522,7 +522,8 @@ def RunSteps(api):
         try:
           corpora_dir = 'current-corpora-from-clusterfuzz'
           profdata_dir = str(
-              api.chromium_checkout.src_dir.join('out', 'profdata-output-dir'))
+              api.chromium_checkout.src_dir.joinpath('out',
+                                                     'profdata-output-dir'))
           build_dir = "out/Release"
           api.step('make corpora directory', ['mkdir', corpora_dir])
           api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
@@ -542,9 +543,9 @@ def RunSteps(api):
                   '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
                   corpora_dir, '--profdata-outdir', profdata_dir
               ])
-          profdata_path = api.chromium_checkout.src_dir.join(
+          profdata_path = api.chromium_checkout.src_dir.joinpath(
               'total_fuzz_coverage.profdata')
-          llvm_profdata_path = api.chromium_checkout.src_dir.join(
+          llvm_profdata_path = api.chromium_checkout.src_dir.joinpath(
               'third_party', 'llvm-build', 'Release+Asserts', 'bin',
               'llvm-profdata')
           api.step('merge all fuzzers', [
@@ -555,7 +556,7 @@ def RunSteps(api):
 
           api.code_coverage.get_chromium_fuzz_coverage(
               api.chromium_checkout.src_dir,
-              api.chromium_checkout.src_dir.join('out', 'Release'),
+              api.chromium_checkout.src_dir.joinpath('out', 'Release'),
               profdata_path, profdata_dir)
         except api.step.StepFailure:
           step_result.logs[

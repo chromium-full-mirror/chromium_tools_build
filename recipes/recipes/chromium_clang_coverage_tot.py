@@ -76,9 +76,10 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   api.chromium.ensure_toolchains()
 
   api.chromium.runhooks()
-  clang_revision_file = api.path.checkout_dir.join('third_party', 'llvm-build',
-                                                   'Release+Asserts',
-                                                   'cr_build_revision')
+  clang_revision_file = api.path.checkout_dir.joinpath('third_party',
+                                                       'llvm-build',
+                                                       'Release+Asserts',
+                                                       'cr_build_revision')
   revision = api.file.read_text(
       'Read clang revision', clang_revision_file, test_data='332838-1')
   api.step.active_result.presentation.step_text = revision
@@ -86,24 +87,24 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   api.chromium.mb_gen(builder_id)
 
   coverage_script = 'coverage.py'
-  coverage_script_path = api.path.checkout_dir.join('tools', 'code_coverage',
-                                                    coverage_script)
+  coverage_script_path = api.path.checkout_dir.joinpath('tools',
+                                                        'code_coverage',
+                                                        coverage_script)
   output_dir_name = 'clang_tot_coverage_report'
-  output_dir_path = api.path.checkout_dir.join('out', output_dir_name)
+  output_dir_path = api.path.checkout_dir.joinpath('out', output_dir_name)
   build_dir = api.chromium.output_dir
 
   cmd = ['python3', coverage_script_path]
   cmd.extend(SAMPLE_TARGETS)
 
   for target in SAMPLE_TARGETS:
-    cmd.extend(['-c', build_dir.join(target)])
+    cmd.extend(['-c', build_dir / target])
 
   cmd.extend(['-b', build_dir])
   cmd.extend(['-o', output_dir_path])
 
-  coverage_tools_dir_path = api.path.checkout_dir.join('third_party',
-                                                       'llvm-build',
-                                                       'Release+Asserts', 'bin')
+  coverage_tools_dir_path = api.path.checkout_dir.joinpath(
+      'third_party', 'llvm-build', 'Release+Asserts', 'bin')
   cmd.extend(['--coverage-tools-dir', coverage_tools_dir_path])
 
   cmd.extend(['-v'])
@@ -113,8 +114,8 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   # Following steps are added for debugging purpose.
   for target in SAMPLE_TARGETS:
     log_file_name = '%s_output.log' % target
-    log_file_path = output_dir_path.join(api.platform.name, 'logs',
-                                         log_file_name)
+    log_file_path = output_dir_path.joinpath(api.platform.name, 'logs',
+                                             log_file_name)
 
     log_content = api.file.read_text(
         'read log output of %s' % target, log_file_path, test_data='aaa\nbbb')
@@ -122,7 +123,8 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
     api.step.active_result.presentation.logs[log_file_name] = log_content_lines
 
   summary_file_name = 'summary.json'
-  summary_file_path = output_dir_path.join(api.platform.name, summary_file_name)
+  summary_file_path = output_dir_path.joinpath(api.platform.name,
+                                               summary_file_name)
   api.file.read_json('read %s' % summary_file_name, summary_file_path)
 
 

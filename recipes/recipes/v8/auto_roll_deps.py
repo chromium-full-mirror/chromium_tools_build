@@ -93,7 +93,7 @@ def get_next_v8_revision(api, last_v8_revision):
     last_v8_revision: The previously rolled revision.
   """
   with api.step.nest('Choose revision') as parent:
-    with api.context(cwd=api.v8.checkout_root.join('v8')):
+    with api.context(cwd=api.v8.checkout_root / 'v8'):
       api.git('fetch', 'origin', '+refs/tags/*:refs/tags/*')
 
       last_version = get_v8_tag(api, last_v8_revision)
@@ -189,9 +189,10 @@ def RunSteps(api):
     api.step.active_result.presentation.status = api.step.WARNING
     return
 
-  with api.context(cwd=api.path.checkout_dir.join('v8'),
-                   env={'DEPOT_TOOLS_UPDATE': '0'},
-                   env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+  with api.context(
+      cwd=api.path.checkout_dir / 'v8',
+      env={'DEPOT_TOOLS_UPDATE': '0'},
+      env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)
     if not next_v8_revision:
       return
@@ -203,17 +204,17 @@ def RunSteps(api):
     else:
       api.v8.python(
           'roll deps',
-          api.v8.checkout_root.join(
-              'v8', 'tools', 'release', 'auto_roll.py'),
-          ['--chromium', api.path.checkout_dir,
-           '--author', push_account,
-           '--reviewer', 'hablich@chromium.org,'
-                         'vahl@chromium.org,'
-                         'v8-waterfall-sheriff@grotations.appspotmail.com',
-           '--roll',
-           '--last-roll', last_v8_revision,
-           '--revision', next_v8_revision,
-           '--work-dir', api.path.cache_dir.join(safe_buildername, 'workdir')],
+          api.v8.checkout_root.joinpath('v8', 'tools', 'release',
+                                        'auto_roll.py'),
+          [
+              '--chromium', api.path.checkout_dir, '--author', push_account,
+              '--reviewer', 'hablich@chromium.org,'
+              'vahl@chromium.org,'
+              'v8-waterfall-sheriff@grotations.appspotmail.com', '--roll',
+              '--last-roll', last_v8_revision, '--revision', next_v8_revision,
+              '--work-dir',
+              api.path.cache_dir.joinpath(safe_buildername, 'workdir')
+          ],
       )
 
 

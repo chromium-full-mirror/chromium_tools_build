@@ -56,7 +56,7 @@ def apply_patch_from_screenshot_builder(api, roller, builder, cl):
   with api.step.nest('Apply screenshot patch from {}'.format(builder)):
     patch_dir = api.path.mkdtemp()
     patch_platform = builder.split('_')[-2]
-    local_path = patch_dir.join(patch_platform + '.patch')
+    local_path = patch_dir.joinpath(patch_platform + '.patch')
     api.gsutil.download(
         roller.gs_bucket,
         cl.gs_location(builder),

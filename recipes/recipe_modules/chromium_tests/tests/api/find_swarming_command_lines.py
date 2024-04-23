@@ -13,7 +13,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir.join('builder')
+  api.path.checkout_dir = api.path.cache_dir / 'builder'
   api.chromium.set_config('chromium')
   api.chromium_tests.find_swarming_command_lines('chromium')
 

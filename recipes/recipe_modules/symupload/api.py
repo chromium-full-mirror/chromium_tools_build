@@ -46,7 +46,8 @@ class SymuploadApi(recipe_api.RecipeApi):
     try:
       toolchain_data = self.m.file.read_json(
           'find_win_toolchain',
-          self.m.chromium_checkout.src_dir.join('build', 'win_toolchain.json'))
+          self.m.chromium_checkout.src_dir.joinpath('build',
+                                                    'win_toolchain.json'))
       dia_dir = self.m.path.join(toolchain_data['path'], 'DIA SDK', 'bin',
                                  'amd64')
       x64_runtime_dir = toolchain_data['runtime_dirs'][0]
@@ -96,7 +97,7 @@ class SymuploadApi(recipe_api.RecipeApi):
       name: (str) name of the step
     """
     with self.m.step.nest('Prepare API key') as key_presentation:
-      output_api_key = self.m.path.cleanup_dir.join('symupload-api-key.txt')
+      output_api_key = self.m.path.cleanup_dir / 'symupload-api-key.txt'
       self.m.cloudkms.decrypt(kms_key_path, encrypted_key_path, output_api_key)
 
       api_key = self.m.file.read_raw(
@@ -172,7 +173,7 @@ class SymuploadApi(recipe_api.RecipeApi):
       return
 
     if self._properties.source_side_spec_path:
-      config_file_path = self.m.chromium_checkout.checkout_dir.join(
+      config_file_path = self.m.chromium_checkout.checkout_dir.joinpath(
           *self._properties.source_side_spec_path)
 
     if config_file_path and self.m.path.exists(config_file_path):
@@ -244,7 +245,7 @@ class SymuploadApi(recipe_api.RecipeApi):
                                              symupload_data.base64_api_key)
 
             # Write out decoded api key
-            input_api_key = self.m.path.cleanup_dir.join(
+            input_api_key = self.m.path.cleanup_dir.joinpath(
                 'symupload-api-key.encrypted')
             api_key_data = base64.b64decode(base64_api_key)
             self.m.file.write_raw('write encrypted api key', input_api_key,

@@ -592,7 +592,7 @@ def failed_tests_names(api):
   return test_names
 
 def lint_script_exists(api, name):
-  script_file = api.path.checkout_dir.join('scripts', 'test', name)
+  script_file = api.path.checkout_dir.joinpath('scripts', 'test', name)
   return api.path.exists(script_file)
 
 def run_lint_check(api):
@@ -604,7 +604,8 @@ def run_lint_check(api):
                                'run_lint_check_css.js')
 
 def publish_performance_benchmarks(api):
-  report_file = api.path.checkout_dir.join('perf-data', 'devtools-perf.json')
+  report_file = api.path.checkout_dir.joinpath('perf-data',
+                                               'devtools-perf.json')
   if not api.path.exists(report_file):
     return
   #TODO(andoli) publish coverage data in skia perf
@@ -638,8 +639,8 @@ def publish_coverage_points(api):
 
   dimensions = ["lines", "statements", "functions", "branches"]
 
-  report_file = api.path.checkout_dir.join('karma-coverage',
-                                          'coverage-summary.json')
+  report_file = api.path.checkout_dir.joinpath('karma-coverage',
+                                               'coverage-summary.json')
 
   summary = api.file.read_json(
       'Coverage summary', report_file, test_data=test_cov_data())
@@ -717,10 +718,11 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(builder_config='Debug'),
-      api.path.exists(api.path.checkout_dir.join(
-          'karma-coverage',
-          'coverage-summary.json',
-      )),
+      api.path.exists(
+          api.path.checkout_dir.joinpath(
+              'karma-coverage',
+              'coverage-summary.json',
+          )),
   )
 
   yield api.test(
@@ -755,10 +757,11 @@ def GenTests(api):
       api.builder_group.for_current('tryserver.devtools-frontend'),
       ci_build(builder='linux'),
       api.properties(perf_benchmarks=True, builder_config='Debug'),
-      api.path.exists(api.path.checkout_dir.join(
-          'perf-data',
-          'devtools-perf.json',
-      )),
+      api.path.exists(
+          api.path.checkout_dir.joinpath(
+              'perf-data',
+              'devtools-perf.json',
+          )),
   )
 
   yield api.test(

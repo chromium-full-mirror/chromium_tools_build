@@ -64,8 +64,9 @@ def RunSteps(api):
     # Run the update script. It will take care of branch creation, WebRTC
     # version update, uploading etc. It will also delete any previous version
     # update branch.
-    script_path = api.path.checkout_dir.join('tools_webrtc', 'version_updater',
-                                             'update_version.py')
+    script_path = api.path.checkout_dir.joinpath('tools_webrtc',
+                                                 'version_updater',
+                                                 'update_version.py')
 
     params = ['--clean']
     cmd = ['vpython3', '-u', script_path] + params

@@ -13,7 +13,7 @@ def RunSteps(api):
   api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   default_adb_path = api.adb.adb_path()
-  api.adb.set_adb_path(api.path.checkout_dir.join('custom', 'adb', 'path'))
+  api.adb.set_adb_path(api.path.checkout_dir.joinpath('custom', 'adb', 'path'))
   custom_adb_path = api.adb.adb_path()
 
   api.step('adb paths', [])

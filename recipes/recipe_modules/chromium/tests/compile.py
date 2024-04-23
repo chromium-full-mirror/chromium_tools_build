@@ -37,8 +37,8 @@ def GenTests(api):
       'basic',
       api.chromium.generic_build(builder_group='test_group'),
       api.path.exists(
-          api.path.checkout_dir.join('tools', 'clang', 'scripts',
-                                     'process_crashreports.py')),
+          api.path.checkout_dir.joinpath('tools', 'clang', 'scripts',
+                                         'process_crashreports.py')),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
       api.post_process(post_process.DropExpectation),
@@ -61,8 +61,8 @@ def GenTests(api):
       api.chromium.generic_build(builder_group='test_group'),
       api.step_data('compile', retcode=1),
       api.path.exists(
-          api.path.checkout_dir.join('tools', 'clang', 'scripts',
-                                     'process_crashreports.py')),
+          api.path.checkout_dir.joinpath('tools', 'clang', 'scripts',
+                                         'process_crashreports.py')),
       api.post_process(post_process.MustRun, 'process clang crashes'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
@@ -214,8 +214,8 @@ def GenTests(api):
       api.chromium.generic_build(builder_group='test_group'),
       api.siso.properties(),
       api.path.exists(
-          api.path.checkout_dir.join('tools', 'clang', 'scripts',
-                                     'process_crashreports.py')),
+          api.path.checkout_dir.joinpath('tools', 'clang', 'scripts',
+                                         'process_crashreports.py')),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
       api.post_process(post_process.DropExpectation),
@@ -226,8 +226,8 @@ def GenTests(api):
       api.chromium.generic_build(builder_group='test_group'),
       api.siso.properties(),
       api.path.exists(
-          api.path.checkout_dir.join('tools', 'clang', 'scripts',
-                                     'process_crashreports.py')),
+          api.path.checkout_dir.joinpath('tools', 'clang', 'scripts',
+                                         'process_crashreports.py')),
       api.post_process(post_process.StepSuccess, 'compile'),
       api.step_data(
           'compile confirm no-op',

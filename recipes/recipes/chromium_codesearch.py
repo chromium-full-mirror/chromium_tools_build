@@ -96,9 +96,9 @@ def generate_compilation_database(api, out_path, compile_commands_json_file,
   try:
     step_result = api.step('generate compilation database', [
         'python3', '-u',
-        api.path.checkout_dir.join('tools', 'clang', 'scripts',
-                                   'generate_compdb.py'), '-p', out_path, '-o',
-        compile_commands_json_file
+        api.path.checkout_dir.joinpath('tools', 'clang', 'scripts',
+                                       'generate_compdb.py'), '-p', out_path,
+        '-o', compile_commands_json_file
     ] + list(targets))
   except api.step.StepFailure as e:
     raise e
@@ -159,10 +159,10 @@ def RunSteps(api, properties):
 
   # These values are identical to those in config.py.
   # TODO(crbug.com/1378059): Remove config.py?
-  checkout_path = api.path.cache_dir.join('builder', 'src')
-  out_path = checkout_path.join('out', gen_repo_out_dir)
-  compile_commands_json_file = out_path.join('compile_commands.json')
-  gn_targets_json_file = out_path.join('gn_targets.json')
+  checkout_path = api.path.cache_dir.joinpath('builder', 'src')
+  out_path = checkout_path.joinpath('out', gen_repo_out_dir)
+  compile_commands_json_file = out_path / 'compile_commands.json'
+  gn_targets_json_file = out_path / 'gn_targets.json'
 
   project = 'chromium' if not internal else 'chrome'
   api.codesearch.set_config(
@@ -204,7 +204,7 @@ def RunSteps(api, properties):
   if api.reclient.instance:
     api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
-  checkout_dir = api.path.cache_dir.join('builder')
+  checkout_dir = api.path.cache_dir / 'builder'
   with api.context(cwd=checkout_dir, env={'PACKFILE_OFFLOADING': 1}):
     update_step = api.bot_update.ensure_checkout(
         root_solution_revision=properties.root_solution_revision)
@@ -214,7 +214,7 @@ def RunSteps(api, properties):
   # a new clang binary and not use the previous one downloaded by
   # api.codesearch.run_clang_tool().
   api.file.rmtree('llvm-build',
-                  api.path.checkout_dir.join('third_party', 'llvm-build'))
+                  api.path.checkout_dir.joinpath('third_party', 'llvm-build'))
 
   api.chromium.set_config(
       'codesearch',
@@ -230,11 +230,11 @@ def RunSteps(api, properties):
   with api.context(env={'CHROME_HEADLESS': '1'}):
     api.chromium.runhooks(name='runhooks%s' % name_suffix)
 
-  sentinel_path = api.path.cache_dir.join('builder', 'cr-cs-sentinel')
+  sentinel_path = api.path.cache_dir.joinpath('builder', 'cr-cs-sentinel')
   if api.path.exists(sentinel_path):
     # If sentinel file is present, it means last build failed to compile, so
     # remove out directory since it might be in a bad state.
-    api.file.rmtree('remove out directory', api.path.checkout_dir.join('out'))
+    api.file.rmtree('remove out directory', api.path.checkout_dir / 'out')
   else:
     # Cleans up generated files. This is to prevent old generated files from
     # being left in the out directory. Note that this needs to be run *before*
@@ -316,7 +316,7 @@ def RunSteps(api, properties):
   # into this checkout. This may fail due to other builders pushing to the
   # remote repo at the same time, so we retry this 3 times before giving up.
   copy_config = {
-      api.path.checkout_dir.join('out', gen_repo_out_dir):
+      api.path.checkout_dir.joinpath('out', gen_repo_out_dir):
           api.path.join(gen_repo_out_dir)
   }
   _RunStepWithRetry(
@@ -447,7 +447,7 @@ def GenTests(api):
       _sanitize_nonalpha('codesearch-gen-chromium-linux'),
       props('linux'),
       api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.path.exists(api.path.cache_dir.join('builder', 'cr-cs-sentinel')),
+      api.path.exists(api.path.cache_dir.joinpath('builder', 'cr-cs-sentinel')),
   )
 
   yield api.test(

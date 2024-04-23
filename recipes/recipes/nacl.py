@@ -74,7 +74,7 @@ def ExecBuildSteps(api, checkout_path, env):
     with api.depot_tools.on_path():
       cmd = [
           'vpython3', '-u',
-          checkout_path.join('buildbot', 'buildbot_selector.py')
+          checkout_path.joinpath('buildbot', 'buildbot_selector.py')
       ]
       api.legacy_annotation('annotated steps', cmd)
 
@@ -107,7 +107,7 @@ def UploadFilesToCAS(api, files):
   with api.step.nest('Upload isolates'):
     isolate_dir = api.path.mkdtemp('isolate_directory')
     for file_info in files:
-      output_dir = isolate_dir.join(file_info.output_dir)
+      output_dir = isolate_dir / file_info.output_dir
       if file_info.is_dir:
         api.file.copytree("Copying tree: {}".format(file_info.input_path),
                           file_info.input_path, output_dir)
@@ -153,11 +153,11 @@ def TriggerHardwareTests(api, got_revision, checkout_path,
   isolated_files = [
       FileInfo(checkout_path, 'native_client', True),
       FileInfo(compiled_sources_path, 'native_client/between_builders', True),
-      FileInfo(api.path.start_dir.join('third_party'), 'third_party', True),
-      FileInfo(api.path.start_dir.join('testing'), 'testing', True),
+      FileInfo(api.path.start_dir / 'third_party', 'third_party', True),
+      FileInfo(api.path.start_dir / 'testing', 'testing', True),
       # The ARM bots need the linux_arm toolchain.
       FileInfo(
-          checkout_path.join('toolchain', 'linux_x86'),
+          checkout_path.joinpath('toolchain', 'linux_x86'),
           'native_client/toolchain/linux_arm', True),
   ]
   isolated_digest = UploadFilesToCAS(api, isolated_files)
@@ -197,7 +197,7 @@ def TriggerHardwareTests(api, got_revision, checkout_path,
 
 def RunSteps(api):
   got_revision = CheckoutSteps(api)
-  checkout_path = api.path.start_dir.join('native_client')
+  checkout_path = api.path.start_dir / 'native_client'
   compiled_sources_path = api.path.mkdtemp('between_builders')
   AnnotatedStepsSteps(api, got_revision, checkout_path, compiled_sources_path)
   if api.buildbucket.builder_name in swarming_dimensions:

@@ -67,7 +67,8 @@ def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
         builder + '_*.json',
         test_data=['[CLEANUP]/builder1_000.json'])
 
-    builder_output_folder = api.path.cleanup_dir.join(project, builder_bucket)
+    builder_output_folder = api.path.cleanup_dir.joinpath(
+        project, builder_bucket)
     api.file.ensure_directory('create dir', builder_output_folder)
     builder_output_file = builder_output_folder.join('{}.json'.format(builder))
     cmd = ['vpython3', api.resource('query.py'), 'format']

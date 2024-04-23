@@ -113,10 +113,10 @@ def RunSteps(api):
     with api.context(cwd=src_dir):
       src_file_suffixes = {'.cc', '.cpp', '.cxx', '.c', '.h', '.hpp'}
       affected = [
-          src_dir.join(f)
+          src_dir / f
           for f in api.chromium_checkout.get_files_affected_by_patch()
-          if api.path.exists(src_dir.join(f)) and
-          api.path.splitext(f)[1] in src_file_suffixes
+          if api.path.exists(src_dir /
+                             f) and api.path.splitext(f)[1] in src_file_suffixes
       ]
       if not affected:
         api.step.empty(
@@ -157,7 +157,8 @@ def GenTests(api):
 
     if affected_files:
       test_data += api.path.exists(*[
-          api.path.cache_dir.join('builder', 'src', x) for x in affected_files
+          api.path.cache_dir.joinpath('builder', 'src', x)
+          for x in affected_files
       ])
       test_data += api.step_data(
           'git diff to analyze patch',

@@ -175,7 +175,7 @@ def _is_reclient_enabled(api, msvc):
 
 
 def _checkout_step(api, target_os, reclient_enabled):
-  solution_path = api.path.cache_dir.join('builder')
+  solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
@@ -290,8 +290,8 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
 
 def _build_steps(api, clang, msvc, out_dir):
   enable_reclient = _is_reclient_enabled(api, msvc)
-  debug_path = api.path.checkout_dir.join('out', out_dir)
-  ninja_path = api.path.checkout_dir.join('third_party', 'ninja', 'ninja')
+  debug_path = api.path.checkout_dir.joinpath('out', out_dir)
+  ninja_path = api.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
   ninja_cmd = [ninja_path, '-C', debug_path]
   if enable_reclient:
     ninja_cmd.extend(['-j', api.reclient.jobs])
@@ -393,7 +393,8 @@ class _ResultDb:
     self.base_variant = base_variant
 
     self.result_adapter_path = str(
-        self.api.path.checkout_dir.join('tools', 'resultdb', 'result_adapter'))
+        self.api.path.checkout_dir.joinpath('tools', 'resultdb',
+                                            'result_adapter'))
     if self.api.platform.is_win:
       self.result_adapter_path += '.exe'
 
@@ -482,7 +483,7 @@ class _Swarming:
 
     test_inputs = self.api.file.read_json(
         'read test inputs list',
-        checkout_path.join(self.out_dir, 'test_runner_py.json'),
+        checkout_path.joinpath(self.out_dir, 'test_runner_py.json'),
         test_data=[
             [
                 checkout_path,
@@ -676,12 +677,12 @@ class _TestRunner:
   def _join_root_dir(self, *paths):
     if self.swarming:
       return self.api.path.join('', *paths)
-    return self._local_root_dir.join(*paths)
+    return self._local_root_dir.joinpath(*paths)
 
   def _join_out_dir(self, *paths):
     if self.swarming:
       return self.api.path.join(self.out_dir, *paths)
-    return self._local_root_dir.join(self.out_dir, *paths)
+    return self._local_root_dir.joinpath(self.out_dir, *paths)
 
   def _create_sanitizer_envionment(self, memory_tool):
     """Sets environment variables required by sanitizer tools."""
@@ -979,7 +980,7 @@ def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
     # buildbot sets 'clobber' to the empty string which evaluates to false if
     # checked directly. Instead, check using the 'in' keyword.
     if 'clobber' in api.properties:
-      api.file.rmtree('clobber', api.path.checkout_dir.join('out', out_dir))
+      api.file.rmtree('clobber', api.path.checkout_dir.joinpath('out', out_dir))
 
     build_config = _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu,
                                   clang, msvc, rel, component, target_os,

@@ -214,7 +214,7 @@ class ReclientApi(recipe_api.RecipeApi):
   def reclient_dir(self):
     if self._reclient_dir:
       return self._reclient_dir
-    return self.m.path.checkout_dir.join('buildtools')
+    return self.m.path.checkout_dir / 'buildtools'
 
   @reclient_dir.setter
   def reclient_dir(self, value):
@@ -342,7 +342,7 @@ class ReclientApi(recipe_api.RecipeApi):
     if self._reclient_binaries_dir is None:
       # This depends on where the reclient CIPD is checked out in DEPS,
       # https://source.chromium.org/chromium/chromium/src/+/main:DEPS;l=452-461;drc=6b88cf228d9d27f49e89f7c4d9ffb582771daa48
-      reclient_binaries_dir = self.reclient_dir.join('reclient')
+      reclient_binaries_dir = self.reclient_dir / 'reclient'
       self._reclient_binaries_dir = str(reclient_binaries_dir)
     return self.m.path.join(self._reclient_binaries_dir, exe_name)
 
@@ -351,7 +351,7 @@ class ReclientApi(recipe_api.RecipeApi):
     if self.m.platform.is_win:
       return 'pipe://reproxy.pipe'
     # Shrink the size if the domain socket path length becomes a problem.
-    return 'unix:///%s' % self._tmp_base_dir.join('reproxy.sock')
+    return 'unix:///%s' % self._tmp_base_dir.joinpath('reproxy.sock')
 
   @property
   def _tmp_base_dir(self):
@@ -359,7 +359,7 @@ class ReclientApi(recipe_api.RecipeApi):
 
   @property
   def base_cache_path_per_follower(self):
-    return self.m.path.cache_dir.join('builder').join('reclient')
+    return self.m.path.cache_dir.joinpath('builder').joinpath('reclient')
 
   @property
   def deps_cache_path(self):
@@ -385,12 +385,12 @@ class ReclientApi(recipe_api.RecipeApi):
     self._reclient_log_dir = self.m.path.mkdtemp('reclient_log')
     deps_cache_path = self.deps_cache_path
     if (deps_cache_by_step):
-      deps_cache_path = deps_cache_path.join(ninja_step_name)
+      deps_cache_path = deps_cache_path / ninja_step_name
     with self.m.step.nest('preprocess for reclient'):
       self._install_reclient_cfgs()
       self.m.file.listdir(
           'list reclient_cfgs dir',
-          self.reclient_dir.join('reclient_cfgs'),
+          self.reclient_dir / 'reclient_cfgs',
           recursive=True,
           test_data=[
               'reproxy.cfg', 'chromium-browser-clang/rewrapper_windows.cfg'
@@ -490,7 +490,8 @@ class ReclientApi(recipe_api.RecipeApi):
           name='install reclient_cfgs',
           cmd=[
               'vpython3',
-              self.reclient_dir.join('reclient_cfgs', 'fetch_reclient_cfgs.py'),
+              self.reclient_dir.joinpath('reclient_cfgs',
+                                         'fetch_reclient_cfgs.py'),
           ],
           infra_step=True)
 
@@ -616,7 +617,7 @@ class ReclientApi(recipe_api.RecipeApi):
     bq_pb.created_at.FromDatetime(self.m.time.utcnow())
     stats_raw = self.m.file.read_raw(
         'load rbe_metrics.pb',
-        reclient_log_dir.join('rbe_metrics.pb'),
+        reclient_log_dir / 'rbe_metrics.pb',
         test_data=make_test_rbe_stats_pb().SerializeToString())
     bq_pb.stats.ParseFromString(stats_raw)
     if self._ensure_verified:
@@ -746,7 +747,7 @@ class ReclientApi(recipe_api.RecipeApi):
     # Must start with 'ninja_log' prefix, see
     # https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/appengine/chromium_build_stats/app/ninja_log.go;l=311-314;drc=e507df6040ea871ba6ef6b5e7da00d8cb186a1bd
     gzip_filename = filename_maker.make_gz('ninja_log')
-    gzip_path = self._tmp_base_dir.join(gzip_filename)
+    gzip_path = self._tmp_base_dir / gzip_filename
     # This assumes that ninja_log is small enough to be loaded into RAM. (As of
     # 2021/01, it's around 3MB.)
     data_txt = self.m.file.read_text(
@@ -780,7 +781,7 @@ class ReclientApi(recipe_api.RecipeApi):
 
   def _upload_rpl(self, reclient_log_dir, filename_maker):
     gzip_filename = filename_maker.make_gz('reproxy_rpl')
-    gzip_path = self._tmp_base_dir.join(gzip_filename)
+    gzip_path = self._tmp_base_dir / gzip_filename
     self.m.step(
         name='gzip reproxy RPL',
         cmd=[
@@ -797,7 +798,7 @@ class ReclientApi(recipe_api.RecipeApi):
   def _upload_crash_dumps(self, reclient_log_dir, reclient_log_dir_files,
                           filename_maker):
     gzip_filename = filename_maker.make_tgz('reproxy_crash_dumps')
-    gzip_path = self._tmp_base_dir.join(gzip_filename)
+    gzip_path = self._tmp_base_dir / gzip_filename
     dmp_files = [
         file for file in reclient_log_dir_files
         if file.pieces[-1].endswith('.dmp')
@@ -814,7 +815,7 @@ class ReclientApi(recipe_api.RecipeApi):
 
   def _upload_logs(self, reclient_log_dir_files, filename_maker):
     tar_filename = filename_maker.make_tgz('reclient_logs')
-    tar_path = self._tmp_base_dir.join(tar_filename)
+    tar_path = self._tmp_base_dir / tar_filename
     log_files = []
     log_suffixes = [
         r'.*\.INFO.*', r'.*\.WARNING.*', r'.*\.ERROR.*', r'.*\.FATAL.*',
@@ -874,7 +875,7 @@ class ReclientApi(recipe_api.RecipeApi):
     return self.resource('ignored_mismatches.textproto')
 
   def _get_cloudtail_pid_file(self, log_name):
-    return self._tmp_base_dir.join('cloudtail_' + log_name + '.pid')
+    return self._tmp_base_dir.joinpath('cloudtail_' + log_name + '.pid')
 
   def _start_cloudtail(self, project_id, log_dir, log_name):
     """Start cloudtail to upload reproxy INFO log.
@@ -891,8 +892,7 @@ class ReclientApi(recipe_api.RecipeApi):
     cloudtail_args = [
         'python3', self._cloudtail_wrapper_path, 'start', '--cloudtail-path',
         self._cloudtail_exe_path, '--cloudtail-project-id', project_id,
-        '--cloudtail-log-path',
-        log_dir.join(log_name), '--pid-file',
+        '--cloudtail-log-path', log_dir / log_name, '--pid-file',
         self.m.raw_io.output_text(
             leak_to=self._get_cloudtail_pid_file(log_name))
     ]

@@ -62,7 +62,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         '--gsutil-py-path',
         self.m.depot_tools.gsutil_py_path,
         '--staging-dir',
-        self.m.path.cache_dir.join('chrome_staging'),
+        self.m.path.cache_dir / 'chrome_staging',
         '--src-dir',
         src_dir,
     ]
@@ -243,7 +243,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       if commit_position:
         gs_metadata[GS_COMMIT_POSITION_KEY] = commit_position
     build_git_commit = self._get_git_commit(update_properties, primary_project)
-    staging_dir = self.m.path.cleanup_dir.join('chrome_staging')
+    staging_dir = self.m.path.cleanup_dir / 'chrome_staging'
     self.m.file.ensure_directory('create staging_dir', staging_dir)
 
     lzma_sdk_args = []
@@ -252,8 +252,8 @@ class ArchiveApi(recipe_api.RecipeApi):
                                                 and self.m.platform.bits == 64)
     if self.m.path.exists(self.m.path.checkout_dir) and self.m.platform.is_win:
       lzma_sdk_args = [
-          self.m.path.checkout_dir.join('third_party', 'lzma_sdk', 'bin',
-                                        'win64')
+          self.m.path.checkout_dir.joinpath('third_party', 'lzma_sdk', 'bin',
+                                            'win64')
       ]
     elif can_fetch_7zip:
       cipd_pkg = 'infra/3pp/tools/7z/${platform}'
@@ -262,8 +262,9 @@ class ArchiveApi(recipe_api.RecipeApi):
       ]
 
     llvm_tools_to_copy = ['llvm-symbolizer', 'sancov']
-    llvm_bin_dir = self.m.path.checkout_dir.join('third_party', 'llvm-build',
-                                                 'Release+Asserts', 'bin')
+    llvm_bin_dir = self.m.path.checkout_dir.joinpath('third_party',
+                                                     'llvm-build',
+                                                     'Release+Asserts', 'bin')
     ext = '.exe' if self.m.platform.is_win else ''
 
     for tool in llvm_tools_to_copy:
@@ -282,8 +283,9 @@ class ArchiveApi(recipe_api.RecipeApi):
         pass
 
     if not self.m.platform.is_win:
-      llvm_lib_dir = self.m.path.checkout_dir.join('third_party', 'llvm-build',
-                                                   'Release+Asserts', 'lib')
+      llvm_lib_dir = self.m.path.checkout_dir.joinpath('third_party',
+                                                       'llvm-build',
+                                                       'Release+Asserts', 'lib')
       libstdcplusplus_lib = 'libstdc++.so.6'
       libstdcplusplus_lib_src = self.m.path.join(llvm_lib_dir,
                                                  libstdcplusplus_lib)
@@ -358,7 +360,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       cmd.extend(['--lzma-sdk-dir'] + lzma_sdk_args)
     self.m.step('zipping', cmd, infra_step=True, **kwargs)
 
-    zip_file = staging_dir.join(zip_file_name)
+    zip_file = staging_dir / zip_file_name
 
     if build_git_commit:
       gs_metadata[GS_GIT_COMMIT_KEY] = build_git_commit
@@ -499,13 +501,13 @@ class ArchiveApi(recipe_api.RecipeApi):
       and skip_empty_source is enabled.
     """
     tmp_dir = self.m.path.mkdtemp()
-    output = tmp_dir.join('artifact.tar.gz')
+    output = tmp_dir / 'artifact.tar.gz'
     pkg = self.m.tar.make_package(build_dir, output, 'gz')
 
     for f in files:
-      pkg.add_file(build_dir.join(f))
+      pkg.add_file(build_dir / f)
     for directory in directories:
-      pkg.add_directory(build_dir.join(directory))
+      pkg.add_directory(build_dir / directory)
 
     try:
       pkg.tar('Create tar.gz archive')
@@ -535,13 +537,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     """
     # Create a temporary directory to hold the zipped archive.
     temp_dir = self.m.path.mkdtemp()
-    output_path = temp_dir.join('artifact.zip')
+    output_path = temp_dir / 'artifact.zip'
     package = self.m.zip.make_package(build_dir, output_path)
 
     for f in files:
-      package.add_file(build_dir.join(f))
+      package.add_file(build_dir / f)
     for directory in directories:
-      package.add_directory(build_dir.join(directory))
+      package.add_directory(build_dir / directory)
 
     # An exception will be raised if there's an error, so we can assume that
     # this step succeeds.
@@ -753,7 +755,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     return source_side_archive_spec
 
   def _get_source_side_archive_spec(self, spec_path):
-    source_side_archive_spec_path = self.m.chromium_checkout.checkout_dir.join(
+    source_side_archive_spec_path = self.m.chromium_checkout.checkout_dir.joinpath(
         *spec_path)
     archive_spec = self._read_source_side_archive_spec(
         source_side_archive_spec_path)
@@ -958,7 +960,7 @@ class ArchiveApi(recipe_api.RecipeApi):
               '/'.join([x for x in f if x]))
 
     def _resolve_base_dir(base_dir):
-      return self.m.chromium_checkout.checkout_dir.join(base_dir)
+      return self.m.chromium_checkout.checkout_dir / base_dir
 
     base_path = build_dir
     if archive_data.base_dir:
@@ -1104,8 +1106,7 @@ class ArchiveApi(recipe_api.RecipeApi):
             step_text=('archive_data properties with |archive_type| '
                        'ARCHIVE_TYPE_FILES must have empty |dirs|'))
       uploads = {
-          base_path.join(f): _sanitize_gcs_path(gcs_path, f)
-          for f in expanded_files
+          base_path / f: _sanitize_gcs_path(gcs_path, f) for f in expanded_files
       }
     elif (archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES):
       if archive_data.dirs:
@@ -1115,8 +1116,7 @@ class ArchiveApi(recipe_api.RecipeApi):
             step_text=('archive_data properties with |archive_type| '
                        'ARCHIVE_TYPE_FLATTEN_FILES must have empty |dirs|'))
       uploads = {
-          base_path.join(f): _sanitize_gcs_path(gcs_path,
-                                                self.m.path.basename(f))
+          base_path / f: _sanitize_gcs_path(gcs_path, self.m.path.basename(f))
           for f in expanded_files
       }
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_TAR_GZ:
@@ -1131,7 +1131,7 @@ class ArchiveApi(recipe_api.RecipeApi):
             status=self.m.step.FAILURE,
             step_text=('archive_data properties with |archive_type| '
                        'ARCHIVE_TYPE_RECURSIVE must specify |dirs|'))
-      uploads = {base_path.join(d): gcs_path for d in updated_dirs}
+      uploads = {base_path / d: gcs_path for d in updated_dirs}
       gcs_args += ['-R']
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_SQUASHFS:
       archive_file = self.m.path.mkdtemp().join('image.squash')
@@ -1228,7 +1228,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
       content_ascii = content.encode('ascii', 'ignore')
       temp_dir = self.m.path.mkdtemp()
-      output_file = temp_dir.join('latest.txt')
+      output_file = temp_dir / 'latest.txt'
       self.m.file.write_text('Write latest file', output_file, content_ascii)
       self.m.gsutil.upload(
           output_file,
@@ -1255,7 +1255,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       content_json = self.m.json.dumps(content)
 
       temp_dir = self.m.path.mkdtemp()
-      output_file = temp_dir.join('revisions.txt')
+      output_file = temp_dir / 'revisions.txt'
       self.m.file.write_text('Write REVISIONS file', output_file, content_json)
       revisions_path = self._replace_placeholders(
           update_properties, custom_vars, archive_data.revisions_file.gcs_path)
@@ -1319,7 +1319,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     upload_results = {}
     for yaml_file in cipd_archive_data.yaml_files:
-      pkg_def = build_dir.join(yaml_file)
+      pkg_def = build_dir / yaml_file
       create_results = self.m.cipd.create_from_yaml(
           pkg_def=pkg_def,
           refs=pkg_refs,

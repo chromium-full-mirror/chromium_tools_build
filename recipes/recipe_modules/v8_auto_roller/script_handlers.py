@@ -61,14 +61,13 @@ class ScriptedRollHandler(RollHandler):
 
   def apply_changes(self):
     args = [self.resolve_arg(a) for a in self.script.args]
-    self.api.step(f'Run {self.name()} script', [
-        'python3', '-u',
-        self.api.path.checkout_dir.join(self.script.exe), *args
-    ])
+    self.api.step(
+        f'Run {self.name()} script',
+        ['python3', '-u', self.api.path.checkout_dir / self.script.exe, *args])
 
   def resolve_arg(self, arg):
     if arg == '{{CHROMIUM_DIR}}':
-      return self.api.path.cache_dir.join('builder', 'src')
+      return self.api.path.cache_dir.joinpath('builder', 'src')
     if arg == '{{DEVTOOLS_DIR}}':
       return self.api.path.checkout_dir
     return arg

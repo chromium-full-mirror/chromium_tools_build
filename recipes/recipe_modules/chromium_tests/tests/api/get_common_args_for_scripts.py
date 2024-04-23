@@ -22,7 +22,7 @@ def RunSteps(api):
       'sample script',
       [
           'python3',
-          api.path.checkout_dir.join('testing', 'scripts', 'example.py')
+          api.path.checkout_dir.joinpath('testing', 'scripts', 'example.py')
       ] + api.chromium_tests.get_common_args_for_scripts(),
   )
 

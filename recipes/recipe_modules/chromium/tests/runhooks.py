@@ -49,7 +49,7 @@ def GenTests(api):
   yield api.test(
       'clobber_cros_cache_bug',
       api.properties(clobber='1'),
-      api.path.exists(api.path.checkout_dir.join('build', 'cros_cache')),
+      api.path.exists(api.path.checkout_dir.joinpath('build', 'cros_cache')),
       api.post_process(post_process.DropExpectation),
   )
 

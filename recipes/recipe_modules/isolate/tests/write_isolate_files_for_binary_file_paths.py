@@ -15,11 +15,11 @@ DEPS = [
 
 def RunSteps(api):
   api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-  browser_test_path = api.path.checkout_dir.join('out/Release/browser_tests')
+  browser_test_path = api.path.checkout_dir / 'out/Release/browser_tests'
   api.isolate.write_isolate_files_for_binary_file_paths(
       file_paths=[browser_test_path],
       isolate_target_name=ALL_TEST_BINARIES_ISOLATE_NAME,
-      build_dir=api.path.checkout_dir.join('out', 'Release'),
+      build_dir=api.path.checkout_dir.joinpath('out', 'Release'),
   )
 
 

@@ -197,7 +197,7 @@ class PgoApi(recipe_api.RecipeApi):
           subdir_identifier = test.step_name(suffix)
           path = self.m.profiles.profile_subdirs.get(subdir_identifier)
           profdata_filename = test.target_name + '.profdata'
-          profdata_path = path.join(profdata_filename)
+          profdata_path = path / profdata_filename
           # In this path, there should be a profdata file named after the test
           if profdata_path not in files:
             missing_files[profdata_filename] = subdir_identifier

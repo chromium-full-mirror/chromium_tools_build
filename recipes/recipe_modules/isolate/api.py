@@ -129,7 +129,7 @@ class IsolateApi(recipe_api.RecipeApi):
     args.extend(['-log-level', 'debug'])
 
     args.extend([
-        build_dir.join('%s.isolated.gen.json' % t)
+        build_dir.joinpath('%s.isolated.gen.json' % t)
         for t in sorted(set(targets))
     ])
 
@@ -292,7 +292,7 @@ class IsolateApi(recipe_api.RecipeApi):
         '--json-output',
         self.m.json.output(),
         '--ninja-path',
-        self.m.path.checkout_dir.join('third_party', 'ninja', 'ninja'),
+        self.m.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja'),
         '--use-isolate-files',
     ]
     try:

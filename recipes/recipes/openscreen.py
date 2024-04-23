@@ -66,17 +66,18 @@ class RepositoryPaths:
     """
     self.api = api
     self.checkout_path = api.path.checkout_dir
-    self.output_path = self.checkout_path.join('out', BUILD_CONFIG)
-    self.unit_test_binary_path = self.output_path.join(UNIT_TEST_BINARY_NAME)
-    self.e2e_test_binary_path = self.output_path.join(E2E_TEST_BINARY_NAME)
-    self.cast_e2e_test_script_path = self.checkout_path.join(
+    self.output_path = self.checkout_path.joinpath('out', BUILD_CONFIG)
+    self.unit_test_binary_path = self.output_path / UNIT_TEST_BINARY_NAME
+    self.e2e_test_binary_path = self.output_path / E2E_TEST_BINARY_NAME
+    self.cast_e2e_test_script_path = self.checkout_path.joinpath(
         'cast', CAST_E2E_TEST_SCRIPT_NAME)
-    self.cast_sender_binary_path = self.output_path.join(
+    self.cast_sender_binary_path = self.output_path.joinpath(
         CAST_SENDER_BINARY_NAME)
-    self.cast_receiver_binary_path = self.output_path.join(
+    self.cast_receiver_binary_path = self.output_path.joinpath(
         CAST_RECEIVER_BINARY_NAME)
-    self.test_data_path = self.checkout_path.join('test', 'data')
-    self.ninja_path = self.checkout_path.join('third_party', 'ninja', 'ninja')
+    self.test_data_path = self.checkout_path.joinpath('test', 'data')
+    self.ninja_path = self.checkout_path.joinpath('third_party', 'ninja',
+                                                  'ninja')
 
 
   def SwarmingBinaryPath(self, binary_name):
@@ -121,20 +122,21 @@ def GenerateCoverageTestConstants(api, paths):
   """
   # Add fakes for the paths that are validated in SetCodeCoverageConstants()
   if api.properties.get('is_valid_coverage_test', False):
-    llvm_dir = paths.checkout_path.join('third_party', 'llvm-build',
-                                        'Release+Asserts', 'bin')
-    api.path.mock_add_paths(paths.checkout_path.join('build', 'code_coverage'))
-    api.path.mock_add_paths(llvm_dir.join('llvm-profdata'))
-    api.path.mock_add_paths(llvm_dir.join('llvm-cov'))
-    api.path.mock_add_paths(paths.output_path.join('default.profraw'))
+    llvm_dir = paths.checkout_path.joinpath('third_party', 'llvm-build',
+                                            'Release+Asserts', 'bin')
+    api.path.mock_add_paths(
+        paths.checkout_path.joinpath('build', 'code_coverage'))
+    api.path.mock_add_paths(llvm_dir / 'llvm-profdata')
+    api.path.mock_add_paths(llvm_dir / 'llvm-cov')
+    api.path.mock_add_paths(paths.output_path / 'default.profraw')
 
   # Add fake .profraw data and destination path
   if api.properties.get('generate_test_profraw', False):
-    api.path.mock_add_paths(paths.checkout_path.join('default.profraw'))
+    api.path.mock_add_paths(paths.checkout_path / 'default.profraw')
 
   # Generate fake .profdata
   if api.properties.get('generate_test_profdata', False):
-    api.path.mock_add_paths(paths.output_path.join('default.profdata'))
+    api.path.mock_add_paths(paths.output_path / 'default.profdata')
 
 
 def GetChangedFiles(api, checkout_path):
@@ -343,9 +345,9 @@ def SetCodeCoverageConstants(api, checkout_path, host_tool_label):
       checkout_path (api.path): Location of openscreen checkout.
       host_tool_label (str): Host label from GetHostToolLabel.
   """
-  llvm_dir = checkout_path.join('third_party', 'llvm-build', 'Release+Asserts',
-                                'bin')
-  merge_libs_dir = checkout_path.join('build', 'code_coverage')
+  llvm_dir = checkout_path.joinpath('third_party', 'llvm-build',
+                                    'Release+Asserts', 'bin')
+  merge_libs_dir = checkout_path.joinpath('build', 'code_coverage')
 
   api.profiles._merge_scripts_dir = merge_libs_dir
   api.profiles._llvm_base_path = llvm_dir
@@ -394,8 +396,8 @@ def CalculateCodeCoverage(api, paths):
 
   # Validate that the script worked as expected, then bubble this up to
   # the trybot UI.
-  source = paths.output_path.join('default.profdata')
-  dest = temp_dir.join('default.profdata')
+  source = paths.output_path / 'default.profdata'
+  dest = temp_dir / 'default.profdata'
   if api.path.exists(source) or api.path.exists(dest):
     api.step.empty('coverage data successfully processed')
   else:
@@ -448,7 +450,7 @@ def RunTestsAndCoverageLocally(api, paths):
           'get files',
           paths.checkout_path,
           '**/*.profraw',
-          test_data=[paths.output_path.join('default.profraw')])
+          test_data=[paths.output_path / 'default.profraw'])
       for path in files:
         api.file.remove('remove ' + str(path), path)
 
@@ -456,7 +458,7 @@ def RunTestsAndCoverageLocally(api, paths):
     api.step('run unit tests', [paths.unit_test_binary_path])
 
     # Ensure tests correctly generated coverage data.
-    profraw_path = paths.checkout_path.join('default.profraw')
+    profraw_path = paths.checkout_path / 'default.profraw'
     if not api.path.exists(profraw_path):
       api.step.empty(
           'skip coverage calculations because no data was generated',

@@ -91,7 +91,7 @@ def RunSteps(api, config, target_os, target_cpu):
   # with existing Mac checkouts on the same machine.
   # TODO(crbug.com/crashpad/319): Use the builder cache on all platforms.
   if is_ios:
-    with api.context(cwd=api.path.cache_dir.join('builder')):
+    with api.context(cwd=api.path.cache_dir / 'builder'):
       api.bot_update.ensure_checkout()
   else:
     api.bot_update.ensure_checkout()
@@ -99,7 +99,7 @@ def RunSteps(api, config, target_os, target_cpu):
   # buildbot sets 'clobber' to the empty string which is falsey, check with
   # 'in'
   if 'clobber' in api.properties:
-    api.file.rmtree('out', api.path.checkout_dir.join('out'))
+    api.file.rmtree('out', api.path.checkout_dir / 'out')
 
   with api.context(env=env):
     api.gclient.runhooks()
@@ -114,12 +114,12 @@ def RunSteps(api, config, target_os, target_cpu):
   if is_fuchsia or is_ios or is_linux or is_mac:
     # TODO(crbug.com/crashpad/319): Simplify once all platforms use the cache.
     if is_ios:
-      gn = api.path.cache_dir.join('builder', 'buildtools', 'mac', 'gn')
+      gn = api.path.cache_dir.joinpath('builder', 'buildtools', 'mac', 'gn')
     else:
-      gn = api.path.start_dir.join('buildtools', 'mac' if is_mac else 'linux64',
-                                   'gn')
+      gn = api.path.start_dir.joinpath('buildtools',
+                                       'mac' if is_mac else 'linux64', 'gn')
     # Generic GN build.
-    path = api.path.checkout_dir.join('out', dirname)
+    path = api.path.checkout_dir.joinpath('out', dirname)
     if not target_cpu:
       target_cpu = 'x64'
     args = (
@@ -139,7 +139,7 @@ def RunSteps(api, config, target_os, target_cpu):
         api.step('generate build files',
                  [gn, 'gen', path, '--check', '--args=' + args])
   elif is_win:
-    gn = api.path.start_dir.join('buildtools', 'win', 'gn.exe')
+    gn = api.path.start_dir.joinpath('buildtools', 'win', 'gn.exe')
     # On Windows, we ought to test:
     # a) x64 OS, x64 handler, x64 client
     # b) x64 OS, x64 handler, x86 client
@@ -154,8 +154,8 @@ def RunSteps(api, config, target_os, target_cpu):
     # Additionally, they're all on the same physical machine currently, so
     # there's no upside in parallelism.
 
-    x86_path = api.path.checkout_dir.join('out', dirname + '_x86')
-    x64_path = api.path.checkout_dir.join('out', dirname + '_x64')
+    x86_path = api.path.checkout_dir.joinpath('out', dirname + '_x86')
+    x64_path = api.path.checkout_dir.joinpath('out', dirname + '_x64')
     args = 'target_os="win" is_debug=' + ('true' if is_debug else 'false')
     with api.context(cwd=api.path.checkout_dir):
       with sdk(target_os, 'x86'):
@@ -188,11 +188,11 @@ def RunSteps(api, config, target_os, target_cpu):
       api.step(
           'run tests', [
               'vpython3', '-u',
-              api.path.checkout_dir.join('build', 'run_tests.py'), build_dir
+              api.path.checkout_dir.joinpath('build', 'run_tests.py'), build_dir
           ],
           timeout=timeout_in_minutes * 60)
 
-  ninja = api.path.checkout_dir.join('third_party', 'ninja', 'ninja')
+  ninja = api.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
   if is_win:
     with sdk(target_os, 'x86'):
       api.step('compile with ninja x86', [ninja, '-C', x86_path])
@@ -237,4 +237,4 @@ def GenTests(api):
         api.buildbucket.ci_build(
             project='crashpad', builder=t, git_repo=CRASHPAD_REPO),
         api.path.exists(
-            api.path.checkout_dir.join('build', 'swarming_test_spec.pyl')))
+            api.path.checkout_dir.joinpath('build', 'swarming_test_spec.pyl')))

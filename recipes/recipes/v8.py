@@ -809,10 +809,12 @@ def GenTests(api):
       'with_test_config',
       enable_swarming=False,
   ) + api.v8.example_test_roots('test_checkout') + api.path.exists(
-      api.path.cache_dir.join('builder', 'v8', 'custom_deps', 'test_checkout',
-                              'infra', 'testing', 'config.pyl'),
-      api.path.cache_dir.join('builder', 'v8', 'custom_deps', 'test_checkout',
-                              'infra', 'testing', 'builders.pyl'),
+      api.path.cache_dir.joinpath('builder', 'v8', 'custom_deps',
+                                  'test_checkout', 'infra', 'testing',
+                                  'config.pyl'),
+      api.path.cache_dir.joinpath('builder', 'v8', 'custom_deps',
+                                  'test_checkout', 'infra', 'testing',
+                                  'builders.pyl'),
   ) + api.override_step_data(
       'initialization.read test config (test_checkout)',
       api.v8.example_test_config(extra_test_config),

@@ -79,7 +79,7 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       ),
       # build_dir is the full path to the "out" directory. Actual
       # gn/ninja/compile artifacts are located in
-      # build_dir.join(build_config_fs).
+      # build_dir / build_config_fs.
       build_dir=Single(Path),
       cros_sdk=ConfigGroup(
           external=Single(bool, empty_val=True, required=False),
@@ -197,14 +197,14 @@ def BASE(c):
       # Windows requires x64 builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
-  c.targets_spec_dir = c.CHECKOUT_PATH.join('testing', 'buildbot')
-  c.analyze_config_path = c.CHECKOUT_PATH.join('testing', 'buildbot',
-                                               'trybot_analyze_config.json')
+  c.targets_spec_dir = c.CHECKOUT_PATH.joinpath('testing', 'buildbot')
+  c.analyze_config_path = c.CHECKOUT_PATH.joinpath(
+      'testing', 'buildbot', 'trybot_analyze_config.json')
   # Test runner memory tools that are not compile-time based.
 
   ext = 'bat' if c.HOST_PLATFORM == 'win' else 'sh'
-  c.runtests.memory_tests_runner = c.CHECKOUT_PATH.join(
-      'tools', 'valgrind', 'chrome_tests.'+ext)
+  c.runtests.memory_tests_runner = c.CHECKOUT_PATH.joinpath(
+      'tools', 'valgrind', 'chrome_tests.' + ext)
 
   if c.HOST_PLATFORM == 'mac':
     c.mac_toolchain.installer_cipd_package = (
@@ -237,7 +237,7 @@ def mb_no_luci_auth(c):
 
 @config_ctx(group='builder')
 def ninja(c):
-  c.build_dir = c.CHECKOUT_PATH.join('out')
+  c.build_dir = c.CHECKOUT_PATH / 'out'
 
 
 @config_ctx()
@@ -549,9 +549,9 @@ def android_asan(_):
 @config_ctx()
 def android_common(c):
   c.env.PATH.extend([
-      c.CHECKOUT_PATH.join('third_party', 'android_sdk', 'public',
-                           'platform-tools'),
-      c.CHECKOUT_PATH.join('build', 'android')
+      c.CHECKOUT_PATH.joinpath('third_party', 'android_sdk', 'public',
+                               'platform-tools'),
+      c.CHECKOUT_PATH.joinpath('build', 'android')
   ])
 
 
@@ -585,6 +585,6 @@ def mac_toolchain(c):
 @config_ctx(includes=['mb'])
 def android_internal_isolate_maps(c):
   c.project_generator.isolate_map_paths = [
-      c.CHECKOUT_PATH.join('clank', 'build', 'bot', 'gn_isolate_map.pyl'),
-      c.CHECKOUT_PATH.join('testing', 'buildbot', 'gn_isolate_map.pyl'),
+      c.CHECKOUT_PATH.joinpath('clank', 'build', 'bot', 'gn_isolate_map.pyl'),
+      c.CHECKOUT_PATH.joinpath('testing', 'buildbot', 'gn_isolate_map.pyl'),
   ]

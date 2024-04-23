@@ -114,7 +114,7 @@ def RunSteps(api, platforms, custom_trigger_script,
           raw_cmd=['hello_world.exe'],
           name='hello_world',
           cas_input_root=cas_input_root,
-          task_output_dir=temp_dir.join('task_output_dir'),
+          task_output_dir=temp_dir / 'task_output_dir',
           merge=merge)
     elif isolated_script_task:
       task = api.chromium_swarming.isolated_script_task()
@@ -132,7 +132,7 @@ def RunSteps(api, platforms, custom_trigger_script,
       if realm:
         task.request = task.request.with_realm(realm)
 
-      task.task_output_dir = temp_dir.join('task_output_dir')
+      task.task_output_dir = temp_dir / 'task_output_dir'
       if merge:
         task.merge = merge
       task.trigger_script = trigger_script
@@ -141,7 +141,7 @@ def RunSteps(api, platforms, custom_trigger_script,
           name='hello_world',
           cas_input_root=cas_input_root,
           extra_args=['--foo', '42'],
-          task_output_dir=temp_dir.join('task_output_dir'),
+          task_output_dir=temp_dir / 'task_output_dir',
           named_caches=named_caches,
           service_account=service_account,
           cipd_packages=[
@@ -166,7 +166,7 @@ def RunSteps(api, platforms, custom_trigger_script,
       task.shard_indices = [0]
     if custom_trigger_script:
       task.trigger_script = chromium_swarming.TriggerScript.create(
-          script=api.path.cache_dir.join('custom_trigger.py'))
+          script=api.path.cache_dir / 'custom_trigger.py')
 
     task_request = task.request
     task_slice = task_request[0]
@@ -640,7 +640,7 @@ def GenTests(api):
       api.properties(
           isolated_script_task=True,
           merge=chromium_swarming.MergeScript.create(
-              script=api.path.cache_dir.join('fake_custom_merge_script.py'))),
+              script=api.path.cache_dir / 'fake_custom_merge_script.py')),
   )
 
   yield api.test(
@@ -662,7 +662,7 @@ def GenTests(api):
       api.properties(
           isolated_script_task=True,
           trigger_script=chromium_swarming.TriggerScript.create(
-              script=api.path.cache_dir.join('fake_custom_trigger_script.py'),
+              script=api.path.cache_dir / 'fake_custom_trigger_script.py',
               args=['foo', 'bar'],
           )),
       api.post_process(

@@ -216,7 +216,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def _get_targets_spec_dir(self, builder_config: ctbc.BuilderConfig) -> Path:
     if builder_config.targets_spec_directory:
-      return self.m.chromium_checkout.checkout_dir.join(
+      return self.m.chromium_checkout.checkout_dir.joinpath(
           builder_config.targets_spec_directory)
     return self.m.chromium.c.targets_spec_dir
 
@@ -380,7 +380,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return tuple(spec.get_test(self) for spec in test_specs)
 
   def read_targets_spec(self, targets_spec_file: str, targets_spec_dir: Path):
-    targets_spec_path = targets_spec_dir.join(targets_spec_file)
+    targets_spec_path = targets_spec_dir / targets_spec_file
     try:
       targets_spec = self.m.file.read_json(
           'read test spec (%s)' % self.m.path.basename(targets_spec_path),
@@ -391,7 +391,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     except Exception:
       if targets_spec_file != 'chromium.perf.pinpoint.json':
         raise
-      targets_spec_path = targets_spec_dir.join('chromium.perf.json')
+      targets_spec_path = targets_spec_dir / 'chromium.perf.json'
       targets_spec = self.m.file.read_json(
           'read test spec (%s)' % self.m.path.basename(targets_spec_path),
           targets_spec_path,
@@ -471,8 +471,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if not version_file:
       return None, None
 
-    version = self.m.chromium.get_version_from_file(
-        self.m.path.checkout_dir.join(version_file))
+    version = self.m.chromium.get_version_from_file(self.m.path.checkout_dir /
+                                                    version_file)
 
     chromium_config = self.m.chromium.c
     arch_id = chromium_config.TARGET_ARCH, chromium_config.TARGET_BITS
@@ -895,7 +895,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
       self.m.archive.clusterfuzz_archive(
-          build_dir=self.m.chromium.c.build_dir.join(
+          build_dir=self.m.chromium.c.build_dir.joinpath(
               self.m.chromium.c.build_config_fs),
           update_properties=update_step.presentation.properties,
           gs_bucket=builder_spec.cf_gs_bucket,
@@ -936,10 +936,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       by the CL being tested.
     """
     absolute_affected_files = set(
-        str(root_dir.join(f)).replace('/', self.m.path.sep)
-        for f in affected_files)
+        str(root_dir / f).replace('/', self.m.path.sep) for f in affected_files)
     absolute_spec_files = set(
-        str(targets_spec_dir.join(f))
+        str(targets_spec_dir / f)
         for f in builder_config.targets_spec_files.values())
     return absolute_spec_files & absolute_affected_files
 
@@ -1150,7 +1149,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       # gn_logs.txt contains debug info for vars with smart defaults. Display
       # its contents in the build for easy debugging.
-      gn_logs_path = self.m.chromium.c.build_dir.join(
+      gn_logs_path = self.m.chromium.c.build_dir.joinpath(
           self.m.chromium.c.build_config_fs, 'gn_logs.txt')
       self.m.path.mock_add_paths(gn_logs_path)
       if self.m.path.exists(gn_logs_path):
@@ -1216,8 +1215,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         build_archive_url=build_archive_url)
 
     if read_gn_args:
-      self.m.gn.get_args(
-          self.m.chromium.c.build_dir.join(self.m.chromium.c.build_config_fs))
+      self.m.gn.get_args(self.m.chromium.c.build_dir /
+                         self.m.chromium.c.build_config_fs)
 
   def _make_legacy_build_url(self, builder_spec, builder_group):
     # The group where the build was zipped and uploaded from.
@@ -1555,8 +1554,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         name='get compile targets for scripts',
         cmd=[
             'vpython3',
-            self.m.path.checkout_dir.join('testing', 'scripts',
-                                          'get_compile_targets.py'),
+            self.m.path.checkout_dir.joinpath('testing', 'scripts',
+                                              'get_compile_targets.py'),
             '--output',
             self.m.json.output(),
             '--',
@@ -1778,7 +1777,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # remove it.
     self.m.file.rmtree(
         'remove build directory',
-        self.m.chromium.c.build_dir.join(self.m.chromium.c.build_config_fs))
+        self.m.chromium.c.build_dir / self.m.chromium.c.build_config_fs)
 
     if set(tests_using_isolates + tests_using_skylab) != set(tests):
       # There are some tests which don't run via swarming. These need the source
@@ -1858,7 +1857,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return package_transfer_reasons
 
   def archive_command_lines(self, command_lines):
-    command_lines_file = self.m.path.cleanup_dir.join('command_lines.json')
+    command_lines_file = self.m.path.cleanup_dir / 'command_lines.json'
     self.m.file.write_json('write command lines', command_lines_file,
                            command_lines)
     return self.m.cas.archive('archive command lines to RBE-CAS',
@@ -1875,7 +1874,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # https://source.chromium.org/chromium/chromium/src/+/main:infra/orchestrator/BUILD.gn
     base_dir = self.m.path.checkout_dir
     output_dir = self.m.chromium.output_dir
-    runtime_deps_file = self.m.chromium.output_dir.join(
+    runtime_deps_file = self.m.chromium.output_dir.joinpath(
         TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE)
 
     if not self.m.path.exists(runtime_deps_file):
@@ -1889,8 +1888,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           self.m.file.read_text('read test-trigger deps file',
                                 runtime_deps_file).rstrip().split('\n'))
       for path in paths:
-        file_path = self.m.path.relpath(output_dir.join(path), base_dir)
-        file_path = base_dir.join(file_path)
+        file_path = self.m.path.relpath(output_dir / path, base_dir)
+        file_path = base_dir / file_path
 
         if "*" in str(file_path):
           # Glob files if it contains a wildcard
@@ -1908,7 +1907,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def _download_command_lines(self, command_lines_digest):
     self.m.cas.download('download command lines', command_lines_digest,
                         self.m.path.cleanup_dir)
-    command_lines_file = self.m.path.cleanup_dir.join('command_lines.json')
+    command_lines_file = self.m.path.cleanup_dir / 'command_lines.json'
     return self.m.file.read_json(
         'read command lines', command_lines_file, test_data={})
 
@@ -2254,7 +2253,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       analyze_names = ['chromium'] + list(builder_config.analyze_names)
       mb_config_path = (
           self.m.chromium.c.project_generator.config_path or
-          self.m.path.checkout_dir.join('tools', 'mb', 'mb_config.pyl'))
+          self.m.path.checkout_dir.joinpath('tools', 'mb', 'mb_config.pyl'))
       analyze_names.append(self.m.chromium.c.TARGET_PLATFORM)
       additional_exclusions = {
           exclusion: 'builder config additional exclusions'
@@ -2347,7 +2346,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if not builder_config.is_compile_only:
       tests = targets_config.all_tests
 
-    root_dir = self.m.chromium_checkout.checkout_dir.join(
+    root_dir = self.m.chromium_checkout.checkout_dir.joinpath(
         bot_update_step.json.output['root'])
 
     test_targets, compile_targets = self.determine_compilation_targets(
@@ -2569,7 +2568,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     with self.m.step.nest('collect runtime deps for %s' % target) as step:
       src_dir = self.m.path.checkout_dir
       build_dir = self.m.chromium.output_dir
-      abs_runtime_deps = build_dir.join(target + '.isolate')
+      abs_runtime_deps = build_dir.joinpath(target + '.isolate')
       if not self.m.path.exists(abs_runtime_deps):
         failure_msg = 'Failed to find the %s.isolate.' % target
         step.status = self.m.step.FAILURE
@@ -2600,21 +2599,19 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       runtime_deps):
 
     def is_dir(rel_path):
-      return self.m.path.isdir(self.m.path.checkout_dir.join(rel_path))
+      return self.m.path.isdir(self.m.path.checkout_dir / rel_path)
 
     def is_file(rel_path):
-      return self.m.path.isfile(self.m.path.checkout_dir.join(rel_path))
+      return self.m.path.isfile(self.m.path.checkout_dir / rel_path)
 
     with self.m.step.nest('upload skylab runtime deps for %s' % target):
       #TODO(crbug/1276489): Remove below condition once we get rid of the
       # build target lacros_version_metadata in src.
-      if not self.m.path.exists(
-          self.m.chromium.output_dir.join('metadata.json')):
+      if not self.m.path.exists(self.m.chromium.output_dir / 'metadata.json'):
         version = self.m.chromium.get_version()
         version_str = '%(MAJOR)s.%(MINOR)s.%(BUILD)s.%(PATCH)s' % version
         self.m.file.write_json(
-            'write metadata.json',
-            self.m.chromium.output_dir.join('metadata.json'),
+            'write metadata.json', self.m.chromium.output_dir / 'metadata.json',
             dict(content={'version': version_str}, metadata_version=1))
 
       # Lacros TLS provision requires a metadata.json containing the chrome

@@ -23,7 +23,7 @@ def RunSteps(api):
   api.chromium_tests.configure_build(builder_config)
   bot_update_step, targets_config = api.chromium_tests.prepare_checkout(
       builder_config)
-  root_dir = api.chromium_checkout.checkout_dir.join(
+  root_dir = api.chromium_checkout.checkout_dir.joinpath(
       bot_update_step.json.output['root'])
   affected_files = api.properties['affected_files']
   api.chromium_tests.determine_compilation_targets(builder_id, builder_config,

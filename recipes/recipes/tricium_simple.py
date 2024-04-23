@@ -42,7 +42,7 @@ def RunSteps(api):
     input_dir = api.chromium_checkout.src_dir
     affected_files = [
         f for f in api.chromium_checkout.get_files_affected_by_patch()
-        if not _should_skip(f) and api.path.exists(input_dir.join(f))
+        if not _should_skip(f) and api.path.exists(input_dir / f)
     ]
     # TODO(qyearsley): Add Pylint analyzer after debugging.
     analyzers = [
@@ -71,7 +71,7 @@ def GenTests(api):
 
   def test_data(affected_files):
     existing_files = [
-        api.path.cache_dir.join('builder', 'src', x) for x in affected_files
+        api.path.cache_dir.joinpath('builder', 'src', x) for x in affected_files
     ]
     return sum([
         api.chromium.try_build(

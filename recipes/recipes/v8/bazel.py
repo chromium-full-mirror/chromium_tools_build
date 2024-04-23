@@ -25,9 +25,9 @@ def RunSteps(api):
   api.chromium.set_config('v8')
   api.v8.checkout()
   api.v8.runhooks()
-  bazel = api.path.checkout_dir.join('tools', 'bazel', 'bazel')
-  clang = api.path.checkout_dir.join(
-      'third_party', 'llvm-build', 'Release+Asserts', 'bin')
+  bazel = api.path.checkout_dir.joinpath('tools', 'bazel', 'bazel')
+  clang = api.path.checkout_dir.joinpath('third_party', 'llvm-build',
+                                         'Release+Asserts', 'bin')
   clang_bin = clang.join('clang')
   clang_xx_bin = clang.join('clang++')
   with api.context(
@@ -37,10 +37,10 @@ def RunSteps(api):
 
     # TODO(https://crbug.com/v8/13515): Temporarily clobber the output
     # directory to avoid incremental build problems.
-    api.file.rmtree('Clobber bin dir', api.path.checkout_dir.join('bazel-bin'))
-    api.file.rmtree('Clobber out dir', api.path.checkout_dir.join('bazel-out'))
-    api.file.rmtree(
-        'Clobber bazel cache', api.path.home_dir.join('.cache', 'bazel'))
+    api.file.rmtree('Clobber bin dir', api.path.checkout_dir / 'bazel-bin')
+    api.file.rmtree('Clobber out dir', api.path.checkout_dir / 'bazel-out')
+    api.file.rmtree('Clobber bazel cache',
+                    api.path.home_dir.joinpath('.cache', 'bazel'))
 
     try:
       api.step(

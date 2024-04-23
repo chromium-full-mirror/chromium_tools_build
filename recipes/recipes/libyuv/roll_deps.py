@@ -60,8 +60,8 @@ def RunSteps(api):
 
     # Run the roll script. It will take care of branch creation, modifying DEPS,
     # uploading etc. It will also delete any previous roll branch.
-    script_path = api.path.checkout_dir.join('tools_libyuv', 'autoroller',
-                                             'roll_deps.py')
+    script_path = api.path.checkout_dir.joinpath('tools_libyuv', 'autoroller',
+                                                 'roll_deps.py')
 
     params = ['--clean', '--verbose']
     if api.runtime.is_experimental:

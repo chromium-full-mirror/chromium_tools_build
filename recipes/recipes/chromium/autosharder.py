@@ -114,10 +114,10 @@ def RunSteps(api):
     api.git('new-branch', 'autoshard', '--upstream', 'origin/main')
 
   potential_autoshard_exceptions_paths = (
-      api.chromium_checkout.src_dir.join('infra', 'config', 'targets',
-                                         'autoshard_exceptions.json'),
-      api.chromium_checkout.src_dir.join('testing', 'buildbot',
-                                         'autoshard_exceptions.json'),
+      api.chromium_checkout.src_dir.joinpath('infra', 'config', 'targets',
+                                             'autoshard_exceptions.json'),
+      api.chromium_checkout.src_dir.joinpath('testing', 'buildbot',
+                                             'autoshard_exceptions.json'),
   )
   for autoshard_exceptions_path in potential_autoshard_exceptions_paths:
     if api.path.exists(autoshard_exceptions_path):
@@ -131,7 +131,7 @@ def RunSteps(api):
         status=api.step.EXCEPTION,
         step_text='\n'.join(step_text))
 
-  script_path = api.chromium_checkout.src_dir.join(
+  script_path = api.chromium_checkout.src_dir.joinpath(
       'testing', 'buildbot', 'query_optimal_shard_counts.py')
 
   script_cmd = [
@@ -166,8 +166,8 @@ def RunSteps(api):
       autoshard_exceptions_path,
   )
 
-  regen_path = api.chromium_checkout.src_dir.join('testing', 'buildbot',
-                                                  'generate_buildbot_json.py')
+  regen_path = api.chromium_checkout.src_dir.joinpath(
+      'testing', 'buildbot', 'generate_buildbot_json.py')
   api.step('regenerate test specs', ['vpython3', regen_path])
 
   commit_message = COMMIT_MESSAGE.format(api.buildbucket.build.id)
@@ -199,7 +199,7 @@ def GenTests(api):
   # Simulate running on a Monday
   current_timestamp = int(datetime.datetime(2023, 7, 3).timestamp())
 
-  autoshard_exceptions_json_path = api.path.cache_dir.join(
+  autoshard_exceptions_json_path = api.path.cache_dir.joinpath(
       'builder', 'src', 'testing', 'buildbot', 'autoshard_exceptions.json')
 
   yield api.test(
@@ -418,8 +418,8 @@ def GenTests(api):
       'new autoshard exceptions path',
       api.time.seed(current_timestamp),
       api.path.exists(
-          api.path.cache_dir.join('builder', 'src', 'infra', 'config',
-                                  'targets', 'autoshard_exceptions.json')),
+          api.path.cache_dir.joinpath('builder', 'src', 'infra', 'config',
+                                      'targets', 'autoshard_exceptions.json')),
       api.override_step_data(
           'gerrit get last merged change',
           api.json.output([{

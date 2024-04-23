@@ -51,7 +51,7 @@ def _checkout_steps(api):
   '''Checks out Dawn. After this, api.path.checkout_dir returns the dawn root.'''
   # Check out dawn into an un-cached directory in 'cache'. This seems weird,
   # but it allows us to use api.path.cache_dir as a common root for RBE.
-  solution_path = api.path.cache_dir.join('uncached')
+  solution_path = api.path.cache_dir / 'uncached'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   with api.context(cwd=solution_path):
@@ -76,7 +76,7 @@ def _checkout_steps(api):
 
 def _install_clang(api):
   # 'builder' directory is implicitly cached, so cache clang there
-  install_path = api.path.cache_dir.join('builder')
+  install_path = api.path.cache_dir / 'builder'
 
   env_paths = []
   # Install binaries to named cache directory mentioned in luci builder
@@ -102,7 +102,7 @@ def _install_clang(api):
   ensure_file.add_package(f'fuchsia/third_party/clang/{package_name}',
                           package_hash, 'clang')
   api.cipd.ensure(install_path, ensure_file)
-  env_paths.append(install_path.join('clang/bin'))
+  env_paths.append(install_path / 'clang/bin')
   return env_paths
 
 
@@ -117,7 +117,7 @@ def windows_sdk(api):
     with api.step.nest('Read Windows SDK environment'):
       toolchain_data = api.file.read_json(
           'read build/win_toolchain.json',
-          api.path.checkout_dir.join('build', 'win_toolchain.json'),
+          api.path.checkout_dir.joinpath('build', 'win_toolchain.json'),
           test_data={
               'win_sdk':
                   'win_toolchain\\vs_files\\version_hash\\Windows Kits\\10',
@@ -325,7 +325,7 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
   if use_remoteexec:
     # RBE build
     ninja_cmd = [
-        ninja_path.join('ninja'), '-C', build_path, '-j', api.reclient.jobs
+        ninja_path / 'ninja', '-C', build_path, '-j', api.reclient.jobs
     ]
     ninja_cmd.extend(targets)
 
@@ -369,7 +369,7 @@ def RunSteps(api,
   env = {}
   if api.platform.is_win:
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path.cache_dir.join('win_toolchain'))
+        api.path.cache_dir / 'win_toolchain')
   if asan:
     # Disable 'detect_container_overflow' as we're hitting false positives because libc++ is not build with asan.
     # See https://github.com/google/sanitizers/wiki/AddressSanitizerContainerOverflow#false-positives
@@ -431,7 +431,7 @@ def RunSteps(api,
           targets=['dawn.node'])
 
       def run_target(target, must_exist):
-        target_path = build_path.join(target)
+        target_path = build_path / target
         if must_exist or api.path.exists(target_path):
           api.step(f'Run {target}', [target_path])
 

@@ -96,7 +96,7 @@ def make_archive(api,
     # This automatically deletes build_dir since we specify clobber above.
     api.v8.runhooks()
 
-  build_dir = api.chromium.c.build_dir.join(api.chromium.c.build_config_fs)
+  build_dir = api.chromium.c.build_dir / api.chromium.c.build_config_fs
   with api.step.nest('build' + step_suffix):
     compile_failure = api.v8.compile()
     if compile_failure:
@@ -105,22 +105,27 @@ def make_archive(api,
   with api.step.nest('make archive' + step_suffix) as parent:
     # Make a list of files to archive.
     files = ['d8', 'icudtl.dat']
-    file_list_test_data = [str(build_dir.join(f)) for f in files]
+    file_list_test_data = [str(build_dir / f) for f in files]
     file_list = api.v8.python(
         'filter build files',
-        api.path.checkout_dir.join('tools', 'release', 'filter_build_files.py'),
+        api.path.checkout_dir.joinpath('tools', 'release',
+                                       'filter_build_files.py'),
         [
-          '--dir', build_dir,
-          '--platform', api.chromium.c.TARGET_PLATFORM,
-          '--type', archive_type,
-          '--json-output', api.json.output(),
+            '--dir',
+            build_dir,
+            '--platform',
+            api.chromium.c.TARGET_PLATFORM,
+            '--type',
+            archive_type,
+            '--json-output',
+            api.json.output(),
         ],
         infra_step=True,
         step_test_data=lambda: api.json.test_api.output(file_list_test_data),
     ).json.output
 
     # Zip build.
-    zip_file = api.path.cleanup_dir.join('archive.zip')
+    zip_file = api.path.cleanup_dir / 'archive.zip'
     package = api.zip.make_package(build_dir, zip_file)
     for f in file_list:
       package.add_file(api.path.abs_to_path(f))

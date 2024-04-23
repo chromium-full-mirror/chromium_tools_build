@@ -15,7 +15,7 @@ DEPS = [
 def RunSteps(api):
   if 'binary_not_found' not in api.properties:
     api.path.mock_add_paths(
-        api.path.start_dir.join('squashfs', 'squashfs-tools', 'mksquashfs'))
+        api.path.start_dir.joinpath('squashfs', 'squashfs-tools', 'mksquashfs'))
   if 'compression_algorithm' in api.properties:
     api.squashfs.mksquashfs('some/folder', 'out.squash',
                             api.properties['compression_algorithm'],

@@ -47,8 +47,8 @@ def RunSteps(api):
       name='set git config user.name')
   # LUCI sets user.email automatically.
   api.git_cl.set_default_repo_location(api.path.checkout_dir)
-  blink_dir = api.path.checkout_dir.join('third_party', 'blink')
-  creds = api.path.cleanup_dir.join(CREDS_NAME + '.json')
+  blink_dir = api.path.checkout_dir.joinpath('third_party', 'blink')
+  creds = api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
       KMS_CRYPTO_KEY,
       api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
@@ -71,7 +71,7 @@ def RunSteps(api):
       delete_branch(name)
 
   with new_branch('update_wpt'):
-    script = blink_dir.join('tools', 'wpt_import.py')
+    script = blink_dir.joinpath('tools', 'wpt_import.py')
     args = [
         '--credentials-json',
         creds,

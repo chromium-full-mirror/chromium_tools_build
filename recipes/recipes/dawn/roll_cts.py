@@ -27,7 +27,7 @@ DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
 def _checkout_steps(api):
-  solution_path = api.path.cache_dir.join('builder')
+  solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
   with api.context(cwd=solution_path):
     # Checkout dawn and its dependencies (specified in DEPS) using gclient.
@@ -53,10 +53,11 @@ def RunSteps(api):
     api.step('npm', ['npm', 'version'])
 
     with api.context(env_prefixes={
-        'PATH': [api.path.checkout_dir.join('tools', 'golang', 'bin')]
+        'PATH': [api.path.checkout_dir.joinpath('tools', 'golang', 'bin')]
     }):
       api.step('Roll WebGPU CTS', [
-          api.path.checkout_dir.join('tools', 'run'), 'cts', 'roll', '-verbose',
+          api.path.checkout_dir.joinpath('tools',
+                                         'run'), 'cts', 'roll', '-verbose',
           '-parent-swarming-run-id', api.swarming.task_id, '-send-to-gardener'
       ])
 

@@ -90,7 +90,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
   current_lkgr = api.gitiles.commit_log(
       repo, ref, step_name='read lkgr from ref')['commit']
 
-  api.file.ensure_directory('mkdirs builder/lw', checkout_dir.join('lw'))
+  api.file.ensure_directory('mkdirs builder/lw', checkout_dir / 'lw')
   args = [
       '-vpython-spec',
       '.vpython3',
@@ -103,7 +103,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
       '--write-to-file',
       api.raw_io.output_text(name='lkgr_hash'),
       '--workdir',
-      checkout_dir.join('lw'),
+      checkout_dir / 'lw',
   ]
   if not api.runtime.is_experimental:
     args.append('--email-errors')
@@ -124,7 +124,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
         '<html>lkgr</html>', name='html')
 
   try:
-    with api.context(cwd=checkout_dir.join('infra')):
+    with api.context(cwd=checkout_dir / 'infra'):
       api.step(
           'calculate %s lkgr' % project, ['vpython3'] + args,
           step_test_data=lambda: step_test_data)
@@ -155,7 +155,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
   # command even without having full checkout.
   api.git.checkout(
       url=repo,
-      dir_path=checkout_dir.join('workdir'),
+      dir_path=checkout_dir / 'workdir',
       submodules=False,
       submodule_update_recursive=False,
       # For some reason, git cache doesn't make this faster crbug.com/860112.
@@ -165,7 +165,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
 
   new_lkgr = step_result.raw_io.output_texts['lkgr_hash']
   if new_lkgr and new_lkgr != current_lkgr:
-    with api.context(cwd=checkout_dir.join('workdir')):
+    with api.context(cwd=checkout_dir / 'workdir'):
       if api.runtime.is_experimental:
         api.step('fake lkgr push', cmd=None)
       else:

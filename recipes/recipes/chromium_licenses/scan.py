@@ -26,7 +26,7 @@ CHROMIUM_REPO_URL = 'https://chromium.googlesource.com/chromium/src.git'
 
 
 def RunSteps(api):
-  chrome_dir = api.path.cache_dir.join('builder', 'chrome')
+  chrome_dir = api.path.cache_dir.joinpath('builder', 'chrome')
   api.file.ensure_directory('chrome dir', chrome_dir)
 
   # Add Chromium to the source checkout
@@ -44,7 +44,7 @@ def RunSteps(api):
   env = {}
   if api.platform.is_win:
     env['DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT'] = (
-        api.path.cache_dir.join('win_toolchain'))
+        api.path.cache_dir / 'win_toolchain')
     env['DEPOT_TOOLS_WIN_TOOLCHAIN'] = 0
 
   with api.context(cwd=chrome_dir, env=env):
@@ -58,7 +58,7 @@ def RunSteps(api):
 
     # Run the licenses tool from the src directory so the special cases
     # can apply correctly.
-    chrome_src = api.path.cache_dir.join('builder', 'chrome', 'src')
+    chrome_src = api.path.cache_dir.joinpath('builder', 'chrome', 'src')
     api.file.ensure_directory('chrome src dir', chrome_src)
 
     with api.context(cwd=chrome_src, env=env):

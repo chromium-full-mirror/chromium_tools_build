@@ -189,4 +189,4 @@ class SisoApi(recipe_api.RecipeApi):
 
   @property
   def siso_path(self):
-    return self.m.path.checkout_dir.join('third_party', 'siso', 'siso')
+    return self.m.path.checkout_dir.joinpath('third_party', 'siso', 'siso')

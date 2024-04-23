@@ -21,8 +21,8 @@ def RunSteps(api):
       'chromium',
       precommit=api.properties['precommit'],
       # Fake path to make tests pass.
-      path_to_merge_scripts=api.path.start_dir.join('checkout',
-                                                    'merge_scripts'))
+      path_to_merge_scripts=api.path.start_dir.joinpath('checkout',
+                                                        'merge_scripts'))
 
 
 def GenTests(api):

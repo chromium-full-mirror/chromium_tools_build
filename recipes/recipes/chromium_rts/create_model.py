@@ -70,7 +70,7 @@ def RunSteps(api):
 
   # Create the model.
   checkout_dir = checkout_dir_fut.result()
-  model_dir = api.path.cleanup_dir.join('rts-chromium-model')
+  model_dir = api.path.cleanup_dir / 'rts-chromium-model'
   api.step(
       'create-model',
       [
@@ -112,11 +112,10 @@ def RunSteps(api):
 
 
 def archive_training_data(api):
-  zip_out = api.path.cleanup_dir.join('rts-chromium-model-data',
-                                      'rts-chromium-model-data.zip')
+  zip_out = api.path.cleanup_dir.joinpath('rts-chromium-model-data',
+                                          'rts-chromium-model-data.zip')
   api.zip.directory('zip model dir',
-                    api.path.cleanup_dir.join('rts-chromium-model-data'),
-                    zip_out)
+                    api.path.cleanup_dir / 'rts-chromium-model-data', zip_out)
   api.gsutil.upload(
       zip_out,
       'chrome-rts',
@@ -131,7 +130,7 @@ def create_cipd_package(api, platform, exec_pkg_dir, model_dir, update_ref):
     # Copy the model files, such that create_cipd_package can be called for
     # different platforms concurrently.
     # Note that we add a platform-specific executable below.
-    pkg_dir = api.path.cleanup_dir.join('model-pkg-dir', platform)
+    pkg_dir = api.path.cleanup_dir.joinpath('model-pkg-dir', platform)
     api.file.copytree('Copy the model files', model_dir, pkg_dir)
 
     # Add the executable to the model.
@@ -139,8 +138,8 @@ def create_cipd_package(api, platform, exec_pkg_dir, model_dir, update_ref):
     exe_base_name = 'rts-chromium' + exe_ext
     api.file.copy(
         'Include the executable',
-        exec_pkg_dir.join(exe_base_name),
-        pkg_dir.join(exe_base_name),
+        exec_pkg_dir / exe_base_name,
+        pkg_dir / exe_base_name,
     )
 
     # Upload to CIPD.
@@ -170,7 +169,7 @@ def install_rts_executables(api):
     - package_path is a api.path.Path object.
   """
   ver = pick_executable_version(api)
-  install_dir = api.path.cleanup_dir.join('rts-chromium')
+  install_dir = api.path.cleanup_dir / 'rts-chromium'
 
   ret = {}
   ensure_file = api.cipd.EnsureFile()
@@ -180,7 +179,7 @@ def install_rts_executables(api):
         version=ver,
         subdir=plat,
     )
-    ret[plat] = install_dir.join(plat)
+    ret[plat] = install_dir / plat
 
   api.cipd.ensure(install_dir, ensure_file, name='install RTS executables')
   return ret
@@ -228,9 +227,9 @@ def _fetch_model_data(api, exec_path, rejection_date_range,
     A tuple (rejections_dir, durations_dir) with path to the directories with
     rejections and durations respectively.
   """
-  data_dir = api.path.cleanup_dir.join('rts-chromium-model-data')
-  rejections_dir = data_dir.join('rejections')
-  durations_dir = data_dir.join('durations')
+  data_dir = api.path.cleanup_dir / 'rts-chromium-model-data'
+  rejections_dir = data_dir / 'rejections'
+  durations_dir = data_dir / 'durations'
 
   futures = api.futures.wait([
     api.futures.spawn_immediate(
@@ -270,7 +269,7 @@ def _date_range_flags(date_range):
 def compose_build_summary(api, model_dir):
   cfg = api.file.read_json(
       'read thresholds',
-      model_dir.join('git-file-graph', 'config.json'),
+      model_dir.joinpath('git-file-graph', 'config.json'),
       test_data={
           'thresholds': [
               {

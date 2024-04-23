@@ -105,7 +105,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         affected_files,
         test_targets,
         additional_compile_targets=additional_targets,
-        mb_path=self.m.path.checkout_dir.join('tools_webrtc', 'mb'),
+        mb_path=self.m.path.checkout_dir.joinpath('tools_webrtc', 'mb'),
         phase=phase)
 
     # Some trybots are used to calculate the binary size impact of the current
@@ -125,18 +125,18 @@ class WebRTCApi(recipe_api.RecipeApi):
     with self.m.depot_tools.on_path():
       # Video quality tools
       args_tools = [
-          self.m.path.checkout_dir.join('tools_webrtc',
-                                        'video_quality_toolchain', 'linux')
+          self.m.path.checkout_dir.joinpath('tools_webrtc',
+                                            'video_quality_toolchain', 'linux')
       ]
-      script_tools = self.m.path.checkout_dir.join('tools_webrtc',
-                                                   'download_tools.py')
+      script_tools = self.m.path.checkout_dir.joinpath('tools_webrtc',
+                                                       'download_tools.py')
       cmd_tools = ['vpython3', '-u', script_tools] + args_tools
       self.m.step('download video quality tools', cmd_tools)
 
       # AppRTC
       args_apprtc = [
           '--bucket=chromium-webrtc-resources', '--directory',
-          self.m.path.checkout_dir.join('rtc_tools', 'testing')
+          self.m.path.checkout_dir.joinpath('rtc_tools', 'testing')
       ]
       script_apprtc = self.m.depot_tools.download_from_google_storage_path
       cmd_apprtc = ['vpython3', '-u', script_apprtc] + args_apprtc
@@ -145,8 +145,8 @@ class WebRTCApi(recipe_api.RecipeApi):
       # Golang
       args_golang = [
           '--bucket=chromium-webrtc-resources', '--directory',
-          self.m.path.checkout_dir.join('rtc_tools', 'testing', 'golang',
-                                        'linux')
+          self.m.path.checkout_dir.joinpath('rtc_tools', 'testing', 'golang',
+                                            'linux')
       ]
       script_golang = self.m.depot_tools.download_from_google_storage_path
       cmd_golang = ['vpython3', '-u', script_golang] + args_golang
@@ -189,7 +189,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         builder_id,
         use_reclient=True,
         phase=phase,
-        mb_path=self.m.path.checkout_dir.join('tools_webrtc', 'mb'),
+        mb_path=self.m.path.checkout_dir.joinpath('tools_webrtc', 'mb'),
         mb_config_path=mb_config_path,
         isolated_targets=_get_isolated_targets(tests or []))
 
@@ -294,8 +294,8 @@ class WebRTCApi(recipe_api.RecipeApi):
     # Build the Android .aar archive and upload it to Google storage (except for
     # trybots). This should only be run on a single bot or the archive will be
     # overwritten (and it's a multi-arch build so one is enough).
-    build_script = self.m.path.checkout_dir.join('tools_webrtc', 'android',
-                                                 'build_aar.py')
+    build_script = self.m.path.checkout_dir.joinpath('tools_webrtc', 'android',
+                                                     'build_aar.py')
     args = ['--verbose']
     if self.m.tryserver.is_tryserver:
       # To benefit from incremental builds for speed.
@@ -312,7 +312,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     if not self.m.tryserver.is_tryserver and not self.m.runtime.is_experimental:
       self.m.gsutil.upload(
-          self.m.path.checkout_dir.join('libwebrtc.aar'),
+          self.m.path.checkout_dir / 'libwebrtc.aar',
           'chromium-webrtc',
           'android_archive/webrtc_android_%s.aar' % self.revision_number,
           args=['-a', 'public-read'],
@@ -320,12 +320,12 @@ class WebRTCApi(recipe_api.RecipeApi):
 
   def package_apprtcmobile(self, builder_id):
     # Zip and upload out/{Debug,Release}/apks/AppRTCMobile.apk
-    apk_root = self.m.chromium.c.build_dir.join(
+    apk_root = self.m.chromium.c.build_dir.joinpath(
         self.m.chromium.c.build_config_fs, 'apks')
-    zip_path = self.m.path.start_dir.join('AppRTCMobile_apk.zip')
+    zip_path = self.m.path.start_dir / 'AppRTCMobile_apk.zip'
 
     pkg = self.m.zip.make_package(apk_root, zip_path)
-    pkg.add_file(apk_root.join('AppRTCMobile.apk'))
+    pkg.add_file(apk_root / 'AppRTCMobile.apk')
     pkg.zip('AppRTCMobile zip archive')
 
     apk_upload_url = 'client.webrtc/%s/AppRTCMobile_apk_%s.zip' % (

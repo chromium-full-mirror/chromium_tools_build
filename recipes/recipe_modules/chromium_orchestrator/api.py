@@ -200,7 +200,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         builder_config,
         comp_output.got_revisions,
         self.m.chromium_checkout.src_dir,
-        targets_spec_dir=self.m.chromium_checkout.src_dir.join(
+        targets_spec_dir=self.m.chromium_checkout.src_dir.joinpath(
             comp_output.src_side_test_spec_dir),
         remote_tests_only=True)
     # This is used to set build properties on swarming tasks
@@ -230,7 +230,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       self.m.code_coverage.set_is_per_cl_coverage(True)
       self.m.code_coverage.filter_and_set_eligible_files(affected_files)
 
-      output_dir = self.m.chromium_checkout.src_dir.join(
+      output_dir = self.m.chromium_checkout.src_dir.joinpath(
           'out', self.m.chromium.c.build_config_fs)
       self.m.code_coverage.build_dir = output_dir
 
@@ -305,7 +305,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # (without patch) should be skipped
     if invalid_test_suites or self.m.chromium_tests.should_skip_without_patch(
         builder_config, self.m.chromium_checkout.src_dir, affected_files,
-        self.m.chromium_checkout.src_dir.join(
+        self.m.chromium_checkout.src_dir.joinpath(
             comp_output.src_side_test_spec_dir)):
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
 

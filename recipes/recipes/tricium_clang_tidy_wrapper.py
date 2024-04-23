@@ -115,7 +115,7 @@ def RunSteps(api):
     src_dir = api.chromium_checkout.src_dir
     with api.context(cwd=src_dir):
       affected = [
-          src_dir.join(_normalize_path_for_os(api, f))
+          src_dir.joinpath(_normalize_path_for_os(api, f))
           for f in api.chromium_checkout.get_files_affected_by_patch()
       ]
 
@@ -126,8 +126,8 @@ def RunSteps(api):
       gn_args_str = api.chromium.mb_lookup(me)
 
       api.file.ensure_directory('ensure out dir', api.chromium.output_dir)
-      api.file.write_text('write args.gn',
-                          api.chromium.output_dir.join('args.gn'), gn_args_str)
+      api.file.write_text('write args.gn', api.chromium.output_dir / 'args.gn',
+                          gn_args_str)
 
       api.tricium_clang_tidy.lint_source_files(api.chromium.output_dir,
                                                affected,
@@ -145,10 +145,10 @@ def GenTests(api):
     commit_message += '\nTriciumTest'
 
     existing_files = [
-        api.path.cache_dir.join('builder', 'src', x) for x in affected_files
+        api.path.cache_dir.joinpath('builder', 'src', x) for x in affected_files
     ]
     existing_files.append(
-        api.path.cache_dir.join('builder', 'src', *_clang_tidy_path))
+        api.path.cache_dir.joinpath('builder', 'src', *_clang_tidy_path))
     return sum([
         api.chromium.try_build(
             builder_group=builder_group,

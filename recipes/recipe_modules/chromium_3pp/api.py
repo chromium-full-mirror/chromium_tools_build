@@ -38,7 +38,7 @@ class Chromium3ppApi(recipe_api.RecipeApi):
           'See https://crrev.com/c/3749816 for context.')
       original_path_str = self._checkout_path
       self._checkout_path = self.m.path.abs_to_path(self._checkout_path)
-      assert self.m.path.exists(self._checkout_path.join('.gclient')), (
+      assert self.m.path.exists(self._checkout_path / '.gclient'), (
           'The chromium_3pp recipe expects local_checkout_dir to be the dir '
           'that contains .gclient. You probably need to pass in the parent '
           f'dir instead of: {original_path_str}')
@@ -94,7 +94,7 @@ class Chromium3ppApi(recipe_api.RecipeApi):
 
       # Analyze if the patch contains 3pp related changes
       # and return early if it does not.
-      with self.m.context(cwd=self._checkout_path.join('src')):
+      with self.m.context(cwd=self._checkout_path / 'src'):
         # Files from patch are under staged state so use "--cached" to only
         # show the staged changes.
         staged_diff_result = self._get_git_diff('Analyze', staged_only=True)
@@ -126,7 +126,7 @@ class Chromium3ppApi(recipe_api.RecipeApi):
       # changes related to 3pp.
       # This is to prevent the preprocess steps above from making unexpected
       # changes to 3pp files.
-      with self.m.context(cwd=self._checkout_path.join('src')):
+      with self.m.context(cwd=self._checkout_path / 'src'):
         unstaged_diff_result = self._get_git_diff('Confirm no-op')
 
       unexpected_3pp_files = []
@@ -140,7 +140,7 @@ class Chromium3ppApi(recipe_api.RecipeApi):
 
     with self.m.step.nest('Load all packages'):
       self.m.support_3pp.load_packages_from_path(
-          self._checkout_path.join('src'),
+          self._checkout_path / 'src',
           glob_pattern='**/3pp/3pp.pb',
           check_dup=True)
 
@@ -151,7 +151,7 @@ class Chromium3ppApi(recipe_api.RecipeApi):
         for pattern in ('**/3pp/3pp.pb', './3pp/3pp.pb'):
           cipd_pkg_names_to_build.update(
               self.m.support_3pp.load_packages_from_path(
-                  self._checkout_path.join('src', *package_path.split('/')),
+                  self._checkout_path.joinpath('src', *package_path.split('/')),
                   glob_pattern=pattern,
                   check_dup=False))
 

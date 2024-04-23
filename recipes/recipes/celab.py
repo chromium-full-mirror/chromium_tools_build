@@ -42,9 +42,9 @@ CHROMIUM_REPO = 'https://chromium.googlesource.com/chromium/src'
 def _get_bin_directory(api, bin_root):
   bin_dir = bin_root
   if api.platform.is_linux:
-    bin_dir = bin_dir.join('linux_amd64', 'bin')
+    bin_dir = bin_dir.joinpath('linux_amd64', 'bin')
   elif api.platform.is_win:
-    bin_dir = bin_dir.join('windows_amd64', 'bin')
+    bin_dir = bin_dir.joinpath('windows_amd64', 'bin')
   return bin_dir
 
 
@@ -129,31 +129,26 @@ def _RunStepsChromium(api):
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  version = _GetCelabVersionFromVPython(api, test_root.join('.vpython3'))
+  version = _GetCelabVersionFromVPython(api, test_root / '.vpython3')
   celab_bin_dir = _GetCelabFromCipd(api, version)
 
   # Run tests for all chromium bots.
-  cel_ctl = celab_bin_dir.join(_get_ctl_binary_name(api))
-  omaha_updater = chromium_bin_dir.join('updater.exe')
-  omaha_installer = chromium_bin_dir.join('UpdaterSetup.exe')
-  installer = chromium_bin_dir.join('mini_installer.exe')
-  chromedriver = chromium_bin_dir.join('chromedriver.exe')
+  cel_ctl = celab_bin_dir.joinpath(_get_ctl_binary_name(api))
+  omaha_updater = chromium_bin_dir / 'updater.exe'
+  omaha_installer = chromium_bin_dir / 'UpdaterSetup.exe'
+  installer = chromium_bin_dir / 'mini_installer.exe'
+  chromedriver = chromium_bin_dir / 'chromedriver.exe'
   test_py_args = '--cel_ctl=%s' % cel_ctl
   test_py_args += ' --test_arg=--omaha_updater=%s' % omaha_updater
   test_py_args += ' --test_arg=--omaha_installer=%s' % omaha_installer
   test_py_args += ' --test_arg=--chrome_installer=%s' % installer
   test_py_args += ' --test_arg=--chromedriver=%s' % chromedriver
-  _RunTests(
-    api,
-    test_root,
-    test_root.join('infra'),
-    'template.host.textpb',
-    tests,
-    test_py_args)
+  _RunTests(api, test_root, test_root / 'infra', 'template.host.textpb', tests,
+            test_py_args)
 
 
 def _GetCelabFromCipd(api, version):
-  packages_root = api.path.start_dir.join('packages')
+  packages_root = api.path.start_dir / 'packages'
   ensure_file = api.cipd.EnsureFile().add_package(
       'infra/celab/celab/${platform}', version)
   api.cipd.ensure(packages_root, ensure_file)
@@ -162,8 +157,8 @@ def _GetCelabFromCipd(api, version):
 
 def _CheckoutCelabRepo(api):
   # Checkout the CELab repo
-  go_root = api.path.start_dir.join('go')
-  src_root = go_root.join('src', 'chromium.googlesource.com', 'enterprise')
+  go_root = api.path.start_dir / 'go'
+  src_root = go_root.joinpath('src', 'chromium.googlesource.com', 'enterprise')
   api.file.ensure_directory('init src_root if not exists', src_root)
 
   with api.context(cwd=src_root):
@@ -174,10 +169,10 @@ def _CheckoutCelabRepo(api):
 
 
 def _BuildCelabFromSource(api, checkout):
-  go_root = api.path.start_dir.join('go')
+  go_root = api.path.start_dir / 'go'
 
   # Install Go & Protoc
-  packages_root = api.path.start_dir.join('packages')
+  packages_root = api.path.start_dir / 'packages'
   ensure_file = api.cipd.EnsureFile()
   ensure_file.add_package('infra/3pp/tools/go/${platform}', 'version:2@1.18.1')
   ensure_file.add_package('infra/tools/protoc/${platform}',
@@ -186,13 +181,13 @@ def _BuildCelabFromSource(api, checkout):
   api.cipd.ensure(packages_root, ensure_file)
 
   add_paths = [
-    go_root.join('bin'),
-    packages_root,
-    packages_root.join('bin'),
+      go_root / 'bin',
+      packages_root,
+      packages_root / 'bin',
   ]
 
   # Build CELab
-  cert_file = packages_root.join('cacert.pem')
+  cert_file = packages_root / 'cacert.pem'
   goenv = {'GOPATH': go_root, 'GIT_SSL_CAINFO': cert_file}
   with api.context(cwd=checkout, env=goenv, env_suffixes={'PATH': add_paths}):
     api.step('install deps',
@@ -249,10 +244,10 @@ def _BuildChromiumFromSource(api, test_root):
 
 def _UploadCelabBinariesToStorage(api, checkout, bin_dir):
   cel_ctl = _get_ctl_binary_name(api)
-  zip_out = api.path.start_dir.join('cel.zip')
+  zip_out = api.path.start_dir / 'cel.zip'
   pkg = api.zip.make_package(checkout.join('out'), zip_out)
-  pkg.add_file(bin_dir.join(cel_ctl))
-  pkg.add_directory(bin_dir.join('resources'))
+  pkg.add_file(bin_dir / cel_ctl)
+  pkg.add_directory(bin_dir / 'resources')
   for package_file in _get_python_packages(api, checkout):
     pkg.add_file(package_file)
   pkg.zip('zip archive')
@@ -282,19 +277,19 @@ def _RunTests(api,
   if not pool_name or not pool_size:
     raise ValueError('pool_name and pool_size must be defined with `tests`.')
 
-  host_dir = api.path.start_dir.join('hosts')
-  logs_dir = api.path.start_dir.join('logs')
+  host_dir = api.path.start_dir / 'hosts'
+  logs_dir = api.path.start_dir / 'logs'
   with api.step.nest('setup tests'):
     api.file.ensure_directory('init host_dir if not exists', host_dir)
     api.file.ensure_directory('init logs_dir if not exists', logs_dir)
 
     # Install required package for gsutil.
-    packages_root = api.path.start_dir.join('packages_tests')
+    packages_root = api.path.start_dir / 'packages_tests'
 
     ensure_file = api.cipd.EnsureFile().add_package(
         'infra/gcloud/${platform}', 'version:251.0.0.chromium0')
     api.cipd.ensure(packages_root, ensure_file)
-    add_paths = [packages_root.join('bin')]
+    add_paths = [packages_root / 'bin']
 
     # Get a unique storage prefix for these tests (diff runs share the bucket)
     storage_prefix = 'test-run-%s' % api.buildbucket.build.id
@@ -375,7 +370,7 @@ def _RunTests(api,
 
 # Zips the content of a directory and uploads the zip file to a given bucket.
 def _ZipAndUploadDirectory(api, bucket, directory, zip_filename, display_name):
-  zip_out = api.path.start_dir.join(zip_filename)
+  zip_out = api.path.start_dir / zip_filename
   pkg = api.zip.make_package(directory, zip_out)
   pkg.add_directory(directory)
   pkg.zip('zip logs archive')
@@ -397,7 +392,7 @@ def _ZipAndUploadDirectory(api, bucket, directory, zip_filename, display_name):
 # Parses the summary.json file created by run_tests.py, organizes the steps
 # presentation of tests and creates separate zips for each test logs.
 def _GetFailedTests(api, logs_dir):
-  summary_path = logs_dir.join('summary.json')
+  summary_path = logs_dir / 'summary.json'
   failed_tests = []
 
   with api.step.nest('find failed tests'):
@@ -424,7 +419,7 @@ def _GetFailedTests(api, logs_dir):
 # Parses the summary.json file created by run_tests.py, organizes the steps
 # presentation of tests and creates separate zips for each test logs.
 def _ParseTestSummary(api, storage_logs, logs_dir):
-  summary_path = logs_dir.join('summary.json')
+  summary_path = logs_dir / 'summary.json'
 
   with api.step.nest('test summary') as summary_step:
     tests_summary = api.file.read_json('parse summary', summary_path)
@@ -448,7 +443,7 @@ def _ParseTestSummary(api, storage_logs, logs_dir):
               test_step.logs['test.py output'] = logs.splitlines()
 
             # Upload logs if they exist (test fails after Deployment starts)
-            compute_logs_dir = logs_dir.join(test)
+            compute_logs_dir = logs_dir / test
             if api.path.exists(compute_logs_dir):
               upload_step = _ZipAndUploadDirectory(
                 api,
@@ -592,7 +587,7 @@ def GenTests(api):
                     api.file.read_text('first\ntest\nlogs')),
       api.step_data('test summary.3rd test.read logs',
                     api.file.errno('EEXIST')),
-      api.path.exists(api.path.start_dir.join('logs', '1st test')),
+      api.path.exists(api.path.start_dir.joinpath('logs', '1st test')),
       api.expect_status('FAILURE'),
   )
   yield api.test(
@@ -648,7 +643,7 @@ def GenTests(api):
       api.step_data('test summary.1st test.read logs',
                     api.file.read_text('first\ntest\nlogs')),
       api.expect_status('FAILURE'),
-      api.path.exists(api.path.start_dir.join('logs', '1st test')),
+      api.path.exists(api.path.start_dir.joinpath('logs', '1st test')),
       api.post_process(DropExpectation),
   )
   yield api.test(

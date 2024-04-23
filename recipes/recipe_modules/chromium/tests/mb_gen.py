@@ -18,10 +18,10 @@ DEPS = [
 
 @chromium.config.config_ctx()
 def mb_overrides(c):
-  c.project_generator.config_path = c.CHECKOUT_PATH.join(
+  c.project_generator.config_path = c.CHECKOUT_PATH.joinpath(
       'override', 'mb_config.pyl')
   c.project_generator.isolate_map_paths = [
-      c.CHECKOUT_PATH.join('override', 'gn_isolate_map.pyl')
+      c.CHECKOUT_PATH.joinpath('override', 'gn_isolate_map.pyl')
   ]
 
 

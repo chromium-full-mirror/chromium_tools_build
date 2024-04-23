@@ -32,7 +32,7 @@ warmed_file_name = 'warmed.txt'
 
 def RunSteps(api, properties):
   with api.chromium.chromium_layout():
-    cache_dir = api.path.cache_dir.join('builder')
+    cache_dir = api.path.cache_dir / 'builder'
     api.file.rmglob('delete warmed.txt', cache_dir, warmed_file_name)
 
     builder_id = chromium.BuilderId.create_for_group(
@@ -70,7 +70,7 @@ def RunSteps(api, properties):
         'got_revision',
         bot_update_step.presentation.properties.get('got_src_revision'))
 
-    warmed_path = cache_dir.join(warmed_file_name)
+    warmed_path = cache_dir / warmed_file_name
     api.file.write_text('write warmed.txt', warmed_path,
                         '{},{}'.format(checkout_time, build_revision))
 

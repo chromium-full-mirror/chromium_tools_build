@@ -61,7 +61,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     if step_name_suffix:
       step_name += step_name_suffix
     timeout = 60 * 60 * 1.5  # 1.5h
-    with self.m.context(env=env, cwd=self.m.path.cache_dir.join('builder')):
+    with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
             [target],
@@ -108,7 +108,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     """Check out to a specified revision."""
     cfg = copy.deepcopy(self.m.gclient.c)
     cfg.revisions['src'] = revision
-    with self.m.context(cwd=self.m.path.cache_dir.join('builder')):
+    with self.m.context(cwd=self.m.path.cache_dir / 'builder'):
       self.m.gclient.sync(cfg)
       self.m.chromium.runhooks()
     self.m.siso.check_version()

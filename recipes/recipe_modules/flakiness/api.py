@@ -159,14 +159,14 @@ class FlakinessApi(recipe_api.RecipeApi):
       return self.m.json.loads('{}')
 
     # The output dir must not exist for untar.
-    output_dir = self.m.path.cleanup_dir.join('flake_endorser')
+    output_dir = self.m.path.cleanup_dir / 'flake_endorser'
     self.m.tar.untar('unpack {}'.format(source), local_dest, output_dir)
 
     bucket = self.m.led.shadowed_bucket or builder.bucket
     return self.m.file.read_json(
         'process precomputed test history',
-        output_dir.join(builder.project, bucket,
-                        '{}.json'.format(builder.builder)),
+        output_dir.joinpath(builder.project, bucket,
+                            '{}.json'.format(builder.builder)),
         test_data=[{
             'test_id':
                 ('ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_'

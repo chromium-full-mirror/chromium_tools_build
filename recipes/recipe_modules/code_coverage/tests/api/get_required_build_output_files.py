@@ -42,7 +42,7 @@ def RunSteps(api, expected_paths, target_platform):
   ]
 
   api.code_coverage.src_dir = api.chromium_checkout.src_dir
-  api.code_coverage.build_dir = api.chromium_checkout.src_dir.join(
+  api.code_coverage.build_dir = api.chromium_checkout.src_dir.joinpath(
       'out', 'Release')
   file_paths = api.code_coverage.get_required_build_output_files(tests)
 
@@ -58,14 +58,14 @@ def GenTests(api):
       api.chromium.try_build(builder='linux-rel'),
       api.properties(
           expected_paths=[
-              api.chromium_checkout.src_dir.join('out/Release/browser_tests'),
-              api.chromium_checkout.src_dir.join(
+              api.chromium_checkout.src_dir / 'out/Release/browser_tests',
+              api.chromium_checkout.src_dir.joinpath(
                   'out/Release/binary_relative_paths_for_clang_code_coverage.json'
               ),
           ],
           target_platform='linux'),
-      api.path.exists(
-          api.chromium_checkout.src_dir.join('out/Release/browser_tests')),
+      api.path.exists(api.chromium_checkout.src_dir /
+                      'out/Release/browser_tests'),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -81,17 +81,17 @@ def GenTests(api):
       api.code_coverage(use_java_coverage=True),
       api.properties(
           expected_paths=[
-              api.chromium_checkout.src_dir.join(android_test_path),
-              api.chromium_checkout.src_dir.join(
+              api.chromium_checkout.src_dir / android_test_path,
+              api.chromium_checkout.src_dir.joinpath(
                   'out/Release/binary_relative_paths_for_clang_code_coverage.json'
               ),
-              api.chromium_checkout.src_dir.join(
+              api.chromium_checkout.src_dir.joinpath(
                   'out/Release/{}'.format(jacoco_file)),
-              api.chromium_checkout.src_dir.join('out/Release/{}'.format(
+              api.chromium_checkout.src_dir.joinpath('out/Release/{}'.format(
                   'chrome/browser/java__process_device.filter.jar'))
           ],
           target_platform='android'),
-      api.path.exists(api.chromium_checkout.src_dir.join(android_test_path)),
+      api.path.exists(api.chromium_checkout.src_dir / android_test_path),
       api.override_step_data(
           'Get all unstripped artifacts paths',
           api.json.output(['[CACHE]/builder/src/{}'.format(android_test_path)

@@ -45,7 +45,7 @@ def _compile_without_remote_execution(api, target):
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
-  solution_path = api.path.cache_dir.join('builder')
+  solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   builder_id = chromium.BuilderId.create_for_group(

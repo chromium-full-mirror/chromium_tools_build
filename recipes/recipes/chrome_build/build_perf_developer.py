@@ -79,7 +79,7 @@ def _incremental_build_with_one_day_changes(api, target):
 
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
-        phase='siso_reproxy', build_dir=api.chromium.c.build_dir.join('rbe'))
+        phase='siso_reproxy', build_dir=api.chromium.c.build_dir / 'rbe')
     suffix = ' with Siso in Reproxy mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -90,7 +90,7 @@ def _incremental_build_with_one_day_changes(api, target):
 
     ## Siso native build
     api.chromium_build_perf.recreate_build_dir(
-        phase='siso_native', build_dir=api.chromium.c.build_dir.join('siso'))
+        phase='siso_native', build_dir=api.chromium.c.build_dir / 'siso')
     suffix = ' with Siso in native mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -115,7 +115,7 @@ def _incremental_build_with_one_day_changes(api, target):
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_reproxy',
-        build_dir=api.chromium.c.build_dir.join('rbe'),
+        build_dir=api.chromium.c.build_dir / 'rbe',
         remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -127,7 +127,7 @@ def _incremental_build_with_one_day_changes(api, target):
     ## Siso native
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_native',
-        build_dir=api.chromium.c.build_dir.join('siso'),
+        build_dir=api.chromium.c.build_dir / 'siso',
         remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -223,11 +223,11 @@ def _incremental_builds_with_patch(api, target):
         phase='ninja', remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_reproxy',
-        build_dir=api.chromium.c.build_dir.join('rbe'),
+        build_dir=api.chromium.c.build_dir / 'rbe',
         remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_native',
-        build_dir=api.chromium.c.build_dir.join('siso'),
+        build_dir=api.chromium.c.build_dir / 'siso',
         remove_deps_cache=True)
 
     # Run a build at each revision.
@@ -315,7 +315,7 @@ def _clean_builds(api, target):
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
-  solution_path = api.path.cache_dir.join('builder')
+  solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
   # Checkout and gclient hooks.

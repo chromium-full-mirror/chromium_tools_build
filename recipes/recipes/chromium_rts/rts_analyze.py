@@ -136,9 +136,9 @@ def _fetch_model_data(api, exec_path, duration_date_range):
     A tuple (rejections_dir, durations_dir) with path to the directories with
     rejections and durations respectively.
   """
-  data_dir = api.path.cleanup_dir.join('rts-suite-analysis-model-data')
-  rejections_dir = data_dir.join('rejections')
-  durations_dir = data_dir.join('durations')
+  data_dir = api.path.cleanup_dir / 'rts-suite-analysis-model-data'
+  rejections_dir = data_dir / 'rejections'
+  durations_dir = data_dir / 'durations'
 
   # Using -append flag doesn't clean the rejections folder so ensure it's
   # cleaned before the fetches

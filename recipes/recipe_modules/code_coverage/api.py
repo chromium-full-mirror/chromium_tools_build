@@ -158,7 +158,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     """
     if not self._metadata_root_dir:
       self._metadata_root_dir = self.m.path.mkdtemp()
-    metadata_dir = self._metadata_root_dir.join(test_type).join(tool_type)
+    metadata_dir = self._metadata_root_dir.joinpath(test_type).joinpath(
+        tool_type)
     self.m.file.ensure_directory(
         'ensure metadata dir for %s tests for %s coverage' %
         (test_type, tool_type), metadata_dir)
@@ -196,7 +197,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if not self._bot_to_gerrit_mapping_file:
       output_dir = self.m.path.mkdtemp()
       gerrit_change = self.m.buildbucket.build.input.gerrit_changes[0]
-      local_to_gerrit_diff_mapping_file = output_dir.join(
+      local_to_gerrit_diff_mapping_file = output_dir.joinpath(
           constants.BOT_TO_GERRIT_LINE_NUM_MAPPING_FILE_NAME)
       timeout_in_minutes = 15
       self.m.step(
@@ -244,7 +245,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     in chromium is to use `checkout_clang_coverage_tools` gclient config:
     bit.ly/45OU2rA
     """
-    clang_update_script = self.m.chromium_checkout.src_dir.join(
+    clang_update_script = self.m.chromium_checkout.src_dir.joinpath(
         'tools', 'clang', 'scripts', 'update.py')
     args = ['python3', clang_update_script, '--package', 'coverage_tools']
     self.m.step(
@@ -288,7 +289,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         self.m.path.relpath(path, self.build_dir) for path in files
     ])
     binary_relative_paths_json_file_path = (
-        self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME))
+        self.build_dir / constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME)
     self.m.file.write_json(
         name='create binary relative path list file',
         dest=binary_relative_paths_json_file_path,
@@ -350,14 +351,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     """
     if may_use_binaries_list_file:
       binary_relative_paths_json_file_path = (
-          self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME))
+          self.build_dir / constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME)
 
       if self.m.path.exists(binary_relative_paths_json_file_path):
         rel_paths = self.m.file.read_json(
             'read binary relative path list file',
-            self.build_dir.join(constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME),
+            self.build_dir / constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME,
             test_data=["some_library"])
-        return {self.build_dir.join(path) for path in rel_paths}
+        return {self.build_dir / path for path in rel_paths}
 
     # TODO(crbug.com/899974): Implement a sturdier approach that also works in
     # separate builder-tester setup.
@@ -454,14 +455,15 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         elif self.platform == 'ios':
           if binary == 'ios_web_view_inttests':
             binaries.add(
-                self.build_dir.join('ChromeWebView.framework', 'ChromeWebView'))
+                self.build_dir.joinpath('ChromeWebView.framework',
+                                        'ChromeWebView'))
             break
           # Actual binary file is at {binary}.app/{binary} for iOS.
-          binaries.add(self.build_dir.join(binary + '.app', binary))
+          binaries.add(self.build_dir.joinpath(binary + '.app', binary))
         elif self.platform == 'win':
-          binaries.add(self.build_dir.join(binary + '.exe'))
+          binaries.add(self.build_dir.joinpath(binary + '.exe'))
         else:
-          binaries.add(self.build_dir.join(binary))
+          binaries.add(self.build_dir / binary)
 
         break
 
@@ -596,14 +598,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if not output_dir:
       output_dir = self.m.chromium.output_dir
     self.m.file.ensure_directory('create .code-coverage',
-                                 self.src_dir.join('.code-coverage'))
+                                 self.src_dir / '.code-coverage')
     self.m.step(
         'save paths of affected files',
         [
             'python3',
             self.resource('write_paths_to_instrument.py'),
             '--write-to',
-            self.src_dir.join('.code-coverage', 'files_to_instrument.txt'),
+            self.src_dir.joinpath('.code-coverage', 'files_to_instrument.txt'),
             '--src-path',
             self.src_dir,
             '--build-path',
@@ -688,7 +690,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             '--sources-json-dir',
             self.build_dir,
             '--java-coverage-dir',
-            self.build_dir.join(constants.JAVA_COVERAGE_DIR),
+            self.build_dir / constants.JAVA_COVERAGE_DIR,
         ])
 
   def _get_unsupported_projects(self):
@@ -822,7 +824,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       return
     with self.m.step.nest('process java coverage (%s)' % test_type):
       try:
-        coverage_dir = self.build_dir.join(constants.JAVA_COVERAGE_DIR)
+        coverage_dir = self.build_dir / constants.JAVA_COVERAGE_DIR
         output_dir = self._ensure_metadata_dir(test_type,
                                                constants.tools.JACOCO)
         cmd = [
@@ -864,7 +866,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if self._export_coverage_to_zoss:
           for repo in constants.COVERAGE_REPOS:
             self.m.gsutil.upload(
-                source=output_dir.join('coverage.xml'),
+                source=output_dir / 'coverage.xml',
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/coverage.xml' % self._compose_gs_path_for_zoss_upload(
                     builder=self._compose_mimic_builder_name(test_type),
@@ -875,14 +877,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 name='export coverage data to zoss for host %s' % repo['host'])
             self.m.file.write_json(
                 name='create zoss metadata json for host %s' % repo['host'],
-                dest=output_dir.join('zoss_metadata.json'),
+                dest=output_dir / 'zoss_metadata.json',
                 data=self._get_zoss_metadata(
                     zoss_host=repo['host'],
                     zoss_project=repo['project'],
                     coverage_format='JACOCO_XML',
                     coverage_type=test_type))
             self.m.gsutil.upload(
-                source=output_dir.join('zoss_metadata.json'),
+                source=output_dir / 'zoss_metadata.json',
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
                     builder=self._compose_mimic_builder_name(test_type),
@@ -892,7 +894,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 multithreaded=True,
                 name='export metadata to zoss for host %s' % repo['host'])
 
-        metadata_path = output_dir.join('all.json.gz')
+        metadata_path = output_dir / 'all.json.gz'
         if not self.m.path.exists(metadata_path):
           self.m.step.empty(
               'skip processing because %s tests metadata was missing' %
@@ -920,7 +922,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       return
     with self.m.step.nest('process javascript coverage (%s)' % test_type):
       try:
-        coverage_dir = self.build_dir.join(constants.JS_COVERAGE_DIR)
+        coverage_dir = self.build_dir / constants.JS_COVERAGE_DIR
         if not self.m.path.exists('%s/lcov.info' % coverage_dir):
           raise self.m.step.StepFailure("Required lcov.info is missing at %s" %
                                         coverage_dir)
@@ -963,7 +965,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         if self._export_coverage_to_zoss:
           for repo in constants.COVERAGE_REPOS:
             self.m.gsutil.upload(
-                source=coverage_dir.join('lcov.info'),
+                source=coverage_dir / 'lcov.info',
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/lcov.info' % self._compose_gs_path_for_zoss_upload(
                     builder=self._compose_mimic_builder_name(test_type),
@@ -974,14 +976,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                 name='export coverage data to zoss for host %s' % repo['host'])
             self.m.file.write_json(
                 name='create zoss metadata json for host %s' % repo['host'],
-                dest=output_dir.join('zoss_metadata.json'),
+                dest=output_dir / 'zoss_metadata.json',
                 data=self._get_zoss_metadata(
                     zoss_host=repo['host'],
                     zoss_project=repo['project'],
                     coverage_format='LCOV',
                     coverage_type=test_type))
             self.m.gsutil.upload(
-                source=output_dir.join('zoss_metadata.json'),
+                source=output_dir / 'zoss_metadata.json',
                 bucket=constants.ZOSS_BUCKET_NAME,
                 dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
                     builder=self._compose_mimic_builder_name(test_type),
@@ -1142,7 +1144,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     cmd.extend(binaries)
     cmd.append('--sources')
     cmd.extend([
-        self.src_dir.join(s)
+        self.src_dir / s
         for s in self._eligible_files_by_tool[constants.tools.CLANG]
     ])
 
@@ -1203,16 +1205,17 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if self.use_java_coverage:
       args.extend([
           '--java-coverage-dir',
-          self.build_dir.join(constants.JAVA_COVERAGE_DIR),
+          self.build_dir / constants.JAVA_COVERAGE_DIR,
           '--jacococli-path',
-          self.src_dir.join('third_party', 'jacoco', 'lib', 'jacococli.jar'),
+          self.src_dir.joinpath('third_party', 'jacoco', 'lib',
+                                'jacococli.jar'),
           '--merged-jacoco-filename',
           self.m.profiles.normalize(step_name),
       ])
     if self.use_javascript_coverage:
       args.extend([
           '--javascript-coverage-dir',
-          self.build_dir.join(constants.JS_COVERAGE_DIR),
+          self.build_dir / constants.JS_COVERAGE_DIR,
           '--chromium-src-dir',
           self.src_dir,
           '--build-dir',
@@ -1241,8 +1244,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
                                  profdata_dir,
                                  test_type=constants.test_types.OVERALL):
     """ Generates fuzz coverage information. """
-    llvm_cov = src_dir.join('third_party').join('llvm-build').join(
-        'Release+Asserts').join('bin').join('llvm-cov')
+    llvm_cov = (
+        src_dir / 'third_party' / 'llvm-build' / 'Release+Asserts' / 'bin' /
+        'llvm-cov')
     self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
     output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
     cmd = [
@@ -1300,8 +1304,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     dir_metadata = self.m.path.mkdtemp().join(constants.DIR_METADATA_FILE_NAME)
     with self.m.context(cwd=self.src_dir):
       self.m.step('Extract directory metadata', [
-          self.src_dir.join('third_party', 'depot_tools', 'dirmd'), 'export',
-          '-out', dir_metadata
+          self.src_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
+          'export', '-out', dir_metadata
       ])
     return dir_metadata
 
@@ -1348,7 +1352,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       if self._export_coverage_to_zoss:
         for repo in constants.COVERAGE_REPOS:
           self.m.gsutil.upload(
-              source=output_dir.join('coverage.json'),
+              source=output_dir / 'coverage.json',
               bucket=constants.ZOSS_BUCKET_NAME,
               dest='%s/coverage.json' % self._compose_gs_path_for_zoss_upload(
                   builder=self._compose_mimic_builder_name(test_type),
@@ -1359,14 +1363,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               name='export coverage data to zoss for host %s' % repo['host'])
           self.m.file.write_json(
               name='create zoss metadata json for host %s' % repo['host'],
-              dest=output_dir.join('zoss_metadata.json'),
+              dest=output_dir / 'zoss_metadata.json',
               data=self._get_zoss_metadata(
                   zoss_host=repo['host'],
                   zoss_project=repo['project'],
                   coverage_format='LLVM',
                   coverage_type=test_type))
           self.m.gsutil.upload(
-              source=output_dir.join('zoss_metadata.json'),
+              source=output_dir / 'zoss_metadata.json',
               bucket=constants.ZOSS_BUCKET_NAME,
               dest='%s/metadata.json' % self._compose_gs_path_for_zoss_upload(
                   builder=self._compose_mimic_builder_name(test_type),

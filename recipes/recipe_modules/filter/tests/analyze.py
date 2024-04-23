@@ -29,7 +29,7 @@ def RunSteps(api):
   kwargs = dict(api.properties.get('analyze_kwargs', {}))
   for k in ('mb_path', 'mb_config_path', 'build_output_dir'):
     if (val := kwargs.get(k)) is not None:
-      kwargs[k] = api.path.checkout_dir.join(*val)
+      kwargs[k] = api.path.checkout_dir.joinpath(*val)
 
   affected_test_targets, affected_compile_targets = (
       api.filter.analyze(

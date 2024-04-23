@@ -123,7 +123,7 @@ def RunSteps(api, properties):
 
   api.step('update win toolchain', [
       'python3',
-      api.path.checkout_dir.join('build', 'vs_toolchain.py'), 'update'
+      api.path.checkout_dir.joinpath('build', 'vs_toolchain.py'), 'update'
   ])
 
   with api.osx_sdk('ios'):
@@ -132,7 +132,7 @@ def RunSteps(api, properties):
       # TODO: specify --revision as package_clang.py does.
       api.step('package rust', [
           'python3',
-          api.path.checkout_dir.join('tools', 'rust', 'package_rust.py')
+          api.path.checkout_dir.joinpath('tools', 'rust', 'package_rust.py')
       ] + args)
 
 

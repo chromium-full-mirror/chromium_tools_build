@@ -161,7 +161,7 @@ def get_gclient_config(api: RecipeApi):
   # TODO(crbug.com/41492686): The .gclient file can technically
   # exist in any parent dir but will normally be in the chromium
   # or chromium/src.
-  checkout_file = api.path.checkout_dir.join('.gclient')
+  checkout_file = api.path.checkout_dir / '.gclient'
   src_file = api.path.split(api.path.checkout_dir)[0].join('.gclient')
   if api.path.exists(checkout_file):
     gclient_file_path = checkout_file
@@ -350,7 +350,7 @@ def create_tests(
       builder_config,
       got_revisions,
       api.path.checkout_dir,
-      targets_spec_dir=api.path.checkout_dir.join('testing', 'buildbot'))
+      targets_spec_dir=api.path.checkout_dir.joinpath('testing', 'buildbot'))
 
   def _get_matching_test(requested_test_name):
     for t in targets_config.all_tests:
@@ -442,8 +442,8 @@ def configure_build(
     if build_dir:
       build_path = api.path.cast_to_path(build_dir)
     else:
-      build_path = api.path.checkout_dir.join('out',
-                                              api.chromium.c.build_config_fs)
+      build_path = api.path.checkout_dir.joinpath(
+          'out', api.chromium.c.build_config_fs)
 
   api.chromium.output_dir = build_path
   return (compiling_builder_id, compiling_builder_config, api.path.checkout_dir,
@@ -571,7 +571,7 @@ def handle_code_coverage(
       gn_args, _ = api.gn.read_args(build_dir)
     api.file.write_text(
         'remove coverage_instrumentation_input_file gn arg',
-        build_dir.join('args.gn'), '\n'.join(
+        build_dir.joinpath('args.gn'), '\n'.join(
             arg for arg in gn_args.split('\n')
             if not arg.startswith('coverage_instrumentation_input_file')))
     return True
@@ -748,7 +748,7 @@ def GenTests(api: RecipeTestApi):
               }
           },
       ),
-      api.path.exists(api.path.cache_dir.join('.gclient')),
+      api.path.exists(api.path.cache_dir / '.gclient'),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1166,7 +1166,7 @@ solutions = [
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path.cache_dir.join('src', '.gclient')),
+      api.path.exists(api.path.cache_dir.joinpath('src', '.gclient')),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1202,7 +1202,7 @@ target_os=['os']
           preserve_gn_args=False,
           bypass_gclient=False,
       ),
-      api.path.exists(api.path.cache_dir.join('.gclient')),
+      api.path.exists(api.path.cache_dir / '.gclient'),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1232,7 +1232,7 @@ solutions = [
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path.cache_dir.join('src', '.gclient')),
+      api.path.exists(api.path.cache_dir.joinpath('src', '.gclient')),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1285,7 +1285,7 @@ target_os=['os']
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path.cache_dir.join('src/out/Release')),
+      api.path.exists(api.path.cache_dir / 'src/out/Release'),
       api.step_data(
           'lookup_builder_gn_args',
           stdout=api.raw_io.output_text('import("//builder.args")\n'

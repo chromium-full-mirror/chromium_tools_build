@@ -54,7 +54,7 @@ def RunSteps(api):
   input_dir = api.path.checkout_dir
   affected_files = [
       f for f in GetChangedFiles(api, input_dir)
-      if 'third_party/' not in f and api.path.exists(input_dir.join(f))
+      if 'third_party/' not in f and api.path.exists(input_dir / f)
   ]
   analyzers = [
       api.tricium.analyzers.HTTPS_CHECK,
@@ -68,7 +68,7 @@ def GenTests(api):
 
   def test_data(affected_files):
     existing_files = [
-        api.path.start_dir.join('pdfium', x) for x in affected_files
+        api.path.start_dir.joinpath('pdfium', x) for x in affected_files
     ]
     return sum([
         api.buildbucket.try_build(

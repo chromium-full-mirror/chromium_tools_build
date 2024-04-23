@@ -97,7 +97,7 @@ def RunSteps(api, properties):
 
 def _GetScriptWorkingDirectory(api, script_invocation):
   if script_invocation.working_directory:
-    return api.path.checkout_dir.join(script_invocation.working_directory)
+    return api.path.checkout_dir / script_invocation.working_directory
   return api.path.checkout_dir
 
 
@@ -105,7 +105,7 @@ def _RunScript(api, script_invocation):
   result_output_file = api.raw_io.output_text(
       suffix='.html', name='script_results')
   has_bug_file = False
-  cmd = [api.path.checkout_dir.join(script_invocation.script)]
+  cmd = [api.path.checkout_dir / script_invocation.script]
   cmd.extend(script_invocation.args)
   cmd.extend(['--result-output-file', result_output_file])
   if (script_invocation.script_type ==

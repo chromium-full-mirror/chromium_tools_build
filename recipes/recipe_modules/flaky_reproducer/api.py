@@ -254,23 +254,23 @@ class FlakyReproducer(recipe_api.RecipeApi):
     task_config = self.get_test_binary_swarming_task_config(test_binary_path)
     self.m.cas.download('download test binary', task_config.cas_input_root,
                         tmp_dir)
-    runner_dir = tmp_dir.join(self.RUNNER_PACKAGE_PATH)
+    runner_dir = tmp_dir / self.RUNNER_PACKAGE_PATH
     self.m.file.copytree('copy flaky_reproducer source', self.resource('.'),
                          runner_dir)
 
     # Delete bad symlink that causing CAS upload failure.
-    bad_symlink_dir = tmp_dir.join(*self.CHROMITE_BAD_SYMLINK_DIR)
+    bad_symlink_dir = tmp_dir.joinpath(*self.CHROMITE_BAD_SYMLINK_DIR)
     self.m.file.rmtree('remove bad symlink directory', bad_symlink_dir)
 
     self.m.file.copy('copy result_summary', result_summary_path,
-                     runner_dir.join(self.RESULT_SUMMARY_FILENAME))
+                     runner_dir / self.RESULT_SUMMARY_FILENAME)
     self.m.file.copy('copy test_binary', test_binary_path,
-                     runner_dir.join(self.TEST_BINARY_JSON_FILENAME))
+                     runner_dir / self.TEST_BINARY_JSON_FILENAME)
 
     self.m.isolate.write_isolate_file(
-        runner_dir.join(self.TEST_BINARY_ISOLATE_FILENAME), ['../'])
+        runner_dir / self.TEST_BINARY_ISOLATE_FILENAME, ['../'])
     return self.m.isolate.isolate(
-        'new test binary', runner_dir.join(self.TEST_BINARY_ISOLATE_FILENAME))
+        'new test binary', runner_dir / self.TEST_BINARY_ISOLATE_FILENAME)
 
   def launch_strategy_in_swarming(self, strategy_name, repacked_cas_input_root,
                                   test_name, task_config):

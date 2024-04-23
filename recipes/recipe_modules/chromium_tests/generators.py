@@ -398,8 +398,9 @@ class Generator:
       merge_script = merge.get('script')
       if merge_script:
         if merge_script.startswith('//'):
-          merge['script'] = self._checkout_path.join(merge_script[2:].replace(
-              '/', self._chromium_tests_api.m.path.sep))
+          merge['script'] = self._checkout_path.joinpath(
+              merge_script[2:].replace('/',
+                                       self._chromium_tests_api.m.path.sep))
         else:
           self._chromium_tests_api.m.step.empty(
               'test spec format error',
@@ -420,7 +421,7 @@ class Generator:
       trigger_script_path = trigger_script.get('script')
       if trigger_script_path:
         if trigger_script_path.startswith('//'):
-          trigger_script['script'] = self._checkout_path.join(
+          trigger_script['script'] = self._checkout_path.joinpath(
               trigger_script_path[2:].replace(
                   '/', self._chromium_tests_api.m.path.sep))
         else:

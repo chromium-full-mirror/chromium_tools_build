@@ -126,7 +126,7 @@ class LedCompilatorHandler(CompilatorHandler):
         output_dir=output_dir)
     build_json = self.api.file.read_json(
         'read build.proto.json',
-        output_dir.join(build_handle.task_id, 'build.proto.json'),
+        output_dir.joinpath(build_handle.task_id, 'build.proto.json'),
     )
     return json_format.ParseDict(
         build_json, build_pb2.Build(), ignore_unknown_fields=True)

@@ -13,8 +13,8 @@ class TarApi(recipe_api.RecipeApi):
 
     Usage:
       pkg = api.tar.make_package(root, output, 'bz2')
-      pkg.add_file(root.join('file'))
-      pkg.add_directory(root.join('directory'))
+      pkg.add_file(root / 'file')
+      pkg.add_directory(root / 'directory')
       yield pkg.tar('taring step')
 
     Args:

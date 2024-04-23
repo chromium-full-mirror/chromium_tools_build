@@ -38,7 +38,7 @@ class SwarmingClientApi(recipe_api.RecipeApi):
     # need to pass in some recent legal revision for this property.
     if revision is None:
       revision = '6b5e452e39fc4c629c40726b0421d495e40b3620'
-    self._client_path = self.m.path.start_dir.join('swarming.client')
+    self._client_path = self.m.path.start_dir / 'swarming.client'
     self.m.git.checkout(
         url='https://chromium.googlesource.com/infra/luci/client-py.git',
         ref=revision,

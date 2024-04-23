@@ -26,20 +26,21 @@ def RunSteps(api):
   api.v8.checkout()
   api.v8.runhooks()
 
-  depot_tools_path = api.path.checkout_dir.join('third_party', 'depot_tools')
+  depot_tools_path = api.path.checkout_dir.joinpath('third_party',
+                                                    'depot_tools')
   with api.context(env_prefixes={'PATH': [depot_tools_path]}):
     api.git('branch', '-D', 'gcmole_update', ok_ret='any')
     api.git('clean', '-ffd')
     api.git('new-branch', 'gcmole_update')
 
-    gcmole_root = api.path.checkout_dir.join('tools', 'gcmole')
-    api.step('Build gcmole', [gcmole_root.join('bootstrap.sh')])
-    api.step('Package gcmole', [gcmole_root.join('package.sh')])
+    gcmole_root = api.path.checkout_dir.joinpath('tools', 'gcmole')
+    api.step('Build gcmole', [gcmole_root / 'bootstrap.sh'])
+    api.step('Package gcmole', [gcmole_root / 'package.sh'])
 
     api.v8.python(
         'upload_to_google_storage',
         api.depot_tools.upload_to_google_storage_path,
-        ['-b', GS_BUCKET, gcmole_root.join('gcmole-tools.tar.gz')],
+        ['-b', GS_BUCKET, gcmole_root / 'gcmole-tools.tar.gz'],
     )
 
     changes = api.git(

@@ -29,7 +29,7 @@ DEPS = [
 
 def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
                         commit_message):
-  packages_dir = api.path.cleanup_dir.join('packages')
+  packages_dir = api.path.cleanup_dir / 'packages'
   test = bool(api.tryserver.get_footer('Tricium-Test'))
   pkg = 'infra/tricium/legacy_functions/metrics/linux-amd64'
   if test:
@@ -40,8 +40,8 @@ def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
     ensure_file.add_package(pkg, version='latest')
     api.cipd.ensure(packages_dir, ensure_file)
 
-  metrics = packages_dir.join('metrics')
-  out_dir = api.path.cleanup_dir.join('out')
+  metrics = packages_dir / 'metrics'
+  out_dir = api.path.cleanup_dir / 'out'
   enums_path = api.path.join('tools', 'metrics', 'histograms', 'enums.xml')
   api.step('metrics', [
       metrics, '-input', src_dir, '-output', out_dir, '-previous', prev_dir,
@@ -50,7 +50,7 @@ def _RunMetricsAnalyzer(api, src_dir, prev_dir, metrics_paths, patch_path,
   ] + metrics_paths)
 
   # This is where the Tricium metrics analyzer should write all results to.
-  out_file = out_dir.join('tricium', 'data', 'results.json')
+  out_file = out_dir.joinpath('tricium', 'data', 'results.json')
 
   text_result = api.file.read_text('metrics_output', out_file)
   results_msg = json_format.Parse(text_result, Data.Results())
@@ -83,7 +83,7 @@ def RunSteps(api):
       # Do not analyze removed files.
       affected = [
           f for f in api.chromium_checkout.get_files_affected_by_patch()
-          if api.path.exists(src_dir.join(f))
+          if api.path.exists(src_dir / f)
       ]
 
       metrics_filenames = {
@@ -103,9 +103,9 @@ def RunSteps(api):
         return
 
       # Put last version of changed files in temporary directory.
-      prev_dir = api.path.cleanup_dir.join('previous', 'src')
+      prev_dir = api.path.cleanup_dir.joinpath('previous', 'src')
       for path in metrics_paths:
-        prev_dir_path = prev_dir.join(path)
+        prev_dir_path = prev_dir / path
         api.file.ensure_directory('create_directories',
                                   api.path.dirname(prev_dir_path))
         # `git show` throws an error if the file doesn't exist. This could
@@ -120,7 +120,7 @@ def RunSteps(api):
           api.step('touch an empty file', ['touch', prev_dir_path])
 
       # Get the diff itself, with paths formatted as Tricium analyzer expects.
-      patch_path = api.path.cleanup_dir.join('tricium_generated_diff.patch')
+      patch_path = api.path.cleanup_dir / 'tricium_generated_diff.patch'
       diff_arg_list = [
           'diff', 'FETCH_HEAD~', 'FETCH_HEAD', '--output=' + str(patch_path),
           '--'
@@ -156,7 +156,8 @@ def GenTests(api):
 
     if auto_exist_files:
       test_data += api.path.exists(*[
-          api.path.cache_dir.join('builder', 'src', x) for x in affected_files
+          api.path.cache_dir.joinpath('builder', 'src', x)
+          for x in affected_files
       ])
 
     return test_data

@@ -65,7 +65,7 @@ def RunSteps(api, is_swarming_test=True):
             test_id_prefix='ninja://chromium/tests:base_unittests/'))
   tests = [test_spec.get_test(api.chromium_tests) for test_spec in test_specs]
   api.chromium_swarming.path_to_merge_scripts = (
-      api.path.cache_dir.join('merge_scripts'))
+      api.path.cache_dir / 'merge_scripts')
   api.chromium_swarming.set_default_dimension('pool', 'foo')
 
   api.test_utils.run_tests(

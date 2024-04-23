@@ -22,7 +22,7 @@ def RunSteps(api):
 
   api.archive.zip_and_upload_build(
       step_name='zip build',
-      target=api.path.checkout_dir.join('Release', 'out'),
+      target=api.path.checkout_dir.joinpath('Release', 'out'),
       build_url=api.archive.legacy_upload_url('example_bucket',
                                               'extra_component'),
       build_revision='example_sha',

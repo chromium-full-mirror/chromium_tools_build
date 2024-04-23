@@ -53,7 +53,7 @@ def RunSteps(api):
   # on special infra/config branch, which is typically orphan.
   if api.tryserver.gerrit_change_target_ref == 'refs/heads/infra/config':
     safe_buildername += '_infra_config'
-  cwd = api.path.cache_dir.join('builder', safe_buildername)
+  cwd = api.path.cache_dir.joinpath('builder', safe_buildername)
   api.file.ensure_directory('ensure builder cache dir', cwd)
 
   skip_owners = False

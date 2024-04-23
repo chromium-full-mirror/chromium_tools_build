@@ -69,12 +69,12 @@ def RunSteps(api, properties):
 
   # The dashboard unit tests depend on Python modules in the App Engine SDK,
   # and the unit test runner script assumes that the SDK is in PYTHONPATH.
-  sdk_path = api.path.start_dir.join('google_appengine')
+  sdk_path = api.path.start_dir / 'google_appengine'
   api.gae_sdk.fetch(api.gae_sdk.PLAT_PYTHON, sdk_path)
   app_engine_sdk_path = api.path.pathsep.join([
       '%(PYTHONPATH)s', str(sdk_path)])
 
-  packages_root = api.path.start_dir.join('packages')
+  packages_root = api.path.start_dir / 'packages'
 
   # Install the protoc package.
   if (api.platform.name == 'mac' and api.platform.arch == 'arm'):
@@ -87,8 +87,7 @@ def RunSteps(api, properties):
 
   with api.osx_sdk('mac'):
     with api.context(
-        env_prefixes={'PATH': [packages_root,
-                               packages_root.join('bin')]}):
+        env_prefixes={'PATH': [packages_root, packages_root / 'bin']}):
       _RemoteSteps(api, app_engine_sdk_path, properties)
 
 

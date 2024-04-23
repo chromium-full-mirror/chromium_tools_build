@@ -17,7 +17,7 @@ class XcodeApi(recipe_api.RecipeApi):
   # or the file does not exist it will return None.
   def get_xcode_version(self, checkout_dir):
     if self.xcode_config_path and checkout_dir:
-      full_path = checkout_dir.join(self.xcode_config_path)
+      full_path = checkout_dir / self.xcode_config_path
 
       # we don't throw an error when file does not exist,
       # because it will fall back using the xcode_build_version

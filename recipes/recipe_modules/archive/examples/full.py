@@ -49,18 +49,17 @@ def RunSteps(api):
 
   if 'build_archive_url' in api.properties:
     api.archive.zip_and_upload_build(
-        step_name='zip build',
-        target=api.path.checkout_dir.join('/Release/out'))
+        step_name='zip build', target=api.path.checkout_dir / '/Release/out')
     return
 
   if 'gcs_archive' in api.properties:
     api.chromium.set_config('chromium')
 
     build_dir = api.m.path.mkdtemp()
-    api.path.mock_add_paths(build_dir.join('existing-dir'))
-    api.path.mock_add_paths(build_dir.join('existing-file.json'))
+    api.path.mock_add_paths(build_dir / 'existing-dir')
+    api.path.mock_add_paths(build_dir / 'existing-file.json')
     api.path.mock_add_paths(
-        api.path.start_dir.join('squashfs', 'squashfs-tools', 'mksquashfs'))
+        api.path.start_dir.joinpath('squashfs', 'squashfs-tools', 'mksquashfs'))
     update_properties = api.properties.get('update_properties')
     custom_vars = api.properties.get('custom_vars')
     upload_results = api.archive.generic_archive(
@@ -74,16 +73,16 @@ def RunSteps(api):
     return
 
   if 'no_llvm' not in api.properties:
-    llvm_bin_dir = api.path.checkout_dir.join('third_party', 'llvm-build',
-                                              'Release+Asserts', 'bin')
+    llvm_bin_dir = api.path.checkout_dir.joinpath('third_party', 'llvm-build',
+                                                  'Release+Asserts', 'bin')
     api.path.mock_add_paths(api.path.join(llvm_bin_dir, 'llvm-symbolizer'))
     api.path.mock_add_paths(api.path.join(llvm_bin_dir, 'sancov'))
 
-    llvm_lib_dir = api.path.checkout_dir.join('third_party', 'llvm-build',
-                                              'Release+Asserts', 'lib')
+    llvm_lib_dir = api.path.checkout_dir.joinpath('third_party', 'llvm-build',
+                                                  'Release+Asserts', 'lib')
     api.path.mock_add_paths(api.path.join(llvm_lib_dir, 'libstdc++.so.6'))
 
-  build_dir = api.path.start_dir.join('src', 'out', 'Release')
+  build_dir = api.path.start_dir.joinpath('src', 'out', 'Release')
 
   api.archive.clusterfuzz_archive(
       build_dir=build_dir,

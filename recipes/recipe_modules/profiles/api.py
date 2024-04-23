@@ -38,17 +38,18 @@ class ProfilesApi(recipe_api.RecipeApi):
     # TODO(crbug.com/1076055) - Refactor the code_coverage folder to a common
     # profiles folder
     if not self._merge_scripts_dir:  # pragma: no cover
-      self._merge_scripts_dir = self.src_dir.join('testing', 'merge_scripts',
-                                                  'code_coverage')
+      self._merge_scripts_dir = self.src_dir.joinpath('testing',
+                                                      'merge_scripts',
+                                                      'code_coverage')
     return self._merge_scripts_dir
 
   @property
   def merge_steps_script(self):
-    return self.merge_scripts_dir.join('merge_steps.py')
+    return self.merge_scripts_dir / 'merge_steps.py'
 
   @property
   def merge_results_script(self):
-    return self.merge_scripts_dir.join('merge_results.py')
+    return self.merge_scripts_dir / 'merge_results.py'
 
   @property
   def profile_subdirs(self):
@@ -56,10 +57,10 @@ class ProfilesApi(recipe_api.RecipeApi):
 
   def llvm_exec_path(self, name):
     if not self._llvm_base_path:
-      self._llvm_base_path = self.src_dir.join('third_party', 'llvm-build',
-                                               'Release+Asserts', 'bin')
+      self._llvm_base_path = self.src_dir.joinpath('third_party', 'llvm-build',
+                                                   'Release+Asserts', 'bin')
     name += '.exe' if self.m.platform.is_win else ''
-    return self._llvm_base_path.join(name)
+    return self._llvm_base_path / name
 
   @property
   def llvm_profdata_exec(self):
@@ -111,7 +112,7 @@ class ProfilesApi(recipe_api.RecipeApi):
 
     if not identifier in self._profile_subdirs:
       path = self.normalize(identifier)
-      new_subdir = self._root_profile_dir.join(path)
+      new_subdir = self._root_profile_dir / path
       self.m.file.ensure_directory('ensure profile dir for %s' % identifier,
                                    new_subdir)
 

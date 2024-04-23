@@ -17,8 +17,7 @@ from recipe_engine import post_process
 
 
 def RunSteps(api):
-  actual_version = api.xcode.get_xcode_version(
-      api.path.cache_dir.join('builder'))
+  actual_version = api.xcode.get_xcode_version(api.path.cache_dir / 'builder')
   api.assertions.assertEqual('0.0', actual_version)
 
 
@@ -28,7 +27,7 @@ def GenTests(api):
       xcode_config_path=config_path)
   yield api.test(
       'testing xcode version retrieval',
-      api.path.exists(api.path.cache_dir.join('builder', config_path)),
+      api.path.exists(api.path.cache_dir.joinpath('builder', config_path)),
       api.properties(**{'$build/xcode': xcode_input_properties}),
       api.post_process(post_process.StepSuccess,
                        'Read xcode_configs from repo'),

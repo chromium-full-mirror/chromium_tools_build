@@ -198,7 +198,7 @@ class ProdTrigger(Trigger):
         'scheduler.Scheduler.GetJobs'
     ]
     input_data = {"project": "v8"}
-    jobs_file = self.api.path.tmp_base_dir.join('jobs.json')
+    jobs_file = self.api.path.tmp_base_dir / 'jobs.json'
     self.api.step(
         "get V8 jobs",
         args,
@@ -360,10 +360,10 @@ class V8Api(recipe_api.RecipeApi):
     Returns: List of paths to test roots.
     """
     result = [self.m.path.checkout_dir]
-    custom_deps_dir = self.m.path.checkout_dir.join('custom_deps')
+    custom_deps_dir = self.m.path.checkout_dir / 'custom_deps'
     self.m.file.ensure_directory('ensure custom_deps dir', custom_deps_dir)
     for path in self.m.file.listdir('list test roots', custom_deps_dir):
-      if self.m.path.exists(path.join('infra', 'testing', 'builders.pyl')):
+      if self.m.path.exists(path.joinpath('infra', 'testing', 'builders.pyl')):
         assert self.bot_type == 'builder_tester', (
             'Separate test checkouts are only supported on builder_testers. '
             'For separate builders and testers, the test configs need to be '
@@ -382,7 +382,7 @@ class V8Api(recipe_api.RecipeApi):
           additional test checkout.
     Returns: Test config dict.
     """
-    test_config_path = root.join('infra', 'testing', 'config.pyl')
+    test_config_path = root.joinpath('infra', 'testing', 'config.pyl')
 
     # Fallback for branch builders.
     if not self.m.path.exists(test_config_path):
@@ -406,7 +406,7 @@ class V8Api(recipe_api.RecipeApi):
       # dicts should be refactored into classes similar to test specs. Maybe
       # the extra configurations from test configs could be added to test
       # specs.
-      test_config['test_root'] = str(root.join('test'))
+      test_config['test_root'] = str(root / 'test')
 
     return test_configs
 
@@ -471,7 +471,7 @@ class V8Api(recipe_api.RecipeApi):
 
   @cached_property
   def checkout_root(self):
-    path = self.m.path.cache_dir.join('builder')
+    path = self.m.path.cache_dir / 'builder'
     self.m.file.ensure_directory('ensure builder cache dir', path)
     return path
 
@@ -576,7 +576,7 @@ class V8Api(recipe_api.RecipeApi):
           builders.
     Returns: v8_builders.TestSpec object, filtered by the passed builders.
     """
-    test_spec_file = root.join('infra', 'testing', 'builders.pyl')
+    test_spec_file = root.joinpath('infra', 'testing', 'builders.pyl')
 
     # Fallback for branch builders.
     if not self.m.path.exists(test_spec_file):
@@ -613,7 +613,7 @@ class V8Api(recipe_api.RecipeApi):
     """
     output_dir = self.m.chromium.output_dir
     if out_dir:
-      output_dir = self.m.path.checkout_dir.join(
+      output_dir = self.m.path.checkout_dir.joinpath(
           out_dir, self.m.chromium.c.build_config_fs)
 
     # Special handling for 'perf' target, since perf tests are going to be
@@ -687,8 +687,8 @@ class V8Api(recipe_api.RecipeApi):
       category: ChromePerf category for qualifying the graph names, e.g.
           linux32 or linux64.
     """
-    size = self.m.file.filesizes(
-        'Check binary size', [self.build_output_dir.join(binary)])[0]
+    size = self.m.file.filesizes('Check binary size',
+                                 [self.build_output_dir / binary])[0]
 
     point_defaults = {
       'units': 'bytes',
@@ -750,7 +750,7 @@ class V8Api(recipe_api.RecipeApi):
             'mb_config_path', 'infra/mb/mb_config.pyl')
 
         mb_config_path = (
-            mb_config_path or self.m.path.checkout_dir.join(mb_config_rel_path))
+            mb_config_path or self.m.path.checkout_dir / mb_config_rel_path)
 
         gn_args = self.m.chromium.mb_gen(
             self.m.chromium.get_builder_id(),
@@ -820,14 +820,14 @@ class V8Api(recipe_api.RecipeApi):
     """Returns path to depot_tools pinned in the V8 checkout."""
     assert 'checkout' in self.m.path, (
         "Pinned depot_tools is not available before checkout has been created")
-    return self.m.path.checkout_dir.join('third_party', 'depot_tools')
+    return self.m.path.checkout_dir.joinpath('third_party', 'depot_tools')
 
   @property
   def ninja_path(self):
     """Returns path to ninja pinned in the V8 checkout."""
     assert 'checkout' in self.m.path, (
         "Pinned ninja is not available before checkout has been created")
-    return self.m.path.checkout_dir.join('third_party', 'ninja')
+    return self.m.path.checkout_dir.joinpath('third_party', 'ninja')
 
   def _get_default_archive(self):
     return 'gs://chromium-v8/archives/%s/%s' % (
@@ -852,9 +852,10 @@ class V8Api(recipe_api.RecipeApi):
 
   @cached_property
   def build_config(self):
-    build_config_path = self.build_output_dir.join('v8_build_config.json')
+    build_config_path = self.build_output_dir / 'v8_build_config.json'
     return self.m.file.read_json(
-        'read build config', build_config_path,
+        'read build config',
+        build_config_path,
         test_data=self.test_api.example_build_config())
 
   def get_build_type(self):
@@ -898,7 +899,7 @@ class V8Api(recipe_api.RecipeApi):
   @property
   def build_output_dir(self):
     """Absolute path to the build product based on the 'checkout' path."""
-    return self.m.chromium.c.build_dir.join(self.m.chromium.c.build_config_fs)
+    return self.m.chromium.c.build_dir / self.m.chromium.c.build_config_fs
 
   @contextlib.contextmanager
   def maybe_clang_coverage(self):
@@ -908,8 +909,8 @@ class V8Api(recipe_api.RecipeApi):
     if self.bot_config.get('coverage') != 'llvm':
       yield
     else:
-      profile_path = self.m.path.cleanup_dir.join('profraw')
-      profile_template = profile_path.join('default-%%9m.profraw')
+      profile_path = self.m.path.cleanup_dir / 'profraw'
+      profile_template = profile_path.joinpath('default-%%9m.profraw')
       try:
         with self.m.context(env={'LLVM_PROFILE_FILE': profile_template}):
           yield
@@ -935,13 +936,13 @@ class V8Api(recipe_api.RecipeApi):
 
   def llvm_tool(self, name):
     """Returns an absolute path to an llvm tool in the V8 checkout."""
-    return self.m.path.checkout_dir.join(
-        'third_party', 'llvm-build', 'Release+Asserts', 'bin', name)
+    return self.m.path.checkout_dir.joinpath('third_party', 'llvm-build',
+                                             'Release+Asserts', 'bin', name)
 
   def merge_profiles(self, profiles):
     """Merges multiple raw profiles and returns a path to the total profile."""
-    output_dir = self.m.path.cleanup_dir.join('profdata')
-    total_profile = output_dir.join('total.profdata')
+    output_dir = self.m.path.cleanup_dir / 'profdata'
+    total_profile = output_dir / 'total.profdata'
     self.m.file.ensure_directory('Ensure output directory', output_dir)
 
     self.m.step('Merge profiles', cmd=[
@@ -954,7 +955,7 @@ class V8Api(recipe_api.RecipeApi):
 
   def create_report(self, total_profile):
     """Creates an html coverage report for a merged profile."""
-    report_dir = self.m.path.cleanup_dir.join('report')
+    report_dir = self.m.path.cleanup_dir / 'report'
     self.m.file.ensure_directory('Ensure report directory', report_dir)
 
     cmd = [
@@ -968,7 +969,7 @@ class V8Api(recipe_api.RecipeApi):
     ]
     for exe in V8_EXECUTABLES:
       cmd.append('--object')
-      cmd.append(str(self.build_output_dir.join(exe)))
+      cmd.append(str(self.build_output_dir / exe))
 
     self.m.step('Create report', cmd=cmd)
 
@@ -1392,7 +1393,7 @@ class V8Api(recipe_api.RecipeApi):
     # Write file to disk.
     self.m.file.write_text(
         'Increment version',
-        self.m.path.checkout_dir.join(self.m.v8.VERSION_FILE),
+        self.m.path.checkout_dir / self.m.v8.VERSION_FILE,
         latest_version_file,
     )
 

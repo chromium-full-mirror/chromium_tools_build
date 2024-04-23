@@ -41,8 +41,8 @@ def RunSteps(api, properties):
 
     for group_name, task_ids in task_groups.items():
       collect_task_args = api.chromium_swarming.get_collect_task_args(
-          merge_script=api.path.checkout_dir.join('tools', 'perf',
-                                                  'process_perf_results.py'),
+          merge_script=api.path.checkout_dir.joinpath(
+              'tools', 'perf', 'process_perf_results.py'),
           merge_arguments=['--lightweight'],
           build_properties=tester_properties,
           requests_json=task_ids)

@@ -262,7 +262,7 @@ def export_nacl_tarball(api, version):
 def fetch_pgo_profiles(api):
   cmd = [
       'python3',
-      api.path.checkout_dir.join('tools', 'update_pgo_profiles.py'),
+      api.path.checkout_dir.joinpath('tools', 'update_pgo_profiles.py'),
       '--target=linux',
       'update',
       '--gs-url-base=chromium-optimization-profiles/pgo_profiles',
@@ -336,17 +336,18 @@ def publish_tarball(api):
 
   api.step('touch chrome/test/data/webui/i18n_process_css_test.html', [
       'touch',
-      api.path.checkout_dir.join('chrome', 'test', 'data', 'webui',
-                                 'i18n_process_css_test.html')
+      api.path.checkout_dir.joinpath('chrome', 'test', 'data', 'webui',
+                                     'i18n_process_css_test.html')
   ])
 
   # These files are generated in the order specified in Chromium's DEPS file.
-  lastchange_path = api.path.checkout_dir.join('build', 'util', 'lastchange.py')
+  lastchange_path = api.path.checkout_dir.joinpath('build', 'util',
+                                                   'lastchange.py')
   api.step('Generate LASTCHANGE', [
       'python3',
       lastchange_path,
       '-o',
-      api.path.checkout_dir.join('build', 'util', 'LASTCHANGE'),
+      api.path.checkout_dir.joinpath('build', 'util', 'LASTCHANGE'),
   ])
   api.step('Generate gpu/config/gpu_lists_version.h', [
       'python3',
@@ -355,17 +356,17 @@ def publish_tarball(api):
       'GPU_LISTS_VERSION',
       '--revision-id-only',
       '--header',
-      api.path.checkout_dir.join('gpu', 'config', 'gpu_lists_version.h'),
+      api.path.checkout_dir.joinpath('gpu', 'config', 'gpu_lists_version.h'),
   ])
   api.step('Generate skia/ext/skia_commit_hash.h', [
       'python3',
       lastchange_path,
       '-s',
-      api.path.checkout_dir.join('third_party', 'skia'),
+      api.path.checkout_dir.joinpath('third_party', 'skia'),
       '-m',
       'SKIA_COMMIT_HASH',
       '--header',
-      api.path.checkout_dir.join('skia', 'ext', 'skia_commit_hash.h'),
+      api.path.checkout_dir.joinpath('skia', 'ext', 'skia_commit_hash.h'),
   ])
   # The --revision option was introduced in 105.0.5148.2, so we need to skip
   # this call when building earlier versions.
@@ -374,14 +375,14 @@ def publish_tarball(api):
         'python3',
         lastchange_path,
         '-s',
-        api.path.checkout_dir.join('third_party', 'dawn'),
+        api.path.checkout_dir.joinpath('third_party', 'dawn'),
         '--revision',
-        api.path.checkout_dir.join('gpu', 'webgpu', 'DAWN_VERSION'),
+        api.path.checkout_dir.joinpath('gpu', 'webgpu', 'DAWN_VERSION'),
     ])
 
   api.file.copy(
       'copy clang-format', api.chromium.resource('clang-format'),
-      api.path.checkout_dir.join('buildtools', 'linux64', 'clang-format'))
+      api.path.checkout_dir.joinpath('buildtools', 'linux64', 'clang-format'))
 
   update_script = 'build.py'
   update_args = [
@@ -397,7 +398,7 @@ def publish_tarball(api):
   # is in all release channels.
   api.step('download clang sources', [
       'python3',
-      api.path.checkout_dir.join('tools', 'clang', 'scripts', update_script)
+      api.path.checkout_dir.joinpath('tools', 'clang', 'scripts', update_script)
   ] + update_args)
 
   fetch_pgo_profiles(api)
@@ -412,21 +413,21 @@ def publish_tarball(api):
     build_rust_args = ['--sync-for-gnrt']
     api.step('download rustc sources', [
         'python3',
-        api.path.checkout_dir.join('tools', 'rust', build_rust_script)
+        api.path.checkout_dir.joinpath('tools', 'rust', build_rust_script)
     ] + build_rust_args)
 
   # https://chromium.googlesource.com/chromium/src/+/065d83e42bb327e81b045fd04c37eef2934be298
   if [int(x) for x in version.split('.')] >= [113, 0, 5656, 0]:
     api.step('Fetch V8 PGO profiles', [
         'python3',
-        api.path.checkout_dir.join('v8', 'tools', 'builtins-pgo',
-                                   'download_profiles.py'),
+        api.path.checkout_dir.joinpath('v8', 'tools', 'builtins-pgo',
+                                       'download_profiles.py'),
         'download',
         '--depot-tools',
-        api.path.checkout_dir.join('third_party', 'depot_tools'),
+        api.path.checkout_dir.joinpath('third_party', 'depot_tools'),
     ])
 
-  node_modules_sha_path = api.path.checkout_dir.join(
+  node_modules_sha_path = api.path.checkout_dir.joinpath(
       'third_party', 'node', 'node_modules.tar.gz.sha1')
   if api.path.exists(node_modules_sha_path):
     api.step('webui_node_modules', [
@@ -443,14 +444,14 @@ def publish_tarball(api):
 
   try:
     temp_dir = api.path.mkdtemp('gn')
-    git_root = temp_dir.join('gn')
+    git_root = temp_dir / 'gn'
     api.step('checkout gn',
              ['git', 'clone', 'https://gn.googlesource.com/gn', git_root])
 
     # Check out the same version of gn as the one pulled down from gclient.
     result = api.step(
         'get gn version', [
-            api.path.checkout_dir.join('buildtools', 'linux64', 'gn'),
+            api.path.checkout_dir.joinpath('buildtools', 'linux64', 'gn'),
             '--version'
         ],
         stdout=api.raw_io.output_text())
@@ -458,9 +459,9 @@ def publish_tarball(api):
     commit = match.group(1)
     api.step('checkout gn commit', ['git', '-C', git_root, 'checkout', commit])
 
-    tools_gn = api.path.checkout_dir.join('tools', 'gn')
+    tools_gn = api.path.checkout_dir.joinpath('tools', 'gn')
     api.step('generate last_commit_position.h',
-             ['python3', git_root.join('build', 'gen.py')])
+             ['python3', git_root.joinpath('build', 'gen.py')])
     api.file.remove('rm README.md', tools_gn.join('README.md'))
     for f in api.file.listdir(
         'listdir gn', git_root, test_data=['build', '.git']):
@@ -468,7 +469,7 @@ def publish_tarball(api):
       if basename not in ['.git', '.gitignore', '.linux-sysroot', 'out']:
         api.file.move('move gn ' + basename, f, tools_gn.join(basename))
     api.file.move('move last_commit_position.h',
-                  git_root.join('out', 'last_commit_position.h'),
+                  git_root.joinpath('out', 'last_commit_position.h'),
                   tools_gn.join('bootstrap', 'last_commit_position.h'))
   finally:
     api.file.rmtree('rmtree temp dir', temp_dir)
@@ -537,8 +538,8 @@ def GenTests(api):
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
       api.path.exists(
-          api.path.checkout_dir.join('third_party', 'node',
-                                     'node_modules.tar.gz.sha1')))
+          api.path.checkout_dir.joinpath('third_party', 'node',
+                                         'node_modules.tar.gz.sha1')))
 
   yield (
       api.test('basic-with-nacl') + api.buildbucket.generic_build() +
@@ -547,8 +548,8 @@ def GenTests(api):
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
       api.path.exists(
-          api.path.checkout_dir.join('third_party', 'node',
-                                     'node_modules.tar.gz.sha1')))
+          api.path.checkout_dir.joinpath('third_party', 'node',
+                                         'node_modules.tar.gz.sha1')))
 
   yield (
       api.test('basic-with-gcc-toolchain-arg') +
@@ -558,8 +559,8 @@ def GenTests(api):
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
       api.path.exists(
-          api.path.checkout_dir.join('third_party', 'node',
-                                     'node_modules.tar.gz.sha1')))
+          api.path.checkout_dir.joinpath('third_party', 'node',
+                                         'node_modules.tar.gz.sha1')))
 
   yield (
       api.test('basic-no-dawn-version') + api.buildbucket.generic_build() +
@@ -568,8 +569,8 @@ def GenTests(api):
       api.step_data(
           'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
       api.path.exists(
-          api.path.checkout_dir.join('third_party', 'node',
-                                     'node_modules.tar.gz.sha1')))
+          api.path.checkout_dir.joinpath('third_party', 'node',
+                                         'node_modules.tar.gz.sha1')))
 
   yield (api.test('dupe') + api.buildbucket.generic_build() + api.properties(
       version='103.0.5060.114'

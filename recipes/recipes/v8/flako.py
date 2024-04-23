@@ -602,7 +602,7 @@ class Runner:
       # override the step names.
       task = self.api.chromium_swarming.task(
           name=f'{step_prefix} - shard {shard}',
-          task_output_dir=path.join(f'task_output_dir_{shard}'),
+          task_output_dir=path / f'task_output_dir_{shard}',
           raw_cmd=self.command.raw_cmd(self.multiplier, offset),
           cas_input_root=cas_digest,
       )

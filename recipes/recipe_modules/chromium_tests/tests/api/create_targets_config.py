@@ -183,7 +183,7 @@ def GenTests(api):
               'browser_tests_no_swarm', 'android_webview_junit_tests',
               'check_static_initializers', 'basic_EVE_TOT'
           ],
-          targets_spec_dir=api.chromium_checkout.src_dir.join('infra/specs'),
+          targets_spec_dir=api.chromium_checkout.src_dir / 'infra/specs',
       ),
       fake_targets_spec(),
       api.chromium.try_build(

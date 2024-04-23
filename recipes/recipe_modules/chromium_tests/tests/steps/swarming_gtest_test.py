@@ -35,7 +35,7 @@ def RunSteps(api):
   # Fake path, as the real one depends on having done a chromium checkout.
   api.profiles.src_dir = api.path.start_dir
   api.chromium_swarming.path_to_merge_scripts = (
-      api.path.cache_dir.join('merge_scripts'))
+      api.path.cache_dir / 'merge_scripts')
   api.chromium_swarming.set_default_dimension('pool', 'foo')
   api.chromium.set_build_properties({
       'got_webrtc_revision': 'webrtc_sha',

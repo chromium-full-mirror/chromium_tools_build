@@ -142,7 +142,7 @@ def compilator_steps(api, properties):
         deleted_files = get_deleted_files(api, task.affected_files)
         affected_files_to_archive = [
             # In case this is a windows compilator
-            str(api.path.checkout_dir.join(f)).replace('/', api.path.sep)
+            str(api.path.checkout_dir / f).replace('/', api.path.sep)
             for f in task.affected_files
             # If the affected file is deleted, don't attempt to archive it or
             # else you'll get a file not found error
@@ -247,7 +247,7 @@ def get_src_side_dep_paths(api):
     List of string paths
   """
   dep_paths = set()
-  runtime_deps_file = api.chromium.output_dir.join(
+  runtime_deps_file = api.chromium.output_dir.joinpath(
       ORCHESTRATOR_RUNTIME_DEPS_FILE)
   paths = (
       api.file.read_text('read orchestrator_all.runtime_deps',
@@ -255,9 +255,9 @@ def get_src_side_dep_paths(api):
   for path in paths:
     # Paths written in these files look like '../../testing/X.py' relative
     # to the output dir
-    file_path = api.path.relpath(
-        api.chromium.output_dir.join(path), api.path.checkout_dir)
-    file_path = api.path.checkout_dir.join(file_path)
+    file_path = api.path.relpath(api.chromium.output_dir / path,
+                                 api.path.checkout_dir)
+    file_path = api.path.checkout_dir / file_path
 
     # Path can be a regex pattern
     if "*" in str(file_path):
@@ -272,7 +272,7 @@ def get_src_side_dep_paths(api):
 def get_deleted_files(api, affected_files):
   deleted_files = []
   for f in affected_files:
-    path = api.path.checkout_dir.join(f)
+    path = api.path.checkout_dir / f
     # In case this is a windows compilator
     path = str(path).replace('/', api.path.sep)
 
@@ -360,7 +360,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -419,9 +419,10 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.cache_dir.join(
+          api.path.cache_dir.joinpath(
               'builder/src/out/Release/lacros_all_tast_tests.isolate'),
-          api.path.start_dir.join('squashfs', 'squashfs-tools', 'mksquashfs'),
+          api.path.start_dir.joinpath('squashfs', 'squashfs-tools',
+                                      'mksquashfs'),
       ),
       ctbc_properties(
           builder_spec=ctbc.BuilderSpec.create(
@@ -488,9 +489,10 @@ def GenTests(api):
           revision='deadbeef',
       ),
       api.path.exists(
-          api.path.cache_dir.join(
+          api.path.cache_dir.joinpath(
               'builder/src/out/Release/lacros_all_tast_tests.isolate'),
-          api.path.start_dir.join('squashfs', 'squashfs-tools', 'mksquashfs'),
+          api.path.start_dir.joinpath('squashfs', 'squashfs-tools',
+                                      'mksquashfs'),
       ),
       ctbc_properties(
           builder_spec=ctbc.BuilderSpec.create(
@@ -554,7 +556,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -607,7 +609,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -624,8 +626,8 @@ def GenTests(api):
       api.tryserver.get_files_affected_by_patch(
           ['foo.cc', 'bar/baz.cc', 'testing/buildbot/chromium.linux.json']),
       api.path.exists(
-          api.path.checkout_dir.join('foo.cc'),
-          api.path.checkout_dir.join('testing/buildbot/chromium.linux.json'),
+          api.path.checkout_dir / 'foo.cc',
+          api.path.checkout_dir / 'testing/buildbot/chromium.linux.json',
       ),
       api.post_process(
           post_process.LogContains, 'archive src-side dep paths', 'dep paths', [
@@ -675,7 +677,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       api.code_coverage(use_clang_coverage=True),
       ctbc_properties(),
       api.properties(
@@ -729,7 +731,7 @@ def GenTests(api):
           revision='deadbeef'),
       api.platform.name('win'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       api.code_coverage(use_clang_coverage=True),
       ctbc_properties(),
       api.properties(
@@ -739,7 +741,7 @@ def GenTests(api):
                   builder_group='fake-try-group'))),
       override_test_spec(),
       api.tryserver.get_files_affected_by_patch(['foo.cc', 'bar/baz.cc']),
-      api.path.exists(api.path.checkout_dir.join('foo.cc')),
+      api.path.exists(api.path.checkout_dir / 'foo.cc'),
       api.step_data(
           'archive src-side dep paths.read orchestrator_all.runtime_deps',
           api.file.read_text(
@@ -766,7 +768,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -808,7 +810,7 @@ def GenTests(api):
       ),
       api.platform.name('win'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -833,7 +835,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -858,7 +860,7 @@ def GenTests(api):
       api.platform.name('linux'),
       api.code_coverage(use_clang_coverage=True),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -892,9 +894,10 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.cache_dir.join(
+          api.path.cache_dir.joinpath(
               'builder/src/out/Release/lacros_all_tast_tests.isolate'),
-          api.path.start_dir.join('squashfs', 'squashfs-tools', 'mksquashfs'),
+          api.path.start_dir.joinpath('squashfs', 'squashfs-tools',
+                                      'mksquashfs'),
       ),
       ctbc_properties(
           builder_spec=ctbc.BuilderSpec.create(
@@ -1072,7 +1075,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1115,7 +1118,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1163,7 +1166,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(
@@ -1198,7 +1201,7 @@ def GenTests(api):
       ),
       api.platform.name('linux'),
       api.path.exists(
-          api.path.checkout_dir.join('out', 'Release', 'browser_tests')),
+          api.path.checkout_dir.joinpath('out', 'Release', 'browser_tests')),
       ctbc_properties(),
       api.properties(
           InputProperties(

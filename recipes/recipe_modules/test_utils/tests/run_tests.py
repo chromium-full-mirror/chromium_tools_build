@@ -49,7 +49,7 @@ def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
       'got_revision_cp': 'refs/heads/main@{#54321}',
   })
   api.chromium_swarming.path_to_merge_scripts = (
-      api.path.cache_dir.join('merge_scripts'))
+      api.path.cache_dir / 'merge_scripts')
   api.chromium_swarming.set_default_dimension('pool', 'foo')
   api.chromium_swarming.set_default_dimension('os', 'Linux')
   api.chromium.set_build_properties({

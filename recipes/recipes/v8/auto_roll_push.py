@@ -31,12 +31,12 @@ def RunSteps(api):
         'v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com')
     api.v8.python(
         'push candidate',
-        api.path.checkout_dir.join('tools', 'release', 'auto_push.py'),
+        api.path.checkout_dir.joinpath('tools', 'release', 'auto_push.py'),
         push_arg + [
-         '--author', push_account,
-         '--reviewer', push_account,
-         '--work-dir', api.path.cache_dir.join(safe_buildername, 'workdir')],
-      )
+            '--author', push_account, '--reviewer', push_account, '--work-dir',
+            api.path.cache_dir.joinpath(safe_buildername, 'workdir')
+        ],
+    )
 
 
 def GenTests(api):

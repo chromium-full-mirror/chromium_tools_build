@@ -22,20 +22,20 @@ class Test262ImportHandler(RollHandler):
     return 'test262 import'
 
   def apply_changes(self):
-    creds = self.api.path.cleanup_dir.join(CREDS_NAME + '.json')
+    creds = self.api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
     self.api.cloudkms.decrypt(
         KMS_CRYPTO_KEY,
-        self.module.repo_resource('recipes', 'recipes',
-                                  'v8', 'assets', CREDS_NAME),
+        self.module.repo_resource('recipes', 'recipes', 'v8', 'assets',
+                                  CREDS_NAME),
         creds,
     )
-    checkout_root = self.api.path.cache_dir.join('builder')
-    chromium_path = checkout_root.join('src')
-    blink_tools_path = chromium_path.join('third_party', 'blink', 'tools')
+    checkout_root = self.api.path.cache_dir / 'builder'
+    chromium_path = checkout_root / 'src'
+    blink_tools_path = chromium_path.joinpath('third_party', 'blink', 'tools')
 
-    v8_path = checkout_root.join('v8')
+    v8_path = checkout_root / 'v8'
 
-    script = v8_path.join('test', 'test262', 'tools', 'import.py')
+    script = v8_path.joinpath('test', 'test262', 'tools', 'import.py')
 
     with self.api.context(cwd=v8_path), self.api.depot_tools.on_path():
       self.api.v8.git_output('branch', '-D', 'test262_import', ok_ret='any')

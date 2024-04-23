@@ -69,7 +69,7 @@ def get_chromium_revision_from_angle_cl(api):
     api.git('checkout', 'change', name='checkout ANGLE CL')
     api.git('rebase', 'base', '-v', name='rebase ANGLE CL')
 
-  angle_deps_file = angle_dir.join('DEPS')
+  angle_deps_file = angle_dir / 'DEPS'
   chromium_revision = api.gclient(
       'get chromium_revision',
       ['getdep', '--var=chromium_revision',

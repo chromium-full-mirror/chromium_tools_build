@@ -16,7 +16,7 @@ class TSMonApi(recipe_api.RecipeApi):
     if self._send_ts_mon_pkg_path:
       return
 
-    self._send_ts_mon_pkg_path = self.m.path.start_dir.join(
+    self._send_ts_mon_pkg_path = self.m.path.start_dir.joinpath(
         'send_ts_mon_values')
     self.m.cipd.ensure(
         self._send_ts_mon_pkg_path,
@@ -103,9 +103,9 @@ class TSMonApi(recipe_api.RecipeApi):
           step_name, [
               'vpython3',
               '-vpython-spec',
-              self._send_ts_mon_pkg_path.join('infra', 'tools',
-                                              'send_ts_mon_values',
-                                              'standalone.vpython3'),
+              self._send_ts_mon_pkg_path.joinpath('infra', 'tools',
+                                                  'send_ts_mon_values',
+                                                  'standalone.vpython3'),
               '-m',
               'infra.tools.send_ts_mon_values',
               '--ts-mon-target-type',

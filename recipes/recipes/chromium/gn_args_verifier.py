@@ -67,21 +67,21 @@ def RunSteps(api, properties):
 
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
-  checkout_root = api.path.cache_dir.join('builder')
+  checkout_root = api.path.cache_dir / 'builder'
 
   with api.context(cwd=checkout_root):
     update_result = api.bot_update.ensure_checkout(patch=True)
-  repo_path = checkout_root.join(update_result.json.output['root'])
+  repo_path = checkout_root / update_result.json.output['root']
   # Absolute path of the per-builder config directory root.
-  builder_config_root = repo_path.join(properties.builder_config_directory)
+  builder_config_root = repo_path / properties.builder_config_directory
 
   # TODO(crbug.com/1471251): Add support for multiple mb config files.
-  mb_config_path = checkout_root.join(properties.mb_config_paths[0])
+  mb_config_path = checkout_root / properties.mb_config_paths[0]
 
   with api.step.nest('process data from patch'):
     gn_args_file_path_by_builder_by_builder_group = api.file.read_json(
         'read gn_args_locations.json',
-        builder_config_root.join('gn_args_locations.json'))
+        builder_config_root / 'gn_args_locations.json')
     # Mapping from gn-args.json file path to the builder group of the builder.
     builder_group_by_gn_args_file_path = {}
     for builder_group, gn_args_file_path_by_builder in (
@@ -102,7 +102,7 @@ def RunSteps(api, properties):
           # being removed by the patch.
           if file_path in builder_group_by_gn_args_file_path:
             gn_args_json_by_file_path[file_path] = api.file.read_json(
-                f'read {file_path}', repo_path.join(f))
+                f'read {file_path}', repo_path / f)
 
     # Find GN args with patch applied.
     gn_args_by_builder_id = {}
@@ -138,8 +138,8 @@ def RunSteps(api, properties):
   for builder_id, post_patch_args in gn_args_by_builder_id.items():
     with api.step.nest(
         f'verify {file_path_by_builder_id[builder_id]}') as presentation:
-      if api.path.exists(
-          builder_config_root.join(file_path_by_builder_id[builder_id])):
+      if api.path.exists(builder_config_root /
+                         file_path_by_builder_id[builder_id]):
         presentation.step_text = '\nbuilder already migrated, skip.'
         continue
 
@@ -350,7 +350,8 @@ def GenTests(api):
       if builder_data.migrated:
         # Builder already migrated
         test_steps += api.path.exists(
-            api.path.cache_dir.join('builder', 'src').join(path_in_repo))
+            api.path.cache_dir.joinpath('builder',
+                                        'src').joinpath(path_in_repo))
         test_steps += api.post_process(
             post_process.StepTextEquals,
             f'verify {bucket}/{builder}/gn-args.json',

@@ -32,8 +32,8 @@ def RunSteps(api, properties):
   api.gclient.apply_config('android')
   api.chromium_checkout.ensure_checkout()
 
-  androidx_dir = api.path.checkout_dir.join('third_party', 'androidx')
-  androidx_libs_dir = androidx_dir.join('libs')
+  androidx_dir = api.path.checkout_dir.joinpath('third_party', 'androidx')
+  androidx_libs_dir = androidx_dir / 'libs'
 
   api.file.ensure_directory('ensure libs dir exists', androidx_libs_dir)
   api.file.rmcontents('delete libs dir contents', androidx_libs_dir)
@@ -43,11 +43,11 @@ def RunSteps(api, properties):
         status=common_pb.INFRA_FAILURE,
         summary_markdown='Unable to delete androidx libs directory.')
 
-  fetch_all_cmd = androidx_dir.join('fetch_all_androidx.py')
+  fetch_all_cmd = androidx_dir / 'fetch_all_androidx.py'
   api.step('fetch_all', [fetch_all_cmd, '-v'])
-  api.path.mock_add_paths(androidx_dir.join('cipd.yaml'))
+  api.path.mock_add_paths(androidx_dir / 'cipd.yaml')
 
-  yaml_path = androidx_dir.join('cipd.yaml')
+  yaml_path = androidx_dir / 'cipd.yaml'
   yaml_lines = api.file.read_text('read cipd.yaml', yaml_path).split('\n')
 
   api.step('extract version', None)
@@ -83,8 +83,8 @@ def RunSteps(api, properties):
 
 
 def GenTests(api):
-  androidx_dir = api.path.checkout_dir.join('third_party', 'androidx')
-  androidx_sample_lib = androidx_dir.join('libs', 'androidx_dino')
+  androidx_dir = api.path.checkout_dir.joinpath('third_party', 'androidx')
+  androidx_sample_lib = androidx_dir.joinpath('libs', 'androidx_dino')
 
   yield api.test(
       'basic',
@@ -92,9 +92,8 @@ def GenTests(api):
           project='chromium',
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-androidx-packager'),
-      api.path.exists(
-          androidx_dir.join('fetch_all_androidx.py'),
-          androidx_sample_lib.join('README.chromium')),
+      api.path.exists(androidx_dir / 'fetch_all_androidx.py',
+                      androidx_sample_lib.join('README.chromium')),
       api.override_step_data(
           'read cipd.yaml',
           api.file.read_text('# version: cr-1\npackage: package1')),
@@ -111,9 +110,8 @@ def GenTests(api):
           project='chromium',
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-androidx-packager'),
-      api.path.exists(
-          androidx_dir.join('fetch_all_androidx.py'),
-          androidx_sample_lib.join('README.chromium')),
+      api.path.exists(androidx_dir / 'fetch_all_androidx.py',
+                      androidx_sample_lib.join('README.chromium')),
       api.override_step_data('check libs empty',
                              api.file.listdir(['androidx_dino/cipd.yaml'])),
       api.expect_status('INFRA_FAILURE'),
@@ -126,9 +124,8 @@ def GenTests(api):
           project='chromium',
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-androidx-packager'),
-      api.path.exists(
-          androidx_dir.join('fetch_all_androidx.py'),
-          androidx_sample_lib.join('README.chromium')),
+      api.path.exists(androidx_dir / 'fetch_all_androidx.py',
+                      androidx_sample_lib.join('README.chromium')),
       api.override_step_data(
           'read cipd.yaml',
           api.file.read_text('# version: cr-1\npackage: package1')),
@@ -146,9 +143,8 @@ def GenTests(api):
           project='chromium',
           git_repo='https://chromium.googlesource.com/chromium/src',
           builder='android-androidx-packager'),
-      api.path.exists(
-          androidx_dir.join('fetch_all_androidx.py'),
-          androidx_sample_lib.join('README.chromium')),
+      api.path.exists(androidx_dir / 'fetch_all_androidx.py',
+                      androidx_sample_lib.join('README.chromium')),
       api.override_step_data('read cipd.yaml',
                              api.file.read_text('package: package1')),
       api.override_step_data('cipd search package1 cr-3',

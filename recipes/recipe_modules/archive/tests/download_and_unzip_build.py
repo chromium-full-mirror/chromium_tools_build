@@ -15,7 +15,7 @@ def RunSteps(api):
   api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.archive.download_and_unzip_build(
       'extract build',
-      target=api.path.checkout_dir.join('Release', 'out'),
+      target=api.path.checkout_dir.joinpath('Release', 'out'),
       build_url=api.archive.legacy_download_url('bucket_name'),
       build_archive_url=api.properties.get('build_archive_url'),
       build_revision='example_sha',

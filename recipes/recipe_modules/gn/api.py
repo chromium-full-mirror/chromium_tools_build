@@ -31,7 +31,7 @@ class GnApi(recipe_api.RecipeApi):
       A tuple containing the contents of the args.gn file as a single string and
       the step result of reading the file.
     """
-    args_file_path = build_dir.join('args.gn')
+    args_file_path = build_dir / 'args.gn'
     step_name = step_name or self._DEFAULT_STEP_NAME
     fake_args = 'target_cpu = "x86"\n'
     args = self.m.file.read_text(step_name, args_file_path, fake_args)

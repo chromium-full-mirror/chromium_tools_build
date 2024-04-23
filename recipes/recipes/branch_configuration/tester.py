@@ -123,17 +123,17 @@ def RunSteps(api, properties):
   gclient_config.repo_path_map[s.url] = (s.name, 'HEAD')
 
   with api.chromium_bootstrap.update_gclient_config(gclient_config) as callback:
-    with api.context(cwd=api.path.cache_dir.join('builder')):
+    with api.context(cwd=api.path.cache_dir / 'builder'):
       update_result = api.bot_update.ensure_checkout(
           patch=True, gclient_config=gclient_config)
     callback(update_result.json.output['manifest'])
 
-  repo_path = api.path.cache_dir.join('builder',
-                                      update_result.json.output['root'])
+  repo_path = api.path.cache_dir.joinpath('builder',
+                                          update_result.json.output['root'])
 
   bad_branch_configs = []
   with api.context(cwd=repo_path):
-    branch_script = repo_path.join(properties.branch_script)
+    branch_script = repo_path / properties.branch_script
     for branch_config in properties.branch_configs:
       with api.step.nest(branch_config.name):
         sheriff_rotation_args = []

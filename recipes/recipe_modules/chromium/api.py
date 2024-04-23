@@ -133,7 +133,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """Return the path to the built executable directory."""
     if self._output_dir:
       return self._output_dir
-    return self.c.build_dir.join(self.c.build_config_fs)
+    return self.c.build_dir / self.c.build_config_fs
 
   @output_dir.setter
   def output_dir(self, value):
@@ -141,7 +141,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @property
   def ninja_path(self):
-    return self.m.path.checkout_dir.join('third_party', 'ninja', 'ninja')
+    return self.m.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
 
   def get_version(self):
     """Returns a dictionary describing the version.
@@ -152,7 +152,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     if self._version is None:
       self._version = self.get_version_from_file(
-          self.m.path.checkout_dir.join('chrome', 'VERSION'))
+          self.m.path.checkout_dir.joinpath('chrome', 'VERSION'))
     return self._version
 
   def get_version_from_file(self, version_file_path, step_name='get version'):
@@ -401,7 +401,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     finally:
       if not self.m.runtime.in_global_shutdown:
-        clang_crashreports_script = self.m.path.checkout_dir.join(
+        clang_crashreports_script = self.m.path.checkout_dir.joinpath(
             'tools', 'clang', 'scripts', 'process_crashreports.py')
         if self.m.path.exists(clang_crashreports_script):
           source = '%s-%s' % (self.m.builder_group.for_current,
@@ -588,13 +588,13 @@ class ChromiumApi(recipe_api.RecipeApi):
     TODO: b/315393741 - Remove this logic after Siso rollout.
     """
     should_clean = False
-    guard_path = self.m.chromium.output_dir.join(_CR_COMPILE_GUARD_NAME)
+    guard_path = self.m.chromium.output_dir / _CR_COMPILE_GUARD_NAME
     if self.m.path.exists(guard_path):
       should_clean = True
       clean_reason = 'the last compile step was interrupted'
 
     build_system = 'siso' if self.m.siso.enabled else 'ninja'
-    last_build_system_path = self.m.chromium.output_dir.join(_LAST_BUILD_SYSTEM)
+    last_build_system_path = self.m.chromium.output_dir / _LAST_BUILD_SYSTEM
     if self.m.path.exists(last_build_system_path):
       last_build_system = self.m.file.read_text('read %s' % _LAST_BUILD_SYSTEM,
                                                 last_build_system_path)
@@ -824,7 +824,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     # be the checkout, when instead it's kitchen-workdir. We also can't use
     # self.m.path.checkout_dir since that has an extra '/src' added onto it
     # compared to what runtest.py expects.
-    with self.m.context(cwd=self.m.path.cache_dir.join('builder')):
+    with self.m.context(cwd=self.m.path.cache_dir / 'builder'):
       resultdb = kwargs.pop('resultdb', None)
       cmd = ['python3', runtest_path] + full_args
       if resultdb:
@@ -866,7 +866,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     self.m.cipd.ensure(
         cipd_root,
         self.m.cipd.EnsureFile().add_package(cipd_pkg, pkg_version))
-    return cipd_root.join(cmd)
+    return cipd_root / cmd
 
   # TODO(crbug.com/797051): remove this when the old "hermetic" flow is
   # no longer used.
@@ -875,7 +875,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     This is to expose any lingering dependencies on the old cache.
     """
-    old_cache = self.m.path.checkout_dir.join(
+    old_cache = self.m.path.checkout_dir.joinpath(
         'build', '%s_files' % self.m.chromium.c.TARGET_PLATFORM)
     self.m.file.rmtree('delete deprecated Xcode cache', old_cache)
 
@@ -899,8 +899,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     kind = self.c.mac_toolchain.kind or self.c.TARGET_PLATFORM
     # TODO(sergeyberezin): for LUCI migration, this must be a requested named
     # cache. Make sure it exists, to avoid downloading Xcode on every build.
-    xcode_app_path = self.m.path.cache_dir.join('xcode_%s_%s.app' %
-                                                (kind, xcode_build_version))
+    xcode_app_path = self.m.path.cache_dir.joinpath('xcode_%s_%s.app' %
+                                                    (kind, xcode_build_version))
 
     with self.m.step.nest('ensure xcode') as step_result:
       step_result.step_text = ('Ensuring Xcode version %s in %s' %
@@ -959,7 +959,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       # to let runhooks proceed safely.
       # TODO(b/256012263): Remove this when the fix has been merged into m108.
       with self.m.step.nest('workaround for read-only //build/cros_cache/ dir'):
-        cros_cache = self.m.path.checkout_dir.join('build', 'cros_cache')
+        cros_cache = self.m.path.checkout_dir.joinpath('build', 'cros_cache')
         if self.m.path.exists(cros_cache):
           self.m.step('chmod cros_cache', ['chmod', '-R', '744', cros_cache])
           self.m.file.rmtree('clobber cros_cache', cros_cache)
@@ -1093,7 +1093,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
     chromium_config = chromium_config or self.c
 
-    mb_path = mb_path or self.m.path.checkout_dir.join('tools', 'mb')
+    mb_path = mb_path or self.m.path.checkout_dir.joinpath('tools', 'mb')
     mb_config_path = (
         mb_config_path or chromium_config.project_generator.config_path or
         self.m.path.join(mb_path, 'mb_config.pyl'))
@@ -1129,7 +1129,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     combined_args = args + (additional_args or [])
 
-    cmd = ['python3', '-u', mb_path.join('mb.py')] + combined_args
+    cmd = ['python3', '-u', mb_path / 'mb.py'] + combined_args
 
     # If an environment was provided, copy it so that we don't modify the
     # caller's data

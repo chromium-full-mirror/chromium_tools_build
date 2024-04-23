@@ -90,21 +90,22 @@ def RunSteps(api, is_debug, triggers, v8_tot):
       api.gclient.c.revisions['node-ci'] = revision
 
     # Check out.
-    with api.context(cwd=api.path.cache_dir.join('builder')):
+    with api.context(cwd=api.path.cache_dir / 'builder'):
       update_step = api.bot_update.ensure_checkout()
       assert update_step.json.output['did_run']
 
     api.chromium.runhooks()
 
   with api.step.nest('build'):
-    depot_tools_path = api.path.checkout_dir.join('third_party', 'depot_tools')
+    depot_tools_path = api.path.checkout_dir.joinpath('third_party',
+                                                      'depot_tools')
     with api.context(env_prefixes={'PATH': [depot_tools_path]}):
       api.chromium.run_gn(use_reclient=True)
       raw_result = api.chromium.compile(use_reclient=True)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
-  build_output_path = api.chromium.c.build_dir.join(
+  build_output_path = api.chromium.c.build_dir.joinpath(
       api.chromium.c.build_config_fs)
 
   # Archive node executable and trigger performance bots on V8 ToT builders.
@@ -117,12 +118,12 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     with api.step.nest('archive') as parent:
       archive_name = ('node-%s-rel-%s-%s.zip' %
                       (api.platform.name, revision_number, revision))
-      zip_file = api.path.cleanup_dir.join(archive_name)
+      zip_file = api.path.cleanup_dir / archive_name
 
       # Zip build.
       package = api.zip.make_package(build_output_path, zip_file)
       package.add_file(
-          build_output_path.join('node'), api.path.join('bin', 'node'))
+          build_output_path.joinpath('node'), api.path.join('bin', 'node'))
       package.zip('zipping')
 
       # Upload to google storage bucket.
@@ -149,9 +150,9 @@ def RunSteps(api, is_debug, triggers, v8_tot):
 
   # Run tests.
   has_flakes = False
-  with api.context(cwd=api.path.checkout_dir.join('node')):
-    run_cctest = lambda step_name: api.step(
-        step_name, [build_output_path.join('node_cctest')])
+  with api.context(cwd=api.path.checkout_dir / 'node'):
+    run_cctest = lambda step_name: api.step(step_name,
+                                            [build_output_path / 'node_cctest'])
     has_flakes |= run_with_retry(api, 'run cctest', run_cctest)
 
     suites = [
@@ -162,14 +163,20 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     ]
     for suite, use_test_root in suites:
       args = [
-        '-p', 'tap',
-        '-j8',
-        '--mode=%s' % api.chromium.c.build_config_fs.lower(),
-        '--flaky-tests', 'run',
-        '--shell', build_output_path.join('node'),
+          '-p',
+          'tap',
+          '-j8',
+          '--mode=%s' % api.chromium.c.build_config_fs.lower(),
+          '--flaky-tests',
+          'run',
+          '--shell',
+          build_output_path / 'node',
       ]
       if use_test_root:
-        args += ['--test-root', build_output_path.join('gen', 'node', 'test')]
+        args += [
+            '--test-root',
+            build_output_path.joinpath('gen', 'node', 'test')
+        ]
       run_test = lambda step_name: api.v8.python(
           name=step_name,
           script=api.path.join('tools', 'test.py'),

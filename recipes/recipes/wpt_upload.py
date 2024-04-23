@@ -28,15 +28,15 @@ KMS_CRYPTO_KEY = (
 def RunSteps(api):
   api.gclient.set_config('chromium')
   api.bot_update.ensure_checkout()
-  creds = api.path.cleanup_dir.join(CREDS_NAME + '.json')
+  creds = api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
       KMS_CRYPTO_KEY,
       api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
       creds,
   )
 
-  script = api.path.checkout_dir.join('third_party', 'blink', 'tools',
-                                      'wpt_upload.py')
+  script = api.path.checkout_dir.joinpath('third_party', 'blink', 'tools',
+                                          'wpt_upload.py')
   args = ['--credentials-json', creds]
   cmd = ['vpython3', script] + args
   api.step('Upload WPT Result from Chromium CI to wpt.fyi', cmd)

@@ -53,7 +53,7 @@ class ANGLEApi(recipe_api.RecipeApi):
 
   def _checkout(self):
     # Checkout angle and its dependencies (specified in DEPS) using gclient.
-    solution_path = self.m.path.cache_dir.join('builder')
+    solution_path = self.m.path.cache_dir / 'builder'
     self.m.file.ensure_directory('init cache if not exists', solution_path)
     with self.m.context(cwd=solution_path):
       if self.m.reclient.instance:

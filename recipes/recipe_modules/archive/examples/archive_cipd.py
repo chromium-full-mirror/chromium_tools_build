@@ -39,7 +39,7 @@ def RunSteps(api):
       build_dir=build_dir, test_success=False)
 
   api.path.mock_add_paths(
-      api.chromium_checkout.checkout_dir.join(*source_side_spec_path))
+      api.chromium_checkout.checkout_dir.joinpath(*source_side_spec_path))
 
   upload_results = api.archive.generic_archive(
       build_dir=build_dir,

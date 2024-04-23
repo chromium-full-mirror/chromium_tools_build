@@ -207,7 +207,7 @@ class TriciumClangTidyApi(RecipeApi):
     clang_tidy_location = self.m.context.cwd.join(*_clang_tidy_path)
     per_file_comments = collections.defaultdict(_SourceFileComments)
 
-    warnings_file = self.m.path.cleanup_dir.join('clang_tidy_complaints.yaml')
+    warnings_file = self.m.path.cleanup_dir / 'clang_tidy_complaints.yaml'
 
     tricium_clang_tidy_command = [
         'vpython3',
@@ -240,7 +240,8 @@ class TriciumClangTidyApi(RecipeApi):
     else:
       fix_file_path = lambda x: x
 
-    autoninja_dir = self.m.path.checkout_dir.join('third_party', 'depot_tools')
+    autoninja_dir = self.m.path.checkout_dir.joinpath('third_party',
+                                                      'depot_tools')
     autoninja_path = {'PATH': [autoninja_dir]}
     with self.m.context(env_suffixes=autoninja_path):
       self._build_with_reclient('tricium_clang_tidy_script.py',

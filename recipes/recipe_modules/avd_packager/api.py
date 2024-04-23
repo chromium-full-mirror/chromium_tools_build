@@ -36,7 +36,7 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     The script //tools/android/avd/avd.py will read each avd config, create an
     avd with snapshot, and update to CIPD.
     """
-    chromium_src = self._checkout_path.join('src')
+    chromium_src = self._checkout_path / 'src'
     avd_script_path = chromium_src.join('tools', 'android', 'avd', 'avd.py')
 
     with self.m.context(cwd=chromium_src):

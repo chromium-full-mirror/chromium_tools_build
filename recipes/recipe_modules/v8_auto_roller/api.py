@@ -83,10 +83,10 @@ class V8AutoRoller(recipe_api.RecipeApi):
         revision,
         step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(''),
     )
-    chromium_path = self.m.v8.checkout_root.join('src')
+    chromium_path = self.m.v8.checkout_root / 'src'
     self.m.file.ensure_directory('ensure chromium cache dir', chromium_path)
 
-    chromium_deps_file = chromium_path.join('DEPS')
+    chromium_deps_file = chromium_path / 'DEPS'
     self.m.file.write_text('Store DEPS', chromium_deps_file, deps)
 
   def build_cl_manager(self, bugs=None):

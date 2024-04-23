@@ -22,21 +22,20 @@ DEPS = [
 def RunSteps(api):
   # Sync and pull in everything.
   api.gclient.set_config('boringssl')
-  cache_dir = api.path.cache_dir.join('builder')
+  cache_dir = api.path.cache_dir / 'builder'
   with api.context(cwd=cache_dir):
     api.bot_update.ensure_checkout()
     api.gclient.runhooks()
 
   # Set up paths.
-  util = cache_dir.join('boringssl', 'util')
+  util = cache_dir.joinpath('boringssl', 'util')
   goroot = util.join('bot', 'golang')
   output = api.path.mkdtemp('boringssl-docs')
 
   # Generate and upload documentation.
   with api.context(
-      cwd=util,
-      env={'GOROOT': goroot},
-      env_prefixes={'PATH': [goroot.join('bin')]}):
+      cwd=util, env={'GOROOT': goroot},
+      env_prefixes={'PATH': [goroot / 'bin']}):
     api.step('generate', ['go', 'run', 'doc.go', '-out', output])
   # Upload docs only if run after commit and on not experimental builds.
   if api.buildbucket.build.builder.bucket == 'ci':

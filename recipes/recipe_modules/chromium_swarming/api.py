@@ -399,7 +399,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     """
     path_to_merge_scripts = self.path_to_merge_scripts
     if not path_to_merge_scripts:
-      path_to_merge_scripts = self.m.chromium_checkout.src_dir.join(
+      path_to_merge_scripts = self.m.chromium_checkout.src_dir.joinpath(
           'testing', 'merge_scripts')
     return path_to_merge_scripts.join(name)
 

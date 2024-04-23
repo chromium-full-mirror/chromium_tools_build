@@ -53,7 +53,7 @@ step_test_data = {
 
 def ExecBuildSteps(api, build_steps, sync_dir, dir_flags):
   for step in build_steps:
-    script = sync_dir.join(step['command'][0])
+    script = sync_dir / step['command'][0]
     args = step['command'][1:]
     api.step(step['name'], ['vpython3', script] + dir_flags + args)
 
@@ -71,16 +71,16 @@ def RunSteps(api):
   env.update({'USE_RECLIENT': '1'})
   api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
 
-  cache_dir = api.path.cache_dir.join('builder')
-  sync_dir = cache_dir.join('emscripten-releases')
+  cache_dir = api.path.cache_dir / 'builder'
+  sync_dir = cache_dir / 'emscripten-releases'
   api.file.ensure_directory('Ensure sync dir', sync_dir)
-  build_dir = cache_dir.join('emscripten-releases', 'build')
-  install_dir = api.path.start_dir.join('install')
+  build_dir = cache_dir.joinpath('emscripten-releases', 'build')
+  install_dir = api.path.start_dir / 'install'
   dir_flags = [
       '--sync-dir=%s' % sync_dir,
       '--build-dir=%s' % build_dir,
       '--prebuilt-dir=%s' % sync_dir,
-      '--v8-dir=%s' % cache_dir.join('v8'),
+      '--v8-dir=%s' % cache_dir.joinpath('v8'),
       '--install-dir=%s' % install_dir
   ]
 
@@ -90,11 +90,11 @@ def RunSteps(api):
       api.bot_update.ensure_checkout()
       api.gclient.runhooks()
 
-    api.reclient.reclient_dir = cache_dir.join('v8', 'buildtools')
+    api.reclient.reclient_dir = cache_dir.joinpath('v8', 'buildtools')
     # Get list of build.py build and test steps
     bot_steps = api.file.read_json(
         'Read steps from JSON',
-        sync_dir.join('bots.json'),
+        sync_dir / 'bots.json',
         test_data=step_test_data)
 
     builder = api.buildbucket.builder_name
@@ -108,7 +108,7 @@ def RunSteps(api):
 
       with api.defer.context() as defer:
         for step in bot_steps[builder]['test_steps']:
-          script = sync_dir.join(step['command'][0])
+          script = sync_dir / step['command'][0]
           args = step['command'][1:]
           defer(api.step, step['name'], ['vpython3', script] + dir_flags + args)
 

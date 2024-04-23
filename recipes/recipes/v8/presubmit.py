@@ -27,7 +27,7 @@ def RunSteps(api):
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.v8.vpython(
         'Presubmit',
-        api.path.checkout_dir.join('tools', 'v8_presubmit.py'),
+        api.path.checkout_dir.joinpath('tools', 'v8_presubmit.py'),
         ['--no-linter-cache'],
         wrapper=('rdb', 'stream', '--'),
     )

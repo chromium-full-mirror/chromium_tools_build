@@ -154,23 +154,24 @@ def GenTests(api):
     ], api.empty_test_data())
     # Mock the file/folder for recipe training.
     mock_paths = [
-        api.path.start_dir.join('squashfs', 'squashfs-tools', 'mksquashfs')
+        api.path.start_dir.joinpath('squashfs', 'squashfs-tools', 'mksquashfs')
     ]
     # testing/buildbot/filters should be a folder.
     mock_paths.append(
-        api.path.checkout_dir.join('testing', 'buildbot', 'filters', 'foo'))
-    mock_paths.append(api.path.checkout_dir.join('out', 'Release', 'chrome'))
+        api.path.checkout_dir.joinpath('testing', 'buildbot', 'filters', 'foo'))
     mock_paths.append(
-        api.path.checkout_dir.join('out', 'Release', 'bin',
-                                   'run_%s' % target_name))
+        api.path.checkout_dir.joinpath('out', 'Release', 'chrome'))
+    mock_paths.append(
+        api.path.checkout_dir.joinpath('out', 'Release', 'bin',
+                                       'run_%s' % target_name))
 
     mock_paths.append(
-        api.path.checkout_dir.join('out', 'Release', 'bin',
-                                   '%s.filter' % target_name))
+        api.path.checkout_dir.joinpath('out', 'Release', 'bin',
+                                       '%s.filter' % target_name))
     if isolate_file_exists:
       mock_paths.append(
-          api.path.checkout_dir.join('out', 'Release',
-                                     '%s.isolate' % target_name))
+          api.path.checkout_dir.joinpath('out', 'Release',
+                                         '%s.isolate' % target_name))
     steps += api.path.exists(*mock_paths)
     if isolate_file_exists and should_read_isolate:
       steps += api.step_data(

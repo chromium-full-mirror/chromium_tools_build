@@ -57,12 +57,13 @@ def RunSteps(api):
     # This has side effect of updating
     # |api.code_coverage._metadata_dir_by_tool_type_by_test_type['overall']|
     metadata_dir = api.code_coverage._ensure_metadata_dir('overall', 'jacoco')
-    api.path.mock_add_paths(metadata_dir.join('all.json.gz'))
+    api.path.mock_add_paths(metadata_dir / 'all.json.gz')
   if api.properties.get('mock_javascript_lcov_path', True):
     api.path.mock_add_paths(
-        api.chromium.output_dir.join('js_coverage').join('lcov.info'))
+        api.chromium.output_dir.joinpath('js_coverage').joinpath('lcov.info'))
   if api.properties.get('build_dir'):
-    api.code_coverage.build_dir = api.properties.get('build_dir')
+    api.code_coverage.build_dir = (
+        api.path.start_dir / api.properties.get('build_dir'))
   if api.properties.get('ensure_clang_coverage_tools'):
     api.code_coverage.ensure_clang_coverage_tools()
 
@@ -77,8 +78,8 @@ def RunSteps(api):
       steps.SwarmingIsolatedScriptTestSpec.create(
           'blink_web_tests',
           merge=chromium_swarming.MergeScript.create(
-              script=api.path.start_dir.join('coverage', 'tests',
-                                             'merge_blink_web_tests.py'),
+              script=api.path.start_dir.joinpath('coverage', 'tests',
+                                                 'merge_blink_web_tests.py'),
               args=['random', 'args'],
           )),
       steps.SwarmingIsolatedScriptTestSpec.create(

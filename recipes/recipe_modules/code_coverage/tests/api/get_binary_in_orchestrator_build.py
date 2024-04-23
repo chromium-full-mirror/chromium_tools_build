@@ -19,7 +19,7 @@ PROPERTIES = {'expected_binaries': Property(kind=list)}
 
 
 def RunSteps(api, expected_binaries):
-  api.code_coverage.build_dir = api.chromium_checkout.src_dir.join(
+  api.code_coverage.build_dir = api.chromium_checkout.src_dir.joinpath(
       'out', 'Release')
   binaries = sorted(
       list(
@@ -33,11 +33,12 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.path.exists(
-          api.chromium_checkout.src_dir.join(
+          api.chromium_checkout.src_dir.joinpath(
               'out', 'Release',
               constants.BINARY_RELATIVE_PATHS_JSON_FILE_NAME)),
       api.properties(expected_binaries=[
-          api.chromium_checkout.src_dir.join('out', 'Release', 'some_library'),
+          api.chromium_checkout.src_dir.joinpath('out', 'Release',
+                                                 'some_library'),
       ]),
       api.post_process(post_process.DropExpectation),
   )

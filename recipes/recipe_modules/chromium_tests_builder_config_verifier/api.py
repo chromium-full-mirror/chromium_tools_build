@@ -84,7 +84,7 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
           include_hidden=True)
       properties_files = set(self.m.path.relpath(p, repo_path) for p in paths)
 
-      with self.m.context(cwd=repo_path.join(properties_files_directory)):
+      with self.m.context(cwd=repo_path / properties_files_directory):
         # Lists the files known to git at HEAD
         result = self.m.git(
             'ls-tree',
@@ -145,7 +145,7 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
         return False
 
       properties = self.m.file.read_json(
-          'read file at CL', repo_path.join(f), test_data={}, include_log=True)
+          'read file at CL', repo_path / f, test_data={}, include_log=True)
       if _CTBC_PROPERTY not in properties:
         return success(f'{_CTBC_PROPERTY} is not set, nothing to verify')
 

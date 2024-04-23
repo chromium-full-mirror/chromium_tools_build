@@ -93,7 +93,7 @@ def test_name_in_status_file(testId):
 
 
 def update_test262_status_file(api, work_dir, new_status_lines):
-  test262_status_path = work_dir.join('test', 'test262', 'test262.status')
+  test262_status_path = work_dir.joinpath('test', 'test262', 'test262.status')
   status_file_lines = api.file.read_text('Read test262 status file',
                                          test262_status_path).splitlines()
   status_lines_before_eof = status_file_lines[:-2]

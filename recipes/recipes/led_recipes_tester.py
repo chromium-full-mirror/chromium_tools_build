@@ -517,12 +517,12 @@ def RunSteps(api):
   s.name = s.url.rsplit('/', 1)[-1]
   gclient_config.got_revision_mapping[s.name] = 'got_revision'
 
-  with api.context(cwd=api.path.cache_dir.join('builder')):
+  with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout(
         patch=True, gclient_config=gclient_config)
 
-  repo_path = api.path.cache_dir.join('builder',
-                                      update_result.json.output['root'])
+  repo_path = api.path.cache_dir.joinpath('builder',
+                                          update_result.json.output['root'])
 
   with api.context(cwd=repo_path):
     affected_files = api.tryserver.get_files_affected_by_patch(repo_path)
@@ -545,9 +545,10 @@ def RunSteps(api):
       'infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py',
       version='refs/heads/main',
       executable_path='recipe_engine/recipes.py')
-  recipes_cfg_path = repo_path.join('infra', 'config', 'recipes.cfg')
-  affected_recipes = _determine_affected_recipes(
-      api, affected_files, recipes, recipes_py_path, recipes_cfg_path)
+  recipes_cfg_path = repo_path.joinpath('infra', 'config', 'recipes.cfg')
+  affected_recipes = _determine_affected_recipes(api, affected_files, recipes,
+                                                 recipes_py_path,
+                                                 recipes_cfg_path)
 
   api.swarming.ensure_client()
 
@@ -681,14 +682,14 @@ def GenTests(api):
     input_files = affected_recipes_input_files(steps)
     for rel_path in rel_paths:
       path = str(
-          api.path.cache_dir.join('builder', 'baz', *rel_path.split('/')))
+          api.path.cache_dir.joinpath('builder', 'baz', *rel_path.split('/')))
       check(path not in input_files)
 
   def affected_recipes_input_files_contains(check, steps, *rel_paths):
     input_files = affected_recipes_input_files(steps)
     for rel_path in rel_paths:
       path = str(
-          api.path.cache_dir.join('builder', 'baz', *rel_path.split('/')))
+          api.path.cache_dir.joinpath('builder', 'baz', *rel_path.split('/')))
       check(path in input_files)
 
   def gitiles_curl(skip_extensive=False, skip_short=False):

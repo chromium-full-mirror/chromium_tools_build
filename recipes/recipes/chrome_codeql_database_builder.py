@@ -42,31 +42,31 @@ def RunSteps(api):
   target_dir = "release"
   build_dir = out_dir + "/" + target_dir
   gn_path = api.depot_tools.gn_py_path
-  cipd_root = api.path.start_dir.join('cipd')
+  cipd_root = api.path.start_dir / 'cipd'
   db_path = api.path.mkdtemp('codeql_dbs')
   with api.context(
       cwd=api.path.checkout_dir, env_suffixes={'PATH': [cipd_root]}):
-    codeql_root = api.path.start_dir.join('codeql')
+    codeql_root = api.path.start_dir / 'codeql'
     # If we end up needing to change this version frequently, consider changing
     # this to use an input property to set the version instead of hardcoding it
     # here.
     ensure_file = api.cipd.EnsureFile().add_package(
         'infra/3pp/tools/codeql/${platform}', "version:2@2.15.4")
     api.cipd.ensure(codeql_root, ensure_file)
-    codeql_path = codeql_root.join('codeql')
+    codeql_path = codeql_root / 'codeql'
     api.step(
         'gn gen out/release',
         ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
     api.chromium.compile(
         use_reclient=True, targets=["all"], out_dir=out_dir, target=target_dir)
-    codeql_script_path = api.path.checkout_dir.join('tools', 'codeql',
-                                                    'index_target.py')
+    codeql_script_path = api.path.checkout_dir.joinpath('tools', 'codeql',
+                                                        'index_target.py')
     api.step("index_target.py", [
         'vpython3', codeql_script_path, '--out_path', build_dir, '--db_path',
         db_path, '--codeql_binary_path', codeql_path, '--gn_path', gn_path
     ])
 
-    zip_out_dir = api.path.start_dir.join('codeql_output')
+    zip_out_dir = api.path.start_dir / 'codeql_output'
     api.step("mkdir codeql_output", ['mkdir', zip_out_dir])
     cur_date = api.time.utcnow()
     TEST_DATA = ['chrome']
@@ -76,7 +76,7 @@ def RunSteps(api):
       target_db_basename = api.path.basename(target_db_path)
       zip_out_filename = target_db_basename + '-codeql-' + cur_date.strftime(
           '%Y-%m-%d-%H:%M:%S') + '.zip'
-      zip_out_file = zip_out_dir.join(zip_out_filename)
+      zip_out_file = zip_out_dir / zip_out_filename
       api.zip.directory('zip codeql dir', db_path, zip_out_file)
     cloud_folder_name = "codeql-" + cur_date.strftime('%Y-%m-%d-%H:%M:%S')
     api.gsutil.upload(

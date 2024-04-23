@@ -137,14 +137,13 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
     If testername is specified, we simulate data for a pure compiler builder
     that's supposed to trigger a tester.
     """
-    return (
-        self.m.path.exists(self.m.path.cache_dir.join(
-            'builder', 'v8', 'infra', 'testing', 'builders.pyl')) +
-        self.step_data(
-            'initialization.read test spec (v8)',
-            self.example_test_spec(testername or buildername, test_spec),
-        )
-    )
+    return (self.m.path.exists(
+        self.m.path.cache_dir.joinpath('builder', 'v8', 'infra', 'testing',
+                                       'builders.pyl')) +
+            self.step_data(
+                'initialization.read test spec (v8)',
+                self.example_test_spec(testername or buildername, test_spec),
+            ))
 
   def hide_infra_steps(self):
     """This hides some infra steps in the expectations which are tested
