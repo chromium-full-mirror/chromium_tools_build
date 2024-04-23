@@ -199,6 +199,7 @@
       "/path/to/tmp/json",
       "--revision",
       "src@HEAD",
+      "--enforce_fetch",
       "--no_fetch_tags"
     ],
     "cwd": "[CACHE]/builder",

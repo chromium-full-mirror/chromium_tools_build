@@ -22,6 +22,7 @@
       "src@0cd310e5609606ca9c8531313142a1a9f16ae860",
       "--refs",
       "refs/heads/main",
+      "--enforce_fetch",
       "--no_fetch_tags"
     ],
     "cwd": "[CACHE]/builder",
