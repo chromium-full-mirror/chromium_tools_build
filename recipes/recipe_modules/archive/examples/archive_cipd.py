@@ -108,10 +108,49 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'fuchsia_cipd_archive_amd64',
+      api.chromium.generic_build(
+          builder_group='fake-group', builder='fake-builder'),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_group='fake-group',
+              builder='fake-builder',
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  chromium_config_kwargs={
+                      'TARGET_ARCH': 'intel',
+                      'TARGET_BITS': 64,
+                      'TARGET_PLATFORM': 'fuchsia',
+                  },
+              ),
+          ).assemble()),
+      api.properties(
+          cipd_archive=True,
+          update_properties={},
+          custom_vars={
+              'chrome_version': '1.2.3.4',
+          },
+          **{'$build/archive': _input_properties()}),
+      api.chromium.override_version(
+          major=91, step_name='Generic Archiving Steps.get version'),
+      api.post_process(
+          post_process.StepCommandContains,
+          "Generic Archiving Steps.create foo", [
+              'cipd', 'create', '-pkg-def',
+              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
+              '-ref', 'canary', '-tag', 'version:1.2.3.4', '-pkg-var',
+              'targetarch:amd64', '-compression-level', '8', '-json-output',
+              '/path/to/tmp/json'
+          ]),
+      api.post_process(post_process.DropExpectation),
+  )
+
   input_properties = _input_properties()
   input_properties.source_side_spec_path.extend(non_existing_spec_path)
   yield api.test(
-      'fuchsia_cipd_archive_x64',
+      'non_existing_source_side_spec_path',
       api.chromium.generic_build(
           builder_group='fake-group', builder='fake-builder'),
       ctbc_api.properties(
@@ -134,17 +173,10 @@ def GenTests(api):
               'chrome_version': '1.2.3.4',
           },
           **{'$build/archive': input_properties}),
-      api.chromium.override_version(
-          major=90, step_name='Generic Archiving Steps.get version'),
-      api.post_process(post_process.StepCommandContains,
-                       "Generic Archiving Steps.create foo", [
-                           'cipd', 'create', '-pkg-def',
-                           '[CACHE]/builder/src/out/Release/foo', '-hash-algo',
-                           'sha256', '-ref', 'beta', '-tag', 'version:1.2.3.4',
-                           '-pkg-var', 'targetarch:amd64', '-compression-level',
-                           '8', '-json-output', '/path/to/tmp/json'
-                       ]),
+      api.post_process(post_process.StepException,
+                       'Could not find specified archive config'),
       api.post_process(post_process.DropExpectation),
+      status='INFRA_FAILURE',
   )
 
   input_properties = _input_properties()

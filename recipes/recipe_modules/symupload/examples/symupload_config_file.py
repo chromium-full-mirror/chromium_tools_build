@@ -44,3 +44,13 @@ def GenTests(api):
           ]),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'non_existing_source_side_spec_path',
+      api.properties(target_platform='mac', host_platform='mac'),
+      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.post_process(post_process.StepException,
+                       'Could not find specified symupload config'),
+      api.post_process(post_process.DropExpectation),
+      status='INFRA_FAILURE',
+  )

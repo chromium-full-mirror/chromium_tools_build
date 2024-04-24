@@ -744,7 +744,11 @@ class ArchiveApi(recipe_api.RecipeApi):
 
   def _read_source_side_archive_spec(self, source_side_archive_spec_path):
     if not self.m.path.exists(source_side_archive_spec_path):
-      return None
+      self.m.step.empty(
+          'Could not find specified archive config',
+          status=self.m.step.INFRA_FAILURE,
+          step_text=f'{source_side_archive_spec_path} archive spec does not exist.'
+      )
     source_side_archive_spec = self.m.file.read_json(
         'read archive spec (%s)' %
         self.m.path.basename(source_side_archive_spec_path),

@@ -176,7 +176,13 @@ class SymuploadApi(recipe_api.RecipeApi):
       config_file_path = self.m.chromium_checkout.checkout_dir.joinpath(
           *self._properties.source_side_spec_path)
 
-    if config_file_path and self.m.path.exists(config_file_path):
+    if config_file_path is not None:
+      if not self.m.path.exists(config_file_path):
+        self.m.step.empty(
+            'Could not find specified symupload config',
+            status=self.m.step.INFRA_FAILURE,
+            step_text=f'{config_file_path} symupload spec does not exist.')
+
       # read the file content and load it as a symupload_datas object
       # for the remainder of the workflow to run.
       config = self.m.file.read_json(
