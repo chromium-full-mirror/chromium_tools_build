@@ -1707,7 +1707,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Performance Tests.copy interaction tests coverage data",
+    "name": "Performance Tests.copy perf tests data",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -2064,6 +2064,121 @@
   {
     "cmd": [],
     "name": "Publish performance benchmarks"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/devtools-frontend/perf-data/devtools-perf.json",
+      "/path/to/tmp/"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Publish performance benchmarks.Read performance data results",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@devtools-perf.json@\"\"@@@",
+      "@@@STEP_LOG_END@devtools-perf.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "{\"git_hash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"key\": {\"bot\": \"linux\", \"master\": \"client.devtools-frontend.integration\"}, \"results\": \"\", \"version\": 1}",
+      "[CLEANUP]/perf-results_tmp_1/devtools-perf.json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Publish performance benchmarks.Write Skia Perf format",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@devtools-perf.json@{\"git_hash\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\", \"key\": {\"bot\": \"linux\", \"master\": \"client.devtools-frontend.integration\"}, \"results\": \"\", \"version\": 1}@@@",
+      "@@@STEP_LOG_END@devtools-perf.json@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Publish performance benchmarks.Upload name ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "cp",
+      "[CACHE]/builder/devtools-frontend/perf-data/devtools-perf.json",
+      "gs://devtools-frontend-perf/ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Publish performance benchmarks.gsutil Upload perf data",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json@https://storage.cloud.google.com/devtools-frontend-perf/ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json@@@"
+    ]
   },
   {
     "name": "$result"

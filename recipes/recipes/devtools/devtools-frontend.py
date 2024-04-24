@@ -41,6 +41,8 @@ DEPS = [
     'recipe_engine/resultdb',
     'recipe_engine/step',
     'recipe_engine/swarming',
+    'recipe_engine/time',
+    'depot_tools/gsutil',
     'v8_orchestrator',
 ]
 
@@ -493,7 +495,7 @@ class PerformanceTests(DevToolsTests):
         'remove perf data file if it exists',
         self.api.path.join(self.api.path.checkout_dir, 'perf-data'))
     self.api.file.copytree(
-        'copy interaction tests coverage data', perf_data_dir,
+        'copy perf tests data', perf_data_dir,
         self.api.path.join(self.api.path.checkout_dir, 'perf-data'))
 
 class E2ETestDivider:
@@ -606,9 +608,38 @@ def run_lint_check(api):
 def publish_performance_benchmarks(api):
   report_file = api.path.checkout_dir.joinpath('perf-data',
                                                'devtools-perf.json')
-  if not api.path.exists(report_file):
-    return
-  #TODO(andoli) publish coverage data in skia perf
+  front_end_results = api.file.read_json('Read performance data results',
+                                         report_file)
+  tmp_dir = api.m.path.mkdtemp('perf-results')
+  results_file = tmp_dir.join('devtools-perf.json')
+  git_revision = api.bot_update.last_returned_properties['got_revision']
+  api.m.file.write_json(
+      'Write Skia Perf format', results_file, {
+          'version': 1,
+          'git_hash': git_revision,
+          'key': {
+              'master': 'client.devtools-frontend.integration',
+              'bot': api.m.buildbucket.builder_name
+          },
+          'results': front_end_results
+      })
+  save_perf_data_in_bucket(api, report_file)
+
+
+def save_perf_data_in_bucket(api, report_file):
+  bucket = 'devtools-frontend-perf'
+  today = api.m.time.utcnow().strftime('%Y/%m/%d/%H')
+  upload_name = '{}/{}/{}/{}/{}/{}'.format(
+      'ingest', today, 'client.devtools-frontend.integration',
+      api.m.buildbucket.builder_name, 'performance-tests', 'perf-data.json')
+  api.m.step.empty(f'Upload name {upload_name}')
+  api.m.gsutil.upload(
+      source=report_file,
+      bucket=bucket,
+      dest=upload_name,
+      link_name=upload_name,
+      name='Upload perf data',
+  )
 
 
 def test_cov_data():
