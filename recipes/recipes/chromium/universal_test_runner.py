@@ -124,8 +124,8 @@ def prerun_checks(
       ]
       return create_rerun_result(api, rerun_options, error_message,
                                  properties.output_properties_file)
-  if api.path.exists(
-      build_path) and not properties.rerun_options.bypass_gn_args:
+  if (api.path.exists(build_path.join('args.gn')) and
+      not properties.rerun_options.bypass_gn_args):
     error_message = check_gn_args(api, build_path, compiling_builder_id)
     if error_message:
       rerun_options = [
@@ -242,7 +242,7 @@ def check_gclient(api: RecipeApi) -> str:
 
 def check_gn_args(api: RecipeApi, build_dir: Path,
                   builder_id: chromium.BuilderId) -> str:
-  """Check if the gn.arg file is acceptable to use for the selected builder
+  """Check if the args.gn file is acceptable to use for the selected builder
 
   Args:
       api: Recipe API object.
@@ -368,8 +368,9 @@ def create_tests(
     if isinstance(test, SwarmingIsolatedScriptTest):
       test.spec = attr.evolve(test.spec, results_handler_name=None)
   if should_build:
-    raw_result = compile_targets(api, properties, tests, builder_id,
-                                 preserve_gn_args, build_dir, builder_recipe)
+    raw_result, preserve_gn_args = compile_targets(api, properties, tests,
+                                                   builder_id, preserve_gn_args,
+                                                   build_dir, builder_recipe)
     if raw_result.status != common_pb2.SUCCESS:
       return raw_result, None
   skylab_tests = [test for test in tests if test.is_skylabtest]
@@ -378,7 +379,7 @@ def create_tests(
     # all other instances, we need to ask mb.py to do so specifically. Do so
     # for *all* possible targets. This shouldn't take much longer, and
     # simplifies things a bit.
-    api.chromium.mb_isolate_everything(None)
+    api.chromium.mb_isolate_everything(None, build_dir=build_dir)
 
   isolate_tests = [test for test in tests if test.isolate_target]
   if isolate_tests:
@@ -445,6 +446,8 @@ def configure_build(
       build_path = api.path.checkout_dir.joinpath(
           'out', api.chromium.c.build_config_fs)
 
+  api.file.ensure_directory('ensure_build_dir', build_path)
+
   api.chromium.output_dir = build_path
   return (compiling_builder_id, compiling_builder_config, api.path.checkout_dir,
           build_path)
@@ -505,7 +508,7 @@ def compile_targets(
     preserve_gn_args = handle_code_coverage(api, build_dir, properties,
                                             builder_id)
 
-  if preserve_gn_args:
+  if preserve_gn_args and api.path.exists(build_dir.join('args.gn')):
     api.gn.gen(build_dir, 'gn_gen')
   else:
     tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
@@ -531,7 +534,7 @@ def compile_targets(
       targets,
       skip_log_upload=True,
       target_output_dir=str(build_dir),
-      use_reclient=use_reclient)
+      use_reclient=use_reclient), preserve_gn_args
 
 
 def handle_code_coverage(
@@ -561,8 +564,10 @@ def handle_code_coverage(
   """
   # If we're bypassing the branch check and not skipping instrumentation
   # then remove the gn arg to instrument everything
-  if properties.rerun_options.bypass_branch_check and not properties.rerun_options.skip_instrumentation:
-    if not properties.rerun_options.preserve_gn_args:
+  if (properties.rerun_options.bypass_branch_check and
+      not properties.rerun_options.skip_instrumentation):
+    if (not properties.rerun_options.preserve_gn_args or
+        not api.path.exists(build_dir.join('args.gn'))):
       gn_args = api.chromium.mb_lookup(
           builder_id,
           recursive=False,
@@ -1033,6 +1038,8 @@ solutions = [
       ),
       api.platform('win', 32),
       api.code_coverage(use_clang_coverage=True),
+      api.path.exists(
+          api.path.cache_dir.join('src', 'out', 'Release', 'args.gn')),
       api.step_data(
           'read GN args',
           api.raw_io.output_text('coverage_instrumentation_input_file = '
@@ -1285,7 +1292,7 @@ target_os=['os']
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path.cache_dir / 'src/out/Release'),
+      api.path.exists(api.path.cache_dir / 'src/out/Release/args.gn'),
       api.step_data(
           'lookup_builder_gn_args',
           stdout=api.raw_io.output_text('import("//builder.args")\n'
@@ -1377,6 +1384,8 @@ target_os=['os']
   yield api.test(
       'preserve_gn_args',
       boilerplate(preserve_gn_args=True),
+      api.path.exists(
+          api.path.cache_dir.join('src', 'out', 'Release', 'args.gn')),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'generate .isolate files'),
       api.post_process(post_process.MustRun, 'isolate tests'),
@@ -1386,6 +1395,13 @@ target_os=['os']
       api.post_process(post_process.DoesNotRun, 'generate_build_files'),
       api.post_process(post_process.DoesNotRun, 'lookup GN args'),
       api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no_args_gn_uses_builder',
+      boilerplate(bypass_gn_args=False, preserve_gn_args=True),
+      api.post_process(post_process.MustRun, 'generate_build_files'),
       api.post_process(post_process.DropExpectation),
   )
 

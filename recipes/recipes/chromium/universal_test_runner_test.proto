@@ -1,0 +1,27 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.chromium.universal_test_runner_test;
+
+// Next ID: 2
+message InputProperties {
+  message BuilderSuites {
+    // Name of the builder to run
+    string builder_name = 1;
+
+    // Bucket the builder belongs to
+    string bucket = 2;
+
+    // Test names of the builder to run
+    repeated string test_names = 3;
+
+    // Where to build the tests for the builder
+    string build_dir = 4;
+  }
+
+  // Builders and their test suites to run
+  repeated BuilderSuites builder_suites = 1;
+}
