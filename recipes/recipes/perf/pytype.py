@@ -20,7 +20,7 @@ def RunSteps(api):
   cmd = [
       'vpython3',
       '-vpython-spec',
-      checkout_dir,
+      checkout_dir / '.vpython3',
       '-m',
       'pytype',
       '--keep-going',
