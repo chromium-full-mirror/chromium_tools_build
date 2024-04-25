@@ -367,6 +367,10 @@ def create_tests(
   for test in tests:
     if isinstance(test, SwarmingIsolatedScriptTest):
       test.spec = attr.evolve(test.spec, results_handler_name=None)
+    if properties.additional_test_args:
+      test.spec = attr.evolve(
+          test.spec,
+          args=test.spec.args + tuple(properties.additional_test_args))
   if should_build:
     raw_result, preserve_gn_args = compile_targets(api, properties, tests,
                                                    builder_id, preserve_gn_args,
@@ -669,13 +673,13 @@ def GenTests(api: RecipeTestApi):
       checkout_path='[CACHE]/src',
       run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
       preserve_gn_args=False,
-      build_dir=None,
       bypass_gclient=True,
       bypass_gn_args=True,
       builder_recipe='chromium',
       output_properties_file='checkout/output_properties.json',
       bypass_branch_check=False,
       skip_instrumentation=False,
+      **kwargs,
   ):
     if not test_names:
       test_names = ['browser_tests']
@@ -683,7 +687,6 @@ def GenTests(api: RecipeTestApi):
         test_names=test_names,
         checkout_path=checkout_path,
         run_type=run_type,
-        build_dir=build_dir,
         builder_recipe=builder_recipe,
         output_properties_file=output_properties_file,
         rerun_options=InputProperties.RerunOptions(
@@ -692,7 +695,9 @@ def GenTests(api: RecipeTestApi):
             preserve_gn_args=preserve_gn_args,
             bypass_branch_check=bypass_branch_check,
             skip_instrumentation=skip_instrumentation,
-        ))
+        ),
+        **kwargs,
+    )
 
   def boilerplate(
       target_spec=None,
@@ -896,6 +901,7 @@ solutions = [
       'multiple_tests',
       boilerplate(
           test_names=['browser_tests', 'unit_tests'],
+          additional_test_args=['--gtest_repeat=100'],
           target_spec={
               'fake-tester': {
                   'gtest_tests': [{
