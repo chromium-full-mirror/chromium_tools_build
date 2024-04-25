@@ -30,6 +30,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       step_name_suffix=None,
       out_sub_dir=None,
       use_rbe=True,
+      resource_usage_output_dir=None,
   ):
     """Run a build.
 
@@ -40,6 +41,8 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
           step_name_suffix: suffix of the step name.
           out_sub_dir: Custom name to use the output directory.
           use_rbe: Whether to use remote build execution or not
+          resource_usage_output_dir: Directory which if provided will record the resource usage
+                                     stats related to build step
 
         Returns:
           A RawResult object with the compile step's status and failure message
@@ -69,7 +72,8 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
             timeout=timeout,
             target=out_sub_dir,  # target is a sub directory name at compile().
             use_reclient=use_rbe,
-            siso_args=siso_args)
+            siso_args=siso_args,
+            resource_usage_output_dir=resource_usage_output_dir)
       finally:
         # b/323976014: Clean up temp dirs for iOS simulators.
         if self.m.chromium.c.TARGET_PLATFORM == 'ios':

@@ -76,6 +76,7 @@ _RULE_RE = re.compile(r'^\[\d+/\d+\] (\S+)')
 _FAILED_RE = re.compile(r'^FAILED: (.*)$')
 _FAILED_END_RE = re.compile(r'^ninja: build stopped:.*')
 
+_TIME_CMD = '/usr/bin/time'
 
 class WarningCollector:
 
@@ -461,6 +462,9 @@ def parse_args(args):
       type=float,
       help=('Seconds to wait for new output from ninja before killing it. '
             '0 = let ninja run forever'))
+  parser.add_argument(
+      '--resource_usage_output',
+      help='Measure resources used to run command and Save result in a file.')
 
   options = parser.parse_args(args)
   return options
@@ -501,6 +505,10 @@ def main(argv):
   # https://crbug.com/984451 for more information
   if not options.no_prune_venv:
     prune_virtual_env()
+
+  if options.resource_usage_output:
+    ninja_cmd = "(%s -v %s) 2>%s" % (_TIME_CMD, options.ninja_cmd,
+                                     options.resource_usage_output)
 
   if not options.ninja_info_output and options.io_timeout <= 0:
     # Options are set such that we don't need to intercept the stdout

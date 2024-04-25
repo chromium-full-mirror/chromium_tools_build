@@ -4,7 +4,6 @@
 """Recipe to measure build time.
    See also go/chrome-build-time
 """
-
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -35,11 +34,14 @@ def _raise_raw_result_on_failure(api, raw_result):
     raise api.step.StepFailure(raw_result.summary_markdown)
 
 
-def _compile_without_remote_execution(api, target):
+def _compile_without_remote_execution(api, target, resource_usage_output_dir):
   # Build without remote execution.
   api.chromium_build_perf.recreate_build_dir(remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_ninja(
-      target, with_remote_cache=False, use_rbe=False)
+      target,
+      with_remote_cache=False,
+      use_rbe=False,
+      resource_usage_output_dir=resource_usage_output_dir)
   _raise_raw_result_on_failure(api, raw_result)
 
 
@@ -61,8 +63,12 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
+  resource_usage_output_dir = api.path.cache_dir / 'resource_usage'
+  api.file.ensure_directory('init resource usage dir if not exists',
+                            resource_usage_output_dir)
+
   # Build target: chrome
-  _compile_without_remote_execution(api, 'chrome')
+  _compile_without_remote_execution(api, 'chrome', resource_usage_output_dir)
 
 
 def GenTests(api):
@@ -86,6 +92,9 @@ def GenTests(api):
               ),
               **builder).assemble()),
       api.reclient.properties(),
+      api.post_process(post_process.StepCommandContains,
+                       'Build chrome without remote execution',
+                       ['--resource_usage_output']),
       api.post_process(post_process.DropExpectation),
   )
 
