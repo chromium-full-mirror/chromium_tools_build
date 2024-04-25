@@ -48,6 +48,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
         api.path.cache_dir / 'builder' / 'infra' / 'build',
         '--force',
         '-vv',
+        'compile-and-test',
     ]
     for test_name in builder_suites.test_names:
       cmd.extend(['--test', test_name])
@@ -96,6 +97,10 @@ def GenTests(api: RecipeTestApi):
                        'fake-bucket:fake-builder', [
                          '--test', 'testA',
                          '--test', 'testB'
+                       ]),
+      api.post_process(post_process.StepCommandContains,
+                       'fake-bucket:fake-builder', [
+                         'compile-and-test'
                        ]),
       api.post_process(post_process.DropExpectation),
   )
