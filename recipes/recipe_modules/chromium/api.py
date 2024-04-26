@@ -314,6 +314,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                  ninja_env=None,
                  siso_args=None,
                  skip_log_upload=False,
+                 resource_usage_output_dir=None,
                  **kwargs):
     """
     Run ninja with given command and env.
@@ -326,6 +327,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       ninja_env: Environment for ninja.
       siso_args: Siso specific arguments.
       skip_log_upload: When true skip log uploading.
+      resource_usage_output_dir: Directory which if provided will record the resource usage
+                                 stats related to build step
 
     Returns:
       A named tuple with the fields
@@ -380,6 +383,11 @@ class ChromiumApi(recipe_api.RecipeApi):
             '--failure_output',
             failure_output,
         ]
+        if resource_usage_output_dir:
+          cmd.append('--resource_usage_output')
+          resource_usage_path = resource_usage_output_dir.joinpath(
+              'time_log.txt')
+          cmd.append(resource_usage_path)
         cmd.append('--')
         cmd.extend(ninja_command)
         with self.m.context(env=ninja_env):
@@ -669,6 +677,8 @@ class ChromiumApi(recipe_api.RecipeApi):
         "Release" or "Debug").
       use_reclient (bool): If True, use reclient as the remote compiler.
       target_output_dir (BasePath): Path to the directory to be compiled.
+      resource_usage_output_dir (BasePath): Path to the directory which will hold stats related
+                                            to resource usage while compiling
 
     Returns:
       A RawResult object with the compile step's status and failure message
