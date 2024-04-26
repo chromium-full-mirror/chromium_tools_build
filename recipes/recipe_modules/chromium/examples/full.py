@@ -22,8 +22,6 @@ DEPS = [
 
 def RunSteps(api):
   use_reclient = api.properties.get('use_reclient', False)
-  resource_usage_output_dir = api.properties.get('resource_usage_output_dir',
-                                                 None)
   out_dir = api.properties.get('out_dir', None)
 
   configs = api.properties.get('configs', [])
@@ -50,10 +48,7 @@ def RunSteps(api):
         android_version_name="example")
 
     return api.chromium.compile(
-        targets=['All'],
-        out_dir=out_dir,
-        use_reclient=use_reclient,
-        resource_usage_output_dir=resource_usage_output_dir)
+        targets=['All'], out_dir=out_dir, use_reclient=use_reclient)
 
 
 def GenTests(api):
@@ -182,27 +177,6 @@ def GenTests(api):
           'compile confirm no-op',
           stdout=api.raw_io.output_text("ninja explain: chrome is dirty\n")),
       api.expect_status('FAILURE'),
-  )
-
-  yield api.test(
-      'measure_resource_usage',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          bot_id='build1-a1',
-          build_number=77457,
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(resource_usage_output_dir=api.path.cache_dir /
-                     'resource_usage'),
-      api.reclient.properties(),
-      api.post_process(post_process.StepCommandContains, 'compile',
-                       ['--resource_usage_output']),
-      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
