@@ -2153,7 +2153,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CACHE]/builder/devtools-frontend/perf-data/devtools-perf.json",
+      "[CLEANUP]/perf-results_tmp_1/devtools-perf.json",
       "gs://devtools-frontend-perf/ingest/2012/05/14/12/client.devtools-frontend.integration/linux/performance-tests/perf-data.json"
     ],
     "env_prefixes": {

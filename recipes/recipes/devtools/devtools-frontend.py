@@ -623,7 +623,7 @@ def publish_performance_benchmarks(api):
           },
           'results': front_end_results
       })
-  save_perf_data_in_bucket(api, report_file)
+  save_perf_data_in_bucket(api, results_file)
 
 
 def save_perf_data_in_bucket(api, report_file):
