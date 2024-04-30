@@ -7,8 +7,13 @@ package recipe_modules.build.chromium_swarming;
 
 // Module properties
 //
-// Next ID: 2
+// Next ID: 3
 message InputProperties {
   // Whether or not the swarming commands should be run verbosely
   bool verbose = 1;
+
+  // LUCI realm to run any triggered tasks in. Will use the realm of the
+  // current LUCI context if not specified. Ignored if the task is configured
+  // to explicitly request a realm.
+  string task_realm = 2;
 }

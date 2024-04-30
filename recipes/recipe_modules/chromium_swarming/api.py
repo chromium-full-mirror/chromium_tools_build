@@ -177,6 +177,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     self._default_priority = 200
     self._default_tags = set()
     self._default_user = None
+    self._default_realm = properties.task_realm
     self._pending_tasks = set()
     self._verbose = properties.verbose
 
@@ -778,6 +779,9 @@ class SwarmingApi(recipe_api.RecipeApi):
     """
     if not (resultdb and resultdb.enable):
       return req
+
+    if not req.realm and self._default_realm:
+      req = req.with_realm(self._default_realm)
 
     # If resultdb was enabled without realm, then use the builder realm.
     # This is needed to allow experimenting with ResultDB-enabled tests

@@ -854,9 +854,24 @@ def GenTests(api):
           builder_group='test_group',
           builder='test_buildername',
           experiments=['chromium_swarming.expose_merge_script_failures'],
-      ), api.properties(platforms=('linux',)),
+      ),
+      api.properties(platforms=('linux',)),
       api.step_data(
           'archive for linux',
           stdout=api.raw_io.output_text(
               'hash_for_linux/size hello_world.isolated')),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'with_custom_realm',
+      api.properties(
+          **{'$build/chromium_swarming': {
+              'task_realm': 'chromium:foo-realm',
+          }}),
+      api.step_data(
+          'archive for win',
+          stdout=api.raw_io.output_text(
+              'hash_for_win/size hello_world.isolated')),
+      api.post_process(post_process.DropExpectation),
+  )
