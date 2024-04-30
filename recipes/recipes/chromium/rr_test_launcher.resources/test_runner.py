@@ -4,7 +4,6 @@
 """Script to run the tests using the rr tool on swarming testing bots."""
 
 import argparse
-import json
 import logging
 import subprocess
 import tarfile
@@ -77,7 +76,7 @@ def main(args):
       trace_dir_name = TRACE_DIR_PREFIX + str(i)
       cmd = [
           'vpython3', 'third_party/blink/tools/run_web_tests.py', '-t',
-          'Release', '--no-retry-failures',
+          'Release', '--no-retry-failures', '--driver-kill-timeout-secs=10',
           f'--isolated-script-test-output={TEST_RESULT_FILE}',
           f'--wrapper=rr_tool/bin/rr record '
           f'--output-trace-dir={trace_dir_name}', test_name
@@ -86,15 +85,18 @@ def main(args):
 
       # Pack the test trace and upload the trace and test result file to output
       # dir.
-      run_cmd(['rr_tool/bin/rr', 'pack', trace_dir_name], '../')
-      with tarfile.open('trace.tar', 'w') as tar:
-        tar.add(f'../{trace_dir_name}')
-      tar.close()
-      os.renames('trace.tar',
-                 f'{args.output_dir}/{test_name_plain}/{str(i)}/trace.tar')
-      os.renames(
-          f'../{TEST_RESULT_FILE}', f'{args.output_dir}/{test_name_plain}/'
-          f'{str(i)}/{TEST_RESULT_FILE}')
+      result = run_cmd(['rr_tool/bin/rr', 'pack', trace_dir_name], '../')
+      if result == 0:
+        with tarfile.open('trace.tar', 'w') as tar:
+          tar.add(f'../{trace_dir_name}')
+        tar.close()
+        os.renames('trace.tar',
+                   f'{args.output_dir}/{test_name_plain}/{str(i)}/trace.tar')
+        os.renames(
+            f'../{TEST_RESULT_FILE}', f'{args.output_dir}/{test_name_plain}/'
+            f'{str(i)}/{TEST_RESULT_FILE}')
+      else:
+        logging.error('Result of running rr pack is %r', result)
 
 
 if __name__ == '__main__':
