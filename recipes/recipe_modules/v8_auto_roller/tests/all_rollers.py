@@ -63,7 +63,7 @@ def RunSteps(api):
 
   autoroller_config = {
       'subject': 'dummy roll',
-      'reviewers': ['piedone@punto.it'],
+      'manual_roll_reviewers': ['piedone@punto.it'],
       'show_commit_log': True,
       'commit_msg_footers': ['Also-Do: This', 'Also-Do: That'],
       'dependency_version_sources': {

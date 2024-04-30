@@ -37,7 +37,7 @@ def RunSteps(api, autoroller_config):
   autoroller_config = {
       'show_commit_log': False,
       'subject': 'Generic deps update',
-      'reviewers': ['maik@example.com'],
+      'manual_roll_reviewers': ['maik@example.com'],
       **autoroller_config
   }
 

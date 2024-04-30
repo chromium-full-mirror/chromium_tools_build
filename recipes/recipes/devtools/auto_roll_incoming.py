@@ -15,7 +15,7 @@ DEPS = [
 
 CONFIG = {
     "subject": "Update DevTools DEPS",
-    "reviewers": [
+    "manual_roll_reviewers": [
         "devtools-waterfall-sheriff-onduty@rotations.google.com",
     ],
     "show_commit_log": False,

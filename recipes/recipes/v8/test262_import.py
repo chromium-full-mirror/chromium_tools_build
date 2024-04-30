@@ -14,9 +14,7 @@ DEPS = [
 ]
 
 CONFIG = {
-    "reviewers": [
-        "syg@chromium.org",
-    ],
+    "manual_roll_reviewers": ["syg@chromium.org",],
 }
 
 

@@ -103,7 +103,7 @@ class UntrustedRollHandler(DEPSRollHandler):
 
   def commit_msg_lines(self, changes):
     return commons.commit_msg_lines_w_reviewes(
-        super().commit_msg_lines(changes), self.config['reviewers'])
+        super().commit_msg_lines(changes), self.config['manual_roll_reviewers'])
 
 
 @dataclass

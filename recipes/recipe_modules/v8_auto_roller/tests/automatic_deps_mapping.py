@@ -26,7 +26,7 @@ def RunSteps(api):
   autoroller_config = {
       'show_commit_log': False,
       'subject': 'Generic deps update',
-      'reviewers': ['maik@example.com'],
+      'manual_roll_reviewers': ['maik@example.com'],
   }
 
   api.v8_auto_roller.setup_target(

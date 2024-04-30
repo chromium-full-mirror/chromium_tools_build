@@ -33,7 +33,7 @@ PROPERTIES = {
                 # with the current config
                 includes=Single(list, empty_val=None),
                 # List of reviewers of rolling CLs requiring a manual review
-                reviewers=List(str),
+                manual_roll_reviewers=List(str),
                 # Add extra log entries to the commit message.
                 show_commit_log=Single(bool),
                 # List of footers added to the commit message.
@@ -55,14 +55,14 @@ def RunSteps(api, autoroller_config):
 
 
 def GenTests(api):
-  yield (
-    api.test('default') +
-    api.properties(autoroller_config={
-      "subject" : "Not important",
-       "reviewers" : ["ciciobello@chromium.org", "jonnybravo@google.com"],
-       "show_commit_log": True,
-    }) +
-    api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
-    api.post_process(MustRun, 'Update trusted deps.gerrit changes') +
-    api.post_process(DropExpectation)
-  )
+  yield (api.test('default') + api.properties(
+      autoroller_config={
+          "subject": "Not important",
+          "manual_roll_reviewers": [
+              "ciciobello@chromium.org",
+              "jonnybravo@google.com",
+          ],
+          "show_commit_log": True,
+      }) + api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
+         api.post_process(MustRun, 'Update trusted deps.gerrit changes') +
+         api.post_process(DropExpectation))
