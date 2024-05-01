@@ -447,6 +447,11 @@ def ios_webkit_tot(c):
 
 
 @CONFIG_CTX()
+def no_generate_location_tags(c):
+  c.solutions[0].custom_vars['generate_location_tags'] = 'False'
+
+
+@CONFIG_CTX()
 def no_kaleidoscope(c):
   c.solutions[0].custom_vars['checkout_kaleidoscope'] = 'False'
 

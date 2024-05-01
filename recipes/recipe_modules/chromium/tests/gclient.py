@@ -99,6 +99,11 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
+      'no_generate_location_tags',
+      api.properties(apply_gclient_config='no_generate_location_tags'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
       'no_kaleidoscope',
       api.properties(apply_gclient_config='no_kaleidoscope'),
       api.post_process(post_process.DropExpectation),
