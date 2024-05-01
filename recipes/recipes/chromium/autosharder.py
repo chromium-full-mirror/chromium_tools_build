@@ -166,9 +166,13 @@ def RunSteps(api):
       autoshard_exceptions_path,
   )
 
-  regen_path = api.chromium_checkout.src_dir.joinpath(
-      'testing', 'buildbot', 'generate_buildbot_json.py')
-  api.step('regenerate test specs', ['vpython3', regen_path])
+  with api.step.nest('regenerate targets specs'):
+    src_dir = api.chromium_checkout.src_dir
+    api.step(
+        '//testing/buildbot',
+        ['vpython3', src_dir / 'testing/buildbot/generate_buildbot_json.py'])
+
+    api.step('//infra/config prod', [src_dir / 'infra/config/main.star'])
 
   commit_message = COMMIT_MESSAGE.format(api.buildbucket.build.id)
   api.git('commit', '-a', '-m', 'Autoshard test suites')
@@ -219,7 +223,7 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun, 'git cl status'),
       api.post_process(post_process.DoesNotRun, 'query optimal shards'),
-      api.post_process(post_process.DoesNotRun, 'regenerate test specs'),
+      api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl set-close'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
@@ -250,7 +254,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(''),
       ),
       api.post_process(post_process.MustRun, 'query optimal shards'),
-      api.post_process(post_process.DoesNotRun, 'regenerate test specs'),
+      api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
   )
@@ -303,7 +307,7 @@ def GenTests(api):
           }]),
       ),
       api.post_process(post_process.DoesNotRun, 'query optimal shards'),
-      api.post_process(post_process.DoesNotRun, 'regenerate test specs'),
+      api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl set-close'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.expect_status('INFRA_FAILURE'),
@@ -331,7 +335,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(''),
       ),
       api.post_process(post_process.MustRun, 'query optimal shards'),
-      api.post_process(post_process.MustRun, 'regenerate test specs'),
+      api.post_process(post_process.MustRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl set-close'),
       api.post_process(post_process.MustRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
@@ -374,7 +378,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text('dry-run'),
       ),
       api.post_process(post_process.DoesNotRun, 'query optimal shards'),
-      api.post_process(post_process.DoesNotRun, 'regenerate test specs'),
+      api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl set-close'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
@@ -409,7 +413,7 @@ def GenTests(api):
       ),
       api.post_process(post_process.MustRun, 'git cl set-close'),
       api.post_process(post_process.MustRun, 'query optimal shards'),
-      api.post_process(post_process.MustRun, 'regenerate test specs'),
+      api.post_process(post_process.MustRun, 'regenerate targets specs'),
       api.post_process(post_process.MustRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
   )
@@ -441,7 +445,7 @@ def GenTests(api):
           stdout=api.raw_io.output_text(''),
       ),
       api.post_process(post_process.MustRun, 'query optimal shards'),
-      api.post_process(post_process.DoesNotRun, 'regenerate test specs'),
+      api.post_process(post_process.DoesNotRun, 'regenerate targets specs'),
       api.post_process(post_process.DoesNotRun, 'git cl upload'),
       api.post_process(post_process.DropExpectation),
   )
