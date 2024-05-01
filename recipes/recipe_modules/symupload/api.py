@@ -221,7 +221,7 @@ class SymuploadApi(recipe_api.RecipeApi):
                 filename,
                 test_data=('glob1.txt', 'glob2.txt')):
               assert build_dir.base == f.base
-              assert build_dir.is_parent_of(f)
+              assert build_dir in f.parents
               uploads.append(self.m.path.abspath(f))
 
           if symupload_data.artifact:

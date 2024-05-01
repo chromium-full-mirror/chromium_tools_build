@@ -92,11 +92,11 @@ class TarPackage:
       path: absolute path to a file, should be in |root| subdirectory.
       archive_name: name of the file in the archive, if non-None
     """
-    assert self._root.is_parent_of(path), path
+    assert self._root in path.parents, path
     self._entries.append({
-      'type': 'file',
-      'path': str(path),
-      'archive_name': archive_name
+        'type': 'file',
+        'path': str(path),
+        'archive_name': archive_name
     })
 
   def add_directory(self, path):
@@ -106,10 +106,10 @@ class TarPackage:
       path: absolute path to a directory, should be in |root| subdirectory.
     """
     # TODO(phosek): Implement 'exclude' filter.
-    assert self._root.is_parent_of(path) or path == self._root, path
+    assert self._root in path.parents or path == self._root, path
     self._entries.append({
-      'type': 'dir',
-      'path': str(path),
+        'type': 'dir',
+        'path': str(path),
     })
 
   def tar(self, step_name):

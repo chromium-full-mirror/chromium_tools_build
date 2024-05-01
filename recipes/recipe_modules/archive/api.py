@@ -992,7 +992,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         # Turn the returned Path object back into a string relative to
         # base_path.
         assert base_path.base == f.base
-        assert base_path.is_parent_of(f)
+        assert base_path in f.parents
         common_pieces = f.pieces[len(base_path.pieces):]
         expanded_files.add(os.path.sep.join(common_pieces))
 
