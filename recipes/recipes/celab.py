@@ -55,9 +55,9 @@ def _get_ctl_binary_name(api):
 
 def _get_python_packages(api, checkout):
   """Returns the full path of the python whl package files."""
-  out_dir = checkout.join('out')
-  return api.file.glob_paths('find python packages', out_dir, '*.whl',
-    test_data=['test.whl'])
+  out_dir = checkout / 'out'
+  return api.file.glob_paths(
+      'find python packages', out_dir, '*.whl', test_data=['test.whl'])
 
 
 def RunSteps(api):
@@ -91,8 +91,8 @@ def _RunStepsCelab(api):
   if tests:
     _RunTests(
         api,
-        checkout.join('test'),
-        checkout.join('scripts').join('tests'),
+        checkout.joinpath('test'),
+        checkout / 'scripts' / 'tests',
         '../../examples/schema/host/example.host.textpb',
         tests,
     )
@@ -124,7 +124,7 @@ def _RunStepsChromium(api):
 
   # Build Chromium binaries from source and get CELab from CIPD.
   checkout = _CheckoutChromiumRepo(api)
-  test_root = checkout.join('chrome', 'test', 'enterprise', 'e2e')
+  test_root = checkout.joinpath('chrome', 'test', 'enterprise', 'e2e')
   chromium_bin_dir, raw_result = _BuildChromiumFromSource(api, test_root)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
@@ -196,7 +196,7 @@ def _BuildCelabFromSource(api, checkout):
     api.step('create python package',
              ['python3', 'build.py', 'create_package', '--verbose'])
 
-  return _get_bin_directory(api, checkout.join('out'))
+  return _get_bin_directory(api, checkout / 'out')
 
 
 def _CheckoutChromiumRepo(api):
@@ -245,7 +245,7 @@ def _BuildChromiumFromSource(api, test_root):
 def _UploadCelabBinariesToStorage(api, checkout, bin_dir):
   cel_ctl = _get_ctl_binary_name(api)
   zip_out = api.path.start_dir / 'cel.zip'
-  pkg = api.zip.make_package(checkout.join('out'), zip_out)
+  pkg = api.zip.make_package(checkout / 'out', zip_out)
   pkg.add_file(bin_dir / cel_ctl)
   pkg.add_directory(bin_dir / 'resources')
   for package_file in _get_python_packages(api, checkout):

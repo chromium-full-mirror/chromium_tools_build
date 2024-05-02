@@ -84,7 +84,7 @@ def checkout(api, manifest_branch):
 def clobber(api):
   # buildbot sets 'clobber' to the empty string which is falsey, check with 'in'
   if 'clobber' in api.properties:
-    api.file.rmtree('clobber', api.context.cwd.join('out'))
+    api.file.rmtree('clobber', api.context.cwd.joinpath('out'))
 
 # Calls api.cipd.ensure_tool, then modifies the path returned by the call to
 # join the subdir.
@@ -93,7 +93,7 @@ def ensure_tool(api, package, version, subdir=""):
     package=package,
     version=version,
   ))[0]
-  return api.path.abs_to_path(api.path.abspath(dirname.join(subdir)))
+  return api.path.abs_to_path(api.path.abspath(dirname.joinpath(subdir)))
 
 def setup_host_x86(api,
                    debug,
@@ -108,7 +108,7 @@ def setup_host_x86(api,
   clobber(api)
 
   build_top_dir = api.context.cwd
-  art_tools = api.context.cwd.join('art', 'tools')
+  art_tools = api.context.cwd.joinpath('art', 'tools')
   # For host, the TARGET_PRODUCT isn't relevant.
   env = {
       'TARGET_PRODUCT':
@@ -182,7 +182,7 @@ def setup_host_x86(api,
 
   with api.context(env=env):
     api.step('build',
-             [art_tools.join('buildbot-build.sh'), '--host', '--installclean'])
+             [art_tools / 'buildbot-build.sh', '--host', '--installclean'])
 
     with api.defer.context() as defer:
       defer(api.step, 'test gtest', [
@@ -219,9 +219,10 @@ def setup_host_x86(api,
       defer(api.step, 'test speed-profile',
             testrunner_cmd + ['--speed-profile'])
 
-      libcore_command = [art_tools.join('run-libcore-tests.sh'),
-                         '--mode=host',
-                         '--variant=X%d' % bitness]
+      libcore_command = [
+          art_tools.joinpath('run-libcore-tests.sh'), '--mode=host',
+          '--variant=X%d' % bitness
+      ]
       if debug:
         libcore_command.append('--debug')
       if gcstress:
@@ -229,10 +230,11 @@ def setup_host_x86(api,
 
       defer(api.step, 'test libcore', libcore_command)
 
-      libjdwp_run = art_tools.join('run-libjdwp-tests.sh')
-      libjdwp_common_command = [libjdwp_run,
-                                '--mode=host',
-                                '--variant=X%d' % bitness]
+      libjdwp_run = art_tools.joinpath('run-libjdwp-tests.sh')
+      libjdwp_common_command = [
+          libjdwp_run, '--mode=host',
+          '--variant=X%d' % bitness
+      ]
       if debug:
         libjdwp_common_command.append('--debug')
       if gcstress:
@@ -259,7 +261,7 @@ def setup_target(api,
                  manifest_branch="master-art"):
 
   build_top_dir = api.context.cwd
-  art_tools = api.context.cwd.join('art', 'tools')
+  art_tools = api.context.cwd.joinpath('art', 'tools')
   # The path to the chroot directory on the device where ART and its
   # dependencies are installed, in case of chroot-based testing.
   if on_virtual_machine:
@@ -389,38 +391,32 @@ def setup_target(api,
   with api.context(env=env):
     api.step(
         'build target',
-        [art_tools.join('buildbot-build.sh'), '--target', '--installclean'])
+        [art_tools.joinpath('buildbot-build.sh'), '--target', '--installclean'])
 
   if build_only:
     return
 
   if on_virtual_machine:
     with api.context(env=env):
-      api.step(
-        'create the virtual machine',
-        [ art_tools.join('buildbot-vm.sh'), 'create' ]
-      )
+      api.step('create the virtual machine',
+               [art_tools.joinpath('buildbot-vm.sh'), 'create'])
 
-      api.step(
-        'enable key authentication on virtual machine',
-        [ art_tools.join('buildbot-vm.sh'), 'install-keys' ]
-      )
+      api.step('enable key authentication on virtual machine',
+               [art_tools.joinpath('buildbot-vm.sh'), 'install-keys'])
 
-      api.step(
-        'boot the virtual machine',
-        [ art_tools.join('buildbot-vm.sh'), 'boot' ]
-      )
+      api.step('boot the virtual machine',
+               [art_tools.joinpath('buildbot-vm.sh'), 'boot'])
 
   with api.defer.context() as defer:
     with api.context(env=test_env):
       defer(api.step, 'device pre-run cleanup',
-            [art_tools.join('buildbot-cleanup-device.sh')])
+            [art_tools.joinpath('buildbot-cleanup-device.sh')])
 
       defer(api.step, 'setup device',
-            [art_tools.join('buildbot-setup-device.sh'), '--verbose'])
+            [art_tools.joinpath('buildbot-setup-device.sh'), '--verbose'])
 
     with api.context(env=env):
-      defer(api.step, 'sync target', [art_tools.join('buildbot-sync.sh')])
+      defer(api.step, 'sync target', [art_tools.joinpath('buildbot-sync.sh')])
 
     def test_logging(api, test_name):
       # adb doesn't know about the VM and will hang.
@@ -430,12 +426,12 @@ def setup_target(api,
         defer(api.step, test_name + ': adb logcat',
               ['adb', 'logcat', '-d', '-v', 'threadtime'])
         defer(api.step, test_name + ': crashes',
-              [art_tools.join('buildbot-symbolize-crashes.sh')])
+              [art_tools.joinpath('buildbot-symbolize-crashes.sh')])
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
 
     with api.context(env=gtest_env):
-      defer(api.step, 'test gtest', [art_tools.join('run-gtests.sh')])
+      defer(api.step, 'test gtest', [art_tools.joinpath('run-gtests.sh')])
     test_logging(api, 'test gtest')
 
     # Common options passed to testrunner.py.
@@ -484,9 +480,10 @@ def setup_target(api,
             testrunner_cmd + ['--speed-profile'])
     test_logging(api, 'test speed-profile')
 
-    libcore_command = [art_tools.join('run-libcore-tests.sh'),
-                       '--mode=device',
-                       '--variant=X%d' % bitness]
+    libcore_command = [
+        art_tools.joinpath('run-libcore-tests.sh'), '--mode=device',
+        '--variant=X%d' % bitness
+    ]
     if debug:
       libcore_command.append('--debug')
     if gcstress:
@@ -502,9 +499,10 @@ def setup_target(api,
         defer(api.step, 'test libcore', libcore_command)
       test_logging(api, 'test libcore')
 
-    libjdwp_command = [art_tools.join('run-libjdwp-tests.sh'),
-                       '--mode=device',
-                       '--variant=X%d' % bitness]
+    libjdwp_command = [
+        art_tools.joinpath('run-libjdwp-tests.sh'), '--mode=device',
+        '--variant=X%d' % bitness
+    ]
     if debug:
       libjdwp_command.append('--debug')
     if gcstress:
@@ -525,15 +523,15 @@ def setup_target(api,
 
     with api.context(env=test_env):
       defer(api.step, 'tear down device',
-            [art_tools.join('buildbot-teardown-device.sh')])
+            [art_tools.joinpath('buildbot-teardown-device.sh')])
 
       defer(api.step, 'device post-run cleanup',
-            [art_tools.join('buildbot-cleanup-device.sh')])
+            [art_tools.joinpath('buildbot-cleanup-device.sh')])
 
     if on_virtual_machine:
       with api.context(env=env):
         defer(api.step, 'shut down virtual machine',
-              [art_tools.join('buildbot-vm.sh'), 'quit'])
+              [art_tools.joinpath('buildbot-vm.sh'), 'quit'])
 
 def GenTests(api):
   yield api.test(

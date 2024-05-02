@@ -237,7 +237,7 @@ class SsciAPI(recipe_api.RecipeApi):
       product = f'{recipe_name}.{self.execution_id}.{final_artifact_name}'
       p_version = self._get_product_version(chrome_version)
 
-      spdx_file = self.m.path.mkdtemp().join("spdx-out.json")
+      spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
       spdx_out = self.m.json.output(name=product, leak_to=spdx_file)
 
       # The vPython metadata files are found in the parent directory.
@@ -312,7 +312,7 @@ class SsciAPI(recipe_api.RecipeApi):
       # prepare outputs.
       depbot_json_output_dir = self.m.path.mkdtemp()
       depbot_json_summary_file = self.m.json.output(name="summary")
-      third_party_out = self.m.path.mkdtemp().join("third_party.json")
+      third_party_out = self.m.path.mkdtemp().joinpath("third_party.json")
 
       targetFlags = []
 

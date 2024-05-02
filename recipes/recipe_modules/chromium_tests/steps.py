@@ -1600,8 +1600,8 @@ class LocalTest(Test):
             self.spec.resultdb.base_variant or {},
             test_suite=self.canonical_name),
         result_adapter_path=str(
-            self.api.m.path.checkout_dir.join('tools', 'resultdb',
-                                              'result_adapter')),
+            self.api.m.path.checkout_dir.joinpath('tools', 'resultdb',
+                                                  'result_adapter')),
         result_file=self.api.m.path.abspath(temp),
         # Give each local test suite its own invocation to make it easier to
         # fetch results.
@@ -1691,7 +1691,7 @@ class ScriptTest(LocalTest):
     # consistency.
     cmd = ([
         'vpython3',
-        self.api.m.path.checkout_dir.join(
+        self.api.m.path.checkout_dir.joinpath(
             'testing', 'scripts', self.api.m.path.basename(self.spec.script))
     ] + self.api.m.chromium_tests.get_common_args_for_scripts() + script_args +
            ['run', '--output', self.api.m.json.output()] + run_args)

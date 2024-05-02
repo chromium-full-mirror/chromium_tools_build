@@ -204,7 +204,7 @@ class TriciumClangTidyApi(RecipeApi):
     self.m.tricium.write_comments()
 
   def _generate_clang_tidy_comments(self, output_dir, file_paths, is_windows):
-    clang_tidy_location = self.m.context.cwd.join(*_clang_tidy_path)
+    clang_tidy_location = self.m.context.cwd.joinpath(*_clang_tidy_path)
     per_file_comments = collections.defaultdict(_SourceFileComments)
 
     warnings_file = self.m.path.cleanup_dir / 'clang_tidy_complaints.yaml'
@@ -226,7 +226,7 @@ class TriciumClangTidyApi(RecipeApi):
         'mac': 'mac',
         'win': 'win',
     }[self.m.platform.name]
-    gn_path = self.m.context.cwd.join('buildtools', gn_subdir, 'gn')
+    gn_path = self.m.context.cwd.joinpath('buildtools', gn_subdir, 'gn')
     tricium_clang_tidy_command.append('--gn=' + str(gn_path))
 
     if is_windows:

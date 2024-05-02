@@ -295,10 +295,10 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
   if use_remoteexec:
     # Tell CMake to use reclient via it's launcher flags
     # See go/reclient-migration-guide (CMake section)
-    rewrapper = checkout.join('buildtools', 'reclient', 'rewrapper')
-    config = checkout.join('buildtools', 'reclient_cfgs',
-                           'chromium-browser-clang',
-                           f'rewrapper_{_rbe_host_platform_name(api)}.cfg')
+    rewrapper = checkout.joinpath('buildtools', 'reclient', 'rewrapper')
+    config = checkout.joinpath('buildtools', 'reclient_cfgs',
+                               'chromium-browser-clang',
+                               f'rewrapper_{_rbe_host_platform_name(api)}.cfg')
     cmake_args.extend([
         # f'-DCMAKE_C_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
         # f'-DCMAKE_CXX_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
@@ -310,11 +310,11 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
   # Note that this directory is not cached.
   outdir_name = 'cmake-build'
 
-  build_path = checkout.join(outdir_name)
-  ninja_path = checkout.join('third_party', 'ninja')
-  cmake_path = checkout.join('tools',
-                             'cmake-win32' if api.platform.is_win else 'cmake',
-                             'bin', 'cmake')
+  build_path = checkout.joinpath(outdir_name)
+  ninja_path = checkout.joinpath('third_party', 'ninja')
+  cmake_path = checkout.joinpath(
+      'tools', 'cmake-win32' if api.platform.is_win else 'cmake', 'bin',
+      'cmake')
 
   with api.context(cwd=checkout, env_prefixes={'PATH': [ninja_path]}):
     api.step(
@@ -384,8 +384,8 @@ def RunSteps(api,
     env_paths = []
     if clang and not api.platform.is_mac:
       env_paths = _install_clang(api)
-    env_paths.append(checkout.join('tools', 'golang', 'bin'))
-    env_paths.append(checkout.join('third_party', 'depot_tools'))
+    env_paths.append(checkout.joinpath('tools', 'golang', 'bin'))
+    env_paths.append(checkout.joinpath('third_party', 'depot_tools'))
 
     with api.context(env_prefixes={'PATH': env_paths}) as _, \
         api.osx_sdk('mac') as _, \

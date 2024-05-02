@@ -30,9 +30,9 @@ def RunSteps(api):
   api.path.checkout_dir = api.path.start_dir
 
   api.path.mock_add_paths(
-      api.profiles.profile_dir().join('unit-merged.profdata'))
+      api.profiles.profile_dir().joinpath('unit-merged.profdata'))
   api.path.mock_add_paths(
-      api.profiles.profile_dir().join('overall-merged.profdata'))
+      api.profiles.profile_dir().joinpath('overall-merged.profdata'))
 
   test_specs = [
       steps.SwarmingGTestTestSpec.create('base_unittests'),

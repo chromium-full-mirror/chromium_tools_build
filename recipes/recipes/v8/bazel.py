@@ -28,11 +28,15 @@ def RunSteps(api):
   bazel = api.path.checkout_dir.joinpath('tools', 'bazel', 'bazel')
   clang = api.path.checkout_dir.joinpath('third_party', 'llvm-build',
                                          'Release+Asserts', 'bin')
-  clang_bin = clang.join('clang')
-  clang_xx_bin = clang.join('clang++')
+  clang_bin = clang / 'clang'
+  clang_xx_bin = clang / 'clang++'
   with api.context(
       cwd=api.path.checkout_dir,
-      env={'BAZEL_COMPILER': 'clang', 'CC': clang_bin, 'CXX': clang_xx_bin},
+      env={
+          'BAZEL_COMPILER': 'clang',
+          'CC': clang_bin,
+          'CXX': clang_xx_bin
+      },
       env_prefixes={'PATH': [clang, api.v8.depot_tools_path]}):
 
     # TODO(https://crbug.com/v8/13515): Temporarily clobber the output

@@ -197,7 +197,7 @@ class IsolateApi(recipe_api.RecipeApi):
   @property
   def _run_isolated_path(self):
     """Returns the path to run_isolated.py."""
-    return self.m.swarming_client.path.join('run_isolated.py')
+    return self.m.swarming_client.path.joinpath('run_isolated.py')
 
   def run_isolated(self,
                    name,

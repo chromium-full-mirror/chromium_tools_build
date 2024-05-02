@@ -50,9 +50,9 @@ def RunSteps(api):
       api.assertions.assertTrue(api.code_coverage.skipping_coverage)
   if api.properties.get('mock_merged_profdata', True):
     api.path.mock_add_paths(
-        api.profiles.profile_dir().join('unit-merged.profdata'))
+        api.profiles.profile_dir().joinpath('unit-merged.profdata'))
     api.path.mock_add_paths(
-        api.profiles.profile_dir().join('overall-merged.profdata'))
+        api.profiles.profile_dir().joinpath('overall-merged.profdata'))
   if api.properties.get('mock_java_tests_metadata_path_overall'):
     # This has side effect of updating
     # |api.code_coverage._metadata_dir_by_tool_type_by_test_type['overall']|

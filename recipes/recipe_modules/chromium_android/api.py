@@ -48,7 +48,7 @@ class AndroidApi(recipe_api.RecipeApi):
     """
     if not self._file_changes_path:
       self._file_changes_path = (
-          self.m.path.mkdtemp('coverage').join('file_changes.json'))
+          self.m.path.mkdtemp('coverage').joinpath('file_changes.json'))
     return self._file_changes_path
 
   def configure_from_properties(self, config_name, **kwargs):
@@ -233,7 +233,7 @@ class AndroidApi(recipe_api.RecipeApi):
               'vpython3',
               self.repo_resource('recipes', 'daemonizer.py'),
               '--',
-              self.c.cr_build_android.join('adb_logcat_monitor.py'),
+              self.c.cr_build_android.joinpath('adb_logcat_monitor.py'),
               self.m.chromium.c.build_dir / 'logcat',
               self.m.adb.adb_path(),
           ],

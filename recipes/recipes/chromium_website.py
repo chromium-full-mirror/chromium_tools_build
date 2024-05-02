@@ -33,7 +33,7 @@ def RunSteps(api):
   api.gclient.runhooks()
 
   with api.context(cwd=api.m.path.checkout_dir):
-    npmw_path = api.m.path.checkout_dir.join('npmw')
+    npmw_path = api.m.path.checkout_dir.joinpath('npmw')
     api.step('build', [npmw_path, 'build'])
 
     if api.m.tryserver.is_tryserver:

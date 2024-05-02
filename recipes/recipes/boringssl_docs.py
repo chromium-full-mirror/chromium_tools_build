@@ -29,7 +29,7 @@ def RunSteps(api):
 
   # Set up paths.
   util = cache_dir.joinpath('boringssl', 'util')
-  goroot = util.join('bot', 'golang')
+  goroot = util / 'bot' / 'golang'
   output = api.path.mkdtemp('boringssl-docs')
 
   # Generate and upload documentation.

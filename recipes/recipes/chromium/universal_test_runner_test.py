@@ -34,10 +34,10 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   checkout(api)
   for builder_suites in properties.builder_suites:
     step_name = f'{builder_suites.bucket}:{builder_suites.builder_name}'
-    build_dir = api.chromium_checkout.src_dir.join(builder_suites.build_dir)
+    build_dir = api.chromium_checkout.src_dir / builder_suites.build_dir
     cmd = [
         'vpython3',
-        api.chromium_checkout.src_dir.join('tools', 'utr', 'run.py'),
+        api.chromium_checkout.src_dir.joinpath('tools', 'utr', 'run.py'),
         '--bucket',
         builder_suites.bucket,
         '--builder',

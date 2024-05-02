@@ -168,7 +168,7 @@ def download_chromium_deps(api, chromium_branch):
       'DEPS',
       branch='refs/branch-heads/%s' % chromium_branch,
   )
-  deps_file = api.path.mkdtemp(f'chromium{chromium_branch}').join('DEPS')
+  deps_file = api.path.mkdtemp(f'chromium{chromium_branch}') / 'DEPS'
   api.file.write_text(f'chromium/{chromium_branch} DEPS', deps_file,
                       chromium_deps)
   return deps_file

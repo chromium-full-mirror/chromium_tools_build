@@ -47,7 +47,7 @@ def get_last_v8_revision(api):
           TEST_DEPS_FILE % 'deadbeef'),
   )
 
-  deps_file = api.path.mkdtemp('gitiles').join('DEPS')
+  deps_file = api.path.mkdtemp('gitiles') / 'DEPS'
   api.file.write_text('gitiles', deps_file, deps)
   revision = api.gclient(
       'get gitiles deps',

@@ -611,7 +611,7 @@ def publish_performance_benchmarks(api):
   front_end_results = api.file.read_json('Read performance data results',
                                          report_file)
   tmp_dir = api.m.path.mkdtemp('perf-results')
-  results_file = tmp_dir.join('devtools-perf.json')
+  results_file = tmp_dir / 'devtools-perf.json'
   git_revision = api.bot_update.last_returned_properties['got_revision']
   api.m.file.write_json(
       'Write Skia Perf format', results_file, {

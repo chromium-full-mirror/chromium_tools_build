@@ -37,12 +37,12 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     avd with snapshot, and update to CIPD.
     """
     chromium_src = self._checkout_path / 'src'
-    avd_script_path = chromium_src.join('tools', 'android', 'avd', 'avd.py')
+    avd_script_path = chromium_src / 'tools' / 'android' / 'avd' / 'avd.py'
 
     with self.m.context(cwd=chromium_src):
       with self.m.defer.context() as defer:
         for avd_config in self._avd_configs:
-          avd_config_path = chromium_src.join(avd_config)
+          avd_config_path = chromium_src / avd_config
 
           # Call "create" to create and upload AVD.
           create_commands = [

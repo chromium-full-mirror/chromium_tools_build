@@ -503,8 +503,7 @@ class _Swarming:
 
     archive_paths = []
     for entry_root, entry_path in test_inputs:
-      archive_paths.append(
-          self.api.path.abs_to_path(entry_root).join(entry_path))
+      archive_paths.append(self.api.path.abs_to_path(entry_root) / entry_path)
 
     self.test_inputs_digest = self.api.cas.archive('archive test inputs',
                                                    checkout_path,

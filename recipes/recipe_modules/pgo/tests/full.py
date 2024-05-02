@@ -68,7 +68,7 @@ def RunSteps(api):
 
   if api.properties.get('mock_merged_profdata', True):
     api.path.mock_add_paths(
-        api.profiles.profile_dir().join('pgo_final_aggregate.profdata'))
+        api.profiles.profile_dir().joinpath('pgo_final_aggregate.profdata'))
 
   test_specs = [
       steps.SwarmingIsolatedScriptTestSpec.create('performance_test_suite'),

@@ -462,15 +462,15 @@ def publish_tarball(api):
     tools_gn = api.path.checkout_dir.joinpath('tools', 'gn')
     api.step('generate last_commit_position.h',
              ['python3', git_root.joinpath('build', 'gen.py')])
-    api.file.remove('rm README.md', tools_gn.join('README.md'))
+    api.file.remove('rm README.md', tools_gn / 'README.md')
     for f in api.file.listdir(
         'listdir gn', git_root, test_data=['build', '.git']):
       basename = api.path.basename(f)
       if basename not in ['.git', '.gitignore', '.linux-sysroot', 'out']:
-        api.file.move('move gn ' + basename, f, tools_gn.join(basename))
+        api.file.move('move gn ' + basename, f, tools_gn / basename)
     api.file.move('move last_commit_position.h',
                   git_root.joinpath('out', 'last_commit_position.h'),
-                  tools_gn.join('bootstrap', 'last_commit_position.h'))
+                  tools_gn / 'bootstrap' / 'last_commit_position.h')
   finally:
     api.file.rmtree('rmtree temp dir', temp_dir)
 

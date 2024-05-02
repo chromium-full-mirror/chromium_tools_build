@@ -50,7 +50,7 @@ def RunSteps(api):
   assert api.platform.is_linux
   assert api.platform.arch == 'intel'
   assert api.platform.bits == 64
-  exec_path = exec_pkg_paths['linux-amd64'].join('rts-chromium')
+  exec_path = exec_pkg_paths['linux-amd64'].joinpath('rts-chromium')
 
   # Fetch the dataset.
   # Ignore today because we might fetch incomplete data.

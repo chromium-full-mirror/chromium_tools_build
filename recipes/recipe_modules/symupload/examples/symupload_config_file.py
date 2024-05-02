@@ -48,7 +48,7 @@ def GenTests(api):
   yield api.test(
       'non_existing_source_side_spec_path',
       api.properties(target_platform='mac', host_platform='mac'),
-      api.path.exists(api.path['tmp_base'].join('symupload')),
+      api.path.exists(api.path['tmp_base'].joinpath('symupload')),
       api.post_process(post_process.StepException,
                        'Could not find specified symupload config'),
       api.post_process(post_process.DropExpectation),

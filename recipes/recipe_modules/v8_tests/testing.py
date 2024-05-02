@@ -952,10 +952,11 @@ class V8GCMoleV3(V82PhaseGenericSwarmingTest):
     upload results to CAS.
     """
     command = [
-      'python3', '-u',
-      workspace.join('tools', 'gcmole', 'run-gcmole.py'),
-      'merge',
-      str(self.test_step_config.variants),
+        'python3',
+        '-u',
+        workspace.joinpath('tools', 'gcmole', 'run-gcmole.py'),
+        'merge',
+        str(self.test_step_config.variants),
     ] + self.test_step_config.test_args
     for taskdir in self.task.get_task_shard_output_dirs():
       command += ['--input', self.output_dir.joinpath(taskdir, 'callgraph.bin')]

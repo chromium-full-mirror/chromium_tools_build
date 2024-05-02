@@ -1086,7 +1086,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       # actually move a dir into a subdir of itself.
       new_dirname = self._replace_placeholders(update_properties, custom_vars,
                                                root_rename.to_dir)
-      move_from_path = self.m.path.mkdtemp().join(
+      move_from_path = self.m.path.mkdtemp().joinpath(
           self.m.path.basename(base_path))
       self.m.file.move("Prep archive root move", base_path, move_from_path)
       self.m.file.move(
@@ -1138,7 +1138,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       uploads = {base_path / d: gcs_path for d in updated_dirs}
       gcs_args += ['-R']
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_SQUASHFS:
-      archive_file = self.m.path.mkdtemp().join('image.squash')
+      archive_file = self.m.path.mkdtemp().joinpath('image.squash')
       algorithm = None
       compression_level = None
       block_size = None
@@ -1210,7 +1210,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
       if '{%chromium_version%}' in archive_data.latest_upload.gcs_file_content:
         file_name = self.m.path.basename(latest_path)
-        dest_path = self.m.path.mkdtemp().join(file_name)
+        dest_path = self.m.path.mkdtemp().joinpath(file_name)
 
         try:
           self.m.gsutil.download(

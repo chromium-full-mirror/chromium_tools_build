@@ -111,8 +111,8 @@ def _gn_build(flavor, api, **kwargs):
         '--args=' + ' '.join(gn_args),
     ])
 
-  build_path = checkout.join('out', out_dir)
-  ninja_path = checkout.join('third_party', 'ninja', 'ninja')
+  build_path = checkout.joinpath('out', out_dir)
+  ninja_path = checkout.joinpath('third_party', 'ninja', 'ninja')
   base_ninja_cmd = [ninja_path, '-C', build_path]
   if use_remoteexec:
     base_ninja_cmd.extend(['-j', api.reclient.jobs])

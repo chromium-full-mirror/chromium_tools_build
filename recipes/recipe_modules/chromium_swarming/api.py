@@ -402,7 +402,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     if not path_to_merge_scripts:
       path_to_merge_scripts = self.m.chromium_checkout.src_dir.joinpath(
           'testing', 'merge_scripts')
-    return path_to_merge_scripts.join(name)
+    return path_to_merge_scripts.joinpath(name)
 
   def task(self,
            name=None,
@@ -1424,7 +1424,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         '--swarming-server',
         self.m.swarming.current_server,
         '--swarming-py-path',
-        self.m.swarming_client.path.join('swarming.py'),
+        self.m.swarming_client.path.joinpath('swarming.py'),
         '--output-json',
         self.m.json.output(),
         '--input-json',

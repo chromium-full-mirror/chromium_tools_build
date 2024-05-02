@@ -124,7 +124,7 @@ def prerun_checks(
       ]
       return create_rerun_result(api, rerun_options, error_message,
                                  properties.output_properties_file)
-  if (api.path.exists(build_path.join('args.gn')) and
+  if (api.path.exists(build_path / 'args.gn') and
       not properties.rerun_options.bypass_gn_args):
     error_message = check_gn_args(api, build_path, compiling_builder_id)
     if error_message:
@@ -162,7 +162,7 @@ def get_gclient_config(api: RecipeApi):
   # exist in any parent dir but will normally be in the chromium
   # or chromium/src.
   checkout_file = api.path.checkout_dir / '.gclient'
-  src_file = api.path.split(api.path.checkout_dir)[0].join('.gclient')
+  src_file = api.path.split(api.path.checkout_dir)[0].joinpath('.gclient')
   if api.path.exists(checkout_file):
     gclient_file_path = checkout_file
   elif api.path.exists(src_file):
@@ -512,7 +512,7 @@ def compile_targets(
     preserve_gn_args = handle_code_coverage(api, build_dir, properties,
                                             builder_id)
 
-  if preserve_gn_args and api.path.exists(build_dir.join('args.gn')):
+  if preserve_gn_args and api.path.exists(build_dir / 'args.gn'):
     api.gn.gen(build_dir, 'gn_gen')
   else:
     tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
@@ -571,7 +571,7 @@ def handle_code_coverage(
   if (properties.rerun_options.bypass_branch_check and
       not properties.rerun_options.skip_instrumentation):
     if (not properties.rerun_options.preserve_gn_args or
-        not api.path.exists(build_dir.join('args.gn'))):
+        not api.path.exists(build_dir / 'args.gn')):
       gn_args = api.chromium.mb_lookup(
           builder_id,
           recursive=False,
@@ -1045,7 +1045,7 @@ solutions = [
       api.platform('win', 32),
       api.code_coverage(use_clang_coverage=True),
       api.path.exists(
-          api.path.cache_dir.join('src', 'out', 'Release', 'args.gn')),
+          api.path.cache_dir.joinpath('src', 'out', 'Release', 'args.gn')),
       api.step_data(
           'read GN args',
           api.raw_io.output_text('coverage_instrumentation_input_file = '
@@ -1391,7 +1391,7 @@ target_os=['os']
       'preserve_gn_args',
       boilerplate(preserve_gn_args=True),
       api.path.exists(
-          api.path.cache_dir.join('src', 'out', 'Release', 'args.gn')),
+          api.path.cache_dir.joinpath('src', 'out', 'Release', 'args.gn')),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'generate .isolate files'),
       api.post_process(post_process.MustRun, 'isolate tests'),

@@ -1030,7 +1030,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       None. One possible reason that profdata doesn't exist is that there might
       be no .profraw files to merge at all.
     """
-    merged_profdata = self.m.profiles.profile_dir().join(
+    merged_profdata = self.m.profiles.profile_dir().joinpath(
         '%s-merged.profdata' % test_type)
 
     # Input profdata in this step was named as {target_name}.profdata. This is
@@ -1301,7 +1301,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   def _generate_dir_metadata(self):
     """Extracts directory metadata, e.g. mapping to monorail component."""
-    dir_metadata = self.m.path.mkdtemp().join(constants.DIR_METADATA_FILE_NAME)
+    dir_metadata = self.m.path.mkdtemp() / constants.DIR_METADATA_FILE_NAME
     with self.m.context(cwd=self.src_dir):
       self.m.step('Extract directory metadata', [
           self.src_dir.joinpath('third_party', 'depot_tools', 'dirmd'),

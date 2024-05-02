@@ -106,10 +106,10 @@ def _WindowsCMakeWorkaround(path):
 def _GetHostCMakeArgs(platform, bot_utils):
   args = {}
   if platform.is_win:
-    args['CMAKE_ASM_NASM_COMPILER'] = _WindowsCMakeWorkaround(
-        bot_utils.join('nasm-win32.exe'))
-    args['PERL_EXECUTABLE'] = bot_utils.join('perl-win32', 'perl', 'bin',
-                                             'perl.exe')
+    args['CMAKE_ASM_NASM_COMPILER'] = _WindowsCMakeWorkaround(bot_utils /
+                                                              'nasm-win32.exe')
+    args['PERL_EXECUTABLE'] = bot_utils.joinpath('perl-win32', 'perl', 'bin',
+                                                 'perl.exe')
   return args
 
 
@@ -151,28 +151,27 @@ class _Config:
     return ret
 
   def get_target_cmake_args(self, src, ninja_path, platform):
-    bot_utils = src.join('util', 'bot')
+    bot_utils = src.joinpath('util', 'bot')
     args = {'CMAKE_MAKE_PROGRAM': ninja_path}
     if self.clang:
       if platform.is_win:
         args['CMAKE_C_COMPILER'] = _WindowsCMakeWorkaround(
-            bot_utils.join('llvm-build', 'bin', 'clang-cl.exe'))
+            bot_utils.joinpath('llvm-build', 'bin', 'clang-cl.exe'))
         args['CMAKE_CXX_COMPILER'] = _WindowsCMakeWorkaround(
-            bot_utils.join('llvm-build', 'bin', 'clang-cl.exe'))
+            bot_utils.joinpath('llvm-build', 'bin', 'clang-cl.exe'))
       else:
-        args['CMAKE_C_COMPILER'] = bot_utils.join('llvm-build', 'bin', 'clang')
-        args['CMAKE_CXX_COMPILER'] = bot_utils.join('llvm-build', 'bin',
-                                                    'clang++')
+        args['CMAKE_C_COMPILER'] = bot_utils / 'llvm-build' / 'bin' / 'clang'
+        args['CMAKE_CXX_COMPILER'] = bot_utils.joinpath('llvm-build', 'bin',
+                                                        'clang++')
     if self.android:
-      args['CMAKE_TOOLCHAIN_FILE'] = bot_utils.join('android_ndk', 'build',
-                                                    'cmake',
-                                                    'android.toolchain.cmake')
+      args['CMAKE_TOOLCHAIN_FILE'] = bot_utils.joinpath(
+          'android_ndk', 'build', 'cmake', 'android.toolchain.cmake')
     args.update(self.cmake_args)
     return args
 
   def get_target_msvc_prefix(self, bot_utils):
     if self.msvc_target is not None:
-      return ['python3', bot_utils.join('vs_env.py'), self.msvc_target]
+      return ['python3', bot_utils / 'vs_env.py', self.msvc_target]
     return []
 
   def get_target_env(self, bot_utils, platform):
@@ -181,9 +180,9 @@ class _Config:
       # TODO(davidben): detect_stack_use_after_return became default in
       # https://reviews.llvm.org/D124057. Can we remove it?
       env['ASAN_OPTIONS'] = 'detect_stack_use_after_return=1'
-      env['ASAN_SYMBOLIZER_PATH'] = bot_utils.join(
+      env['ASAN_SYMBOLIZER_PATH'] = bot_utils.joinpath(
           'llvm-build', 'bin', 'llvm-symbolizer' + _GetHostExeSuffix(platform))
-      env['MSAN_SYMBOLIZER_PATH'] = bot_utils.join(
+      env['MSAN_SYMBOLIZER_PATH'] = bot_utils.joinpath(
           'llvm-build', 'bin', 'llvm-symbolizer' + _GetHostExeSuffix(platform))
     return env
 
@@ -235,14 +234,15 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
 
   # Set up paths.
   src = cache_dir / 'boringssl'
-  bot_utils = src.join('util', 'bot')
-  goroot = bot_utils.join('golang')
-  adb_path = bot_utils.join('android_sdk', 'public', 'platform-tools', 'adb')
-  sde_path = bot_utils.join('sde-' + _GetHostToolSuffix(api.platform),
-                            'sde' + _GetHostExeSuffix(api.platform))
-  build_dir = src.join('build')
-  runner_dir = src.join('ssl', 'test', 'runner')
-  ninja_path = bot_utils.join('ninja', 'ninja')
+  bot_utils = src.joinpath('util', 'bot')
+  goroot = bot_utils.joinpath('golang')
+  adb_path = bot_utils.joinpath('android_sdk', 'public', 'platform-tools',
+                                'adb')
+  sde_path = bot_utils.joinpath('sde-' + _GetHostToolSuffix(api.platform),
+                                'sde' + _GetHostExeSuffix(api.platform))
+  build_dir = src.joinpath('build')
+  runner_dir = src.joinpath('ssl', 'test', 'runner')
+  ninja_path = bot_utils.joinpath('ninja', 'ninja')
 
   env = {}
   env_prefixes = {}
@@ -260,12 +260,12 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
       env_prefixes=env_prefixes), api.osx_sdk('ios'), _CleanupMSVC(api):
     # Check pregenerated files.
     if check_pregenerated_files and api.path.exists(
-        src.join('util', 'pregenerate')):
+        src.joinpath('util', 'pregenerate')):
       cmd = ['go', 'run', './util/pregenerate', '-check']
       if api.platform.is_win:
         cmd += [
             '-perl',
-            bot_utils.join('perl-win32', 'perl', 'bin', 'perl.exe')
+            bot_utils.joinpath('perl-win32', 'perl', 'bin', 'perl.exe')
         ]
       with api.context(cwd=src):
         api.step('check pregenerated files', cmd)
@@ -282,11 +282,12 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
     msvc_prefix = config.get_target_msvc_prefix(bot_utils)
 
     # Build BoringSSL itself.
-    cmake_dir = bot_utils.join('cmake')
+    cmake_dir = bot_utils.joinpath('cmake')
     if not api.path.exists(cmake_dir):
       # TODO(davidben): Remove this branch when BoringSSL is updated to put
       # CMake in a platform-independent location.
-      cmake_dir = bot_utils.join('cmake-' + _GetHostToolSuffix(api.platform))
+      cmake_dir = bot_utils.joinpath('cmake-' +
+                                     _GetHostToolSuffix(api.platform))
     cmake = cmake_dir.joinpath('bin', 'cmake' + _GetHostExeSuffix(api.platform))
     cmake_args = _GetHostCMakeArgs(api.platform, bot_utils)
     cmake_args.update(
@@ -306,7 +307,7 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
       if check_imported_libraries or config.buildername == 'linux_shared':
         defer(api.step, 'check imported libraries', [
             'go', 'run',
-            src.join('util', 'check_imported_libraries.go'),
+            src.joinpath('util', 'check_imported_libraries.go'),
             build_dir.joinpath('crypto', 'libcrypto.so'),
             build_dir.joinpath('ssl', 'libssl.so')
         ])
@@ -314,20 +315,19 @@ def RunSteps(api, android, check_imported_libraries, check_pregenerated_files,
       if check_stack:
         defer(api.step, 'check stack', [
             'go', 'run',
-            src.join('util', 'check_stack.go'),
+            src.joinpath('util', 'check_stack.go'),
             build_dir.joinpath('tool', 'bssl')
         ])
 
       with api.context(cwd=src):
-        defer(
-            api.step,
-            'check filenames',
-            ['go', 'run', src.join('util', 'check_filenames.go')])
+        defer(api.step, 'check filenames',
+              ['go', 'run',
+               src.joinpath('util', 'check_filenames.go')])
 
       with api.context(cwd=src):
         # Determine the list of Go tests to run.
         go_tests_str = api.file.read_text('read go tests',
-                                          src.join('util', 'go_tests.txt'))
+                                          src.joinpath('util', 'go_tests.txt'))
         go_tests = [t for t in go_tests_str.split('\n') if t]
         defer(api.step, 'go tests', ['go', 'test', '-v'] + go_tests)
 

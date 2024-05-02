@@ -43,7 +43,7 @@ def get_component_revision_from_deps(api, component, project, repository_url,
       'DEPS',
       branch=branch,
       step_name='fetch %s DEPS' % project)
-  deps_file = api.path.mkdtemp(project).join('DEPS')
+  deps_file = api.path.mkdtemp(project) / 'DEPS'
   api.file.write_text('snapshot %s DEPS' % project, deps_file, deps)
   revision = api.gclient(
       'get %s_revision' % component,

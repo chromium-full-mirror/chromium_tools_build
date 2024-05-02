@@ -237,7 +237,7 @@ class PgoApi(recipe_api.RecipeApi):
 
     with self.m.step.nest('Processing PGO .profraw data'):
       # Invoke the merge script
-      profdata_artifact = self.m.profiles.profile_dir().join(
+      profdata_artifact = self.m.profiles.profile_dir().joinpath(
           self.TEMP_PROFDATA_FILENAME)
       # We want to run llvm-profdata without the --sparse argument.
       # https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
@@ -273,7 +273,7 @@ class PgoApi(recipe_api.RecipeApi):
       # The final profdata artifact name uses the sha1 hash of the contents,
       # so the profdata file is generated first, and then renamed.
       new_filename = self._profdata_artifact_name(sha1)
-      new_filepath = self.m.profiles.profile_dir().join(new_filename)
+      new_filepath = self.m.profiles.profile_dir().joinpath(new_filename)
       self.m.file.move('Rename the profdata artifact', profdata_artifact,
                        new_filepath)
 

@@ -365,8 +365,8 @@ class ReclientApi(recipe_api.RecipeApi):
   def deps_cache_path(self):
     safe_buildername = re.sub(r'[^a-zA-Z0-9]', '_',
                               self.m.buildbucket.builder_name)
-    data_cache = self.base_cache_path_per_follower.join('deps')
-    return data_cache.join(safe_buildername)
+    data_cache = self.base_cache_path_per_follower.joinpath('deps')
+    return data_cache.joinpath(safe_buildername)
 
   @contextlib.contextmanager
   def process(self,

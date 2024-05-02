@@ -47,7 +47,7 @@ V8_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+(?:\.\d+)?$')
 
 
 def get_v8_revision(api, name, deps):
-  deps_file = api.path.mkdtemp(name).join('DEPS')
+  deps_file = api.path.mkdtemp(name) / 'DEPS'
   api.file.write_text(name, deps_file, deps)
   revision = api.gclient(
       'get %s deps' % name,

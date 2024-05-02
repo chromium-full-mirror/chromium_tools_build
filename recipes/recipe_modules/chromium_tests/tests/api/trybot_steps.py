@@ -104,8 +104,8 @@ _TEST_TRYBOTS = ctbc.TryDatabase.create({
 def RunSteps(api):
   assert api.tryserver.is_tryserver
   api.path.mock_add_paths(
-      api.profiles.profile_dir().join('overall-merged.profdata'))
-  api.path.mock_add_paths(api.profiles.profile_dir().join(
+      api.profiles.profile_dir().joinpath('overall-merged.profdata'))
+  api.path.mock_add_paths(api.profiles.profile_dir().joinpath(
       api.pgo.TEMP_PROFDATA_FILENAME))
 
   api.chromium_swarming.set_default_dimension('os', 'Linux')

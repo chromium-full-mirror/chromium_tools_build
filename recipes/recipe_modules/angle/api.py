@@ -83,7 +83,7 @@ class ANGLEApi(recipe_api.RecipeApi):
         '--log',
         'debug',
         '--gtest_filter=%s' % gtest_filter,
-        '--out-dir=%s' % checkout.join('out', 'CaptureReplayTest'),
+        '--out-dir=%s' % checkout.joinpath('out', 'CaptureReplayTest'),
         '--use-reclient',
     ]
     if self.m.platform.is_linux:

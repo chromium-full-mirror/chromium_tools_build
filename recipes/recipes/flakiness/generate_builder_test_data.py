@@ -70,7 +70,7 @@ def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
     builder_output_folder = api.path.cleanup_dir.joinpath(
         project, builder_bucket)
     api.file.ensure_directory('create dir', builder_output_folder)
-    builder_output_file = builder_output_folder.join('{}.json'.format(builder))
+    builder_output_file = builder_output_folder / '{}.json'.format(builder)
     cmd = ['vpython3', api.resource('query.py'), 'format']
     for f in files:
       cmd += ['--file', str(f)]
@@ -78,7 +78,7 @@ def analyze_try_builder_test_history(api, builder, gs_bucket, build_number,
     api.step('format json', cmd)
 
     tar_filename = '{}.json.tar.gz'.format(builder)
-    tar_gz = builder_output_folder.join(tar_filename)
+    tar_gz = builder_output_folder / tar_filename
     pkg = api.tar.make_package(api.path.cleanup_dir, tar_gz, compression='gz')
     pkg.add_file(builder_output_file)
     pkg.tar('Create {}'.format(tar_filename))
