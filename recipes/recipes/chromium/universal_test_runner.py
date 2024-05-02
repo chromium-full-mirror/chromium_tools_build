@@ -347,10 +347,7 @@ def create_tests(
   preserve_gn_args = properties.rerun_options.preserve_gn_args
   builder_recipe = properties.builder_recipe
   targets_config = api.chromium_tests.create_targets_config(
-      builder_config,
-      got_revisions,
-      api.path.checkout_dir,
-      targets_spec_dir=api.path.checkout_dir.joinpath('testing', 'buildbot'))
+      builder_config, got_revisions, api.path.checkout_dir)
 
   def _get_matching_test(requested_test_name):
     for t in targets_config.all_tests:
