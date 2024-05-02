@@ -154,7 +154,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"a7e3c7b71a111ae16c073dbf02c989697668310c\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"cel\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"a7e3c7b71a111ae16c073dbf02c989697668310c\",@@@",

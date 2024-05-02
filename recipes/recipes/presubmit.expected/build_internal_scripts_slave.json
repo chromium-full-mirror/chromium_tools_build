@@ -123,7 +123,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"3faf12c8131337a86e669cc1a1bd8d2dfe8cc86d\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"build_internal/scripts/slave\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_build_revision\": \"80754af91bfb6d1073585b046fe0a474ce868509\",@@@",

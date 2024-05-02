@@ -119,7 +119,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"a95eb4c044a154d692a53fdfa564ee8de7aeea5b\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"native_client\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"a95eb4c044a154d692a53fdfa564ee8de7aeea5b\",@@@",

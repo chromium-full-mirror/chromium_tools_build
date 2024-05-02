@@ -119,7 +119,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"d2571c8b2d27c5e5a14fd061581e46e802f1566a\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"chrome_golo\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"d2571c8b2d27c5e5a14fd061581e46e802f1566a\",@@@",

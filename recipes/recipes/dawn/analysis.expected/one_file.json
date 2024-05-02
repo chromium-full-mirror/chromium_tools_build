@@ -177,7 +177,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"038c340fe78831dc717b6cb1539137cc96c2aa29\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"dawn\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"038c340fe78831dc717b6cb1539137cc96c2aa29\",@@@",

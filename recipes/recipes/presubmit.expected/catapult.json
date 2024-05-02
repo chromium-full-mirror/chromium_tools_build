@@ -119,7 +119,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"c812fca9479aacda33f5f5a74d588acef2b4fb02\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"catapult\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"c812fca9479aacda33f5f5a74d588acef2b4fb02\",@@@",

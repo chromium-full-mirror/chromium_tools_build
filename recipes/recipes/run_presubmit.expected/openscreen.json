@@ -153,7 +153,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"3c786867e1866cf41f75fed77b19b53f1a7c54c5\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"openscreen\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"3c786867e1866cf41f75fed77b19b53f1a7c54c5\",@@@",

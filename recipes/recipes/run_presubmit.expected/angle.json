@@ -153,7 +153,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"11a9215ec620218c8e8d409263469091431ff0d4\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"angle\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_angle_revision\": \"11a9215ec620218c8e8d409263469091431ff0d4\",@@@",

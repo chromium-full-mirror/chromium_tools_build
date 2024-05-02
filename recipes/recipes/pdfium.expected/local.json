@@ -151,7 +151,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"d69d97171c17fdb12a52f78847e2ee2f0594eff1\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"pdfium\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"d69d97171c17fdb12a52f78847e2ee2f0594eff1\",@@@",

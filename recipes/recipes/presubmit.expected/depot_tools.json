@@ -119,7 +119,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"59bbfb4465019d8ed83bfe88fef566922953452a\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"depot_tools\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"59bbfb4465019d8ed83bfe88fef566922953452a\",@@@",

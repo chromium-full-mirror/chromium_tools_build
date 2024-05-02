@@ -160,7 +160,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"6ab16881880a6d1688f06e7384084977a17dba76\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"infra\\\\recipes-py\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"6ab16881880a6d1688f06e7384084977a17dba76\",@@@",

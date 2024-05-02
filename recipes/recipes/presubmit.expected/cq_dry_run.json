@@ -158,7 +158,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"a0f1490a20d0211c997b44bc357e1972deab8ae3\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"s\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"a0f1490a20d0211c997b44bc357e1972deab8ae3\",@@@",

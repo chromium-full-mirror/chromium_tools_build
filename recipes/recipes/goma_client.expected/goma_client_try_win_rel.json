@@ -126,7 +126,6 @@
       "@@@STEP_LOG_LINE@json.output@      \"revision\": \"d2a04d71301a8915217dd5faf81d12cffd6cd958\"@@@",
       "@@@STEP_LOG_LINE@json.output@    }@@@",
       "@@@STEP_LOG_LINE@json.output@  },@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"patch_failure\": false,@@@",
       "@@@STEP_LOG_LINE@json.output@  \"patch_root\": \"client\",@@@",
       "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"d2a04d71301a8915217dd5faf81d12cffd6cd958\",@@@",
