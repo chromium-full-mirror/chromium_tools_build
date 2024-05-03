@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import traceback
+
 from . import commons
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
@@ -39,10 +41,10 @@ class RollHandler(ABC):
           if cl_link:
             step.links['CL'] = cl_link
             self.module.summary.append(self.summary())
-      except Exception as e:
+      except Exception:
         failed = self.api.step.empty('Roll failed')
         failed.presentation.status = self.api.step.FAILURE
-        failed.presentation.step_text = str(e)
+        failed.presentation.step_text = traceback.format_exc()
         self.module.failures.append(self.name())
 
   @contextmanager

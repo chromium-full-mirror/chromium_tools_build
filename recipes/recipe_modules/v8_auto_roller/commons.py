@@ -5,10 +5,15 @@
 import re
 
 def commit_msg_lines_w_reviewes(commit_msg_lines, reviewers):
-  return [
+  lines = [
       ('This roll requires a manual review. See http://go/reviewed-rolls for '
        'guidance.')
-  ] + commit_msg_lines + [f'R={",".join(reviewers)}']
+  ] + commit_msg_lines
+
+  if reviewers:
+    lines.append(f'R={",".join(reviewers)}')
+
+  return lines
 
 
 def roll_origin_line(api):

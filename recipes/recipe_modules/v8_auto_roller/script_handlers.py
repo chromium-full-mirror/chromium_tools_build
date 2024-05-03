@@ -79,7 +79,7 @@ class ScriptedRollHandler(RollHandler):
     return commons.commit_msg_lines_w_reviewes(
         [self.script.message,
          commons.roll_origin_line(self.api)],
-        self.config['manual_roll_reviewers'])
+        self.config.get('manual_roll_reviewers'))
 
   def summary(self):
     return self.name()
