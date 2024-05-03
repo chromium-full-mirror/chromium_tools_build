@@ -291,6 +291,10 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
         f'-DTINT_BUILD_AST_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
         f'-DTINT_BUILD_REGEX_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
     ])
+    if api.platform.is_linux:
+      # On Linux, use the x64 sysroot specified in DEPS
+      sysroot = checkout.joinpath('build/linux/debian_bullseye_amd64-sysroot')
+      cmake_args.extend([f'-DCMAKE_SYSROOT={sysroot}'])
 
   rbe_exec_root = _rbe_exec_root(api)
   if use_remoteexec:
