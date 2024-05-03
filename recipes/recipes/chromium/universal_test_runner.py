@@ -15,7 +15,7 @@ from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from PB.recipe_engine import result as result_pb2
-from PB.recipes.build.chromium.universal_test_runner import InputProperties
+from PB.recipe_modules.build.chromium_utr.request import Request
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -30,6 +30,7 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'chromium_utr',
     'code_coverage',
     'gn',
     'test_utils',
@@ -47,7 +48,7 @@ DEPS = [
     'recipe_engine/step',
 ]
 
-PROPERTIES = InputProperties
+PROPERTIES = Request
 
 
 try:  # pragma: no cover
@@ -69,9 +70,9 @@ except ImportError:  # pragma: no cover
   OLD_PATH_TYPE = False
 
 
-def RunSteps(api: RecipeApi, properties: InputProperties):
-  should_build = properties.run_type != InputProperties.RunType.RUN_TYPE_RUN
-  should_test = properties.run_type != InputProperties.RunType.RUN_TYPE_COMPILE
+def RunSteps(api: RecipeApi, properties: Request):
+  should_build = properties.run_type != Request.RunType.RUN_TYPE_RUN
+  should_test = properties.run_type != Request.RunType.RUN_TYPE_COMPILE
 
   (compiling_builder_id, compiling_builder_config, _,
    build_path) = configure_build(api, properties.checkout_path,
@@ -103,15 +104,15 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
 
 def prerun_checks(
-    api: RecipeApi, properties: InputProperties, build_path: Path,
+    api: RecipeApi, properties: Request, build_path: Path,
     compiling_builder_id: chromium.BuilderId) -> result_pb2.RawResult:
   # TODO(crbug.com/41492686): Combine these checks so they can be prompted in
   # one interation of the recipe invocations
   def create_prompt_option(prompt: str, **kwargs):
     if not kwargs:
-      return (prompt, InputProperties())
+      return (prompt, Request())
     rerun_properties = copy.deepcopy(properties.rerun_options)
-    update = InputProperties.RerunOptions(**kwargs)
+    update = Request.RerunOptions(**kwargs)
     rerun_properties.MergeFrom(update)
     return (prompt, rerun_properties)
 
@@ -122,8 +123,8 @@ def prerun_checks(
           create_prompt_option('yes', bypass_gclient=True),
           create_prompt_option('no')
       ]
-      return create_rerun_result(api, rerun_options, error_message,
-                                 properties.output_properties_file)
+      return api.chromium_utr.create_rerun_result(
+          rerun_options, error_message, properties.output_properties_file)
   if (api.path.exists(build_path / 'args.gn') and
       not properties.rerun_options.bypass_gn_args):
     error_message = check_gn_args(api, build_path, compiling_builder_id)
@@ -135,8 +136,8 @@ def prerun_checks(
               'overwrite', bypass_gn_args=True, preserve_gn_args=False),
           create_prompt_option('abort')
       ]
-      return create_rerun_result(api, rerun_options, error_message,
-                                 properties.output_properties_file)
+      return api.chromium_utr.create_rerun_result(
+          rerun_options, error_message, properties.output_properties_file)
   if (not properties.rerun_options.bypass_branch_check and
       api.code_coverage.using_coverage and properties.builder_recipe
       in ('chromium/orchestrator', 'chromium_trybot')):
@@ -153,8 +154,8 @@ def prerun_checks(
               skip_instrumentation=True),
           create_prompt_option('abort')
       ]
-      return create_rerun_result(api, rerun_options, error_message,
-                                 properties.output_properties_file)
+      return api.chromium_utr.create_rerun_result(
+          rerun_options, error_message, properties.output_properties_file)
 
 
 def get_gclient_config(api: RecipeApi):
@@ -323,7 +324,7 @@ def get_upstream_branch(api: RecipeApi):
 
 def create_tests(
     api: RecipeApi,
-    properties: InputProperties,
+    properties: Request,
     build_dir: Path,
     got_revisions: Mapping[str, str],
     builder_id: chromium.BuilderId,
@@ -479,7 +480,7 @@ def generate_got_revisions_map(api):
 
 def compile_targets(
     api: RecipeApi,
-    properties: InputProperties,
+    properties: Request,
     tests: Iterable[Test],
     builder_id: chromium.BuilderId,
     preserve_gn_args: bool,
@@ -490,7 +491,7 @@ def compile_targets(
 
   Args:
       api: Recipe API object.
-      properties: InputProperties given to the recipe
+      properties: Request given to the recipe
       tests: Iterable of test objects to be compiled
       builder_id: The ID of the builder to compile for
       preserve_gn_args: Bool whether to have the recipe overwrite the gn args
@@ -541,7 +542,7 @@ def compile_targets(
 def handle_code_coverage(
     api: RecipeApi,
     build_dir: Path,
-    properties: InputProperties,
+    properties: Request,
     builder_id: chromium.BuilderId,
 ) -> bool:
   """Handles code coverage for runs using try builders
@@ -557,7 +558,7 @@ def handle_code_coverage(
   Args:
       api: Recipe API object.
       build_dir: Path to the directory to use for building
-      properties: InputProperties given to the recipe
+      properties: Request given to the recipe
       builder_id: The ID of the builder to get tests from
   Returns:
       A boolean for whether or not the gn args need to be preserved or the
@@ -614,43 +615,6 @@ def get_remote_compile_options(api, build_dir) -> bool:
   return use_reclient
 
 
-def create_rerun_result(api: RecipeApi, \
-                        rerun_options: list[tuple[str, InputProperties.RerunOptions]],
-                        info: str,
-                        output_properties_file: str) -> result_pb2.RawResult:
-  """Create a result for retriggering the recipe
-
-  Writes the provided rerun options and creates a RawResult meant for the CLI to
-  retrigger the recipe. The presence of rerun_properties should indicate to the
-  CLI that the recipe can be invoked again differently for a different result.
-  The info will be included in the RawResult meant to provide additional
-  information to the user (e.g. if gclient args from the builder are not set
-  locally).
-
-  Args:
-      api: Recipe API object.
-      rerun_options: A list of strings and input properties. These strings
-        will be presented to the user as options and the corresponding input
-        properties fed back to the recipe when selected. An entry with empty
-        input properties will signal the recipe should not be reinvoked for that
-        prompt selection.
-      info: Information string that the user should see
-      output_properties_file: Where the rerun_options should be written
-  Returns:
-    A RawResult that should be returned to trigger a rerun
-  """
-  if output_properties_file:
-    output = []
-    for prompt, properties in rerun_options:
-      output.append((prompt,
-                     json_format.MessageToDict(
-                         message=properties, preserving_proto_field_name=True)))
-    api.file.write_json(
-        f'write output_properties_file {output_properties_file}',
-        output_properties_file, output)
-  return result_pb2.RawResult(status=common_pb2.FAILURE, summary_markdown=info)
-
-
 def GenTests(api: RecipeTestApi):
   ctbc_api = api.chromium_tests_builder_config
 
@@ -668,7 +632,7 @@ def GenTests(api: RecipeTestApi):
   def boilerplate_properties(
       test_names=None,
       checkout_path='[CACHE]/src',
-      run_type=InputProperties.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
       preserve_gn_args=False,
       bypass_gclient=True,
       bypass_gn_args=True,
@@ -686,7 +650,7 @@ def GenTests(api: RecipeTestApi):
         run_type=run_type,
         builder_recipe=builder_recipe,
         output_properties_file=output_properties_file,
-        rerun_options=InputProperties.RerunOptions(
+        rerun_options=Request.RerunOptions(
             bypass_gclient=bypass_gclient,
             bypass_gn_args=bypass_gn_args,
             preserve_gn_args=preserve_gn_args,
@@ -1410,7 +1374,7 @@ target_os=['os']
 
   yield api.test(
       'skip_build',
-      boilerplate(run_type=InputProperties.RunType.RUN_TYPE_RUN),
+      boilerplate(run_type=Request.RunType.RUN_TYPE_RUN),
       api.post_process(post_process.DoesNotRun, 'compile'),
       api.post_process(post_process.DoesNotRun, 'generate_build_files'),
       api.post_process(post_process.MustRun, 'isolate tests'),
@@ -1422,7 +1386,7 @@ target_os=['os']
 
   yield api.test(
       'skip_test',
-      boilerplate(run_type=InputProperties.RunType.RUN_TYPE_COMPILE),
+      boilerplate(run_type=Request.RunType.RUN_TYPE_COMPILE),
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.MustRun, 'isolate tests'),
       api.post_process(post_process.StepCommandContains, 'generate_build_files',

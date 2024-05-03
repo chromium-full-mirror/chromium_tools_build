@@ -4,10 +4,10 @@
 
 syntax = "proto3";
 
-package recipes.build.chromium.universal_test_runner;
+package recipe_modules.build.chromium_utr;
 
 // Next ID: 9
-message InputProperties {
+message Request {
   // Required, the directory where chromium is checked out not including the src
   // dir
   string checkout_path = 1;
