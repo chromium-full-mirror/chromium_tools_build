@@ -161,7 +161,7 @@ def GenTests(api):
       api.step_data(
           'bot_update',
           api.bot_update.output_json(
-              root='src',
+              patch_root='src',
               first_sln='src',
               revision_mapping={'got_revision': 'src'},
               fixed_revisions={'src': fake_revision})),
