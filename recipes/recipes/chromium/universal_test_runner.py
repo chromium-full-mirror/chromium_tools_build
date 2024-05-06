@@ -78,7 +78,8 @@ def RunSteps(api: RecipeApi, properties: Request):
    build_path) = configure_build(api, properties.checkout_path,
                                  properties.build_dir, should_build)
 
-  result = prerun_checks(api, properties, build_path, compiling_builder_id)
+  result = api.m.chromium_utr.prerun_checks(properties, build_path,
+                                            compiling_builder_id)
   if result != None:
     return result
 
@@ -101,225 +102,6 @@ def RunSteps(api: RecipeApi, properties: Request):
     api.chromium_swarming.default_priority = 20
     api.chromium_swarming.add_default_tag('is_utr:1')
     return test_runner()
-
-
-def prerun_checks(
-    api: RecipeApi, properties: Request, build_path: Path,
-    compiling_builder_id: chromium.BuilderId) -> result_pb2.RawResult:
-  # TODO(crbug.com/41492686): Combine these checks so they can be prompted in
-  # one interation of the recipe invocations
-  def create_prompt_option(prompt: str, **kwargs):
-    if not kwargs:
-      return (prompt, Request())
-    rerun_properties = copy.deepcopy(properties.rerun_options)
-    update = Request.RerunOptions(**kwargs)
-    rerun_properties.MergeFrom(update)
-    return (prompt, rerun_properties)
-
-  if not properties.rerun_options.bypass_gclient:
-    error_message = check_gclient(api)
-    if error_message:
-      rerun_options = [
-          create_prompt_option('yes', bypass_gclient=True),
-          create_prompt_option('no')
-      ]
-      return api.chromium_utr.create_rerun_result(
-          rerun_options, error_message, properties.output_properties_file)
-  if (api.path.exists(build_path / 'args.gn') and
-      not properties.rerun_options.bypass_gn_args):
-    error_message = check_gn_args(api, build_path, compiling_builder_id)
-    if error_message:
-      rerun_options = [
-          create_prompt_option(
-              'continue', bypass_gn_args=True, preserve_gn_args=True),
-          create_prompt_option(
-              'overwrite', bypass_gn_args=True, preserve_gn_args=False),
-          create_prompt_option('abort')
-      ]
-      return api.chromium_utr.create_rerun_result(
-          rerun_options, error_message, properties.output_properties_file)
-  if (not properties.rerun_options.bypass_branch_check and
-      api.code_coverage.using_coverage and properties.builder_recipe
-      in ('chromium/orchestrator', 'chromium_trybot')):
-    error_message = check_upstream_branch(api)
-    if error_message:
-      rerun_options = [
-          create_prompt_option(
-              'instrument everything',
-              bypass_branch_check=True,
-              skip_instrumentation=False),
-          create_prompt_option(
-              'skip instrumentation',
-              bypass_branch_check=True,
-              skip_instrumentation=True),
-          create_prompt_option('abort')
-      ]
-      return api.chromium_utr.create_rerun_result(
-          rerun_options, error_message, properties.output_properties_file)
-
-
-def get_gclient_config(api: RecipeApi):
-  # TODO(crbug.com/41492686): The .gclient file can technically
-  # exist in any parent dir but will normally be in the chromium
-  # or chromium/src.
-  checkout_file = api.path.checkout_dir / '.gclient'
-  src_file = api.path.split(api.path.checkout_dir)[0].joinpath('.gclient')
-  if api.path.exists(checkout_file):
-    gclient_file_path = checkout_file
-  elif api.path.exists(src_file):
-    gclient_file_path = src_file
-  else:
-    raise FileNotFoundError(f'.gclient file not found at {str(checkout_file)} '
-                            f'or {str(src_file)}')
-  # TODO(https://crbug.com/327270127): Use some utility to get the current
-  # .gclient config so we don't have to exec() the file
-  gclient_text = api.file.read_text('read gclient', gclient_file_path)
-  local_env = {}
-  exec(gclient_text, {}, local_env)
-  return local_env
-
-
-def check_gclient(api: RecipeApi) -> str:
-  """Check if the .gclient file is acceptable to use for the selected builder
-
-  Args:
-      api: Recipe API object.
-  Returns:
-      A string that represents the error or an empty string when there is no
-      warning
-  """
-  mismatch_messages = []
-  gclient_config = get_gclient_config(api)
-  solution = [
-      sol for sol in gclient_config.get('solutions', []) if sol.get('url', '')
-      == 'https://chromium.googlesource.com/chromium/src.git'
-  ]
-  if len(solution) != 1:
-    return ('Caution: your .gclient file could not be validated. Exactly one '
-            'solution with \'url\' set to '
-            'https://chromium.googlesource.com/chromium/src.git'
-            ' must be set\n')
-  solution = solution[0]
-
-  current_custom_vars = solution.get('custom_vars', {})
-  if 'rbe_instance' in current_custom_vars:
-    mismatch_messages.append('- rbe_instance has been set in the .gclient file')
-
-  # Are there any Chrome/Chromium builders with >1 gclient solution?
-  if len(api.gclient.c.solutions) != 1:  # pragma: no cover
-    raise api.step.StepFailure(
-        'Unsupported UTR invocation for this builder. Please file a general '
-        "infra bug via https://g.co/bugatrooper if you're seeing this, and "
-        'provide your full cmd-line invocation.')
-
-  builder_cfg = api.gclient.c.solutions[0]
-  for builder_custom_var, builder_val in builder_cfg.custom_vars.items():
-    assignment_snippet = f'`"{builder_custom_var}": "{builder_val}"`'
-    if (builder_custom_var not in current_custom_vars or
-        builder_val != str(current_custom_vars[builder_custom_var])):
-      mismatch_messages.append(
-          f'- custom_var {builder_custom_var} has mismatched value in the '
-          f'local .gclient file. Set it to: {assignment_snippet}')
-
-  current_target_os = gclient_config.get('target_os', [])
-  builder_target_os = api.gclient.c.target_os
-  missing_os = list(set(builder_target_os) - set(current_target_os))
-  target_os_snippet = (
-      '`target_os = [%s]`' %
-      ', '.join(f'"{os}"' for os in current_target_os + missing_os))
-  if missing_os:
-    mismatch_messages.append(
-        f'- target_os in builder config `"{missing_os}"` is not in the local '
-        f'.gclient file. Set it to: {target_os_snippet}')
-
-  # TODO(crbug.com/41492686): Check custom_deps
-  error_info = ''
-  if mismatch_messages:
-    error_info = ('Caution: your .gclient file and the builder\'s mismatches in'
-                  ' the following way(s). Please run "gclient sync" after '
-                  'resolving these:\n' + '\n'.join(mismatch_messages))
-  return error_info
-
-
-def check_gn_args(api: RecipeApi, build_dir: Path,
-                  builder_id: chromium.BuilderId) -> str:
-  """Check if the args.gn file is acceptable to use for the selected builder
-
-  Args:
-      api: Recipe API object.
-      build_dir: Path to the build dir being used
-      builder_id: The BuilderId for the builder being run
-  Returns:
-      A string that represents the error or an empty string when there is no
-      warning
-  """
-
-  def get_imports(args):
-    return [l.strip() for l in args.splitlines() if l.startswith('import(')]
-
-  builder_gn_args = api.chromium.mb_lookup(
-      builder_id, recursive=False, name='lookup_builder_gn_args')
-  builder_imports = get_imports(builder_gn_args)
-  builder_gn_args = api.gn.parse_gn_args(builder_gn_args)
-
-  current_gn_args, _ = api.gn.read_args(build_dir)
-  current_imports = get_imports(current_gn_args)
-  current_gn_args = api.gn.parse_gn_args(current_gn_args)
-
-  mismatch_messages = []
-  for arg in current_gn_args:
-    if arg not in builder_gn_args:
-      mismatch_messages.append(
-          f'- `{arg}` in current build dir is not set by the builder')
-    elif builder_gn_args[arg] != current_gn_args[arg]:
-      mismatch_messages.append(
-          f'- `{arg}` in current build (`{current_gn_args[arg]}`) does not match '
-          f'builder value (`{builder_gn_args[arg]}`)')
-  for arg in builder_gn_args:
-    if arg not in current_gn_args:
-      mismatch_messages.append(
-          f'- `{arg}` set by the builder is absent in the current build dir')
-
-  for missing_import in set(builder_imports) - set(current_imports):
-    mismatch_messages.append(
-        f'- `{missing_import}` used by the builder is absent in the '
-        'current build dir')
-  for missing_import in set(current_imports) - set(builder_imports):
-    mismatch_messages.append(
-        f'- `{missing_import}` in current build dir is not used by the '
-        'builder')
-
-  error_info = ''
-  if mismatch_messages:
-    error_info = ('Caution: your build\'s gn args and the builder\'s '
-                  'mismatches in the following way(s):\n' +
-                  '\n'.join(mismatch_messages))
-  return error_info
-
-
-def check_upstream_branch(api: RecipeApi):
-  """Check if the current branch has an upstream branch for diffing against
-
-  Args:
-      api: Recipe API object.
-  Returns:
-      A string that represents the error or an empty string when there is no
-      warning
-  """
-  if get_upstream_branch(api).retcode != 0:
-    return 'Caution: failed to get an upstream branch from the current checkout'
-
-
-def get_upstream_branch(api: RecipeApi):
-  return api.git(
-      'rev-parse',
-      '--abbrev-ref',
-      '--symbolic-full-name',
-      '@{u}',
-      name='check upstream branch',
-      stdout=api.raw_io.output(),
-      raise_on_failure=False,
-      step_test_data=lambda: api.raw_io.test_api.stream_output('origin/main\n'))
 
 
 def create_tests(
@@ -585,7 +367,7 @@ def handle_code_coverage(
   paths = []
   if not properties.rerun_options.skip_instrumentation:
     with api.context(cwd=api.path.checkout_dir):
-      step_result = get_upstream_branch(api)
+      step_result = api.chromium_utr.get_upstream_branch()
       branch_upstream_name = step_result.stdout.decode('utf-8').strip()
       step_result = api.git(
           '-c',
@@ -923,45 +705,6 @@ solutions = [
   )
 
   yield api.test(
-      'code_coverage_no_upstream',
-      ctbc_properties(),
-      boilerplate_properties(
-          checkout_path='[CACHE]\\src',
-          build_dir='[CACHE]\\src\\out\\Release',
-          builder_recipe='chromium_trybot',
-          output_properties_file='[CACHE]\\out.json'),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.platform('win', 32),
-      api.code_coverage(use_clang_coverage=True),
-      api.step_data(
-          'check upstream branch',
-          retcode=1,
-      ),
-      api.post_process(
-          post_process.ResultReason,
-          'Caution: failed to get an upstream branch from the current checkout'
-      ),
-      api.post_process(post_process.MustRun,
-                       'write output_properties_file [CACHE]\\out.json'),
-      api.post_process(
-          post_process.StepCommandContains,
-          'write output_properties_file [CACHE]\\out.json', [
-              '[["instrument everything", '
-              '{"bypass_branch_check": true, "bypass_gclient": true, '
-              '"bypass_gn_args": true}], '
-              '["skip instrumentation", {"bypass_branch_check": true, '
-              '"bypass_gclient": true, "bypass_gn_args": true, '
-              '"skip_instrumentation": true}], '
-              '["abort", {}]]'
-          ]),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'code_coverage_skip_instrument',
       boilerplate(
           checkout_path='[CACHE]\\src',
@@ -1140,7 +883,7 @@ solutions = [
           builder_group='fake-group',
           builder='fake-tester',
       ),
-      api.path.exists(api.path.cache_dir.joinpath('src', '.gclient')),
+      api.path.exists(api.path.cache_dir.joinpath('.gclient')),
       api.step_data(
           'read gclient',
           api.file.read_text("""
@@ -1154,139 +897,10 @@ solutions = [
 ]
 target_os=['os']
 """)),
-      api.post_process(
-          post_process.ResultReason,
-          'Caution: your .gclient file and the builder\'s mismatches in the '
-          'following way(s). Please run "gclient sync" after resolving these:\n'
-          '- rbe_instance has been set in the .gclient file\n'
-          '- custom_var checkout_telemetry_dependencies has mismatched value '
-          'in the local .gclient file. Set it to: '
-          '`"checkout_telemetry_dependencies": "True"`\n'
-          '- target_os in builder config `"[\'ios\']"` is not in the local '
-          '.gclient file. Set it to: `target_os = ["os", "ios"]`'),
-      api.post_process(post_process.StepCommandContains, 'read gclient',
-                       ['[CACHE]/src/.gclient']),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
-  yield api.test(
-      'gclient_above_src',
-      boilerplate(
-          preserve_gn_args=False,
-          bypass_gclient=False,
-      ),
-      api.path.exists(api.path.cache_dir / '.gclient'),
-      api.step_data(
-          'read gclient',
-          api.file.read_text("""
-solutions = [
-  {
-    'url': 'https://chromium.googlesource.com/chromium/src.git',
-    'custom_vars': {
-      'checkout_telemetry_dependencies': True,
-    },
-  },
-]
-""")),
-      api.post_process(post_process.StepCommandContains, 'read gclient',
-                       ['[CACHE]/.gclient']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'src_not_in_gclient',
-      boilerplate_properties(bypass_gclient=False),
-      ctbc_properties(
-          builder_spec=ctbc.BuilderSpec.create(
-              gclient_config='ios',
-              chromium_config='chromium',
-          )),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.path.exists(api.path.cache_dir.joinpath('src', '.gclient')),
-      api.step_data(
-          'read gclient',
-          api.file.read_text("""
-solutions = [
-  {
-    'custom_vars': {
-      'rbe_instance': 'fake_instance',
-    },
-  },
-]
-target_os=['os']
-""")),
-      api.post_process(
-          post_process.ResultReason,
-          'Caution: your .gclient file could not be validated. Exactly one '
-          'solution with \'url\' set to '
-          'https://chromium.googlesource.com/chromium/src.git must be set\n'),
-      api.post_process(post_process.StepCommandContains, 'read gclient',
-                       ['[CACHE]/src/.gclient']),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'missing_gclient',
-      boilerplate_properties(bypass_gclient=False),
-      ctbc_properties(
-          builder_spec=ctbc.BuilderSpec.create(
-              gclient_config='chromium',
-              chromium_config='chromium',
-          )),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.expect_exception('FileNotFoundError'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'bad_gn_args',
-      boilerplate_properties(
-          bypass_gn_args=False, build_dir='[CACHE]/src/out/Release'),
-      ctbc_properties(
-          builder_spec=ctbc.BuilderSpec.create(
-              gclient_config='chromium',
-              chromium_config='chromium',
-          )),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.path.exists(api.path.cache_dir / 'src/out/Release/args.gn'),
-      api.step_data(
-          'lookup_builder_gn_args',
-          stdout=api.raw_io.output_text('import("//builder.args")\n'
-                                        'a = "1"\n'
-                                        'c = true\n'
-                                        'd = true')),
-      api.step_data(
-          'read GN args',
-          api.raw_io.output_text('import("//local.args")\n'
-                                 'b="2"\n'
-                                 'c=false\n'
-                                 'd=true')),
-      api.post_process(
-          post_process.ResultReason,
-          'Caution: your build\'s gn args and the builder\'s mismatches in the '
-          'following way(s):\n'
-          '- `b` in current build dir is not set by the builder\n'
-          '- `c` in current build (`false`) does not match builder value '
-          '(`true`)\n'
-          '- `a` set by the builder is absent in the current build dir\n'
-          '- `import("//builder.args")` used by the builder is absent in the '
-          'current build dir\n'
-          '- `import("//local.args")` in current build dir is not used by the '
-          'builder'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
 
   yield api.test(
       'changed_build_dir',
