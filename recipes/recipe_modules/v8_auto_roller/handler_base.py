@@ -44,7 +44,7 @@ class RollHandler(ABC):
       except Exception:
         failed = self.api.step.empty('Roll failed')
         failed.presentation.status = self.api.step.FAILURE
-        failed.presentation.step_text = traceback.format_exc()
+        failed.presentation.logs['exception'] = traceback.format_exc()
         self.module.failures.append(self.name())
 
   @contextmanager
