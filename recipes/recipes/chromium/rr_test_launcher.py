@@ -38,6 +38,12 @@ DEPS = [
 RUNNER_PACKAGE_PATH = 'rr_tool_runner'
 TEST_BINARY_ISOLATE_FILENAME = 'runner.isolate'
 UPLOAD_BUCKET = 'chromium-rr-traces'
+WEB_TEST_CMD = [
+    'vpython3', 'third_party/blink/tools/run_web_tests.py', '-t', 'Release',
+    '--no-retry-failures', '--driver-kill-timeout-secs=10',
+    '--isolated-script-test-output=test_result',
+    '--wrapper=rr_tool/bin/rr record --output-trace-dir=trace_dir'
+]
 
 
 def find_traces(api, target_path):
@@ -82,12 +88,13 @@ def RunSteps(api):
   repacked_cas = api.isolate.isolate('new test binary',
                                      runner_dir / TEST_BINARY_ISOLATE_FILENAME)
 
-  # Trigger reproducing job in swarming.
-  # TODO(jiesheng): Replace the test name with actual test trigger command.
+  # Construct test cmd, trigger reproducing job in swarming.
   command = [
-      'vpython3', 'test_runner.py', '--test-names={0}'.format(test_name),
-      '--output-dir={0}'.format('${ISOLATED_OUTDIR}')
+      'vpython3', 'test_runner.py', '--test={0}'.format(test_name),
+      '--output-dir={0}'.format('${ISOLATED_OUTDIR}'), '--'
   ]
+  # TODO(jiesheng): Construct test command based on test type.
+  command.extend(WEB_TEST_CMD)
 
   request = (api.swarming.task_request().
       with_name("rr tool runner for {0}".format(test_name)).

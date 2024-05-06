@@ -12,21 +12,22 @@ import platform
 import sys
 
 MAX_RUNS = 5
-TRACE_DIR_PREFIX = 'trace_dir_'
+TRACE_DIR = 'trace_dir'
 TEST_RESULT_FILE = 'test_result'
 
 
 def parse_args(args):
-
-  def list_of_tests(arg):
-    return arg.split(',')
-
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
-      '--test-names',
-      type=list_of_tests,
-      help="The name of failing test to be reproduced")
-  parser.add_argument('--output-dir', help="The output dir of all test traces")
+      '--test',
+      '-t',
+      required=True,
+      action='append',
+      help="The test list of "
+      "failing tests to be reproduced.")
+  parser.add_argument(
+      '--output-dir', required=True, help="The output dir of all test traces")
+  parser.add_argument('test_cmd', nargs='*', help="The test command list.")
 
   return parser.parse_args(args)
 
@@ -63,32 +64,20 @@ def main(args):
   if platform.system() != 'Linux':
     raise Exception('This test runner only supports Linux')
 
-  if not args.test_names:
-    raise Exception("No test input for this test runner")
-
-  if not args.output_dir:
-    raise Exception("No output dir for this test runner")
-
-  for test_name in args.test_names:
+  for test_name in args.test:
     test_name_plain = sanitize_test_name(test_name, '_')
+    test_cmd = args.test_cmd
+    test_cmd.append(test_name)
+    if not test_name_plain:
+      continue
     for i in range(MAX_RUNS):
-      # TODO(jiesheng): Replace the hard-coded test command based on test type.
-      trace_dir_name = TRACE_DIR_PREFIX + str(i)
-      cmd = [
-          'vpython3', 'third_party/blink/tools/run_web_tests.py', '-t',
-          'Release', '--no-retry-failures', '--driver-kill-timeout-secs=10',
-          f'--isolated-script-test-output={TEST_RESULT_FILE}',
-          f'--wrapper=rr_tool/bin/rr record '
-          f'--output-trace-dir={trace_dir_name}', test_name
-      ]
-      run_cmd(cmd, '../')
-
+      run_cmd(test_cmd, '../')
       # Pack the test trace and upload the trace and test result file to output
       # dir.
-      result = run_cmd(['rr_tool/bin/rr', 'pack', trace_dir_name], '../')
+      result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../')
       if result == 0:
         with tarfile.open('trace.tar', 'w') as tar:
-          tar.add(f'../{trace_dir_name}')
+          tar.add(f'../{TRACE_DIR}')
         tar.close()
         os.renames('trace.tar',
                    f'{args.output_dir}/{test_name_plain}/{str(i)}/trace.tar')
@@ -97,6 +86,8 @@ def main(args):
             f'{str(i)}/{TEST_RESULT_FILE}')
       else:
         logging.error('Result of running rr pack is %r', result)
+      # Remove the trace dir.
+      run_cmd(['rm', '-rf', TRACE_DIR], '../')
 
 
 if __name__ == '__main__':

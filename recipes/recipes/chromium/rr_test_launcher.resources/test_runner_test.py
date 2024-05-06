@@ -19,15 +19,20 @@ import test_runner
 class TestRunnerTest(unittest.TestCase):
 
   def test_args(self):
-    args = ['--test-names=test1']
-    expected = ['test1']
+    args = ['--test=test1', '-t', 'test2', '--output-dir', 'output_dir']
+    expected = ['test1', 'test2']
     res = test_runner.parse_args(args)
-    self.assertEqual(res.test_names, expected)
+    self.assertEqual(res.test, expected)
 
-    args = ['--test-names=test1,test2,test3']
-    expected = ['test1', 'test2', 'test3']
+    args = [
+        '--test=test1', '-t', 'test2', '--output-dir', 'output_dir', '--',
+        'test_binary', 'binary_arg1'
+    ]
+    expected_test = ['test1', 'test2']
+    expected_test_cmd = ['test_binary', 'binary_arg1']
     res = test_runner.parse_args(args)
-    self.assertEqual(res.test_names, expected)
+    self.assertEqual(res.test, expected_test)
+    self.assertEqual(res.test_cmd, expected_test_cmd)
 
   @patch('subprocess.Popen')
   @patch('logging.info')
