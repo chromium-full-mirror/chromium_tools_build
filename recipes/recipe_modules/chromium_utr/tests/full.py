@@ -34,16 +34,9 @@ def RunSteps(api, request):
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.path.checkout_dir = api.path.abs_to_path(request.checkout_path)
-  build_path = api.path.checkout_dir.joinpath('out', 'Release')
   api.chromium_tests.configure_build(builder_config)
 
-  result = api.chromium_utr.prerun_checks(request, build_path, builder_id)
-  if result:
-    return result
-
-  api.chromium_utr.generate_got_revisions_map()
-  api.chromium_utr.handle_code_coverage(build_path, request, builder_id)
-  api.chromium_utr.get_remote_compile_options(build_path)
+  return api.chromium_utr.run(request, builder_id, builder_config)
 
 
 def GenTests(api):
@@ -61,7 +54,10 @@ def GenTests(api):
         ).assemble())
 
   def boilerplate_properties(
+      run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      test_names=None,
       checkout_path='[CACHE]/src',
+      build_dir='[CACHE]/src/out/Release',
       builder_recipe='chromium',
       output_properties_file='checkout/output_properties.json',
       # Re-run options.
@@ -72,7 +68,11 @@ def GenTests(api):
       skip_instrumentation=False,
       **kwargs,
   ):
+    if not test_names:
+      test_names = ['browser_tests']
     return api.properties(
+        run_type=run_type,
+        test_names=test_names,
         checkout_path=checkout_path,
         output_properties_file=output_properties_file,
         builder_recipe=builder_recipe,
@@ -86,8 +86,8 @@ def GenTests(api):
         **kwargs,
     )
 
-  def boilerplate(build=None, ctbc_properties=None, **kwargs):
-    return sum([
+  def boilerplate(build=None, ctbc_properties=None, target_spec=None, **kwargs):
+    test_data = [
         boilerplate_properties(**kwargs),
         ctbc_properties if ctbc_properties else gen_ctbc_properties(
             builder_spec=ctbc.BuilderSpec.create(
@@ -98,13 +98,55 @@ def GenTests(api):
             builder_group='fake-group',
             builder='fake-tester',
         ),
-    ], api.empty_test_data())
+    ]
+    # Overload 'None' and 'False' for this arg to indicate default test data vs
+    # no test data.
+    if target_spec is None:
+      target_spec = {
+          'fake-tester': {
+              'gtest_tests': [{
+                  'name': 'browser_tests',
+                  'swarming': {
+                      'dimensions': {
+                          'os': 'Linux',
+                          'pool': 'fake-pool',
+                      },
+                  },
+              }],
+          },
+      }
+    if target_spec:
+      target_spec_data = api.chromium_tests.read_targets_spec(
+          'fake-group', target_spec)
+      test_data.append(target_spec_data)
+    return sum(test_data, api.empty_test_data())
 
   yield api.test(
       'basic',
       boilerplate(
           preserve_gn_args=False,
           bypass_gclient=False,
+          target_spec={
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }, {
+                      'name': 'not_run_test',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              }
+          },
       ),
       api.path.exists(api.path.cache_dir / '.gclient'),
       api.step_data(
@@ -119,19 +161,128 @@ solutions = [
   },
 ]
 """)),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
+      api.post_process(post_process.MustRun, 'lookup GN args'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.StepCommandContains, 'compile',
+                       ['[CACHE]/src/out/Release', 'browser_tests']),
+      api.post_process(
+          post_process.StepCommandContains, 'isolate tests',
+          ['[CACHE]/src/out/Release/browser_tests.isolated.gen.json']),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       ['-m', 'fake-group', '-b', 'fake-tester']),
+      api.post_process(post_process.StepCommandContains, 'find command lines',
+                       ['[CACHE]/src/out/Release']),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.DoesNotRun, 'upload_ninja_log'),
+      api.post_process(post_process.StepCommandDoesNotContain, 'compile',
+                       ['not_run_test']),
+      api.post_process(
+          post_process.StepCommandDoesNotContain, 'isolate tests',
+          ['fake_root/fake_out/Debug/not_run_test.isolated.gen.json']),
+      api.post_process(post_process.DoesNotRun, 'not_run_test'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'skip_test',
+      boilerplate(run_type=Request.RunType.RUN_TYPE_COMPILE),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       ['-m', 'fake-group', '-b', 'fake-tester']),
+      api.post_process(post_process.DoesNotRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.DoesNotRun, 'browser_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'failed_build',
+      boilerplate(),
+      api.override_step_data('compile', retcode=1),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.DoesNotRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'reclient',
+      boilerplate(),
+      api.step_data('read GN args',
+                    api.raw_io.output_text('use_remoteexec = true')),
+      api.post_process(post_process.MustRun, 'isolate tests'),
+      api.post_process(post_process.MustRun, 'lookup GN args'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '[CACHE]/src/third_party/ninja/ninja', '-C',
+          '[CACHE]/src/out/Release', '-j', '160', 'browser_tests'
+      ]),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(
+          post_process.MustRun,
+          'postprocess for reclient.shutdown reproxy via bootstrap'),
+      api.post_process(post_process.DoesNotRun,
+                       'postprocess for reclient.stop cloudtail'),
+      api.post_process(post_process.DoesNotRun,
+                       'preprocess for reclient.start cloudtail: reproxy.INFO'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'child_tester',
+      boilerplate(
+          build=api.chromium_tests_builder_config.ci_build(
+              builder_group='fake-group',
+              builder='fake-tester',
+              builder_db=ctbc.BuilderDatabase.create({
+                  'fake-group': {
+                      'fake-builder':
+                          ctbc.BuilderSpec.create(
+                              chromium_config='chromium',
+                              gclient_config='chromium',
+                          ),
+                      'fake-tester':
+                          ctbc.BuilderSpec.create(
+                              execution_mode=ctbc.TEST,
+                              parent_buildername='fake-builder',
+                              parent_builder_group='fake-group',
+                              chromium_config='chromium',
+                              gclient_config='chromium',
+                          ),
+                  },
+              }))),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no_tests',
+      boilerplate(test_names=['non_existant_test']),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          'No suites on the bot matched the request for non_existant_test',
+      ),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'missing_gclient',
-      boilerplate(bypass_gclient=False),
+      boilerplate(bypass_gclient=False, target_spec=False),
       api.expect_exception('FileNotFoundError'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
       'src_not_in_gclient',
-      boilerplate(bypass_gclient=False),
+      boilerplate(bypass_gclient=False, target_spec=False),
       api.path.exists(api.path.cache_dir.joinpath('.gclient')),
       api.step_data(
           'read gclient',
@@ -161,6 +312,7 @@ target_os=['os']
       boilerplate(
           preserve_gn_args=False,
           bypass_gclient=False,
+          target_spec=False,
           ctbc_properties=gen_ctbc_properties(
               builder_spec=ctbc.BuilderSpec.create(
                   gclient_config='ios',
@@ -199,7 +351,7 @@ target_os=['os']
 
   yield api.test(
       'bad_gn_args',
-      boilerplate(bypass_gn_args=False, build_dir='[CACHE]/src/out/Release'),
+      boilerplate(bypass_gn_args=False, target_spec=False),
       api.path.exists(api.path.cache_dir / 'src/out/Release/args.gn'),
       api.step_data(
           'lookup_builder_gn_args',
@@ -250,7 +402,7 @@ target_os=['os']
 
   yield api.test(
       'code_coverage_no_upstream',
-      boilerplate(builder_recipe='chromium_trybot',),
+      boilerplate(builder_recipe='chromium_trybot', target_spec=False),
       api.code_coverage(use_clang_coverage=True),
       api.step_data(
           'check upstream branch',
@@ -340,5 +492,68 @@ target_os=['os']
                        'remove coverage_instrumentation_input_file gn arg',
                        ['coverage_instrumentation_input_file']),
       api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'multiple_tests',
+      boilerplate(
+          test_names=['browser_tests', 'unit_tests'],
+          additional_test_args=['--gtest_repeat=100'],
+          target_spec={
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }, {
+                      'name': 'unit_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
+      api.post_process(post_process.MustRun, 'compile'),
+      api.post_process(post_process.MustRun, 'isolate tests'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] unit_tests'),
+      api.post_process(post_process.StepCommandContains, 'generate_build_files',
+                       ['-m', 'fake-group', '-b', 'fake-tester']),
+      api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.MustRun, 'unit_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'SwarmingIsolatedScriptTest_skips_upload',
+      boilerplate(
+          test_names=['fake-script-test'],
+          target_spec={
+              'fake-tester': {
+                  'isolated_scripts': [{
+                      'name': 'fake-script-test',
+                      'script': 'fake-script',
+                      'results_handler': 'layout tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                          },
+                      }
+                  }],
+              }
+          },
+      ),
+      api.post_process(post_process.DoesNotRun,
+                       'archive results for fake-script-test'),
       api.post_process(post_process.DropExpectation),
   )

@@ -5,8 +5,11 @@
 DEPS = [
     'chromium',
     'chromium_checkout',
+    'chromium_swarming',
+    'chromium_tests',
     'code_coverage',
     'gn',
+    'reclient',
     'depot_tools/gclient',
     'depot_tools/git',
     'recipe_engine/context',
@@ -14,4 +17,5 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/raw_io',
+    'recipe_engine/step',
 ]

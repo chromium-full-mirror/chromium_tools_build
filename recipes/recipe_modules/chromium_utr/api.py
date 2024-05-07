@@ -7,7 +7,10 @@ TODO(crbug.com/41492686): Move as much code from
 recipes/chromium/universal_test_runner.py into here as possible.
 """
 
+import attr
 import copy
+import itertools
+from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
 
 from recipe_engine import recipe_api
@@ -16,10 +19,92 @@ from recipe_engine.config_types import Path
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.build.chromium_utr.request import Request
+
 from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests.steps import (
+    Test, SwarmingIsolatedScriptTest)
+
+try:  # pragma: no cover
+  # BUG(329113288) - old-style path types
+  #
+  # Note that the old and new paths are not covered simultaneously, so both have
+  # to be nocover in order to allow a non-trivial roll rather than a manual one.
+  # Once the upstream change which deletes the BasePath type and adds
+  # api.path.cast_to_path land, this whole block and the OLD_PATH_TYPE==True
+  # block in the body of configure_build can be deleted.
+  from recipe_engine.config_types import BasePath
+
+  class RootBasePath(BasePath):
+    """A base path for the root of the filesystem."""
+
+    def resolve(self, test_enabled: bool) -> str:
+      return ''
+
+  OLD_PATH_TYPE = True
+except ImportError:  # pragma: no cover
+  OLD_PATH_TYPE = False
 
 
 class ChromiumUTRApi(recipe_api.RecipeApi):
+
+  def run(self, properties: Request, compiling_builder_id: chromium.BuilderId,
+          compiling_builder_config: ctbc.BuilderConfig) -> result_pb2.RawResult:
+    """Compiles and runs tests as needed.
+
+    Args:
+      properties: Request given to the recipe
+      compiling_builder_id: BuilderId for the compiler builder
+      compiling_builder_config: BuilderConfig for the compiling builder
+
+    Returns:
+      result_pb2.RawResult of the recipe execution
+    """
+    should_build = properties.run_type != Request.RunType.RUN_TYPE_RUN
+    should_test = properties.run_type != Request.RunType.RUN_TYPE_COMPILE
+
+    build_path = self.configure_build_dir(properties.build_dir)
+    result = self.prerun_checks(properties, build_path, compiling_builder_id)
+    if result != None:
+      return result
+
+    got_revisions = self.generate_got_revisions_map()
+
+    raw_result, tests = self.create_tests(properties, build_path, got_revisions,
+                                          compiling_builder_id,
+                                          compiling_builder_config,
+                                          should_build)
+    if raw_result and raw_result.status != common_pb2.SUCCESS:
+      return raw_result
+    if not should_test:
+      return result_pb2.RawResult(status=common_pb2.SUCCESS)
+
+    test_runner = self.m.chromium_tests.create_test_runner(tests)
+    with self.m.chromium_tests.wrap_chromium_tests(tests):
+      self.m.chromium_tests.configure_swarming(True)
+      # Lower pri for faster turn-around time in debugging. The UTR shouldn't
+      # get so much use that it affects CI/CQ traffic substantially. But we can
+      # check for sure using the UTR-specific tag below, and reassess if needed.
+      self.m.chromium_swarming.default_priority = 20
+      self.m.chromium_swarming.add_default_tag('is_utr:1')
+      return test_runner()
+
+  def configure_build_dir(self, build_dir):
+    if OLD_PATH_TYPE:  # pragma: no cover
+      # see comment in import block at top of this file.
+      build_dir = build_dir or api.path.join(self.m.path.checkout_dir, 'out',
+                                             self.m.chromium.c.build_config_fs)
+      build_path = Path(RootBasePath(), build_dir)
+    else:  # pragma: no cover
+      if build_dir:
+        build_path = self.m.path.cast_to_path(build_dir)
+      else:
+        build_path = self.m.path.checkout_dir.joinpath(
+            'out', self.m.chromium.c.build_config_fs)
+
+    self.m.file.ensure_directory('ensure_build_dir', build_path)
+    self.m.chromium.output_dir = build_path
+    return build_path
 
   def get_gclient_config(self):
     src_file = self.m.path.split(
@@ -359,3 +444,130 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       args = self.m.gn.parse_gn_args(gn_args)
       use_reclient = args.get('use_remoteexec') == 'true'
     return use_reclient
+
+  def compile_targets(
+      self,
+      properties: Request,
+      tests: Iterable[Test],
+      builder_id: chromium.BuilderId,
+      preserve_gn_args: bool,
+      build_dir: str,
+      builder_recipe: str,
+  ) -> result_pb2.RawResult:
+    """Builds the test targets
+
+    Args:
+        properties: Request given to the recipe
+        tests: Iterable of test objects to be compiled
+        builder_id: The ID of the builder to compile for
+        preserve_gn_args: Bool whether to have the recipe overwrite the gn args
+          with the builder_id's gn args
+        build_dir: Path to the directory to use for building
+        builder_recipe: The recipe normally run by the requested builder
+    """
+    targets = list(itertools.chain(*[t.compile_targets() for t in tests]))
+
+    # Remove duplicate targets.
+    targets = sorted(set(targets))
+
+    # Only recipes that support try should handle changed files
+    if (self.m.code_coverage.using_coverage and
+        builder_recipe in ('chromium/orchestrator', 'chromium_trybot')):
+      preserve_gn_args = self.handle_code_coverage(build_dir, properties,
+                                                   builder_id)
+
+    if preserve_gn_args and self.m.path.exists(build_dir / 'args.gn'):
+      self.m.gn.gen(build_dir, 'gn_gen')
+    else:
+      tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
+      self.m.chromium.mb_gen(
+          builder_id,
+          name='generate_build_files',
+          recursive_lookup=True,
+          build_dir=build_dir,
+          isolated_targets=tests_to_isolate)
+
+    use_reclient = self.get_remote_compile_options(build_dir)
+
+    if use_reclient:
+      self.m.reclient.experimental_credentials_helper = 'luci-auth'
+      self.m.reclient.experimental_credentials_helper_args = ' '.join([
+          'token',
+          '-scopes-context',
+          '-json-output=-',
+          '-json-format=reclient',
+          '-lifetime=5m',
+      ])
+    return self.m.chromium.compile(
+        targets,
+        skip_log_upload=True,
+        target_output_dir=str(build_dir),
+        use_reclient=use_reclient), preserve_gn_args
+
+  def create_tests(
+      self,
+      properties: Request,
+      build_dir: Path,
+      got_revisions: Mapping[str, str],
+      builder_id: chromium.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+      should_build: bool,
+  ) -> tuple[result_pb2.RawResult, Iterable[Test]]:
+    """Creates the test objects for the provided builder/test names
+
+    Args:
+        build_dir: Path to the build directory either containing the prebuilt
+          binaries or where they should be built
+        test_names: Names of the tests to create on the provided builder_id
+        got_revisions: Mapping[str, str] of the revisions retrieved during updates
+        builder_id: The ID of the builder to get tests from
+        builder_config: A BuilderConfig with the configuration for the builder
+          being reproduced
+        should_build: Bool controlling whether the tests should be compiled
+    """
+    test_names = properties.test_names
+    preserve_gn_args = properties.rerun_options.preserve_gn_args
+    builder_recipe = properties.builder_recipe
+    targets_config = self.m.chromium_tests.create_targets_config(
+        builder_config, got_revisions, self.m.path.checkout_dir)
+
+    def _get_matching_test(requested_test_name):
+      for t in targets_config.all_tests:
+        if requested_test_name in (t.name, t.canonical_name):
+          return t
+      raise self.m.step.StepFailure(
+          f'No suites on the bot matched the request for {requested_test_name}')
+
+    tests = [_get_matching_test(n) for n in test_names]
+
+    # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
+    # ci builders that would point to gcs dirs that devs do not have access to.
+    # Remove when layout tests can be archived
+    for test in tests:
+      if isinstance(test, SwarmingIsolatedScriptTest):
+        test.spec = attr.evolve(test.spec, results_handler_name=None)
+      if properties.additional_test_args:
+        test.spec = attr.evolve(
+            test.spec,
+            args=test.spec.args + tuple(properties.additional_test_args))
+    if should_build:
+      raw_result, preserve_gn_args = self.compile_targets(
+          properties, tests, builder_id, preserve_gn_args, build_dir,
+          builder_recipe)
+      if raw_result.status != common_pb2.SUCCESS:
+        return raw_result, None
+    skylab_tests = [test for test in tests if test.is_skylabtest]
+    if not should_build or preserve_gn_args or skylab_tests:
+      # When compiling, "mb.py gen" will produce the *.isolate files for us. In
+      # all other instances, we need to ask mb.py to do so specifically. Do so
+      # for *all* possible targets. This shouldn't take much longer, and
+      # simplifies things a bit.
+      self.m.chromium.mb_isolate_everything(None, build_dir=build_dir)
+
+    isolate_tests = [test for test in tests if test.isolate_target]
+    if isolate_tests:
+      self.m.chromium_tests.isolate_tests(
+          builder_config, isolate_tests, '', '', build_dir=build_dir)
+
+    # TODO(crbug.com/41492686): Prepare skylab artifacts
+    return None, tests
