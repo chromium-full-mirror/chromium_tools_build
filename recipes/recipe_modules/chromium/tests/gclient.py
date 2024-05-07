@@ -198,3 +198,9 @@ def GenTests(api):
       api.properties(apply_gclient_config='fuchsia_workstation_perf_images'),
       api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+      'chromium_with_telemetry_dependencies',
+      api.properties(
+          apply_gclient_config='chromium_with_telemetry_dependencies'),
+      api.post_process(post_process.DropExpectation),
+  )

@@ -18,6 +18,8 @@ def chromium_bare(c):
   s.name = 'src'
   s.url = ChromiumGitURL(c, 'chromium', 'src.git')
   s.custom_vars = {
+      # TODO(crbug.com/339061089): Remove this once the default is changed to
+      # False.
       # We always want the bots to fetch the dependencies needed to
       # run the telemetry tests, regardless of whether they are needed or not
       # (this makes things simpler and more consistent).
@@ -379,9 +381,16 @@ def chrome_internal(c):
 def checkout_instrumented_libraries(c):
   c.solutions[0].custom_vars['checkout_instrumented_libraries'] = 'True'
 
+
+# TODO(crbug.com/339061089): Remove this once the default is changed to False.
 @CONFIG_CTX(includes=['chromium'])
 def chromium_no_telemetry_dependencies(c):  # pragma: no cover
   c.solutions[0].custom_vars['checkout_telemetry_dependencies'] = 'False'
+
+
+@CONFIG_CTX(includes=['chromium'])
+def chromium_with_telemetry_dependencies(c):
+  c.solutions[0].custom_vars['checkout_telemetry_dependencies'] = 'True'
 
 
 @CONFIG_CTX(includes=['chromium'])
