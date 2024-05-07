@@ -9,6 +9,7 @@ this recipe to test both UTR cli and recipe changes. The tests invoked are
 configurable as input properties."""
 
 from recipe_engine import post_process
+from recipe_engine.config_types import Path
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
@@ -31,7 +32,8 @@ PROPERTIES = InputProperties
 
 
 def RunSteps(api: RecipeApi, properties: InputProperties):
-  checkout(api)
+  recipe_dir = checkout(api)
+  bundle_dir = create_recipe_bundle(api, recipe_dir)
   for builder_suites in properties.builder_suites:
     step_name = f'{builder_suites.bucket}:{builder_suites.builder_name}'
     build_dir = api.chromium_checkout.src_dir / builder_suites.build_dir
@@ -45,7 +47,7 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
         '--build-dir',
         build_dir,
         '--recipe-path',
-        api.path.cache_dir / 'builder' / 'infra' / 'build',
+        bundle_dir,
         '--force',
         '-vv',
     ]
@@ -56,7 +58,11 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
 
 def checkout(api: RecipeApi):
-  """Checks out chromium/src and build repos."""
+  """Checks out chromium/src and build repos.
+
+  Returns path to the tools/build.git recipe checkout. The src checkout can
+  be accessed at `api.chromium_checkout.src_dir`.
+  """
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
 
@@ -67,6 +73,19 @@ def checkout(api: RecipeApi):
 
   api.chromium_checkout.ensure_checkout()
   api.chromium.runhooks()
+  return api.path.cache_dir / 'builder' / 'infra' / 'build'
+
+
+def create_recipe_bundle(api: RecipeApi, recipe_dir: Path):
+  """Creates a hermetic recipe bundle via `recipes.py bundle`."""
+  bundle_dir = api.path.mkdtemp('recipe_bundle')
+  api.step('create bundle', [
+      recipe_dir / 'recipes' / 'recipes.py',
+      'bundle',
+      '--destination',
+      bundle_dir,
+  ])
+  return bundle_dir
 
 
 def GenTests(api: RecipeTestApi):
@@ -89,7 +108,7 @@ def GenTests(api: RecipeTestApi):
                          '--bucket', 'fake-bucket',
                          '--builder', 'fake-builder',
                          '--build-dir', '[CACHE]/builder/src/fake/build',
-                         '--recipe-path', '[CACHE]/builder/infra/build',
+                         '--recipe-path', '[CLEANUP]/recipe_bundle_tmp_1',
                          '--force',
                          '-vv',
                          '--test', 'testA',
