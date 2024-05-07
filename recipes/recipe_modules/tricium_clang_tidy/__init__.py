@@ -15,7 +15,3 @@ DEPS = [
 
 _clang_tidy_path = ('third_party', 'llvm-build', 'Release+Asserts', 'bin',
                     'clang-tidy')
-
-CXX17_FAILURE_SUFFIX = ('Potentially relevant: clang-tidy currently runs in '
-                        'c++17 mode. Use of c++20-only features is '
-                        'currently discouraged. See crbug.com/1406869.')
