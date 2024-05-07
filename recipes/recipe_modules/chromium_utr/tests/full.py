@@ -18,6 +18,7 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/path',
+    'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
 ]
@@ -36,7 +37,13 @@ def RunSteps(api, request):
   build_path = api.path.checkout_dir.joinpath('out', 'Release')
   api.chromium_tests.configure_build(builder_config)
 
-  return api.chromium_utr.prerun_checks(request, build_path, builder_id)
+  result = api.chromium_utr.prerun_checks(request, build_path, builder_id)
+  if result:
+    return result
+
+  api.chromium_utr.generate_got_revisions_map()
+  api.chromium_utr.handle_code_coverage(build_path, request, builder_id)
+  api.chromium_utr.get_remote_compile_options(build_path)
 
 
 def GenTests(api):
@@ -223,6 +230,25 @@ target_os=['os']
   )
 
   yield api.test(
+      'code_coverage',
+      boilerplate(
+          checkout_path='[CACHE]\\src',
+          build_dir='[CACHE]\\src\\out\\Release',
+          builder_recipe='chromium_trybot',
+          build=api.chromium.generic_build(
+              builder_group='fake-group',
+              builder='fake-tester',
+              bucket='try',
+          ),
+      ),
+      api.platform('win', 32),
+      api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'code_coverage_no_upstream',
       boilerplate(builder_recipe='chromium_trybot',),
       api.code_coverage(use_clang_coverage=True),
@@ -238,5 +264,81 @@ target_os=['os']
           post_process.MustRun,
           'write output_properties_file checkout/output_properties.json'),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'code_coverage_skip_instrument',
+      boilerplate(
+          build_dir='[CACHE]/src/out/Release',
+          builder_recipe='chromium_trybot',
+          bypass_branch_check=True,
+          skip_instrumentation=True,
+      ),
+      api.code_coverage(use_clang_coverage=True),
+      api.post_process(post_process.MustRun, 'save paths of affected files'),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'code_coverage_instrument_everything_user_gn_args_win',
+      boilerplate(
+          build_dir='[CACHE]/src/out/Release',
+          builder_recipe='chromium_trybot',
+          bypass_branch_check=True,
+          skip_instrumentation=False,
+          preserve_gn_args=True,
+      ),
+      api.code_coverage(use_clang_coverage=True),
+      api.path.exists(
+          api.path.cache_dir.joinpath('src', 'out', 'Release', 'args.gn')),
+      api.step_data(
+          'read GN args',
+          api.raw_io.output_text('coverage_instrumentation_input_file = '
+                                 '".code-coverage/files_to_instrument.txt"\n'
+                                 'use_remoteexec = true')),
+      api.post_process(post_process.MustRun,
+                       'remove coverage_instrumentation_input_file gn arg'),
+      api.post_process(post_process.StepCommandContains,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['use_remoteexec = true']),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['coverage_instrumentation_input_file']),
+      api.post_process(post_process.StatusSuccess),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'code_coverage_instrument_everything_builder_gn_args',
+      boilerplate(
+          build_dir='[CACHE]/src/out/Release',
+          builder_recipe='chromium_trybot',
+          bypass_branch_check=True,
+          skip_instrumentation=False,
+          preserve_gn_args=False,
+      ),
+      api.code_coverage(use_clang_coverage=True),
+      api.step_data(
+          'read GN args',
+          api.raw_io.output_text('coverage_instrumentation_input_file = '
+                                 '".code-coverage/files_to_instrument.txt"\n'
+                                 'b = true')),
+      api.step_data(
+          'lookup_builder_gn_args_for_code_coverage',
+          stdout=api.raw_io.output_text(
+              'coverage_instrumentation_input_file = '
+              '".code-coverage/files_to_instrument.txt"\n'
+              'b = true')),
+      api.post_process(post_process.MustRun,
+                       'remove coverage_instrumentation_input_file gn arg'),
+      api.post_process(post_process.StepCommandContains,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['b = true']),
+      api.post_process(post_process.StepCommandDoesNotContain,
+                       'remove coverage_instrumentation_input_file gn arg',
+                       ['coverage_instrumentation_input_file']),
+      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -83,7 +83,7 @@ def RunSteps(api: RecipeApi, properties: Request):
   if result != None:
     return result
 
-  got_revisions = generate_got_revisions_map(api)
+  got_revisions = api.chromium_utr.generate_got_revisions_map()
 
   raw_result, tests = create_tests(api, properties, build_path, got_revisions,
                                    compiling_builder_id,
@@ -237,29 +237,6 @@ def configure_build(
           build_path)
 
 
-def generate_got_revisions_map(api):
-  """Generates a minimalistic got_revisions mapping.
-
-  got_revisions is a dict normally returned by gclient/bot_update recipe
-  modules and subsequently referenced throughout the Chromium recipe. Since the
-  UTR runs on developer workstations, we want to avoid modifying or mucking
-  about with the local checkout as much as we can. To that end, this returns a
-  very basic got_revisions map that includes only the keys that normally point
-  to the chromium/src.git revision.
-
-  The rev these keys point to is the local HEAD. Note that if the checkout
-  contains any local commits, this rev will be unique to the checkout.
-  """
-  result = api.git('rev-parse', 'HEAD', stdout=api.raw_io.output())
-  rev = result.stdout.decode('utf-8').strip()
-  return {
-      # See the substitutions in recipe_modules/chromium_tests/generators.py
-      # for what got_* revision keys might be used.
-      'got_cr_revision': rev,
-      'got_revision': rev,
-      'got_src_revision': rev,
-  }
-
 def compile_targets(
     api: RecipeApi,
     properties: Request,
@@ -289,8 +266,8 @@ def compile_targets(
   # Only recipes that support try should handle changed files
   if (api.code_coverage.using_coverage and
       builder_recipe in ('chromium/orchestrator', 'chromium_trybot')):
-    preserve_gn_args = handle_code_coverage(api, build_dir, properties,
-                                            builder_id)
+    preserve_gn_args = api.chromium_utr.handle_code_coverage(
+        build_dir, properties, builder_id)
 
   if preserve_gn_args and api.path.exists(build_dir / 'args.gn'):
     api.gn.gen(build_dir, 'gn_gen')
@@ -303,7 +280,7 @@ def compile_targets(
         build_dir=build_dir,
         isolated_targets=tests_to_isolate)
 
-  use_reclient = get_remote_compile_options(api, build_dir)
+  use_reclient = api.chromium_utr.get_remote_compile_options(build_dir)
 
   if use_reclient:
     api.reclient.experimental_credentials_helper = 'luci-auth'
@@ -319,82 +296,6 @@ def compile_targets(
       skip_log_upload=True,
       target_output_dir=str(build_dir),
       use_reclient=use_reclient), preserve_gn_args
-
-
-def handle_code_coverage(
-    api: RecipeApi,
-    build_dir: Path,
-    properties: Request,
-    builder_id: chromium.BuilderId,
-) -> bool:
-  """Handles code coverage for runs using try builders
-
-  Based on the input properties (bypass_branch_check and skip_instrumentation)
-  this will either:
-    - Instrument everything by removing the coverage_instrumentation_input_file
-    when bypass_branch_check is true and skip_instrumentation is false
-    - Instrument nothing by creating an empty instrumentation file when
-    bypass_branch_check is true and skip_instrumentation is true
-    - Instrument only the changed files when bypass_branch_check is false
-
-  Args:
-      api: Recipe API object.
-      build_dir: Path to the directory to use for building
-      properties: Request given to the recipe
-      builder_id: The ID of the builder to get tests from
-  Returns:
-      A boolean for whether or not the gn args need to be preserved or the
-      builder's gn args can overwrite them
-  """
-  # If we're bypassing the branch check and not skipping instrumentation
-  # then remove the gn arg to instrument everything
-  if (properties.rerun_options.bypass_branch_check and
-      not properties.rerun_options.skip_instrumentation):
-    if (not properties.rerun_options.preserve_gn_args or
-        not api.path.exists(build_dir / 'args.gn')):
-      gn_args = api.chromium.mb_lookup(
-          builder_id,
-          recursive=False,
-          name='lookup_builder_gn_args_for_code_coverage')
-    else:
-      gn_args, _ = api.gn.read_args(build_dir)
-    api.file.write_text(
-        'remove coverage_instrumentation_input_file gn arg',
-        build_dir.joinpath('args.gn'), '\n'.join(
-            arg for arg in gn_args.split('\n')
-            if not arg.startswith('coverage_instrumentation_input_file')))
-    return True
-  paths = []
-  if not properties.rerun_options.skip_instrumentation:
-    with api.context(cwd=api.path.checkout_dir):
-      step_result = api.chromium_utr.get_upstream_branch()
-      branch_upstream_name = step_result.stdout.decode('utf-8').strip()
-      step_result = api.git(
-          '-c',
-          'core.quotePath=false',
-          'diff',
-          '--merge-base',
-          '--name-only',
-          branch_upstream_name,
-          name='git diff to instrument',
-          stdout=api.raw_io.output(),
-          step_test_data=lambda: api.raw_io.test_api.stream_output('foo.cc'))
-    paths = [p.decode('utf-8') for p in step_result.stdout.splitlines()]
-    paths.sort()
-    if api.platform.is_win:
-      paths = [path.replace('\\', '/') for path in paths]
-  api.code_coverage.src_dir = api.chromium_checkout.src_dir
-  api.code_coverage.instrument(paths)
-  return properties.rerun_options.preserve_gn_args
-
-
-def get_remote_compile_options(api, build_dir) -> bool:
-  use_reclient = False
-  if api.chromium.c.project_generator.tool == 'mb':
-    gn_args, _ = api.gn.read_args(build_dir)
-    args = api.gn.parse_gn_args(gn_args)
-    use_reclient = args.get('use_remoteexec') == 'true'
-  return use_reclient
 
 
 def GenTests(api: RecipeTestApi):
@@ -700,109 +601,6 @@ solutions = [
               'coverage_instrumentation_input_file = "files_to_instrument.txt"')
       ),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
-      api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'code_coverage_skip_instrument',
-      boilerplate(
-          checkout_path='[CACHE]\\src',
-          build_dir='[CACHE]\\src\\out\\Release',
-          builder_recipe='chromium_trybot',
-          build=api.chromium.generic_build(
-              builder_group='fake-group',
-              builder='fake-tester',
-              bucket='try',
-          ),
-          bypass_branch_check=True,
-          skip_instrumentation=True,
-      ),
-      api.platform('win', 32),
-      api.code_coverage(use_clang_coverage=True),
-      api.post_process(post_process.MustRun, 'lookup GN args'),
-      api.step_data(
-          'lookup GN args',
-          stdout=api.raw_io.output_text(
-              'coverage_instrumentation_input_file = "files_to_instrument.txt"')
-      ),
-      api.post_process(post_process.MustRun, 'save paths of affected files'),
-      api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'code_coverage_instrument_everything_user_gn_args',
-      boilerplate(
-          checkout_path='[CACHE]\\src',
-          build_dir='[CACHE]\\src\\out\\Release',
-          builder_recipe='chromium_trybot',
-          build=api.chromium.generic_build(
-              builder_group='fake-group',
-              builder='fake-tester',
-              bucket='try',
-          ),
-          bypass_branch_check=True,
-          skip_instrumentation=False,
-          preserve_gn_args=True,
-      ),
-      api.platform('win', 32),
-      api.code_coverage(use_clang_coverage=True),
-      api.path.exists(
-          api.path.cache_dir.joinpath('src', 'out', 'Release', 'args.gn')),
-      api.step_data(
-          'read GN args',
-          api.raw_io.output_text('coverage_instrumentation_input_file = '
-                                 '".code-coverage/files_to_instrument.txt"\n'
-                                 'use_remoteexec = true')),
-      api.post_process(post_process.MustRun,
-                       'remove coverage_instrumentation_input_file gn arg'),
-      api.post_process(post_process.StepCommandContains,
-                       'remove coverage_instrumentation_input_file gn arg',
-                       ['use_remoteexec = true']),
-      api.post_process(post_process.StepCommandDoesNotContain,
-                       'remove coverage_instrumentation_input_file gn arg',
-                       ['coverage_instrumentation_input_file']),
-      api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'code_coverage_instrument_everything_builder_gn_args',
-      boilerplate(
-          checkout_path='[CACHE]\\src',
-          build_dir='[CACHE]\\src\\out\\Release',
-          builder_recipe='chromium_trybot',
-          build=api.chromium.generic_build(
-              builder_group='fake-group',
-              builder='fake-tester',
-              bucket='try',
-          ),
-          bypass_branch_check=True,
-          skip_instrumentation=False,
-          preserve_gn_args=False,
-      ),
-      api.platform('win', 32),
-      api.code_coverage(use_clang_coverage=True),
-      api.step_data(
-          'read GN args',
-          api.raw_io.output_text('coverage_instrumentation_input_file = '
-                                 '".code-coverage/files_to_instrument.txt"\n'
-                                 'b = true')),
-      api.step_data(
-          'lookup_builder_gn_args_for_code_coverage',
-          stdout=api.raw_io.output_text(
-              'coverage_instrumentation_input_file = '
-              '".code-coverage/files_to_instrument.txt"\n'
-              'b = true')),
-      api.post_process(post_process.MustRun,
-                       'remove coverage_instrumentation_input_file gn arg'),
-      api.post_process(post_process.StepCommandContains,
-                       'remove coverage_instrumentation_input_file gn arg',
-                       ['b = true']),
-      api.post_process(post_process.StepCommandDoesNotContain,
-                       'remove coverage_instrumentation_input_file gn arg',
-                       ['coverage_instrumentation_input_file']),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )

@@ -262,3 +262,100 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           output_properties_file, output)
     return result_pb2.RawResult(
         status=common_pb2.FAILURE, summary_markdown=info)
+
+  def generate_got_revisions_map(self):
+    """Generates a minimalistic got_revisions mapping.
+
+    got_revisions is a dict normally returned by gclient/bot_update recipe
+    modules and subsequently referenced throughout the Chromium recipe. Since the
+    UTR runs on developer workstations, we want to avoid modifying or mucking
+    about with the local checkout as much as we can. To that end, this returns a
+    very basic got_revisions map that includes only the keys that normally point
+    to the chromium/src.git revision.
+
+    The rev these keys point to is the local HEAD. Note that if the checkout
+    contains any local commits, this rev will be unique to the checkout.
+    """
+    result = self.m.git('rev-parse', 'HEAD', stdout=self.m.raw_io.output())
+    rev = result.stdout.decode('utf-8').strip()
+    return {
+        # See the substitutions in recipe_modules/chromium_tests/generators.py
+        # for what got_* revision keys might be used.
+        'got_cr_revision': rev,
+        'got_revision': rev,
+        'got_src_revision': rev,
+    }
+
+  def handle_code_coverage(
+      self,
+      build_dir: Path,
+      properties: Request,
+      builder_id: chromium.BuilderId,
+  ) -> bool:
+    """Handles code coverage for runs using try builders
+
+    Based on the input properties (bypass_branch_check and skip_instrumentation)
+    this will either:
+      - Instrument everything by removing the coverage_instrumentation_input_file
+      when bypass_branch_check is true and skip_instrumentation is false
+      - Instrument nothing by creating an empty instrumentation file when
+      bypass_branch_check is true and skip_instrumentation is true
+      - Instrument only the changed files when bypass_branch_check is false
+
+    Args:
+        build_dir: Path to the directory to use for building
+        properties: Request given to the recipe
+        builder_id: The ID of the builder to get tests from
+    Returns:
+        A boolean for whether or not the gn args need to be preserved or the
+        builder's gn args can overwrite them
+    """
+    # If we're bypassing the branch check and not skipping instrumentation
+    # then remove the gn arg to instrument everything
+    if (properties.rerun_options.bypass_branch_check and
+        not properties.rerun_options.skip_instrumentation):
+      if (not properties.rerun_options.preserve_gn_args or
+          not self.m.path.exists(build_dir / 'args.gn')):
+        gn_args = self.m.chromium.mb_lookup(
+            builder_id,
+            recursive=False,
+            name='lookup_builder_gn_args_for_code_coverage')
+      else:
+        gn_args, _ = self.m.gn.read_args(build_dir)
+      self.m.file.write_text(
+          'remove coverage_instrumentation_input_file gn arg',
+          build_dir.joinpath('args.gn'), '\n'.join(
+              arg for arg in gn_args.split('\n')
+              if not arg.startswith('coverage_instrumentation_input_file')))
+      return True
+    paths = []
+    if not properties.rerun_options.skip_instrumentation:
+      with self.m.context(cwd=self.m.path.checkout_dir):
+        step_result = self.get_upstream_branch()
+        branch_upstream_name = step_result.stdout.decode('utf-8').strip()
+        step_result = self.m.git(
+            '-c',
+            'core.quotePath=false',
+            'diff',
+            '--merge-base',
+            '--name-only',
+            branch_upstream_name,
+            name='git diff to instrument',
+            stdout=self.m.raw_io.output(),
+            step_test_data=lambda: self.m.raw_io.test_api.stream_output('foo.cc'
+                                                                       ))
+      paths = [p.decode('utf-8') for p in step_result.stdout.splitlines()]
+      paths.sort()
+      if self.m.platform.is_win:
+        paths = [path.replace('\\', '/') for path in paths]
+    self.m.code_coverage.src_dir = self.m.chromium_checkout.src_dir
+    self.m.code_coverage.instrument(paths)
+    return properties.rerun_options.preserve_gn_args
+
+  def get_remote_compile_options(self, build_dir) -> bool:
+    use_reclient = False
+    if self.m.chromium.c.project_generator.tool == 'mb':
+      gn_args, _ = self.m.gn.read_args(build_dir)
+      args = self.m.gn.parse_gn_args(gn_args)
+      use_reclient = args.get('use_remoteexec') == 'true'
+    return use_reclient
