@@ -45,8 +45,7 @@ def RunSteps(api, properties):
     with api.context(cwd=checkout_dir, env=env):
       api.git('clone', '--progress', properties.source_repo, 'src')
 
-  api.path.checkout_dir = checkout_dir / 'src'
-  with api.context(cwd=api.path.checkout_dir, env=env):
+  with api.context(cwd=checkout_dir / 'src', env=env):
     # Discard any commits from previous runs.
     api.git('reset', '--hard', 'HEAD')
 
