@@ -19,6 +19,11 @@ SPEC = {
                 'mb',
             ],
             gclient_config='chromium',
+            gclient_apply_config=[
+                # This is necessary due to this builder running the
+                # telemetry_perf_unittests suite.
+                "chromium_with_telemetry_dependencies",
+            ],
             chromium_config_kwargs={
                 'BUILD_CONFIG': 'Release',
                 'TARGET_BITS': 64,
