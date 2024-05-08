@@ -40,7 +40,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           build_args=List(str),
           compiler=Single(str, required=False),
           mode=Single(str, required=False),
-          goma_dir=Single(Path, required=False),
           prune_venv=Single(bool, empty_val=False, required=False),
           reclient_deps_cache_by_step=Single(
               bool, empty_val=False, required=False),
