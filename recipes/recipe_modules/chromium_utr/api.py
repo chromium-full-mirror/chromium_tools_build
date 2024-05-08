@@ -1,11 +1,7 @@
 # Copyright 2024 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Shareable implementation of the recipe side of Chromium's UTR.
-
-TODO(crbug.com/41492686): Move as much code from
-recipes/chromium/universal_test_runner.py into here as possible.
-"""
+"""Shareable implementation of the recipe side of Chromium's UTR."""
 
 import attr
 import copy
@@ -22,6 +18,8 @@ from PB.recipe_modules.build.chromium_utr.request import Request
 
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build.chromium_tests_builder_config import (
+    builder_config as builder_config_module)
 from RECIPE_MODULES.build.chromium_tests.steps import (
     Test, SwarmingIsolatedScriptTest)
 
@@ -48,8 +46,8 @@ except ImportError:  # pragma: no cover
 
 class ChromiumUTRApi(recipe_api.RecipeApi):
 
-  def run(self, properties: Request, compiling_builder_id: chromium.BuilderId,
-          compiling_builder_config: ctbc.BuilderConfig) -> result_pb2.RawResult:
+  def run(self, properties: Request, builder_id: chromium.BuilderId,
+          builder_config: ctbc.BuilderConfig) -> result_pb2.RawResult:
     """Compiles and runs tests as needed.
 
     Args:
@@ -62,6 +60,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     """
     should_build = properties.run_type != Request.RunType.RUN_TYPE_RUN
     should_test = properties.run_type != Request.RunType.RUN_TYPE_COMPILE
+
+    compiling_builder_id, compiling_builder_config = self.get_compiling_builder_config(
+        builder_id, builder_config)
 
     build_path = self.configure_build_dir(properties.build_dir)
     result = self.prerun_checks(properties, build_path, compiling_builder_id)
@@ -89,11 +90,42 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       self.m.chromium_swarming.add_default_tag('is_utr:1')
       return test_runner()
 
+  def get_compiling_builder_config(
+      self, builder_id: chromium.BuilderId, builder_config: ctbc.BuilderConfig
+  ) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
+    """Gets the config of the compiling-builder for the given BuilderConfig
+
+    Essentially just returns the BuilderConfig of the parent builder if the
+    given BuilderConfig is a child-tester.
+
+    Args:
+      builder_id: BuilderId of the given builder
+      builder_config: BuilderConfig of the given builder
+
+    Returns:
+      Tuple of BuilderId for the compiler builder, BuilderConfig for the
+      compiling builder
+    """
+    if builder_config.execution_mode != ctbc.TEST:
+      return builder_id, builder_config
+
+    compiling_builder_id = chromium.BuilderId.create_for_group(
+        builder_config.parent_builder_group, builder_config.parent_buildername)
+    compiling_builder_config = builder_config_module.BuilderConfig.lookup(
+        compiling_builder_id, builder_config.builder_db)
+    if compiling_builder_config.execution_mode != ctbc.COMPILE_AND_TEST:
+      raise self.m.step.StepFailure(
+          f'Unsupported UTR invocation for builder {builder_id} triggered by '
+          f'builder {builder_config.parent_buildername}. Please file a '
+          "general infra bug via https://g.co/bugatrooper if you're seeing "
+          'this.')
+    return compiling_builder_id, compiling_builder_config
+
   def configure_build_dir(self, build_dir):
     if OLD_PATH_TYPE:  # pragma: no cover
       # see comment in import block at top of this file.
-      build_dir = build_dir or api.path.join(self.m.path.checkout_dir, 'out',
-                                             self.m.chromium.c.build_config_fs)
+      build_dir = build_dir or self.m.path.join(
+          self.m.path.checkout_dir, 'out', self.m.chromium.c.build_config_fs)
       build_path = Path(RootBasePath(), build_dir)
     else:  # pragma: no cover
       if build_dir:

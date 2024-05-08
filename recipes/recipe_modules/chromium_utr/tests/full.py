@@ -34,7 +34,9 @@ def RunSteps(api, request):
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.path.checkout_dir = api.path.abs_to_path(request.checkout_path)
-  api.chromium_tests.configure_build(builder_config)
+  api.chromium_tests.configure_build(
+      builder_config,
+      test_only=request.run_type == Request.RunType.RUN_TYPE_RUN)
 
   return api.chromium_utr.run(request, builder_id, builder_config)
 
@@ -237,28 +239,81 @@ solutions = [
 
   yield api.test(
       'child_tester',
-      boilerplate(
-          build=api.chromium_tests_builder_config.ci_build(
-              builder_group='fake-group',
-              builder='fake-tester',
-              builder_db=ctbc.BuilderDatabase.create({
-                  'fake-group': {
-                      'fake-builder':
-                          ctbc.BuilderSpec.create(
-                              chromium_config='chromium',
-                              gclient_config='chromium',
-                          ),
-                      'fake-tester':
-                          ctbc.BuilderSpec.create(
-                              execution_mode=ctbc.TEST,
-                              parent_buildername='fake-builder',
-                              parent_builder_group='fake-group',
-                              chromium_config='chromium',
-                              gclient_config='chromium',
-                          ),
-                  },
-              }))),
+      boilerplate_properties(),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          parent_builder_group='fake-group',
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.chromium_tests.read_targets_spec(
+          'fake-group', {
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              },
+          }),
       api.post_process(post_process.MustRun, 'browser_tests'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'unsupported_child_testers',
+      boilerplate_properties(),
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='fake-group',
+          builder='fake-grandchild-tester',
+          builder_db=ctbc.BuilderDatabase.create({
+              'fake-group': {
+                  'fake-builder':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-child-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-builder',
+                          parent_builder_group='fake-group',
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+                  'fake-grandchild-tester':
+                      ctbc.BuilderSpec.create(
+                          execution_mode=ctbc.TEST,
+                          parent_buildername='fake-child-tester',
+                          parent_builder_group='fake-group',
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.post_process(
+          post_process.SummaryMarkdownRE,
+          'Unsupported UTR invocation for builder fake-group:fake-grandchild-tester.*',
+      ),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 
