@@ -73,13 +73,22 @@ def RunSteps(api, properties):
           'user.name',
           'Expectation File Editor',
           name='set git config user.name')
-      api.git.new_branch(MAIN_BRANCH, name='create main branch')
+      # We use "git checkout -b" here and below instead of api.git.new_branch()
+      # since new_branch creates the new branch at origin/main instead of the
+      # pinned revision. This is problematic if the working directory is a
+      # DEPSed in repo, as the pinned revision can be behind origin/main, which
+      # can git submodules to show ups as changed.
+      api.git('checkout', '-b', MAIN_BRANCH, name='create main branch')
 
       for script_invocation in invocations:
         with api.step.nest(script_invocation.step_name):
           # We don't care about the specific branch name, just that there won't
           # be any overlap.
-          api.git.new_branch(str(api.time.time()), name='create script branch')
+          api.git(
+              'checkout',
+              '-b',
+              str(api.time.time()),
+              name='create script branch')
           try:
             _RunScript(api, script_invocation)
           except api.step.StepFailure as e:
