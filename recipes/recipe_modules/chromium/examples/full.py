@@ -22,8 +22,8 @@ DEPS = [
 
 def RunSteps(api):
   use_reclient = api.properties.get('use_reclient', False)
-  resource_usage_output_dir = api.properties.get('resource_usage_output_dir',
-                                                 None)
+  resource_usage_output_file = api.properties.get('resource_usage_output_file',
+                                                  None)
   out_dir = api.properties.get('out_dir', None)
 
   configs = api.properties.get('configs', [])
@@ -53,7 +53,7 @@ def RunSteps(api):
         targets=['All'],
         out_dir=out_dir,
         use_reclient=use_reclient,
-        resource_usage_output_dir=resource_usage_output_dir)
+        resource_usage_output_file=resource_usage_output_file)
 
 
 def GenTests(api):
@@ -200,11 +200,11 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(resource_usage_output_dir=api.path.cache_dir /
-                     'resource_usage'),
+      api.properties(resource_usage_output_file=api.path.cache_dir /
+                     'resource_usage' / 'time_log.txt'),
       api.reclient.properties(),
       api.post_process(post_process.StepCommandContains, 'compile',
-                       ['--resource_usage_output']),
+                       ['--resource_usage_output_file']),
       api.post_process(post_process.DropExpectation),
   )
 

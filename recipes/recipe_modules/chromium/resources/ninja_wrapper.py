@@ -463,8 +463,8 @@ def parse_args(args):
       help=('Seconds to wait for new output from ninja before killing it. '
             '0 = let ninja run forever'))
   parser.add_argument(
-      '--resource_usage_output',
-      help='Measure resources used to run command and Save result in a file.')
+      '--resource_usage_output_file',
+      help='Measure resources used to run command and save result in a file.')
 
   options = parser.parse_args(args)
   return options
@@ -506,9 +506,11 @@ def main(argv):
   if not options.no_prune_venv:
     prune_virtual_env()
 
-  if options.resource_usage_output:
-    ninja_cmd = [_TIME_CMD, '-v', '-o', options.resource_usage_output
-                ] + ninja_cmd
+  if options.resource_usage_output_file:
+    ninja_cmd = [
+        _TIME_CMD, '--format=\'{"ru_utime": %U}\'', '-o',
+        options.resource_usage_output_file
+    ] + ninja_cmd
 
   if not options.ninja_info_output and options.io_timeout <= 0:
     # Options are set such that we don't need to intercept the stdout

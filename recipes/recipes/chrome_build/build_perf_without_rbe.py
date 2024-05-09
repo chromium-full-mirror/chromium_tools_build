@@ -17,17 +17,21 @@ DEPS = [
     'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
-    'code_coverage',
     'recipe_engine/buildbucket',
+    'recipe_engine/cipd',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
+    'recipe_engine/time',
     'reclient',
 ]
 
+_BQ_TABLE_NAME = 'chromium-build-stats.public.build_resource_usage'
 
 def _raise_raw_result_on_failure(api, raw_result):
   if raw_result.status != common_pb.SUCCESS:
@@ -37,13 +41,35 @@ def _raise_raw_result_on_failure(api, raw_result):
 def _compile_without_remote_execution(api, target, resource_usage_output_dir):
   # Build without remote execution.
   api.chromium_build_perf.recreate_build_dir(remove_deps_cache=True)
+  resource_usage_output_file = resource_usage_output_dir / 'resource_usage.txt'
   raw_result = api.chromium_build_perf.build_with_ninja(
       target,
       with_remote_cache=False,
       use_rbe=False,
-      resource_usage_output_dir=resource_usage_output_dir)
+      resource_usage_output_file=resource_usage_output_file)
   _raise_raw_result_on_failure(api, raw_result)
 
+  config = api.file.read_json(
+      'read resource usage log',
+      resource_usage_output_file,
+      test_data={'ru_utime': '0:01.00'},
+  )
+  config['revision'] = api.buildbucket.build.input.gitiles_commit.id
+  config['build_timestamp'] = api.time.utcnow().isoformat()
+  bqupload_cipd_path = api.cipd.ensure_tool('infra/tools/bqupload/${platform}',
+                                            'latest')
+  try:
+    api.step(
+        'upload resource usage metrics to BigQuery', [
+            bqupload_cipd_path,
+            _BQ_TABLE_NAME,
+        ],
+        stdin=api.raw_io.input(data=api.json.dumps(config)),
+        infra_step=True)
+  finally:
+    api.step.active_result.presentation.logs[
+        'resource_usage_metrics'] = api.json.dumps(
+            config, indent=2)
 
 def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
@@ -94,7 +120,7 @@ def GenTests(api):
       api.reclient.properties(),
       api.post_process(post_process.StepCommandContains,
                        'Build chrome without remote execution',
-                       ['--resource_usage_output']),
+                       ['--resource_usage_output_file']),
       api.post_process(post_process.DropExpectation),
   )
 
