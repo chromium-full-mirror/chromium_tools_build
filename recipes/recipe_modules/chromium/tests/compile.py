@@ -156,7 +156,7 @@ def GenTests(api):
           [1/1] CXX a.o
           filename:row:col: error: error info
           ```
-          #### More information in raw_io.output_text[failure_summary]
+          #### More information in [failure_summary](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
           """).strip()),
       api.post_process(post_process.DropExpectation),
   )
@@ -204,7 +204,7 @@ def GenTests(api):
           More stuff that happened in the error
           ```
           ##### ...The message was too long...
-          #### More information in raw_io.output_text[failure_summary]
+          #### More information in [failure_summary](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
           """).strip()),
       api.post_process(post_process.DropExpectation),
   )

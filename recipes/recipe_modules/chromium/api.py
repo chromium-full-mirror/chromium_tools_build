@@ -6,6 +6,7 @@ import collections
 import collections.abc
 import contextlib
 import functools
+import re
 import textwrap
 
 from recipe_engine import recipe_api
@@ -303,10 +304,24 @@ class ChromiumApi(recipe_api.RecipeApi):
     header = '#### Step _%s_ failed. Error logs are shown below:' % step_name
     summary_lines.insert(0, header)
     # Ensure footer is within a reasonable size,
-    if len(footer) <= 2 * AVG_LINE_SIZE:
+    if len(footer) <= 3 * AVG_LINE_SIZE:
       summary_lines.append('#### %s' % footer)
 
     return '\n'.join(summary_lines)
+
+  # TODO: crbug.com/339375951 - Move this logic to infra recipe modules.
+  def _get_failure_summary_url(self, step):
+    sanitized_name_tokens = [
+        re.sub('[ _/()]', '_', t) for t in step.name_tokens
+    ]
+    url = 'https://%(logdog_hostname)s/logs/%(logdog_project)s/%(logdog_prefix)s/+/u/%(step_name)s/%(log_name)s' % {
+        'logdog_hostname': self.m.buildbucket.build.infra.logdog.hostname,
+        'logdog_project': self.m.buildbucket.build.infra.logdog.project,
+        'logdog_prefix': self.m.buildbucket.build.infra.logdog.prefix,
+        'step_name': '/'.join(sanitized_name_tokens),
+        'log_name': 'raw_io.output_text_failure_summary_',
+    }
+    return url
 
   def _run_ninja(self,
                  ninja_command,
@@ -340,8 +355,10 @@ class ChromiumApi(recipe_api.RecipeApi):
       StepFailure from compile confirm no-op step
     """
 
-    CompileResult = collections.namedtuple('CompileResult',
-                                           'failure_summary retcode')
+    CompileResult = collections.namedtuple(
+        'CompileResult',
+        'failure_summary failure_summary_url retcode',
+        defaults=(None, None, None))
 
     failure_output = self.m.raw_io.output_text(
         add_output_log='on_failure', name='failure_summary')
@@ -401,11 +418,15 @@ class ChromiumApi(recipe_api.RecipeApi):
 
       failure_summary = ('(retcode=%d) No failure summary provided.' %
                          ninja_step_result.retcode)
+      failure_summary_url = ''
       if ninja_step_result.raw_io.output_text:
         failure_summary = ninja_step_result.raw_io.output_text
+        failure_summary_url = self._get_failure_summary_url(ninja_step_result)
 
       return CompileResult(
-          failure_summary=failure_summary, retcode=ninja_step_result.retcode)
+          failure_summary=failure_summary,
+          failure_summary_url=failure_summary_url,
+          retcode=ninja_step_result.retcode)
 
     finally:
       if not self.m.runtime.in_global_shutdown:
@@ -459,7 +480,9 @@ class ChromiumApi(recipe_api.RecipeApi):
             step_test_data=noop_step_test_data)
       check_noop(step_result)
 
+    failure_summary_url = ''
     if step_result.presentation.status == self.m.step.FAILURE:
+      failure_summary_url = self._get_failure_summary_url(step_result)
       return CompileResult(
           failure_summary=textwrap.dedent("""
               Failing build because ninja reported work to do.
@@ -468,9 +491,11 @@ class ChromiumApi(recipe_api.RecipeApi):
               wasn't a no-op). Consult the first "ninja explain:" line for a
               likely culprit.
            """).strip(),
+          failure_summary_url=failure_summary_url,
           retcode=1)
     return CompileResult(
         failure_summary='No dependency issues found',
+        failure_summary_url=failure_summary_url,
         retcode=ninja_step_result.exc_result.retcode)
 
   def _run_ninja_with_reclient(self,
@@ -749,9 +774,12 @@ class ChromiumApi(recipe_api.RecipeApi):
             **kwargs)
 
     if ninja_result.retcode:
-      failure_summary = self._format_failures(
-          ninja_result.failure_summary, name or 'compile',
-          'More information in raw_io.output_text[failure_summary]')
+      footer = ''
+      if ninja_result.failure_summary_url:
+        footer = ('More information in [failure_summary](%s)' %
+                  ninja_result.failure_summary_url)
+      failure_summary = self._format_failures(ninja_result.failure_summary,
+                                              name or 'compile', footer)
       return result_pb2.RawResult(
           status=common_pb.FAILURE, summary_markdown=failure_summary)
     return result_pb2.RawResult(status=common_pb.SUCCESS)

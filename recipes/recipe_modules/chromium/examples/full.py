@@ -180,7 +180,10 @@ def GenTests(api):
       api.properties(out_dir='/tmp',),
       api.override_step_data(
           'compile confirm no-op',
-          stdout=api.raw_io.output_text("ninja explain: chrome is dirty\n")),
+          api.raw_io.output_text(
+              "ninja explain: chrome is dirty\n", name='failure_summary'),
+          stdout=api.raw_io.output_text("ninja explain: chrome is dirty\n"),
+      ),
       api.expect_status('FAILURE'),
   )
 
