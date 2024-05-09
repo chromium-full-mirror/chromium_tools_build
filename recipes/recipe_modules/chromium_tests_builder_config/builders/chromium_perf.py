@@ -75,7 +75,10 @@ def BuildSpec(config_name,
   if target_arch:
     kwargs['chromium_config_kwargs']['TARGET_ARCH'] = target_arch
 
-  kwargs['gclient_apply_config'] += ['checkout_pgo_profiles']
+  kwargs['gclient_apply_config'] += [
+      'checkout_pgo_profiles',
+      'chromium_with_telemetry_dependencies',
+  ]
   if extra_gclient_apply_config:
     kwargs['gclient_apply_config'] += list(extra_gclient_apply_config)
 
