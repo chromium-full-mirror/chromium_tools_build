@@ -45,6 +45,20 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'false_clobber',
+      api.properties(clobber=False),
+      api.post_process(post_process.DoesNotRun, 'clobber'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'no_clobber',
+      api.properties(),
+      api.post_process(post_process.DoesNotRun, 'clobber'),
+      api.post_process(post_process.DropExpectation),
+  )
+
   # TODO(b/256012263): Remove this when the fix has rolled in.
   yield api.test(
       'clobber_cros_cache_bug',
