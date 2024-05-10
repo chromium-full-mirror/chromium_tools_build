@@ -2,23 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import (DoesNotRun, MustRun, DropExpectation)
-from recipe_engine.recipe_api import Property
-from recipe_engine.config import ConfigGroup, Dict, Single, List
+from recipe_engine.post_process import MustRun, DropExpectation
 
 DEPS = [
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
     'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/properties',
-    'recipe_engine/raw_io',
-    'recipe_engine/step',
-    'v8',
     'v8_auto_roller',
 ]
+
+V8_DEPS = """
+vars = {
+  'chromium_url': Str('https://chromium.googlesource.com/'),
+}
+
+deps = {
+  'third_party/icu': Var('chromium_url') + 'chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4'
+}
+"""
+
+CHROMIUM_DEPS = """
+deps = {
+  'src/third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed'
+}
+"""
 
 
 def RunSteps(api):
@@ -56,16 +61,10 @@ def GenTests(api):
         api.post_process(DropExpectation),
     )
 
-  # Infer the v8's dependency version for `third_party/icu` from chromium's
-  # dependency version `3rd_party/icu` based on the dependency location
-  # (https://chromium.googlesource.com/chromium/deps/icu.git).
-  ie_v8_deps = 'deps = {"third_party/icu": "https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"}'
-  ie_chromium_deps = 'deps = {"src/3rd_party/icu": "https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"}'
-
   yield test(
-      'automatic_mapping',
-      ie_chromium_deps,
-      ie_v8_deps,
+      'apply_Var_Str',
+      CHROMIUM_DEPS,
+      V8_DEPS,
       api.post_process(MustRun,
                        'Update trusted deps.gclient setdep third_party_icu'),
   )
