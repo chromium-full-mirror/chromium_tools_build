@@ -508,7 +508,7 @@ def main(argv):
 
   if options.resource_usage_output_file:
     ninja_cmd = [
-        _TIME_CMD, '--format=\'{"ru_utime": %U}\'', '-o',
+        _TIME_CMD, '--format={"ru_utime": %U}', '-o',
         options.resource_usage_output_file
     ] + ninja_cmd
 
