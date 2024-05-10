@@ -4,9 +4,10 @@
 
 import copy
 
-from recipe_engine import recipe_api, step_data
+from recipe_engine import recipe_api
 
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
+from RECIPE_MODULES.depot_tools import bot_update
 from RECIPE_MODULES.depot_tools.gclient import api as gclient
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
@@ -96,7 +97,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       *,
       timeout: int | None = None,
       **kwargs,
-  ) -> step_data.StepData:
+  ) -> bot_update.Result:
     """Wrapper for bot_update.ensure_checkout with chromium-specific additions.
 
     Args:

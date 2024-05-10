@@ -12,7 +12,7 @@ import traceback
 from urllib.parse import urlencode
 
 from google.protobuf import timestamp_pb2
-from recipe_engine import recipe_api, step_data
+from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
 from PB.recipe_engine import result as result_pb2
@@ -24,6 +24,7 @@ from PB.go.chromium.org.luci.buildbucket.proto \
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.attr_utils import attrib, mapping, sequence, attrs
+from RECIPE_MODULES.depot_tools import bot_update
 
 from . import generators, steps
 from . import targets_config as targets_config_module
@@ -122,7 +123,7 @@ class Task:
   test_suites = attrib(sequence[steps.AbstractTest])
 
   # Holds state on build properties. Used to pass state between methods.
-  bot_update_step = attrib(step_data.StepData)
+  bot_update_step = attrib(bot_update.Result)
 
   # The root directory of the checkout.
   root_dir = attrib(Path)
