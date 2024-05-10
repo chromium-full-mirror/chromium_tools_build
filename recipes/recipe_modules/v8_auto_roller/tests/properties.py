@@ -57,23 +57,21 @@ def GenTests(api):
     return api.test(
         name,
         api.properties(autoroller_config=autoroller_config),
-
         api.override_step_data(
-            'Find updated deps.gclient get v8 deps',
-            api.raw_io.stream_output_text(v8_deps, stream='stdout'),
+            'Find updated deps.Read v8/DEPS',
+            api.file.read_text(v8_deps),
         ),
         api.override_step_data(
-            'Find updated deps.gclient get src deps',
-            api.raw_io.stream_output_text(chromium_deps, stream='stdout'),
+            'Find updated deps.Read src/DEPS',
+            api.file.read_text(chromium_deps),
         ),
-
         *expectations,
         api.post_process(DropExpectation),
     )
 
   # includes / excludes
-  ie_v8_deps = "v8/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"
-  ie_chromium_deps = "src/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"
+  ie_v8_deps = "deps = {'v8/third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4'}"
+  ie_chromium_deps = "deps = {'src/third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed'}"
 
   yield test(
       'includes_icu_valid',

@@ -49,7 +49,8 @@ class V8AutoRoller(recipe_api.RecipeApi):
       soln.revision = 'HEAD'
 
       self.m.gclient.c = gclient_config
-      self._setup_chromium(requires_chromium_checkout)
+      if requires_chromium_checkout:
+        self.m.gclient.apply_config('chromium')
 
       # Allow rolling all os deps.
       self.m.gclient.c.target_os.add('android')
@@ -60,38 +61,33 @@ class V8AutoRoller(recipe_api.RecipeApi):
       # solution_name), and might be something else, e.g. devtools-frontend.
       self.m.v8.checkout(ignore_input_commit=True, set_output_commit=False)
 
-  def _setup_chromium(self, requires_chromium_checkout):
-    # Some builders require a chromium checkout. If that's not required, rollers
-    # usually need chromium's DEPS file. We store it at the same location as a
-    # checkout to avoid further tweakings of the process.
-    self.m.gclient.apply_config('chromium')
+      # Some builders require a chromium checkout. If that's not required,
+      # rollers usually need chromium's DEPS file. We store it at the same
+      # location as a checkout to avoid further tweakings of the process.
+      if not requires_chromium_checkout:
+        self._download_chromium_deps_file()
 
-    # TODO(https://crbug.com/338536416): Add support for chromium-less DEPS
-    # parsing agin.
-    # if requires_chromium_checkout:
-    #   self.m.gclient.apply_config('chromium')
-    #   return
+  def _download_chromium_deps_file(self):
+    revision = self.m.gerrit.get_gerrit_branch(
+        'https://chromium-review.googlesource.com/',
+        'chromium/src',
+        'refs/heads/main',
+        step_test_data=lambda: self.m.json.test_api.output({
+            'ref': 'refs/heads/main',
+            'revision': 'deadbeef',
+        }),
+    )
+    deps = self.m.gitiles.download_file(
+        'https://chromium.googlesource.com/chromium/src',
+        'DEPS',
+        revision,
+        step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(''),
+    )
+    chromium_path = self.m.v8.checkout_root / 'src'
+    self.m.file.ensure_directory('ensure chromium cache dir', chromium_path)
 
-    # revision = self.m.gerrit.get_gerrit_branch(
-    #     'https://chromium-review.googlesource.com/',
-    #     'chromium/src',
-    #     'refs/heads/main',
-    #     step_test_data=lambda: self.m.json.test_api.output({
-    #         'ref': 'refs/heads/main',
-    #         'revision': 'deadbeef',
-    #     }),
-    # )
-    # deps = self.m.gitiles.download_file(
-    #     'https://chromium.googlesource.com/chromium/src',
-    #     'DEPS',
-    #     revision,
-    #     step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(''),
-    # )
-    # chromium_path = self.m.v8.checkout_root / 'src'
-    # self.m.file.ensure_directory('ensure chromium cache dir', chromium_path)
-
-    # chromium_deps_file = chromium_path / 'DEPS'
-    # self.m.file.write_text('Store DEPS', chromium_deps_file, deps)
+    chromium_deps_file = chromium_path / 'DEPS'
+    self.m.file.write_text('Store src/DEPS', chromium_deps_file, deps)
 
   def build_cl_manager(self, bugs=None):
     return CLManager(self.m, bugs)
