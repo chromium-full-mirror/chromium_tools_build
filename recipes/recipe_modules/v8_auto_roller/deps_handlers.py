@@ -39,6 +39,17 @@ CIPD_LOG_TEMPLATE = "Rolling %s: %s..%s"
 GIT_LOG_TEMPLATE = "Rolling %s: %s/+log/%s..%s"
 MAX_COMMIT_LOG_ENTRIES = 8
 
+# Custom vars by project. They are added to the gclient solution when
+# determining current deps versions.
+GCLIENT_CUSTOM_VARS = {
+    'https://chromium.googlesource.com/chromium/src': {
+        'checkout_fuchsia_no_hooks': True,
+    },
+    'https://chromium.googlesource.com/v8/v8': {
+        'checkout_fuchsia_no_hooks': True,
+    },
+}
+
 # Some dependent repositories still use the deprecated term as their main branch
 RETSAM = 'retsam'[::-1]
 
@@ -292,7 +303,11 @@ def get_dep_updates(api, step_presentation, autoroller_config):
 
 
 def get_chromium_deps_by_location(api) -> Dict[str, ChromiumDep]:
-  chromium_dep_by_name = get_deps(api, 'src')
+  chromium_dep_by_name = get_deps(
+      api,
+      'https://chromium.googlesource.com/chromium/src',
+      'src',
+  )
   result = {}
   for name, entry in chromium_dep_by_name.items():
     # Skip GCS dependencies
@@ -311,7 +326,7 @@ def get_chromium_deps_by_location(api) -> Dict[str, ChromiumDep]:
 def get_target_deps(
     api, autoroller_config, chromium_dep_by_location) -> List[TargetDep]:
   target = commons.get_targeted_solution(api)
-  target_dep_entry_by_name = get_deps(api, target.name)
+  target_dep_entry_by_name = get_deps(api, target.url, target.name)
 
   target_deps = []
   for name, dep_entry in target_dep_entry_by_name.items():
@@ -360,8 +375,6 @@ def canonical_location(name):
 
 
 def get_location_version(entry):
-  assert '@' in entry, (
-      f'Invalid format: Expected location@version, found {entry}.')
   return entry.split('@', 1)
 
 
@@ -373,51 +386,53 @@ def handle_failed_deps(api, failed_deps):
   raise api.step.StepFailure(message)
 
 
-def get_deps(api, name):
-  deps_file_path = api.v8.checkout_root / name / 'DEPS'
-  deps_content = api.file.read_text(
-      f'Read {name}/DEPS', deps_file_path, include_log=False)
-
-  # Interpret DEPS file.
-  local_scope = {}
-  global_scope = {
-      'Str': lambda str_value: str_value,
-      'Var': lambda var_name: local_scope['vars'][var_name],
-      'deps_os': {},
+def get_deps(api, repo_url, name):
+  # Make a fake spec. Gclient is not nice to us when having two solutions
+  # side by side. The latter checkout kills the former's gclient file.
+  custom_vars = GCLIENT_CUSTOM_VARS.get(repo_url, {})
+  spec = 'solutions=[%s]' % {
+      'managed': False,
+      'name': name,
+      'url': repo_url,
+      'custom_vars': custom_vars,
+      'deps_file': 'DEPS',
   }
-  exec(deps_content, global_scope, local_scope)
 
-  # Extract deps.
-  raw_deps = sorted(local_scope.get('deps', {}).items())
+  # Read local deps information. Each deps has one line in the format:
+  # path/to/deps: repo@revision
+  with api.context(cwd=api.v8.checkout_root):
+    step_result = api.gclient(
+        f'get {name} deps',
+        ['revinfo', '--deps', 'all', '--spec', spec],
+        stdout=api.raw_io.output_text(),
+    )
+
+  # Transform into dict. Skip the solution prefix in keys (e.g. src/).
   deps = {}
-  for path, dep_info in raw_deps:
-    # Remove trailing solution name, e.g. `src/`.
-    path = re.sub(f'^{name}/', '', path)
+  for line in step_result.stdout.strip().splitlines():
+    tokens = line.strip().split(' ')
+    if len(tokens) != 2:
+      raise Exception(f"malformatted DEPS entry '{tokens}'")
 
-    is_dict = isinstance(dep_info, dict)
-    if is_dict and dep_info.get('dep_type') == 'cipd':
-      for package_info in dep_info['packages']:
-        package = package_info['package']
-        version = package_info['version']
-        deps[f'{path}:{package}'] = f'{CIPD_DEP_URL_PREFIX}{package}@{version}'
+    key, value = tokens
 
-    elif is_dict and dep_info.get('dep_type') == 'gcs':
-      for obj in dep_info['objects']:
-        object_name = obj['object_name']
-        bucket = dep_info['bucket']
-        deps[f'{path}:{object_name}'] = f'gs://{bucket}/{object_name}'
+    # Remove trailing colon.
+    key = key.rstrip(':')
 
-    elif is_dict and dep_info.get('url'):
-      deps[path] = dep_info['url']
-    else:
-      assert isinstance(dep_info, str), f'Unsupported type: {dep_info}'
-      deps[path] = dep_info
+    # Skip the deps entry to the solution itself.
+    if not '/' in key:
+      continue
+
+    # Strip trailing solution name (e.g. src/).
+    key = '/'.join(key.split('/')[1:])
+
+    deps[key] = value
 
   # Log DEPS output.
-  api.step.active_result.presentation.logs['deps'] = api.json.dumps(
-      deps, indent=2)
-
+  step_result.presentation.logs['deps'] = api.json.dumps(
+      deps, indent=2).splitlines()
   return deps
+
 
 def get_commit_log(api, repo, commit):
   subject = commit["message"].splitlines()[0]

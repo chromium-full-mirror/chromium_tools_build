@@ -45,12 +45,12 @@ def GenTests(api):
     return api.test(
         name,
         api.override_step_data(
-            'Find updated deps.Read v8/DEPS',
-            api.file.read_text(v8_deps),
+            'Find updated deps.gclient get v8 deps',
+            api.raw_io.stream_output_text(v8_deps, stream='stdout'),
         ),
         api.override_step_data(
-            'Find updated deps.Read src/DEPS',
-            api.file.read_text(chromium_deps),
+            'Find updated deps.gclient get src deps',
+            api.raw_io.stream_output_text(chromium_deps, stream='stdout'),
         ),
         *expectations,
         api.post_process(DropExpectation),
@@ -59,8 +59,8 @@ def GenTests(api):
   # Infer the v8's dependency version for `third_party/icu` from chromium's
   # dependency version `3rd_party/icu` based on the dependency location
   # (https://chromium.googlesource.com/chromium/deps/icu.git).
-  ie_v8_deps = 'deps = {"third_party/icu": "https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"}'
-  ie_chromium_deps = 'deps = {"src/3rd_party/icu": "https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"}'
+  ie_v8_deps = "v8/third_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4"
+  ie_chromium_deps = "src/3rd_party/icu: https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"
 
   yield test(
       'automatic_mapping',
