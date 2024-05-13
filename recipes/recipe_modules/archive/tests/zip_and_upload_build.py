@@ -18,7 +18,7 @@ DEPS = [
 def RunSteps(api):
   api.gclient.set_config('chromium')
 
-  bot_update_step = api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
 
   api.archive.zip_and_upload_build(
       step_name='zip build',
@@ -30,7 +30,7 @@ def RunSteps(api):
       exclude_files='example_exclude',
       exclude_perf_test_files=True,
       platform=api.properties['platform'],
-      update_properties=bot_update_step.presentation.properties,
+      update_properties=update_result.properties,
       store_by_hash=False)
 
 

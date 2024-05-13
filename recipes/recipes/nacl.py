@@ -60,11 +60,8 @@ class FileInfo:
 
 def CheckoutSteps(api):
   api.gclient.set_config('nacl')
-  result = api.bot_update.ensure_checkout()
-
-  # HACK(iannucci): bot_update.ensure_checkout should return an actual
-  # meaningful object with actual meaningful semantics.
-  got_revision = result.presentation.properties['got_revision']
+  update_result = api.bot_update.ensure_checkout()
+  got_revision = update_result.properties['got_revision']
   api.gclient.runhooks()
   return got_revision
 

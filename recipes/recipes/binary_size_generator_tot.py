@@ -42,8 +42,8 @@ def RunSteps(api):
     api.chromium.apply_config('mb')
     api.chromium_android.set_config('base_config')
 
-    result = api.chromium_checkout.ensure_checkout()
-    got_revision = result.presentation.properties['got_revision']
+    update_result = api.chromium_checkout.ensure_checkout()
+    got_revision = update_result.properties['got_revision']
 
     api.chromium.runhooks(name='runhooks')
 

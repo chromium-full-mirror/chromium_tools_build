@@ -123,7 +123,7 @@ class Task:
   test_suites = attrib(sequence[steps.AbstractTest])
 
   # Holds state on build properties. Used to pass state between methods.
-  bot_update_step = attrib(bot_update.Result)
+  update_result = attrib(bot_update.Result)
 
   # The root directory of the checkout.
   root_dir = attrib(Path)
@@ -307,13 +307,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         targets_by_builder_id=targets_by_builder_id,
         skip_tests=test_names_to_skip)
 
-  def prepare_checkout(self,
-                       builder_config,
-                       report_cache_state=True,
-                       set_output_commit=True,
-                       root_solution_revision=None,
-                       runhooks_suffix=None,
-                       **kwargs):
+  def prepare_checkout(
+      self,
+      builder_config,
+      report_cache_state=True,
+      set_output_commit=True,
+      root_solution_revision=None,
+      runhooks_suffix=None,
+      **kwargs,
+  ) -> tuple[bot_update.Result, targets_config_module.TargetsConfig]:
     """
     Args:
       runhooks_suffix: Suffix for gclient runhooks step name
@@ -338,7 +340,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # and the same branch needs to be checked out for the root solution
     root_solution_revision = (root_solution_revision or
                               self.m.properties.get('root_solution_revision'))
-    update_step = self.m.chromium_checkout.ensure_checkout(
+    update_result = self.m.chromium_checkout.ensure_checkout(
         clobber=builder_config.clobber,
         set_output_commit=set_output_commit,
         root_solution_revision=root_solution_revision,
@@ -361,11 +363,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     targets_config = self.create_targets_config(
         builder_config,
-        update_step.presentation.properties,
+        update_result.properties,
         self.m.chromium.c.CHECKOUT_PATH,
     )
 
-    return update_step, targets_config
+    return update_result, targets_config
 
   def _generate_tests_from_targets_spec(
       self,
@@ -497,7 +499,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def compile_specific_targets(self,
                                builder_id,
                                builder_config,
-                               update_step,
+                               update_result: bot_update.Result,
                                targets_config,
                                compile_targets,
                                tests,
@@ -627,7 +629,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           builder_config,
           isolated_tests,
           suffix,
-          update_step.presentation.properties.get('got_revision_cp'),
+          update_result.properties.get('got_revision_cp'),
           additional_isolate_targets=additional_isolate_targets)
 
       if builder_config.perf_isolate_upload:
@@ -635,7 +637,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         repo = self.m.buildbucket.build.input.gitiles_commit.project or \
                'chromium'
         git_hash = self.m.buildbucket.build.input.gitiles_commit.id or \
-               update_step.presentation.properties['got_revision']
+               update_result.properties['got_revision']
         self.m.perf_dashboard.upload_isolate(
             self.m.buildbucket.builder_name,
             self.m.perf_dashboard.get_change_info([{
@@ -794,8 +796,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return execution_info
 
-  def package_build(self, builder_id, update_step, builder_config,
-                    reasons=None):
+  def package_build(
+      self,
+      builder_id,
+      update_result: bot_update.Result,
+      builder_config,
+      reasons=None,
+  ):
     """Zip and upload the build to google storage.
 
     This is currently used for transfer between builder and tester,
@@ -818,9 +825,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
          ctbc.COMPILE_AND_TEST))
 
     if not builder_spec.cf_archive_build:
-      build_revision = update_step.presentation.properties.get(
-          'got_revision',
-          update_step.presentation.properties.get('got_src_revision'))
+      build_revision = update_result.properties.get(
+          'got_revision', update_result.properties.get('got_src_revision'))
 
       # For archiving 'chromium.perf', the builder also archives a version
       # without perf test files for manual bisect.
@@ -831,7 +837,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             self.m.chromium.c.build_config_fs,
             build_url=self._build_bisect_gs_archive_url(builder_spec),
             build_revision=build_revision,
-            update_properties=update_step.presentation.properties,
+            update_properties=update_result.properties,
             exclude_perf_test_files=True,
             store_by_hash=False,
             platform=self.m.chromium.c.TARGET_PLATFORM)
@@ -863,7 +869,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         package_step.presentation.logs['why is this running?'] = (
             standard_reasons)
 
-  def archive_build(self, update_step, enable_snoopy=False):
+  def archive_build(
+      self,
+      update_result: bot_update.Result,
+      enable_snoopy=False,
+  ):
     """Archive the build if the bot is configured to do so.
 
     There are three types of builds that get archived: regular builds,
@@ -884,21 +894,26 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # https://crbug.com/1076679.
     upload_results = self.m.archive.generic_archive(
         build_dir=self.m.chromium.output_dir,
-        update_properties=update_step.presentation.properties,
+        update_properties=update_result.properties,
         custom_vars=custom_vars,
         report_artifacts=enable_snoopy)
 
     self.m.symupload(self.m.chromium.output_dir)
     return upload_results
 
-  def archive_clusterfuzz(self, builder_id, update_step, builder_config):
+  def archive_clusterfuzz(
+      self,
+      builder_id,
+      update_result: bot_update.Result,
+      builder_config,
+  ):
     builder_spec = builder_config.builder_db[builder_id]
 
     if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
       self.m.archive.clusterfuzz_archive(
           build_dir=self.m.chromium.c.build_dir.joinpath(
               self.m.chromium.c.build_config_fs),
-          update_properties=update_step.presentation.properties,
+          update_properties=update_result.properties,
           gs_bucket=builder_spec.cf_gs_bucket,
           gs_acl=builder_spec.cf_gs_acl,
           archive_prefix=builder_spec.cf_archive_name,
@@ -1070,7 +1085,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def _get_trigger_properties(self,
                               builder_id,
-                              update_step,
+                              update_result: bot_update.Result,
                               additional_properties=None):
     """Get the properties used for triggering child builds.
 
@@ -1104,7 +1119,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         # through scheduler, this can be removed
         'parent_build_id': str(self.m.buildbucket.build.id),
     }
-    for name, value in update_step.presentation.properties.items():
+    for name, value in update_result.properties.items():
       if name.startswith('got_'):
         properties['parent_' + name] = value
     # Work around https://crbug.com/785462 in LUCI UI that ignores
@@ -1113,8 +1128,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       properties['revision'] = properties['parent_got_revision']
 
     properties['deps_revision_overrides'] = {
-        path: update_step.json.output['manifest'][path]['revision']
-        for path in update_step.json.output['fixed_revisions']
+        path: update_result.manifest[path]['revision']
+        for path in update_result.fixed_revisions
     }
 
     properties.update(additional_properties or {})
@@ -1182,7 +1197,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def download_and_unzip_build(self,
                                builder_id,
-                               update_step,
+                               update_result: bot_update.Result,
                                builder_config,
                                build_archive_url=None,
                                build_revision=None,
@@ -1200,8 +1215,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     legacy_build_url = None
     build_revision = (
         build_revision or self.m.properties.get('parent_got_revision') or
-        update_step.presentation.properties.get('got_revision') or
-        update_step.presentation.properties.get('got_src_revision'))
+        update_result.properties.get('got_revision') or
+        update_result.properties.get('got_src_revision'))
     build_archive_url = build_archive_url or self.m.properties.get(
         'parent_build_archive_url')
     if not build_archive_url:
@@ -1272,7 +1287,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       builder_id,
                                       builder_config,
                                       failing_tests,
-                                      bot_update_step,
+                                      update_result: bot_update.Result,
                                       suffix,
                                       additional_compile_targets=None):
     """Builds and isolates test suites in |failing_tests|.
@@ -1336,7 +1351,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         builder_config,
         failing_swarming_tests,
         suffix,
-        bot_update_step.presentation.properties.get('got_revision_cp'),
+        update_result.properties.get('got_revision_cp'),
         swarm_hashes_property_name='swarm_hashes',
     )
 
@@ -1463,10 +1478,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.summarize_test_failures(task.test_suites)
         return None, failing_test_suites
 
-      deapply_changes(task.bot_update_step)
+      deapply_changes(task.update_result)
       raw_result, _ = self.build_and_isolate_failing_tests(
           builder_id, task.builder_config, failing_test_suites,
-          task.bot_update_step, 'without patch')
+          task.update_result, 'without patch')
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result, []
 
@@ -1928,12 +1943,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return valid, invalid
 
-  def deapply_deps(self, bot_update_step):
+  def deapply_deps(self, update_result: bot_update.Result):
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
       # If tests fail, we want to fix Chromium revision only. Tests will use
       # the dependencies versioned in 'src' tree.
-      self.m.bot_update.resolve_fixed_revision(bot_update_step.json.output,
-                                               'src')
+      self.m.gclient.c.revisions = {
+          'src': update_result.manifest['src']['revision']
+      }
 
       # NOTE: 'ignore_input_commit=True' gets a checkout using the commit
       # before the tested commit, effectively deapplying the gitiles commit
@@ -2025,7 +2041,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    self.archive_build(task.bot_update_step, self._enable_snoopy)
+    self.archive_build(task.update_result, self._enable_snoopy)
 
     self.m.step.empty('mark: before_tests')
     if task.test_suites:
@@ -2322,7 +2338,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # update all DEPS.
     # Chromium has a lot of tags which slow us down, we don't need them on
     # trybots, so don't fetch them.
-    bot_update_step, targets_config = self.prepare_checkout(
+    update_result, targets_config = self.prepare_checkout(
         builder_config,
         timeout=3600,
         no_fetch_tags=True,
@@ -2347,8 +2363,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if not builder_config.is_compile_only:
       tests = targets_config.all_tests
 
-    root_dir = self.m.chromium_checkout.checkout_dir.joinpath(
-        bot_update_step.json.output['root'])
+    root_dir = update_result.source_root.path
 
     test_targets, compile_targets = self.determine_compilation_targets(
         builder_id,
@@ -2372,7 +2387,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       raw_result, execution_info = self.compile_specific_targets(
           builder_id,
           builder_config,
-          bot_update_step,
+          update_result,
           targets_config,
           compile_targets,
           tests,
@@ -2397,7 +2412,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests = []
 
-    return raw_result, Task(builder_config, tests, bot_update_step, root_dir,
+    return raw_result, Task(builder_config, tests, update_result, root_dir,
                             affected_files, execution_info)
 
   def get_first_tag(self, key):

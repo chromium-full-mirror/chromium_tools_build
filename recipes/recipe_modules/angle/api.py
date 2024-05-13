@@ -7,6 +7,8 @@ from recipe_engine import recipe_api
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
+from RECIPE_MODULES.depot_tools import bot_update
+
 from . import builders as builders_module
 from . import trybots as trybots_module
 
@@ -51,7 +53,7 @@ class ANGLEApi(recipe_api.RecipeApi):
     stepdata.presentation.step_text = '<br/>commit position: %d' % commit_pos
     return commit_pos
 
-  def _checkout(self):
+  def _checkout(self) -> bot_update.Result:
     # Checkout angle and its dependencies (specified in DEPS) using gclient.
     solution_path = self.m.path.cache_dir / 'builder'
     self.m.file.ensure_directory('init cache if not exists', solution_path)
@@ -59,17 +61,15 @@ class ANGLEApi(recipe_api.RecipeApi):
       if self.m.reclient.instance:
         self.m.reclient.use_download_remoteexec_cfg_hook(
             self.m.gclient.c.solutions[0])
-      update_step = self.m.bot_update.ensure_checkout()
-
-    assert update_step.json.output['did_run']
+      update_result = self.m.bot_update.ensure_checkout()
 
     # Add an ANGLE commit position to the build properties.
-    build_properties = update_step.json.output['properties']
+    build_properties = update_result.properties
     build_properties['angle_commit_pos'] = self._get_angle_commit_pos()
 
-    self.m.chromium.set_build_properties(update_step.json.output['properties'])
+    self.m.chromium.set_build_properties(update_result.properties)
     self.m.chromium.runhooks()
-    return update_step
+    return update_result
 
   def _compile(self, isolated_targets):
     raw_result = self.m.chromium_tests.run_mb_and_compile(
@@ -107,7 +107,7 @@ class ANGLEApi(recipe_api.RecipeApi):
     platform = self.m.properties.get('platform', self.m.platform.name)
     test_mode = self.m.properties.get('test_mode')
     self._apply_builder_config(platform, toolchain, test_mode)
-    update_step = self._checkout()
+    update_result = self._checkout()
     if test_mode == 'checkout_only':
       pass
     elif test_mode == 'trace_tests':
@@ -125,7 +125,7 @@ class ANGLEApi(recipe_api.RecipeApi):
           self.m.tryserver.is_tryserver,
           path_to_merge_scripts=script_dir)
       targets_config = self.m.chromium_tests.create_targets_config(
-          self._builder_config, update_step.presentation.properties,
+          self._builder_config, update_result.properties,
           self.m.path.checkout_dir)
 
       if self.m.tryserver.is_tryserver:

@@ -91,8 +91,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
 
     # Check out.
     with api.context(cwd=api.path.cache_dir / 'builder'):
-      update_step = api.bot_update.ensure_checkout()
-      assert update_step.json.output['did_run']
+      api.bot_update.ensure_checkout()
 
     api.chromium.runhooks()
 

@@ -422,7 +422,7 @@ def batched(iterable):
 
 def RunSteps(api):
   builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
-  checkout_results = api.chromium_checkout.ensure_checkout(
+  update_result = api.chromium_checkout.ensure_checkout(
       clobber=bot_config.clobber)
 
   api.chromium.ensure_toolchains()
@@ -588,7 +588,7 @@ def RunSteps(api):
 
       api.archive.clusterfuzz_archive(
           build_dir=api.chromium.output_dir,
-          update_properties=checkout_results.json.output['properties'],
+          update_properties=update_result.properties,
           gs_bucket=bot_config.upload_bucket,
           archive_prefix=bot_config.archive_prefix,
           archive_subdir_suffix=bot_config.upload_directory,

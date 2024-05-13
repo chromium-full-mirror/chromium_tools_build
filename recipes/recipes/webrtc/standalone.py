@@ -31,10 +31,9 @@ def RunSteps(api):
       builder_db=builders.BUILDERS_DB)
   api.webrtc.apply_bot_config(builder_id, builder_config)
 
-  update_step = api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
   targets_config = api.chromium_tests.create_targets_config(
-      builder_config, update_step.presentation.properties,
-      api.path.checkout_dir)
+      builder_config, update_result.properties, api.path.checkout_dir)
 
   api.chromium_swarming.configure_swarming(
       'webrtc', precommit=api.tryserver.is_tryserver)
@@ -84,7 +83,7 @@ def RunSteps(api):
     if test_failure_summary:
       return test_failure_summary
 
-  api.webrtc.trigger_child_builds(builder_id, builder_config, update_step)
+  api.webrtc.trigger_child_builds(builder_id, builder_config, update_result)
 
 
 def GenTests(api):

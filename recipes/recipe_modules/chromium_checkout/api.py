@@ -121,20 +121,18 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       self._report_gclient_config(gclient_config)
 
       with self.m.context(cwd=self.checkout_dir):
-        update_step = self.m.bot_update.ensure_checkout(
+        update_result = self.m.bot_update.ensure_checkout(
             gclient_config=gclient_config, timeout=timeout, **kwargs)
 
-      assert update_step.json.output['did_run']
       # HACK(dnj): Remove after 'crbug.com/398105' has landed
-      self.m.chromium.set_build_properties(
-          update_step.json.output['properties'])
+      self.m.chromium.set_build_properties(update_result.properties)
 
-      callback(update_step.json.output['manifest'])
+      callback(update_result.manifest)
 
     self.update_rdb_invocation(
         gitiles_commit=self.m.buildbucket.build.output.gitiles_commit)
 
-    return update_step
+    return update_result
 
   def _report_gclient_config(self, gclient_config):
     # We may need to update revision values to replace revision resolvers with

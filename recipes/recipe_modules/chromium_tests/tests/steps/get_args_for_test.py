@@ -22,7 +22,7 @@ def RunSteps(api):
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
 
-  update_step = api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
 
   single_spec = api.properties.get('single_spec')
   test_spec = single_spec if single_spec else {}
@@ -34,7 +34,7 @@ def RunSteps(api):
 
   generator = generators.Generator(
       api.chromium_tests,
-      update_step.presentation.properties,
+      update_result.properties,
       api.path.checkout_dir,
       precommit_details=precommit_details,
   )

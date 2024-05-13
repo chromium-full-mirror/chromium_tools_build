@@ -100,9 +100,8 @@ class LibyuvApi(recipe_api.RecipeApi):
 
   def checkout(self):
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
-      update_step = self.m.bot_update.ensure_checkout()
-      assert update_step.json.output['did_run']
-      self.revision = update_step.presentation.properties['got_revision']
+      update_result = self.m.bot_update.ensure_checkout()
+      self.revision = update_result.properties['got_revision']
 
   @contextlib.contextmanager
   def ensure_sdk(self):

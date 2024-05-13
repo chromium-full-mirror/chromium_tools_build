@@ -76,7 +76,7 @@ def compilator_steps(api, properties):
           orch_builder_config,
       )
       api.chromium.apply_config('trybot_flavor')
-      bot_update_step, targets_config = api.chromium_tests.prepare_checkout(
+      update_result, targets_config = api.chromium_tests.prepare_checkout(
           orch_builder_config,
           timeout=3600,
           no_fetch_tags=True,
@@ -102,7 +102,7 @@ def compilator_steps(api, properties):
               orch_builder_id,
               orch_builder_config,
               test_suites,
-              bot_update_step,
+              update_result,
               'without patch',
               additional_compile_targets=[ORCHESTRATOR_ALL_TARGET_NAME]))
     else:
@@ -114,16 +114,14 @@ def compilator_steps(api, properties):
           skip_analysis_reasons=properties.skip_analysis_reasons)
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
-      bot_update_step = task.bot_update_step
+      update_result = task.update_result
 
       # In case a without patch build is needed later, output the needed
       # deps override
-      # In case this is a win bot, convert the double backwards slashes to a
-      # forward slash.
-      patch_root = bot_update_step.json.output['patch_root'].replace('\\', '/')
-      if patch_root != bot_update_step.json.output['root']:
+      if update_result.patch_root != update_result.source_root:
+        patch_root = update_result.patch_root.name
         deps_overrides = {}
-        deps_revision_dict = bot_update_step.json.output['manifest'][patch_root]
+        deps_revision_dict = update_result.manifest[patch_root]
         deps_overrides[patch_root] = deps_revision_dict['revision']
         output_deps_override = api.step.empty('output override_deps')
         output_deps_override.presentation.properties['override_deps'] = (

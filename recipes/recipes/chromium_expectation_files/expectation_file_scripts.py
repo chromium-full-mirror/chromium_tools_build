@@ -56,8 +56,8 @@ def RunSteps(api, properties):
   if properties.checkout_src_internal:
     api.gclient.apply_config('chrome_internal')
   with api.chromium_bootstrap.update_gclient_config() as callback:
-    update_step = api.bot_update.ensure_checkout(refs=['refs/heads/main'])
-    callback(update_step.json.output['manifest'])
+    update_result = api.bot_update.ensure_checkout(refs=['refs/heads/main'])
+    callback(update_result.manifest)
   api.gclient.runhooks()
 
   failures = []

@@ -521,8 +521,7 @@ def RunSteps(api):
     update_result = api.bot_update.ensure_checkout(
         patch=True, gclient_config=gclient_config)
 
-  repo_path = api.path.cache_dir.joinpath('builder',
-                                          update_result.json.output['root'])
+  repo_path = update_result.source_root.path
 
   with api.context(cwd=repo_path):
     affected_files = api.tryserver.get_files_affected_by_patch(repo_path)

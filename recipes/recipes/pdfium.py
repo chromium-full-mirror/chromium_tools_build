@@ -186,10 +186,10 @@ def _checkout_step(api, target_os, reclient_enabled):
     api.gclient.c.got_revision_mapping['pdfium'] = 'got_revision'
     if reclient_enabled:
       api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
-    update_step = api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
 
     api.gclient.runhooks()
-    return update_step.presentation.properties['got_revision']
+    return update_result.properties['got_revision']
 
 
 def _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel, component):

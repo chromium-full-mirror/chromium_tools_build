@@ -71,7 +71,7 @@ def RunSteps(api, properties):
 
   with api.context(cwd=checkout_root):
     update_result = api.bot_update.ensure_checkout(patch=True)
-  repo_path = checkout_root / update_result.json.output['root']
+  repo_path = update_result.source_root.path
   # Absolute path of the per-builder config directory root.
   builder_config_root = repo_path / properties.builder_config_directory
 

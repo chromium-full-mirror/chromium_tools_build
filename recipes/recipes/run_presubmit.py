@@ -160,8 +160,7 @@ def _RunStepsInternal(api):
     solution.name = api.properties.get('solution_name', 's')
     gclient_config.got_revision_mapping[solution.name] = 'got_revision'
 
-  bot_update_step = api.bot_update.ensure_checkout(
-      gclient_config=gclient_config)
+  update_result = api.bot_update.ensure_checkout(gclient_config=gclient_config)
   relative_root = api.gclient.get_gerrit_patch_root(
       gclient_config=gclient_config).rstrip('/')
   got_revision_properties = api.bot_update.get_project_revision_properties(
@@ -169,8 +168,7 @@ def _RunStepsInternal(api):
       # as the delimiter. This breaks on windows otherwise.
       relative_root.replace(api.path.sep, '/'),
       gclient_config or api.gclient.c)
-  upstream = bot_update_step.json.output['properties'].get(
-      got_revision_properties[0])
+  upstream = update_result.properties.get(got_revision_properties[0])
 
   abs_root = api.context.cwd / relative_root
   with api.context(cwd=abs_root):

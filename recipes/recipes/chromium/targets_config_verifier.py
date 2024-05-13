@@ -84,7 +84,7 @@ def RunSteps(api, properties):
   with api.context(cwd=checkout_root):
     update_result = api.bot_update.ensure_checkout(patch=True)
 
-  repo_path = checkout_root / update_result.json.output['root']
+  repo_path = update_result.source_root.path
 
   with api.step.nest('determine affected targets spec files'):
     with api.context(cwd=repo_path):

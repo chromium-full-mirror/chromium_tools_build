@@ -206,9 +206,9 @@ def RunSteps(api, properties):
 
   checkout_dir = api.path.cache_dir / 'builder'
   with api.context(cwd=checkout_dir, env={'PACKFILE_OFFLOADING': 1}):
-    update_step = api.bot_update.ensure_checkout(
+    update_result = api.bot_update.ensure_checkout(
         root_solution_revision=properties.root_solution_revision)
-  api.chromium.set_build_properties(update_step.json.output['properties'])
+  api.chromium.set_build_properties(update_result.properties)
 
   # Remove the llvm-build directory, so that gclient runhooks will download
   # a new clang binary and not use the previous one downloaded by

@@ -11,10 +11,10 @@ from functools import cached_property
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine.result import RawResult
 
+from RECIPE_MODULES.depot_tools import bot_update
+
 from recipe_engine import recipe_api
 from . import bisection
-
-from RECIPE_MODULES.build import chromium
 
 MILO_HOST = 'luci-milo.appspot.com'
 V8_URL = 'https://chromium.googlesource.com/v8/v8'
@@ -475,7 +475,7 @@ class V8Api(recipe_api.RecipeApi):
     self.m.file.ensure_directory('ensure builder cache dir', path)
     return path
 
-  def checkout(self, revision=None, **kwargs):
+  def checkout(self, revision=None, **kwargs) -> bot_update.Result:
     # Set revision for bot_update.
     revision = revision or self.m.buildbucket.gitiles_commit.id or 'HEAD'
     solution = self.m.gclient.c.solutions[0]
@@ -488,14 +488,12 @@ class V8Api(recipe_api.RecipeApi):
       self.m.reclient.use_download_remoteexec_cfg_hook(solution)
 
     with self.m.context(cwd=self.checkout_root):
-      update_step = self.m.bot_update.ensure_checkout(**kwargs)
-
-    assert update_step.json.output['did_run']
+      update_result = self.m.bot_update.ensure_checkout(**kwargs)
 
     self.parse_revision_props(
         self.m.bot_update.last_returned_properties['got_revision'],
         self.m.bot_update.last_returned_properties.get('got_revision_cp'))
-    return update_step
+    return update_result
 
   def parse_revision_props(self, got_revision, got_revision_cp=None):
     """Parses got_revision and got_revision_cp properties.
@@ -866,7 +864,7 @@ class V8Api(recipe_api.RecipeApi):
              self.build_config.get('DEBUG_defined', False))
     return 'debug' if debug else 'release'
 
-  def maybe_create_clusterfuzz_archive(self, update_step):
+  def maybe_create_clusterfuzz_archive(self, update_result: bot_update.Result):
     clusterfuzz_archive = self.bot_config.get('clusterfuzz_archive')
     if clusterfuzz_archive:
       kwargs = {}
@@ -877,12 +875,11 @@ class V8Api(recipe_api.RecipeApi):
           revision_dir='v8',
           build_config=self.get_build_type(),
           build_dir=self.build_output_dir,
-          update_properties=update_step.presentation.properties,
+          update_properties=update_result.properties,
           gs_bucket=clusterfuzz_archive.get('bucket'),
           gs_acl='public-read',
           archive_prefix=clusterfuzz_archive.get('name'),
-          **kwargs
-      )
+          **kwargs)
 
   def download_isolated_json(self, revision):
     archive = 'gs://' + self.isolated_archive_path + f'/{revision}.json'

@@ -126,10 +126,9 @@ def RunSteps(api, properties):
     with api.context(cwd=api.path.cache_dir / 'builder'):
       update_result = api.bot_update.ensure_checkout(
           patch=True, gclient_config=gclient_config)
-    callback(update_result.json.output['manifest'])
+    callback(update_result.manifest)
 
-  repo_path = api.path.cache_dir.joinpath('builder',
-                                          update_result.json.output['root'])
+  repo_path = update_result.source_root.path
 
   bad_branch_configs = []
   with api.context(cwd=repo_path):
