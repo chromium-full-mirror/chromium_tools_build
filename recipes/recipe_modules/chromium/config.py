@@ -366,6 +366,32 @@ def clang_tot(c):
   c.use_tot_clang = True
 
 
+# When using any of these configs that read files from src-internal, the gclient
+# config 'chrome_internal' should also be used to ensure that the affected files
+# can be correctly reported
+
+
+@config_ctx()
+def internal_isolate_paths(c):
+  c.project_generator.isolate_map_paths = [
+      c.CHECKOUT_PATH / 'internal/testing/buildbot/gn_isolate_map.pyl',
+      c.CHECKOUT_PATH / 'testing/buildbot/gn_isolate_map.pyl',
+  ]
+
+
+@config_ctx(includes=['internal_isolate_paths'])
+def internal_targets_specs(c):
+  c.targets_spec_dir = c.CHECKOUT_PATH / 'internal/testing/buildbot'
+  c.analyze_config_path = (
+      c.CHECKOUT_PATH / 'internal/testing/buildbot/trybot_analyze_config.json')
+
+
+@config_ctx(includes=['mb'])
+def internal_mb_config(c):
+  c.project_generator.config_path = (
+      c.CHECKOUT_PATH / 'internal/tools/mb/mb_config.pyl')
+
+
 #### 'Full' configurations
 
 

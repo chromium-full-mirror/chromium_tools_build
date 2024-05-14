@@ -103,6 +103,12 @@ def GenTests(api):
 
   yield from_config('download_xr_test_apks')
 
+  yield from_config('internal_isolate_paths')
+
+  yield from_config('internal_targets_specs')
+
+  yield from_config('internal_mb_config')
+
   yield api.test(
       'mac_toolchain',
       api.platform('mac', 64),
