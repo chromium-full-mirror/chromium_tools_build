@@ -32,7 +32,6 @@
       "@@@STEP_LOG_LINE@config@      \"url\": \"https://webrtc.googlesource.com/src\"@@@",
       "@@@STEP_LOG_LINE@config@    }@@@",
       "@@@STEP_LOG_LINE@config@  ],@@@",
-      "@@@STEP_LOG_LINE@config@  \"src_root\": null,@@@",
       "@@@STEP_LOG_LINE@config@  \"target_cpu\": [@@@",
       "@@@STEP_LOG_LINE@config@    \"arm64\"@@@",
       "@@@STEP_LOG_LINE@config@  ],@@@",

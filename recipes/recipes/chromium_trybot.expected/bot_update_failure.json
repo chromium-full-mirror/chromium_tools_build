@@ -295,7 +295,6 @@
       "@@@STEP_LOG_LINE@config@      \"url\": \"https://chromium.googlesource.com/chromium/src.git\"@@@",
       "@@@STEP_LOG_LINE@config@    }@@@",
       "@@@STEP_LOG_LINE@config@  ],@@@",
-      "@@@STEP_LOG_LINE@config@  \"src_root\": null,@@@",
       "@@@STEP_LOG_LINE@config@  \"target_cpu\": [],@@@",
       "@@@STEP_LOG_LINE@config@  \"target_cpu_only\": false,@@@",
       "@@@STEP_LOG_LINE@config@  \"target_os\": [],@@@",
