@@ -23,7 +23,7 @@ def chromium_bare(c):
       # We always want the bots to fetch the dependencies needed to
       # run the telemetry tests, regardless of whether they are needed or not
       # (this makes things simpler and more consistent).
-      'checkout_telemetry_dependencies': 'True'
+      'checkout_telemetry_dependencies': 'False'
   }
   m = c.got_revision_reverse_mapping
   m['got_revision'] = 'src'

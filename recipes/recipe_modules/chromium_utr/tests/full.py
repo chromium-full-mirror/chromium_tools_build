@@ -158,7 +158,7 @@ solutions = [
   {
     'url': 'https://chromium.googlesource.com/chromium/src.git',
     'custom_vars': {
-      'checkout_telemetry_dependencies': True,
+      'checkout_telemetry_dependencies': False,
     },
   },
 ]
@@ -395,7 +395,7 @@ target_os=['os']
           '- rbe_instance has been set in the .gclient file\n'
           '- custom_var checkout_telemetry_dependencies has mismatched value '
           'in the local .gclient file. Set it to: '
-          '`"checkout_telemetry_dependencies": "True"`\n'
+          '`"checkout_telemetry_dependencies": "False"`\n'
           '- target_os in builder config `"[\'ios\']"` is not in the local '
           '.gclient file. Set it to: `target_os = ["os", "ios"]`'),
       api.post_process(post_process.StepCommandContains, 'read gclient',
