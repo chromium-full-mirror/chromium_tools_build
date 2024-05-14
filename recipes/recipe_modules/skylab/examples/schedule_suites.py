@@ -158,6 +158,13 @@ REQUESTS = [
         bucket='chromiumos-image-archive',
         extra_browser_args=GPU_EXTRA_BROWSWER_ARGS,
     ),
+    gen_skylab_test(
+        'm88_gtest_test_args',
+        tast_expr=None,
+        test_args=LACROS_GTEST_ARGS,
+        autotest_name='chromium',
+        run_cft=True,
+    ),
 ]
 
 MULTI_DUT_REQUESTS = [
@@ -633,5 +640,14 @@ def GenTests(api):
                        'schedule skylab test.' + REQUESTS[0].name + '.schedule',
                        ['--shard-indexes', '2']),
       api.skylab.mock_wait_on_suites('find test runner build', 1),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'enable-cft',
+      api.properties(requests=REQUESTS[6:]),
+      api.post_process(post_process.StepCommandContains,
+                       'schedule skylab test.' + REQUESTS[6].name + '.schedule',
+                       '--run-cft'),
       api.post_process(post_process.DropExpectation),
   )
