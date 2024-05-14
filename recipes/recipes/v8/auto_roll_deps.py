@@ -156,9 +156,9 @@ def RunSteps(api):
     )
 
     if not cq_commits:
-      api.v8.checkout()
+      update_result = api.v8.checkout()
       with api.context(
-          cwd=api.path.checkout_dir,
+          cwd=update_result.source_root.path,
           env_prefixes={'PATH': [api.v8.depot_tools_path]}):
         if api.runtime.is_experimental:
           api.step('fake resubmit to CQ', cmd=None)
@@ -179,7 +179,7 @@ def RunSteps(api):
       api.v8.resource('sleep_20_seconds.py'),
   )
 
-  api.v8.checkout()
+  update_result = api.v8.checkout()
 
   last_v8_revision, last_v8_revision_local = get_consistent_v8_revisions(api)
 
@@ -189,8 +189,9 @@ def RunSteps(api):
     api.step.active_result.presentation.status = api.step.WARNING
     return
 
+  source_dir = update_result.source_root.path
   with api.context(
-      cwd=api.path.checkout_dir / 'v8',
+      cwd=source_dir / 'v8',
       env={'DEPOT_TOOLS_UPDATE': '0'},
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)
@@ -207,8 +208,8 @@ def RunSteps(api):
           api.v8.checkout_root.joinpath('v8', 'tools', 'release',
                                         'auto_roll.py'),
           [
-              '--chromium', api.path.checkout_dir, '--author', push_account,
-              '--reviewer', 'hablich@chromium.org,'
+              '--chromium', source_dir, '--author', push_account, '--reviewer',
+              'hablich@chromium.org,'
               'vahl@chromium.org,'
               'v8-waterfall-sheriff@grotations.appspotmail.com', '--roll',
               '--last-roll', last_v8_revision, '--revision', next_v8_revision,

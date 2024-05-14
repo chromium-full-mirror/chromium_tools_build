@@ -189,7 +189,7 @@ def _checkout_step(api, target_os, reclient_enabled):
     update_result = api.bot_update.ensure_checkout()
 
     api.gclient.runhooks()
-    return update_result.properties['got_revision']
+    return update_result
 
 
 def _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel, component):
@@ -222,12 +222,11 @@ def _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel, component):
 
 # _gn_gen_builds() calls 'gn gen' and returns a dictionary of
 # the used build configuration to be used by Gold.
-def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
-                   rel, component, target_os, out_dir):
+def _gn_gen_builds(api, source_root, memory_tool, skia, xfa, v8, target_cpu,
+                   clang, msvc, rel, component, target_os, out_dir):
   enable_reclient = _is_reclient_enabled(api, msvc)
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
-  checkout = api.path.checkout_dir
   gn_cmd = api.depot_tools.gn_py_path
 
   # Prepare the arguments to pass in.
@@ -277,10 +276,10 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
   if target_cpu:
     args.append('target_cpu="%s"' % target_cpu)
 
-  with api.context(cwd=checkout):
+  with api.context(cwd=source_root):
     api.step(
         'gn gen', PYTHON_CMD + [
-            gn_cmd, '--check', '--root=' + str(checkout), 'gen',
+            gn_cmd, '--check', '--root=' + str(source_root), 'gen',
             '//out/' + out_dir, '--args=' + ' '.join(args)
         ])
 
@@ -288,10 +287,10 @@ def _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc,
   return _gold_build_config(args)
 
 
-def _build_steps(api, clang, msvc, out_dir):
+def _build_steps(api, source_root, clang, msvc, out_dir):
   enable_reclient = _is_reclient_enabled(api, msvc)
-  debug_path = api.path.checkout_dir.joinpath('out', out_dir)
-  ninja_path = api.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
+  debug_path = source_root.joinpath('out', out_dir)
+  ninja_path = source_root.joinpath('third_party', 'ninja', 'ninja')
   ninja_cmd = [ninja_path, '-C', debug_path]
   if enable_reclient:
     ninja_cmd.extend(['-j', api.reclient.jobs])
@@ -346,11 +345,11 @@ def _request_all_corpus_tests(test_runner, skia, v8, xfa):
       test_runner.request_corpus_tests(_XfaDisabledOption)
 
 
-def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
-               run_skia_gold, renderers, swarming):
+def _run_tests(api, source_root, memory_tool, v8, xfa, skia, out_dir,
+               build_config, revision, run_skia_gold, renderers, swarming):
   """Runs the tests and uploads the results to Gold."""
   resultdb = _ResultDb(
-      api, base_variant={
+      api, source_root, base_variant={
           'builder': api.buildbucket.builder_name,
       })
 
@@ -363,9 +362,10 @@ def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
     else:
       embedder_test_renderers = [None]
     python_test_renderers = [None]
-  test_runner = _TestRunner(api, memory_tool, resultdb, out_dir, build_config,
-                            revision, run_skia_gold, embedder_test_renderers,
-                            python_test_renderers, swarming)
+  test_runner = _TestRunner(api, source_root, memory_tool, resultdb, out_dir,
+                            build_config, revision, run_skia_gold,
+                            embedder_test_renderers, python_test_renderers,
+                            swarming)
 
   # pdfium_unittests:
   test_runner.request_unit_tests()
@@ -388,13 +388,12 @@ def _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
 
 class _ResultDb:
 
-  def __init__(self, api, *, base_variant):
+  def __init__(self, api, source_root, *, base_variant):
     self.api = api
     self.base_variant = base_variant
 
     self.result_adapter_path = str(
-        self.api.path.checkout_dir.joinpath('tools', 'resultdb',
-                                            'result_adapter'))
+        source_root.joinpath('tools', 'resultdb', 'result_adapter'))
     if self.api.platform.is_win:
       self.result_adapter_path += '.exe'
 
@@ -458,8 +457,9 @@ class _Swarming:
     # The triggered task request.
     task: TaskRequestMetadata = None
 
-  def __init__(self, api, out_dir, properties):
+  def __init__(self, api, source_dir, out_dir, properties):
     self.api = api
+    self.source_dir = source_dir
     self.out_dir = out_dir
 
     assert 'dimensions' in properties
@@ -479,22 +479,20 @@ class _Swarming:
     if self.test_inputs_digest:
       return
 
-    checkout_path = self.api.path.checkout_dir
-
     test_inputs = self.api.file.read_json(
         'read test inputs list',
-        checkout_path.joinpath(self.out_dir, 'test_runner_py.json'),
+        self.source_dir.joinpath(self.out_dir, 'test_runner_py.json'),
         test_data=[
             [
-                checkout_path,
+                self.source_dir,
                 '.vpython3',
             ],
             [
-                checkout_path,
+                self.source_dir,
                 self.api.path.join(self.out_dir, 'snapshot_blob.bin'),
             ],
             [
-                checkout_path,
+                self.source_dir,
                 self.api.path.join('testing', 'resources'),
             ],
         ],
@@ -506,7 +504,7 @@ class _Swarming:
       archive_paths.append(self.api.path.abs_to_path(entry_root) / entry_path)
 
     self.test_inputs_digest = self.api.cas.archive('archive test inputs',
-                                                   checkout_path,
+                                                   self.source_dir,
                                                    *archive_paths)
 
   def request_task(self, test_request, *, env):
@@ -627,10 +625,11 @@ def _validate_renderers(context_name, renderers):
 
 class _TestRunner:
 
-  def __init__(self, api, memory_tool, resultdb, out_dir, build_config,
-               revision, run_skia_gold, embedder_test_renderers,
+  def __init__(self, api, source_dir, memory_tool, resultdb, out_dir,
+               build_config, revision, run_skia_gold, embedder_test_renderers,
                python_test_renderers, swarming):
     self.api = api
+    self.source_dir = source_dir
     self.resultdb = resultdb
     self.out_dir = self.api.path.join('out', out_dir)
     self.build_config = build_config
@@ -639,7 +638,8 @@ class _TestRunner:
                                                        embedder_test_renderers)
     self.python_test_renderers = _validate_renderers('pdfium_test',
                                                      python_test_renderers)
-    self.swarming = _Swarming(api, self.out_dir, swarming) if swarming else None
+    self.swarming = _Swarming(api, source_dir, self.out_dir,
+                              swarming) if swarming else None
 
     self.local_requests = []
 
@@ -669,19 +669,15 @@ class _TestRunner:
             str(self.api.tryserver.gerrit_change.patchset),
         ])
 
-  @property
-  def _local_root_dir(self):
-    return self.api.path.checkout_dir
-
   def _join_root_dir(self, *paths):
     if self.swarming:
       return self.api.path.join('', *paths)
-    return self._local_root_dir.joinpath(*paths)
+    return self.source_dir.joinpath(*paths)
 
   def _join_out_dir(self, *paths):
     if self.swarming:
       return self.api.path.join(self.out_dir, *paths)
-    return self._local_root_dir.joinpath(self.out_dir, *paths)
+    return self.source_dir.joinpath(self.out_dir, *paths)
 
   def _create_sanitizer_envionment(self, memory_tool):
     """Sets environment variables required by sanitizer tools."""
@@ -831,7 +827,7 @@ class _TestRunner:
         collecting = bool(self.swarming)
         while self.local_requests or collecting:
           if self.local_requests:
-            with self.api.context(cwd=self._local_root_dir, env=self.env):
+            with self.api.context(cwd=self.source_dir, env=self.env):
               for request in self.local_requests:
                 defer(self.api.step, request.step_name, request.command)
             self.local_requests.clear()
@@ -970,7 +966,10 @@ def _gen_properties(api, **kwargs):
 def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
              run_skia_gold, component, skip_test, target_os, renderers,
              swarming):
-  revision = _checkout_step(api, target_os, _is_reclient_enabled(api, msvc))
+  update_result = _checkout_step(api, target_os,
+                                 _is_reclient_enabled(api, msvc))
+  source_dir = update_result.source_root.path
+  revision = update_result.properties['got_revision']
 
   out_dir = _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel,
                                component)
@@ -979,20 +978,20 @@ def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
     # buildbot sets 'clobber' to the empty string which evaluates to false if
     # checked directly. Instead, check using the 'in' keyword.
     if 'clobber' in api.properties:
-      api.file.rmtree('clobber', api.path.checkout_dir.joinpath('out', out_dir))
+      api.file.rmtree('clobber', source_dir.joinpath('out', out_dir))
 
-    build_config = _gn_gen_builds(api, memory_tool, skia, xfa, v8, target_cpu,
-                                  clang, msvc, rel, component, target_os,
-                                  out_dir)
+    build_config = _gn_gen_builds(api, source_dir, memory_tool, skia, xfa, v8,
+                                  target_cpu, clang, msvc, rel, component,
+                                  target_os, out_dir)
     if not run_skia_gold:
       build_config = {}
-    _build_steps(api, clang, msvc, out_dir)
+    _build_steps(api, source_dir, clang, msvc, out_dir)
 
     if skip_test:
       return
 
-    _run_tests(api, memory_tool, v8, xfa, skia, out_dir, build_config, revision,
-               run_skia_gold, renderers, swarming)
+    _run_tests(api, source_dir, memory_tool, v8, xfa, skia, out_dir,
+               build_config, revision, run_skia_gold, renderers, swarming)
 
 
 def GenTests(api):

@@ -161,17 +161,15 @@ def _RunStepsInternal(api):
     gclient_config.got_revision_mapping[solution.name] = 'got_revision'
 
   update_result = api.bot_update.ensure_checkout(gclient_config=gclient_config)
-  relative_root = api.gclient.get_gerrit_patch_root(
-      gclient_config=gclient_config).rstrip('/')
   got_revision_properties = api.bot_update.get_project_revision_properties(
       # Replace path.sep with '/', since most recipes are written assuming '/'
       # as the delimiter. This breaks on windows otherwise.
-      relative_root.replace(api.path.sep, '/'),
+      update_result.patch_root.name.replace(api.path.sep, '/'),
       gclient_config or api.gclient.c)
   upstream = update_result.properties.get(got_revision_properties[0])
 
-  abs_root = api.context.cwd / relative_root
-  with api.context(cwd=abs_root):
+  patch_dir = update_result.patch_root.path
+  with api.context(cwd=patch_dir):
     # TODO(hinoka): Extract email/name from issue?
     api.git(
         '-c',
@@ -186,7 +184,7 @@ def _RunStepsInternal(api):
         infra_step=False)
 
   if api.properties.get('runhooks'):
-    with api.context(cwd=api.path.checkout_dir):
+    with api.context(cwd=update_result.source_root.path):
       api.gclient.runhooks()
 
   presubmit_args = [
@@ -205,7 +203,7 @@ def _RunStepsInternal(api):
 
   presubmit_args.extend([
       '--root',
-      abs_root,
+      patch_dir,
       '--commit',
       '--verbose',
       '--verbose',

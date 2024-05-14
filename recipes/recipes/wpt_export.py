@@ -33,7 +33,7 @@ KMS_CRYPTO_KEY = (
 
 def RunSteps(api):
   api.gclient.set_config('chromium')
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
   creds = api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
       KMS_CRYPTO_KEY,
@@ -41,8 +41,8 @@ def RunSteps(api):
       creds,
   )
 
-  script = api.path.checkout_dir.joinpath('third_party', 'blink', 'tools',
-                                          'wpt_export.py')
+  script = update_result.source_root.path.joinpath('third_party', 'blink',
+                                                   'tools', 'wpt_export.py')
   summary_path = api.path.mkstemp()
   args = [
       '--credentials-json',

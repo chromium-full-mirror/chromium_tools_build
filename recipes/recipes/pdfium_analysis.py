@@ -50,8 +50,8 @@ def RunSteps(api):
   # We want line numbers for the file as it is in the CL, not as it is
   # rebased on origin/main. BotUpdateApi.ensure_checkout() by default
   # prevents rebasing and ensures the correct line numbers.
-  api.bot_update.ensure_checkout()
-  input_dir = api.path.checkout_dir
+  update_result = api.bot_update.ensure_checkout()
+  input_dir = update_result.source_root.path
   affected_files = [
       f for f in GetChangedFiles(api, input_dir)
       if 'third_party/' not in f and api.path.exists(input_dir / f)

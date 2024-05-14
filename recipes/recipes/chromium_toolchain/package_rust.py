@@ -16,7 +16,6 @@ DEPS = [
     'depot_tools/osx_sdk',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
-    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/runtime',
@@ -119,21 +118,23 @@ ARM_MAC_BUILDERS = (
 def RunSteps(api, properties):
   _, bot_config = api.chromium.configure_bot(BUILDERS)
 
-  api.chromium_checkout.ensure_checkout(clobber=bot_config.clobber)
+  update_result = api.chromium_checkout.ensure_checkout(
+      clobber=bot_config.clobber)
+  source_dir = update_result.source_root.path
 
-  api.step('update win toolchain', [
-      'python3',
-      api.path.checkout_dir.joinpath('build', 'vs_toolchain.py'), 'update'
-  ])
+  api.step(
+      'update win toolchain',
+      ['python3',
+       source_dir.joinpath('build', 'vs_toolchain.py'), 'update'])
 
   with api.osx_sdk('ios'):
     with api.depot_tools.on_path():
       args = ['--upload']
       # TODO: specify --revision as package_clang.py does.
-      api.step('package rust', [
-          'python3',
-          api.path.checkout_dir.joinpath('tools', 'rust', 'package_rust.py')
-      ] + args)
+      api.step(
+          'package rust',
+          ['python3',
+           source_dir.joinpath('tools', 'rust', 'package_rust.py')] + args)
 
 
 def GenTests(api):

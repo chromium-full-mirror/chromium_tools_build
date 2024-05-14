@@ -41,18 +41,19 @@ def RunSteps(api):
   # when this recipe was relying on the config for Linux Builder
   api.gclient.apply_config('use_clang_coverage')
   with api.context(cwd=api.path.cache_dir / 'builder'):
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
   # TODO(gbeaty) If none of the hooks are downloading directories containing
   # DIR_METADATA files, then it shouldn't be necessary to run the hooks as part
   # of this recipe
   api.chromium.set_config('chromium')
   api.chromium.runhooks()
 
+  source_dir = update_result.source_root.path
   api.step('dirmd chromium-update', [
-      api.path.checkout_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
+      source_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
       'chromium-update',
       '-chromium-checkout',
-      api.path.checkout_dir,
+      source_dir,
       '-bucket',
       DEST_BUCKET,
       '-bucket-legacy',
@@ -64,10 +65,10 @@ def RunSteps(api):
   # TODO(crbug.com/1285078) merge steps.
   bb_git_commit = api.buildbucket.gitiles_commit
   api.step('dirmd chromium-update bq write', [
-      api.path.checkout_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
+      source_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
       'chromium-update',
       '-chromium-checkout',
-      api.path.checkout_dir,
+      source_dir,
       '-bigquery-table',
       DEST_BIGQUERY_TABLE,
       '-git-host',

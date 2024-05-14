@@ -70,9 +70,9 @@ def _checkout_steps(api):
     }
     if api.reclient.instance:
       api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
-
+  return update_result
 
 def _install_clang(api):
   # 'builder' directory is implicitly cached, so cache clang there
@@ -107,7 +107,7 @@ def _install_clang(api):
 
 
 @contextmanager
-def windows_sdk(api):
+def windows_sdk(api, source_dir):
   """Sets up environment for MSVC usage"""
   if not api.platform.is_win:
     yield
@@ -117,7 +117,7 @@ def windows_sdk(api):
     with api.step.nest('Read Windows SDK environment'):
       toolchain_data = api.file.read_json(
           'read build/win_toolchain.json',
-          api.path.checkout_dir.joinpath('build', 'win_toolchain.json'),
+          source_dir.joinpath('build', 'win_toolchain.json'),
           test_data={
               'win_sdk':
                   'win_toolchain\\vs_files\\version_hash\\Windows Kits\\10',
@@ -233,6 +233,7 @@ class CMakeFixedArgs:
 # on cmake args.
 def _cmake_build(flavor,
                  api,
+                 source_dir,
                  fixed_args: CMakeFixedArgs,
                  dawn_node=False,
                  build_as_other=False,
@@ -241,13 +242,13 @@ def _cmake_build(flavor,
   if targets is None:
     targets = ['all']
   with api.step.nest(f'CMake build {flavor}'):
-    return _do_cmake_build(flavor, api, fixed_args, dawn_node, build_as_other,
-                           enable_readers_and_writers, targets)
+    return _do_cmake_build(flavor, api, source_dir, fixed_args, dawn_node,
+                           build_as_other, enable_readers_and_writers, targets)
 
 
-def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
-                    build_as_other: bool, enable_readers_and_writers: bool,
-                    targets: list):
+def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
+                    dawn_node: bool, build_as_other: bool,
+                    enable_readers_and_writers: bool, targets: list):
   use_remoteexec = fixed_args.enable_remoteexec and fixed_args.clang and api.reclient.instance
   build_env_vars = {}
 
@@ -257,8 +258,6 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
   # cpus are the same.
   # TODO(amaiorano): Assert that host cpu is same as target cpu
   _ = fixed_args.target_cpu
-
-  checkout = api.path.checkout_dir
 
   def cmake_bool_arg(v: bool):
     return "1" if v else "0"
@@ -293,17 +292,17 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
     ])
     if api.platform.is_linux:
       # On Linux, use the x64 sysroot specified in DEPS
-      sysroot = checkout.joinpath('build/linux/debian_bullseye_amd64-sysroot')
+      sysroot = source_dir.joinpath('build/linux/debian_bullseye_amd64-sysroot')
       cmake_args.extend([f'-DCMAKE_SYSROOT={sysroot}'])
 
   rbe_exec_root = _rbe_exec_root(api)
   if use_remoteexec:
     # Tell CMake to use reclient via it's launcher flags
     # See go/reclient-migration-guide (CMake section)
-    rewrapper = checkout.joinpath('buildtools', 'reclient', 'rewrapper')
-    config = checkout.joinpath('buildtools', 'reclient_cfgs',
-                               'chromium-browser-clang',
-                               f'rewrapper_{_rbe_host_platform_name(api)}.cfg')
+    rewrapper = source_dir.joinpath('buildtools', 'reclient', 'rewrapper')
+    config = source_dir.joinpath(
+        'buildtools', 'reclient_cfgs', 'chromium-browser-clang',
+        f'rewrapper_{_rbe_host_platform_name(api)}.cfg')
     cmake_args.extend([
         # f'-DCMAKE_C_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
         # f'-DCMAKE_CXX_COMPILER_LAUNCHER={rewrapper};-cfg={config};-exec_root={rbe_exec_root}',
@@ -315,16 +314,16 @@ def _do_cmake_build(flavor, api, fixed_args: CMakeFixedArgs, dawn_node: bool,
   # Note that this directory is not cached.
   outdir_name = 'cmake-build'
 
-  build_path = checkout.joinpath(outdir_name)
-  ninja_path = checkout.joinpath('third_party', 'ninja')
-  cmake_path = checkout.joinpath(
+  build_path = source_dir.joinpath(outdir_name)
+  ninja_path = source_dir.joinpath('third_party', 'ninja')
+  cmake_path = source_dir.joinpath(
       'tools', 'cmake-win32' if api.platform.is_win else 'cmake', 'bin',
       'cmake')
 
-  with api.context(cwd=checkout, env_prefixes={'PATH': [ninja_path]}):
+  with api.context(cwd=source_dir, env_prefixes={'PATH': [ninja_path]}):
     api.step(
         f'CMake generate step for {flavor}',
-        [cmake_path, '-S', str(checkout), '-B', build_path] + cmake_args)
+        [cmake_path, '-S', str(source_dir), '-B', build_path] + cmake_args)
 
   step_desc = f'Compile {flavor}'
   if use_remoteexec:
@@ -383,23 +382,23 @@ def RunSteps(api,
     env['UBSAN_OPTIONS'] = 'print_stacktrace=1:halt_on_error=1'
 
   with api.context(env=env):
-    _checkout_steps(api)
+    update_result = _checkout_steps(api)
+    source_dir = update_result.source_root.path
 
-    checkout = api.path.checkout_dir
     env_paths = []
     if clang and not api.platform.is_mac:
       env_paths = _install_clang(api)
-    env_paths.append(checkout.joinpath('tools', 'golang', 'bin'))
-    env_paths.append(checkout.joinpath('third_party', 'depot_tools'))
+    env_paths.append(source_dir.joinpath('tools', 'golang', 'bin'))
+    env_paths.append(source_dir.joinpath('third_party', 'depot_tools'))
 
     with api.context(env_prefixes={'PATH': env_paths}) as _, \
         api.osx_sdk('mac') as _, \
-        windows_sdk(api) as _:
+        windows_sdk(api, source_dir) as _:
 
       # Run shell scripts with bash on Windows
       shell_wrapper = ('bash', '--') if api.platform.is_win else ()
 
-      with api.context(cwd=checkout):
+      with api.context(cwd=source_dir):
         # Run these checks only on Linux, no need to check on Win/Mac
         if api.platform.is_linux:
           api.step(
@@ -424,13 +423,15 @@ def RunSteps(api,
           # Skip dxc on Mac to speed up the build
           build_dxc=not api.platform.is_mac)
 
-      build_path = _cmake_build('default targets', api, cmake_fixed_args)
+      build_path = _cmake_build('default targets', api, source_dir,
+                                cmake_fixed_args)
       rel_build_path = str(api.path.relpath(build_path,
-                                            checkout)).replace('\\', '/')
+                                            source_dir)).replace('\\', '/')
 
       _cmake_build(
           'default targets with dawn.node enabled',
           api,
+          source_dir,
           cmake_fixed_args,
           dawn_node=True,
           targets=['dawn.node'])
@@ -443,7 +444,7 @@ def RunSteps(api,
       run_target('tint_unittests', True)
 
       if cmake_fixed_args.build_fuzzers:
-        with api.context(cwd=checkout):
+        with api.context(cwd=source_dir):
           api.step(
               'Check fuzzers',
               ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
@@ -454,7 +455,7 @@ def RunSteps(api,
         run_target('tint_ast_fuzzer_unittests', False)
         run_target('tint_regex_fuzzer_unittests', False)
 
-      with api.context(cwd=checkout):
+      with api.context(cwd=source_dir):
         tint_exe = f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
 
         # TODO(crbug.com/tint/2034): Add back glsl once we fix the ~7x slowdown in Windows Debug builds
@@ -482,6 +483,7 @@ def RunSteps(api,
         _cmake_build(
             '_other.cc files',
             api,
+            source_dir,
             cmake_fixed_args,
             build_as_other=True,
             targets=['tint_cmd_tint_cmd'])
@@ -489,6 +491,7 @@ def RunSteps(api,
       _cmake_build(
           'disabled readers and writers',
           api,
+          source_dir,
           cmake_fixed_args,
           enable_readers_and_writers=False,
           targets=['tint_cmd_tint_cmd'])

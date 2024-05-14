@@ -11,26 +11,25 @@ dependencies and need docker.
 from recipe_engine.post_process import DropExpectation, Filter
 
 DEPS = [
-  'chromium',
-  'depot_tools/gclient',
-  'infra/docker',
-  'recipe_engine/context',
-  'recipe_engine/path',
-  'recipe_engine/step',
-  'v8',
+    'chromium',
+    'depot_tools/gclient',
+    'infra/docker',
+    'recipe_engine/context',
+    'recipe_engine/step',
+    'v8',
 ]
 
 
 def RunSteps(api):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
-  api.v8.checkout()
+  update_result = api.v8.checkout()
   api.v8.runhooks()
 
   # Run node tests for js-fuzzer using the node docker image.
+  source_dir = update_result.source_root.path
   with api.step.nest('js-fuzzer'):
-    fuzzer_dir = api.path.checkout_dir.joinpath('tools', 'clusterfuzz',
-                                                'js_fuzzer')
+    fuzzer_dir = source_dir.joinpath('tools', 'clusterfuzz', 'js_fuzzer')
     docker_cmd = [
         'run',
         '--rm',

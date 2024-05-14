@@ -91,22 +91,21 @@ def _get_commit_position(api):
   return rev
 
 
-def generate_compilation_database(api, out_path, compile_commands_json_file,
-                                  targets):
+def generate_compilation_database(api, source_dir, out_path,
+                                  compile_commands_json_file, targets):
   try:
     step_result = api.step('generate compilation database', [
         'python3', '-u',
-        api.path.checkout_dir.joinpath('tools', 'clang', 'scripts',
-                                       'generate_compdb.py'), '-p', out_path,
-        '-o', compile_commands_json_file
+        source_dir.joinpath('tools', 'clang', 'scripts', 'generate_compdb.py'),
+        '-p', out_path, '-o', compile_commands_json_file
     ] + list(targets))
   except api.step.StepFailure as e:
     raise e
   return step_result
 
 
-def generate_gn_compilation_database(api, out_path, targets):
-  with api.context(cwd=api.path.checkout_dir, env=api.chromium.get_env()):
+def generate_gn_compilation_database(api, source_dir, out_path, targets):
+  with api.context(cwd=source_dir, env=api.chromium.get_env()):
     export_compile_cmd = '--export-compile-commands'
     if targets:
       export_compile_cmd += '=' + ','.join(targets)
@@ -118,8 +117,12 @@ def generate_gn_compilation_database(api, out_path, targets):
         stdout=api.raw_io.output_text())
 
 
-def generate_gn_target_list(api, out_path, gn_targets_json_file, targets=None):
-  with api.context(cwd=api.path.checkout_dir, env=api.chromium.get_env()):
+def generate_gn_target_list(api,
+                            source_dir,
+                            out_path,
+                            gn_targets_json_file,
+                            targets=None):
+  with api.context(cwd=source_dir, env=api.chromium.get_env()):
     targets_cmd = '*'
     if targets:
       targets_cmd = ' '.join(targets)
@@ -209,12 +212,13 @@ def RunSteps(api, properties):
     update_result = api.bot_update.ensure_checkout(
         root_solution_revision=properties.root_solution_revision)
   api.chromium.set_build_properties(update_result.properties)
+  source_dir = update_result.source_root.path
 
   # Remove the llvm-build directory, so that gclient runhooks will download
   # a new clang binary and not use the previous one downloaded by
   # api.codesearch.run_clang_tool().
-  api.file.rmtree('llvm-build',
-                  api.path.checkout_dir.joinpath('third_party', 'llvm-build'))
+  api.file.rmtree('llvm-build', source_dir.joinpath('third_party',
+                                                    'llvm-build'))
 
   api.chromium.set_config(
       'codesearch',
@@ -234,7 +238,7 @@ def RunSteps(api, properties):
   if api.path.exists(sentinel_path):
     # If sentinel file is present, it means last build failed to compile, so
     # remove out directory since it might be in a bad state.
-    api.file.rmtree('remove out directory', api.path.checkout_dir / 'out')
+    api.file.rmtree('remove out directory', source_dir / 'out')
   else:
     # Cleans up generated files. This is to prevent old generated files from
     # being left in the out directory. Note that this needs to be run *before*
@@ -254,16 +258,17 @@ def RunSteps(api, properties):
     # target list.
     webview_gn_targets = ['//android_webview:system_webview_apk']
     generate_gn_compilation_database(
-        api=api, out_path=out_path, targets=targets)
-    generate_gn_target_list(api, out_path, gn_targets_json_file,
+        api=api, source_dir=source_dir, out_path=out_path, targets=targets)
+    generate_gn_target_list(api, source_dir, out_path, gn_targets_json_file,
                             webview_gn_targets)
   else:
     generate_compilation_database(
         api=api,
+        source_dir=source_dir,
         out_path=out_path,
         compile_commands_json_file=compile_commands_json_file,
         targets=targets)
-    generate_gn_target_list(api, out_path, gn_targets_json_file)
+    generate_gn_target_list(api, source_dir, out_path, gn_targets_json_file)
 
   # Prepare Java Kythe output directory
   kzip_dir = api.codesearch.c.javac_extractor_output_dir
@@ -282,7 +287,7 @@ def RunSteps(api, properties):
   # uploading at all.
   with api.context(
       env={
-          'KYTHE_ROOT_DIRECTORY': api.path.checkout_dir,
+          'KYTHE_ROOT_DIRECTORY': source_dir,
           'KYTHE_OUTPUT_DIRECTORY': kzip_dir,
           'KYTHE_CORPUS': corpus
       }):
@@ -316,7 +321,7 @@ def RunSteps(api, properties):
   # into this checkout. This may fail due to other builders pushing to the
   # remote repo at the same time, so we retry this 3 times before giving up.
   copy_config = {
-      api.path.checkout_dir.joinpath('out', gen_repo_out_dir):
+      source_dir.joinpath('out', gen_repo_out_dir):
           api.path.join(gen_repo_out_dir)
   }
   _RunStepWithRetry(

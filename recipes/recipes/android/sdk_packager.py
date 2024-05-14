@@ -32,12 +32,13 @@ PROPERTIES = sdk_packager.InputProperties
 def RunSteps(api, properties):
   api.gclient.set_config('chromium')
   api.gclient.apply_config('android')
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
+  source_dir = update_result.source_root.path
 
-  sdk_manager = api.path.checkout_dir.joinpath('third_party', 'android_sdk',
-                                               'public', 'cmdline-tools',
-                                               'latest', 'bin', 'sdkmanager')
-  jdk_path = api.path.checkout_dir.joinpath('third_party', 'jdk', 'current')
+  sdk_manager = source_dir.joinpath('third_party', 'android_sdk', 'public',
+                                    'cmdline-tools', 'latest', 'bin',
+                                    'sdkmanager')
+  jdk_path = source_dir.joinpath('third_party', 'jdk', 'current')
 
   if not api.path.exists(sdk_manager):
     summary_markdown = (
@@ -85,7 +86,7 @@ def RunSteps(api, properties):
       }
 
   for package in properties.packages:
-    cipd_yaml = api.path.checkout_dir / package.cipd_yaml
+    cipd_yaml = source_dir / package.cipd_yaml
     if not api.path.exists(cipd_yaml):
       summary_markdown = (
           'Unable to find yaml file for %s at path `%s`' % (

@@ -9,7 +9,6 @@ DEPS = [
     'depot_tools/gclient',
     'depot_tools/tryserver',
     'recipe_engine/buildbucket',
-    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
     'reclient',
@@ -19,7 +18,7 @@ DEPS = [
 
 def RunSteps(api):
   api.gclient.set_config('webrtc_ios')
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
   api.gclient.runhooks()
 
   api.chromium.set_config(
@@ -27,15 +26,15 @@ def RunSteps(api):
   api.chromium.apply_config('mac_toolchain')
   api.chromium.ensure_toolchains()
 
-  build_script = api.path.checkout_dir.joinpath('tools_webrtc', 'ios',
-                                                'build_ios_libs.py')
+  source_dir = update_result.source_root.path
+  build_script = source_dir.joinpath('tools_webrtc', 'ios', 'build_ios_libs.py')
   cmd = ['vpython3', '-u', build_script, '--verbose']
   if not api.tryserver.is_tryserver:
     api.step('cleanup', [build_script, '-c'])
     cmd += ['-r', api.webrtc.revision_number]
   api.webrtc.build_with_reclient('build', cmd)
 
-  output_dir = api.path.checkout_dir / 'out_ios_libs'
+  output_dir = source_dir / 'out_ios_libs'
 
   api.webrtc.get_binary_sizes(
       files=['WebRTC.xcframework/ios-arm64/WebRTC.framework/WebRTC'],

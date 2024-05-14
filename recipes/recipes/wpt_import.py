@@ -39,15 +39,17 @@ KMS_CRYPTO_KEY = (
 
 def RunSteps(api):
   api.gclient.set_config('chromium')
-  api.bot_update.ensure_checkout()
-  api.git(
-      'config',
-      'user.name',
-      'Chromium WPT Sync',
-      name='set git config user.name')
+  update_result = api.bot_update.ensure_checkout()
+  source_dir = update_result.source_root.path
+  with api.context(cwd=source_dir):
+    api.git(
+        'config',
+        'user.name',
+        'Chromium WPT Sync',
+        name='set git config user.name')
   # LUCI sets user.email automatically.
-  api.git_cl.set_default_repo_location(api.path.checkout_dir)
-  blink_dir = api.path.checkout_dir.joinpath('third_party', 'blink')
+  api.git_cl.set_default_repo_location(source_dir)
+  blink_dir = source_dir.joinpath('third_party', 'blink')
   creds = api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
       KMS_CRYPTO_KEY,
@@ -63,12 +65,13 @@ def RunSteps(api):
       api.git('checkout', 'origin/main')
       api.git('branch', '-D', name, ok_ret='any')
 
-    delete_branch(name)
-    api.git.new_branch(name)
-    try:
-      yield
-    finally:
+    with api.context(cwd=source_dir):
       delete_branch(name)
+      api.git.new_branch(name)
+      try:
+        yield
+      finally:
+        delete_branch(name)
 
   with new_branch('update_wpt'):
     script = blink_dir.joinpath('tools', 'wpt_import.py')

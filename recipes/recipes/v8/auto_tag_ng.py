@@ -35,7 +35,6 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/json',
     'recipe_engine/file',
-    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/runtime',
@@ -65,10 +64,10 @@ class BuildResults:
 
 def RunSteps(api):
   api.gclient.set_config('v8')
-  api.v8.checkout(with_branch_heads=True)
+  update_result = api.v8.checkout(with_branch_heads=True)
 
   with api.context(
-      cwd=api.path.checkout_dir,
+      cwd=update_result.source_root.path,
       env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.v8.git_output('fetch', 'origin', '--prune')
 

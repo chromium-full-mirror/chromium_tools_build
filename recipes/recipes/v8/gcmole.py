@@ -11,7 +11,6 @@ DEPS = [
     'depot_tools/gsutil',
     'depot_tools/git',
     'recipe_engine/context',
-    'recipe_engine/path',
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'v8',
@@ -23,17 +22,17 @@ GS_BUCKET = 'chrome-v8-gcmole'
 def RunSteps(api):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
-  api.v8.checkout()
+  update_result = api.v8.checkout()
   api.v8.runhooks()
 
-  depot_tools_path = api.path.checkout_dir.joinpath('third_party',
-                                                    'depot_tools')
+  source_dir = update_result.source_root.path
+  depot_tools_path = source_dir.joinpath('third_party', 'depot_tools')
   with api.context(env_prefixes={'PATH': [depot_tools_path]}):
     api.git('branch', '-D', 'gcmole_update', ok_ret='any')
     api.git('clean', '-ffd')
     api.git('new-branch', 'gcmole_update')
 
-    gcmole_root = api.path.checkout_dir.joinpath('tools', 'gcmole')
+    gcmole_root = source_dir.joinpath('tools', 'gcmole')
     api.step('Build gcmole', [gcmole_root / 'bootstrap.sh'])
     api.step('Package gcmole', [gcmole_root / 'package.sh'])
 

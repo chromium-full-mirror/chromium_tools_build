@@ -30,9 +30,10 @@ PROPERTIES = sdk_packager.InputProperties
 def RunSteps(api, properties):
   api.gclient.set_config('chromium')
   api.gclient.apply_config('android')
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
 
-  androidx_dir = api.path.checkout_dir.joinpath('third_party', 'androidx')
+  source_dir = update_result.source_root.path
+  androidx_dir = source_dir / 'third_party/androidx'
   androidx_libs_dir = androidx_dir / 'libs'
 
   api.file.ensure_directory('ensure libs dir exists', androidx_libs_dir)

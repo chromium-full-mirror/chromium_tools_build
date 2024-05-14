@@ -80,7 +80,7 @@ def make_archive(api,
 
     # Opt out of using gyp environment variables.
     api.chromium.c.use_gyp_env = False
-    api.v8.checkout()
+    update_result = api.v8.checkout()
 
     if not version:
       version = str(api.v8.read_version_from_ref(api.v8.revision, 'head'))
@@ -102,14 +102,14 @@ def make_archive(api,
     if compile_failure:
       return None, compile_failure
 
+  source_dir = update_result.source_root.path
   with api.step.nest('make archive' + step_suffix) as parent:
     # Make a list of files to archive.
     files = ['d8', 'icudtl.dat']
     file_list_test_data = [str(build_dir / f) for f in files]
     file_list = api.v8.python(
         'filter build files',
-        api.path.checkout_dir.joinpath('tools', 'release',
-                                       'filter_build_files.py'),
+        source_dir.joinpath('tools', 'release', 'filter_build_files.py'),
         [
             '--dir',
             build_dir,

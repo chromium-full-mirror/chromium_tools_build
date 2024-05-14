@@ -16,7 +16,6 @@ DEPS = [
     'depot_tools/depot_tools',
     'gn',
     'recipe_engine/context',
-    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -52,12 +51,13 @@ def RunSteps(api):
   builder_id, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_db=BUILDERS_DB)
   api.chromium_tests.configure_build(builder_config)
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
   api.chromium.runhooks()
   api.webrtc.run_mb(builder_id)
-  with api.context(cwd=api.path.checkout_dir):
+  source_dir = update_result.source_root.path
+  with api.context(cwd=source_dir):
     args = [
-        '--root=%s' % str(api.path.checkout_dir),
+        '--root=%s' % str(source_dir),
         'refs',
         str(api.chromium.output_dir),
         '--all',

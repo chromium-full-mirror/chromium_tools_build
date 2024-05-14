@@ -91,13 +91,13 @@ def RunSteps(api, is_debug, triggers, v8_tot):
 
     # Check out.
     with api.context(cwd=api.path.cache_dir / 'builder'):
-      api.bot_update.ensure_checkout()
+      update_result = api.bot_update.ensure_checkout()
 
     api.chromium.runhooks()
 
+  source_dir = update_result.source_root.path
   with api.step.nest('build'):
-    depot_tools_path = api.path.checkout_dir.joinpath('third_party',
-                                                      'depot_tools')
+    depot_tools_path = source_dir.joinpath('third_party', 'depot_tools')
     with api.context(env_prefixes={'PATH': [depot_tools_path]}):
       api.chromium.run_gn(use_reclient=True)
       raw_result = api.chromium.compile(use_reclient=True)
@@ -149,7 +149,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
 
   # Run tests.
   has_flakes = False
-  with api.context(cwd=api.path.checkout_dir / 'node'):
+  with api.context(cwd=source_dir / 'node'):
     run_cctest = lambda step_name: api.step(step_name,
                                             [build_output_path / 'node_cctest'])
     has_flakes |= run_with_retry(api, 'run cctest', run_cctest)

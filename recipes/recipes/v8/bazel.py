@@ -23,15 +23,17 @@ DEPS = [
 def RunSteps(api):
   api.gclient.set_config('v8_with_bazel')
   api.chromium.set_config('v8')
-  api.v8.checkout()
+  update_result = api.v8.checkout()
   api.v8.runhooks()
-  bazel = api.path.checkout_dir.joinpath('tools', 'bazel', 'bazel')
-  clang = api.path.checkout_dir.joinpath('third_party', 'llvm-build',
-                                         'Release+Asserts', 'bin')
+
+  source_dir = update_result.source_root.path
+  bazel = source_dir.joinpath('tools', 'bazel', 'bazel')
+  clang = source_dir.joinpath('third_party', 'llvm-build', 'Release+Asserts',
+                              'bin')
   clang_bin = clang / 'clang'
   clang_xx_bin = clang / 'clang++'
   with api.context(
-      cwd=api.path.checkout_dir,
+      cwd=source_dir,
       env={
           'BAZEL_COMPILER': 'clang',
           'CC': clang_bin,
@@ -41,8 +43,8 @@ def RunSteps(api):
 
     # TODO(https://crbug.com/v8/13515): Temporarily clobber the output
     # directory to avoid incremental build problems.
-    api.file.rmtree('Clobber bin dir', api.path.checkout_dir / 'bazel-bin')
-    api.file.rmtree('Clobber out dir', api.path.checkout_dir / 'bazel-out')
+    api.file.rmtree('Clobber bin dir', source_dir / 'bazel-bin')
+    api.file.rmtree('Clobber out dir', source_dir / 'bazel-out')
     api.file.rmtree('Clobber bazel cache',
                     api.path.home_dir.joinpath('.cache', 'bazel'))
 

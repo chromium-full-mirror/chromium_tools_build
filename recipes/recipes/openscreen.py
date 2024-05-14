@@ -58,14 +58,14 @@ class RepositoryPaths:
      unit test binary location.
   """
 
-  def __init__(self, api):
+  def __init__(self, api, source_dir):
     """Initializer for RepositoryPaths.
 
     Args:
         api (recipe_api.RecipeApi): API generated from recipe dependencies.
     """
     self.api = api
-    self.checkout_path = api.path.checkout_dir
+    self.checkout_path = source_dir
     self.output_path = self.checkout_path.joinpath('out', BUILD_CONFIG)
     self.unit_test_binary_path = self.output_path / UNIT_TEST_BINARY_NAME
     self.e2e_test_binary_path = self.output_path / E2E_TEST_BINARY_NAME
@@ -498,10 +498,10 @@ def RunSteps(api):
     openscreen_config.target_cpu.add(target_cpu)
   api.gclient.c = openscreen_config
 
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
-  paths = RepositoryPaths(api)
+  paths = RepositoryPaths(api, update_result.source_root.path)
   GenerateCoverageTestConstants(api, paths)
 
   env = {}

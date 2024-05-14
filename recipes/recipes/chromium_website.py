@@ -29,11 +29,12 @@ DEPS = [
 def RunSteps(api):
   api.gclient.set_config('chromium_website')
   with api.context(cwd=api.path.cache_dir / 'builder'):
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
-  with api.context(cwd=api.m.path.checkout_dir):
-    npmw_path = api.m.path.checkout_dir.joinpath('npmw')
+  source_dir = update_result.source_root.path
+  with api.context(cwd=source_dir):
+    npmw_path = source_dir.joinpath('npmw')
     api.step('build', [npmw_path, 'build'])
 
     if api.m.tryserver.is_tryserver:

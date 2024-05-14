@@ -50,11 +50,11 @@ def RunSteps(api):
   # We want line numbers for the file as it is in the CL, not as it is
   # rebased on origin/main. BotUpdateApi.ensure_checkout() by default
   # prevents rebasing and ensures the correct line numbers.
-  api.bot_update.ensure_checkout()
-  input_dir = api.path.checkout_dir
+  update_result = api.bot_update.ensure_checkout()
+  source_dir = update_result.source_root.path
   affected_files = [
-      f for f in GetChangedFiles(api, input_dir)
-      if 'third_party/' not in f and api.path.exists(input_dir / f)
+      f for f in GetChangedFiles(api, source_dir)
+      if 'third_party/' not in f and api.path.exists(source_dir / f)
   ]
   analyzers = [
       api.tricium.analyzers.INCLUSIVE_LANGUAGE_CHECK,
@@ -62,7 +62,7 @@ def RunSteps(api):
       api.tricium.analyzers.OBJECTIVE_C_STYLE,
       api.tricium.analyzers.SPELLCHECKER,
   ]
-  api.tricium.run_legacy(analyzers, input_dir, affected_files, commit_message)
+  api.tricium.run_legacy(analyzers, source_dir, affected_files, commit_message)
 
 
 def GenTests(api):

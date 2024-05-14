@@ -11,7 +11,6 @@ DEPS = [
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/json',
-    'recipe_engine/path',
     'recipe_engine/step',
     'webrtc',
 ]
@@ -23,9 +22,10 @@ GERRIT_PROJECT = 'src'
 def RunSteps(api):
   api.gclient.set_config('webrtc')
   api.gclient.c.target_os.add('linux')
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
 
-  with api.context(cwd=api.path.checkout_dir):
+  source_dir = update_result.source_root.path
+  with api.context(cwd=source_dir):
     # Check for an open CL.
     commits = api.gerrit.get_changes(
         GERRIT_URL,
@@ -64,9 +64,8 @@ def RunSteps(api):
     # Run the update script. It will take care of branch creation, WebRTC
     # version update, uploading etc. It will also delete any previous version
     # update branch.
-    script_path = api.path.checkout_dir.joinpath('tools_webrtc',
-                                                 'version_updater',
-                                                 'update_version.py')
+    script_path = source_dir.joinpath('tools_webrtc', 'version_updater',
+                                      'update_version.py')
 
     params = ['--clean']
     cmd = ['vpython3', '-u', script_path] + params

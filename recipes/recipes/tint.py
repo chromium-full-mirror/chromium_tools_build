@@ -44,8 +44,10 @@ def _checkout_steps(api):
     # hooks relative to the variable "root" which is set to . by default and
     # then to 'tint' on bots here:
     api.gclient.c.solutions[0].custom_vars = {'tint_root': 'tint'}
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
+
+  return update_result
 
 
 def _out_path(target_cpu, debug, clang):
@@ -61,11 +63,10 @@ def _use_reclient(api, clang):
   return not api.platform.is_win or clang in ('clang', 'gcc')
 
 
-def _gn_gen_builds(api, target_cpu, debug, clang, out_dir):
+def _gn_gen_builds(api, source_dir, target_cpu, debug, clang, out_dir):
   """calls 'gn gen'"""
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
-  checkout = api.path.checkout_dir
   gn_cmd = api.depot_tools.gn_py_path
 
   # Prepare the arguments to pass in.
@@ -87,11 +88,11 @@ def _gn_gen_builds(api, target_cpu, debug, clang, out_dir):
   if target_cpu:
     args.append('target_cpu="%s"' % target_cpu)
 
-  with api.context(cwd=checkout):
+  with api.context(cwd=source_dir):
     api.step('gn gen', [
         'python3',
         gn_cmd,
-        '--root=' + str(checkout),
+        '--root=' + str(source_dir),
         'gen',
         '//out/' + out_dir,
         '--check',
@@ -99,9 +100,9 @@ def _gn_gen_builds(api, target_cpu, debug, clang, out_dir):
     ])
 
 
-def _build_steps(api, out_dir, clang, *targets):
-  debug_path = api.path.checkout_dir.joinpath('out', out_dir)
-  ninja_path = api.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
+def _build_steps(api, source_dir, out_dir, clang, *targets):
+  debug_path = source_dir.joinpath('out', out_dir)
+  ninja_path = source_dir.joinpath('third_party', 'ninja', 'ninja')
 
   ninja_cmd = [ninja_path, '-C', debug_path]
   if _use_reclient(api, clang):
@@ -116,8 +117,8 @@ def _build_steps(api, out_dir, clang, *targets):
     api.step('compile with ninja', ninja_cmd)
 
 
-def _run_unittests(api, out_dir):
-  test_path = api.path.checkout_dir.joinpath('out', out_dir, 'tint_unittests')
+def _run_unittests(api, source_dir, out_dir):
+  test_path = source_dir.joinpath('out', out_dir, 'tint_unittests')
   api.step('Run the Tint unittests', [test_path])
 
 
@@ -128,13 +129,14 @@ def RunSteps(api, target_cpu, debug, clang):
         api.path.cache_dir / 'win_toolchain')
 
   with api.context(env=env):
-    _checkout_steps(api)
+    update_result = _checkout_steps(api)
+    source_dir = update_result.source_root.path
     out_dir = _out_path(target_cpu, debug, clang)
     with api.osx_sdk('mac'):
       # Static build all targets and run unittests
-      _gn_gen_builds(api, target_cpu, debug, clang, out_dir)
-      _build_steps(api, out_dir, clang)
-      _run_unittests(api, out_dir)
+      _gn_gen_builds(api, source_dir, target_cpu, debug, clang, out_dir)
+      _build_steps(api, source_dir, out_dir, clang)
+      _run_unittests(api, source_dir, out_dir)
 
 
 def GenTests(api):

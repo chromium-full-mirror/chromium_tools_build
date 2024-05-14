@@ -64,9 +64,9 @@ def GetHeads(api, repo):
 
 def PushRef(api, repo, hsh):
   api.gclient.set_config('v8')
-  api.v8.checkout()
+  update_result = api.v8.checkout()
 
-  with api.context(cwd=api.path.checkout_dir):
+  with api.context(cwd=update_result.source_root.path):
     api.git('update-ref', CANARY_REF, hsh)
     api.git('push', repo, '-f', '%s:%s' % (CANARY_REF, CANARY_REF))
 

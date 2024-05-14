@@ -52,15 +52,15 @@ def _checkout_steps(api):
     api.gclient.c.solutions[0].custom_vars = {'dawn_root': 'dawn'}
     if api.reclient.instance:
       api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
-
+  return update_result
 
 # Make a GN build for Dawn using **kwargs as the GN args.
 # Yields a function `build` which compiles the targets specified by *args and
 # returns a tuple of the file paths where those targets' executables should be located.
 @contextmanager
-def _gn_build(flavor, api, **kwargs):
+def _gn_build(source_dir, flavor, api, **kwargs):
   use_remoteexec = (kwargs['is_clang'] is True or
                     kwargs['is_clang'] is None) and api.reclient.instance
   gn_args = []
@@ -100,19 +100,18 @@ def _gn_build(flavor, api, **kwargs):
       kwargs, sort_keys=True).encode('utf8')).hexdigest()
 
   gn_cmd = api.depot_tools.gn_py_path
-  checkout = api.path.checkout_dir
-  with api.context(cwd=checkout):
+  with api.context(cwd=source_dir):
     api.step('gn gen', [
         'python3',
         gn_cmd,
-        '--root=' + str(checkout),
+        '--root=' + str(source_dir),
         'gen',
         '//out/' + out_dir,
         '--args=' + ' '.join(gn_args),
     ])
 
-  build_path = checkout.joinpath('out', out_dir)
-  ninja_path = checkout.joinpath('third_party', 'ninja', 'ninja')
+  build_path = source_dir.joinpath('out', out_dir)
+  ninja_path = source_dir.joinpath('third_party', 'ninja', 'ninja')
   base_ninja_cmd = [ninja_path, '-C', build_path]
   if use_remoteexec:
     base_ninja_cmd.extend(['-j', api.reclient.jobs])
@@ -132,12 +131,12 @@ def _gn_build(flavor, api, **kwargs):
   yield build
 
 
-def _generate_fuzz_corpus(api, **kwargs):
+def _generate_fuzz_corpus(api, source_dir, **kwargs):
   kwargs.update({
       'is_component_build': True,
       'dawn_use_swiftshader': True,
   })
-  with _gn_build('dawn tests', api, **kwargs) as build:
+  with _gn_build(source_dir, 'dawn tests', api, **kwargs) as build:
     (dawn_unittests, dawn_end2end_tests) = build('dawn_unittests',
                                                  'dawn_end2end_tests')
   # Collect the traces in temporary directories.
@@ -191,14 +190,20 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
         api.path.cache_dir / 'win_toolchain')
 
   with api.context(env=env):
-    _checkout_steps(api)
+    update_result = _checkout_steps(api)
+    source_dir = update_result.source_root.path
     if gen_fuzz_corpus:
       _generate_fuzz_corpus(
-          api, target_cpu=target_cpu, is_debug=debug, is_clang=clang)
+          api,
+          source_dir,
+          target_cpu=target_cpu,
+          is_debug=debug,
+          is_clang=clang)
       return
 
     with api.osx_sdk('mac'):
       with _gn_build(
+          source_dir,
           'default targets',
           api,
           target_cpu=target_cpu,
@@ -213,6 +218,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
 
       if not api.platform.is_win:
         with _gn_build(
+            source_dir,
             'fuzzer targets',
             api,
             target_cpu=target_cpu,
@@ -228,6 +234,7 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
       # When using SwiftShader a component build should be used.
       # See anglebug.com/4396.
       with _gn_build(
+          source_dir,
           'component build with Swiftshader',
           api,
           target_cpu=target_cpu,

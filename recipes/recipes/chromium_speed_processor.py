@@ -7,7 +7,6 @@ DEPS = [
     'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
-    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
     'recipe_engine/json',
@@ -32,17 +31,18 @@ def RunSteps(api, properties):
           step_text='Unexpected execution mode. Expect: %s, Actual: %s' %
           (ctbc.TEST, execution_mode))
     api.chromium_tests.configure_build(builder_config)
-    api.chromium_tests.prepare_checkout(
+    update_result, _ = api.chromium_tests.prepare_checkout(
         builder_config, timeout=3600, no_fetch_tags=True)
 
     # 2. run collect task for each group
     task_groups = api.json.loads(properties.tasks_groups)
     tester_properties = api.json.loads(properties.tester_properties)
 
+    source_dir = update_result.source_root.path
     for group_name, task_ids in task_groups.items():
       collect_task_args = api.chromium_swarming.get_collect_task_args(
-          merge_script=api.path.checkout_dir.joinpath(
-              'tools', 'perf', 'process_perf_results.py'),
+          merge_script=source_dir.joinpath('tools', 'perf',
+                                           'process_perf_results.py'),
           merge_arguments=['--lightweight'],
           build_properties=tester_properties,
           requests_json=task_ids)

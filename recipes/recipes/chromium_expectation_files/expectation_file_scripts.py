@@ -24,7 +24,6 @@ DEPS = [
     'depot_tools/git_cl',
     'recipe_engine/context',
     'recipe_engine/file',
-    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/random',
     'recipe_engine/raw_io',
@@ -58,6 +57,7 @@ def RunSteps(api, properties):
   with api.chromium_bootstrap.update_gclient_config() as callback:
     update_result = api.bot_update.ensure_checkout(refs=['refs/heads/main'])
     callback(update_result.manifest)
+  source_dir = update_result.source_root.path
   api.gclient.runhooks()
 
   failures = []
@@ -65,7 +65,7 @@ def RunSteps(api, properties):
   # run elsewhere in other repos as long as `git cl upload` works for that repo.
   script_batches = collections.defaultdict(list)
   for s in properties.scripts:
-    script_batches[_GetScriptWorkingDirectory(api, s)].append(s)
+    script_batches[_GetScriptWorkingDirectory(api, source_dir, s)].append(s)
   for working_directory, invocations in script_batches.items():
     with api.context(cwd=working_directory):
       api.git(
@@ -90,7 +90,7 @@ def RunSteps(api, properties):
               str(api.time.time()),
               name='create script branch')
           try:
-            _RunScript(api, script_invocation)
+            _RunScript(api, source_dir, script_invocation)
           except api.step.StepFailure as e:
             failures.append(e)
           finally:
@@ -104,17 +104,17 @@ def RunSteps(api, properties):
     raise exception_type('%d script invocation(s) failed' % len(failures))
 
 
-def _GetScriptWorkingDirectory(api, script_invocation):
+def _GetScriptWorkingDirectory(api, source_dir, script_invocation):
   if script_invocation.working_directory:
-    return api.path.checkout_dir / script_invocation.working_directory
-  return api.path.checkout_dir
+    return source_dir / script_invocation.working_directory
+  return source_dir
 
 
-def _RunScript(api, script_invocation):
+def _RunScript(api, source_dir, script_invocation):
   result_output_file = api.raw_io.output_text(
       suffix='.html', name='script_results')
   has_bug_file = False
-  cmd = [api.path.checkout_dir / script_invocation.script]
+  cmd = [source_dir / script_invocation.script]
   cmd.extend(script_invocation.args)
   cmd.extend(['--result-output-file', result_output_file])
   if (script_invocation.script_type ==

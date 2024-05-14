@@ -36,7 +36,8 @@ def RunSteps(api):
   api.gclient.set_config("chromium")
   api.chromium.set_config()
   api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
+  source_dir = update_result.source_root.path
   api.gclient.runhooks()
   out_dir = 'out'
   target_dir = "release"
@@ -44,8 +45,7 @@ def RunSteps(api):
   gn_path = api.depot_tools.gn_py_path
   cipd_root = api.path.start_dir / 'cipd'
   db_path = api.path.mkdtemp('codeql_dbs')
-  with api.context(
-      cwd=api.path.checkout_dir, env_suffixes={'PATH': [cipd_root]}):
+  with api.context(cwd=source_dir, env_suffixes={'PATH': [cipd_root]}):
     codeql_root = api.path.start_dir / 'codeql'
     # If we end up needing to change this version frequently, consider changing
     # this to use an input property to set the version instead of hardcoding it
@@ -59,8 +59,8 @@ def RunSteps(api):
         ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
     api.chromium.compile(
         use_reclient=True, targets=["all"], out_dir=out_dir, target=target_dir)
-    codeql_script_path = api.path.checkout_dir.joinpath('tools', 'codeql',
-                                                        'index_target.py')
+    codeql_script_path = source_dir.joinpath('tools', 'codeql',
+                                             'index_target.py')
     api.step("index_target.py", [
         'vpython3', codeql_script_path, '--out_path', build_dir, '--db_path',
         db_path, '--codeql_binary_path', codeql_path, '--gn_path', gn_path

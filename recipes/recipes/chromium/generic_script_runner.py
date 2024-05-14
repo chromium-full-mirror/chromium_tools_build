@@ -25,7 +25,6 @@ DEPS = [
     'depot_tools/git',
     'depot_tools/tryserver',
     'recipe_engine/context',
-    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
     'recipe_engine/swarming',
@@ -45,20 +44,21 @@ def RunSteps(api, properties):
         status=common_pb.INFRA_FAILURE, summary_markdown='\n'.join(summary))
 
   api.gclient.set_config('chromium_skip_wpr_archives_download')
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
   api.gclient.runhooks()
 
+  source_dir = update_result.source_root.path
   results = []
   for script_invocation in properties.scripts:
-    with api.context(cwd=api.path.checkout_dir):
-      results.append(_RunScript(api, script_invocation))
+    with api.context(cwd=source_dir):
+      results.append(_RunScript(api, source_dir, script_invocation))
 
   for result in results:
     api.step.raise_on_failure(result)
 
 
-def _RunScript(api, script_invocation):
-  cmd = [api.path.checkout_dir / script_invocation.script]
+def _RunScript(api, source_dir, script_invocation):
+  cmd = [source_dir / script_invocation.script]
   cmd.extend(script_invocation.args)
   return api.step(
       name=script_invocation.step_name, cmd=cmd, raise_on_failure=False)

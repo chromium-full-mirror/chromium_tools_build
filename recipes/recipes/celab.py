@@ -163,9 +163,9 @@ def _CheckoutCelabRepo(api):
 
   with api.context(cwd=src_root):
     api.gclient.set_config('celab')
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
-  return api.path.checkout_dir
+  return update_result.source_root.path
 
 
 def _BuildCelabFromSource(api, checkout):
@@ -222,10 +222,11 @@ def _CheckoutChromiumRepo(api):
     builder_config = ctbc.BuilderSpec.create(**builder_config)
 
     api.chromium_tests.configure_build(builder_config)
-    api.chromium_checkout.ensure_checkout(clobber=builder_config.clobber)
+    update_result = api.chromium_checkout.ensure_checkout(
+        clobber=builder_config.clobber)
     api.chromium.runhooks()
 
-  return api.path.checkout_dir
+  return update_result.source_root.path
 
 
 def _BuildChromiumFromSource(api, test_root):

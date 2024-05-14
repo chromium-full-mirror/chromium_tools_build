@@ -9,25 +9,24 @@ Recipe for running presubmit in V8 CI.
 from recipe_engine.post_process import Filter
 
 DEPS = [
-  'chromium',
-  'depot_tools/gclient',
-  'recipe_engine/context',
-  'recipe_engine/path',
-  'recipe_engine/properties',
-  'v8',
+    'chromium',
+    'depot_tools/gclient',
+    'recipe_engine/context',
+    'recipe_engine/properties',
+    'v8',
 ]
 
 def RunSteps(api):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
-  api.v8.checkout()
+  update_result = api.v8.checkout()
   api.v8.runhooks()
+  source_dir = update_result.source_root.path
   with api.context(
-      cwd=api.path.checkout_dir,
-      env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+      cwd=source_dir, env_prefixes={'PATH': [api.v8.depot_tools_path]}):
     api.v8.vpython(
         'Presubmit',
-        api.path.checkout_dir.joinpath('tools', 'v8_presubmit.py'),
+        source_dir.joinpath('tools', 'v8_presubmit.py'),
         ['--no-linter-cache'],
         wrapper=('rdb', 'stream', '--'),
     )

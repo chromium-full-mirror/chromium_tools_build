@@ -130,6 +130,7 @@ def compilator_steps(api, properties):
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
+    source_dir = update_result.source_root.path
     if any((t.runs_on_swarming or t.is_skylabtest) and t.is_enabled
            for t in test_suites):
       affected_files_to_archive = []
@@ -137,16 +138,16 @@ def compilator_steps(api, properties):
       # "without patch" so there's no affected files to archive
       if (not properties.test_targets and
           not api.code_coverage.skipping_coverage):
-        deleted_files = get_deleted_files(api, task.affected_files)
+        deleted_files = get_deleted_files(api, source_dir, task.affected_files)
         affected_files_to_archive = [
             # In case this is a windows compilator
-            str(api.path.checkout_dir / f).replace('/', api.path.sep)
+            str(source_dir / f).replace('/', api.path.sep)
             for f in task.affected_files
             # If the affected file is deleted, don't attempt to archive it or
             # else you'll get a file not found error
             if f not in deleted_files
         ]
-      archive_src_side_deps(api, affected_files_to_archive)
+      archive_src_side_deps(api, source_dir, affected_files_to_archive)
 
       if any(t.runs_on_swarming and t.is_enabled for t in test_suites):
         # Isolate the tests first so the Orchestrator can trigger them asap
@@ -198,7 +199,7 @@ def compilator_steps(api, properties):
     return raw_result
 
 
-def archive_src_side_deps(api, affected_files):
+def archive_src_side_deps(api, source_dir, affected_files):
   """Archives src-side deps that the Orchestrator needs to run tests/coverage.
 
   Affected files is also needed by the orchestrator to run code coverage
@@ -208,23 +209,24 @@ def archive_src_side_deps(api, affected_files):
   """
   with api.step.nest('archive src-side dep paths') as nested_step:
     # Dedupe in case a file from src_side_dep_paths is also an affected file
-    dep_paths = sorted(set(get_src_side_dep_paths(api) + affected_files))
+    dep_paths = sorted(
+        set(get_src_side_dep_paths(api, source_dir) + affected_files))
 
     # We need the files relative to the checkout dir so they can get downloaded
     # correctly on the orchestrator. And the .isolate file inherits the cwd of
     # the file itself, so create the file using a tmp name that should be
     # sufficiently unique to this build.
     isolate_file = api.path.join(
-        api.path.checkout_dir, '%s_archive_deps.isolate' % api.swarming.task_id)
+        source_dir, '%s_archive_deps.isolate' % api.swarming.task_id)
     rel_dep_paths = []
     for p in dep_paths:
-      rel_dep_paths.append(api.path.relpath(p, api.path.checkout_dir))
+      rel_dep_paths.append(api.path.relpath(p, source_dir))
     api.isolate.write_isolate_file(isolate_file, rel_dep_paths)
     digest = api.isolate.isolate('archive src-side deps', isolate_file)
     api.file.remove('rm %s' % isolate_file, isolate_file)
 
     relative_test_spec_dir = api.path.relpath(api.chromium.c.targets_spec_dir,
-                                              api.path.checkout_dir)
+                                              source_dir)
     # On windows compilators, this would use a `\\` path separator instead of
     # a `/` that the linux orchestrators need to construct Paths
     relative_test_spec_dir = relative_test_spec_dir.replace(api.path.sep, '/')
@@ -234,7 +236,7 @@ def archive_src_side_deps(api, affected_files):
     nested_step.logs['dep paths'] = api.json.dumps(dep_paths, indent=2)
 
 
-def get_src_side_dep_paths(api):
+def get_src_side_dep_paths(api, source_dir):
   """Get src-side paths to archive.
 
   The chromium compile step writes which src-side deps to archive.
@@ -253,24 +255,23 @@ def get_src_side_dep_paths(api):
   for path in paths:
     # Paths written in these files look like '../../testing/X.py' relative
     # to the output dir
-    file_path = api.path.relpath(api.chromium.output_dir / path,
-                                 api.path.checkout_dir)
-    file_path = api.path.checkout_dir / file_path
+    file_path = api.path.relpath(api.chromium.output_dir / path, source_dir)
+    file_path = source_dir / file_path
 
     # Path can be a regex pattern
     if "*" in str(file_path):
-      paths = api.file.glob_paths('get files that match pattern',
-                                  api.path.checkout_dir, str(file_path))
+      paths = api.file.glob_paths('get files that match pattern', source_dir,
+                                  str(file_path))
       dep_paths.update([str(p) for p in paths])
     else:
       dep_paths.add(str(file_path))
   return list(dep_paths)
 
 
-def get_deleted_files(api, affected_files):
+def get_deleted_files(api, source_dir, affected_files):
   deleted_files = []
   for f in affected_files:
-    path = api.path.checkout_dir / f
+    path = source_dir / f
     # In case this is a windows compilator
     path = str(path).replace('/', api.path.sep)
 

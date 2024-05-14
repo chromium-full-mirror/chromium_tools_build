@@ -25,11 +25,12 @@ PROPERTIES = InputProperties
 def _CheckoutSteps(api):
   """Checks out the catapult repo (and any dependencies) using gclient."""
   api.gclient.set_config('catapult')
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
   api.gclient.runhooks()
+  return update_result
 
 
-def _RemoteSteps(api, app_engine_sdk_path, properties):
+def _RemoteSteps(api, source_dir, app_engine_sdk_path, properties):
   """Runs the build steps specified in catapult_build/build_steps.py.
 
   Steps are specified in catapult repo in order to avoid multi-sided patches
@@ -41,7 +42,7 @@ def _RemoteSteps(api, app_engine_sdk_path, properties):
   Use the test_checkout_path property in local tests to run against a local
   copy of catapult_build/build_steps.py.
   """
-  base = api.properties.get('test_checkout_path', str(api.path.checkout_dir))
+  base = api.properties.get('test_checkout_path', str(source_dir))
   script = api.path.join(base, 'catapult_build', 'build_steps.py')
   platform = properties.platform
   dashboard_only = properties.dashboard_only
@@ -49,7 +50,7 @@ def _RemoteSteps(api, app_engine_sdk_path, properties):
   args = [
       script,
       '--api-path-checkout',
-      api.path.checkout_dir,
+      source_dir,
       '--app-engine-sdk-pythonpath',
       app_engine_sdk_path,
       '--platform',
@@ -65,7 +66,7 @@ def _RemoteSteps(api, app_engine_sdk_path, properties):
 
 
 def RunSteps(api, properties):
-  _CheckoutSteps(api)
+  update_result = _CheckoutSteps(api)
 
   # The dashboard unit tests depend on Python modules in the App Engine SDK,
   # and the unit test runner script assumes that the SDK is in PYTHONPATH.
@@ -85,10 +86,11 @@ def RunSteps(api, properties):
         'infra/tools/protoc/${platform}', 'protobuf_version:v3.6.1')
   api.cipd.ensure(packages_root, ensure_file)
 
+  source_dir = update_result.source_root.path
   with api.osx_sdk('mac'):
     with api.context(
         env_prefixes={'PATH': [packages_root, packages_root / 'bin']}):
-      _RemoteSteps(api, app_engine_sdk_path, properties)
+      _RemoteSteps(api, source_dir, app_engine_sdk_path, properties)
 
 
 def GenTests(api):

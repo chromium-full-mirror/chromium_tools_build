@@ -39,25 +39,24 @@ def _checkout_steps(api):
     # hooks relative to the variable "root" which is set to . by default and
     # then to 'dawn' on bots here:
     api.gclient.c.solutions[0].custom_vars = {'dawn_root': 'dawn'}
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
-
+  return update_result
 
 NODEJS_VERSION = '16.13.0'
 
 
 def RunSteps(api):
-  _checkout_steps(api)
+  update_result = _checkout_steps(api)
+  source_dir = update_result.source_root.path
 
   with api.nodejs(NODEJS_VERSION):
     api.step('npm', ['npm', 'version'])
 
-    with api.context(env_prefixes={
-        'PATH': [api.path.checkout_dir.joinpath('tools', 'golang', 'bin')]
-    }):
+    with api.context(
+        env_prefixes={'PATH': [source_dir.joinpath('tools', 'golang', 'bin')]}):
       api.step('Roll WebGPU CTS', [
-          api.path.checkout_dir.joinpath('tools',
-                                         'run'), 'cts', 'roll', '-verbose',
+          source_dir.joinpath('tools', 'run'), 'cts', 'roll', '-verbose',
           '-parent-swarming-run-id', api.swarming.task_id, '-send-to-gardener'
       ])
 

@@ -30,11 +30,13 @@ def RunSteps(api, target_cpu):
   soln.name = 'client'
   soln.url = 'https://chromium.googlesource.com/infra/goma/client'
   api.gclient.c = src_cfg
-  api.bot_update.ensure_checkout(clobber=False, gerrit_no_reset=True)
+  update_result = api.bot_update.ensure_checkout(
+      clobber=False, gerrit_no_reset=True)
   api.gclient.runhooks()
+  source_dir = update_result.source_root.path
 
   # 2. Build
-  build_out_dir = api.path.checkout_dir / 'out'
+  build_out_dir = source_dir / 'out'
   build_target = 'Release'
   build_dir = build_out_dir / build_target
 
@@ -56,12 +58,12 @@ def RunSteps(api, target_cpu):
         name='gn',
         cmd=[
             'python3', api.depot_tools.gn_py_path,
-            '--root=%s' % str(api.path.checkout_dir), 'gen', build_dir,
+            '--root=%s' % str(source_dir), 'gen', build_dir,
             '--args=%s' % ' '.join(gn_args)
         ])
 
     # 2-2. ninja
-    ninja_path = api.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
+    ninja_path = source_dir.joinpath('third_party', 'ninja', 'ninja')
     api.step('build', [ninja_path, '-C', build_dir])
 
     # 3. Run test
@@ -72,8 +74,7 @@ def RunSteps(api, target_cpu):
           name='tests',
           cmd=[
               'python3',
-              api.path.checkout_dir.joinpath('build',
-                                             'run_unittest.py'), '--build-dir',
+              source_dir.joinpath('build', 'run_unittest.py'), '--build-dir',
               build_out_dir, '--target', build_target, '--non-stop'
           ])
 
@@ -85,8 +86,8 @@ def RunSteps(api, target_cpu):
       name='archive',
       cmd=[
           'python3',
-          api.path.checkout_dir.joinpath('build', 'archive.py'), '--platform',
-          platform, '--build_dir', build_out_dir, '--target_dir', build_target,
+          source_dir.joinpath('build', 'archive.py'), '--platform', platform,
+          '--build_dir', build_out_dir, '--target_dir', build_target,
           '--dist_dir', api.path.tmp_base_dir
       ])
 

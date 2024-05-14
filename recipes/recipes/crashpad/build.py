@@ -92,14 +92,15 @@ def RunSteps(api, config, target_os, target_cpu):
   # TODO(crbug.com/crashpad/319): Use the builder cache on all platforms.
   if is_ios:
     with api.context(cwd=api.path.cache_dir / 'builder'):
-      api.bot_update.ensure_checkout()
+      update_result = api.bot_update.ensure_checkout()
   else:
-    api.bot_update.ensure_checkout()
+    update_result = api.bot_update.ensure_checkout()
+  source_dir = update_result.source_root.path
 
   # buildbot sets 'clobber' to the empty string which is falsey, check with
   # 'in'
   if 'clobber' in api.properties:
-    api.file.rmtree('out', api.path.checkout_dir / 'out')
+    api.file.rmtree('out', source_dir / 'out')
 
   with api.context(env=env):
     api.gclient.runhooks()
@@ -119,7 +120,7 @@ def RunSteps(api, config, target_os, target_cpu):
       gn = api.path.start_dir.joinpath('buildtools',
                                        'mac' if is_mac else 'linux64', 'gn')
     # Generic GN build.
-    path = api.path.checkout_dir.joinpath('out', dirname)
+    path = source_dir.joinpath('out', dirname)
     if not target_cpu:
       target_cpu = 'x64'
     args = (
@@ -134,7 +135,7 @@ def RunSteps(api, config, target_os, target_cpu):
       # gclient runhooks.
       args += ' clang_path="//third_party/linux/clang/linux-amd64"'
       args += ' target_sysroot="//third_party/linux/sysroot"'
-    with api.context(cwd=api.path.checkout_dir):
+    with api.context(cwd=source_dir):
       with sdk(target_os):
         api.step('generate build files',
                  [gn, 'gen', path, '--check', '--args=' + args])
@@ -154,10 +155,10 @@ def RunSteps(api, config, target_os, target_cpu):
     # Additionally, they're all on the same physical machine currently, so
     # there's no upside in parallelism.
 
-    x86_path = api.path.checkout_dir.joinpath('out', dirname + '_x86')
-    x64_path = api.path.checkout_dir.joinpath('out', dirname + '_x64')
+    x86_path = source_dir.joinpath('out', dirname + '_x86')
+    x64_path = source_dir.joinpath('out', dirname + '_x64')
     args = 'target_os="win" is_debug=' + ('true' if is_debug else 'false')
-    with api.context(cwd=api.path.checkout_dir):
+    with api.context(cwd=source_dir):
       with sdk(target_os, 'x86'):
         api.step('generate build files x86', [
             gn, 'gen', x86_path, '--check',
@@ -188,11 +189,11 @@ def RunSteps(api, config, target_os, target_cpu):
       api.step(
           'run tests', [
               'vpython3', '-u',
-              api.path.checkout_dir.joinpath('build', 'run_tests.py'), build_dir
+              source_dir.joinpath('build', 'run_tests.py'), build_dir
           ],
           timeout=timeout_in_minutes * 60)
 
-  ninja = api.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
+  ninja = source_dir.joinpath('third_party', 'ninja', 'ninja')
   if is_win:
     with sdk(target_os, 'x86'):
       api.step('compile with ninja x86', [ninja, '-C', x86_path])
@@ -219,15 +220,16 @@ def GenTests(api):
           project='crashpad', builder=test, git_repo=CRASHPAD_REPO))
 
   tests = [
-      (test, 'mac', ''),
-      ('crashpad_try_mac_rel', 'mac', ''),
-      ('crashpad_try_win_dbg', 'win', ''),
-      ('crashpad_try_linux_rel', 'linux', ''),
-      ('crashpad_fuchsia_rel', 'fuchsia', ''),
-      ('crashpad_ios_simulator_dbg', 'ios', ''),
-      ('crashpad_ios_device_rel', 'ios', 'arm64'),
+      (test, 'mac', '', None),
+      ('crashpad_try_mac_rel', 'mac', '', None),
+      ('crashpad_try_win_dbg', 'win', '', None),
+      ('crashpad_try_linux_rel', 'linux', '', None),
+      ('crashpad_fuchsia_rel', 'fuchsia', '', None),
+      ('crashpad_ios_simulator_dbg', 'ios', '', api.path.cache_dir / 'builder'),
+      ('crashpad_ios_device_rel', 'ios', 'arm64', None),
   ]
-  for t, os, cpu in tests:
+  for t, os, cpu, checkout_dir in tests:
+    checkout_dir = checkout_dir or api.path.start_dir
     yield api.test(
         t,
         api.properties(
@@ -237,4 +239,5 @@ def GenTests(api):
         api.buildbucket.ci_build(
             project='crashpad', builder=t, git_repo=CRASHPAD_REPO),
         api.path.exists(
-            api.path.checkout_dir.joinpath('build', 'swarming_test_spec.pyl')))
+            checkout_dir.joinpath('crashpad', 'build',
+                                  'swarming_test_spec.pyl')))

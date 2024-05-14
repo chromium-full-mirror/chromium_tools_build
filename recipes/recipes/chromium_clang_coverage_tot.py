@@ -13,7 +13,6 @@ DEPS = [
     'recipe_engine/context',
     'recipe_engine/file',
     'recipe_engine/json',
-    'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/step',
 ]
@@ -71,15 +70,15 @@ def RunSteps(api):
 
 
 def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
+  source_dir = update_result.source_root.path
 
   api.chromium.ensure_toolchains()
 
   api.chromium.runhooks()
-  clang_revision_file = api.path.checkout_dir.joinpath('third_party',
-                                                       'llvm-build',
-                                                       'Release+Asserts',
-                                                       'cr_build_revision')
+  clang_revision_file = source_dir.joinpath('third_party', 'llvm-build',
+                                            'Release+Asserts',
+                                            'cr_build_revision')
   revision = api.file.read_text(
       'Read clang revision', clang_revision_file, test_data='332838-1')
   api.step.active_result.presentation.step_text = revision
@@ -87,11 +86,10 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   api.chromium.mb_gen(builder_id)
 
   coverage_script = 'coverage.py'
-  coverage_script_path = api.path.checkout_dir.joinpath('tools',
-                                                        'code_coverage',
-                                                        coverage_script)
+  coverage_script_path = source_dir.joinpath('tools', 'code_coverage',
+                                             coverage_script)
   output_dir_name = 'clang_tot_coverage_report'
-  output_dir_path = api.path.checkout_dir.joinpath('out', output_dir_name)
+  output_dir_path = source_dir.joinpath('out', output_dir_name)
   build_dir = api.chromium.output_dir
 
   cmd = ['python3', coverage_script_path]
@@ -103,8 +101,8 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   cmd.extend(['-b', build_dir])
   cmd.extend(['-o', output_dir_path])
 
-  coverage_tools_dir_path = api.path.checkout_dir.joinpath(
-      'third_party', 'llvm-build', 'Release+Asserts', 'bin')
+  coverage_tools_dir_path = source_dir.joinpath('third_party', 'llvm-build',
+                                                'Release+Asserts', 'bin')
   cmd.extend(['--coverage-tools-dir', coverage_tools_dir_path])
 
   cmd.extend(['-v'])

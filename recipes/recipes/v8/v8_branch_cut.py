@@ -16,7 +16,6 @@ DEPS = [
     'depot_tools/gclient',
     'depot_tools/git',
     'recipe_engine/context',
-    'recipe_engine/path',
     'recipe_engine/file',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -29,9 +28,10 @@ PUSH_ACCOUNT = (
 
 def RunSteps(api):
   api.gclient.set_config('v8')
-  api.v8.checkout(with_branch_heads=True)
+  update_result = api.v8.checkout(with_branch_heads=True)
 
-  with api.context(cwd=api.path.checkout_dir), api.depot_tools.on_path():
+  source_dir = update_result.source_root.path
+  with api.context(cwd=source_dir), api.depot_tools.on_path():
     branches = api.v8.latest_branches()
     assert branches, "No branches found!"
     last_version = branches[0]
@@ -46,9 +46,9 @@ def RunSteps(api):
     if last_version != beta_version:
       with api.step.nest('New branch detected'):
         defintions = calculate_versions(api, defintions, last_version)
-        update_branch_version(api, last_version)
+        update_branch_version(api, source_dir, last_version)
         update_main_version(api)
-        update_infra_config(api, defintions)
+        update_infra_config(api, source_dir, defintions)
     else:
       api.step('No new branch detected', [])
 
@@ -59,7 +59,7 @@ def infer_beta_version(defintions):
   return version(defined_versions[0].s)
 
 
-def update_infra_config(api, definitions):
+def update_infra_config(api, source_dir, definitions):
   with api.step.nest('Update infra/config') as parent_step:
     api.v8.git_output('checkout', 'infra/config')
     api.v8.git_output('pull', ok_ret='any')
@@ -67,7 +67,7 @@ def update_infra_config(api, definitions):
     api.v8.git_output('clean', '-ffd')
     api.v8.git_output('checkout', '-b', 'branch_cut_update')
     api.v8.git_output('branch', '--set-upstream-to=origin/infra/config')
-    definitions_path = api.path.checkout_dir / 'definitions.star'
+    definitions_path = source_dir / 'definitions.star'
     api.file.write_text('Write branch defintions', definitions_path,
                         definitions)
     api.step('Lucicfg format', ['lucicfg', 'format'])
@@ -105,7 +105,7 @@ def calculate_versions(api, defintions, last_version):
   return astunparse.unparse(contents)
 
 
-def update_branch_version(api, latest_version):
+def update_branch_version(api, source_dir, latest_version):
   with api.step.nest('Update on branch') as parent_step:
     branch_ref = 'branch-heads/%s' % api.v8.version_num2str(latest_version)
     api.v8.git_output('checkout', branch_ref)
@@ -115,7 +115,7 @@ def update_branch_version(api, latest_version):
         branch_ref,
         version_at_branch_head,
         push_account=PUSH_ACCOUNT,
-        extra_edits=update_gn)
+        extra_edits=lambda api: update_gn(api, source_dir))
     issue = get_issue(api)
     parent_step.links[issue] = issue
 
@@ -135,9 +135,9 @@ def get_issue(api):
   issue = api.v8.git_output('cl', 'issue')
   return re.search('\((.*)\)', issue).group(1)
 
-def update_gn(api):
-  toggle_path = api.path.checkout_dir.joinpath("gni",
-                                               "release_branch_toggle.gni")
+
+def update_gn(api, source_dir):
+  toggle_path = source_dir.joinpath("gni", "release_branch_toggle.gni")
   build_gn_content = api.file.read_text('Read release_branch_toggle.gni',
                                         toggle_path)
   MAIN_LINE = 'v8_is_on_release_branch = false'
