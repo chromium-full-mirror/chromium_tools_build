@@ -480,7 +480,7 @@ class E2ETests(DevToolsTests):
   def construct_commands(self):
     is_exoneration_attempt = self.extra_args
     if is_exoneration_attempt:
-      return [self.run_tests_command('test/interactions')]
+      return [self.run_tests_command('test/e2e')]
     return [
         self.run_tests_command(*test_list)
         for test_list in self.divider.commands
