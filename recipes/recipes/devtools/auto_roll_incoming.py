@@ -7,16 +7,23 @@ Recipe for rolling incoming changes in DevTools.
 """
 
 from recipe_engine.post_process import (DropExpectation, MustRun)
+import json
 
 DEPS = [
+    'recipe_engine/file',
     'v8_auto_roller',
 ]
-
 
 CONFIG = {
     "subject": "Update DevTools DEPS",
     "manual_roll_reviewers": [
         "devtools-waterfall-sheriff-onduty@rotations.google.com",
+    ],
+    "excludes": [
+        "extensions/cxx_debugging/third_party/lldb-eval/src",
+        "extensions/cxx_debugging/third_party/llvm/src",
+        "third_party/cmake:infra/cmake/${{platform}}",
+        "third_party/esbuild:infra/3pp/tools/esbuild/${{platform}}",
     ],
     "show_commit_log": False,
 }
@@ -44,15 +51,22 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield (
-    api.test('default') +
-    api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
-    api.post_process(MustRun, 'Update trusted deps.gerrit changes') +
-    api.post_process(MustRun, 'Update chromium pin deps.gclient get '
-                     'chrome deps') +
-    api.post_process(MustRun, 'Scripted rolls.Update Puppeteer Core deps.'
-                     'Run Puppeteer Core script') +
-    api.post_process(MustRun, 'Scripted rolls.Update Puppeteer Replay deps.'
-                     'Run Puppeteer Replay script') +
-    api.post_process(DropExpectation)
-  )
+
+  def dummy_deps(*keys):
+    return "deps = " + json.dumps({
+        dep_name: 'https://googlesource.org/deps/s.git@123' for dep_name in keys
+    })
+
+  yield (api.test('default') + api.override_step_data(
+      'Find updated deps.Read devtools-frontend/DEPS',
+      api.file.read_text(dummy_deps(*CONFIG["excludes"])),
+  ) + api.post_process(MustRun, 'Update reviewed deps.gerrit changes') +
+         api.post_process(MustRun, 'Update trusted deps.gerrit changes') +
+         api.post_process(MustRun, 'Update chromium pin deps.gclient get '
+                          'chrome deps') +
+         api.post_process(
+             MustRun, 'Scripted rolls.Update Puppeteer Core deps.'
+             'Run Puppeteer Core script') + api.post_process(
+                 MustRun, 'Scripted rolls.Update Puppeteer Replay deps.'
+                 'Run Puppeteer Replay script') +
+         api.post_process(DropExpectation))
