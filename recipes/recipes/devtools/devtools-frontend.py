@@ -423,11 +423,12 @@ class InteractionsTests(DevToolsTests):
       yield
 
   def _post_collect(self):
-    if self.coverage:
-      self.copy_coverage_data()
+    self.copy_coverage_data()
     self.copy_golden_snapshots()
 
   def copy_coverage_data(self):
+    if not self.coverage:
+      return
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
     coverage_data_dir = (
         self.output_dir / shard_output_dir / 'interactions-coverage')
@@ -439,6 +440,8 @@ class InteractionsTests(DevToolsTests):
         self.api.path.join(self.api.path.checkout_dir, 'interactions-coverage'))
 
   def copy_golden_snapshots(self):
+    if not self.api.tryserver.is_tryserver:
+      return
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
     golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
     self.api.file.rmtree(
