@@ -440,7 +440,12 @@ class InteractionsTests(DevToolsTests):
         self.api.path.join(self.api.path.checkout_dir, 'interactions-coverage'))
 
   def copy_golden_snapshots(self):
-    if not self.api.tryserver.is_tryserver:
+    # TODO:(liviurau) Remove this after fast build gets fixed for the new runner
+    goldens_collector_builders = [
+        "devtools_frontend_linux_rel", "devtools_frontend_mac_rel",
+        "devtools_frontend_win_rel"
+    ]
+    if self.api.buildbucket.builder_name not in goldens_collector_builders:
       return
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
     golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
@@ -893,7 +898,7 @@ def GenTests(api):
   yield api.test(
       'cq parallel builder',
       api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='parallel_linux'),
+      try_build(builder='devtools_frontend_linux_rel'),
       api.step_data(
           'Trigger Tests.Trigger E2E Tests.Read test list',
           api.raw_io.stream_output_text(
