@@ -444,6 +444,43 @@
     ]
   },
   {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "rawapi",
+      "--host",
+      "https://chrome-internal-review.googlesource.com",
+      "--path",
+      "/changes/123/revisions/current/review",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--method",
+      "POST",
+      "--body",
+      "{\"message\": \"Patch created at https://cr-buildbucket.appspot.com/build/0\"}"
+    ],
+    "cwd": "[CLEANUP]/tmp_tmp_1",
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "name": "Roller: 'experiment'.Checking CL 123.Apply screenshot patches.gerrit add comment",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@No JSON object could be decoded@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "Roller: 'experiment'.Checking CL 123.Apply screenshot patches.CL needs review",
     "~followup_annotations": [

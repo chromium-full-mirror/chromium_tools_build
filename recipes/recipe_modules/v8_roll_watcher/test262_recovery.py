@@ -66,6 +66,7 @@ def test262_update_status_file(api, roller, cl):
     api.v8.git_output('cl', 'upload', '-f', '--bypass-hooks', '--cq-dry-run')
     cl.set_tag('test262_status_file_patched',
                'Mark CL as patched with new test262 status file')
+    cl.add_backlink_comment()
     commons.just_fail(
         api,
         roller,

@@ -113,13 +113,23 @@ class GerritCL:
 
   def set_tag(self, tag_name, step_name):
     self.api.gerrit.call_raw_api(
-        f'https://{self.host}',
-        f'/changes/{self.number}/hashtags',
+        host=f'https://{self.host}',
+        path=f'/changes/{self.number}/hashtags',
         method='POST',
         body={"add": [tag_name]},
         accept_statuses=[200, 201],
         name=step_name,
     )
+
+  def add_backlink_comment(self):
+    self.api.gerrit.call_raw_api(
+        name='add comment',
+        method='POST',
+        host=f'https://{self.host}',
+        path=f'/changes/{self.number}/revisions/current/review',
+        body={
+            "message": f'Patch created at {self.api.buildbucket.build_url()}'
+        })
 
   def prepare_local_checkout(self):
     with self.api.step.nest('Prepare local checkout'):

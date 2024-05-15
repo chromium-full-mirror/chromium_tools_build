@@ -31,6 +31,7 @@ def apply_screenshot_patches(api, roller, cl):
                           '--cq-dry-run')
         cl.set_tag(roller.screenshots_applied_tag,
                    'Mark CL as patched with new screenshots')
+        cl.add_backlink_comment()
         outcome_title = 'CL needs review'
         outcome_message = 'Please review screenshot patch!'
       commons.just_fail(
