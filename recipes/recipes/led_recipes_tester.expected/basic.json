@@ -955,7 +955,7 @@
     "name": "test luci.chromium.try:chromium_presubmit",
     "~followup_annotations": [
       "@@@STEP_LINK@Test CL@https://chromium-review.googlesource.com/c/chromium/src/+/11235813@@@",
-      "@@@STEP_LINK@Build@https://buildbucket@appspot.com/build/87654321@@@"
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
     ]
   },
   {
@@ -1152,11 +1152,11 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"buildbucket\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"build_id\": 87654321,@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket@appspot.com\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket.appspot.com\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@Build@https://buildbucket@appspot.com/build/87654321@@@"
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
     ]
   },
   {
@@ -1580,7 +1580,7 @@
     "name": "test luci.chromium.try:linux-rel",
     "~followup_annotations": [
       "@@@STEP_LINK@Test CL@https://chromium-review.googlesource.com/c/chromium/src/+/91827@@@",
-      "@@@STEP_LINK@Build@https://buildbucket@appspot.com/build/87654321@@@"
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
     ]
   },
   {
@@ -1777,11 +1777,11 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"buildbucket\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"build_id\": 87654321,@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket@appspot.com\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket.appspot.com\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@Build@https://buildbucket@appspot.com/build/87654321@@@"
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
     ]
   },
   {
@@ -1954,7 +1954,7 @@
     "name": "test luci.chromium.try:win-rel",
     "~followup_annotations": [
       "@@@STEP_LINK@Test CL@https://chromium-review.googlesource.com/c/chromium/src/+/11235813@@@",
-      "@@@STEP_LINK@Build@https://buildbucket@appspot.com/build/87654321@@@"
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
     ]
   },
   {
@@ -2151,11 +2151,11 @@
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"buildbucket\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"build_id\": 87654321,@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket@appspot.com\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket.appspot.com\"@@@",
       "@@@STEP_LOG_LINE@json.output@  }@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LINK@Build@https://buildbucket@appspot.com/build/87654321@@@"
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
     ]
   },
   {
