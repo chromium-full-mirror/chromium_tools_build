@@ -216,12 +216,6 @@ class DevToolsTests(ABC):
 
     return results
 
-  def include_invocations(self):
-    for task in self.tasks:
-      # Remove 'invocations/' because it is added again in include_invocations.
-      self.api.resultdb.include_invocations(
-        [i[len('invocations/'):] for i in task.get_invocation_names()])
-
   def prepare_filtered_rerun(self, test_names):
     grep_arg = 'mocha-grep' if use_legacy_test_runner(self.api) else 'grep'
     self.extra_args = [
@@ -246,6 +240,10 @@ class DevToolsTests(ABC):
           commands=self.commands(),
           env=self.construct_env(),
       )
+    for task in self.tasks:
+      # Remove 'invocations/' because it is added again in include_invocations.
+      self.api.resultdb.include_invocations(
+          [i[len('invocations/'):] for i in task.get_invocation_names()])
 
   def process_results(self):
     with self.api.step.nest(self.step_name):
@@ -636,7 +634,6 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     with api.step.nest('Trigger Tests'):
       for t in tests:
         t.trigger()
-        t.include_invocations()
 
     if not api.devtools.is_debug(builder_config):
       with api.step.nest('Linting'):
@@ -650,7 +647,6 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
       for t in tests:
         t.trigger_exoneration(test_names)
-        t.include_invocations()
       for t in tests:
         t.process_exoneration_results()
 
