@@ -592,7 +592,7 @@ def divide_list(lst, split_count):
 # supported (https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/infra/config/definitions.star)
 def use_legacy_test_runner(api):
   branch_number = api.properties.get('branch_number', None)
-  last_branch_with_legacy_runner = 6421
+  last_branch_with_legacy_runner = 6478
   return branch_number and int(branch_number) <= last_branch_with_legacy_runner
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
