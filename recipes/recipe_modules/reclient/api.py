@@ -517,29 +517,54 @@ class ReclientApi(recipe_api.RecipeApi):
     use_gce_credentials = ('false'
                            if self._experimental_credentials_helper else 'true')
     env = {
-        'RBE_instance': self.instance,
-        'RBE_log_format': _REPROXY_LOG_FORMAT,
-        'RBE_log_dir': self._reclient_log_dir,
-        'RBE_proxy_log_dir': self._reclient_log_dir,
-        'RBE_output_dir': self._reclient_log_dir,
-        'RBE_re_proxy': reproxy_bin_path,
-        'RBE_service': self._service,
-        'RBE_server_address': self.server_address,
-        'RBE_fast_log_collection': 'true',
-        'RBE_use_application_default_credentials': 'false',
-        'RBE_automatic_auth': 'false',
-        'RBE_use_gce_credentials': use_gce_credentials,
-        'RBE_fail_early_min_action_count': 4000,
-        'RBE_fail_early_min_fallback_ratio': 0.5,
-        'RBE_deps_cache_dir': reclient_cache_dir,
-        'RBE_cache_dir': reclient_cache_dir,
-        'RBE_enable_deps_cache': 'true',
-        'RBE_deps_cache_max_mb': _DEPS_CACHE_MAX_MB[self.m.platform.name],
-        'RBE_use_unified_uploads': 'true',
-        'RBE_grpc_keepalive_time': '30s',
-        'RBE_grpc_keepalive_permit_without_stream': 'false',
-        'GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP': enable_crash_dump,
-        'GOMA_DEPS_CACHE_TABLE_THRESHOLD': 40000,
+        'RBE_instance':
+            self.instance,
+        'RBE_log_format':
+            _REPROXY_LOG_FORMAT,
+        'RBE_log_dir':
+            self._reclient_log_dir,
+        'RBE_proxy_log_dir':
+            self._reclient_log_dir,
+        'RBE_output_dir':
+            self._reclient_log_dir,
+        'RBE_re_proxy':
+            reproxy_bin_path,
+        'RBE_service':
+            self._service,
+        'RBE_server_address':
+            self.server_address,
+        'RBE_fast_log_collection':
+            'true',
+        'RBE_use_application_default_credentials':
+            'false',
+        'RBE_automatic_auth':
+            'false',
+        'RBE_use_gce_credentials':
+            use_gce_credentials,
+        'RBE_fail_early_min_action_count':
+            4000,
+        'RBE_fail_early_min_fallback_ratio':
+            0.5,
+        'RBE_deps_cache_dir':
+            reclient_cache_dir,
+        'RBE_cache_dir':
+            reclient_cache_dir,
+        'RBE_enable_deps_cache':
+            'true',
+        'RBE_deps_cache_max_mb':
+            _DEPS_CACHE_MAX_MB[self.m.platform.name],
+        'RBE_use_unified_uploads':
+            'true',
+        'RBE_grpc_keepalive_time':
+            '30s',
+        'RBE_grpc_keepalive_permit_without_stream':
+            'false',
+        'RBE_auxiliary_metadata_path':
+            'auxiliary_proto-descriptor-set.proto.bin',
+        'GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP':
+            enable_crash_dump,
+        'GOMA_DEPS_CACHE_TABLE_THRESHOLD':
+            40000,
     }
 
     if self._experimental_credentials_helper:
