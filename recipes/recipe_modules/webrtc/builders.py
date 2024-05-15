@@ -891,16 +891,6 @@ _TRYSERVER_WEBRTC_SPEC = {
                 'BUILD_CONFIG': 'Debug',
                 'TARGET_BITS': 64,
             }),
-    'linux_memcheck':
-        WebRTCBuilderSpec.create(
-            chromium_config='webrtc_default',
-            gclient_config='webrtc',
-            chromium_apply_config=['memcheck'],
-            gclient_apply_config=['webrtc_valgrind'],
-            chromium_config_kwargs={
-                'BUILD_CONFIG': 'Release',
-                'TARGET_BITS': 64,
-            }),
     'linux_more_configs':
         WebRTCBuilderSpec.create(
             phases=('bwe_test_logging', 'dummy_audio_file_devices_no_protobuf',
