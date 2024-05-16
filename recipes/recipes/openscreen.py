@@ -41,7 +41,8 @@ OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 GN_PROPERTIES = [
     'cast_allow_developer_certificate', 'have_ffmpeg', 'have_libsdl2',
     'have_libopus', 'have_libvpx', 'is_component_build', 'is_debug', 'is_asan',
-    'is_tsan', 'is_gcc', 'target_cpu', 'sysroot', 'use_coverage'
+    'is_tsan', 'is_clang', 'use_custom_cxx', 'target_cpu', 'sysroot',
+    'use_coverage'
 ]
 
 # List of dimensions used for starting swarming on ARM64.
@@ -277,8 +278,8 @@ def TriggerTest(api, dimensions, swarm_request):
 
 
 def CollectTest(api, paths, dimensions, swarm_request, metadata):
-  """Collects a swarming test request. We collect each swarm request individually
-    to enable better reporting of failures.
+  """Collects a swarming test request. We collect each swarm request
+     individually to enable better reporting of failures.
 
   Args:
       api (recipe_api.RecipeApi): API generated from recipe dependencies.
@@ -288,7 +289,8 @@ def CollectTest(api, paths, dimensions, swarm_request, metadata):
           unpacked as **kwargs, such as pool or os.
       swarm_request(SwarmRequest): the information used to start the swarming
           request.
-      metadata(TaskRequestMetadata): the information associated with the test trigger.
+      metadata(TaskRequestMetadata): the information associated with the test
+          trigger.
   """
   output_directory = api.path.mkdtemp(
       f'{swarm_request.task_name}-swarming-output')
@@ -670,7 +672,7 @@ def GenTests(api):
       'linux_x64_gcc',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=True, is_gcc=True),
+      api.properties(is_debug=True, is_clang=False, use_custom_cxx=False),
   )
   yield api.test(
       'linux_arm64', api.platform('linux', 64),
