@@ -82,6 +82,39 @@ PROPERTIES = {
 
 FLAKE_DETECTION_MAX_TESTS = 20
 
+
+class TestRunPhase(ABC):
+
+  @abstractmethod
+  def trigger(self, runner):
+    pass  # pragma: no cover
+
+  @abstractmethod
+  def process_results(self, runner):
+    pass  # pragma: no cover
+
+
+class FirstRunPhase(TestRunPhase):
+
+  def trigger(self, runner):
+    runner.trigger()
+
+  def process_results(self, runner):
+    runner.process_results()
+
+
+class ExonerationPhase(TestRunPhase):
+
+  def __init__(self, test_names):
+    self.test_names = test_names
+
+  def trigger(self, runner):
+    runner.trigger_exoneration(self.test_names)
+
+  def process_results(self, runner):
+    runner.process_exoneration_results(self.test_names)
+
+
 class Results():
 
   def __init__(self, infra_failures=None, task_failures=None,
@@ -133,41 +166,6 @@ class Results():
         status=common_pb.SUCCESS,
     )
 
-class NoOpExonerator:
-  def __init__(self, runner):
-    self.runner = runner
-    self.api = runner.api
-    # Used to indicate that no task was triggered; may contain a failure if the
-    # reason for not triggering qualifies as such
-    self.skip_result = None
-
-  def trigger(self, test_names):
-    pass
-
-  def process_results(self):
-    pass
-
-class RerunExonerator(NoOpExonerator):
-  def trigger(self, test_names):
-    owned_tests = test_names.get(self.runner.test_type_tag)
-    if not owned_tests:
-      self.skip_result = Results()
-      return
-    if len(owned_tests) > FLAKE_DETECTION_MAX_TESTS:
-      self.skip_result = Results()
-      self.skip_result.add_test_failure('Too many failures')
-      self.api.step.empty(
-          f'Too many tests to check for flakes {self.runner.step_name}')
-      return
-    self.runner.step_name += ' (rerun)'
-    self.runner.prepare_filtered_rerun(owned_tests)
-    self.runner.trigger()
-
-  def process_results(self):
-    if self.skip_result:
-      self.runner.results += self.skip_result
-      return
-    self.runner.process_results()
 
 class DevToolsTests(ABC):
 
@@ -191,10 +189,6 @@ class DevToolsTests(ABC):
     The tag that identifies the type of tests we are running. This is used to
     identify the tests that we want to rerun in case of flakiness.
     """
-
-  @cached_property
-  def exonerator(self):
-    return RerunExonerator(self)
 
   def skip(self):
     return False
@@ -229,6 +223,12 @@ class DevToolsTests(ABC):
 
   def test_name_to_grep_string(self, name):
     return name.replace('/', ' ')
+
+  def trigger_phase(self, phase):
+    phase.trigger(self)
+
+  def process_phase_results(self, phase):
+    phase.process_results(self)
 
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):
@@ -273,10 +273,10 @@ class DevToolsTests(ABC):
     """
 
   def trigger_exoneration(self, test_names):
-    self.exonerator.trigger(test_names)
+    pass
 
-  def process_exoneration_results(self):
-    self.exonerator.process_results()
+  def process_exoneration_results(self, test_names):
+    pass
 
   def construct_env(self):
     return self.env
@@ -313,7 +313,38 @@ class DevToolsTests(ABC):
     """
 
 
-class UnitTests(DevToolsTests):
+class ExonerableTests(DevToolsTests):
+
+  def __init__(self, api, cas_digest, builder_config, coverage, step_name):
+    super().__init__(api, cas_digest, builder_config, coverage, step_name)
+    # Used to indicate that no task was triggered; may contain a failure if the
+    # reason for not triggering qualifies as such
+    self.skip_result = None
+
+  def trigger_exoneration(self, test_names):
+    owned_tests = test_names.get(self.test_type_tag)
+    if not owned_tests:
+      self.skip_result = Results()
+      return
+    if len(owned_tests) > FLAKE_DETECTION_MAX_TESTS:
+      self.skip_result = Results()
+      self.skip_result.add_test_failure('Too many failures')
+      self.api.step.empty(
+          f'Too many tests to check for flakes {self.step_name}')
+      return
+    self.step_name += ' (rerun)'
+    self.prepare_filtered_rerun(owned_tests)
+    self.trigger()
+
+  def process_exoneration_results(self, test_names):
+    if self.skip_result:
+      self.results += self.skip_result
+      return
+    self.process_results()
+
+
+class UnitTests(ExonerableTests):
+
   @property
   def test_type_tag(self):
     return 'unit_tests'
@@ -356,7 +387,8 @@ class UnitTests(DevToolsTests):
 
 
 
-class InteractionsTests(DevToolsTests):
+class InteractionsTests(ExonerableTests):
+
   @property
   def test_type_tag(self):
     return 'interactions_tests'
@@ -460,7 +492,9 @@ class InteractionsTests(DevToolsTests):
     name = re.sub(r'^interactions/.*: ', '', name)
     return super().test_name_to_grep_string(name)
 
-class E2ETests(DevToolsTests):
+
+class E2ETests(ExonerableTests):
+
   @property
   def test_type_tag(self):
     prefix = 'shuffled_' if self.api.devtools.is_shuffled_run() else ''
@@ -496,9 +530,12 @@ class E2ETests(DevToolsTests):
 
 
 class RepeatE2EShuffledTests(E2ETests):
-  @cached_property
-  def exonerator(self):
-    return NoOpExonerator(self)
+
+  def trigger_exoneration(self, test_names):
+    pass
+
+  def process_exoneration_results(self, test_names):
+    pass
 
   def skip(self):
     return super().skip() or (not self.api.devtools.is_shuffled_run())
@@ -509,10 +546,6 @@ class RepeatE2EShuffledTests(E2ETests):
 
 
 class PerformanceTests(DevToolsTests):
-  @cached_property
-  def exonerator(self):
-    return NoOpExonerator(self)
-
   @property
   def test_type_tag(self):
     return 'perf_tests'
@@ -631,24 +664,26 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     ]
     tests = [t for t in tests if not t.skip()]
 
+    phase = FirstRunPhase()
+
     with api.step.nest('Trigger Tests'):
       for t in tests:
-        t.trigger()
+        t.trigger_phase(phase)
 
     if not api.devtools.is_debug(builder_config):
       with api.step.nest('Linting'):
         run_lint_check(api)
 
     for t in tests:
-      t.process_results()
+      t.process_phase_results(phase)
 
     with api.step.nest('Flake exonaration attempt'):
-      test_names = failed_tests_names(api)
+      phase = ExonerationPhase(failed_tests_names(api))
 
       for t in tests:
-        t.trigger_exoneration(test_names)
+        t.trigger_phase(phase)
       for t in tests:
-        t.process_exoneration_results()
+        t.process_phase_results(phase)
 
     if coverage:
       with api.step.nest('Coverage'):
