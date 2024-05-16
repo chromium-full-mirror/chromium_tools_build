@@ -694,9 +694,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     Args:
       rdb_results: util.RDBResults instance for test results as reported by RDB
-      allowed_failing_suites: A list of suite names, whose failures did not
-        exceed the expectations. Remove them from unexpected_failing_suites
-        and do not retry them.
+      allowed_failing_suites: A set of suite names whose failures did not
+        exceed the expectations and/or are suites names for experimental suites.
+        Remove them from unexpected_failing_suites and do not retry them.
     Return:
       True if we should skip retries; False otherwise.
     """
@@ -800,13 +800,17 @@ class TestUtilsApi(recipe_api.RecipeApi):
     rdb_results, invalid_test_suites, failed_test_suites = (
         self.run_tests_once(test_suites, suffix, sort_by_shard=sort_by_shard))
 
-    _allowed_failing_suites = [
+    _allowed_failing_suites = {
         x.name
         for x in failed_test_suites
         if not x.exceed_allowed_failure_rate(suffix)
-    ]
+    }
+
+    _experimental_suites = {x.name for x in test_suites if x.is_experimental}
     if retry_failed_shards and self._should_abort_retry(
-        rdb_results, allowed_failing_suites=_allowed_failing_suites):
+        rdb_results,
+        allowed_failing_suites=_allowed_failing_suites.union(
+            _experimental_suites)):
       return invalid_test_suites, invalid_test_suites + failed_test_suites
 
     exonerated_suites_to_retry = []

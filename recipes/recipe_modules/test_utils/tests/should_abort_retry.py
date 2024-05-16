@@ -48,7 +48,7 @@ def RunSteps(api):
         util.RDBPerSuiteResults.create(invocation_dict, suite, suite, 1))
   rdb_results = util.RDBResults.create(rdb_suite_results)
   should_abort = api.test_utils._should_abort_retry(rdb_results,
-                                                    ['fake_suite0'])
+                                                    {'fake_suite0'})
 
   expected_should_abort = api.properties.get('expected_should_abort', False)
   api.assertions.assertEqual(should_abort, expected_should_abort)
