@@ -74,7 +74,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+      "[CLEANUP]/fake-repo/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
       "[START_DIR]/src/out/Release/llvm-symbolizer"
     ],
     "infra_step": true,
@@ -88,7 +88,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/sancov",
+      "[CLEANUP]/fake-repo/third_party/llvm-build/Release+Asserts/bin/sancov",
       "[START_DIR]/src/out/Release/sancov"
     ],
     "infra_step": true,
@@ -102,7 +102,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6",
+      "[CLEANUP]/fake-repo/third_party/llvm-build/Release+Asserts/lib/libstdc++.so.6",
       "[START_DIR]/src/out/Release/libstdc++.so.6"
     ],
     "infra_step": true,

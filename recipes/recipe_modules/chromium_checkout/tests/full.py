@@ -25,6 +25,13 @@ DEPS = [
 PROPERTIES = {
     'ignore_input_commit': Property(kind=bool, default=False),
     'set_output_commit': Property(kind=bool, default=True),
+    # TODO: crbug.com/340576979 - Once dowstream uses are switched to using
+    # set_paths, test case for the setter can be removed
+    'check_setter': Property(kind=bool, default=False),
+    # TODO: crbug.com/340576979 - Once dowstream uses are switched to using
+    # set_paths, everything related to the getter's backward-compatibility can
+    # be removed
+    'check_getter_back_compat': Property(kind=bool, default=False),
 }
 
 
@@ -35,7 +42,28 @@ def revision_resolver(c):
   c.revisions['src-internal'] = gclient.RevisionFallbackChain('refs/heads/main')
 
 
-def RunSteps(api, ignore_input_commit, set_output_commit):
+def RunSteps(api, ignore_input_commit, set_output_commit, check_setter,
+             check_getter_back_compat):
+  with api.assertions.assertRaisesRegexp(ValueError, 'source_dir is not set'):
+    _ = api.chromium_checkout.src_dir
+
+  if check_setter:
+    api.chromium_checkout.checkout_dir = (
+        api.chromium_checkout.default_checkout_dir)
+    api.assertions.assertEqual(api.chromium_checkout.checkout_dir,
+                               api.chromium_checkout.default_checkout_dir)
+    api.assertions.assertEqual(
+        api.chromium_checkout.source_dir,
+        api.chromium_checkout.default_checkout_dir / 'src')
+  elif check_getter_back_compat:
+    # Backwards compatibility kludge: getting checkout_dir before it's been set
+    # calls set_paths
+    api.assertions.assertEqual(api.chromium_checkout.checkout_dir,
+                               api.chromium_checkout.default_checkout_dir)
+    api.assertions.assertEqual(
+        api.chromium_checkout.source_dir,
+        api.chromium_checkout.default_checkout_dir / 'src')
+
   api.gclient.set_config(api.properties.get('gclient_config', 'chromium'))
 
   api.chromium_checkout.ensure_checkout(
@@ -48,21 +76,14 @@ def RunSteps(api, ignore_input_commit, set_output_commit):
         api.chromium_checkout.get_files_affected_by_patch(),),
   ]
 
-  # Verify that checkout_dir can be overridden
-  api.chromium_checkout.checkout_dir = api.path.cleanup_dir
-  api.assertions.assertEqual(api.chromium_checkout.checkout_dir,
-                             api.path.cleanup_dir)
-  api.assertions.assertEqual(api.chromium_checkout.src_dir,
-                             api.path.cleanup_dir / 'src')
-
+  # Checking out again is fine if the checkout_dir and source_dir are the same
+  api.chromium_checkout.ensure_checkout()
 
 def GenTests(api):
   yield api.test(
       'full_ci',
       api.platform('linux', 64),
       api.buildbucket.generic_build(),
-      api.path.exists(api.chromium_checkout.src_dir /
-                      'out/Release/browser_tests'),
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'bot_update'),
@@ -83,8 +104,6 @@ def GenTests(api):
       api.reclient.properties(instance='someinstance'),
       api.post_check(verify_rbe_instance,
                      'projects/someinstance/instances/default_instance'),
-      api.path.exists(api.chromium_checkout.src_dir /
-                      'out/Release/browser_tests'),
       api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'bot_update'),
@@ -101,7 +120,7 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.platform('win', 64),
       api.post_check(verify_checkout_dir,
-                     api.path.cache_dir.joinpath('builder', 'src')),
+                     api.chromium_checkout.default_checkout_dir / 'src'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'bot_update'),
@@ -114,7 +133,7 @@ def GenTests(api):
       api.buildbucket.try_build(),
       api.platform('linux', 64),
       api.post_check(verify_checkout_dir,
-                     api.path.cache_dir.joinpath('builder', 'src')),
+                     api.chromium_checkout.default_checkout_dir / 'src'),
       api.post_process(DoesNotRun, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
@@ -141,11 +160,27 @@ def GenTests(api):
       api.platform('linux', 64),
       api.properties(ignore_input_commit=True, set_output_commit=False),
       api.post_check(verify_checkout_dir,
-                     api.path.cache_dir.joinpath('builder', 'src')),
+                     api.chromium_checkout.default_checkout_dir / 'src'),
       api.post_process(DoesNotRun, 'taskkill'),
       api.post_process(StepSuccess, 'gclient config'),
       api.post_process(StepSuccess, 'gerrit fetch current CL info'),
       api.post_process(StepSuccess, 'bot_update'),
       api.post_process(StepSuccess, 'git diff to analyze patch'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'setter',
+      api.buildbucket.try_build(),
+      api.platform('linux', 64),
+      api.properties(check_setter=True),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'getter-back-compat',
+      api.buildbucket.try_build(),
+      api.platform('linux', 64),
+      api.properties(check_getter_back_compat=True),
       api.post_process(DropExpectation),
   )

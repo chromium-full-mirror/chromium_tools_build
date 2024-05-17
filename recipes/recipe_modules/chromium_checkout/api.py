@@ -5,6 +5,7 @@
 import copy
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 from RECIPE_MODULES.depot_tools import bot_update
@@ -18,7 +19,11 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
   def __init__(self, input_properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
+    # We track if the default checkout dir was accessed so that we can detect
+    # usage that would most likely be a mistake
+    self._default_checkout_dir_accessed = False
     self._checkout_dir = None
+    self._source_dir = None
     self._timeout = input_properties.timeout
 
   @property
@@ -26,37 +31,114 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     return self._timeout
 
   @property
-  def checkout_dir(self):
-    """Returns directory where checkout can be created."""
-    # On LUCI, Buildbucket by default maps a per-builder unique directory in
-    # as the 'builder' cache. Builders that are intended to share a cache
-    # should have a CacheEntry config like:
-    #
-    #   caches {
-    #     path: "builder"
-    #     name: "some common name shared by different builders"
-    #   }
-    #
-    # Which will mount that named cache to exactly the same folder.
-    #
-    # It's important to maintain the same mounted location because file paths
-    # can end up in cached goma keys/objects; mounting the named cache to an
-    # alternate location could result in goma cache bloating.
-    if not self._checkout_dir:
-      self._checkout_dir = self.m.path.cache_dir / 'builder'
+  def default_checkout_dir(self) -> Path:
+    """The default location to perform a checkout."""
+    self._default_checkout_dir_accessed = True
+    return self.m.path.cache_dir / 'builder'
+
+  _UNSET_USAGE_MESSAGE = (
+      'call chromium_checkout.ensure_checkout, chromium_checkout.set_paths'
+      ' or chromium_checkout.set_paths_from_update_result first')
+
+  @property
+  def checkout_dir(self) -> Path:
+    """The path to the directory where the checkout was performed.
+
+    For a chromium checkout, this would be the parent of src.
+    """
+    if self._checkout_dir is None:
+      # TODO: crbug.com/340576979 - Once dowstream uses are switched to set the
+      # paths before using them, raise an error
+      self.checkout_dir = self.default_checkout_dir
     return self._checkout_dir
 
+  # TODO: crbug.com/340576979 - Once dowstream uses are switched to use
+  # set_paths, remove the setter
   @checkout_dir.setter
   def checkout_dir(self, value):
-    self._checkout_dir = value
+    self._set_paths(value, value / 'src')
 
-  # TODO (kimstephanie): Recipes should pass in the src path as an argument to
-  # recipe_modules instead of recipe_modules using src_dir and checkout_dir to
-  # construct these paths.
   @property
-  def src_dir(self):
-    """Returns the path to the src checkout directory."""
-    return self.checkout_dir / 'src'
+  def source_dir(self) -> Path:
+    """The path to the top level repo.
+
+    For a chromium checkout, this would be the src directory.
+    """
+    if self._checkout_dir is None:
+      raise ValueError(f'source_dir is not set, {self._UNSET_USAGE_MESSAGE}')
+    return self._source_dir
+
+  @property
+  def src_dir(self) -> Path:
+    """The path to the top level repo.
+
+    DEPRECATED use source_dir instead.
+
+    This is present for backwards compatibility, src_dir is replaced by
+    source_dir, which aligns with the terminology in the bot_update Result type
+    and to avoid the implied assumption of a directory named 'src'.
+    """
+    return self.source_dir
+
+  def _set_paths(self, checkout_dir: Path, source_dir: Path) -> None:
+    assert self._checkout_dir is None and self._source_dir is None, (
+        'paths have already been set')
+    assert checkout_dir in source_dir.parents, (
+        'source_dir must be within checkout_dir')
+    # We expect that if someone accessed default_checkout_dir then checkout_dir
+    # will end up set to default_checkout_dir. If that's not the case, we expect
+    # it to be a mistake.
+    if (self._default_checkout_dir_accessed and
+        checkout_dir != self.default_checkout_dir):
+      raise ValueError(
+          f'checkout_dir is being set to {checkout_dir} after'
+          f' default_checkout_dir ({self.default_checkout_dir}) was accessed,'
+          ' this indicates a likely mistake')
+    self._checkout_dir = checkout_dir
+    self._source_dir = source_dir
+
+  def set_paths(self, checkout_dir: Path, source_dir: str | Path) -> None:
+    """Manually set the paths for the module.
+
+    This is intended for uses cases where no checkout is performed. Eventually,
+    all code should be switched to taking paths as arguments instead of relying
+    on chromium_checkout.checkout_dir and chromium_checkout.source_dir, but this
+    provides a migration path for removing api.path.checkout_dir until necessary
+    changes to plumb paths through can be made.
+
+    Args:
+      checkout_dir: The path to where the directory that contains the "checked
+        out" repos (for a chromium checkout, this will be the parent directory
+        of src). After returning, api.chromium_checkout.checkout_dir will have
+        this value.
+      source_root: Either a str that gives the checkout_dir-relative path to the
+        source directory or a Path which must be a subdirectory of checkout_dir.
+        After returning, api.chromium_checkout.source_dir and
+        api.path.checkout_dir will have a Path pointing at this directory.
+    """
+    if isinstance(source_dir, str):
+      source_dir = checkout_dir / source_dir
+    self._set_paths(checkout_dir, source_dir)
+
+    # TODO: crbug.com/336589262 This can be removed once no one is relying on it
+    # being set
+    self.m.path.checkout_dir = self._source_dir
+
+  def set_paths_from_update_result(self,
+                                   update_result: bot_update.Result) -> None:
+    """Manually set the paths for the module.
+
+    This is intended for uses cases where the checkout is performed via
+    bot_update.ensure_checkout. Eventually, all code should be switched to
+    taking paths as arguments instead of relying on
+    chromium_checkout.checkout_dir and chromium_checkout.source_dir, but this
+    provides a migration path for removing api.path.checkout_dir until necessary
+    changes to plumb paths through can be made.
+
+    Args:
+      update_result: The result from calling bot_update.ensure_checkout.
+    """
+    self._set_paths(update_result.checkout_dir, update_result.source_root.path)
 
   def get_files_affected_by_patch(self, relative_to='src/', cwd=None,
                                   report_via_property=False):
@@ -100,12 +182,15 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
   ) -> bot_update.Result:
     """Wrapper for bot_update.ensure_checkout with chromium-specific additions.
 
+    in contrast to bot_update.ensure_checkout, if api.context.cwd is None, the
+    checkout will be performed in api.chromium_checkout.default_checkout_dir
+    instead of api.path.start_dir.
+
     Args:
       timeout: Timeout in seconds for bot_update.ensure_checkout. If the timeout
         value is set on this module's properties, this will be ignored.
       **kwargs: Keyword arguments to forward on to bot_update.ensure_checkout.
-        The following arguments have overridden defaults:
-        * no_fetch_tags: True
+        The following arguments have overridden defaults: * no_fetch_tags: True
     """
     kwargs.setdefault('no_fetch_tags', True)
 
@@ -120,7 +205,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         gclient_config) as callback:
       self._report_gclient_config(gclient_config)
 
-      with self.m.context(cwd=self.checkout_dir):
+      with self.m.context(cwd=self.m.context.cwd or self.default_checkout_dir):
         update_result = self.m.bot_update.ensure_checkout(
             gclient_config=gclient_config, timeout=timeout, **kwargs)
 
@@ -128,6 +213,20 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       self.m.chromium.set_build_properties(update_result.properties)
 
       callback(update_result.manifest)
+
+    if self._checkout_dir is None and self._source_dir is None:
+      self.set_paths_from_update_result(update_result)
+    else:
+      # Allow checking out multiple times provided that the checkout is
+      # performed in the same location and checks out the same repo
+      checkout_dir = update_result.checkout_dir
+      source_dir = update_result.source_root.path
+      assert (
+          self._checkout_dir == checkout_dir and self._source_dir == source_dir
+      ), ('checkout performed with different paths, previously'
+          f' checkout_dir={self._checkout_dir}, source_dir={self._source_dir},'
+          ' attempting to set'
+          f' checkout_dir={checkout_dir}, source_dir={source_dir}')
 
     self.update_rdb_invocation(
         gitiles_commit=self.m.buildbucket.build.output.gitiles_commit)

@@ -9,6 +9,7 @@ from PB.recipe_modules.build.symupload import properties
 
 DEPS = [
     'chromium',
+    'chromium_checkout',
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/properties',
@@ -17,6 +18,8 @@ DEPS = [
 
 
 def RunSteps(api):
+  api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
+
   api.chromium.set_config(
       'chromium', **{
           'TARGET_PLATFORM': api.properties.get('target_platform'),
@@ -219,9 +222,9 @@ def GenTests(api):
       api.properties(target_platform='linux', host_platform='linux'),
       api.path.exists(
           api.path.tmp_base_dir / 'symupload',
-          api.path.cache_dir.joinpath('builder', 'src-internal', 'infra',
-                                      'official_configs', 'bling',
-                                      'symupload_configs.json')),
+          api.path.cleanup_dir.joinpath('src-internal', 'infra',
+                                        'official_configs', 'bling',
+                                        'symupload_configs.json')),
       api.symupload(input_properties_file),
       api.post_process(post_process.MustRun, 'symupload.symupload_v2'),
       api.post_process(post_process.StepCommandContains,

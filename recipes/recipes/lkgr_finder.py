@@ -83,7 +83,7 @@ def RunSteps(api, project, repo, ref, config, lkgr_status_gs_path, allowed_lag,
   api.gclient.c.got_revision_mapping = {}
   api.gclient.c.got_revision_reverse_mapping = {'got_revision': 'infra'}
 
-  checkout_dir = api.chromium_checkout.checkout_dir
+  checkout_dir = api.chromium_checkout.default_checkout_dir
   with api.context(cwd=checkout_dir):
     api.bot_update.ensure_checkout()
 

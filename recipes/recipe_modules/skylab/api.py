@@ -135,7 +135,7 @@ class SkylabApi(recipe_api.RecipeApi):
           'vpython3',
           self.resource('skylab.py'),
           '--chromium-src',
-          str(self.m.chromium_checkout.src_dir),
+          str(self.m.chromium_checkout.source_dir),
           '--json-outfile',
           self.m.json.output(),
           'request',
@@ -161,9 +161,9 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.use_lkgm:
         assert not test.spec.cros_img, 'cros_img should be empty when use_lkgm is True'
         is_public = test.spec.bucket.startswith('chromiumos-')
-        cros_img = self.get_lkgm_version(test.spec.cros_board,
-                                         str(self.m.chromium_checkout.src_dir),
-                                         is_public)
+        cros_img = self.get_lkgm_version(
+            test.spec.cros_board, str(self.m.chromium_checkout.source_dir),
+            is_public)
         assert cros_img, 'chromite build_api command not found'
       else:
         cros_img = test.spec.cros_img
@@ -181,9 +181,8 @@ class SkylabApi(recipe_api.RecipeApi):
         for b, img in zip(boards, imgs):
           if img == 'use_lkgm':
             is_public = test.spec.bucket.startswith('chromiumos-')
-            img = self.get_lkgm_version(b,
-                                        str(self.m.chromium_checkout.src_dir),
-                                        is_public)
+            img = self.get_lkgm_version(
+                b, str(self.m.chromium_checkout.source_dir), is_public)
           cmd.extend(['--secondary-boards', b])
           cmd.extend(['--secondary-images', img])
 
@@ -318,7 +317,7 @@ class SkylabApi(recipe_api.RecipeApi):
         'vpython3',
         self.resource('skylab.py'),
         '--chromium-src',
-        str(self.m.chromium_checkout.src_dir),
+        str(self.m.chromium_checkout.source_dir),
         '--json-outfile',
         self.m.json.output(),
         'response',

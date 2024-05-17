@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'chromium_checkout',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
     'skylab',
@@ -44,6 +46,8 @@ PROPERTIES = {
 
 
 def RunSteps(api, requests):
+  api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
+
   with api.step.nest('schedule skylab test'):
     for r in requests:
       api.skylab.schedule_suite(r, '')

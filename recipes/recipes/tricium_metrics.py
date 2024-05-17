@@ -78,7 +78,7 @@ def RunSteps(api):
     # patch.
     api.chromium_checkout.ensure_checkout(gerrit_no_rebase_patch_ref=True)
 
-    src_dir = api.chromium_checkout.src_dir
+    src_dir = api.chromium_checkout.source_dir
     with api.context(cwd=src_dir):
       # Do not analyze removed files.
       affected = [

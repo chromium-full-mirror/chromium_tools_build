@@ -86,7 +86,7 @@ def RunSteps(api):
       )
 
     issue_num = changes[0]['_number']
-    with api.context(cwd=api.chromium_checkout.src_dir):
+    with api.context(cwd=api.chromium_checkout.source_dir):
       status_step = api.git_cl(
           'status', ['--issue', issue_num, '--field', 'status'],
           name='git cl status',
@@ -104,7 +104,7 @@ def RunSteps(api):
               'to submit.'),
       )
     # Close CL so we can upload a new one
-    with api.context(cwd=api.chromium_checkout.src_dir):
+    with api.context(cwd=api.chromium_checkout.source_dir):
       api.git_cl('set-close', ['--issue', issue_num], name='git cl set-close')
 
   api.git('config', 'user.name', 'autosharder')
@@ -114,10 +114,10 @@ def RunSteps(api):
     api.git('new-branch', 'autoshard', '--upstream', 'origin/main')
 
   potential_autoshard_exceptions_paths = (
-      api.chromium_checkout.src_dir.joinpath('infra', 'config', 'targets',
-                                             'autoshard_exceptions.json'),
-      api.chromium_checkout.src_dir.joinpath('testing', 'buildbot',
-                                             'autoshard_exceptions.json'),
+      api.chromium_checkout.source_dir.joinpath('infra', 'config', 'targets',
+                                                'autoshard_exceptions.json'),
+      api.chromium_checkout.source_dir.joinpath('testing', 'buildbot',
+                                                'autoshard_exceptions.json'),
   )
   for autoshard_exceptions_path in potential_autoshard_exceptions_paths:
     if api.path.exists(autoshard_exceptions_path):
@@ -131,7 +131,7 @@ def RunSteps(api):
         status=api.step.EXCEPTION,
         step_text='\n'.join(step_text))
 
-  script_path = api.chromium_checkout.src_dir.joinpath(
+  script_path = api.chromium_checkout.source_dir.joinpath(
       'testing', 'buildbot', 'query_optimal_shard_counts.py')
 
   script_cmd = [
@@ -149,7 +149,7 @@ def RunSteps(api):
 
   def step_test_data():
     autoshard_exceptions_rel_path = api.path.relpath(
-        autoshard_exceptions_path, api.chromium_checkout.src_dir)
+        autoshard_exceptions_path, api.chromium_checkout.source_dir)
     return api.raw_io.test_api.stream_output_text(
         f'diff --git a/{autoshard_exceptions_rel_path}'
         f' b/{autoshard_exceptions_rel_path}')
@@ -167,7 +167,7 @@ def RunSteps(api):
   )
 
   with api.step.nest('regenerate targets specs'):
-    src_dir = api.chromium_checkout.src_dir
+    src_dir = api.chromium_checkout.source_dir
     api.step(
         '//testing/buildbot',
         ['vpython3', src_dir / 'testing/buildbot/generate_buildbot_json.py'])
@@ -190,7 +190,7 @@ def RunSteps(api):
       '--send-email',
   ]
 
-  with api.context(cwd=api.chromium_checkout.src_dir):
+  with api.context(cwd=api.chromium_checkout.source_dir):
     api.git_cl.upload(commit_message, upload_args, name='git cl upload')
     api.git_cl(
         'issue',

@@ -465,7 +465,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       paths.sort()
       if self.m.platform.is_win:
         paths = [path.replace('\\', '/') for path in paths]
-    self.m.code_coverage.src_dir = self.m.chromium_checkout.src_dir
+    self.m.code_coverage.src_dir = self.m.chromium_checkout.source_dir
     self.m.code_coverage.instrument(paths)
     return properties.rerun_options.preserve_gn_args
 

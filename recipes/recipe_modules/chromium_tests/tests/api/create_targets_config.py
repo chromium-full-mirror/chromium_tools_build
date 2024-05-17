@@ -72,10 +72,9 @@ FAKE_TARGETS_SPEC = {
 
 def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
              skip_tests):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
+  api.chromium_checkout.ensure_checkout()
   targets_config = api.chromium_tests.create_targets_config(
       builder_config, {
           "got_angle_revision": "19582d1201aab222b61be3858776e6fe93967895",
@@ -87,7 +86,7 @@ def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
           "got_webrtc_revision": "a19f0c7409f1dc4316bb6a6d9a97d3261539a84d",
           "got_webrtc_revision_cp": "refs/heads/main@{#36539}",
       },
-      api.chromium_checkout.src_dir,
+      api.chromium_checkout.source_dir,
       targets_spec_dir=targets_spec_dir,
       precommit_details=(generators.PrecommitDetails()
                          if api.tryserver.is_tryserver else None),
@@ -183,7 +182,7 @@ def GenTests(api):
               'browser_tests_no_swarm', 'android_webview_junit_tests',
               'check_static_initializers', 'basic_EVE_TOT'
           ],
-          targets_spec_dir=api.chromium_checkout.src_dir / 'infra/specs',
+          targets_spec_dir=api.path.cleanup_dir / 'infra/specs',
       ),
       fake_targets_spec(),
       api.chromium.try_build(
@@ -191,9 +190,9 @@ def GenTests(api):
           builder='fake-try-builder',
       ),
       api.post_process(
-          post_process.StepTextContains,
+          post_process.StepCommandContains,
           'read test spec (fake-group.json)',
-          ['infra/specs'],
+          ['[CLEANUP]/infra/specs/fake-group.json'],
       ),
       api.post_process(post_process.DropExpectation),
   )

@@ -245,7 +245,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     in chromium is to use `checkout_clang_coverage_tools` gclient config:
     bit.ly/45OU2rA
     """
-    clang_update_script = self.m.chromium_checkout.src_dir.joinpath(
+    clang_update_script = self.m.chromium_checkout.source_dir.joinpath(
         'tools', 'clang', 'scripts', 'update.py')
     args = ['python3', clang_update_script, '--package', 'coverage_tools']
     self.m.step(

@@ -11,6 +11,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
+    'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
     'chromium_utr',
@@ -27,13 +28,15 @@ PROPERTIES = Request
 
 
 def RunSteps(api, request):
+  api.chromium_checkout.set_paths(api.path.cache_dir,
+                                  api.path.abs_to_path(request.checkout_path))
+
   builder = api.buildbucket.build.builder.builder
   builder_id = chromium.BuilderId.create_for_group(
       api.m.properties['builder_group'], builder)
 
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
-  api.path.checkout_dir = api.path.abs_to_path(request.checkout_path)
   api.chromium_tests.configure_build(
       builder_config,
       test_only=request.run_type == Request.RunType.RUN_TYPE_RUN)

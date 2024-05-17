@@ -10,7 +10,8 @@ from recipe_engine import post_process
 
 DEPS = [
     'archive',
-    'build/chromium',
+    'chromium',
+    'chromium_checkout',
     'squashfs',
     'recipe_engine/assertions',
     'recipe_engine/file',
@@ -34,7 +35,7 @@ TEST_COMMIT_POSITON_COMPONENT = 'refs/heads/main@{#234}'
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
 
   if 'test_get_channel_name' in api.properties:
     api.assertions.assertEqual(

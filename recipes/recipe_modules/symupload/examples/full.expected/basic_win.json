@@ -11,7 +11,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/build/win_toolchain.json",
+      "[CLEANUP]/fake-repo/build/win_toolchain.json",
       "/path/to/tmp/"
     ],
     "infra_step": true,

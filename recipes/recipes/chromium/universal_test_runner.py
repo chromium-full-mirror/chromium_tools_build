@@ -57,9 +57,8 @@ def configure_build(
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
 
   api.chromium_tests.configure_build(builder_config, test_only=not build)
-  api.path.checkout_dir = api.path.abs_to_path(checkout_dir)
-  api.chromium_checkout.checkout_dir = api.path.cache_dir
-
+  api.chromium_checkout.set_paths(api.path.cache_dir,
+                                  api.path.abs_to_path(checkout_dir))
   return builder_id, builder_config
 
 

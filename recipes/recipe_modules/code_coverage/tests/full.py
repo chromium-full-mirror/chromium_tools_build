@@ -13,6 +13,7 @@ from PB.recipe_modules.recipe_engine.led.properties import InputProperties
 
 DEPS = [
     'chromium',
+    'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
     'code_coverage',
@@ -36,10 +37,11 @@ def RunSteps(api):
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(builder_config)
+  api.chromium_checkout.ensure_checkout()
+
   # Fake path.
-  api.profiles.src_dir = api.path.start_dir
-  api.code_coverage.src_dir = api.path.start_dir
-  api.path.checkout_dir = api.path.start_dir
+  api.profiles.src_dir = api.chromium_checkout.source_dir
+  api.code_coverage.src_dir = api.chromium_checkout.source_dir
 
   if api.tryserver.is_tryserver:
     api.code_coverage.instrument(
@@ -157,7 +159,7 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS),
-                       ['[START_DIR]/out/Release/content_shell']),
+                       ['[CACHE]/builder/src/out/Release/content_shell']),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1043,12 +1045,14 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
           'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
-              '[START_DIR]/out/Debug/content_shell.app/content_shell'
+              '[CACHE]/builder/src/out/Debug/content_shell.app/content_shell'
           ]),
       api.post_process(post_process.StepCommandContains, (
           'process clang code coverage data for overall test coverage.generate '
-          'metadata for overall test coverage in %s tests' % _NUM_TESTS
-      ), ['[START_DIR]/out/Debug/ios_chrome_eg2tests.app/ios_chrome_eg2tests']),
+          'metadata for overall test coverage in %s tests' % _NUM_TESTS), [
+              ('[CACHE]/builder/src/out/Debug/'
+               'ios_chrome_eg2tests.app/ios_chrome_eg2tests'),
+          ]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -1219,7 +1223,7 @@ def GenTests(api):
           post_process.StepCommandContains,
           'process clang code coverage data for overall test coverage.filter '
           'binaries with valid data for %s binaries' % (_NUM_TESTS - 2),
-          ['[START_DIR]\\out\\Release\\content_shell.exe']),
+          ['[CACHE]\\builder\\src\\out\\Release\\content_shell.exe']),
       api.post_process(post_process.MustRun, (
           'process clang code coverage data for overall test coverage.generate '
           'html report for overall test coverage in %s tests' % _NUM_TESTS)),

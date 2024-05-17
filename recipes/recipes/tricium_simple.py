@@ -39,7 +39,7 @@ def RunSteps(api):
     # rebased on origin/main. gerrit_no_rebase_patch_ref prevents rebasing
     # on origin/main which may result in incorrect line numbers.
     api.chromium_checkout.ensure_checkout(gerrit_no_rebase_patch_ref=True)
-    input_dir = api.chromium_checkout.src_dir
+    input_dir = api.chromium_checkout.source_dir
     affected_files = [
         f for f in api.chromium_checkout.get_files_affected_by_patch()
         if not _should_skip(f) and api.path.exists(input_dir / f)

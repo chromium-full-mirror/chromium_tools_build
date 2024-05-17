@@ -400,7 +400,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     """
     path_to_merge_scripts = self.path_to_merge_scripts
     if not path_to_merge_scripts:
-      path_to_merge_scripts = self.m.chromium_checkout.src_dir.joinpath(
+      path_to_merge_scripts = self.m.chromium_checkout.source_dir.joinpath(
           'testing', 'merge_scripts')
     return path_to_merge_scripts.joinpath(name)
 
@@ -1708,7 +1708,7 @@ class SwarmingApi(recipe_api.RecipeApi):
       path_to_merge_scripts: The path to a local directory mirroring
           https://chromium.googlesource.com/chromium/src/+/main/testing/merge_scripts/.
           This is needed for accessing the scripts used for merging outputs. If
-          unset, this module will look at self.m.chromium_checkout.src_dir.
+          unset, this module will look at self.m.chromium_checkout.source_dir.
     """
     # Set platform-specific default dims.
     target_platform = self.m.chromium.c.TARGET_PLATFORM

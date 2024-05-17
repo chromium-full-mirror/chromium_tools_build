@@ -7,10 +7,12 @@ from recipe_engine import recipe_test_api
 
 class ChromiumCheckoutTestApi(recipe_test_api.RecipeTestApi):
 
+  # TODO: crbug.com/340576979 - Once dowstream uses are switched to
+  # default_checkout_dir, remove checkout_dir property
   @property
   def checkout_dir(self):
     return self.m.path.cache_dir / 'builder'
 
   @property
-  def src_dir(self):
-    return self.checkout_dir / 'src'
+  def default_checkout_dir(self):
+    return self.checkout_dir

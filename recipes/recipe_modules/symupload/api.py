@@ -46,8 +46,8 @@ class SymuploadApi(recipe_api.RecipeApi):
     try:
       toolchain_data = self.m.file.read_json(
           'find_win_toolchain',
-          self.m.chromium_checkout.src_dir.joinpath('build',
-                                                    'win_toolchain.json'))
+          self.m.chromium_checkout.source_dir.joinpath('build',
+                                                       'win_toolchain.json'))
       dia_dir = self.m.path.join(toolchain_data['path'], 'DIA SDK', 'bin',
                                  'amd64')
       x64_runtime_dir = toolchain_data['runtime_dirs'][0]

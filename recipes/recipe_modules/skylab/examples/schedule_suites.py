@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'chromium_checkout',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/json',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
@@ -264,6 +266,8 @@ def StepCommandContainsSubstrings(check, step_odict, step, substrings):
 
 
 def RunSteps(api, requests):
+  api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
+
   api.buildbucket.set_output_gitiles_commit(GITILES_COMMIT)
   ctp_build_ids = []
   with api.step.nest('schedule skylab test'):
@@ -328,7 +332,7 @@ def GenTests(api):
           post_process.StepCommandContains,
           'schedule skylab test.' + REQUESTS[0].name + '.schedule', [
               '--chromium-src',
-              '[CACHE]/builder/src',
+              '[CLEANUP]/fake-repo',
               '--json-outfile',
               '/path/to/tmp/json',
               'request',

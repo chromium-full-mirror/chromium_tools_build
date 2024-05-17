@@ -5,7 +5,6 @@
 from recipe_engine import post_process
 
 DEPS = [
-    'chromium_checkout',
     'profiles',
     'recipe_engine/path',
 ]
@@ -13,7 +12,7 @@ DEPS = [
 
 def RunSteps(api):
   # coverage only
-  api.profiles.src_dir = api.chromium_checkout.src_dir
+  api.profiles.src_dir = api.path.cleanup_dir
   _ = api.profiles.merge_scripts_dir
   _ = api.profiles.merge_steps_script
   _ = api.profiles.merge_results_script

@@ -9,6 +9,7 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
+    'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/tryserver',
@@ -20,8 +21,6 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-
   test_specs = []
   if api.properties.get('local_gtest'):
     test_specs.append(steps.LocalGTestTestSpec.create('base_unittests'))
@@ -39,6 +38,9 @@ def RunSteps(api):
             script_args=['some', 'args']))
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
+  # Remove this once the following code is not relying on paths being set by
+  # chromium_checkout
+  api.chromium_checkout.ensure_checkout()
   tests = [s.get_test(api.chromium_tests) for s in test_specs]
   with api.chromium_tests.wrap_chromium_tests(tests=tests):
     pass

@@ -36,10 +36,10 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   bundle_dir = create_recipe_bundle(api, recipe_dir)
   for builder_suites in properties.builder_suites:
     step_name = f'{builder_suites.bucket}:{builder_suites.builder_name}'
-    build_dir = api.chromium_checkout.src_dir / builder_suites.build_dir
+    build_dir = api.chromium_checkout.source_dir / builder_suites.build_dir
     cmd = [
         'vpython3',
-        api.chromium_checkout.src_dir.joinpath('tools', 'utr', 'run.py'),
+        api.chromium_checkout.source_dir.joinpath('tools', 'utr', 'run.py'),
         '--bucket',
         builder_suites.bucket,
         '--builder',
@@ -61,7 +61,7 @@ def checkout(api: RecipeApi):
   """Checks out chromium/src and build repos.
 
   Returns path to the tools/build.git recipe checkout. The src checkout can
-  be accessed at `api.chromium_checkout.src_dir`.
+  be accessed at `api.chromium_checkout.source_dir`.
   """
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')

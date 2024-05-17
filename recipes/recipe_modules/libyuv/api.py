@@ -99,8 +99,9 @@ class LibyuvApi(recipe_api.RecipeApi):
     return self.bot_config.get('parent_buildername')
 
   def checkout(self):
-    with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
+    with self.m.context(cwd=self.m.chromium_checkout.default_checkout_dir):
       update_result = self.m.bot_update.ensure_checkout()
+      self.m.chromium_checkout.set_paths_from_update_result(update_result)
       self.revision = update_result.properties['got_revision']
 
   @contextlib.contextmanager

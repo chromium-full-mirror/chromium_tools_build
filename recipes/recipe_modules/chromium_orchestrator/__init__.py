@@ -13,6 +13,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'code_coverage',
+    'depot_tools/gclient',
     'depot_tools/gsutil',
     'depot_tools/tryserver',
     'flakiness',

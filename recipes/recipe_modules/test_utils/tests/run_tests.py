@@ -12,6 +12,7 @@ from RECIPE_MODULES.build.chromium_tests import steps
 DEPS = [
     'builder_group',
     'chromium',
+    'chromium_checkout',
     'chromium_swarming',
     'chromium_tests',
     'depot_tools/tryserver',
@@ -41,6 +42,8 @@ PROPERTIES = {
 
 def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
              test_experimental, retry_failed_shards, retry_invalid_shards):
+  api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
+
   api.chromium.set_config('chromium')
   api.chromium.set_build_properties({
       'got_webrtc_revision': 'webrtc_sha',

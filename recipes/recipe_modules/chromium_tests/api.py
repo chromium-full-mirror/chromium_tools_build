@@ -320,10 +320,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Args:
       runhooks_suffix: Suffix for gclient runhooks step name
     """
+    checkout_dir = self.m.chromium_checkout.default_checkout_dir
     if report_cache_state:
       with self.m.step.nest('builder cache') as presentation:
-        contents = self.m.file.listdir('check if empty',
-                                       self.m.chromium_checkout.checkout_dir)
+        contents = self.m.file.listdir('check if empty', checkout_dir)
         is_cached = bool(contents)
         presentation.properties['is_cached'] = is_cached
         if is_cached:
@@ -1262,13 +1262,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           require_device_steps):
         self.m.chromium_android.common_tests_setup_steps()
 
-      self.m.code_coverage.src_dir = self.m.chromium_checkout.src_dir
-      self.m.profiles.src_dir = self.m.chromium_checkout.src_dir
+      self.m.code_coverage.src_dir = self.m.chromium_checkout.source_dir
+      self.m.profiles.src_dir = self.m.chromium_checkout.source_dir
 
       try:
         yield
       finally:
-        checkout_dir = self.m.chromium_checkout.src_dir
+        checkout_dir = self.m.chromium_checkout.source_dir
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
           if require_device_steps:
             self.m.chromium_android.common_tests_final_steps(
@@ -2351,7 +2351,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     # Must happen before without patch steps.
     if self.m.code_coverage.using_coverage:
-      self.m.code_coverage.src_dir = self.m.chromium_checkout.src_dir
+      self.m.code_coverage.src_dir = self.m.chromium_checkout.source_dir
       self.m.code_coverage.instrument(
           affected_files, is_deps_only_change=is_deps_only_change)
       # Don't isolate output files if coverage is skipped anyway

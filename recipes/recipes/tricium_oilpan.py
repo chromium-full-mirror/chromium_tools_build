@@ -72,7 +72,7 @@ def _RunUntracedMemberAnalyzer(api, src_dir, affected):
             oilpan_email = 'oilpan-reviews@chromium.org'
             message = 'Please CC {0} if you are adding new UntracedMember.' \
                       .format(oilpan_email)
-            src_dir = api.chromium_checkout.src_dir
+            src_dir = api.chromium_checkout.source_dir
             relpath = api.path.relpath(path, start=src_dir)
             api.tricium.add_comment(
                 category,
@@ -109,7 +109,7 @@ def RunSteps(api):
     # which may be synced to include changes subsequent to the actual patch.
     api.chromium_checkout.ensure_checkout(gerrit_no_rebase_patch_ref=True)
 
-    src_dir = api.chromium_checkout.src_dir
+    src_dir = api.chromium_checkout.source_dir
     with api.context(cwd=src_dir):
       src_file_suffixes = {'.cc', '.cpp', '.cxx', '.c', '.h', '.hpp'}
       affected = [

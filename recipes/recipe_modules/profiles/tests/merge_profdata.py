@@ -6,7 +6,6 @@ from recipe_engine import post_process
 
 
 DEPS = [
-    'chromium_checkout',
     'profiles',
     'recipe_engine/assertions',
     'recipe_engine/path',
@@ -14,7 +13,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.profiles.src_dir = api.chromium_checkout.src_dir
+  api.profiles.src_dir = api.path.cleanup_dir
   assert api.profiles.llvm_profdata_exec == api.profiles.src_dir.joinpath(
       'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-profdata')
   new_path = '/some/other/path/llvm-profdata'
