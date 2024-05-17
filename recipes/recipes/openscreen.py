@@ -41,7 +41,7 @@ OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 GN_PROPERTIES = [
     'cast_allow_developer_certificate', 'have_ffmpeg', 'have_libsdl2',
     'have_libopus', 'have_libvpx', 'is_component_build', 'is_debug', 'is_asan',
-    'is_tsan', 'is_clang', 'use_custom_cxx', 'target_cpu', 'sysroot',
+    'is_tsan', 'is_clang', 'use_custom_libcxx', 'target_cpu', 'sysroot',
     'use_coverage'
 ]
 
@@ -672,7 +672,7 @@ def GenTests(api):
       'linux_x64_gcc',
       api.platform('linux', 64),
       api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(is_debug=True, is_clang=False, use_custom_cxx=False),
+      api.properties(is_debug=True, is_clang=False, use_custom_libcxx=False),
   )
   yield api.test(
       'linux_arm64', api.platform('linux', 64),
