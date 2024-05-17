@@ -703,7 +703,11 @@
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@raw_io.output_text[stderr]@rdb-stream: included \"invocations/test-name\" in \"invocations/build-inv\"@@@",
-      "@@@STEP_LOG_END@raw_io.output_text[stderr]@@@"
+      "@@@STEP_LOG_END@raw_io.output_text[stderr]@@@",
+      "@@@STEP_LOG_LINE@paths.json@{'checkout': Path([CACHE], 'builder', 'src')}@@@",
+      "@@@STEP_LOG_END@paths.json@@@",
+      "@@@STEP_LOG_LINE@properties.json@{'buildername': 'fake-tester', 'buildnumber': 571, 'bot_id': 'fake-bot-id', 'slavename': 'fake-bot-id', 'mastername': 'fake-group', 'target_platform': 'linux'}@@@",
+      "@@@STEP_LOG_END@properties.json@@@"
     ]
   },
   {

@@ -1689,11 +1689,13 @@ class ScriptTest(LocalTest):
 
     # Enforce that all scripts are in the specified directory for
     # consistency.
+    common_args, paths, properties = (
+        self.api.m.chromium_tests.get_common_args_for_scripts())
     cmd = ([
         'vpython3',
         self.api.m.path.checkout_dir.joinpath(
             'testing', 'scripts', self.api.m.path.basename(self.spec.script))
-    ] + self.api.m.chromium_tests.get_common_args_for_scripts() + script_args +
+    ] + common_args + script_args +
            ['run', '--output', self.api.m.json.output()] + run_args)
     step_name = self.step_name(suffix)
     if resultdb:
@@ -1705,6 +1707,8 @@ class ScriptTest(LocalTest):
         stderr=self.api.m.raw_io.output_text(
             add_output_log=True, name='stderr'),
         step_test_data=step_test_data)
+    result.presentation.logs['paths.json'] = str(paths)
+    result.presentation.logs['properties.json'] = str(properties)
 
     status = result.presentation.status
 

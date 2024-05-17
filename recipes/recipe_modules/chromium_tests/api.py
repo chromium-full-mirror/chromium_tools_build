@@ -1543,7 +1543,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     args.extend(['--properties', self.m.json.input(properties)])
 
-    return args
+    return args, paths, properties
 
   def get_compile_targets_for_scripts(self):
     """This gets the combined compile_targets information from the
@@ -1566,6 +1566,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     TODO:
       * Only gather targets for the scripts that we might concievably run.
     """
+    common_args, _, _ = self.get_common_args_for_scripts()
     result = self.m.step(
         name='get compile targets for scripts',
         cmd=[
@@ -1575,7 +1576,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             '--output',
             self.m.json.output(),
             '--',
-        ] + self.get_common_args_for_scripts(),
+        ] + common_args,
         step_test_data=lambda: self.m.json.test_api.output({}))
     return result.json.output
 

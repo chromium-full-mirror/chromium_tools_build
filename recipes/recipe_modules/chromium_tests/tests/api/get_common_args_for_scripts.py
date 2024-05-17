@@ -18,12 +18,13 @@ def RunSteps(api):
 
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
+  common_args, _, _ = api.chromium_tests.get_common_args_for_scripts()
   api.step(
       'sample script',
       [
           'python3',
           api.path.checkout_dir.joinpath('testing', 'scripts', 'example.py')
-      ] + api.chromium_tests.get_common_args_for_scripts(),
+      ] + common_args,
   )
 
 
