@@ -92,7 +92,7 @@ def RunSteps(api):
     api.chromium_android.apply_config(c)
 
   api.chromium_android.init_and_sync(
-      use_bot_update=False, use_git_cache=config.get('use_git_cache', True))
+      use_git_cache=config.get('use_git_cache', True))
 
   api.chromium.runhooks()
   api.chromium_android.run_tree_truth(additional_repos=['foo'])

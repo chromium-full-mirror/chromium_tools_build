@@ -33,7 +33,7 @@ class CronetApi(recipe_api.RecipeApi):
     self.m.chromium.apply_config('cronet_builder')
     for c in chromium_apply_config or []:
       self.m.chromium.apply_config(c)
-    droid.init_and_sync(use_bot_update=True)
+    droid.init_and_sync()
 
   def build(self,
             builder_id=None,
