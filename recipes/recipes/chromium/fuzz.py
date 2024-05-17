@@ -527,6 +527,7 @@ def RunSteps(api):
                                                      'profdata-output-dir'))
           build_dir = "out/Release"
           api.step('make corpora directory', ['mkdir', corpora_dir])
+          api.file.rmtree('ensure profdata directory blank', profdata_dir)
           api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
           api.step('download corpora', [
               'python3', 'tools/code_coverage/download_fuzz_corpora.py',
