@@ -1754,7 +1754,7 @@
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_2",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
     "luci_context": {

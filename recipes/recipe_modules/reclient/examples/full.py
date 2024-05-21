@@ -71,10 +71,12 @@ def RunSteps(api):
 
   ninja_command = ['ninja', '-C', 'out/Release']
   deps_cache_by_step = api.properties.get('deps_cache_by_step', False)
+  exec_strategy = api.properties.get('exec_strategy', None)
   with api.reclient.process(
       ninja_step_name=_NINJA_STEP_NAME,
       ninja_command=ninja_command,
-      deps_cache_by_step=deps_cache_by_step):
+      deps_cache_by_step=deps_cache_by_step,
+      exec_strategy=exec_strategy):
     api.step(_NINJA_STEP_NAME, ninja_command)
   _ = api.reclient.instance  # for code coverage
   _ = api.reclient.rewrapper_path
@@ -294,6 +296,19 @@ def GenTests(api):
           'GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP': 'true',
       }),
       api.post_check(goma_env_checker),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  def exec_strategy_env_checker(check, steps):
+    env = steps[_NINJA_STEP_NAME].env
+    check(env['RBE_exec_strategy'] == 'remote')
+
+  yield api.test(
+      'exec-strategy',
+      api.buildbucket.ci_build(project='chromium', builder='Linux reclient'),
+      api.reclient.properties(),
+      api.properties(exec_strategy='remote'),
+      api.post_check(exec_strategy_env_checker),
       api.post_process(post_process.DropExpectation),
   )
 

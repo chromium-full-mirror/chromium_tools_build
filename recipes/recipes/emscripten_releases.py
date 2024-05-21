@@ -103,7 +103,7 @@ def RunSteps(api):
     # Depot tools on path is for gsutil.py.
     with api.depot_tools.on_path(), api.context(env=env):
       build_steps = bot_steps[builder]['build_steps']
-      with api.reclient.process('compile', '', False):
+      with api.reclient.process('compile', '', deps_cache_by_step=False):
         ExecBuildSteps(api, build_steps, sync_dir, dir_flags)
 
       with api.defer.context() as defer:

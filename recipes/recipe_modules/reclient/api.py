@@ -13,6 +13,7 @@ import tarfile
 import time
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 from google.protobuf import json_format
 from google.protobuf import timestamp_pb2
@@ -146,8 +147,7 @@ class ReclientApi(recipe_api.RecipeApi):
     # Initialization is delayed until the first call for reclient exe
     self._reclient_binaries_dir = None
     self._jobs = props.jobs or None
-    self._rewrapper_env = None
-    self._reclient_log_dir = None
+    self._base_rewrapper_env = None
     self._cache_silo = props.cache_silo or None
     self._mismatch = None
     self._bootstrap_env = None
@@ -220,36 +220,39 @@ class ReclientApi(recipe_api.RecipeApi):
   def reclient_dir(self, value):
     self._reclient_dir = value
 
-  @property
-  def rewrapper_env(self):
+  def _rewrapper_env(self, reclient_log_dir: Path, exec_strategy: str | None):
     # While this verification would better be placed at __init__, the test
     # framework 1) doesn't check for exceptions thrown during object creation,
     # 2) requires 100% code coverage. Thus we have to move any exception
     # throwing code -- such as checking validity of props inputs -- outside
     # __init__.
-    if self._rewrapper_env is None:
-      self._rewrapper_env = self._verify_reclient_flags(
+    if self._base_rewrapper_env is None:
+      self._base_rewrapper_env = self._verify_reclient_flags(
           self._props.rewrapper_env)
 
-    # While it'd make more sense to set this during __init__, deciding the
-    # server_address requires knowing which platform we're running on - and
-    # accessing the recipe deps that provides platform can't happen until
-    # _after_ the object is created.
-    if 'RBE_server_address' not in self._rewrapper_env:
-      self._rewrapper_env['RBE_server_address'] = self.server_address
-      if self._reclient_log_dir:
-        self._rewrapper_env['RBE_log_dir'] = self._reclient_log_dir
+    rewrapper_env = dict(self._base_rewrapper_env)
 
-    # TODO: b/299613159 Validate if racing can be used in CQ
-    # Once performance has been validated either remove this comment or enable racing
-    if 'RBE_exec_strategy' not in self._rewrapper_env:
-      self._rewrapper_env['RBE_exec_strategy'] = 'remote_local_fallback'
+    if exec_strategy is not None:
+      rewrapper_env['RBE_exec_strategy'] = exec_strategy
+    else:
+      # TODO: b/299613159 Validate if racing can be used in CQ
+      # Once performance has been validated either remove this comment or enable
+      # racing
+      rewrapper_env.setdefault('RBE_exec_strategy', 'remote_local_fallback')
 
+    # The log directory will be different each time reclient is invoked, so this
+    # needs to be redone each time
+    if 'RBE_server_address' not in rewrapper_env:
+      rewrapper_env['RBE_server_address'] = self.server_address
+      rewrapper_env['RBE_log_dir'] = reclient_log_dir
+
+    # The reclient version needs to be checked each time because if a different
+    # revision was checked out then the reclient version could be different
     if (self.m.platform.is_win and self.reclient_version["MAJOR"] <= 0 and
         self.reclient_version["MINOR"] < 109):
-      self._rewrapper_env['RBE_canonicalize_working_dir'] = 'false'
+      rewrapper_env['RBE_canonicalize_working_dir'] = 'false'
 
-    return self._rewrapper_env
+    return rewrapper_env
 
   @property
   def bootstrap_env(self):
@@ -372,8 +375,10 @@ class ReclientApi(recipe_api.RecipeApi):
   def process(self,
               ninja_step_name,
               ninja_command,
+              *,
               deps_cache_by_step=False,
-              skip_log_upload=False):
+              skip_log_upload=False,
+              exec_strategy=None):
     """Do preparation and cleanup steps for running the ninja command.
 
     Args:
@@ -382,7 +387,7 @@ class ReclientApi(recipe_api.RecipeApi):
                      (e.g. ['ninja', '-C', 'out/Release'])
       skip_log_upload: When true skip log uploading including cloudtail.
     """
-    self._reclient_log_dir = self.m.path.mkdtemp('reclient_log')
+    reclient_log_dir = self.m.path.mkdtemp('reclient_log')
     deps_cache_path = self.deps_cache_path
     if (deps_cache_by_step):
       deps_cache_path = deps_cache_path / ninja_step_name
@@ -401,18 +406,17 @@ class ReclientApi(recipe_api.RecipeApi):
       if not skip_log_upload:
         # TODO: remove 'goma-logs' fallback
         cloudtail_project_id = self.metrics_project or 'goma-logs'
-        log_dir = self._reclient_log_dir
-        self._start_cloudtail(cloudtail_project_id, log_dir,
+        self._start_cloudtail(cloudtail_project_id, reclient_log_dir,
                               self._get_platform_exe_name('reproxy') + '.INFO')
-        self._start_cloudtail(cloudtail_project_id, log_dir,
+        self._start_cloudtail(cloudtail_project_id, reclient_log_dir,
                               'reproxy-gomaip.INFO')
-        self._start_cloudtail(cloudtail_project_id, log_dir,
+        self._start_cloudtail(cloudtail_project_id, reclient_log_dir,
                               'reproxy_outerr.log')
 
-      self._start_reproxy(deps_cache_path)
+      self._start_reproxy(reclient_log_dir, deps_cache_path)
       # This will get the reclient version the first time it is run,
       # so get it here to ensure it is nested in 'preprocess for reclient'
-      rewrapper_env = self.rewrapper_env
+      rewrapper_env = self._rewrapper_env(reclient_log_dir, exec_strategy)
 
     p = BuildResultReceiver()
     try:
@@ -421,36 +425,36 @@ class ReclientApi(recipe_api.RecipeApi):
     finally:
       if not self.m.runtime.in_global_shutdown:
         with self.m.step.nest('postprocess for reclient'):
-          self._stop_reproxy(deps_cache_path)
+          self._stop_reproxy(reclient_log_dir, deps_cache_path)
           if not skip_log_upload:
             self._stop_cloudtail(
                 self._get_platform_exe_name('reproxy') + '.INFO')
             self._stop_cloudtail('reproxy-gomaip.INFO')
             self._stop_cloudtail('reproxy_outerr.log')
-            self._upload_rbe_metrics(self._reclient_log_dir)
+            self._upload_rbe_metrics(reclient_log_dir)
             if self._props.publish_trace:
-              self._upload_reclient_traces(self._reclient_log_dir)
+              self._upload_reclient_traces(reclient_log_dir)
             filename_maker = FilenameMaker(self.m.time.utcnow(),
                                            self.m.uuid.random())
             if ninja_command:
               self._upload_ninja_log(ninja_step_name, ninja_command,
                                      p.build_exit_status, filename_maker)
-            self._upload_rpl(self._reclient_log_dir, filename_maker)
+            self._upload_rpl(reclient_log_dir, filename_maker)
             log_dir_files = self.m.file.listdir(
                 'list reclient log directory',
-                self._reclient_log_dir,
+                reclient_log_dir,
                 test_data=[
                     'reproxy.INFO', 'rewrapper.INFO', 'reproxy.rpl',
                     'reproxy_stderr.log',
                     'reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256'
                 ])
             self._upload_logs(log_dir_files, filename_maker)
-            self._upload_crash_dumps(self._reclient_log_dir, log_dir_files,
+            self._upload_crash_dumps(reclient_log_dir, log_dir_files,
                                      filename_maker)
-          self._perform_reclient_health_check(p.build_exit_status)
+          self._perform_reclient_health_check(reclient_log_dir,
+                                              p.build_exit_status)
           if not skip_log_upload:
-            self.m.file.rmtree('cleanup reclient log dir',
-                               self._reclient_log_dir)
+            self.m.file.rmtree('cleanup reclient log dir', reclient_log_dir)
           if self._ensure_verified:
             status = self.m.step.SUCCESS
             if self._mismatch:
@@ -504,7 +508,7 @@ class ReclientApi(recipe_api.RecipeApi):
     self.m.file.listdir('list reclient cache directory', reclient_cache_dir)
 
   @contextlib.contextmanager
-  def _bootstrap_context(self, reclient_cache_dir):
+  def _bootstrap_context(self, reclient_log_dir: Path, reclient_cache_dir):
     """Creates env dict for running bootstrap
 
     Args:
@@ -522,11 +526,11 @@ class ReclientApi(recipe_api.RecipeApi):
         'RBE_log_format':
             _REPROXY_LOG_FORMAT,
         'RBE_log_dir':
-            self._reclient_log_dir,
+            reclient_log_dir,
         'RBE_proxy_log_dir':
-            self._reclient_log_dir,
+            reclient_log_dir,
         'RBE_output_dir':
-            self._reclient_log_dir,
+            reclient_log_dir,
         'RBE_re_proxy':
             reproxy_bin_path,
         'RBE_service':
@@ -609,7 +613,7 @@ class ReclientApi(recipe_api.RecipeApi):
     with self.m.context(env=env):
       yield
 
-  def _start_reproxy(self, reclient_cache_dir):
+  def _start_reproxy(self, reclient_log_dir: Path, reclient_cache_dir):
     """Starts the reproxy via bootstrap.
 
     Args:
@@ -617,12 +621,12 @@ class ReclientApi(recipe_api.RecipeApi):
                           the dependency cache at reproxy startup
                           and update at shutdown
     """
-    with self._bootstrap_context(reclient_cache_dir):
+    with self._bootstrap_context(reclient_log_dir, reclient_cache_dir):
       self.m.step(
           'start reproxy via bootstrap', [self._bootstrap_bin_path],
           infra_step=True)
 
-  def _stop_reproxy(self, reclient_cache_dir):
+  def _stop_reproxy(self, reclient_log_dir: Path, reclient_cache_dir):
     """Stops the reproxy via bootstrap.
 
     Args:
@@ -630,7 +634,7 @@ class ReclientApi(recipe_api.RecipeApi):
                           the dependency cache at reproxy startup
                           and update at shutdown
     """
-    with self._bootstrap_context(reclient_cache_dir):
+    with self._bootstrap_context(reclient_log_dir, reclient_cache_dir):
       self.m.step(
           'shutdown reproxy via bootstrap',
           [self._bootstrap_bin_path, '-shutdown'],
@@ -947,7 +951,8 @@ class ReclientApi(recipe_api.RecipeApi):
         ],
         infra_step=True)
 
-  def _perform_reclient_health_check(self, build_exit_status):
+  def _perform_reclient_health_check(self, reclient_log_dir: Path,
+                                     build_exit_status):
     """Perform reclient health check by verifing existence of FATAL logs
 
     Raises:
@@ -958,7 +963,7 @@ class ReclientApi(recipe_api.RecipeApi):
             'python3',
             self._health_check_path,
             '--reclient-log-dir',
-            self._reclient_log_dir,
+            reclient_log_dir,
             '--build-exit-status',
             build_exit_status,
         ],

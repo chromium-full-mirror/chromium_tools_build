@@ -342,12 +342,11 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
       build_env_vars[
           'RBE_platform'] = f'{rbe_platform},InputRootAbsolutePath={rbe_exec_root}'
 
-    # Force remote-only to see if this fails (can't do this via env var)
-    api.reclient.rewrapper_env['RBE_exec_strategy'] = 'remote'
     build_env_vars['RBE_v'] = '2'
 
     with api.context(env=build_env_vars):
-      with api.reclient.process(step_desc, ''):
+      # Force remote-only to see if this fails (can't do this via env var)
+      with api.reclient.process(step_desc, '', exec_strategy='remote'):
         api.step(step_desc, ninja_cmd)
   else:
     # Regular cmake build

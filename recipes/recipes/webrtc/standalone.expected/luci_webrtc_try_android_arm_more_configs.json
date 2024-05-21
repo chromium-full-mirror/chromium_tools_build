@@ -2489,7 +2489,7 @@
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
@@ -2523,7 +2523,7 @@
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
@@ -3945,7 +3945,7 @@
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
@@ -3980,7 +3980,7 @@
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_3",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
@@ -6242,7 +6242,7 @@
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {
@@ -6276,7 +6276,7 @@
       "CHROME_HEADLESS": "1",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
+      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
     "luci_context": {

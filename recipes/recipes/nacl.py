@@ -93,7 +93,7 @@ def AnnotatedStepsSteps(api, got_revision, checkout_path,
   }
   if use_reclient:
     env.update({'USE_RECLIENT': '1'})
-    with api.reclient.process('compile', '', False):
+    with api.reclient.process('compile', '', deps_cache_by_step=False):
       ExecBuildSteps(api, checkout_path, env)
   else:
     ExecBuildSteps(api, checkout_path, env)
