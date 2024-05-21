@@ -190,6 +190,7 @@
   },
   {
     "cmd": [
+      "python3",
       "RECIPE_REPO[depot_tools]/gn.py",
       "gen",
       "[START_DIR]/openscreen/out/Default",

@@ -553,6 +553,7 @@ def RunSteps(api):
     # NOTE: the api.osx_sdk statement is a no-op on non-macOS platforms.
     with api.osx_sdk('mac'):
       api.step('gn gen', [
+          'python3',
           api.depot_tools.gn_py_path,
           'gen',
           paths.output_path,
