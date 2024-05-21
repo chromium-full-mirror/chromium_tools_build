@@ -26,35 +26,41 @@ EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS = [
 ]
 
 EXCLUDED_TOP_LEVEL_DIRS = {
-  'win': set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
-    'cfinstaller_archive',
-    'installer_archive',
-    'lib',
-  ]),
-  'mac': set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
-    '.deps',
-    'App Shim Socket',
-    # We copy the framework into the app bundle, we don't need the second
-    # copy outside the app.
-    # TODO(mark): Since r28431, the copy in the build directory is actually
-    # used by tests.  Putting two copies in the .zip isn't great, so maybe
-    # we can find another workaround.
-    # 'Chromium Framework.framework',
-    # 'Google Chrome Framework.framework',
-    # We copy the Helper into the app bundle, we don't need the second
-    # copy outside the app.
-    'Chromium Helper.app',
-    'Google Chrome Helper.app',
-    'lib',
-    'mksnapshot.dSYM',
-    'v8_shell.dSYM',
-  ]),
-  'linux': set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
-    '.deps',
-    'appcache',
-    'glue',
-    'src',
-  ]),
+    'win':
+        set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
+            'cfinstaller_archive',
+            'installer_archive',
+            'lib',
+        ]),
+    'mac':
+        set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
+            '.deps',
+            'App Shim Socket',
+            # We copy the framework into the app bundle, we don't need the second
+            # copy outside the app.
+            # TODO(mark): Since r28431, the copy in the build directory is actually
+            # used by tests.  Putting two copies in the .zip isn't great, so maybe
+            # we can find another workaround.
+            # 'Chromium Framework.framework',
+            # 'Google Chrome Framework.framework',
+            # We copy the Helper into the app bundle, we don't need the second
+            # copy outside the app.
+            'Chromium Helper.app',
+            'Google Chrome Helper.app',
+            'bytecode_builtins_list_generator.dSYM',
+            'gen-regexp-special-case.dSYM',
+            'lib',
+            'mksnapshot.dSYM',
+            'torque.dSYM',
+            'v8_shell.dSYM',
+        ]),
+    'linux':
+        set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
+            '.deps',
+            'appcache',
+            'glue',
+            'src',
+        ]),
 }
 
 # Subdirectories located anywhere inside of build_dir. For example, 'obj' will
@@ -71,42 +77,54 @@ EXCLUDED_SUBDIRS = {
 
 # Basenames of the files to be excluded from the archive.
 EXCLUDED_FILES_ALL_PLATFORMS = [
-  '.landmines',
-  '.ninja_deps',
-  '.ninja_log',
-  'mksnapshot',
-  'v8_context_snapshot_generator',
-  'v8_shell',
+    '.landmines',
+    '.ninja_deps',
+    '.ninja_log',
+    'bytecode_builtins_list_generator',
+    'gen-regexp-special-case',
+    'mksnapshot',
+    'torque',
+    'v8_context_snapshot_generator',
+    'v8_shell',
 ]
 
 # Excluded files on specific platforms.
 EXCLUDED_FILES = {
-  'win': set(EXCLUDED_FILES_ALL_PLATFORMS + [
-    'mksnapshot.exe',
-    'mksnapshot.exe.pdb',
-    'v8_context_snapshot_generator.exe',
-    'v8_context_snapshot_generator.exe.pdb',
-    'v8_shell.exe',
-    'v8_shell.exe.pdb',
-  ]),
-  # TODO: figure out which files we can skip on Mac.
-  'mac': set(EXCLUDED_FILES_ALL_PLATFORMS + [
-    # We don't need the arm bits v8 builds.
-    'd8_arm',
-    'v8_shell_arm',
-    'obj.host',
-    'obj.target',
-    # pdfsqueeze is a build helper, no need to copy it to testers.
-    'pdfsqueeze',
-  ]),
-  'linux': set(EXCLUDED_FILES_ALL_PLATFORMS + [
-    # Scons build cruft.
-    '.sconsign.dblite',
-    # Intermediate build directories (full of .o, .d, etc.).
-    'lib.host',
-    'obj.host',
-    'obj.target',
-  ]),
+    'win':
+        set(EXCLUDED_FILES_ALL_PLATFORMS + [
+            'bytecode_builtins_list_generator.exe',
+            'bytecode_builtins_list_generator.exe.pdb',
+            'gen-regexp-special-case.exe',
+            'gen-regexp-special-case.exe.pdb',
+            'mksnapshot.exe',
+            'mksnapshot.exe.pdb',
+            'torque.exe',
+            'torque.exe.pdb',
+            'v8_context_snapshot_generator.exe',
+            'v8_context_snapshot_generator.exe.pdb',
+            'v8_shell.exe',
+            'v8_shell.exe.pdb',
+        ]),
+    # TODO: figure out which files we can skip on Mac.
+    'mac':
+        set(EXCLUDED_FILES_ALL_PLATFORMS + [
+            # We don't need the arm bits v8 builds.
+            'd8_arm',
+            'v8_shell_arm',
+            'obj.host',
+            'obj.target',
+            # pdfsqueeze is a build helper, no need to copy it to testers.
+            'pdfsqueeze',
+        ]),
+    'linux':
+        set(EXCLUDED_FILES_ALL_PLATFORMS + [
+            # Scons build cruft.
+            '.sconsign.dblite',
+            # Intermediate build directories (full of .o, .d, etc.).
+            'lib.host',
+            'obj.host',
+            'obj.target',
+        ]),
 }
 
 # Pattern for excluded files on specific platforms.
