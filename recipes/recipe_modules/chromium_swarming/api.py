@@ -589,15 +589,17 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     # Ensure --test-launcher-summary-output is not already passed. We are going
     # to overwrite it.
+    sum_arg = '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json'
     bad_args = any(
-        x.startswith('--test-launcher-summary-output=') for x in raw_cmd)
-    if bad_args:  # pragma: no cover
+        x.startswith('--test-launcher-summary-output=') and not x == sum_arg
+        for x in raw_cmd)
+    if bad_args:
       raise ValueError('--test-launcher-summary-output should not be used. %s' %
                        raw_cmd)
 
     # Append it. output.json name is expected by collect_task.py.
-    raw_cmd.append(
-        '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json')
+    if sum_arg not in raw_cmd:
+      raw_cmd.append(sum_arg)
 
     merge = (
         merge or chromium_swarming.MergeScript.create(

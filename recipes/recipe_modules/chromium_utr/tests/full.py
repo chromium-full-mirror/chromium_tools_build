@@ -2,9 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from google.protobuf import timestamp_pb2
+
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
+from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.recipe_modules.build.chromium_utr.request import Request
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -18,6 +21,7 @@ DEPS = [
     'code_coverage',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
+    'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
@@ -211,6 +215,73 @@ solutions = [
       api.post_process(post_process.MustRun, 'compile'),
       api.post_process(post_process.DoesNotRun,
                        'test_pre_run.[trigger] browser_tests'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'reuse_swarming_task',
+      boilerplate(reuse_swarming_task='12341234'),
+      api.step_data(
+          'get_reuse_swarming_task',
+          stdout=api.json.output({
+              'tags': ['test_suite:browser_tests'],
+              'task_slices': [{
+                  'properties': {
+                      'command': ['rdb', 'stream', '--', 'run_test'],
+                      'relative_cwd':
+                          'some/dir',
+                      'cas_input_root': {
+                          'cas_instance':
+                              'projects/example-project/instances/default_instance',
+                          'digest': {
+                              'hash':
+                                  '24b2420bc49d8b8fdc1d011a163708927532b37dc9f91d7d8d6877e3a86559ca',
+                              'size_bytes':
+                                  '73',
+                          },
+                      },
+                      'dimensions': [{
+                          'key': 'pool',
+                          'value': 'swarming-pool',
+                      }],
+                  }
+              }],
+          })),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'reuse_swarming_task_wrong_test',
+      boilerplate(reuse_swarming_task='12341234'),
+      api.step_data(
+          'get_reuse_swarming_task',
+          stdout=api.json.output({
+              'tags': ['test_suite:unit_tests'],
+          })),
+      api.post_process(
+          post_process.ResultReason,
+          'The provided swarming task does not appear to match the requested '
+          'test. Requested browser_tests but trying to reuse unit_tests'),
+      api.expect_status('FAILURE'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'reuse_non_isolated',
+      boilerplate(
+          reuse_swarming_task='12341234',
+          target_spec={
+              'fake-tester': {
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                  }],
+              }
+          },
+      ),
+      api.post_process(
+          post_process.ResultReason,
+          'Only one test that uses swarming can be reused at a time'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )

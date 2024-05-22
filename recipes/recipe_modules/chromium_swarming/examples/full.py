@@ -40,12 +40,14 @@ PROPERTIES = {
     'wait_for_tasks': Property(default=None),
     'realm': Property(default=None),
     'resultdb_spec': Property(default={}),
+    'raw_cmd': Property(default=['hello_world.exe'])
 }
+
 
 def RunSteps(api, platforms, custom_trigger_script,
              show_outputs_ref_in_collect_step, gtest_task, isolated_script_task,
              merge, trigger_script, named_caches, service_account,
-             wait_for_tasks, realm, resultdb_spec):
+             wait_for_tasks, realm, resultdb_spec, raw_cmd):
   # Checkout swarming client.
   api.swarming_client.checkout('main')
 
@@ -111,7 +113,7 @@ def RunSteps(api, platforms, custom_trigger_script,
     # shards on Linux.
     if gtest_task:
       task = api.chromium_swarming.gtest_task(
-          raw_cmd=['hello_world.exe'],
+          raw_cmd=raw_cmd,
           name='hello_world',
           cas_input_root=cas_input_root,
           task_output_dir=temp_dir / 'task_output_dir',
@@ -873,5 +875,24 @@ def GenTests(api):
           'archive for win',
           stdout=api.raw_io.output_text(
               'hash_for_win/size hello_world.isolated')),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'bad_summary_output_arg',
+      api.properties(
+          raw_cmd=[
+              'chromium:foo-realm', '--test-launcher-summary-output=something'
+          ],
+          gtest_task=True),
+      api.chromium.ci_build(
+          builder_group='test_group',
+          builder='test_buildername',
+      ),
+      api.step_data(
+          'archive for win',
+          stdout=api.raw_io.output_text(
+              'hash_for_win/size hello_world.isolated')),
+      api.expect_exception('ValueError'),
       api.post_process(post_process.DropExpectation),
   )

@@ -8,11 +8,15 @@ import copy
 import itertools
 from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
+from google.protobuf.json_format import MessageToDict
 
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
+from PB.go.chromium.org.luci.buildbucket.proto import (
+    common as common_pb2,
+    builds_service as builds_service_pb2,
+)
 from PB.recipe_engine import result as result_pb2
 from PB.recipe_modules.build.chromium_utr.request import Request
 
@@ -582,6 +586,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         test.spec = attr.evolve(
             test.spec,
             args=test.spec.args + tuple(properties.additional_test_args))
+
+    if properties.reuse_swarming_task:
+      self.reuse_swarming_task(properties.reuse_swarming_task, tests)
+      return None, tests
+
     if should_build:
       raw_result, preserve_gn_args = self.compile_targets(
           properties, tests, builder_id, preserve_gn_args, build_dir,
@@ -603,3 +612,41 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     # TODO(crbug.com/41492686): Prepare skylab artifacts
     return None, tests
+
+  def reuse_swarming_task(
+      self,
+      reuse_swarming_task: str,
+      tests: Iterable[Test],
+  ):
+    """Applies the cas and execution info from the swarming task to the test
+
+    Args:
+      reuse_swarming_task: The swarming task to reuse
+      tests: A list of the test to reuse. This should be a single, swarming test
+    """
+    if len(tests) != 1 or not tests[0].uses_isolate:
+      raise self.m.step.StepFailure(
+          'Only one test that uses swarming can be reused at a time')
+
+    task = self.m.swarming.show_request('get_reuse_swarming_task',
+                                        reuse_swarming_task).to_jsonish()
+
+    test = tests[0]
+    task_test_suite = [t for t in task['tags'] if t.startswith('test_suite:')
+                      ][0][len('test_suite:'):]
+    if test.canonical_name != task_test_suite:
+      raise self.m.step.StepFailure(
+          'The provided swarming task does not appear to match the requested '
+          f'test. Requested {test.canonical_name} but trying to reuse '
+          f'{task_test_suite}')
+    task_slice = task['task_slices'][0]['properties']
+
+    test.raw_cmd = test.spec.resultdb.unwrap(self.m, task_slice['command'])
+    test.relative_cwd = task_slice['relative_cwd']
+
+    digest = task_slice['cas_input_root']['digest']
+    swarm_hashes = {
+        test.target_name: digest['hash'] + '/' + digest['size_bytes']
+    }
+
+    self.m.isolate.set_isolated_tests(swarm_hashes)

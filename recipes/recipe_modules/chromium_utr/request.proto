@@ -6,7 +6,7 @@ syntax = "proto3";
 
 package recipe_modules.build.chromium_utr;
 
-// Next ID: 9
+// Next ID: 10
 message Request {
   // Required, the directory where chromium is checked out not including the src
   // dir
@@ -70,4 +70,7 @@ message Request {
 
   // Any extra cmd-line flags to pass to the tests (eg: "--gtest_filter=...")
   repeated string additional_test_args = 8;
+
+  // An optional swarming task id to attempt to reuse the cas digest of
+  string reuse_swarming_task = 9;
 }

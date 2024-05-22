@@ -193,3 +193,12 @@ class ResultDB:
         inherit_sources=True,
         baseline_id=configs.baseline_id,
     )
+
+  def unwrap(self, api, cmd: list[str]) -> list[str]:
+    """Reverses the wrap command"""
+
+    cmd = api.resultdb.unwrap(cmd)
+    if (cmd[0] != self.result_adapter_path and
+        cmd[0] != self.result_adapter_path + '.exe'):
+      return cmd
+    return cmd[cmd.index('--') + 1:]

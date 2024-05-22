@@ -163,6 +163,14 @@ def RunSteps(api):
           '${ISOLATED_OUTDIR}', '-test-location', '--'
       ] + cmd,
   )
+  api.assertions.assertEqual(
+      rdb.unwrap(
+          api,
+          rdb.wrap(
+              api, cmd, result_format='gtest', test_id_as_test_location=True)),
+      cmd,
+  )
+  rdb.unwrap(api, ['no-wrapping'])
 
 
 def GenTests(api):
