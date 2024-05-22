@@ -47,16 +47,8 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     For a chromium checkout, this would be the parent of src.
     """
     if self._checkout_dir is None:
-      # TODO: crbug.com/340576979 - Once dowstream uses are switched to set the
-      # paths before using them, raise an error
-      self.checkout_dir = self.default_checkout_dir
+      raise ValueError(f'checkout_dir is not set, {self._UNSET_USAGE_MESSAGE}')
     return self._checkout_dir
-
-  # TODO: crbug.com/340576979 - Once dowstream uses are switched to use
-  # set_paths, remove the setter
-  @checkout_dir.setter
-  def checkout_dir(self, value):
-    self._set_paths(value, value / 'src')
 
   @property
   def source_dir(self) -> Path:
@@ -67,18 +59,6 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     if self._checkout_dir is None:
       raise ValueError(f'source_dir is not set, {self._UNSET_USAGE_MESSAGE}')
     return self._source_dir
-
-  @property
-  def src_dir(self) -> Path:
-    """The path to the top level repo.
-
-    DEPRECATED use source_dir instead.
-
-    This is present for backwards compatibility, src_dir is replaced by
-    source_dir, which aligns with the terminology in the bot_update Result type
-    and to avoid the implied assumption of a directory named 'src'.
-    """
-    return self.source_dir
 
   def _set_paths(self, checkout_dir: Path, source_dir: Path) -> None:
     assert self._checkout_dir is None and self._source_dir is None, (
