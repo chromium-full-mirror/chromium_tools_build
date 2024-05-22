@@ -103,6 +103,7 @@ class LibyuvApi(recipe_api.RecipeApi):
       update_result = self.m.bot_update.ensure_checkout()
       self.m.chromium_checkout.set_paths_from_update_result(update_result)
       self.revision = update_result.properties['got_revision']
+    return update_result
 
   @contextlib.contextmanager
   def ensure_sdk(self):

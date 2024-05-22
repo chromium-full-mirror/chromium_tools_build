@@ -4,16 +4,15 @@
 
 
 DEPS = [
-  'depot_tools/depot_tools',
-  'depot_tools/gclient',
-  'depot_tools/gerrit',
-  'depot_tools/git',
-  'libyuv',
-  'recipe_engine/context',
-  'recipe_engine/json',
-  'recipe_engine/path',
-  'recipe_engine/runtime',
-  'recipe_engine/step',
+    'depot_tools/depot_tools',
+    'depot_tools/gclient',
+    'depot_tools/gerrit',
+    'depot_tools/git',
+    'libyuv',
+    'recipe_engine/context',
+    'recipe_engine/json',
+    'recipe_engine/runtime',
+    'recipe_engine/step',
 ]
 
 
@@ -28,9 +27,10 @@ def RunSteps(api):
   for os in ['linux', 'android', 'mac', 'ios', 'win', 'unix']:
     api.gclient.c.target_os.add(os)
 
-  api.libyuv.checkout()
+  update_result = api.libyuv.checkout()
 
-  with api.context(cwd=api.path.checkout_dir):
+  source_dir = update_result.source_root.path
+  with api.context(cwd=source_dir):
     # TODO(oprypin): Replace with api.service_account.default().get_email()
     # when https://crbug.com/846923 is resolved.
     push_account = ('libyuv-ci-autoroll-builder@'
@@ -60,8 +60,7 @@ def RunSteps(api):
 
     # Run the roll script. It will take care of branch creation, modifying DEPS,
     # uploading etc. It will also delete any previous roll branch.
-    script_path = api.path.checkout_dir.joinpath('tools_libyuv', 'autoroller',
-                                                 'roll_deps.py')
+    script_path = source_dir / 'tools_libyuv/autoroller/roll_deps.py'
 
     params = ['--clean', '--verbose']
     if api.runtime.is_experimental:
