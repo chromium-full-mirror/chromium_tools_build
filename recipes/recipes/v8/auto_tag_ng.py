@@ -65,15 +65,16 @@ class BuildResults:
 def RunSteps(api):
   api.gclient.set_config('v8')
   update_result = api.v8.checkout(with_branch_heads=True)
+  source_dir = update_result.source_root.path
 
   with api.context(
-      cwd=update_result.source_root.path,
-      env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+      cwd=source_dir,
+      env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}):
     api.v8.git_output('fetch', 'origin', '--prune')
 
     build_results = BuildResults()
     for v8_version, chromium_version in milestone_version_mapping(api):
-      check_branch(api, v8_version, chromium_version, build_results)
+      check_branch(api, source_dir, v8_version, chromium_version, build_results)
 
     result = api.step('Summary', cmd=None)
     result.presentation.step_text = "\n".join(build_results.performed_actions
@@ -125,11 +126,13 @@ def milestone_version_mapping(api):
   return result
 
 
-def check_branch(api, branch_version, chromium_version, build_results):
+def check_branch(api, source_dir, branch_version, chromium_version,
+                 build_results):
   with api.step.nest('Checking branch %s' % branch_version):
     branch_ref = 'branch-heads/%s' % branch_version
     api.v8.git_output('checkout', branch_ref)
-    version_at_head = api.v8.read_version_from_ref("HEAD", branch_ref)
+    version_at_head = api.v8.read_version_from_ref(source_dir, "HEAD",
+                                                   branch_ref)
     proof_of_version_change = api.v8.git_output(
         'show',
         api.v8.VERSION_FILE,
@@ -153,7 +156,8 @@ def check_branch(api, branch_version, chromium_version, build_results):
             build_results)
 
     else:
-      maybe_increment_version(api, branch_ref, version_at_head, build_results)
+      maybe_increment_version(api, source_dir, branch_ref, version_at_head,
+                              build_results)
 
 
 def verify_version_tag(api, version_at_branch_head, build_results):
@@ -245,7 +249,8 @@ def push_ref(api, repo, ref, hsh):
   api.git('push', repo, '+%s:%s' % (hsh, ref))
 
 
-def maybe_increment_version(api, ref, latest_version, build_results):
+def maybe_increment_version(api, source_dir, ref, latest_version,
+                            build_results):
   with api.step.nest('Increment version from %s' % latest_version):
     commits = api.gerrit.get_changes(
         'https://chromium-review.googlesource.com',
@@ -264,7 +269,11 @@ def maybe_increment_version(api, ref, latest_version, build_results):
     else:
       new_version = latest_version.with_incremented_patch()
       api.v8.update_version_cl(
-        ref, new_version, push_account=PUSH_ACCOUNT, bot_commit=True)
+          source_dir,
+          ref,
+          new_version,
+          push_account=PUSH_ACCOUNT,
+          bot_commit=True)
       build_results.performed_actions.append("Version updated %s" % new_version)
 
 

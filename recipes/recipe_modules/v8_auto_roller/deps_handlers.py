@@ -46,15 +46,15 @@ RETSAM = 'retsam'[::-1]
 
 class DEPSRollHandler(RollHandler, ABC):
 
-  def __init__(self, module, autoroller_config, updates=None):
-    super().__init__(module, autoroller_config)
+  def __init__(self, module, source_dir, autoroller_config, updates=None):
+    super().__init__(module, source_dir, autoroller_config)
     self.updates = updates
 
   def apply_changes(self):
     return [update for update in self.updates if self.set_dep(update)]
 
   def set_dep(self, update):
-    with self.api.context(cwd=self.api.path.checkout_dir):
+    with self.api.context(cwd=self.source_dir):
       clean_name = update.name.replace('/', '_')
       step_result = self.api.gclient(
           f'setdep {clean_name}',

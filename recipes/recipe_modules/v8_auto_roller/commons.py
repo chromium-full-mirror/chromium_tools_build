@@ -20,10 +20,10 @@ def roll_origin_line(api):
   return f'\nRoll created at {api.buildbucket.build_url()}'
 
 
-def discard_local_changes(api):
+def discard_local_changes(api, source_dir):
   with api.context(
-      cwd=api.path.checkout_dir,
-      env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+      cwd=source_dir,
+      env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}):
     api.git('checkout', '-f', 'origin/main')
     api.git('branch', '-D', 'roll', ok_ret='any')
     api.git('clean', '-ffd')

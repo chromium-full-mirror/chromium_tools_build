@@ -157,9 +157,10 @@ def RunSteps(api):
 
     if not cq_commits:
       update_result = api.v8.checkout()
+      source_dir = update_result.source_root.path
       with api.context(
-          cwd=update_result.source_root.path,
-          env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+          cwd=source_dir,
+          env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}):
         if api.runtime.is_experimental:
           api.step('fake resubmit to CQ', cmd=None)
         else:
@@ -193,7 +194,7 @@ def RunSteps(api):
   with api.context(
       cwd=source_dir / 'v8',
       env={'DEPOT_TOOLS_UPDATE': '0'},
-      env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+      env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)
     if not next_v8_revision:
       return

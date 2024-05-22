@@ -41,12 +41,13 @@ def RunSteps(api, autoroller_config):
       **autoroller_config
   }
 
-  api.v8_auto_roller.setup_target(
+  update_result = api.v8_auto_roller.setup_target(
       'v8',
       'https://chromium.googlesource.com/v8/v8',
   )
-  clm = api.v8_auto_roller.build_cl_manager()
-  api.v8_auto_roller.regular_roll(autoroller_config, clm)
+  source_dir = update_result.source_root.path
+  clm = api.v8_auto_roller.build_cl_manager(source_dir)
+  api.v8_auto_roller.regular_roll(autoroller_config, clm, source_dir)
 
   return api.v8_auto_roller.report_result()
 

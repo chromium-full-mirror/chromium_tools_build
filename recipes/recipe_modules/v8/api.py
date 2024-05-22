@@ -346,7 +346,7 @@ class V8Api(recipe_api.RecipeApi):
     bot_config['triggers_proxy'] = triggers_proxy
     return bot_config
 
-  def get_test_roots(self):
+  def get_test_roots(self, source_dir):
     """Returns the list of default and extensible test root directories.
 
     A test root is a directory with the following layout:
@@ -359,8 +359,8 @@ class V8Api(recipe_api.RecipeApi):
 
     Returns: List of paths to test roots.
     """
-    result = [self.m.path.checkout_dir]
-    custom_deps_dir = self.m.path.checkout_dir / 'custom_deps'
+    result = [source_dir]
+    custom_deps_dir = source_dir / 'custom_deps'
     self.m.file.ensure_directory('ensure custom_deps dir', custom_deps_dir)
     for path in self.m.file.listdir('list test roots', custom_deps_dir):
       if self.m.path.exists(path.joinpath('infra', 'testing', 'builders.pyl')):
@@ -601,7 +601,7 @@ class V8Api(recipe_api.RecipeApi):
 
     return test_spec
 
-  def isolate_tests(self, isolate_targets, out_dir=None):
+  def isolate_tests(self, source_dir, isolate_targets, out_dir=None):
     """Upload isolated tests to isolate server.
 
     Args:
@@ -611,8 +611,8 @@ class V8Api(recipe_api.RecipeApi):
     """
     output_dir = self.m.chromium.output_dir
     if out_dir:
-      output_dir = self.m.path.checkout_dir.joinpath(
-          out_dir, self.m.chromium.c.build_config_fs)
+      output_dir = source_dir.joinpath(out_dir,
+                                       self.m.chromium.c.build_config_fs)
 
     # Special handling for 'perf' target, since perf tests are going to be
     # executed on an internal swarming server and thus need to be uploaded to
@@ -705,12 +705,16 @@ class V8Api(recipe_api.RecipeApi):
     point.update(point_defaults)
     self.m.perf_dashboard.add_point([point], halt_on_failure=True)
 
-  def compile(
-      self, test_spec=None, mb_config_path=None,
-      out_dir=None, **kwargs):
+  def compile(self,
+              source_dir,
+              test_spec=None,
+              mb_config_path=None,
+              out_dir=None,
+              **kwargs):
     """Compile all desired targets and isolate tests.
 
     Args:
+      source_dir: The path to the top-level repo.
       test_spec: Optional TestSpec object as returned by read_test_spec().
           Expected to contain only specifications for the current builder and
           all triggered builders. All corrensponding extra targets will also be
@@ -747,8 +751,7 @@ class V8Api(recipe_api.RecipeApi):
         mb_config_rel_path = self.m.properties.get(
             'mb_config_path', 'infra/mb/mb_config.pyl')
 
-        mb_config_path = (
-            mb_config_path or self.m.path.checkout_dir / mb_config_rel_path)
+        mb_config_path = mb_config_path or source_dir / mb_config_rel_path
 
         gn_args = self.m.chromium.mb_gen(
             self.m.chromium.get_builder_id(),
@@ -773,7 +776,7 @@ class V8Api(recipe_api.RecipeApi):
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
-      self.isolate_tests(isolate_targets, out_dir=out_dir)
+      self.isolate_tests(source_dir, isolate_targets, out_dir=out_dir)
 
   @property
   def should_collect_post_compile_metrics(self):
@@ -782,11 +785,11 @@ class V8Api(recipe_api.RecipeApi):
             self.m.v8.bot_config.get('track_build_dependencies') or
             self.m.v8.bot_config.get('binary_size_tracking')))
 
-  def collect_post_compile_metrics(self):
+  def collect_post_compile_metrics(self, source_dir):
     with self.ensure_osx_sdk_if_needed():
       if self.bot_config.get('track_build_dependencies',
                              False) and not self._is_muted_branch():
-        path = [self.depot_tools_path, self.ninja_path]
+        path = [self.depot_tools_path(source_dir), self.ninja_path(source_dir)]
         with self.m.context(env_prefixes={'PATH': path}):
           deps = self.vpython(
               name='track build dependencies (fyi)',
@@ -813,19 +816,13 @@ class V8Api(recipe_api.RecipeApi):
   def _is_muted_branch(self):
     return self.m.buildbucket.build.builder.bucket not in ['ci', 'try']
 
-  @property
-  def depot_tools_path(self):
+  def depot_tools_path(self, source_dir):
     """Returns path to depot_tools pinned in the V8 checkout."""
-    assert 'checkout' in self.m.path, (
-        "Pinned depot_tools is not available before checkout has been created")
-    return self.m.path.checkout_dir.joinpath('third_party', 'depot_tools')
+    return source_dir.joinpath('third_party', 'depot_tools')
 
-  @property
-  def ninja_path(self):
+  def ninja_path(self, source_dir):
     """Returns path to ninja pinned in the V8 checkout."""
-    assert 'checkout' in self.m.path, (
-        "Pinned ninja is not available before checkout has been created")
-    return self.m.path.checkout_dir.joinpath('third_party', 'ninja')
+    return source_dir.joinpath('third_party', 'ninja')
 
   def _get_default_archive(self):
     return 'gs://chromium-v8/archives/%s/%s' % (
@@ -899,13 +896,14 @@ class V8Api(recipe_api.RecipeApi):
     return self.m.chromium.c.build_dir / self.m.chromium.c.build_config_fs
 
   @contextlib.contextmanager
-  def maybe_clang_coverage(self):
+  def maybe_clang_coverage(self, source_dir):
     """Context manager for wrapping a local test execution with
     coverage-collection logic (switched by the 'coverage' property).
     """
     if self.bot_config.get('coverage') != 'llvm':
       yield
     else:
+      assert source_dir
       profile_path = self.m.path.cleanup_dir / 'profraw'
       profile_template = profile_path.joinpath('default-%%9m.profraw')
       try:
@@ -913,10 +911,10 @@ class V8Api(recipe_api.RecipeApi):
           yield
       finally:
         with self.m.step.nest('Code coverage') as parent_presentation:
-          with self.m.context(cwd=self.m.path.checkout_dir):
+          with self.m.context(cwd=source_dir):
             profiles = self.find_profiles(profile_path)
-            total_profile = self.merge_profiles(profiles)
-            report_dir = self.create_report(total_profile)
+            total_profile = self.merge_profiles(source_dir, profiles)
+            report_dir = self.create_report(source_dir, total_profile)
             link = self.upload_report(report_dir)
             parent_presentation.links['report'] = link
             self.recipe_result = RawResult(
@@ -931,38 +929,44 @@ class V8Api(recipe_api.RecipeApi):
       if str(f).endswith(PROFRAW_FILE_EXTENSION)
     ]
 
-  def llvm_tool(self, name):
+  def llvm_tool(self, source_dir, name):
     """Returns an absolute path to an llvm tool in the V8 checkout."""
-    return self.m.path.checkout_dir.joinpath('third_party', 'llvm-build',
-                                             'Release+Asserts', 'bin', name)
+    return source_dir / 'third_party/llvm-build/Release+Asserts/bin' / name
 
-  def merge_profiles(self, profiles):
+  def merge_profiles(self, source_dir, profiles):
     """Merges multiple raw profiles and returns a path to the total profile."""
     output_dir = self.m.path.cleanup_dir / 'profdata'
     total_profile = output_dir / 'total.profdata'
     self.m.file.ensure_directory('Ensure output directory', output_dir)
 
-    self.m.step('Merge profiles', cmd=[
-        self.llvm_tool('llvm-profdata'),
-        'merge',
-        '-o', total_profile,
-        '--sparse'] + profiles)
+    self.m.step(
+        'Merge profiles',
+        cmd=[
+            self.llvm_tool(source_dir, 'llvm-profdata'),
+            'merge',
+            '-o',
+            total_profile,
+            '--sparse',
+        ] + profiles)
 
     return total_profile
 
-  def create_report(self, total_profile):
+  def create_report(self, source_dir, total_profile):
     """Creates an html coverage report for a merged profile."""
     report_dir = self.m.path.cleanup_dir / 'report'
     self.m.file.ensure_directory('Ensure report directory', report_dir)
 
     cmd = [
-      self.llvm_tool('llvm-cov'),
-      'show',
-      '-format=html',
-      f'-compilation-dir={self.build_output_dir}',
-      f'-output-dir={report_dir}',
-      f'-instr-profile={total_profile}',
-      '-Xdemangler', 'c++filt', '-Xdemangler', '-n',
+        self.llvm_tool(source_dir, 'llvm-cov'),
+        'show',
+        '-format=html',
+        f'-compilation-dir={self.build_output_dir}',
+        f'-output-dir={report_dir}',
+        f'-instr-profile={total_profile}',
+        '-Xdemangler',
+        'c++filt',
+        '-Xdemangler',
+        '-n',
     ]
     for exe in V8_EXECUTABLES:
       cmd.append('--object')
@@ -1006,7 +1010,7 @@ class V8Api(recipe_api.RecipeApi):
     return (self.bot_type == 'tester' and
             self.bot_config.get('enable_swarming', True))
 
-  def maybe_bisect(self, test_results, test_spec):
+  def maybe_bisect(self, source_dir, test_results, test_spec):
     """Build-local bisection for one failure."""
     if (self.bot_config.get('disable_auto_bisect') or
         self.m.properties.get('disable_auto_bisect')):
@@ -1036,7 +1040,7 @@ class V8Api(recipe_api.RecipeApi):
 
     test = self.m.v8_tests.create_test(failure.test_step_config)
     def test_func(_):
-      return test.rerun(failure_dict=failure.failure_dict)
+      return test.rerun(source_dir, failure_dict=failure.failure_dict)
 
     def is_bad(revision):
       with self.m.step.nest('Bisect ' + revision[:8]):
@@ -1047,7 +1051,7 @@ class V8Api(recipe_api.RecipeApi):
           # download_isolated_json already provides isolated targets for this
           # revision. Only compile if not.
           self.runhooks()
-          compile_failure = self.compile(test_spec)
+          compile_failure = self.compile(source_dir, test_spec)
           if compile_failure:
             # TODO: Consider changing control flow
             # to handle returning of compile failures
@@ -1300,18 +1304,20 @@ class V8Api(recipe_api.RecipeApi):
     for culprit in culprit_range:
       step_result.presentation.links[culprit[:8]] = COMMIT_TEMPLATE % culprit
 
-  def read_version_file(self, ref, step_name_desc):
+  def read_version_file(self, source_dir, ref, step_name_desc):
     """Read and return the version-file content at a paricular ref."""
-    with self.m.context(cwd=self.m.path.checkout_dir):
+    with self.m.context(cwd=source_dir):
       return self.m.git(
-          'show', f'{ref}:{self.VERSION_FILE}',
+          'show',
+          f'{ref}:{self.VERSION_FILE}',
           name=f'Check {step_name_desc} version file',
           stdout=self.m.raw_io.output_text(),
       ).stdout
 
-  def read_version_from_ref(self, ref, step_name_desc):
+  def read_version_from_ref(self, source_dir, ref, step_name_desc):
     """Read and return the version at a paricular ref."""
-    return V8Api.version_from_file(self.read_version_file(ref, step_name_desc))
+    return V8Api.version_from_file(
+        self.read_version_file(source_dir, ref, step_name_desc))
 
   @staticmethod
   def version_from_file(blob):
@@ -1350,12 +1356,17 @@ class V8Api(recipe_api.RecipeApi):
     step_result.presentation.logs['stdout'] = result.splitlines()
     return result.strip()
 
-  def update_version_cl(self, ref, latest_version, push_account,
-      bot_commit=False, extra_edits=None):
+  def update_version_cl(self,
+                        source_dir,
+                        ref,
+                        latest_version,
+                        push_account,
+                        bot_commit=False,
+                        extra_edits=None):
     """Update the version on branch 'ref'.
 
       Args:
-        api: The recipe api.
+        source_dir: The path to the top-level repo.
         ref: Ref name where to change the version, e.g.
             refs/remotes/branch-heads/1.2.
         latest_version: The currently latest version to be updated in the
@@ -1383,14 +1394,14 @@ class V8Api(recipe_api.RecipeApi):
         name='git config user.email',
     )
 
-    latest_version_file = self.read_version_file(ref, 'latest')
+    latest_version_file = self.read_version_file(source_dir, ref, 'latest')
     latest_version_file = latest_version.update_version_file_blob(
         latest_version_file)
 
     # Write file to disk.
     self.m.file.write_text(
         'Increment version',
-        self.m.path.checkout_dir / self.m.v8.VERSION_FILE,
+        source_dir / self.m.v8.VERSION_FILE,
         latest_version_file,
     )
 

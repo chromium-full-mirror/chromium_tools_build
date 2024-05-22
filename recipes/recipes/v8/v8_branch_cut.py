@@ -47,7 +47,7 @@ def RunSteps(api):
       with api.step.nest('New branch detected'):
         defintions = calculate_versions(api, defintions, last_version)
         update_branch_version(api, source_dir, last_version)
-        update_main_version(api)
+        update_main_version(api, source_dir)
         update_infra_config(api, source_dir, defintions)
     else:
       api.step('No new branch detected', [])
@@ -109,9 +109,11 @@ def update_branch_version(api, source_dir, latest_version):
   with api.step.nest('Update on branch') as parent_step:
     branch_ref = 'branch-heads/%s' % api.v8.version_num2str(latest_version)
     api.v8.git_output('checkout', branch_ref)
-    version_at_branch_head = api.v8.read_version_from_ref("HEAD", branch_ref)
+    version_at_branch_head = api.v8.read_version_from_ref(
+        source_dir, "HEAD", branch_ref)
     version_at_branch_head = version_at_branch_head.with_incremented_patch()
     api.v8.update_version_cl(
+        source_dir,
         branch_ref,
         version_at_branch_head,
         push_account=PUSH_ACCOUNT,
@@ -120,14 +122,18 @@ def update_branch_version(api, source_dir, latest_version):
     parent_step.links[issue] = issue
 
 
-def update_main_version(api):
+def update_main_version(api, source_dir):
   with api.step.nest('Update on main') as parent_step:
     branch_ref = 'main'
     api.v8.git_output('checkout', branch_ref)
-    version_at_branch_head = api.v8.read_version_from_ref("HEAD", branch_ref)
+    version_at_branch_head = api.v8.read_version_from_ref(
+        source_dir, "HEAD", branch_ref)
     version_at_branch_head = version_at_branch_head.with_incremented_minor()
     api.v8.update_version_cl(
-        branch_ref, version_at_branch_head, push_account=PUSH_ACCOUNT)
+        source_dir,
+        branch_ref,
+        version_at_branch_head,
+        push_account=PUSH_ACCOUNT)
     issue = get_issue(api)
     parent_step.links[issue] = issue
 

@@ -141,20 +141,21 @@ def RunSteps(api):
       },
   }
 
-  api.v8_auto_roller.setup_target(
+  update_result = api.v8_auto_roller.setup_target(
       'dummy',
       'https://chromium.googlesource.com/dumb/dumber',
   )
+  source_dir = update_result.source_root.path
 
   clm = DummyCLManager(api)
 
-  api.v8_auto_roller.regular_roll(autoroller_config, clm)
-  api.v8_auto_roller.cft_pin_roll(autoroller_config, clm)
-  api.v8_auto_roller.scripted_rolls(autoroller_config, clm, [
+  api.v8_auto_roller.regular_roll(autoroller_config, clm, source_dir)
+  api.v8_auto_roller.cft_pin_roll(autoroller_config, clm, source_dir)
+  api.v8_auto_roller.scripted_rolls(autoroller_config, clm, source_dir, [
       'puppeteer-core',
       'browser-protocol',
   ])
-  api.v8_auto_roller.test262_roll(autoroller_config, clm)
+  api.v8_auto_roller.test262_roll(autoroller_config, clm, source_dir)
 
   return api.v8_auto_roller.report_result()
 

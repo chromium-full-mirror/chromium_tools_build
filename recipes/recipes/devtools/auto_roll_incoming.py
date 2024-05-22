@@ -30,17 +30,18 @@ CONFIG = {
 
 
 def RunSteps(api):
-  api.v8_auto_roller.setup_target(
+  update_result = api.v8_auto_roller.setup_target(
       'devtools-frontend',
       'https://chromium.googlesource.com/devtools/devtools-frontend',
       requires_chromium_checkout=True,
   )
+  source_dir = update_result.source_root.path
 
-  clm = api.v8_auto_roller.build_cl_manager(bugs="none")
+  clm = api.v8_auto_roller.build_cl_manager(source_dir, bugs="none")
 
-  api.v8_auto_roller.regular_roll(CONFIG, clm)
-  api.v8_auto_roller.cft_pin_roll(CONFIG, clm)
-  api.v8_auto_roller.scripted_rolls(CONFIG, clm, [
+  api.v8_auto_roller.regular_roll(CONFIG, clm, source_dir)
+  api.v8_auto_roller.cft_pin_roll(CONFIG, clm, source_dir)
+  api.v8_auto_roller.scripted_rolls(CONFIG, clm, source_dir, [
       "puppeteer-core",
       "puppeteer-replay",
       "browser-protocol",

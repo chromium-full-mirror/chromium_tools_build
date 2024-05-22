@@ -23,7 +23,8 @@ def RunSteps(api):
   api.v8.runhooks()
   source_dir = update_result.source_root.path
   with api.context(
-      cwd=source_dir, env_prefixes={'PATH': [api.v8.depot_tools_path]}):
+      cwd=source_dir,
+      env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}):
     api.v8.vpython(
         'Presubmit',
         source_dir.joinpath('tools', 'v8_presubmit.py'),

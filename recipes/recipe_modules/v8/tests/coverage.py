@@ -18,8 +18,8 @@ def RunSteps(api):
       {}, binary_size_tracking=None, clusterfuzz_archive=None, coverage='llvm',
       enable_swarming=False, target_arch='intel', target_platform='linux',
       track_build_dependencies=False, triggers=[], triggers_proxy=False))
-  api.v8.checkout()
-  with api.v8.maybe_clang_coverage():
+  update_result = api.v8.checkout()
+  with api.v8.maybe_clang_coverage(update_result.source_root.path):
     api.step('run tests', cmd=['run-some-tests.py'])
   return api.v8.recipe_result
 

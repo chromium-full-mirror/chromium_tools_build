@@ -19,15 +19,16 @@ CONFIG = {
 
 
 def RunSteps(api):
-  api.v8_auto_roller.setup_target(
+  update_result = api.v8_auto_roller.setup_target(
       'v8',
       'https://chromium.googlesource.com/v8/v8',
       requires_chromium_checkout=True,
   )
+  source_dir = update_result.source_root.path
 
-  clm = api.v8_auto_roller.build_cl_manager(bugs="v8:7834")
+  clm = api.v8_auto_roller.build_cl_manager(source_dir, bugs="v8:7834")
 
-  api.v8_auto_roller.test262_roll(CONFIG, clm)
+  api.v8_auto_roller.test262_roll(CONFIG, clm, source_dir)
 
   return api.v8_auto_roller.report_result()
 

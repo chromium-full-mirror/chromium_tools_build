@@ -77,12 +77,11 @@ def orchestrator_name(api):
   return builder_name
 
 
-def read_test_spec(api):
+def read_test_spec(api, source_dir):
   """Dynamically load test specifications from all discovered test roots."""
   test_spec = api.v8_tests.TEST_SPEC()
-  for test_root in api.v8.get_test_roots():
-    test_spec.update(
-        api.v8.read_test_spec(test_root, [orchestrator_name(api)]))
+  for test_root in api.v8.get_test_roots(source_dir):
+    test_spec.update(api.v8.read_test_spec(test_root, [orchestrator_name(api)]))
   return test_spec
 
 
@@ -119,14 +118,15 @@ def compilator_steps(api, custom_deps, default_targets, gclient_vars,
   v8.set_chromium_configs(clobber=False, default_targets=default_targets)
 
   with api.step.nest('initialization'):
-    v8.checkout(revision)
+    update_result = v8.checkout(revision)
+    source_dir = update_result.source_root.path
     api.v8_tests.set_up_swarming()
     v8.runhooks()
 
-    test_spec = read_test_spec(api)
+    test_spec = read_test_spec(api, source_dir)
 
   with api.step.nest('build'):
-    compile_failure = v8.compile(test_spec)
+    compile_failure = v8.compile(source_dir, test_spec)
     if compile_failure:
       return compile_failure
 

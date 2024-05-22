@@ -16,19 +16,20 @@ GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
 
 class RollHandler(ABC):
 
-  def __init__(self, module, autoroller_config):
+  def __init__(self, module, source_dir, autoroller_config):
     self.module = module
     self.api = module.m
+    self.source_dir = source_dir
     self.config = autoroller_config
     self.add_new_files = False
 
   def roll(self, cl_manager):
     with self.api.step.nest(f'Update {self.name()} deps') as step:
       try:
-        with self.roll_contex():
+        with self.roll_contex(self.source_dir):
           step.step_text = self.summary()
           cl_manager.abandon_active_cls(self.get_subject())
-          commons.discard_local_changes(self.api)
+          commons.discard_local_changes(self.api, self.source_dir)
           changes = self.apply_changes()
           commit_msg_lines = (self.commit_msg_lines(changes) +
                               self.commit_msg_footers())
@@ -48,9 +49,8 @@ class RollHandler(ABC):
         self.module.failures.append(self.name())
 
   @contextmanager
-  def roll_contex(self):
-    with self.api.context(
-        cwd=self.api.path.checkout_dir), self.api.depot_tools.on_path():
+  def roll_contex(self, source_dir):
+    with self.api.context(cwd=source_dir), self.api.depot_tools.on_path():
       yield
 
   @abstractmethod
@@ -82,8 +82,8 @@ class RollHandler(ABC):
 
 class DummyRollHandler(RollHandler):
 
-  def __init__(self, module, autoroller_config):
-    super().__init__(module, autoroller_config)
+  def __init__(self, module, source_dir, autoroller_config):
+    super().__init__(module, source_dir, autoroller_config)
     self.add_new_files = True
 
   def name(self):

@@ -110,6 +110,7 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
   tests = api.v8_tests.extra_tests_from_properties()
 
   if v8.is_pure_swarming_tester:
+    source_dir = None
     with api.step.nest('initialization'):
       # This is to install golang swarming client via CIPD.
       with api.swarming.on_path():
@@ -127,13 +128,14 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
   else:
     with api.step.nest('initialization'):
       update_step = v8.checkout(clobber=clobber_all)
+      source_dir = update_step.source_root.path
 
       api.v8_tests.set_up_swarming()
       v8.runhooks()
 
       # Dynamically load more test specifications from all discovered test
       # roots.
-      test_roots = v8.get_test_roots()
+      test_roots = v8.get_test_roots(source_dir)
       for test_root in test_roots:
         api.v8_tests.update_test_configs(v8.load_dynamic_test_configs(test_root))
         test_spec.update(v8.read_test_spec(test_root, v8.builderset))
@@ -142,16 +144,16 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
 
     if v8.should_build:
       with api.step.nest('build'):
-        compile_failure = v8.compile(test_spec)
+        compile_failure = v8.compile(source_dir, test_spec)
         if compile_failure:
           return compile_failure
 
     v8.maybe_create_clusterfuzz_archive(update_step)
 
   if v8.should_test and tests:
-    with v8.maybe_clang_coverage():
-      test_results = api.v8_tests.runtests(tests)
-    v8.maybe_bisect(test_results, test_spec)
+    with v8.maybe_clang_coverage(source_dir):
+      test_results = api.v8_tests.runtests(source_dir, tests)
+    v8.maybe_bisect(source_dir, test_results, test_spec)
 
     if not api.tryserver.is_tryserver and test_results.is_negative:
       # Let the overall build fail for failures and flakes.
@@ -165,7 +167,7 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
 
   if api.v8.should_collect_post_compile_metrics:
     with api.step.nest('measurements'):
-      api.v8.collect_post_compile_metrics()
+      api.v8.collect_post_compile_metrics(source_dir)
 
   return v8.recipe_result
 

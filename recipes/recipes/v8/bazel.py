@@ -39,7 +39,7 @@ def RunSteps(api):
           'CC': clang_bin,
           'CXX': clang_xx_bin
       },
-      env_prefixes={'PATH': [clang, api.v8.depot_tools_path]}):
+      env_prefixes={'PATH': [clang, api.v8.depot_tools_path(source_dir)]}):
 
     # TODO(https://crbug.com/v8/13515): Temporarily clobber the output
     # directory to avoid incremental build problems.

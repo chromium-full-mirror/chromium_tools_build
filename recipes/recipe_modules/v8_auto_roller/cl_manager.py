@@ -11,8 +11,9 @@ GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
 
 class CLManager:
 
-  def __init__(self, api, bugs, gerrit_base_url=GERRIT_BASE_URL):
+  def __init__(self, api, source_dir, bugs, gerrit_base_url=GERRIT_BASE_URL):
     self.api = api
+    self.source_dir = source_dir
     self.bugs = bugs
     self.gerrit_base_url = gerrit_base_url
 
@@ -25,7 +26,7 @@ class CLManager:
     Returns the URL to the uploaded CL, or None if no CL was uploaded.
     """
     # Check for a difference. If no deps changed, the diff is empty.
-    with self.api.context(cwd=self.api.path.checkout_dir):
+    with self.api.context(cwd=self.source_dir):
       step_result = self.api.git(
           'status',
           '-s',
@@ -50,8 +51,8 @@ class CLManager:
 
     kwargs = {'stdout': self.api.raw_io.output_text()}
     with self.api.context(
-        cwd=self.api.path.checkout_dir,
-        env_prefixes={'PATH': [self.api.v8.depot_tools_path]}):
+        cwd=self.source_dir,
+        env_prefixes={'PATH': [self.api.v8.depot_tools_path(self.source_dir)]}):
       self.api.git(*args, **kwargs)
       self.api.git('show')
       upload_args = [

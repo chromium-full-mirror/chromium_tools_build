@@ -14,8 +14,8 @@ V8_TEST262_ROLLS_META_BUG = 'v8:7834'
 
 class Test262ImportHandler(RollHandler):
 
-  def __init__(self, api, autoroller_config):
-    super().__init__(api, autoroller_config)
+  def __init__(self, api, source_dir, autoroller_config):
+    super().__init__(api, source_dir, autoroller_config)
     self.import_range = None
 
   def name(self):

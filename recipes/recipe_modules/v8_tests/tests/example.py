@@ -23,10 +23,10 @@ def RunSteps(api):
   api.v8_tests.set_up_swarming()
   api.v8_tests.read_cl_footer_flags()
   api.v8_tests.load_static_test_configs()
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder' / 'src'
 
   tests = api.v8_tests.extra_tests_from_properties()
-  api.v8_tests.runtests(tests)
+  api.v8_tests.runtests(source_dir, tests)
 
 
 def GenTests(api):

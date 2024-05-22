@@ -59,13 +59,16 @@ class V8AutoRoller(recipe_api.RecipeApi):
       # NOTE: Besides the name, this actually does a checkout of the first
       # solution defined in gclient (autoroller_config -> target_config ->
       # solution_name), and might be something else, e.g. devtools-frontend.
-      self.m.v8.checkout(ignore_input_commit=True, set_output_commit=False)
+      update_result = self.m.v8.checkout(
+          ignore_input_commit=True, set_output_commit=False)
 
       # Some builders require a chromium checkout. If that's not required,
       # rollers usually need chromium's DEPS file. We store it at the same
       # location as a checkout to avoid further tweakings of the process.
       if not requires_chromium_checkout:
         self._download_chromium_deps_file()
+
+      return update_result
 
   def _download_chromium_deps_file(self):
     revision = self.m.gerrit.get_gerrit_branch(
@@ -89,8 +92,11 @@ class V8AutoRoller(recipe_api.RecipeApi):
     chromium_deps_file = chromium_path / 'DEPS'
     self.m.file.write_text('Store src/DEPS', chromium_deps_file, deps)
 
-  def build_cl_manager(self, bugs=None):
-    return CLManager(self.m, bugs)
+  def build_cl_manager(self, source_dir=None, bugs=None):
+    # TODO: crbug.com/336589262 - Update downstream callers to pass source_dir,
+    # then remove this and make argument required
+    source_dir = source_dir or self.m.path.checkout_dir
+    return CLManager(self.m, source_dir, bugs)
 
   def report_result(self):
     result = result_pb2.RawResult()
@@ -102,28 +108,36 @@ class V8AutoRoller(recipe_api.RecipeApi):
         self.failures) + '.'
     return result
 
-  def regular_roll(self, autoroller_config, cl_manager):
+  def regular_roll(self, autoroller_config, cl_manager, source_dir=None):
+    # TODO: crbug.com/336589262 - Update downstream callers to pass source_dir,
+    # then remove this and make argument required
+    source_dir = source_dir or self.m.path.checkout_dir
     with self.m.step.nest('Find updated deps') as step_presentation:
-      discard_local_changes(self.m)
+      discard_local_changes(self.m, source_dir)
       trusted_updates, untrusted_updates, failed = get_dep_updates(
           self.m, step_presentation, autoroller_config)
 
-    TrustedRollHandler(self, autoroller_config,
+    TrustedRollHandler(self, source_dir, autoroller_config,
                        trusted_updates).roll(cl_manager)
-    UntrustedRollHandler(self, autoroller_config,
+    UntrustedRollHandler(self, source_dir, autoroller_config,
                          untrusted_updates).roll(cl_manager)
 
     with self.m.step.nest('Check failed deps'):
       handle_failed_deps(self.m, failed)
 
-  def cft_pin_roll(self, autoroller_config, cl_manager):
-    CfTPinRollHandler(self, autoroller_config).roll(cl_manager)
+  def cft_pin_roll(self, autoroller_config, cl_manager, source_dir):
+    CfTPinRollHandler(self, source_dir, autoroller_config).roll(cl_manager)
 
-  def test262_roll(self, autoroller_config, cl_manager):
-    Test262ImportHandler(self, autoroller_config).roll(cl_manager)
+  def test262_roll(self, autoroller_config, cl_manager, source_dir):
+    Test262ImportHandler(self, source_dir, autoroller_config).roll(cl_manager)
 
-  def scripted_rolls(self, autoroller_config, cl_manager, scripted_keys=None):
-    scripted_rollers = get_rollers(self, autoroller_config, scripted_keys or [])
+  def scripted_rolls(self,
+                     autoroller_config,
+                     cl_manager,
+                     source_dir,
+                     scripted_keys=None):
+    scripted_rollers = get_rollers(self, source_dir, autoroller_config,
+                                   scripted_keys or [])
     if scripted_rollers:
       with self.m.step.nest('Scripted rolls'):
         for roller in scripted_rollers:
@@ -142,5 +156,5 @@ class V8AutoRoller(recipe_api.RecipeApi):
     extracted_email = first_line[len(output_prefix):-1]
     return extracted_email
 
-  def dummy_roll(self, cl_manager):
-    return DummyRollHandler(self, None).roll(cl_manager)
+  def dummy_roll(self, cl_manager, source_dir):
+    return DummyRollHandler(self, source_dir, None).roll(cl_manager)

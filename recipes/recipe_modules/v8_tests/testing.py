@@ -299,14 +299,14 @@ class BaseTest:
   def mid_run(self):
     """Callback for things happening after pre_run and before run."""
 
-  def run(self, test=None, **kwargs):
+  def run(self, source_dir, test=None, **kwargs):
     """Callback for showing test runs.
 
     Each step in this callback will be shown on top-level.
     """
     raise NotImplementedError()  # pragma: no cover
 
-  def rerun(self, failure_dict, **kwargs):  # pragma: no cover
+  def rerun(self, source_dir, failure_dict, **kwargs):  # pragma: no cover
     raise NotImplementedError()
 
 
@@ -324,7 +324,7 @@ class V8Test(BaseTest):
       return False
     return True
 
-  def run(self, test=None, **kwargs):
+  def run(self, source_dir, test=None, **kwargs):
     test = test or self.api.v8_tests.test_configs[self.name]
 
     full_args, env = self.api.v8_tests._setup_test_runner(
@@ -333,8 +333,8 @@ class V8Test(BaseTest):
       '--json-test-results',
       self.api.json.output(add_json_log=False),
     ]
-    script = self.api.path.checkout_dir.joinpath('tools', 'run-tests.py')
-    with self.api.context(cwd=self.api.path.checkout_dir, env=env):
+    script = source_dir.joinpath('tools', 'run-tests.py')
+    with self.api.context(cwd=source_dir, env=env):
       try:
         self.api.step(
           test['name'] + self.test_step_config.step_name_suffix,
@@ -461,8 +461,9 @@ class V8Test(BaseTest):
     self.applied_test_filter = None
     return rerun_config
 
-  def rerun(self, failure_dict, **kwargs):
-    return self.run(test=self._setup_rerun_config(failure_dict), **kwargs)
+  def rerun(self, source_dir, failure_dict, **kwargs):
+    return self.run(
+        source_dir, test=self._setup_rerun_config(failure_dict), **kwargs)
 
 
 def _trigger_swarming_task(api, task, test_step_config):
@@ -592,7 +593,7 @@ class V8SwarmingTest(V8Test):
 
     _trigger_swarming_task(self.api, self.task, self.test_step_config)
 
-  def run(self, test=None, **kwargs):
+  def run(self, source_dir, test=None, **kwargs):
     assert self.task
     result = TestResults.empty()
     try:
@@ -609,9 +610,9 @@ class V8SwarmingTest(V8Test):
 
     return result + self.post_run(self.test)
 
-  def rerun(self, failure_dict, **kwargs):
+  def rerun(self, source_dir, failure_dict, **kwargs):
     self.pre_run(test=self._setup_rerun_config(failure_dict), **kwargs)
-    return self.run(**kwargs)
+    return self.run(source_dir, **kwargs)
 
 
 class V8GenericSwarmingTest(BaseTest):
@@ -656,7 +657,7 @@ class V8GenericSwarmingTest(BaseTest):
 
     _trigger_swarming_task(self.api, self.task, self.test_step_config)
 
-  def run(self, test=None, **kwargs):
+  def run(self, source_dir, test=None, **kwargs):
     assert self.task
     step_result, _ = self.api.chromium_swarming.collect_task(self.task)
     self.api.step.raise_on_failure(step_result)
@@ -771,7 +772,7 @@ class V82PhaseGenericSwarmingTest(BaseTest):
 
       _trigger_swarming_task(self.api, self.task, self.test_step_config)
 
-  def run(self, test=None, **kwargs):
+  def run(self, source_dir, test=None, **kwargs):
     """Collect tasks of phase 2."""
     assert self.task
     step_result, _ = self.api.chromium_swarming.collect_task(self.task)
@@ -801,7 +802,7 @@ class V8CompositeSwarmingTest(BaseTest):
     for c in self.composites:
       c.pre_run(test, **kwargs)
 
-  def run(self, test=None, **kwargs):
+  def run(self, source_dir, test=None, **kwargs):
     for c in self.composites:
       c.run(test, **kwargs)
     return TestResults.not_empty()
@@ -866,7 +867,7 @@ class V8Fuzzer(V8GenericSwarmingTest):
   def task_output_dir(self):
     return self.output_dir
 
-  def run(self, test=None, **kwargs):
+  def run(self, source_dir, test=None, **kwargs):
     try:
       super().run(test, **kwargs)
     except self.api.step.StepFailure as e:
@@ -1301,11 +1302,11 @@ class TestGroup:
       with self.run_checked(test):
         test.mid_run()
 
-  def run(self):
+  def run(self, source_dir):
     """Executes the |run| method of each test."""
     for test in self.tests:
       with self.run_checked(test):
-        self.test_results += test.run()
+        self.test_results += test.run(source_dir)
 
   @contextlib.contextmanager
   def run_checked(self, test):

@@ -25,16 +25,17 @@ RETSAM = 'retsam'[::-1]
 def RunSteps(api):
   """This tests the CL manager using a dummy roller."""
 
-  api.v8_auto_roller.setup_target(
+  update_result = api.v8_auto_roller.setup_target(
       'dummy',
       'https://chromium.googlesource.com/dumb/dumber',
   )
+  source_dir = update_result.source_root.path
 
-  clm = api.v8_auto_roller.build_cl_manager(bugs='dummy:123')
+  clm = api.v8_auto_roller.build_cl_manager(source_dir, bugs='dummy:123')
 
-  api.v8_auto_roller.dummy_roll(clm)
-  if api.properties.get('try_again', False ):
-    api.v8_auto_roller.dummy_roll(clm)
+  api.v8_auto_roller.dummy_roll(clm, source_dir)
+  if api.properties.get('try_again', False):
+    api.v8_auto_roller.dummy_roll(clm, source_dir)
 
   return api.v8_auto_roller.report_result()
 

@@ -101,7 +101,7 @@ def orchestrator_steps(api, compilator_name):
   # build artifacts to set up swarming tasks.
   v8.gn_args = list(comp_props['gn_args'])
   v8.isolated_tests = dict(comp_props['swarm_hashes'])
-  test_results = v8.runtests(tests)
+  test_results = v8.runtests(None, tests)
 
   status = common_pb.SUCCESS
   summary_markdown = None

@@ -36,10 +36,11 @@ SUPPORTED_SCRIPTS = {
 }
 
 
-def get_rollers(api_module, autoroller_config, script_keys):
+def get_rollers(api_module, source_dir, autoroller_config, script_keys):
   return [
       ScriptedRollHandler(
           api_module,
+          source_dir,
           autoroller_config,
           SUPPORTED_SCRIPTS[key],
           key,
@@ -49,8 +50,8 @@ def get_rollers(api_module, autoroller_config, script_keys):
 
 class ScriptedRollHandler(RollHandler):
 
-  def __init__(self, module, autoroller_config, script, key):
-    super().__init__(module, autoroller_config)
+  def __init__(self, module, source_dir, autoroller_config, script, key):
+    super().__init__(module, source_dir, autoroller_config)
     self.add_new_files = True
     self.script = script
     self.key = key
@@ -61,15 +62,14 @@ class ScriptedRollHandler(RollHandler):
 
   def apply_changes(self):
     args = [self.resolve_arg(a) for a in self.script.args]
-    self.api.step(
-        f'Run {self.name()} script',
-        ['python3', '-u', self.api.path.checkout_dir / self.script.exe, *args])
+    self.api.step(f'Run {self.name()} script',
+                  ['python3', '-u', self.source_dir / self.script.exe, *args])
 
   def resolve_arg(self, arg):
     if arg == '{{CHROMIUM_DIR}}':
       return self.api.path.cache_dir.joinpath('builder', 'src')
     if arg == '{{DEVTOOLS_DIR}}':
-      return self.api.path.checkout_dir
+      return self.source_dir
     return arg
 
   def get_subject(self):

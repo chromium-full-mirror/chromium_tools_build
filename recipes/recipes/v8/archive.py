@@ -81,11 +81,15 @@ def make_archive(api,
     # Opt out of using gyp environment variables.
     api.chromium.c.use_gyp_env = False
     update_result = api.v8.checkout()
+    source_dir = update_result.source_root.path
 
     if not version:
-      version = str(api.v8.read_version_from_ref(api.v8.revision, 'head'))
+      version = str(
+          api.v8.read_version_from_ref(source_dir, api.v8.revision, 'head'))
       tags = set(x.strip() for x in api.git(
-          'describe', '--tags', 'HEAD',
+          'describe',
+          '--tags',
+          'HEAD',
           stdout=api.raw_io.output_text(),
       ).stdout.strip().splitlines())
 
@@ -98,11 +102,10 @@ def make_archive(api,
 
   build_dir = api.chromium.c.build_dir / api.chromium.c.build_config_fs
   with api.step.nest('build' + step_suffix):
-    compile_failure = api.v8.compile()
+    compile_failure = api.v8.compile(source_dir)
     if compile_failure:
       return None, compile_failure
 
-  source_dir = update_result.source_root.path
   with api.step.nest('make archive' + step_suffix) as parent:
     # Make a list of files to archive.
     files = ['d8', 'icudtl.dat']

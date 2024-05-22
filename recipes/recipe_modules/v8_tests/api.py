@@ -175,7 +175,7 @@ class V8TestsApi(recipe_api.RecipeApi):
       with self.m.step.nest(parent_step_name):
         yield
 
-  def runtests(self, tests):
+  def runtests(self, source_dir, tests):
     if self.extra_flags:
       result = self.m.step('Customized run with extra flags', cmd=None)
       result.presentation.step_text += ' '.join(self.extra_flags)
@@ -201,7 +201,7 @@ class V8TestsApi(recipe_api.RecipeApi):
 
     test_group.mid_run()
 
-    test_group.run()
+    test_group.run(source_dir)
 
     test_group.raise_on_failure()
 
