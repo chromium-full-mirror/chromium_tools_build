@@ -14,9 +14,10 @@ class E2ETests(ExonerableTests):
     prefix = 'shuffled_' if self.api.devtools.is_shuffled_run() else ''
     return prefix + 'e2e_tests'
 
-  def __init__(self, api, cas_digest, builder_config, coverage, step_name,
-               divider):
-    super().__init__(api, cas_digest, builder_config, coverage, step_name)
+  def __init__(self, api, source_dir, cas_digest, builder_config, coverage,
+               step_name, divider):
+    super().__init__(api, source_dir, cas_digest, builder_config, coverage,
+                     step_name)
     self.divider = divider
 
   def skip(self):
@@ -39,7 +40,8 @@ class E2ETests(ExonerableTests):
     return super().test_name_to_grep_string(name)
 
   def trigger_exoneration(self, test_names):
-    self.divider = E2ETestDivider(self.api, self.builder_config, shard_count=1)
+    self.divider = E2ETestDivider(
+        self.api, self.source_dir, self.builder_config, shard_count=1)
     return super().trigger_exoneration(test_names)
 
 
@@ -61,13 +63,15 @@ class RepeatE2EShuffledTests(E2ETests):
 
 class E2ETestDivider:
 
-  def __init__(self, api, builder_config, shard_count=4):
+  def __init__(self, api, source_dir, builder_config, shard_count=4):
     self.api = api
+    self.source_dir = source_dir
     self.builder_config = builder_config
     self.shard_count = shard_count
 
   def legacy_commands(self):
     return self.api.devtools.divided_e2e_commands(
+        self.source_dir,
         builder_config=self.builder_config,
         shards=self.shard_count,
     )
@@ -78,7 +82,7 @@ class E2ETestDivider:
   def commands(self):
     if use_legacy_test_runner(self.api):
       return self.legacy_commands()
-    gen_root = self.api.path.checkout_dir / 'out' / self.builder_config / 'gen'
+    gen_root = self.source_dir / 'out' / self.builder_config / 'gen'
     test_relative_path = 'test/e2e'
     test_root = gen_root / test_relative_path
     test_list_file_path = test_root / 'tests.txt'

@@ -19,42 +19,49 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   def update(self):
     with self._in_builder_cache():
-      self.m.bot_update.ensure_checkout()
-      self._git_clean()
+      result = self.m.bot_update.ensure_checkout()
+      self._git_clean(result.source_root.path)
       self.m.gclient.runhooks()
+    return result
 
   @contextmanager
-  def depot_on_path(self):
-    depot_tools_path = self.m.path.checkout_dir / 'third_party'
+  def depot_on_path(self, source_dir):
+    depot_tools_path = source_dir / 'third_party'
     with self.m.context(env_prefixes={'PATH': [depot_tools_path]}):
       yield
 
-  def clean_out_dir(self, builder_config, clobber):
+  def clean_out_dir(self, source_dir, builder_config, clobber):
     if clobber:
       dir_to_clean = 'Release'
     elif self.is_debug(builder_config):
       dir_to_clean = 'Debug'
     else:
       return
-    path_to_clean = self.m.path.checkout_dir.joinpath('out', dir_to_clean)
+    path_to_clean = source_dir.joinpath('out', dir_to_clean)
     self.m.file.rmtree('clean outdir', path_to_clean)
 
   def is_debug(self, builder_config):
     return builder_config == 'Debug'
 
-  def rdb_node_script(self, step_name, script, args=None):
+  def rdb_node_script(self, source_dir, step_name, script, args=None):
     rdb_wrapper = self.m.resultdb.wrap([])
-    self.run_node_script(step_name, script, args, wrapper=rdb_wrapper)
+    self.run_node_script(
+        source_dir, step_name, script, args, wrapper=rdb_wrapper)
 
-  def run_node_script(self, step_name, script, args=None, **kwargs):
-    with self.m.context(cwd=self.m.path.checkout_dir):
+  def run_node_script(self, source_dir, step_name, script, args=None, **kwargs):
+    with self.m.context(cwd=source_dir):
       sc_path = self.m.path.join('third_party', 'node', 'node.py')
       node_args = ['--output', self.m.path.join('scripts', 'test', script)]
       node_args.extend(args or [])
       self.m.step(step_name, ["vpython3", "-u", sc_path] + node_args, **kwargs)
 
-  def run_python_script(self, step_name, script, args=None, **kwargs):
-    with self.m.context(cwd=self.m.path.checkout_dir):
+  def run_python_script(self,
+                        source_dir,
+                        step_name,
+                        script,
+                        args=None,
+                        **kwargs):
+    with self.m.context(cwd=source_dir):
       sc_path = self.m.path.join('scripts', 'test', script)
       args = args or []
       return self.m.step(step_name, ["vpython3", "-u", sc_path] + args,
@@ -63,7 +70,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
   def is_shuffled_run(self):
     return 'shuffled' in self.m.buildbucket.builder_name.lower()
 
-  def run_e2e(self, builder_config, args=None, run_mode='regular'):
+  def run_e2e(self, source_dir, builder_config, args=None, run_mode='regular'):
     args = list(args or [])
     mode_modifiers = dict(
         regular=([], ''),
@@ -74,10 +81,12 @@ class DevToolsAPI(recipe_api.RecipeApi):
     extra_args, suffix = mode_modifiers[run_mode]
     args += extra_args
 
-    self.m.devtools.rdb_node_script('E2E tests' + suffix, 'run_test_suite.js', [
-        "--test-suite-path=gen/test/e2e", "--test-suite-source-dir=test/e2e",
-        "--test-server-type='hosted-mode'", "--target=" + builder_config
-    ] + args)
+    self.m.devtools.rdb_node_script(
+        source_dir, 'E2E tests' + suffix, 'run_test_suite.js', [
+            "--test-suite-path=gen/test/e2e",
+            "--test-suite-source-dir=test/e2e",
+            "--test-server-type='hosted-mode'", "--target=" + builder_config
+        ] + args)
 
   def get_dimensions_for_platform(self):
     os_names = dict(
@@ -96,10 +105,11 @@ class DevToolsAPI(recipe_api.RecipeApi):
         'pool': 'chromium.tests',
     }
 
-  def archive_to_cas(self):
-    return self.m.cas.archive('archive', self.m.path.checkout_dir)
+  def archive_to_cas(self, source_dir):
+    return self.m.cas.archive('archive', source_dir)
 
   def divided_e2e_commands(self,
+                           source_dir,
                            builder_config,
                            shards=4,
                            file_pattern='',
@@ -108,6 +118,7 @@ class DevToolsAPI(recipe_api.RecipeApi):
     modified_commands = []
     shuffled = ['--shuffle'] if shuffle else []
     raw_commands = self.m.devtools.run_python_script(
+        source_dir,
         'divide test run',
         'e2e_divider.py',
         [
@@ -260,6 +271,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
   # TODO(liviurau): remove this temp hack after devtools refactoring that
   # involve .gitignore are done
-  def _git_clean(self):
-    with self.m.context(cwd=self.m.path.checkout_dir):
+  def _git_clean(self, source_dir):
+    with self.m.context(cwd=source_dir):
       self.m.git('clean', '-xf', '--', 'front_end')

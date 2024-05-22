@@ -15,13 +15,15 @@ class InteractionsTests(ExonerableTests):
 
   def __init__(self,
                api,
+               source_dir,
                cas_digest,
                builder_config,
                coverage,
                step_name,
                bucket='devtools-frontend-screenshots'):
     self.bucket = bucket
-    super().__init__(api, cas_digest, builder_config, coverage, step_name)
+    super().__init__(api, source_dir, cas_digest, builder_config, coverage,
+                     step_name)
 
   def collect(self):
     if self.api.tryserver.is_tryserver:
@@ -85,10 +87,10 @@ class InteractionsTests(ExonerableTests):
         self.output_dir / shard_output_dir / 'interactions-coverage')
     self.api.file.rmtree(
         'remove coverage files if they exist',
-        self.api.path.join(self.api.path.checkout_dir, 'interactions-coverage'))
+        self.api.path.join(self.source_dir, 'interactions-coverage'))
     self.api.file.copytree(
         'copy interaction tests coverage data', coverage_data_dir,
-        self.api.path.join(self.api.path.checkout_dir, 'interactions-coverage'))
+        self.api.path.join(self.source_dir, 'interactions-coverage'))
 
   def copy_golden_snapshots(self):
     # TODO:(liviurau) Remove this after fast build gets fixed for the new runner
@@ -102,12 +104,10 @@ class InteractionsTests(ExonerableTests):
     golden_snapshots_dir = self.output_dir / shard_output_dir / 'goldens'
     self.api.file.rmtree(
         'remove previous goldens',
-        self.api.path.join(self.api.path.checkout_dir, 'test', 'interactions',
-                           'goldens'))
+        self.api.path.join(self.source_dir, 'test', 'interactions', 'goldens'))
     self.api.file.copytree(
         'copy golden snapshots', golden_snapshots_dir,
-        self.api.path.join(self.api.path.checkout_dir, 'test', 'interactions',
-                           'goldens'))
+        self.api.path.join(self.source_dir, 'test', 'interactions', 'goldens'))
 
   def test_name_to_grep_string(self, name):
     name = re.sub(r'^interactions/.*: ', '', name)

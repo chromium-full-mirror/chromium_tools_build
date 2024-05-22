@@ -14,7 +14,6 @@ DEPS = [
     'devtools',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
-    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
 ]
@@ -33,21 +32,23 @@ def RunSteps(api, clobber):
   builder_config = 'Release'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
-  api.devtools.update()
+  update_result = api.devtools.update()
+  source_dir = update_result.source_root.path
 
-  with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
+  with api.devtools.depot_on_path(source_dir):
+    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
     api.chromium.run_gn()
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
 
     with api.devtools.collect_screenshots('devtools-frontend-screenshots'):
-      update_screenshots(api, builder_config)
+      update_screenshots(api, source_dir, builder_config)
 
 
-def update_screenshots(api, builder_config):
+def update_screenshots(api, source_dir, builder_config):
   api.devtools.rdb_node_script(
+      source_dir,
       'Screenshots',
       'run_test_suite.js',
       [

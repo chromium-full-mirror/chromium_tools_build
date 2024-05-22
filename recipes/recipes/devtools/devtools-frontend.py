@@ -83,29 +83,29 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
              clobber, coverage, perf_benchmarks):
   api.devtools.configure(builder_config, is_official_build,
                          devtools_skip_typecheck)
-  api.devtools.update()
+  update_result = api.devtools.update()
 
-  with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
+  source_dir = update_result.source_root.path
+  with api.devtools.depot_on_path(source_dir):
+    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
     api.chromium.run_gn()
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
 
-    cas_digest = api.devtools.archive_to_cas()
-    divider = E2ETestDivider(api, builder_config)
+    cas_digest = api.devtools.archive_to_cas(source_dir)
+    divider = E2ETestDivider(api, source_dir, builder_config)
     tests = [
-        UnitTests(api, cas_digest, builder_config, coverage,
-                          'Unit Tests'),
-        InteractionsTests(api, cas_digest, builder_config, coverage,
+        UnitTests(api, source_dir, cas_digest, builder_config, coverage,
+                  'Unit Tests'),
+        InteractionsTests(api, source_dir, cas_digest, builder_config, coverage,
                           'Interactions Tests'),
-        E2ETests(api, cas_digest, builder_config, coverage,
-                          'E2E Tests', divider),
-        PerformanceTests(api, cas_digest, builder_config, coverage,
-                          'Performance Tests'),
-        RepeatE2EShuffledTests(api, cas_digest, builder_config, coverage,
-                          'Repeat E2E Tests', divider),
-
+        E2ETests(api, source_dir, cas_digest, builder_config, coverage,
+                 'E2E Tests', divider),
+        PerformanceTests(api, source_dir, cas_digest, builder_config, coverage,
+                         'Performance Tests'),
+        RepeatE2EShuffledTests(api, source_dir, cas_digest, builder_config,
+                               coverage, 'Repeat E2E Tests', divider),
     ]
     tests = [t for t in tests if not t.skip()]
 
@@ -117,7 +117,7 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
     if not api.devtools.is_debug(builder_config):
       with api.step.nest('Linting'):
-        run_lint_check(api)
+        run_lint_check(api, source_dir)
 
     for t in tests:
       t.process_phase_results(phase)
@@ -132,11 +132,11 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
 
     if coverage:
       with api.step.nest('Coverage'):
-        publish_coverage_points(api)
+        publish_coverage_points(api, source_dir)
 
     if perf_benchmarks:
       with api.step.nest('Publish performance benchmarks'):
-        publish_performance_benchmarks(api)
+        publish_performance_benchmarks(api, source_dir)
 
     results = sum([t.results for t in tests], Results())
     return results.raw_result()
@@ -160,21 +160,24 @@ def failed_tests_names(api):
 
   return test_names
 
-def lint_script_exists(api, name):
-  script_file = api.path.checkout_dir.joinpath('scripts', 'test', name)
+
+def lint_script_exists(api, source_dir, name):
+  script_file = source_dir / 'scripts/test' / name
   return api.path.exists(script_file)
 
-def run_lint_check(api):
+
+def run_lint_check(api, source_dir):
   lint_script = 'run_lint_check_js.mjs'
-  if not lint_script_exists(api, lint_script):
+  if not lint_script_exists(api, source_dir, lint_script):
     lint_script = 'run_lint_check_js.js'
-  api.devtools.run_node_script('Lint Check with ESLint', lint_script)
-  api.devtools.run_node_script('Lint check with Stylelint',
+  api.devtools.run_node_script(source_dir, 'Lint Check with ESLint',
+                               lint_script)
+  api.devtools.run_node_script(source_dir, 'Lint check with Stylelint',
                                'run_lint_check_css.js')
 
-def publish_performance_benchmarks(api):
-  report_file = api.path.checkout_dir.joinpath('perf-data',
-                                               'devtools-perf.json')
+
+def publish_performance_benchmarks(api, source_dir):
+  report_file = source_dir / 'perf-data/devtools-perf.json'
   front_end_results = api.file.read_json('Read performance data results',
                                          report_file)
   tmp_dir = api.m.path.mkdtemp('perf-results')
@@ -228,17 +231,16 @@ def test_cov_data():
   }
 
 
-def publish_coverage_points(api):
+def publish_coverage_points(api, source_dir):
   if api.tryserver.is_tryserver:
     return
 
-  api.devtools.run_node_script('Combining coverage reports',
+  api.devtools.run_node_script(source_dir, 'Combining coverage reports',
                                'merge_coverage_reports.js')
 
   dimensions = ["lines", "statements", "functions", "branches"]
 
-  report_file = api.path.checkout_dir.joinpath('karma-coverage',
-                                               'coverage-summary.json')
+  report_file = source_dir / 'karma-coverage/coverage-summary.json'
 
   summary = api.file.read_json(
       'Coverage summary', report_file, test_data=test_cov_data())
@@ -248,7 +250,7 @@ def publish_coverage_points(api):
       for dim in dimensions
   ])
 
-  with api.context(cwd=api.path.checkout_dir):
+  with api.context(cwd=source_dir):
     git_revision = api.bot_update.last_returned_properties['got_revision']
 
     commit_count = api.git(
@@ -317,10 +319,8 @@ def GenTests(api):
       ci_build(builder='linux'),
       api.properties(builder_config='Debug'),
       api.path.exists(
-          api.path.checkout_dir.joinpath(
-              'karma-coverage',
-              'coverage-summary.json',
-          )),
+          api.path.cache_dir /
+          'builder/devtools-frontend/karma-coverage/coverage-summary.json',),
   )
 
   yield api.test(
@@ -356,10 +356,8 @@ def GenTests(api):
       ci_build(builder='linux'),
       api.properties(perf_benchmarks=True, builder_config='Debug'),
       api.path.exists(
-          api.path.checkout_dir.joinpath(
-              'perf-data',
-              'devtools-perf.json',
-          )),
+          api.path.cache_dir /
+          'builder/devtools-frontend/perf-data/devtools-perf.json',),
   )
 
   yield api.test(

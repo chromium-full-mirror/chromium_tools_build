@@ -62,10 +62,11 @@ def RunSteps(api, clobber, e2e_env, runner_args, parallel):
   builder_config = 'Debug'
   api.devtools.configure(
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
-  api.devtools.update()
+  update_result = api.devtools.update()
+  source_dir = update_result.source_root.path
 
-  with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, clobber)
+  with api.devtools.depot_on_path(source_dir):
+    api.devtools.clean_out_dir(source_dir, builder_config, clobber)
     api.chromium.run_gn()
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
@@ -75,9 +76,9 @@ def RunSteps(api, clobber, e2e_env, runner_args, parallel):
       args = runner_args.split() if runner_args else []
       e2e_env = e2e_env or {}
       if not parallel:
-        api.devtools.run_e2e(builder_config, args)
+        api.devtools.run_e2e(source_dir, builder_config, args)
       else:
-        cas_digest = api.devtools.archive_to_cas()
+        cas_digest = api.devtools.archive_to_cas(source_dir)
         test_pattern = ''
         iterations = 1
         if 'TEST_PATTERNS' in e2e_env:
@@ -89,7 +90,7 @@ def RunSteps(api, clobber, e2e_env, runner_args, parallel):
               step_name='E2E Tests',
               cas_digest=cas_digest,
               commands=api.devtools.divided_e2e_commands(
-                  builder_config, 4, test_pattern, iterations),
+                  source_dir, builder_config, 4, test_pattern, iterations),
               env={
                   "HTML_OUTPUT_FILE":
                       api.path.join('${ISOLATED_OUTDIR}',
