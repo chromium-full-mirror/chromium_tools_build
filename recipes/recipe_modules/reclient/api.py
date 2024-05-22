@@ -231,6 +231,12 @@ class ReclientApi(recipe_api.RecipeApi):
           self._props.rewrapper_env)
 
     rewrapper_env = dict(self._base_rewrapper_env)
+    rewrapper_env["RBE_invocation_id"] = '/'.join([
+        self.m.buildbucket.build.builder.project,
+        self.m.buildbucket.build.builder.bucket,
+        self.m.buildbucket.builder_name,
+        '%d' % self.m.buildbucket.build.number,
+    ])
 
     if exec_strategy is not None:
       rewrapper_env['RBE_exec_strategy'] = exec_strategy

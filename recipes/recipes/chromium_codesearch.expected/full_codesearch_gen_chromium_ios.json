@@ -1129,6 +1129,7 @@
       "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
       "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/ci/codesearch-gen-chromium-ios/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -1166,6 +1167,7 @@
       "KYTHE_OUTPUT_DIRECTORY": "[CACHE]/builder/src/out/ios-Debug/kzip",
       "KYTHE_ROOT_DIRECTORY": "[CACHE]/builder/src",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/ci/codesearch-gen-chromium-ios/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },

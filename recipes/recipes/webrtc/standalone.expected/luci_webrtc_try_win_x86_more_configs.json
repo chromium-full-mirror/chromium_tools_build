@@ -991,6 +991,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
@@ -1023,6 +1024,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
@@ -2515,6 +2517,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_2",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
@@ -2547,6 +2550,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_2",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
@@ -3963,6 +3967,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_3",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
@@ -3995,6 +4000,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_3",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
@@ -6255,6 +6261,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
       "RBE_server_address": "pipe://reproxy.pipe"
     },
@@ -6287,6 +6294,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "webrtc/try/win_x86_more_configs/0",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_4",
       "RBE_server_address": "pipe://reproxy.pipe"
     },

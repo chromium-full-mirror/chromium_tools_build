@@ -857,6 +857,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/try/fuchsia-deterministic-dbg/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -889,6 +890,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/try/fuchsia-deterministic-dbg/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -2282,6 +2284,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/try/fuchsia-deterministic-dbg/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -2314,6 +2317,7 @@
     "env": {
       "CHROME_HEADLESS": "1",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/try/fuchsia-deterministic-dbg/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_2",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },

@@ -603,6 +603,7 @@
     ],
     "env": {
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "pdfium/try/windows/1234",
       "RBE_log_dir": "[CLEANUP]\\reclient_log_tmp_1",
       "RBE_server_address": "pipe://reproxy.pipe"
     },

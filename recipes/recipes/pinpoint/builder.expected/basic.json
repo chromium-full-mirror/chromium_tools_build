@@ -1109,6 +1109,7 @@
       "CHROMIUM_BUILD": "_google_chrome",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/ci/Android Compile Perf/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
@@ -1145,6 +1146,7 @@
       "CHROMIUM_BUILD": "_google_chrome",
       "PATH": "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools:[CACHE]/builder/src/build/android:<PATH>",
       "RBE_exec_strategy": "remote_local_fallback",
+      "RBE_invocation_id": "chromium/ci/Android Compile Perf/571",
       "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
     },
