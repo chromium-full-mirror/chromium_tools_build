@@ -92,10 +92,7 @@ class V8AutoRoller(recipe_api.RecipeApi):
     chromium_deps_file = chromium_path / 'DEPS'
     self.m.file.write_text('Store src/DEPS', chromium_deps_file, deps)
 
-  def build_cl_manager(self, source_dir=None, bugs=None):
-    # TODO: crbug.com/336589262 - Update downstream callers to pass source_dir,
-    # then remove this and make argument required
-    source_dir = source_dir or self.m.path.checkout_dir
+  def build_cl_manager(self, source_dir, bugs=None):
     return CLManager(self.m, source_dir, bugs)
 
   def report_result(self):
@@ -108,10 +105,7 @@ class V8AutoRoller(recipe_api.RecipeApi):
         self.failures) + '.'
     return result
 
-  def regular_roll(self, autoroller_config, cl_manager, source_dir=None):
-    # TODO: crbug.com/336589262 - Update downstream callers to pass source_dir,
-    # then remove this and make argument required
-    source_dir = source_dir or self.m.path.checkout_dir
+  def regular_roll(self, autoroller_config, cl_manager, source_dir):
     with self.m.step.nest('Find updated deps') as step_presentation:
       discard_local_changes(self.m, source_dir)
       trusted_updates, untrusted_updates, failed = get_dep_updates(
