@@ -115,4 +115,4 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     with self.m.context(cwd=self.m.path.cache_dir / 'builder'):
       self.m.gclient.sync(cfg)
       self.m.chromium.runhooks()
-    self.m.siso.check_version()
+    self.m.siso.check_version(self.m.path.checkout_dir)

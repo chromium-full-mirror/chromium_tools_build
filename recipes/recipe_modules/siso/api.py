@@ -3,13 +3,10 @@
 # found in the LICENSE file.
 """API for interacting with the siso, experimental build tool."""
 
-import collections
 import contextlib
 
 from recipe_engine import recipe_api
-
-from PB.recipe_engine import result as result_pb2
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from recipe_engine.config_types import Path
 
 # GCS bucket for Siso reports.
 _GS_BUCKET = 'chrome-build-logs'
@@ -37,7 +34,9 @@ class SisoApi(recipe_api.RecipeApi):
     self._disabled = orig
 
   def run_ninja(self,
+                source_dir: Path,
                 ninja_command,
+                *,
                 ninja_env=None,
                 name=None,
                 siso_args=None,
@@ -66,7 +65,7 @@ class SisoApi(recipe_api.RecipeApi):
     self._assert_ninja_command(ninja_command)
     ninja_dir = self._ninja_dir(ninja_command)
     cmd = [
-        self.siso_path,
+        self.siso_path(source_dir),
         'ninja',
         '--project',
         self._props.project,
@@ -111,7 +110,7 @@ class SisoApi(recipe_api.RecipeApi):
     if len(self._props.experiments) > 0:
       env['SISO_EXPERIMENTS'] = ','.join(self._props.experiments)
     try:
-      with self.m.context(env=env, cwd=self.m.path.checkout_dir):
+      with self.m.context(env=env, cwd=source_dir):
         step_result = self.m.step(name, cmd, **kwargs)
         if post_step_func:
           post_step_func(step_result)
@@ -183,10 +182,9 @@ class SisoApi(recipe_api.RecipeApi):
 
     return "."
 
-  def check_version(self):
+  def check_version(self, source_dir: Path):
     """Print Siso version info"""
-    self.m.step('check siso version', [self.siso_path, 'version'])
+    self.m.step('check siso version', [self.siso_path(source_dir), 'version'])
 
-  @property
-  def siso_path(self):
-    return self.m.path.checkout_dir.joinpath('third_party', 'siso', 'siso')
+  def siso_path(self, source_dir: Path):
+    return source_dir / 'third_party/siso/siso'

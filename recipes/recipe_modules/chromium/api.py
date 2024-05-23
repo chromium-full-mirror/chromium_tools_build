@@ -384,6 +384,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         # TODO(b/288534744): support ninja_info with Siso.
         cmd = ['ninja', '-failure_summary', failure_output] + ninja_command[1:]
         ninja_step_result = self.m.siso.run_ninja(
+            self.m.path.checkout_dir,
             cmd,
             ninja_env=ninja_env,
             siso_args=siso_args,
@@ -461,6 +462,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     if self.m.siso.enabled:
       step_result = self.m.siso.run_ninja(
+          self.m.path.checkout_dir,
           ninja_command_explain,
           siso_args=siso_args,
           name=noop_step_name,
@@ -674,7 +676,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     command = [str(self.ninja_path)]
     if self.m.siso.enabled:
-      command = [str(self.m.siso.siso_path), 'ninja']
+      command = [str(self.m.siso.siso_path(self.m.path.checkout_dir)), 'ninja']
     command += ['-C', target_output_dir, '-t', 'cleandead']
     with self.m.context(env=ninja_env, cwd=self.m.path.checkout_dir):
       self.m.step(name='cleandead', cmd=command)

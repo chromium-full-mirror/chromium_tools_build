@@ -324,13 +324,12 @@ def RunSteps(api):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
-  api.chromium_checkout.ensure_checkout()
-  api.chromium.ensure_toolchains(
-      checkout_dir=api.chromium_checkout.checkout_dir)
+  update_result = api.chromium_checkout.ensure_checkout()
+  api.chromium.ensure_toolchains(checkout_dir=update_result.checkout_dir)
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
-  api.siso.check_version()
+  api.siso.check_version(update_result.source_root.path)
 
   # Build target: chrome or chrome_public_apk
   target = 'chrome'

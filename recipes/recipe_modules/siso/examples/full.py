@@ -12,13 +12,14 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder' / 'src'
   env = {}
   if api.siso.enabled:
     api.path.mock_add_paths(
         api.path.join('out', 'Release', 'siso_metrics.json'))
-    api.siso.check_version()
+    api.siso.check_version(source_dir)
     api.siso.run_ninja(
+        source_dir,
         ninja_command=api.properties.get('build_command'),
         ninja_env=env,
         name=api.properties.get('name', 'compile'),

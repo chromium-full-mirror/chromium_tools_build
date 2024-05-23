@@ -72,9 +72,9 @@ def RunSteps(api):
       _get_builder_id(api), use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
 
-  api.chromium_checkout.ensure_checkout()
-  api.chromium.ensure_toolchains(
-      checkout_dir=api.chromium_checkout.checkout_dir)
+  update_result = api.chromium_checkout.ensure_checkout()
+  api.chromium.ensure_toolchains(checkout_dir=update_result.checkout_dir)
+  source_dir = update_result.source_root.path
 
   if api.code_coverage.using_coverage:
     api.code_coverage.src_dir = api.chromium_checkout.source_dir
@@ -82,7 +82,7 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
-  api.step('check siso version', [api.siso.siso_path, 'version'])
+  api.step('check siso version', [api.siso.siso_path(source_dir), 'version'])
 
   # Build target: all
   _run_builds(api, 'all', phase='builtin')
