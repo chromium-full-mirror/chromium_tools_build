@@ -1,6 +1,45 @@
 [
   {
     "cmd": [],
+    "name": "Retrieve bot_config",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@merged bot_config@{\"chromium_apply_config\": [\"default_compiler\", \"mb\", \"mb_no_luci_auth\"], \"enable_swarming\": true, \"triggers\": [], \"triggers_proxy\": null, \"v8_config_kwargs\": {}}@@@",
+      "@@@STEP_LOG_END@merged bot_config@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/v8/v8/+/deadbeefdeadbeefdeadbeefdeadbeefdeadbeef/infra/builder_properties.pyl",
+      "--format",
+      "text",
+      "--accept-statuses",
+      "200,404"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "v8:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Retrieve bot_config.fetch deadbeefdeadbeefdeadbeefdeadbeefdeadbeef:infra/builder_properties.pyl",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "initialization"
   },
   {

@@ -100,8 +100,7 @@ def compilator_steps(api, custom_deps, default_targets, gclient_vars,
                      target_arch, target_platform, revision):
   v8 = api.v8
   api.v8_tests.load_static_test_configs()
-  bot_config = v8.update_bot_config(
-      v8.bot_config_by_buildername(),
+  bot_config = v8.get_bot_config(
       binary_size_tracking=None,
       clusterfuzz_archive=None,
       coverage=None,
@@ -112,7 +111,7 @@ def compilator_steps(api, custom_deps, default_targets, gclient_vars,
       triggers=None,
       triggers_proxy=None,
   )
-  v8.apply_bot_config(bot_config)
+  v8.apply_bot_config(bot_config, revision=revision)
   v8.set_gclient_custom_vars(gclient_vars)
   v8.set_gclient_custom_deps(custom_deps)
   v8.set_chromium_configs(clobber=False, default_targets=default_targets)

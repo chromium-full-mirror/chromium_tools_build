@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import ast
+import collections.abc
 import contextlib
 import re
 
@@ -14,6 +15,7 @@ from PB.recipe_engine.result import RawResult
 from RECIPE_MODULES.depot_tools import bot_update
 
 from recipe_engine import recipe_api
+from recipe_engine.engine_types import freeze, thaw
 from . import bisection
 
 MILO_HOST = 'luci-milo.appspot.com'
@@ -282,24 +284,12 @@ class V8Api(recipe_api.RecipeApi):
   def vpython(self, name, script, args=None, **kwargs):
     return self._python(name, 'vpython3', script, args, **kwargs)
 
-  def bot_config_by_buildername(self, builders=None):
-    default = {}
-    if not self.m.properties.get('parent_buildername'):
-      # Builders and builder_testers both build and need the following set of
-      # default chromium configs:
-      default['chromium_apply_config'] = [
-          'default_compiler', 'mb', 'mb_no_luci_auth'
-      ]
-    return (builders or {}).get(self.m.buildbucket.builder_name, default)
-
-  def update_bot_config(self, bot_config, binary_size_tracking,
-                        clusterfuzz_archive, coverage, enable_swarming,
-                        target_arch, target_platform, track_build_dependencies,
-                        triggers, triggers_proxy):
-    """Update bot_config dict with src-side properties.
+  def get_bot_config(self, binary_size_tracking, clusterfuzz_archive, coverage,
+                     enable_swarming, target_arch, target_platform,
+                     track_build_dependencies, triggers, triggers_proxy):
+    """Get bot_config dict with src-side properties.
 
     Args:
-      bot_config: The bot_config dict to update.
       binary_size_tracking: Additional configurations to enable binary size
           tracking.
       clusterfuzz_archive: Additional configurations set for archiving builds to
@@ -314,11 +304,16 @@ class V8Api(recipe_api.RecipeApi):
       triggers_proxy: Weather to trigger the internal trigger proxy.
 
     Returns:
-      An updated copy of the bot_config dict.
+      A bot_config dict.
     """
     # TODO(machenbach): Turn the bot_config dict into a proper class.
-    # Make mutable copy.
-    bot_config = dict(bot_config)
+    bot_config = {}
+    if not self.m.properties.get('parent_buildername'):
+      # Builders and builder_testers both build and need the following set of
+      # default chromium configs:
+      bot_config['chromium_apply_config'] = [
+          'default_compiler', 'mb', 'mb_no_luci_auth'
+      ]
     bot_config['v8_config_kwargs'] = dict(
         bot_config.get('v8_config_kwargs', {}))
     # Update only specified properties.
@@ -344,7 +339,7 @@ class V8Api(recipe_api.RecipeApi):
     # side. Should be removed when everything has migrated.
     bot_config['triggers'] = sorted(list(set(bot_config['triggers'])))
     bot_config['triggers_proxy'] = triggers_proxy
-    return bot_config
+    return freeze(bot_config)
 
   def get_test_roots(self, source_dir):
     """Returns the list of default and extensible test root directories.
@@ -418,9 +413,49 @@ class V8Api(recipe_api.RecipeApi):
     if self.m.builder_group.for_current == 'client.v8.perf':
       self.m.chromium.apply_config('default_target_d8')
 
-  def apply_bot_config(self, bot_config):
+  def _update_dict(self, initial, update):
+    for key, update_value in update.items():
+      initial_value = initial.get(key)
+      is_nested = (
+          isinstance(initial_value, collections.abc.Mapping) and
+          isinstance(update_value, collections.abc.Mapping))
+      if is_nested:
+        self._update_dict(initial_value, update_value)
+      else:
+        initial[key] = update_value
+
+  def _set_repo_bot_config(self, bot_config, revision=None):
+    """Override the bot config based on custom builder properties in
+    <repo>/infra/builder_properties.pyl.
+
+    If the file does not exist in the repository, gitiles returns a 404 and
+    this method does not substitute any configuration.
+    """
+    revision = self.get_revision(revision)
+
+    builder_properties = self.m.gitiles.download_file(
+        'https://chromium.googlesource.com/v8/v8',
+        'infra/builder_properties.pyl',
+        revision,
+        accept_statuses=[200, 404],
+        step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(''),
+    )
+
+    if not builder_properties:
+      return bot_config
+
+    builder_name = self.m.buildbucket.builder_name
+    custom_properties = ast.literal_eval(builder_properties).get(builder_name)
+
+    thawed_bot_config = thaw(bot_config)
+    self._update_dict(thawed_bot_config, custom_properties or {})
+    return freeze(thawed_bot_config)
+
+  def apply_bot_config(self, bot_config, revision=None):
     """Entry method for using the v8 api."""
-    self.bot_config = bot_config
+    with self.m.step.nest('Retrieve bot_config') as step:
+      self.bot_config = self._set_repo_bot_config(bot_config, revision=revision)
+      step.logs['merged bot_config'] = self.m.json.dumps(self.bot_config)
 
     kwargs = {}
     kwargs.update(self.bot_config.get('v8_config_kwargs', {}))
@@ -475,9 +510,12 @@ class V8Api(recipe_api.RecipeApi):
     self.m.file.ensure_directory('ensure builder cache dir', path)
     return path
 
+  def get_revision(self, revision=None):
+    return revision or self.m.buildbucket.gitiles_commit.id or 'HEAD'
+
   def checkout(self, revision=None, **kwargs) -> bot_update.Result:
     # Set revision for bot_update.
-    revision = revision or self.m.buildbucket.gitiles_commit.id or 'HEAD'
+    revision = self.get_revision(revision)
     solution = self.m.gclient.c.solutions[0]
     branch = self.m.buildbucket.gitiles_commit.ref
     if RELEASE_BRANCH_RE.match(branch):

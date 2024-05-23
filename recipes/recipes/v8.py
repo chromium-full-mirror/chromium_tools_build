@@ -86,8 +86,7 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
   v8 = api.v8
   api.v8_tests.read_cl_footer_flags()
   api.v8_tests.load_static_test_configs()
-  bot_config = v8.update_bot_config(
-      v8.bot_config_by_buildername(),
+  bot_config = v8.get_bot_config(
       binary_size_tracking,
       clusterfuzz_archive,
       coverage,
