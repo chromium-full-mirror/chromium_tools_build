@@ -886,7 +886,7 @@ def GenTests(api):
               api.test_utils.rdb_results(
                   'base_unittests3', failing_tests=['Test.One']))),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReasonRE,
+      api.post_process(post_process.SummaryMarkdownRE,
                        r'3 Test Suite\(s\) failed.*'),
       api.post_process(post_process.DropExpectation),
   )
@@ -941,7 +941,7 @@ def GenTests(api):
           api.json.output(
               {tryserver.constants.CQ_DEPEND_FOOTER: 'chromium:123456'})),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReasonRE,
+      api.post_process(post_process.SummaryMarkdownRE,
                        r'Commit message footer Cq-Depend is not supported.*'),
       api.post_process(post_process.DropExpectation),
   )

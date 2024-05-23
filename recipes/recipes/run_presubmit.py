@@ -338,7 +338,7 @@ def GenTests(api):
           }),
           times_out_after=60 * 20),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        'Timeout occurred during presubmit step.'),
       api.post_process(post_process.DropExpectation),
   )
@@ -364,7 +364,7 @@ def GenTests(api):
           times_out_after=60 * 20),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent('''
               There are 1 error, 0 warnings, and 0 notifications.
 
@@ -514,7 +514,7 @@ def GenTests(api):
           retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent(r'''
               There are 2 errors, 1 warning, and 1 notification.
 
@@ -560,7 +560,7 @@ def GenTests(api):
           retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent(r'''
               There are 1 error, 0 warnings, and 0 notifications.
 
@@ -618,7 +618,7 @@ def GenTests(api):
           retcode=2),
       api.expect_status('INFRA_FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent('''
               There are 1 error, 0 warnings, and 0 notifications.
 
@@ -645,7 +645,7 @@ def GenTests(api):
       api.properties(repo_name='chromium'),
       api.step_data('presubmit', api.json.output(None, retcode=1)),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.ResultReason, bug_msg),
+      api.post_process(post_process.SummaryMarkdown, bug_msg),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -657,7 +657,7 @@ def GenTests(api):
       api.properties(repo_name='chromium'),
       api.step_data('presubmit', api.json.output(None, retcode=2)),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.ResultReason, bug_msg),
+      api.post_process(post_process.SummaryMarkdown, bug_msg),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -682,7 +682,7 @@ def GenTests(api):
           retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent(r'''
               There are 1 error, 0 warnings, and 0 notifications.
 

@@ -892,7 +892,7 @@ def GenTests(api):
           ).assemble()),
       api.properties(fail_compile=True),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReason, 'Compile step failed.'),
+      api.post_process(post_process.SummaryMarkdown, 'Compile step failed.'),
       api.post_process(post_process.DropExpectation),
   )
 

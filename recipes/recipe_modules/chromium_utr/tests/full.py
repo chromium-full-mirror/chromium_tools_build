@@ -260,7 +260,7 @@ solutions = [
               'tags': ['test_suite:unit_tests'],
           })),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'The provided swarming task does not appear to match the requested '
           'test. Requested browser_tests but trying to reuse unit_tests'),
       api.expect_status('FAILURE'),
@@ -280,7 +280,7 @@ solutions = [
           },
       ),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'Only one test that uses swarming can be reused at a time'),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
@@ -426,7 +426,7 @@ solutions = [
 target_os=['os']
 """)),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'Caution: your .gclient file could not be validated. Exactly one '
           'solution with \'url\' set to '
           'https://chromium.googlesource.com/chromium/src.git must be set\n'),
@@ -463,7 +463,7 @@ solutions = [
 target_os=['os']
 """)),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'Caution: your .gclient file and the builder\'s mismatches in the '
           'following way(s). Please run "gclient sync" after resolving these:\n'
           '- rbe_instance has been set in the .gclient file\n'
@@ -495,7 +495,7 @@ target_os=['os']
                                  'c=false\n'
                                  'd=true')),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'Caution: your build\'s gn args and the builder\'s mismatches in the '
           'following way(s):\n'
           '- `b` in current build dir is not set by the builder\n'
@@ -538,7 +538,7 @@ target_os=['os']
           retcode=1,
       ),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'Caution: failed to get an upstream branch from the current checkout'
       ),
       api.post_process(

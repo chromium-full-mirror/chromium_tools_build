@@ -6,9 +6,7 @@
 The recipe will launch scripts based on the input.
 """
 
-from recipe_engine.post_process import (DoesNotRun, DropExpectation,
-                                        LogContains, ResultReason,
-                                        StepCommandRE, StepFailure, StepSuccess)
+from recipe_engine import post_process
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 from PB.recipes.build.chromium.generic_script_runner \
@@ -89,11 +87,11 @@ def GenTests(api):
                   args=['--some-arg'],
               )
           ])),
-      api.post_process(StepCommandRE, 'run script', [
+      api.post_process(post_process.StepCommandRE, 'run script', [
           '.*some/script.py',
           '--some-arg',
       ]),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -103,11 +101,11 @@ def GenTests(api):
               SWARMING_SERVER='https://chromium-swarm.appspot.com')),
       api.properties(InputProperties(scripts=[])),
       api.post_process(
-          ResultReason,
+          post_process.SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts is empty'),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -119,11 +117,11 @@ def GenTests(api):
           InputProperties(
               scripts=[ScriptInvocation(script='some/script.py',)])),
       api.post_process(
-          ResultReason,
+          post_process.SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].step_name is not set'),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -134,11 +132,11 @@ def GenTests(api):
       api.properties(
           InputProperties(scripts=[ScriptInvocation(step_name='run script',)])),
       api.post_process(
-          ResultReason,
+          post_process.SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].script is not set'),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -154,10 +152,10 @@ def GenTests(api):
                   step_name='step_name_success', script='some/script.py')
           ])),
       api.step_data('step_name_failure', retcode=1),
-      api.post_process(StepFailure, 'step_name_failure'),
-      api.post_process(StepSuccess, 'step_name_success'),
+      api.post_process(post_process.StepFailure, 'step_name_failure'),
+      api.post_process(post_process.StepSuccess, 'step_name_success'),
       api.expect_status('FAILURE'),
-      api.post_process(ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        'Step(\'step_name_failure\') (retcode: 1)'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )

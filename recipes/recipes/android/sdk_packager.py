@@ -236,7 +236,7 @@ def GenTests(api):
               [UNPARSEABLE]
               '''))),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        'Unable to parse sdkmanager output.'),
       api.post_process(post_process.DropExpectation),
   )
@@ -254,6 +254,7 @@ def GenTests(api):
                                          'sdkmanager')),
       package_version_steps(),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.ResultReasonRE, 'Unable to find yaml file'),
+      api.post_process(post_process.SummaryMarkdownRE,
+                       'Unable to find yaml file'),
       api.post_process(post_process.DropExpectation),
   )

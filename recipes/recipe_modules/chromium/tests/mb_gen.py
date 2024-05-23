@@ -98,7 +98,7 @@ def GenTests(api):
           retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent('''
           #### Step _generate_build_files_ failed. Error logs are shown below:
           ```
@@ -120,7 +120,7 @@ def GenTests(api):
           retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent('''
           #### Step _generate_build_files_ failed. Error logs are shown below:
           ```
@@ -156,7 +156,7 @@ def GenTests(api):
           retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent("""
           #### Step _generate_build_files_ failed. Error logs are shown below:
           ```

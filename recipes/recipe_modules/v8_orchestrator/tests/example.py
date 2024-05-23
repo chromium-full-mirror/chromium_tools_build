@@ -101,7 +101,7 @@ def GenTests(api):
       api.properties(revision='abcd'),
       subbuild_data('Compile failed', common_pb.FAILURE),
       api.expect_status('FAILURE'),
-      api.post_process(ResultReason, 'Compile failed'),
+      api.post_process(SummaryMarkdown, 'Compile failed'),
       api.post_process(DropExpectation),
   )
 
@@ -110,7 +110,7 @@ def GenTests(api):
       api.buildbucket.ci_build(builder='V8 Foobar'),
       api.properties(revision='abcd'),
       api.expect_status('INFRA_FAILURE'),
-      api.post_process(ResultReason, 'sub_build missing from step'),
+      api.post_process(SummaryMarkdown, 'sub_build missing from step'),
       api.post_process(DropExpectation),
   )
 

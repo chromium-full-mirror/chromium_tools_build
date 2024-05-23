@@ -40,7 +40,7 @@ def RunSteps(api, config, task_id, build_id, test_name, test_id,
 import re
 from google.protobuf import timestamp_pb2, struct_pb2
 
-from recipe_engine.post_process import DoesNotRun, DropExpectation, ResultReason
+from recipe_engine import post_process
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
     common as common_pb2,  # go/pyformat-break
     invocation as invocation_pb2,  #
@@ -305,7 +305,7 @@ def GenTests(api):
            "failing sample                 [reproduced](https://example.swarmingserver.appspot.com/task?id=2) 2/2  \n"
            "Win10 Tests x64                [not reproduced](https://example.swarmingserver.appspot.com/task?id=None), with failure: 'NoneType' object has no attribute 'get'"
           ) in steps['summarize_results'].step_summary_text)),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -315,9 +315,9 @@ def GenTests(api):
       api.step_data('get_test_result_summary.swarming collect',
                     api.swarming.collect([])),
       api.expect_status('FAILURE'),
-      api.post_process(ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        'Cannot find TaskResult for task 54321fffffabc123.'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -327,8 +327,9 @@ def GenTests(api):
       api.step_data('get_test_result_summary.download swarming outputs',
                     api.raw_io.output_dir({})),
       api.expect_status('FAILURE'),
-      api.post_process(ResultReason, 'Not supported task result.'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.SummaryMarkdown,
+                       'Not supported task result.'),
+      api.post_process(post_process.DropExpectation),
   )
 
   success_swarming_result_without_reproducing_step = api.swarming.task_result(
@@ -360,9 +361,10 @@ def GenTests(api):
           'collect strategy results',
           api.swarming.collect(
               [success_swarming_result_without_reproducing_step])),
-      api.post_process(DoesNotRun, 'choose_best_reproducing_step.api_runner'),
+      api.post_process(post_process.DoesNotRun,
+                       'choose_best_reproducing_step.api_runner'),
       api.expect_status('SUCCESS'),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -387,10 +389,10 @@ def GenTests(api):
                     api.swarming.collect(failed_swarming_results)),
       api.expect_status('FAILURE'),
       api.post_process(
-          ResultReason, '''Error while running:
+          post_process.SummaryMarkdown, '''Error while running:
 * flaky reproducer strategy batch for MockUnitTests.FailTest
 * flaky reproducer strategy repeat for MockUnitTests.FailTest'''),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -407,7 +409,7 @@ def GenTests(api):
               'label': 'flaky-reproduced'
           }]}),
       ),
-      api.post_process(DropExpectation),
+      api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -423,6 +425,7 @@ def GenTests(api):
           'chromium/123',
           parent_step_name='query_sample_failure_from_luci_analysis'),
       api.expect_status('FAILURE'),
-      api.post_check(ResultReason, 'No cluster associated with bug.'),
-      api.post_process(DropExpectation),
+      api.post_check(post_process.SummaryMarkdown,
+                     'No cluster associated with bug.'),
+      api.post_process(post_process.DropExpectation),
   )

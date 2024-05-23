@@ -5,7 +5,8 @@
 """Recipe to test v8/node.js integration."""
 
 from recipe_engine.recipe_api import Property
-from recipe_engine.post_process import Filter, ResultReasonRE, DropExpectation
+from recipe_engine.post_process import (Filter, SummaryMarkdownRE,
+                                        DropExpectation)
 
 from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
                                                        builds_service_pb2)
@@ -286,7 +287,8 @@ def GenTests(api):
       v8_tot=True,
       status='FAILURE',
   ) + api.step_data('test default', retcode=1) +
-         api.post_process(ResultReasonRE, 'Flakes in build') + api.post_process(
+         api.post_process(SummaryMarkdownRE, 'Flakes in build') +
+         api.post_process(
              Filter('test default', 'test default (retry)',
                     'test default (flakes)')))
 

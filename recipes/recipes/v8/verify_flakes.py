@@ -17,8 +17,8 @@ from PB.go.chromium.org.luci.buildbucket.proto import (builds_service as
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
 from recipe_engine.post_process import (DropExpectation, Filter, MustRun,
-                                        ResultReasonRE, StepException,
-                                        StepFailure)
+                                        StepException, StepFailure,
+                                        SummaryMarkdownRE)
 
 
 DEPS = [
@@ -177,7 +177,7 @@ def GenTests(api):
       'failure',
       test_data(['FAILURE']),
       api.post_process(StepFailure, 'FunctionCallSample'),
-      api.post_process(ResultReasonRE,
+      api.post_process(SummaryMarkdownRE,
                        'Some flakes failed to reproduce: FunctionCallSample'),
       api.post_process(DropExpectation),
       status='FAILURE',

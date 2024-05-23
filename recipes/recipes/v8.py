@@ -5,9 +5,9 @@
 import json
 
 from recipe_engine import recipe_test_api
-from recipe_engine.post_process import (
-    Filter, DoesNotRun, DoesNotRunRE, DropExpectation, MustRun, ResultReasonRE,
-    StepException, StepFailure)
+from recipe_engine.post_process import (Filter, DoesNotRun, DoesNotRunRE,
+                                        DropExpectation, MustRun, StepException,
+                                        StepFailure, SummaryMarkdownRE)
 from recipe_engine.recipe_api import Property
 
 from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
@@ -377,7 +377,7 @@ def GenTests(api):
   ) + api.v8.test_spec_in_checkout('V8 Foobar', test_spec) +
          api.override_step_data('Check', api.v8_tests.infra_failure()) +
          api.post_process(StepException, 'Check') +
-         api.post_process(ResultReasonRE, 'Failures or flakes in build.') +
+         api.post_process(SummaryMarkdownRE, 'Failures or flakes in build.') +
          api.post_process(DropExpectation))
 
   # Test flako command line with interesting data.
@@ -628,8 +628,8 @@ def GenTests(api):
       blamelist=['dude@chromium.org'],
       status='FAILURE',
   ) + api.override_step_data('Check', api.v8_tests.output_json(empty_run=True))
-    + api.post_process(ResultReasonRE, 'No tests were run')
-    + api.post_process(DropExpectation))
+         + api.post_process(SummaryMarkdownRE, 'No tests were run') +
+         api.post_process(DropExpectation))
 
   # Test tryjob with named cache.
   yield (

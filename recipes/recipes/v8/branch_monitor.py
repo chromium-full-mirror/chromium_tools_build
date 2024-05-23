@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 from recipe_engine.recipe_api import Property
 from recipe_engine.post_process import (DropExpectation, StepFailure,
-                                        SummaryMarkdown, ResultReason)
+                                        SummaryMarkdown)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine.result import RawResult
 
@@ -243,7 +243,7 @@ def GenTests(api):
       api.url.json(
           'GET https://chromiumdash.appspot.com/fetch_milestones?'
           'num=0&only_active=true', {}),
-      api.post_process(ResultReason, "No branches found"),
+      api.post_process(SummaryMarkdown, "No branches found"),
       api.post_process(DropExpectation),
       status='FAILURE',
   )
@@ -303,7 +303,7 @@ def GenTests(api):
           StepFailure,
           "branch 11.4 (6666).Revision deadbeef was not rolled for 2 days, 7:00:01"
       ),
-      api.post_process(ResultReason,
+      api.post_process(SummaryMarkdown,
                        '1 overdue revs in 10.3; 1 overdue revs in 11.4'),
       api.post_process(DropExpectation),
       status='FAILURE',
@@ -344,7 +344,7 @@ def GenTests(api):
       api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
       api.time.seed(apr_10_2023_09 + 60 * 60 * 20),
       fake_version_file(patch='2'),
-      api.post_process(ResultReason, '1 overdue revs in 11.4'),
+      api.post_process(SummaryMarkdown, '1 overdue revs in 11.4'),
       api.post_process(DropExpectation),
       status='FAILURE',
   )

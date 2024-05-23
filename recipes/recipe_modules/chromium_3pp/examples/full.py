@@ -126,7 +126,8 @@ def GenTests(api):
           'Confirm no-op',
           api.raw_io.stream_output_text('third_party/qux/3pp/3pp.pb')),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReasonRE, 'Unexpected 3pp changes'),
+      api.post_process(post_process.SummaryMarkdownRE,
+                       'Unexpected 3pp changes'),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -5,8 +5,8 @@
 import collections
 
 from recipe_engine.post_process import (DoesNotRun, DropExpectation,
-                                        LogContains, ResultReason,
-                                        StepCommandRE, StepFailure, StepSuccess)
+                                        LogContains, StepCommandRE, StepFailure,
+                                        StepSuccess, SummaryMarkdown)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 from PB.recipes.build.chromium_expectation_files.expectation_file_scripts \
@@ -628,7 +628,7 @@ def GenTests(api):
       'validate_missing_scripts',
       api.properties(InputProperties(scripts=[])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts is empty'),
       api.expect_status('INFRA_FAILURE'),
@@ -648,7 +648,7 @@ def GenTests(api):
               )
           ])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].step_name is not set'),
       api.expect_status('INFRA_FAILURE'),
@@ -668,7 +668,7 @@ def GenTests(api):
               )
           ])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].script is not set'),
       api.expect_status('INFRA_FAILURE'),
@@ -690,7 +690,7 @@ def GenTests(api):
               )
           ])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].script_type is not set'),
       api.expect_status('INFRA_FAILURE'),
@@ -712,7 +712,7 @@ def GenTests(api):
               )
           ])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].submit_type is not set'),
       api.expect_status('INFRA_FAILURE'),
@@ -732,7 +732,7 @@ def GenTests(api):
               )
           ])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'No reviewer_rotation/reviewer_list set.'),
       api.expect_status('INFRA_FAILURE'),
@@ -753,7 +753,7 @@ def GenTests(api):
               )
           ])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].reviewer_list.reviewer is empty'),
       api.expect_status('INFRA_FAILURE'),
@@ -773,7 +773,7 @@ def GenTests(api):
               )
           ])),
       api.post_process(
-          ResultReason,
+          SummaryMarkdown,
           'The following errors were found with the input properties:\n\n'
           'scripts[0].cl_title is not set'),
       api.expect_status('INFRA_FAILURE'),
@@ -803,7 +803,7 @@ def GenTests(api):
       api.post_process(StepFailure, 'step_name_failure.run script'),
       api.post_process(StepSuccess, 'step_name_success'),
       api.expect_status('FAILURE'),
-      api.post_process(ResultReason, '1 script invocation(s) failed'),
+      api.post_process(SummaryMarkdown, '1 script invocation(s) failed'),
       api.post_process(DropExpectation),
   )
 

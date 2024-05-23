@@ -60,7 +60,7 @@ def GenTests(api):
       api.post_process(post_process.StepFailure,
                        'schedule skylab test.' + REQUESTS[0].name),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'Length of should_provision_browser_files must match secondary_cros_board'
       ),
       api.post_process(post_process.DropExpectation),
@@ -73,7 +73,7 @@ def GenTests(api):
       api.post_process(post_process.StepFailure,
                        'schedule skylab test.' + REQUESTS[1].name),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           'Length of secondary_cros_img must match secondary_cros_board'),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),

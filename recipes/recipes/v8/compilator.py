@@ -19,7 +19,7 @@ import json
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 
-from recipe_engine.post_process import DropExpectation, ResultReason
+from recipe_engine.post_process import DropExpectation, SummaryMarkdown
 from recipe_engine.recipe_api import Property
 
 DEPS = [
@@ -203,5 +203,5 @@ def GenTests(api):
 
   yield (test('cancellation', status='CANCELED') +
          api.runtime.global_shutdown_on_step('build.compile') +
-         api.post_process(ResultReason, CANCELLATION_MESSAGE) +
+         api.post_process(SummaryMarkdown, CANCELLATION_MESSAGE) +
          api.post_process(DropExpectation))

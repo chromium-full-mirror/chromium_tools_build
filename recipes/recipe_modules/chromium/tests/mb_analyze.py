@@ -47,7 +47,7 @@ def GenTests(api):
           retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           textwrap.dedent('''
           #### Step _analyze_ failed. Error logs are shown below:
           ```
@@ -67,7 +67,7 @@ def GenTests(api):
           api.json.output({'output': ''}, name="failure_summary"),
           retcode=1),
       api.expect_status('FAILURE'),
-      api.post_process(post_process.ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        "Step('analyze') (retcode: 1)"),
       api.post_process(post_process.DropExpectation),
   )

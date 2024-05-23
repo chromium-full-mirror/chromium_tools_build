@@ -238,7 +238,7 @@ def GenTests(api):
       # Only Test.Two should appear in the build summary, because Test.One
       # has a green run.
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'failed because of:\n\n- Test.Two'),
       api.post_process(
@@ -396,7 +396,7 @@ def GenTests(api):
           ]),
       api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'failed because of:\n\n- Test.One'),
       api.post_process(
@@ -447,7 +447,7 @@ def GenTests(api):
                              api.m.json.output({})),
       api.post_process(post_process.StepException, 'basic_EVE_TOT'),
       api.post_process(
-          post_process.ResultReason,
+          post_process.SummaryMarkdown,
           '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
           'did not complete, likely due to an infra bug.'),
       api.post_process(post_process.DropExpectation),
@@ -473,7 +473,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepFailure,
           'prepare skylab tests.collect runtime deps for %s' % TAST_TARGET),
-      api.post_process(post_process.ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        'Failed to find the %s.isolate.' % TAST_TARGET),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
@@ -488,7 +488,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepFailure,
           'prepare skylab tests.collect runtime deps for %s' % TAST_TARGET),
-      api.post_process(post_process.ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        'Failed to parse the %s.isolate' % TAST_TARGET),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
@@ -503,7 +503,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepFailure,
           'prepare skylab tests.collect runtime deps for %s' % TAST_TARGET),
-      api.post_process(post_process.ResultReason,
+      api.post_process(post_process.SummaryMarkdown,
                        'No dependencies attached to target %s.' % TAST_TARGET),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
