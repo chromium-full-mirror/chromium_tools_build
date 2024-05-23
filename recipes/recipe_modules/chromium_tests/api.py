@@ -2269,9 +2269,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       additional_compile_targets = sorted(
           set(compile_targets) - set(test_targets))
       analyze_names = ['chromium'] + list(builder_config.analyze_names)
-      mb_config_path = (
-          self.m.chromium.c.project_generator.config_path or
-          self.m.path.checkout_dir.joinpath('tools', 'mb', 'mb_config.pyl'))
       analyze_names.append(self.m.chromium.c.TARGET_PLATFORM)
       additional_exclusions = {
           exclusion: 'builder config additional exclusions'
@@ -2282,7 +2279,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           test_targets,
           additional_compile_targets,
           builder_id=builder_id,
-          mb_config_path=mb_config_path,
           additional_names=analyze_names,
           additional_exclusions=additional_exclusions)
 
