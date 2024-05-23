@@ -147,7 +147,8 @@ def compilator_steps(api, properties):
             # else you'll get a file not found error
             if f not in deleted_files
         ]
-      archive_src_side_deps(api, source_dir, affected_files_to_archive)
+      archive_src_side_deps(api, orch_builder_config, source_dir,
+                            affected_files_to_archive)
 
       if any(t.runs_on_swarming and t.is_enabled for t in test_suites):
         # Isolate the tests first so the Orchestrator can trigger them asap
@@ -199,7 +200,12 @@ def compilator_steps(api, properties):
     return raw_result
 
 
-def archive_src_side_deps(api, source_dir, affected_files):
+def archive_src_side_deps(
+    api,
+    orch_builder_config: ctbc.BuilderConfig,
+    source_dir,
+    affected_files,
+):
   """Archives src-side deps that the Orchestrator needs to run tests/coverage.
 
   Affected files is also needed by the orchestrator to run code coverage
@@ -225,8 +231,9 @@ def archive_src_side_deps(api, source_dir, affected_files):
     digest = api.isolate.isolate('archive src-side deps', isolate_file)
     api.file.remove('rm %s' % isolate_file, isolate_file)
 
-    relative_test_spec_dir = api.path.relpath(api.chromium.c.targets_spec_dir,
-                                              source_dir)
+    targets_spec_dir = api.chromium_tests.get_targets_spec_dir(
+        orch_builder_config)
+    relative_test_spec_dir = api.path.relpath(targets_spec_dir, source_dir)
     # On windows compilators, this would use a `\\` path separator instead of
     # a `/` that the linux orchestrators need to construct Paths
     relative_test_spec_dir = relative_test_spec_dir.replace(api.path.sep, '/')

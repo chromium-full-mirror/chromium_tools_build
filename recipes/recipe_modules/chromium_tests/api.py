@@ -215,7 +215,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   _COMPUTE_PRECOMMIT_DETAILS = object()
 
-  def _get_targets_spec_dir(self, builder_config: ctbc.BuilderConfig) -> Path:
+  def get_targets_spec_dir(self, builder_config: ctbc.BuilderConfig) -> Path:
     if builder_config.targets_spec_directory:
       return self.m.chromium_checkout.checkout_dir.joinpath(
           builder_config.targets_spec_directory)
@@ -254,7 +254,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Returns: TargetsConfig for current builder
     """
     if not targets_spec_dir:
-      targets_spec_dir = self._get_targets_spec_dir(builder_config)
+      targets_spec_dir = self.get_targets_spec_dir(builder_config)
 
     # The scripts_compile_targets is indirected through a function so that we
     # don't execute unnecessary steps if there are no scripts that need to be
@@ -1472,9 +1472,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         return None, invalid_test_suites or []
 
       # Also exit if there are failures but we shouldn't deapply the patch
+      targets_spec_dir = self.get_targets_spec_dir(task.builder_config)
       if self.should_skip_without_patch(task.builder_config, task.root_dir,
-                                        task.affected_files,
-                                        self.m.chromium.c.targets_spec_dir):
+                                        task.affected_files, targets_spec_dir):
         self.summarize_test_failures(task.test_suites)
         return None, failing_test_suites
 
@@ -2249,7 +2249,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       affected_spec_files = self._get_affected_spec_files(
           root_dir, affected_files, builder_config,
-          self._get_targets_spec_dir(builder_config))
+          self.get_targets_spec_dir(builder_config))
       # If any of the spec files that we used for determining the targets/tests
       # is affected, skip doing analysis, just build/test all of them
       if affected_spec_files:
