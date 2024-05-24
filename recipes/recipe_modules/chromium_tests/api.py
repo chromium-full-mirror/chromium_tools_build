@@ -219,7 +219,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if builder_config.targets_spec_directory:
       return self.m.chromium_checkout.checkout_dir.joinpath(
           builder_config.targets_spec_directory)
-    return self.m.chromium.c.targets_spec_dir
+    return self.m.chromium.targets_spec_dir(self.m.chromium_checkout.source_dir)
 
   def create_targets_config(self,
                             builder_config,
@@ -238,7 +238,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         chromium builders this is usually cache/builder/src, but for other
         builders, like angle, this is cache/builder/angle.
       targets_spec_dir: Path to directory containing targets specs. If
-        this is None, chromium.c.targets_spec_dir will be used.
+        this is None, chromium.targets_spec_dir will be used.
       precommit_details: Details used for the pre-commit-specific
         behavior when generating tests. If None, then the generation
         will use the non-pre-commit behavior. By default, the
@@ -911,8 +911,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
       self.m.archive.clusterfuzz_archive(
-          build_dir=self.m.chromium.c.build_dir.joinpath(
-              self.m.chromium.c.build_config_fs),
+          build_dir=self.m.chromium.output_dir,
           update_properties=update_result.properties,
           gs_bucket=builder_spec.cf_gs_bucket,
           gs_acl=builder_spec.cf_gs_acl,
@@ -1165,8 +1164,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       # gn_logs.txt contains debug info for vars with smart defaults. Display
       # its contents in the build for easy debugging.
-      gn_logs_path = self.m.chromium.c.build_dir.joinpath(
-          self.m.chromium.c.build_config_fs, 'gn_logs.txt')
+      gn_logs_path = self.m.chromium.output_dir / 'gn_logs.txt'
       self.m.path.mock_add_paths(gn_logs_path)
       if self.m.path.exists(gn_logs_path):
         self.m.file.read_text('read gn_logs.txt', gn_logs_path)
@@ -1231,8 +1229,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         build_archive_url=build_archive_url)
 
     if read_gn_args:
-      self.m.gn.get_args(self.m.chromium.c.build_dir /
-                         self.m.chromium.c.build_config_fs)
+      self.m.gn.get_args(self.m.chromium.output_dir)
 
   def _make_legacy_build_url(self, builder_spec, builder_group):
     # The group where the build was zipped and uploaded from.
@@ -1792,9 +1789,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     #
     # The best way to ensure the old build directory is not used is to
     # remove it.
-    self.m.file.rmtree(
-        'remove build directory',
-        self.m.chromium.c.build_dir / self.m.chromium.c.build_config_fs)
+    self.m.file.rmtree('remove build directory', self.m.chromium.output_dir)
 
     if set(tests_using_isolates + tests_using_skylab) != set(tests):
       # There are some tests which don't run via swarming. These need the source

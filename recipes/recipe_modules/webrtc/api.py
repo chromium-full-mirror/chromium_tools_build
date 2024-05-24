@@ -320,8 +320,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
   def package_apprtcmobile(self, builder_id):
     # Zip and upload out/{Debug,Release}/apks/AppRTCMobile.apk
-    apk_root = self.m.chromium.c.build_dir.joinpath(
-        self.m.chromium.c.build_config_fs, 'apks')
+    apk_root = self.m.chromium.output_dir / 'apks'
     zip_path = self.m.path.start_dir / 'AppRTCMobile_apk.zip'
 
     pkg = self.m.zip.make_package(apk_root, zip_path)

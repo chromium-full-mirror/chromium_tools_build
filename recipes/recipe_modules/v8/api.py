@@ -931,7 +931,7 @@ class V8Api(recipe_api.RecipeApi):
   @property
   def build_output_dir(self):
     """Absolute path to the build product based on the 'checkout' path."""
-    return self.m.chromium.c.build_dir / self.m.chromium.c.build_config_fs
+    return self.m.chromium.output_dir
 
   @contextlib.contextmanager
   def maybe_clang_coverage(self, source_dir):

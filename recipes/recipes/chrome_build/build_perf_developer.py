@@ -39,7 +39,7 @@ def _raise_raw_result_on_failure(api, raw_result):
     raise api.step.StepFailure(raw_result.summary_markdown)
 
 
-def _incremental_build_with_one_day_changes(api, target):
+def _incremental_build_with_one_day_changes(api, source_dir, target):
   """Steps to run an incremental build with 1-day of changes
      (a.k.a morning build).
   """
@@ -69,6 +69,8 @@ def _incremental_build_with_one_day_changes(api, target):
     # Run a warm up build for remote caches at the current revision.
     api.chromium_build_perf.checkout(cur_rev)
 
+    build_dir = api.chromium.build_dir(source_dir)
+
     ##  Ninja+Reclient
     api.chromium_build_perf.recreate_build_dir(phase='ninja')
     raw_result = api.chromium_build_perf.build_with_ninja(
@@ -79,7 +81,7 @@ def _incremental_build_with_one_day_changes(api, target):
 
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
-        phase='siso_reproxy', build_dir=api.chromium.c.build_dir / 'rbe')
+        phase='siso_reproxy', build_dir=build_dir / 'rbe')
     suffix = ' with Siso in Reproxy mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -90,7 +92,7 @@ def _incremental_build_with_one_day_changes(api, target):
 
     ## Siso native build
     api.chromium_build_perf.recreate_build_dir(
-        phase='siso_native', build_dir=api.chromium.c.build_dir / 'siso')
+        phase='siso_native', build_dir=build_dir / 'siso')
     suffix = ' with Siso in native mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -115,7 +117,7 @@ def _incremental_build_with_one_day_changes(api, target):
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_reproxy',
-        build_dir=api.chromium.c.build_dir / 'rbe',
+        build_dir=build_dir / 'rbe',
         remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -127,7 +129,7 @@ def _incremental_build_with_one_day_changes(api, target):
     ## Siso native
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_native',
-        build_dir=api.chromium.c.build_dir / 'siso',
+        build_dir=build_dir / 'siso',
         remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -161,7 +163,7 @@ def _incremental_build_with_one_day_changes(api, target):
     _raise_raw_result_on_failure(api, raw_result)
 
 
-def _incremental_builds_with_patch(api, target):
+def _incremental_builds_with_patch(api, source_dir, target):
   """Steps to run incremental builds with a patch, which represent builds with
      local modifications.
 
@@ -218,16 +220,18 @@ def _incremental_builds_with_patch(api, target):
       gitlog_result.presentation.step_text = 'No commits to build'
       return
 
+    build_dir = api.chromium.build_dir(source_dir)
+
     # Set up build dirs for Ninja+Reclient/Siso+Reclient/Siso native builds.
     api.chromium_build_perf.recreate_build_dir(
         phase='ninja', remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_reproxy',
-        build_dir=api.chromium.c.build_dir / 'rbe',
+        build_dir=build_dir / 'rbe',
         remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_native',
-        build_dir=api.chromium.c.build_dir / 'siso',
+        build_dir=build_dir / 'siso',
         remove_deps_cache=True)
 
     # Run a build at each revision.
@@ -329,7 +333,8 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     api.chromium.runhooks()
 
-  api.siso.check_version(update_result.source_root.path)
+  source_dir = update_result.source_root.path
+  api.siso.check_version(source_dir)
 
   # Build target: chrome or chrome_public_apk
   target = 'chrome'
@@ -349,9 +354,9 @@ def RunSteps(api):
     _clean_builds(api, target)
 
     # Incremental build with 1-day of changes. a.k.a morning build.
-    _incremental_build_with_one_day_changes(api, target)
+    _incremental_build_with_one_day_changes(api, source_dir, target)
 
-    _incremental_builds_with_patch(api, target)
+    _incremental_builds_with_patch(api, source_dir, target)
 
 
 def GenTests(api):

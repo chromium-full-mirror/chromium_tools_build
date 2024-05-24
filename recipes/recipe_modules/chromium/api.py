@@ -10,6 +10,7 @@ import re
 import textwrap
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 from . import types as chromium
 from .config import validate_config
@@ -129,12 +130,24 @@ class ChromiumApi(recipe_api.RecipeApi):
   def build_properties(self):
     return self._build_properties
 
+  def targets_spec_dir(self, source_dir: Path) -> Path:
+    """The path to the targets spec directory."""
+    return source_dir / self.c.targets_spec_dir
+
+  def analyze_config_path(self, source_dir: Path) -> Path:
+    """The path to the analyze config file."""
+    return source_dir / self.c.analyze_config_path
+
+  def build_dir(self, source_dir: Path) -> Path:
+    """The path to the directory containing one or more output directories."""
+    return source_dir / self.c.build_dir
+
   @property
   def output_dir(self):
     """Return the path to the built executable directory."""
     if self._output_dir:
       return self._output_dir
-    return self.c.build_dir / self.c.build_config_fs
+    return self.build_dir(self.m.path.checkout_dir) / self.c.build_config_fs
 
   @output_dir.setter
   def output_dir(self, value):

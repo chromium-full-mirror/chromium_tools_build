@@ -338,7 +338,8 @@ class FilterApi(recipe_api.RecipeApi):
       additional_names = ['chromium']
 
     if config_path is None:
-      config_path = self.m.chromium.c.analyze_config_path
+      config_path = self.m.chromium.analyze_config_path(
+          self.m.path.checkout_dir)
       assert config_path, (
           'either config_path must be passed in'
           ' or the chromium config must set analyze_config_path')

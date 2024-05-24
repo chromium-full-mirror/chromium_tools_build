@@ -230,7 +230,7 @@ class AndroidApi(recipe_api.RecipeApi):
               self.repo_resource('recipes', 'daemonizer.py'),
               '--',
               self.c.cr_build_android.joinpath('adb_logcat_monitor.py'),
-              self.m.chromium.c.build_dir / 'logcat',
+              self.m.chromium.build_dir(self.m.path.checkout_dir) / 'logcat',
               self.m.adb.adb_path(),
           ],
           infra_step=True,

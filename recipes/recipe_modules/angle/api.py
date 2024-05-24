@@ -62,6 +62,9 @@ class ANGLEApi(recipe_api.RecipeApi):
         self.m.reclient.use_download_remoteexec_cfg_hook(
             self.m.gclient.c.solutions[0])
       update_result = self.m.bot_update.ensure_checkout()
+      # Many methods on the chromium_tests API require the chromium_checkout
+      # paths set
+      self.m.chromium_checkout.set_paths_from_update_result(update_result)
 
     # Add an ANGLE commit position to the build properties.
     build_properties = update_result.properties
