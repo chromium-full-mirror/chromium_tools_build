@@ -293,6 +293,8 @@ _AddIsolatedTestSpec('android-pixel6-perf-pgo', 'android',
                      'android_arm64_high_end-builder-perf-pgo')
 _AddIsolatedTestSpec('android-pixel6-pro-perf', 'android',
                      'android_arm64_high_end-builder-perf')
+_AddIsolatedTestSpec('android-pixel-fold-perf', 'android',
+                     'android_arm64_high_end-builder-perf')
 
 _AddIsolatedTestSpec(
     'android-go-wembley-perf',
