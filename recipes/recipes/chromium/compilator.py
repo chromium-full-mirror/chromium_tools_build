@@ -59,6 +59,10 @@ def compilator_steps(api, properties):
   with api.chromium.chromium_layout():
     orchestrator = properties.orchestrator.builder_name
     builder_group = properties.orchestrator.builder_group
+    if not orchestrator or not builder_group:
+      raise api.step.InfraFailure(
+          'this builder is intended to be triggered by its corresponding'
+          ' orchestrator builder, it is an error to trigger it directly')
     orch_builder_id = chromium.BuilderId.create_for_group(
         builder_group, orchestrator)
 
@@ -399,6 +403,19 @@ def GenTests(api):
                        'angle_unittests_no_swarm (with patch)'),
       api.post_process(post_process.DoesNotRun, 'angle_unittests (with patch)'),
       api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'triggered-directly',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-compilator',
+          revision='deadbeef',
+      ),
+      api.post_check(post_process.SummaryMarkdownRE,
+                     'it is an error to trigger it directly'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
   )
 
   SKYLAB_ISOLATE_TEXT = """
