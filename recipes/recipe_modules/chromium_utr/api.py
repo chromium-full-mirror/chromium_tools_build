@@ -412,7 +412,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       build_dir: Path,
       properties: Request,
       builder_id: chromium.BuilderId,
-  ) -> bool:
+  ) -> list[str]:
     """Handles code coverage for runs using try builders
 
     Based on the input properties (bypass_branch_check and skip_instrumentation)
@@ -428,27 +428,13 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         properties: Request given to the recipe
         builder_id: The ID of the builder to get tests from
     Returns:
-        A boolean for whether or not the gn args need to be preserved or the
-        builder's gn args can overwrite them
+        A list of gn args that need to be removed
     """
     # If we're bypassing the branch check and not skipping instrumentation
     # then remove the gn arg to instrument everything
     if (properties.rerun_options.bypass_branch_check and
         not properties.rerun_options.skip_instrumentation):
-      if (not properties.rerun_options.preserve_gn_args or
-          not self.m.path.exists(build_dir / 'args.gn')):
-        gn_args = self.m.chromium.mb_lookup(
-            builder_id,
-            recursive=False,
-            name='lookup_builder_gn_args_for_code_coverage')
-      else:
-        gn_args, _ = self.m.gn.read_args(build_dir)
-      self.m.file.write_text(
-          'remove coverage_instrumentation_input_file gn arg',
-          build_dir.joinpath('args.gn'), '\n'.join(
-              arg for arg in gn_args.split('\n')
-              if not arg.startswith('coverage_instrumentation_input_file')))
-      return True
+      return ['coverage_instrumentation_input_file']
     paths = []
     if not properties.rerun_options.skip_instrumentation:
       with self.m.context(cwd=self.m.path.checkout_dir):
@@ -471,14 +457,19 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         paths = [path.replace('\\', '/') for path in paths]
     self.m.code_coverage.src_dir = self.m.chromium_checkout.source_dir
     self.m.code_coverage.instrument(paths)
-    return properties.rerun_options.preserve_gn_args
+    return []
 
-  def get_remote_compile_options(self, build_dir) -> bool:
+  def get_remote_compile_options(self, build_dir: Path,
+                                 properties: Request) -> bool:
     use_reclient = False
     if self.m.chromium.c.project_generator.tool == 'mb':
       gn_args, _ = self.m.gn.read_args(build_dir)
       args = self.m.gn.parse_gn_args(gn_args)
       use_reclient = args.get('use_remoteexec') == 'true'
+
+    if properties.no_rbe:
+      use_reclient = False
+
     return use_reclient
 
   def compile_targets(
@@ -506,13 +497,46 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     # Remove duplicate targets.
     targets = sorted(set(targets))
 
+    gn_args_to_remove = []
     # Only recipes that support try should handle changed files
     if (self.m.code_coverage.using_coverage and
         builder_recipe in ('chromium/orchestrator', 'chromium_trybot')):
-      preserve_gn_args = self.handle_code_coverage(build_dir, properties,
-                                                   builder_id)
+      gn_args_to_remove = self.handle_code_coverage(build_dir, properties,
+                                                    builder_id)
 
-    if preserve_gn_args and self.m.path.exists(build_dir / 'args.gn'):
+    gn_args_to_update = {}
+    if properties.no_rbe:
+      gn_args_to_update['use_remoteexec'] = 'false'
+    if properties.no_siso:
+      gn_args_to_update['use_siso'] = 'false'
+
+    # If we can use mb_gen it is preferable but if a gn arg needs to be removed
+    # or we've been asked to preserve whatever is in the build dir's existing
+    # args.gn file then fall back to using gn gen and handling the gn args here
+    if gn_args_to_remove or gn_args_to_update:
+      preserve_gn_args = True
+    if preserve_gn_args:
+      if not self.m.path.exists(build_dir / 'args.gn'):
+        gn_args = self.m.chromium.mb_lookup(
+            builder_id, recursive=False, name='lookup_builder_gn_args')
+      else:
+        gn_args, _ = self.m.gn.read_args(build_dir)
+
+      if gn_args_to_remove or gn_args_to_update:
+        gn_args = gn_args.splitlines()
+        arg_re = self.m.gn.ARG_RE
+        for arg_line in gn_args:
+          match = arg_re.match(arg_line)
+          if (match and match.group(1) in gn_args_to_remove or
+              match.group(1) in gn_args_to_update):
+            gn_args.remove(arg_line)
+
+        for update_arg, update_val in gn_args_to_update.items():
+          gn_args.append(f'{update_arg} = {update_val}')
+
+        self.m.file.write_text('write cleaned gn args',
+                               build_dir.joinpath('args.gn'),
+                               '\n'.join(gn_args))
       self.m.gn.gen(build_dir, 'gn_gen')
     else:
       tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
@@ -523,7 +547,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           build_dir=build_dir,
           isolated_targets=tests_to_isolate)
 
-    use_reclient = self.get_remote_compile_options(build_dir)
+    use_reclient = self.get_remote_compile_options(build_dir, properties)
 
     if use_reclient:
       self.m.reclient.experimental_credentials_helper = 'luci-auth'
@@ -534,11 +558,18 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           '-json-format=reclient',
           '-lifetime=5m',
       ])
-    return self.m.chromium.compile(
-        targets,
-        skip_log_upload=True,
-        target_output_dir=str(build_dir),
-        use_reclient=use_reclient), preserve_gn_args
+
+    def compile_fn():
+      return self.m.chromium.compile(
+          targets,
+          skip_log_upload=True,
+          target_output_dir=str(build_dir),
+          use_reclient=use_reclient), preserve_gn_args
+
+    if properties.no_siso:
+      with self.m.siso.disable():
+        return compile_fn()
+    return compile_fn()
 
   def create_tests(
       self,

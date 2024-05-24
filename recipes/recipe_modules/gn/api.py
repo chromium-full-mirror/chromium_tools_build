@@ -11,10 +11,10 @@ from . import constants
 class GnApi(recipe_api.RecipeApi):
 
   _DEFAULT_STEP_NAME = 'read GN args'
-  _ARG_RE = re.compile('\s*(\w+)\s*=\s*(\S+)')
   _NON_LOCAL_ARGS = frozenset(['target_sysroot'])
   _DEFAULT_MAX_TEXT_LINES = 15
 
+  ARG_RE = re.compile('\s*(\w+)\s*=\s*(\S+)')
   DEFAULT = constants.DEFAULT
   TEXT = constants.TEXT
   LOGS = constants.LOGS
@@ -56,7 +56,7 @@ class GnApi(recipe_api.RecipeApi):
     local_lines = []
     non_local_lines = []
     for l in args.splitlines():
-      match = self._ARG_RE.match(l)
+      match = self.ARG_RE.match(l)
       if match is not None and match.group(1) in self._NON_LOCAL_ARGS:
         non_local_lines.append(l)
       else:
@@ -270,7 +270,7 @@ class GnApi(recipe_api.RecipeApi):
     """
     result = {}
     for line in content.splitlines():
-      match = self._ARG_RE.match(line)
+      match = self.ARG_RE.match(line)
       if match:
         result[match.group(1)] = match.group(2)
     return result

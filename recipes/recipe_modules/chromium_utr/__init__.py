@@ -11,6 +11,7 @@ DEPS = [
     'gn',
     'isolate',
     'reclient',
+    'siso',
     'depot_tools/gclient',
     'depot_tools/git',
     'recipe_engine/context',

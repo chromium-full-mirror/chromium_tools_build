@@ -579,13 +579,11 @@ target_os=['os']
           api.raw_io.output_text('coverage_instrumentation_input_file = '
                                  '".code-coverage/files_to_instrument.txt"\n'
                                  'use_remoteexec = true')),
-      api.post_process(post_process.MustRun,
-                       'remove coverage_instrumentation_input_file gn arg'),
+      api.post_process(post_process.MustRun, 'write cleaned gn args'),
       api.post_process(post_process.StepCommandContains,
-                       'remove coverage_instrumentation_input_file gn arg',
-                       ['use_remoteexec = true']),
+                       'write cleaned gn args', ['use_remoteexec = true']),
       api.post_process(post_process.StepCommandDoesNotContain,
-                       'remove coverage_instrumentation_input_file gn arg',
+                       'write cleaned gn args',
                        ['coverage_instrumentation_input_file']),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
@@ -607,18 +605,16 @@ target_os=['os']
                                  '".code-coverage/files_to_instrument.txt"\n'
                                  'b = true')),
       api.step_data(
-          'lookup_builder_gn_args_for_code_coverage',
+          'lookup_builder_gn_args',
           stdout=api.raw_io.output_text(
               'coverage_instrumentation_input_file = '
               '".code-coverage/files_to_instrument.txt"\n'
               'b = true')),
-      api.post_process(post_process.MustRun,
-                       'remove coverage_instrumentation_input_file gn arg'),
+      api.post_process(post_process.MustRun, 'write cleaned gn args'),
       api.post_process(post_process.StepCommandContains,
-                       'remove coverage_instrumentation_input_file gn arg',
-                       ['b = true']),
+                       'write cleaned gn args', ['b = true']),
       api.post_process(post_process.StepCommandDoesNotContain,
-                       'remove coverage_instrumentation_input_file gn arg',
+                       'write cleaned gn args',
                        ['coverage_instrumentation_input_file']),
       api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
@@ -684,5 +680,18 @@ target_os=['os']
       ),
       api.post_process(post_process.DoesNotRun,
                        'archive results for fake-script-test'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'disabled_remote_options',
+      boilerplate(no_rbe=True, no_siso=True),
+      api.post_process(post_process.MustRun, 'generate .isolate files'),
+      api.post_process(post_process.StepCommandContains,
+                       'write cleaned gn args', [
+                           'target_cpu = "x86"\n'
+                           'use_remoteexec = false\n'
+                           'use_siso = false'
+                       ]),
       api.post_process(post_process.DropExpectation),
   )
