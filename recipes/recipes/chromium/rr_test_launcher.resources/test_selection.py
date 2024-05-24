@@ -17,7 +17,7 @@ PROJECT = 'chrome-unexpected-pass-data'
 def parse_args(args):
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument(
-      '--output-file', required=True, help='path to output file for results')
+      '--output-json', required=True, help='path to output json for results')
   parser.add_argument(
       '--sample-day',
       required=True,
@@ -44,7 +44,7 @@ def fetch_test_info(bq, args):
       'test_suite': row.test_suite,
   } for row in rows]
 
-  with open(args.output_file, 'w+', encoding='utf-8') as f:
+  with open(args.output_json, 'w+', encoding='utf-8') as f:
     json.dump(test_results, f)
 
 

@@ -14,24 +14,24 @@ import test_selection
 class QueryTest(unittest.TestCase):
 
   def test_args(self):
-    output_file = '/some/path/to/file.json'
+    output_json = '/some/path/to/file.json'
     query_args = [
-        '--output-file',
-        output_file,
+        '--output-json',
+        output_json,
         '--sample-day=10',
     ]
 
     res = test_selection.parse_args(query_args)
-    self.assertEqual(res.output_file, output_file)
+    self.assertEqual(res.output_json, output_json)
     self.assertEqual(res.sample_day, 10)
 
   @mock.patch('google.cloud.bigquery.Client', autospec=True)
   @mock.patch('builtins.open', autospec=True)
   def test_fetch_builders(self, mock_file, mock_client):
-    output_file = 'test_result.json'
+    output_json = 'test_result.json'
     builder_args = [
-        '--output-file',
-        output_file,
+        '--output-json',
+        output_json,
         '--sample-day=10',
     ]
     args = test_selection.parse_args(builder_args)

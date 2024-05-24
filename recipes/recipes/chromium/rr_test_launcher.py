@@ -68,101 +68,119 @@ def find_traces(api, target_path):
   return pass_run_dir, failed_run_dir
 
 def RunSteps(api):
-  # TODO(jiesheng): Replace the current example build id and test id with top
-  # 10 flaky tests from LUCI analysis. Support web test first, then gtests.
-  task_id, test_name = (
-      api.flaky_reproducer.query_resultdb_for_task_id_and_test_name(
-          build_id="8752378832772530417",
-          test_id='ninja://:blink_wpt_tests/external/wpt/css/'
-          'css-transforms/z-index-does-not-apply.html'))
-
-  test_binary_path = api.flaky_reproducer.get_test_binary(task_id)
-  task_config = api.flaky_reproducer.get_test_binary_swarming_task_config(
-      test_binary_path)
-  api.cas.download('download test binary', task_config.cas_input_root,
-                   api.path.cleanup_dir)
-  runner_dir = api.path.cleanup_dir / RUNNER_PACKAGE_PATH
-  api.file.copytree('copy source files', api.resource('.'), runner_dir)
-  api.isolate.write_isolate_file(runner_dir / TEST_BINARY_ISOLATE_FILENAME,
-                                 ['../'])
-  repacked_cas = api.isolate.isolate('new test binary',
-                                     runner_dir / TEST_BINARY_ISOLATE_FILENAME)
-
-  # Construct test cmd, trigger reproducing job in swarming.
-  command = [
-      'vpython3', 'test_runner.py', '--test={0}'.format(test_name),
-      '--output-dir={0}'.format('${ISOLATED_OUTDIR}'), '--'
+  # Select tests from past 10 days' bugs.
+  cmd = [
+      'vpython3',
+      api.resource('test_selection.py'), '--output-json',
+      api.json.output(), '--sample-day=10'
   ]
-  # TODO(jiesheng): Construct test command based on test type.
-  command.extend(WEB_TEST_CMD)
+  step_result = api.step('query test data', cmd)
+  test_infos = step_result.json.output
 
-  request = (api.swarming.task_request().
-      with_name("rr tool runner for {0}".format(test_name)).
-      with_priority(200))
-
-  dimensions = task_config.dimensions
-  dimensions['pool'] = 'chromium.tests.rr'
+  # Prepare rr tool binary
   ensure_file = api.cipd.EnsureFile()
   ensure_file.add_package('infra/3pp/tools/rr/${platform}', 'latest', 'rr_tool')
-  request_slice = (request[0].
-      with_command(command).
-      with_relative_cwd(RUNNER_PACKAGE_PATH).
-      with_cas_input_root(repacked_cas).
-      with_cipd_ensure_file(ensure_file).
-      with_dimensions(**dimensions).
-      with_execution_timeout_secs(1800).
-      with_io_timeout_secs(1800).
-      with_expiration_secs(1800))
-  request = request.with_slice(0, request_slice)
+  swarming_tasks = []
+  for test_info in test_infos:
+    # TODO(jiesheng): Support other test type for rr test launcher.
+    if 'blink' not in test_info.get('test_suite', ''):
+      continue
+    build_id = test_info.get('invocation_id', '').split('-')[-1]
+    test_id = test_info.get('test_id', '')
+    if not build_id or not test_id:
+      continue
 
-  swarming_tasks = [api.swarming.trigger("rr tool runner", [request])[0]]
+    task_id, test_name = (
+        api.flaky_reproducer.query_resultdb_for_task_id_and_test_name(
+            build_id=build_id, test_id=test_id))
+    task_path = api.path.cleanup_dir / task_id
+    test_binary_path = api.flaky_reproducer.get_test_binary(task_id)
+    task_config = api.flaky_reproducer.get_test_binary_swarming_task_config(
+        test_binary_path)
+    api.cas.download('download test binary', task_config.cas_input_root,
+                     task_path)
+    runner_dir = task_path / RUNNER_PACKAGE_PATH
+    api.file.copytree('copy source files', api.resource('.'), runner_dir)
+    api.isolate.write_isolate_file(runner_dir / TEST_BINARY_ISOLATE_FILENAME,
+                                   ['../'])
+    repacked_cas = api.isolate.isolate(
+        'new test binary', runner_dir / TEST_BINARY_ISOLATE_FILENAME)
+
+    # Construct test cmd, trigger reproducing job in swarming.
+    command = [
+        'vpython3', 'test_runner.py', '--test={0}'.format(test_name),
+        '--output-dir={0}'.format('${ISOLATED_OUTDIR}'), '--'
+    ]
+    # TODO(jiesheng): Construct test command based on test type.
+    command.extend(WEB_TEST_CMD)
+    request = (
+        api.swarming.task_request().with_name(
+            "rr tool runner for {0}".format(test_name)).with_priority(200))
+
+    dimensions = task_config.dimensions
+    dimensions['pool'] = 'chromium.tests.rr'
+
+    request_slice = (
+        request[0].with_command(command).with_relative_cwd(RUNNER_PACKAGE_PATH)
+        .with_cas_input_root(repacked_cas).with_cipd_ensure_file(ensure_file)
+        .with_dimensions(**dimensions).with_execution_timeout_secs(
+            1800).with_io_timeout_secs(1800).with_expiration_secs(1800))
+    request = request.with_slice(0, request_slice)
+
+    swarming_tasks.append(api.swarming.trigger("rr tool runner", [request])[0])
+
+  # Collect all task result and upload to GCS
   task_results = api.swarming.collect(
       'collect rr tool runner results',
       swarming_tasks,
       output_dir=api.path.mkdtemp())
 
-  task_result = task_results[0]
-  api.cas.download('download test traces', task_result.cas_outputs.digest,
-                   api.path.cleanup_dir / 'test_traces')
+  for task_result in task_results:
+    if not task_result.cas_outputs:
+      # TODO(jiesheng): Handle the missing output from task.
+      continue
+    download_dir = api.path.cleanup_dir / f'trace_dir_{task_result.id}'
+    api.file.ensure_directory('ensure traces dir exist', download_dir)
+    api.cas.download('download test traces', task_result.cas_outputs.digest,
+                     download_dir)
 
-  traces_out_dir = api.path.join(api.path.cleanup_dir, 'output_traces')
-  found_test_traces = False
-  for target_path in api.file.listdir(
-      'listdir test dirs',
-      api.path.cleanup_dir / 'test_traces',
-      test_data=['test_name']):
-    target_name = api.path.basename(target_path)
-    pass_run_dir, failed_run_dir = find_traces(api, target_path)
-    if pass_run_dir and failed_run_dir:
-      pass_run_new_dir = api.path.join(traces_out_dir, target_name,
-                                       'pass_run_trace')
-      api.file.ensure_directory('ensure pass trace dir exist', pass_run_new_dir)
-      api.file.move('move pass trace', f'{pass_run_dir}/trace.tar',
-                    pass_run_new_dir)
-      failed_run_new_dir = api.path.join(traces_out_dir, target_name,
-                                         'failed_run_trace')
-      api.file.ensure_directory('ensure failed trace dir exist',
-                                failed_run_new_dir)
-      api.file.move('move failed trace', f'{failed_run_dir}/trace.tar',
-                    failed_run_new_dir)
-      found_test_traces = True
+    traces_out_dir = api.path.join(api.path.cleanup_dir,
+                                   f'output_traces_{task_result.id}')
+    found_test_traces = False
+    for target_path in api.file.listdir(
+        'listdir test dirs', download_dir, test_data=['test_name']):
+      target_name = api.path.basename(target_path)
+      pass_run_dir, failed_run_dir = find_traces(api, target_path)
+      if pass_run_dir and failed_run_dir:
+        pass_run_new_dir = api.path.join(traces_out_dir, target_name,
+                                         'pass_run_trace')
+        api.file.ensure_directory('ensure pass trace dir exist',
+                                  pass_run_new_dir)
+        api.file.move('move pass trace', f'{pass_run_dir}/trace.tar',
+                      pass_run_new_dir)
+        failed_run_new_dir = api.path.join(traces_out_dir, target_name,
+                                           'failed_run_trace')
+        api.file.ensure_directory('ensure failed trace dir exist',
+                                  failed_run_new_dir)
+        api.file.move('move failed trace', f'{failed_run_dir}/trace.tar',
+                      failed_run_new_dir)
+        found_test_traces = True
 
-  if found_test_traces:
-    cur_date = api.time.utcnow().strftime('%Y-%m-%d-%H:%M:%S')
-    cloud_folder_name = f'test-rr-traces-{cur_date}'
-    api.gsutil.upload(
-        traces_out_dir,
-        UPLOAD_BUCKET,
-        cloud_folder_name,
-        args=['-r'],
-        link_name='Test rr traces')
+    if found_test_traces:
+      cur_date = api.time.utcnow().strftime('%Y-%m-%d-%H:%M:%S')
+      cloud_folder_name = f'test-rr-traces-{cur_date}'
+      api.gsutil.upload(
+          traces_out_dir,
+          UPLOAD_BUCKET,
+          cloud_folder_name,
+          args=['-r'],
+          link_name='Test rr traces')
 
 def GenTests(api):
   query_test_results = resultdb_pb2.QueryTestResultsResponse(
       test_results=[
           test_result_pb2.TestResult(
-              test_id=('ninja://:blink_wpt_tests/external/wpt/'
-                       'css/css-transforms/z-index-does-not-apply.html'),
+              test_id='test_id_123',
               name=('invocations/task-example.swarmingserver.appspot.com'
                     '-task1/result-1'),
               expected=False,
@@ -175,6 +193,13 @@ def GenTests(api):
   yield api.test(
       'happy_path',
       api.builder_group.for_current('chromium.fyi'),
+      api.override_step_data(
+          'query test data',
+          api.json.output([{
+              'test_suite': 'blink',
+              'invocation_id': 'build-123',
+              'test_id': 'test_id_123'
+          }])),
       api.resultdb.query_test_results(query_test_results),
       api.step_data(
           'get_test_binary from task1',
@@ -182,15 +207,15 @@ def GenTests(api):
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
                       'gtest_task_request.json')))),
-      api.path.exists(api.path.cleanup_dir / 'test_traces' / 'test_name'),
+      api.path.exists(api.path.cleanup_dir / 'trace_dir_0' / 'test_name'),
       api.path.files_exist(
-          api.path.cleanup_dir / 'test_traces' / 'test_name' / '0' /
+          api.path.cleanup_dir / 'trace_dir_0' / 'test_name' / '0' /
           'test_result',
-          api.path.cleanup_dir / 'test_traces' / 'test_name' / '0' /
+          api.path.cleanup_dir / 'trace_dir_0' / 'test_name' / '0' /
           'trace.tar',
-          api.path.cleanup_dir / 'test_traces' / 'test_name' / '1' /
+          api.path.cleanup_dir / 'trace_dir_0' / 'test_name' / '1' /
           'test_result',
-          api.path.cleanup_dir / 'test_traces' / 'test_name' / '1' /
+          api.path.cleanup_dir / 'trace_dir_0' / 'test_name' / '1' /
           'trace.tar',
       ),
       api.override_step_data('read test result for 0',
@@ -202,6 +227,13 @@ def GenTests(api):
   yield api.test(
       'no_result',
       api.builder_group.for_current('chromium.fyi'),
+      api.override_step_data(
+          'query test data',
+          api.json.output([{
+              'test_suite': 'blink',
+              'invocation_id': 'build-123',
+              'test_id': 'test_id_123'
+          }])),
       api.resultdb.query_test_results(query_test_results),
       api.step_data(
           'get_test_binary from task1',
@@ -209,5 +241,57 @@ def GenTests(api):
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
                       'gtest_task_request.json')))),
+      api.post_process(DropExpectation),
+  )
+  yield api.test(
+      'no_suite',
+      api.builder_group.for_current('chromium.fyi'),
+      api.override_step_data(
+          'query test data',
+          api.json.output([{
+              'invocation_id': 'build-123',
+              'test_id': 'test_id_123'
+          }])),
+      api.post_process(DropExpectation),
+  )
+  yield api.test(
+      'no_build_id',
+      api.builder_group.for_current('chromium.fyi'),
+      api.override_step_data(
+          'query test data',
+          api.json.output([{
+              'test_suite': 'blink',
+              'test_id': 'test_id_123'
+          }])),
+      api.post_process(DropExpectation),
+  )
+  yield api.test(
+      'no_cas_output',
+      api.builder_group.for_current('chromium.fyi'),
+      api.override_step_data(
+          'query test data',
+          api.json.output([{
+              'test_suite': 'blink',
+              'invocation_id': 'build-123',
+              'test_id': 'test_id_123'
+          }])),
+      api.resultdb.query_test_results(query_test_results),
+      api.step_data(
+          'get_test_binary from task1',
+          api.json.output_stream(
+              api.json.loads(
+                  api.flaky_reproducer.get_test_data(
+                      'gtest_task_request.json')))),
+      api.step_data(
+          'collect rr tool runner results',
+          api.swarming.collect([{
+              'output': 'hello world!',
+              'results': {
+                  'exit_code': '0',
+                  'name': 'corpus tests (reverse byte order)',
+                  'state': 'COMPLETED',
+                  'task_id': '2',
+              },
+          }])),
       api.post_process(DropExpectation),
   )
