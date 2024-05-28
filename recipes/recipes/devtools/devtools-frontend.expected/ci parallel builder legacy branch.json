@@ -1,20 +1,23 @@
 [
   {
     "cmd": [],
-    "name": "Trigger Tests"
-  },
-  {
-    "cmd": [],
-    "name": "Trigger Tests.Trigger Unit Tests",
+    "name": "Run tests.Trigger Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
     ]
   },
   {
@@ -47,9 +50,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure package directory",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure package directory",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
+      "@@@STEP_NEST_LEVEL@4@@@"
     ]
   },
   {
@@ -83,9 +86,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure_installed",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure_installed",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_NEST_LEVEL@4@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
@@ -128,9 +131,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Unit Tests.[trigger] Unit Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.[trigger] Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -265,10 +268,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.resultdb.update_included_invocations",
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations",
     "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
@@ -282,9 +285,9 @@
   },
   {
     "cmd": [],
-    "name": "Trigger Tests.Trigger Interactions Tests",
+    "name": "Run tests.Trigger Tests.Trigger Interactions Tests",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -316,9 +319,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Interactions Tests.[trigger] Interactions Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Trigger Tests.Trigger Interactions Tests.[trigger] Interactions Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -470,10 +473,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.resultdb.update_included_invocations (2)",
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (2)",
     "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
@@ -487,9 +490,9 @@
   },
   {
     "cmd": [],
-    "name": "Trigger Tests.Trigger E2E Tests",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -520,9 +523,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger E2E Tests.divide test run",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.divide test run",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@raw_io.output_text@node runner config pattern@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
@@ -556,9 +559,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Trigger Tests.Trigger E2E Tests.[trigger] E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -697,10 +700,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.resultdb.update_included_invocations (3)",
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (3)",
     "stdin": "{\"addInvocations\": [\"invocations/2\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
@@ -714,9 +717,9 @@
   },
   {
     "cmd": [],
-    "name": "Trigger Tests.Trigger Repeat E2E Tests",
+    "name": "Run tests.Trigger Tests.Trigger Repeat E2E Tests",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -748,9 +751,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Repeat E2E Tests.[trigger] Repeat E2E Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Trigger Tests.Trigger Repeat E2E Tests.[trigger] Repeat E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -889,10 +892,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.resultdb.update_included_invocations (4)",
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (4)",
     "stdin": "{\"addInvocations\": [\"invocations/3\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
@@ -951,9 +954,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u scripts/test/run_unittests.py --target=Release --swarming-output-file ${ISOLATED_OUTDIR} --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1039,9 +1042,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/interactions --test-suite-source-dir=test/interactions --test-server-type='component-docs' --target=Release --swarming-output-file ${ISOLATED_OUTDIR} --coverage```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1127,9 +1130,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/e2e --test-suite-source-dir=test/e2e --test-server-type='hosted-mode' --target=Release config pattern```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1215,9 +1218,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Repeat E2E Tests.Repeat E2E Tests shards results.Repeat E2E Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Repeat E2E Tests.Repeat E2E Tests shards results.Repeat E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output scripts/test/run_test_suite.js --test-suite-path=gen/test/e2e --test-suite-source-dir=test/e2e --test-server-type='hosted-mode' --target=Release config pattern```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",

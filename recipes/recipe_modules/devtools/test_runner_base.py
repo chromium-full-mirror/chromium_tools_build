@@ -69,12 +69,6 @@ class DevToolsTests(ABC):
   def test_name_to_grep_string(self, name):
     return name.replace('/', ' ')
 
-  def trigger_phase(self, phase):
-    phase.trigger(self)
-
-  def process_phase_results(self, phase):
-    phase.process_results(self)
-
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):
       self.tasks = self.api.devtools.trigger_test_swarming_tasks(

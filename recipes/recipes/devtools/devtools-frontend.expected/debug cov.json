@@ -470,20 +470,27 @@
   },
   {
     "cmd": [],
-    "name": "Trigger Tests"
+    "name": "Run tests"
   },
   {
     "cmd": [],
-    "name": "Trigger Tests.Trigger Unit Tests",
+    "name": "Run tests.Trigger Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
     ]
   },
   {
@@ -516,9 +523,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure package directory",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure package directory",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
+      "@@@STEP_NEST_LEVEL@4@@@"
     ]
   },
   {
@@ -552,9 +559,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure_installed",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.install infra/tools/luci/swarming.ensure_installed",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_NEST_LEVEL@4@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
@@ -597,9 +604,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Unit Tests.[trigger] Unit Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Trigger Tests.Trigger Unit Tests.[trigger] Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -736,10 +743,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.resultdb.update_included_invocations",
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations",
     "stdin": "{\"addInvocations\": [\"invocations/0\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
@@ -753,9 +760,9 @@
   },
   {
     "cmd": [],
-    "name": "Trigger Tests.Trigger Interactions Tests",
+    "name": "Run tests.Trigger Tests.Trigger Interactions Tests",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -787,9 +794,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.Trigger Interactions Tests.[trigger] Interactions Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Trigger Tests.Trigger Interactions Tests.[trigger] Interactions Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"tasks\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -938,10 +945,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Trigger Tests.resultdb.update_included_invocations (2)",
+    "name": "Run tests.Trigger Tests.resultdb.update_included_invocations (2)",
     "stdin": "{\"addInvocations\": [\"invocations/1\"], \"includingInvocation\": \"invocations/build:8945511751514863184\"}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_LINE@json.input@{@@@",
@@ -955,13 +962,16 @@
   },
   {
     "cmd": [],
-    "name": "Unit Tests"
+    "name": "Run tests.Unit Tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [],
-    "name": "Unit Tests.Unit Tests shards results",
+    "name": "Run tests.Unit Tests.Unit Tests shards results",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -1011,9 +1021,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Debug/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --coverage front_end```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1080,9 +1090,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Unit Tests.remove coverage files if they exist",
+    "name": "Run tests.Unit Tests.remove coverage files if they exist",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -1114,20 +1124,23 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Unit Tests.copy unit tests coverage data",
+    "name": "Run tests.Unit Tests.copy unit tests coverage data",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Run tests.Interactions Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Interactions Tests"
-  },
-  {
-    "cmd": [],
-    "name": "Interactions Tests.Interactions Tests shards results",
+    "name": "Run tests.Interactions Tests.Interactions Tests shards results",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -1177,9 +1190,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on Ubuntu-22.04",
+    "name": "Run tests.Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_NEST_LEVEL@3@@@",
       "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Debug/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja --coverage test/interactions```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
@@ -1246,9 +1259,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Interactions Tests.remove coverage files if they exist",
+    "name": "Run tests.Interactions Tests.remove coverage files if they exist",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -1280,9 +1293,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "Interactions Tests.copy interaction tests coverage data",
+    "name": "Run tests.Interactions Tests.copy interaction tests coverage data",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -1323,6 +1336,13 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Flake exonaration attempt.Trigger Tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
