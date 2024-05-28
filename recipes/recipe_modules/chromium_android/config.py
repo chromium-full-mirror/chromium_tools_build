@@ -4,13 +4,16 @@
 
 from recipe_engine.config import config_item_context, ConfigGroup
 from recipe_engine.config import Dict, List, Single, Static
-from recipe_engine.config_types import Path
 
-def BaseConfig(CHECKOUT_PATH, INTERNAL=False, REPO_NAME=None, REPO_URL=None,
-               BUILD_CONFIG='Debug', REVISION='', asan_symbolize=False,
+
+def BaseConfig(INTERNAL=False,
+               REPO_NAME=None,
+               REPO_URL=None,
+               BUILD_CONFIG='Debug',
+               REVISION='',
+               asan_symbolize=False,
                **_kwargs):  # pylint: disable=redefined-outer-name
   return ConfigGroup(
-      CHECKOUT_PATH=Static(CHECKOUT_PATH),
       INTERNAL=Static(INTERNAL),
       REPO_NAME=Static(REPO_NAME),
       REPO_URL=Static(REPO_URL),
@@ -31,8 +34,8 @@ def BaseConfig(CHECKOUT_PATH, INTERNAL=False, REPO_NAME=None, REPO_URL=None,
       managed=Single(bool, required=False, empty_val=True),
       extra_deploy_opts=List(inner_type=str),
       tests=List(inner_type=str),
-      cr_build_android=Static(CHECKOUT_PATH.joinpath('build', 'android')),
-      test_runner=Single(Path),
+      # Path to the test runner relative to the top level repo
+      test_runner=Single(str),
       gclient_custom_deps=Dict(value_type=(str, type(None))),
       channel=Single(str, empty_val='chrome'),
       gclient_custom_vars=Dict(value_type=(str, type(None))),
@@ -55,7 +58,7 @@ config_ctx = config_item_context(BaseConfig)
 @config_ctx(is_root=True)
 def base_config(c):
   c.internal_dir_name = 'clank'
-  c.test_runner = c.CHECKOUT_PATH.joinpath('build', 'android', 'test_runner.py')
+  c.test_runner = 'build/android/test_runner.py'
 
 @config_ctx()
 def main_builder(_):

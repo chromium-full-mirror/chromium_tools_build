@@ -21,7 +21,6 @@ class AndroidApi(recipe_api.RecipeApi):
   def get_config_defaults(self):
     return {
         'REVISION': self.m.buildbucket.gitiles_commit.id,
-        'CHECKOUT_PATH': self.m.path.checkout_dir,
     }
 
   @property
@@ -229,7 +228,7 @@ class AndroidApi(recipe_api.RecipeApi):
               'vpython3',
               self.repo_resource('recipes', 'daemonizer.py'),
               '--',
-              self.c.cr_build_android.joinpath('adb_logcat_monitor.py'),
+              self.m.path.checkout_dir / 'build/android/adb_logcat_monitor.py',
               self.m.chromium.build_dir(self.m.path.checkout_dir) / 'logcat',
               self.m.adb.adb_path(),
           ],
@@ -991,7 +990,7 @@ class AndroidApi(recipe_api.RecipeApi):
     if pass_adb_path:
       args.extend(['--adb-path', self.m.adb.adb_path()])
     with self.handle_exit_codes():
-      script = self.c.test_runner
+      script = self.m.path.checkout_dir / self.c.test_runner
       env = {}
       if wrapper_script_suite_name:
         script = self.m.chromium.output_dir.joinpath(
