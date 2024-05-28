@@ -8,6 +8,7 @@ of affected files, gather warnings, and post via Tricium.
 
 import collections
 
+from recipe_engine.config_types import Path
 from recipe_engine.recipe_api import RecipeApi
 
 from . import _clang_tidy_path
@@ -158,6 +159,7 @@ def _parse_tidy_diagnostic(diagnostic, diagnostic_name, is_windows):
 class TriciumClangTidyApi(RecipeApi):
 
   def lint_source_files(self,
+                        source_dir: Path,
                         output_dir,
                         file_paths,
                         is_windows=False):
@@ -187,7 +189,7 @@ class TriciumClangTidyApi(RecipeApi):
     with self.m.step.nest('clang-tidy'):
       with self.m.step.nest('generate-warnings'):
         per_file_comments = self._generate_clang_tidy_comments(
-            output_dir, affected, is_windows)
+            source_dir, output_dir, affected, is_windows)
 
       for file_path, comments in per_file_comments.items():
         for category, message, line_number, suggestions in comments:
@@ -202,7 +204,13 @@ class TriciumClangTidyApi(RecipeApi):
 
     self.m.tricium.write_comments()
 
-  def _generate_clang_tidy_comments(self, output_dir, file_paths, is_windows):
+  def _generate_clang_tidy_comments(
+      self,
+      source_dir: Path,
+      output_dir,
+      file_paths,
+      is_windows,
+  ):
     clang_tidy_location = self.m.context.cwd.joinpath(*_clang_tidy_path)
     per_file_comments = collections.defaultdict(_SourceFileComments)
 
@@ -239,11 +247,10 @@ class TriciumClangTidyApi(RecipeApi):
     else:
       fix_file_path = lambda x: x
 
-    autoninja_dir = self.m.path.checkout_dir.joinpath('third_party',
-                                                      'depot_tools')
+    autoninja_dir = source_dir / 'third_party/depot_tools'
     autoninja_path = {'PATH': [autoninja_dir]}
     with self.m.context(env_suffixes=autoninja_path):
-      self._build_with_reclient('tricium_clang_tidy_script.py',
+      self._build_with_reclient(source_dir, 'tricium_clang_tidy_script.py',
                                 tricium_clang_tidy_command)
 
     # Please see tricium_clang_tidy_script.py for full docs on what this
@@ -313,9 +320,8 @@ class TriciumClangTidyApi(RecipeApi):
 
     return per_file_comments
 
-  def _build_with_reclient(self, step_name, cmd):
+  def _build_with_reclient(self, source_dir: Path, step_name, cmd):
     ninja_command = ""
-    with self.m.reclient.process(step_name, ninja_command,
-                                 self.m.path.checkout_dir) as p:
+    with self.m.reclient.process(step_name, ninja_command, source_dir) as p:
       step_result = self.m.step(step_name, cmd)
       p.build_exit_status = step_result.retcode

@@ -21,10 +21,11 @@ DEPS = [
 
 def RunSteps(api):
   cache_dir = api.path.cache_dir
-  api.path.checkout_dir = cache_dir / 'builder' / 'src'
+  source_dir = cache_dir / 'builder' / 'src'
   with api.context(cwd=cache_dir):
     # file_paths should be kept in sync with the paths used in test below.
     api.tricium_clang_tidy.lint_source_files(
+        source_dir,
         output_dir=cache_dir / 'out',
         file_paths=[cache_dir.joinpath('src', 'path/to/some/cc/file.cpp')],
         is_windows=api.properties['is_windows'])

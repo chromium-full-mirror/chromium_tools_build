@@ -107,15 +107,15 @@ def RunSteps(api):
     # Do not rebase the patch, so that the Tricium analyzer observes the correct
     # line numbers. Otherwise, line numbers would be relative to origin/main,
     # which may be synced to include changes subsequent to the actual patch.
-    api.chromium_checkout.ensure_checkout(
+    update_result = api.chromium_checkout.ensure_checkout(
         clobber=config.clobber, gerrit_no_rebase_patch_ref=True)
 
     api.chromium.runhooks(name='runhooks (with patch)')
 
-    src_dir = api.chromium_checkout.source_dir
-    with api.context(cwd=src_dir):
+    source_dir = update_result.source_root.path
+    with api.context(cwd=source_dir):
       affected = [
-          src_dir.joinpath(_normalize_path_for_os(api, f))
+          source_dir.joinpath(_normalize_path_for_os(api, f))
           for f in api.chromium_checkout.get_files_affected_by_patch()
       ]
 
@@ -129,7 +129,8 @@ def RunSteps(api):
       api.file.write_text('write args.gn', api.chromium.output_dir / 'args.gn',
                           gn_args_str)
 
-      api.tricium_clang_tidy.lint_source_files(api.chromium.output_dir,
+      api.tricium_clang_tidy.lint_source_files(source_dir,
+                                               api.chromium.output_dir,
                                                affected,
                                                api.platform.name == 'win')
 
