@@ -360,7 +360,7 @@ class ReclientApi(recipe_api.RecipeApi):
       self,
       ninja_step_name,
       ninja_command,
-      source_dir: Path | None = None,
+      source_dir: Path,
       *,
       buildtools_dir: Path | None = None,
       deps_cache_by_step=False,
@@ -378,9 +378,6 @@ class ReclientApi(recipe_api.RecipeApi):
         then the 'buildtools' subdirectory of `source_dir` will be used.
       skip_log_upload: When true skip log uploading including cloudtail.
     """
-    # TODO: crbug.com/336589262 - Update downstream uses to pass source_dir,
-    # then remove default
-    source_dir = source_dir or self.m.path.checkout_dir
     buildtools_dir = buildtools_dir or source_dir / 'buildtools'
     reclient_log_dir = self.m.path.mkdtemp('reclient_log')
     deps_cache_path = self.deps_cache_path
