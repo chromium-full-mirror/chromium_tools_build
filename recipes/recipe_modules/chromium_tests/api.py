@@ -364,7 +364,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     targets_config = self.create_targets_config(
         builder_config,
         update_result.properties,
-        self.m.chromium.c.CHECKOUT_PATH,
+        self.m.chromium_checkout.source_dir,
     )
 
     return update_result, targets_config

@@ -237,7 +237,7 @@ def _verify_target_configs(
         'get pyl targets config',
         builder_config,
         repo_path,
-        chromium_config.targets_spec_dir,
+        repo_path / chromium_config.targets_spec_dir,
         precommit_details,
     )
 

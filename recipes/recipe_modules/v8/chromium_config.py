@@ -9,9 +9,9 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 def v8(c):
   c.project_generator.tool = 'mb'
   c.project_generator.isolate_map_paths = [
-      c.CHECKOUT_PATH.joinpath('infra', 'mb', 'gn_isolate_map.pyl'),
+      'infra/mb/gn_isolate_map.pyl',
   ]
-  c.build_dir = c.CHECKOUT_PATH / 'out'
+  c.build_dir = 'out'
   c.build_config_fs = 'build'
 
   if c.HOST_PLATFORM == 'mac' and c.TARGET_PLATFORM != 'ios':

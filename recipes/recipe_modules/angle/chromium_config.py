@@ -8,14 +8,12 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 @CONFIG_CTX(includes=['ninja', 'mb'])
 def angle_base(c):
   c.project_generator.isolate_map_paths = [
-      c.CHECKOUT_PATH.joinpath('infra', 'specs', 'gn_isolate_map.pyl'),
+      'infra/specs/gn_isolate_map.pyl',
   ]
-  c.project_generator.config_path = c.CHECKOUT_PATH.joinpath(
-      'infra', 'specs', 'angle_mb_config.pyl')
-  c.build_dir = c.CHECKOUT_PATH / 'out'
-  c.targets_spec_dir = c.CHECKOUT_PATH.joinpath('infra', 'specs')
-  c.analyze_config_path = c.CHECKOUT_PATH.joinpath(
-      'infra', 'specs', 'trybot_analyze_config.json')
+  c.project_generator.config_path = 'infra/specs/angle_mb_config.pyl'
+  c.build_dir = 'out'
+  c.targets_spec_dir = 'infra/specs'
+  c.analyze_config_path = 'infra/specs/trybot_analyze_config.json'
 
   if c.HOST_PLATFORM == 'mac' and c.TARGET_PLATFORM != 'ios':
     # Update via recipe logic in api.chromium.runhooks and mac_toolchains DEPS

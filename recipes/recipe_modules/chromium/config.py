@@ -54,7 +54,13 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       # TODO(machenbach): This does not expand to Chromium's runtests yet.
       use_gyp_env=Single(bool, empty_val=True, required=False),
       env=ConfigGroup(
-          PATH=List(Path),
+          # Additional directories to add to PATH when running chromium module
+          # steps
+          # Can either be a string that is a path relative to the top-level repo
+          # or a Path object
+          # TODO: crbug.com/336589262 - Switch all downstream uses to be strings
+          # and then disallow Path values
+          PATH=List((str, Path)),
           FORCE_MAC_TOOLCHAIN=Single(int, required=False),
           FORCE_MAC_SDK_MIN=Single(str, required=False),
       ),
@@ -69,24 +75,35 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       ),
       project_generator=ConfigGroup(
           tool=Single(str, empty_val='mb'),
-          config_path=Single(Path),
+          # Path to the config file for the project generator
+          # Can either be a string that is a path relative to the top-level repo
+          # or a Path object
+          # TODO: crbug.com/336589262 - Switch all downstream uses to be strings
+          # and then disallow Path values
+          config_path=Single((str, Path)),
           args=Set(str),
-          isolate_map_paths=List(Path),
+          # Isolate map files to use when invoking the project generator
+          # Can either be strings that are paths relative to the top-level repo
+          # or Path objects
+          # TODO: crbug.com/336589262 - Switch all downstream uses to be strings
+          # and then disallow Path values
+          isolate_map_paths=List((str, Path)),
           # TODO(crbug.com/1060857): Remove this once swarming task templates
           # support command prefixes.
           use_luci_auth=Single(bool, empty_val=False, required=False),
       ),
-      # build_dir is the full path to the "out" directory. Actual
-      # gn/ninja/compile artifacts are located in
+      # build_dir is the path to the "out" directory relative to the top level
+      # repo
+      # Actual gn/ninja/compile artifacts are located in
       # build_dir / build_config_fs.
-      build_dir=Single(Path),
+      build_dir=Single(str),
       cros_sdk=ConfigGroup(
           external=Single(bool, empty_val=True, required=False),
           args=List(str),
       ),
       runtests=ConfigGroup(
           enable_memcheck=Single(bool, empty_val=False, required=False),
-          memory_tests_runner=Single(Path),
+          memory_tests_runner=Single(str),
           enable_asan=Single(bool, empty_val=False, required=False),
           enable_lsan=Single(bool, empty_val=False, required=False),
           enable_msan=Single(bool, empty_val=False, required=False),
@@ -94,12 +111,20 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           run_asan_test=Single(bool, required=False),
       ),
       # The directory where targets spec files will be read for the builder
-      targets_spec_dir=Single(Path),
+      # Can be either a string which is a path relative to the top-level repo or
+      # a Path object.
+      # TODO: crbug.com/336589262 - Switch all downstream uses to be strings and
+      # then disallow Path values
+      targets_spec_dir=Single((str, Path)),
       # Path to the analyze config file used for configuring ignores/exclusions
       # for analyze (e.g. //testing/buildbot/trybot_analyze_config.json). If not
       # provided, then trybot_analyze_config.json in targets_spec_dir will be
       # used.
-      analyze_config_path=Single(Path, required=False),
+      # Can be either a string which is a path relative to the top-level repo or
+      # a Path object.
+      # TODO: crbug.com/336589262 - Switch all downstream uses to be strings and
+      # then disallow Path values
+      analyze_config_path=Single((str, Path), required=False),
       use_tot_clang=Single(bool, empty_val=False, required=False),
 
       # Some platforms do not have a 1:1 correlation of BUILD_CONFIG to what is
@@ -196,14 +221,12 @@ def BASE(c):
       # Windows requires x64 builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
-  c.targets_spec_dir = c.CHECKOUT_PATH.joinpath('testing', 'buildbot')
-  c.analyze_config_path = c.CHECKOUT_PATH.joinpath(
-      'testing', 'buildbot', 'trybot_analyze_config.json')
+  c.targets_spec_dir = 'testing/buildbot'
+  c.analyze_config_path = 'testing/buildbot/trybot_analyze_config.json'
   # Test runner memory tools that are not compile-time based.
 
   ext = 'bat' if c.HOST_PLATFORM == 'win' else 'sh'
-  c.runtests.memory_tests_runner = c.CHECKOUT_PATH.joinpath(
-      'tools', 'valgrind', 'chrome_tests.' + ext)
+  c.runtests.memory_tests_runner = f'tools/valgrind/chrome_tests.{ext}'
 
   if c.HOST_PLATFORM == 'mac':
     c.mac_toolchain.installer_cipd_package = (
@@ -236,7 +259,7 @@ def mb_no_luci_auth(c):
 
 @config_ctx(group='builder')
 def ninja(c):
-  c.build_dir = c.CHECKOUT_PATH / 'out'
+  c.build_dir = 'out'
 
 
 @config_ctx()
@@ -374,22 +397,20 @@ def clang_tot(c):
 @config_ctx()
 def internal_isolate_paths(c):
   c.project_generator.isolate_map_paths = [
-      c.CHECKOUT_PATH / 'internal/testing/buildbot/gn_isolate_map.pyl',
-      c.CHECKOUT_PATH / 'testing/buildbot/gn_isolate_map.pyl',
+      'internal/testing/buildbot/gn_isolate_map.pyl',
+      'testing/buildbot/gn_isolate_map.pyl',
   ]
 
 
 @config_ctx(includes=['internal_isolate_paths'])
 def internal_targets_specs(c):
-  c.targets_spec_dir = c.CHECKOUT_PATH / 'internal/testing/buildbot'
-  c.analyze_config_path = (
-      c.CHECKOUT_PATH / 'internal/testing/buildbot/trybot_analyze_config.json')
+  c.targets_spec_dir = 'internal/testing/buildbot'
+  c.analyze_config_path = 'internal/testing/buildbot/trybot_analyze_config.json'
 
 
 @config_ctx(includes=['mb'])
 def internal_mb_config(c):
-  c.project_generator.config_path = (
-      c.CHECKOUT_PATH / 'internal/tools/mb/mb_config.pyl')
+  c.project_generator.config_path = 'internal/tools/mb/mb_config.pyl'
 
 
 #### 'Full' configurations
@@ -574,9 +595,8 @@ def android_asan(_):
 @config_ctx()
 def android_common(c):
   c.env.PATH.extend([
-      c.CHECKOUT_PATH.joinpath('third_party', 'android_sdk', 'public',
-                               'platform-tools'),
-      c.CHECKOUT_PATH.joinpath('build', 'android')
+      'third_party/android_sdk/public/platform-tools',
+      'build/android',
   ])
 
 
@@ -610,6 +630,6 @@ def mac_toolchain(c):
 @config_ctx(includes=['mb'])
 def android_internal_isolate_maps(c):
   c.project_generator.isolate_map_paths = [
-      c.CHECKOUT_PATH.joinpath('clank', 'build', 'bot', 'gn_isolate_map.pyl'),
-      c.CHECKOUT_PATH.joinpath('testing', 'buildbot', 'gn_isolate_map.pyl'),
+      'clank/build/bot/gn_isolate_map.pyl',
+      'testing/buildbot/gn_isolate_map.pyl',
   ]

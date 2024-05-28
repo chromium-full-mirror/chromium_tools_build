@@ -120,8 +120,9 @@ class ChromiumApi(recipe_api.RecipeApi):
   def get_env(self):
     ret = {}
     if self.c.env.PATH:
-      ret['PATH'] = self.m.path.pathsep.join([str(p) for p in self.c.env.PATH] +
-                                             ['%(PATH)s'])
+      ret['PATH'] = self.m.path.pathsep.join(
+          [str(self.m.path.checkout_dir / p) for p in self.c.env.PATH] +
+          ['%(PATH)s'])
     if self.c.env.FORCE_MAC_TOOLCHAIN:
       ret['FORCE_MAC_TOOLCHAIN'] = self.c.env.FORCE_MAC_TOOLCHAIN
     return ret
@@ -862,7 +863,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           '--pass-build-dir',
           '--pass-target',
           '--run-shell-script',
-          self.c.runtests.memory_tests_runner,
+          self.m.path.checkout_dir / self.c.runtests.memory_tests_runner,
           '--test',
           t_name,
           '--tool',
@@ -1104,7 +1105,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   def _mb_isolate_map_file_args(self):
     for isolate_map_path in self.c.project_generator.isolate_map_paths:
       yield '--isolate-map-file'
-      yield isolate_map_path
+      yield self.m.path.checkout_dir / isolate_map_path
 
   def _mb_build_dir_args(self, build_dir):
     if not build_dir:
@@ -1147,9 +1148,11 @@ class ChromiumApi(recipe_api.RecipeApi):
     chromium_config = chromium_config or self.c
 
     mb_path = mb_path or self.m.path.checkout_dir.joinpath('tools', 'mb')
-    mb_config_path = (
-        mb_config_path or chromium_config.project_generator.config_path or
-        self.m.path.join(mb_path, 'mb_config.pyl'))
+    if not mb_config_path and chromium_config.project_generator.config_path:
+      mb_config_path = (
+          self.m.path.checkout_dir /
+          chromium_config.project_generator.config_path)
+    mb_config_path = mb_config_path or mb_path / 'mb_config.pyl'
 
     args = [
         mb_command,

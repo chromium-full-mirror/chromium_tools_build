@@ -7,9 +7,8 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 
 @CONFIG_CTX(includes=['ninja', 'default_compiler'])
 def webrtc_default(c):
-  c.targets_spec_dir = c.CHECKOUT_PATH.joinpath('infra', 'specs')
-  c.analyze_config_path = c.CHECKOUT_PATH.joinpath(
-      'infra', 'specs', 'trybot_analyze_config.json')
+  c.targets_spec_dir = 'infra/specs'
+  c.analyze_config_path = 'infra/specs/trybot_analyze_config.json'
   c.compile_py.default_targets = []
 
 
@@ -18,14 +17,12 @@ def webrtc_default(c):
 # depend on clang)
 @CONFIG_CTX(includes=['ninja', 'clang'])
 def webrtc_clang(c):
-  c.targets_spec_dir = c.CHECKOUT_PATH.joinpath('infra', 'specs')
-  c.analyze_config_path = c.CHECKOUT_PATH.joinpath(
-      'infra', 'specs', 'trybot_analyze_config.json')
+  c.targets_spec_dir = 'infra/specs'
+  c.analyze_config_path = 'infra/specs/trybot_analyze_config.json'
   c.compile_py.default_targets = []
 
 
 @CONFIG_CTX(includes=['android'])
 def webrtc_android(c):
-  c.targets_spec_dir = c.CHECKOUT_PATH.joinpath('infra', 'specs')
-  c.analyze_config_path = c.CHECKOUT_PATH.joinpath(
-      'infra', 'specs', 'trybot_analyze_config.json')
+  c.targets_spec_dir = 'infra/specs'
+  c.analyze_config_path = 'infra/specs/trybot_analyze_config.json'
