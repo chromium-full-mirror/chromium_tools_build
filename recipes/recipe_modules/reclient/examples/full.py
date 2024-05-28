@@ -45,15 +45,8 @@ def RunSteps(api):
         soln.custom_vars["rbe_instance"],
         'projects/test-rbe-project/instances/default_instance')
 
-  api.path.checkout_dir = api.path.tmp_base_dir / 'checkout'
+  source_dir = api.path.tmp_base_dir / 'checkout'
 
-  # Verify that checkout_dir can be overridden...
-  api.reclient.reclient_dir = api.path.cleanup_dir
-  api.assertions.assertEqual(api.reclient.reclient_dir, api.path.cleanup_dir)
-  # ... and that it defaults to checkout when not set.
-  api.reclient.reclient_dir = None
-  api.assertions.assertEqual(api.reclient.reclient_dir,
-                             api.path.checkout_dir / 'buildtools')
   # Verify that cache silo can be overridden.
   tmp = api.reclient.cache_silo
   api.reclient.cache_silo = "foobar"
@@ -75,11 +68,11 @@ def RunSteps(api):
   with api.reclient.process(
       ninja_step_name=_NINJA_STEP_NAME,
       ninja_command=ninja_command,
+      source_dir=source_dir,
       deps_cache_by_step=deps_cache_by_step,
       exec_strategy=exec_strategy):
     api.step(_NINJA_STEP_NAME, ninja_command)
   _ = api.reclient.instance  # for code coverage
-  _ = api.reclient.rewrapper_path
   _ = api.reclient.metrics_project
   _ = api.reclient.jobs
   _ = api.reclient.experimental_credentials_helper

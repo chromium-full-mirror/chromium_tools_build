@@ -346,7 +346,8 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
 
     with api.context(env=build_env_vars):
       # Force remote-only to see if this fails (can't do this via env var)
-      with api.reclient.process(step_desc, '', exec_strategy='remote'):
+      with api.reclient.process(
+          step_desc, '', source_dir, exec_strategy='remote'):
         api.step(step_desc, ninja_cmd)
   else:
     # Regular cmake build

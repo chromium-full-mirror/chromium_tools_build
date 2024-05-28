@@ -540,6 +540,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     with self.m.reclient.process(
         name,
         ninja_command,
+        self.m.path.checkout_dir,
         deps_cache_by_step=self.c.compile_py.reclient_deps_cache_by_step,
         skip_log_upload=skip_log_upload) as p:
       ninja_result = self._run_ninja(

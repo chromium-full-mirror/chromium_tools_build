@@ -121,7 +121,7 @@ def _gn_build(source_dir, flavor, api, **kwargs):
     ninja_cmd.extend(targets)
     desc = 'compile {} with ninja'.format(flavor)
     if use_remoteexec:
-      with api.reclient.process(desc, ''):
+      with api.reclient.process(desc, '', source_dir):
         api.step(desc, ninja_cmd)
     else:
       api.step(desc, ninja_cmd)

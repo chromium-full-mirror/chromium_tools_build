@@ -286,7 +286,8 @@ class WebRTCApi(recipe_api.RecipeApi):
     cmd += ['--use-remoteexec']
     # TODO(b/243628179): get ninja command generated in build_aar.py
     ninja_command = ""
-    with self.m.reclient.process(step_name, ninja_command) as p:
+    with self.m.reclient.process(step_name, ninja_command,
+                                 self.m.path.checkout_dir) as p:
       step_result = self.m.step(step_name, cmd)
       p.build_exit_status = step_result.retcode
 

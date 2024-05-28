@@ -2881,6 +2881,65 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.get reclient version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@reclient_version@{@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"HASH\": \"aaaaaaaa\",@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MAJOR\": 0,@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MINOR\": 110,@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"PATCH\": 0@@@",
+      "@@@STEP_LOG_LINE@reclient_version@}@@@",
+      "@@@STEP_LOG_END@reclient_version@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\bootstrap.exe",
+      "--version"
+    ],
+    "env": {
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "PLATFORM": "windows",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.preprocess for reclient.get reclient version.call bootstrap --version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
     "cmd": [
       "[CACHE]\\uncached\\dawn\\third_party\\ninja\\ninja",
       "-C",
@@ -4748,6 +4807,65 @@
     "name": "CMake build disabled readers and writers.preprocess for reclient.start reproxy via bootstrap",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build disabled readers and writers.preprocess for reclient.get reclient version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@reclient_version@{@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"HASH\": \"aaaaaaaa\",@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MAJOR\": 0,@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"MINOR\": 110,@@@",
+      "@@@STEP_LOG_LINE@reclient_version@  \"PATCH\": 0@@@",
+      "@@@STEP_LOG_LINE@reclient_version@}@@@",
+      "@@@STEP_LOG_END@reclient_version@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]\\uncached\\dawn\\buildtools\\reclient\\bootstrap.exe",
+      "--version"
+    ],
+    "env": {
+      "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
+      "PLATFORM": "windows",
+      "RBE_canonicalize_working_dir": "False",
+      "RBE_exec_root": "[CACHE]",
+      "RBE_platform": "test,InputRootAbsolutePath=[CACHE]",
+      "RBE_v": "2",
+      "WDK_DIR": "win_toolchain\\vs_files\\version_hash\\wdk",
+      "WINDOWSSDKDIR": "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "win_toolchain\\vs_files\\version_hash\\Windows Kits\\10\\bin\\version\\x64",
+        "win_toolchain\\vs_files\\version_hash\\sys64",
+        "win_toolchain\\vs_files\\version_hash\\sys32",
+        "win_toolchain\\vs_files\\version_hash\\sysarm64",
+        "win_toolchain\\vs_files\\version_hash",
+        "[CACHE]\\builder\\clang\\bin",
+        "[CACHE]\\uncached\\dawn\\tools\\golang\\bin",
+        "[CACHE]\\uncached\\dawn\\third_party\\depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.preprocess for reclient.get reclient version.call bootstrap --version",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
     ]
   },
   {

@@ -111,7 +111,7 @@ def _build_steps(api, source_dir, out_dir, clang, *targets):
   ninja_cmd.extend(targets)
 
   if _use_reclient(api, clang):
-    with api.reclient.process('compile with ninja', ''):
+    with api.reclient.process('compile with ninja', '', source_dir):
       api.step('compile with ninja', ninja_cmd)
   else:
     api.step('compile with ninja', ninja_cmd)

@@ -297,7 +297,8 @@ def _build_steps(api, source_root, clang, msvc, out_dir):
   ninja_cmd.append('pdfium_all')
 
   if enable_reclient:
-    with api.reclient.process('compile', '', deps_cache_by_step=False):
+    with api.reclient.process(
+        'compile', '', source_root, deps_cache_by_step=False):
       api.step('compile with ninja', ninja_cmd)
   else:
     api.step('compile with ninja', ninja_cmd)

@@ -87,10 +87,11 @@ def RunSteps(api):
   with api.osx_sdk('mac'):
     api.file.ensure_directory('Ensure install dir', install_dir)
     with api.context(cwd=cache_dir):
-      api.bot_update.ensure_checkout()
+      update_result = api.bot_update.ensure_checkout()
       api.gclient.runhooks()
+    source_dir = update_result.source_root.path
+    buildtools_dir = update_result.checkout_dir / 'v8/buildtools'
 
-    api.reclient.reclient_dir = cache_dir.joinpath('v8', 'buildtools')
     # Get list of build.py build and test steps
     bot_steps = api.file.read_json(
         'Read steps from JSON',
@@ -103,7 +104,12 @@ def RunSteps(api):
     # Depot tools on path is for gsutil.py.
     with api.depot_tools.on_path(), api.context(env=env):
       build_steps = bot_steps[builder]['build_steps']
-      with api.reclient.process('compile', '', deps_cache_by_step=False):
+      with api.reclient.process(
+          'compile',
+          '',
+          source_dir,
+          buildtools_dir=buildtools_dir,
+          deps_cache_by_step=False):
         ExecBuildSteps(api, build_steps, sync_dir, dir_flags)
 
       with api.defer.context() as defer:

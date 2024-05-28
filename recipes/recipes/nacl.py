@@ -61,23 +61,21 @@ class FileInfo:
 def CheckoutSteps(api):
   api.gclient.set_config('nacl')
   update_result = api.bot_update.ensure_checkout()
-  got_revision = update_result.properties['got_revision']
   api.gclient.runhooks()
-  return got_revision
+  return update_result
 
 
-def ExecBuildSteps(api, checkout_path, env):
-  with api.context(cwd=checkout_path, env=env):
+def ExecBuildSteps(api, source_dir, env):
+  with api.context(cwd=source_dir, env=env):
     with api.depot_tools.on_path():
       cmd = [
           'vpython3', '-u',
-          checkout_path.joinpath('buildbot', 'buildbot_selector.py')
+          source_dir.joinpath('buildbot', 'buildbot_selector.py')
       ]
       api.legacy_annotation('annotated steps', cmd)
 
 
-def AnnotatedStepsSteps(api, got_revision, checkout_path,
-                        compiled_sources_path):
+def AnnotatedStepsSteps(api, got_revision, source_dir, compiled_sources_path):
   use_reclient = api.reclient.instance
   # Default environment; required by all builders.
   env = {
@@ -93,10 +91,11 @@ def AnnotatedStepsSteps(api, got_revision, checkout_path,
   }
   if use_reclient:
     env.update({'USE_RECLIENT': '1'})
-    with api.reclient.process('compile', '', deps_cache_by_step=False):
-      ExecBuildSteps(api, checkout_path, env)
+    with api.reclient.process(
+        'compile', '', source_dir, deps_cache_by_step=False):
+      ExecBuildSteps(api, source_dir, env)
   else:
-    ExecBuildSteps(api, checkout_path, env)
+    ExecBuildSteps(api, source_dir, env)
 
 
 def UploadFilesToCAS(api, files):
@@ -143,18 +142,18 @@ def ParseSwarmingResults(api, builder_name, results):
     raise api.step.StepFailure(fail_text)
 
 
-def TriggerHardwareTests(api, got_revision, checkout_path,
-                         compiled_sources_path, dimensions):
+def TriggerHardwareTests(api, got_revision, source_dir, compiled_sources_path,
+                         dimensions):
   """Triggers tests on ARM hardware bots with precompiled sources."""
   # Isolate required files
   isolated_files = [
-      FileInfo(checkout_path, 'native_client', True),
+      FileInfo(source_dir, 'native_client', True),
       FileInfo(compiled_sources_path, 'native_client/between_builders', True),
       FileInfo(api.path.start_dir / 'third_party', 'third_party', True),
       FileInfo(api.path.start_dir / 'testing', 'testing', True),
       # The ARM bots need the linux_arm toolchain.
       FileInfo(
-          checkout_path.joinpath('toolchain', 'linux_x86'),
+          source_dir.joinpath('toolchain', 'linux_x86'),
           'native_client/toolchain/linux_arm', True),
   ]
   isolated_digest = UploadFilesToCAS(api, isolated_files)
@@ -193,13 +192,13 @@ def TriggerHardwareTests(api, got_revision, checkout_path,
 
 
 def RunSteps(api):
-  got_revision = CheckoutSteps(api)
-  checkout_path = api.path.start_dir / 'native_client'
+  update_result = CheckoutSteps(api)
+  got_revision = update_result.properties['got_revision']
+  source_dir = update_result.source_root.path
   compiled_sources_path = api.path.mkdtemp('between_builders')
-  AnnotatedStepsSteps(api, got_revision, checkout_path, compiled_sources_path)
+  AnnotatedStepsSteps(api, got_revision, source_dir, compiled_sources_path)
   if api.buildbucket.builder_name in swarming_dimensions:
-    TriggerHardwareTests(api, got_revision, checkout_path,
-                         compiled_sources_path,
+    TriggerHardwareTests(api, got_revision, source_dir, compiled_sources_path,
                          swarming_dimensions[api.buildbucket.builder_name])
 
 
