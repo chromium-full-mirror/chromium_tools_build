@@ -80,6 +80,7 @@ def RunSteps(api):
   # Prepare rr tool binary
   ensure_file = api.cipd.EnsureFile()
   ensure_file.add_package('infra/3pp/tools/rr/${platform}', 'latest', 'rr_tool')
+  recorded_tasks_to_config = {}
   swarming_tasks = []
   for test_info in test_infos:
     # TODO(jiesheng): Support other test type for rr test launcher.
@@ -94,17 +95,21 @@ def RunSteps(api):
         api.flaky_reproducer.query_resultdb_for_task_id_and_test_name(
             build_id=build_id, test_id=test_id))
     task_path = api.path.cleanup_dir / task_id
-    test_binary_path = api.flaky_reproducer.get_test_binary(task_id)
-    task_config = api.flaky_reproducer.get_test_binary_swarming_task_config(
-        test_binary_path)
-    api.cas.download('download test binary', task_config.cas_input_root,
-                     task_path)
-    runner_dir = task_path / RUNNER_PACKAGE_PATH
-    api.file.copytree('copy source files', api.resource('.'), runner_dir)
-    api.isolate.write_isolate_file(runner_dir / TEST_BINARY_ISOLATE_FILENAME,
-                                   ['../'])
-    repacked_cas = api.isolate.isolate(
-        'new test binary', runner_dir / TEST_BINARY_ISOLATE_FILENAME)
+    if task_id in recorded_tasks_to_config:
+      task_config, repacked_cas = recorded_tasks_to_config[task_id]
+    else:
+      test_binary_path = api.flaky_reproducer.get_test_binary(task_id)
+      task_config = api.flaky_reproducer.get_test_binary_swarming_task_config(
+          test_binary_path)
+      api.cas.download('download test binary', task_config.cas_input_root,
+                       task_path)
+      runner_dir = task_path / RUNNER_PACKAGE_PATH
+      api.file.copytree('copy source files', api.resource('.'), runner_dir)
+      api.isolate.write_isolate_file(runner_dir / TEST_BINARY_ISOLATE_FILENAME,
+                                     ['../'])
+      repacked_cas = api.isolate.isolate(
+          'new test binary', runner_dir / TEST_BINARY_ISOLATE_FILENAME)
+      recorded_tasks_to_config[task_id] = task_config, repacked_cas
 
     # Construct test cmd, trigger reproducing job in swarming.
     command = [
@@ -190,6 +195,19 @@ def GenTests(api):
               ],
           ),
       ],)
+  query_test_results_2 = resultdb_pb2.QueryTestResultsResponse(
+      test_results=[
+          test_result_pb2.TestResult(
+              test_id='test_id_234',
+              name=('invocations/task-example.swarmingserver.appspot.com'
+                    '-task1/result-2'),
+              expected=False,
+              tags=[
+                  common_pb2.StringPair(
+                      key="test_name_2", value="MockUnitTests.FailTest"),
+              ],
+          ),
+      ],)
   yield api.test(
       'happy_path',
       api.builder_group.for_current('chromium.fyi'),
@@ -199,6 +217,10 @@ def GenTests(api):
               'test_suite': 'blink',
               'invocation_id': 'build-123',
               'test_id': 'test_id_123'
+          }, {
+              'test_suite': 'blink',
+              'invocation_id': 'build-123',
+              'test_id': 'test_id_234'
           }])),
       api.resultdb.query_test_results(query_test_results),
       api.step_data(
@@ -207,6 +229,8 @@ def GenTests(api):
               api.json.loads(
                   api.flaky_reproducer.get_test_data(
                       'gtest_task_request.json')))),
+      api.resultdb.query_test_results(
+          query_test_results_2, step_name='query_test_results (2)'),
       api.path.exists(api.path.cleanup_dir / 'trace_dir_0' / 'test_name'),
       api.path.files_exist(
           api.path.cleanup_dir / 'trace_dir_0' / 'test_name' / '0' /
