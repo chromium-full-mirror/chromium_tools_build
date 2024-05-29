@@ -111,7 +111,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         'TARGET_BITS':
             (32 if self.m.platform.name == 'win' else self.m.platform.bits),
         'BUILD_CONFIG': self.m.properties.get('build_config', 'Release'),
-        'CHECKOUT_PATH': self.m.path.checkout_dir,
         'TEST_ONLY': False,
     }
 

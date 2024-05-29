@@ -6,7 +6,6 @@ import pipes
 
 from recipe_engine.config import config_item_context, ConfigGroup
 from recipe_engine.config import Dict, List, Single, Static, Set, BadConf
-from recipe_engine.config_types import Path
 
 # Because of the way that we use decorators, pylint can't figure out the proper
 # type signature of functions annotated with the @config_ctx decorator.
@@ -31,8 +30,7 @@ def check(val, potentials):
 # chromium/api.py:get_config_defaults().
 def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
                TARGET_ARCH, TARGET_BITS, BUILD_CONFIG, TARGET_CROS_BOARDS,
-               CROS_BOARDS_WITH_QEMU_IMAGES, CHECKOUT_PATH, TEST_ONLY,
-               **_kwargs):
+               CROS_BOARDS_WITH_QEMU_IMAGES, TEST_ONLY, **_kwargs):
   equal_fn = lambda tup: ('%s=%s' % (tup[0], pipes.quote(str(tup[1]))))
   return ConfigGroup(
       compile_py=ConfigGroup(
@@ -47,7 +45,7 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       gyp_env=ConfigGroup(
           # VR version is deprecated, use XR version going forward.
           DOWNLOAD_XR_TEST_APKS=Single(int, required=False),
-          GYP_DEFINES=Dict(equal_fn, ' '.join, (str, int, Path)),
+          GYP_DEFINES=Dict(equal_fn, ' '.join, (str, int)),
       ),
       # This allows clients to opt out of using GYP variables in the
       # environment.
@@ -55,12 +53,8 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       use_gyp_env=Single(bool, empty_val=True, required=False),
       env=ConfigGroup(
           # Additional directories to add to PATH when running chromium module
-          # steps
-          # Can either be a string that is a path relative to the top-level repo
-          # or a Path object
-          # TODO: crbug.com/336589262 - Switch all downstream uses to be strings
-          # and then disallow Path values
-          PATH=List((str, Path)),
+          # steps, as paths relative to the top-level repo
+          PATH=List(str),
           FORCE_MAC_TOOLCHAIN=Single(int, required=False),
           FORCE_MAC_SDK_MIN=Single(str, required=False),
       ),
@@ -75,19 +69,13 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       ),
       project_generator=ConfigGroup(
           tool=Single(str, empty_val='mb'),
-          # Path to the config file for the project generator
-          # Can either be a string that is a path relative to the top-level repo
-          # or a Path object
-          # TODO: crbug.com/336589262 - Switch all downstream uses to be strings
-          # and then disallow Path values
-          config_path=Single((str, Path)),
+          # Path to the config file for the project generator, relative to the
+          # top-level repo
+          config_path=Single(str),
           args=Set(str),
-          # Isolate map files to use when invoking the project generator
-          # Can either be strings that are paths relative to the top-level repo
-          # or Path objects
-          # TODO: crbug.com/336589262 - Switch all downstream uses to be strings
-          # and then disallow Path values
-          isolate_map_paths=List((str, Path)),
+          # Path to isolate map files to use when invoking the project
+          # generator, relative to the top-level repo
+          isolate_map_paths=List(str),
           # TODO(crbug.com/1060857): Remove this once swarming task templates
           # support command prefixes.
           use_luci_auth=Single(bool, empty_val=False, required=False),
@@ -110,21 +98,14 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           enable_tsan=Single(bool, empty_val=False, required=False),
           run_asan_test=Single(bool, required=False),
       ),
-      # The directory where targets spec files will be read for the builder
-      # Can be either a string which is a path relative to the top-level repo or
-      # a Path object.
-      # TODO: crbug.com/336589262 - Switch all downstream uses to be strings and
-      # then disallow Path values
-      targets_spec_dir=Single((str, Path)),
+      # Path to the directory where targets spec files will be read for
+      # the builder, relative to the top-level repo
+      targets_spec_dir=Single(str),
       # Path to the analyze config file used for configuring ignores/exclusions
-      # for analyze (e.g. //testing/buildbot/trybot_analyze_config.json). If not
-      # provided, then trybot_analyze_config.json in targets_spec_dir will be
-      # used.
-      # Can be either a string which is a path relative to the top-level repo or
-      # a Path object.
-      # TODO: crbug.com/336589262 - Switch all downstream uses to be strings and
-      # then disallow Path values
-      analyze_config_path=Single((str, Path), required=False),
+      # for analyze (e.g. //testing/buildbot/trybot_analyze_config.json),
+      # relative to the top-level repo. If not provided, then
+      # trybot_analyze_config.json in targets_spec_dir will be used.
+      analyze_config_path=Single(str, required=False),
       use_tot_clang=Single(bool, empty_val=False, required=False),
 
       # Some platforms do not have a 1:1 correlation of BUILD_CONFIG to what is
@@ -139,7 +120,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
       TARGET_BITS=Static(check(TARGET_BITS, HOST_TARGET_BITS)),
       TARGET_CROS_BOARDS=Static(TARGET_CROS_BOARDS),
       CROS_BOARDS_WITH_QEMU_IMAGES=Static(CROS_BOARDS_WITH_QEMU_IMAGES),
-      CHECKOUT_PATH=Static(CHECKOUT_PATH),
       TEST_ONLY=Static(TEST_ONLY),
       gn_args=List(str),
       clobber_before_runhooks=Single(
