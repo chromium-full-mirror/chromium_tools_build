@@ -578,7 +578,7 @@
       "RECIPE_REPO[build]/recipes/daemonizer.py",
       "--",
       "[START_DIR]/src/build/android/adb_logcat_monitor.py",
-      "[START_DIR]/src/out/logcat",
+      "[CLEANUP]/logcat",
       "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "env": {
@@ -981,7 +981,7 @@
       "RECIPE_REPO[build]/recipes/daemonizer.py",
       "--",
       "[START_DIR]/src/build/android/adb_logcat_monitor.py",
-      "[START_DIR]/src/out/logcat",
+      "[CLEANUP]/logcat",
       "[START_DIR]/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "env": {
@@ -1357,7 +1357,7 @@
       "[START_DIR]/src/out/Release/full_log",
       "--",
       "[START_DIR]/src/build/android/adb_logcat_printer.py",
-      "[START_DIR]/src/out/logcat"
+      "[CLEANUP]/logcat"
     ],
     "infra_step": true,
     "luci_context": {
