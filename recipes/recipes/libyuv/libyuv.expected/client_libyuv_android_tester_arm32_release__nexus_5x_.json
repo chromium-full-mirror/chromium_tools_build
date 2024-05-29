@@ -208,7 +208,7 @@
       "RECIPE_REPO[build]/recipes/daemonizer.py",
       "--",
       "[CACHE]/builder/src/build/android/adb_logcat_monitor.py",
-      "[CLEANUP]/logcat",
+      "[CACHE]/builder/src/out/logcat",
       "[CACHE]/builder/src/third_party/android_sdk/public/platform-tools/adb"
     ],
     "cwd": "[CACHE]/builder",
@@ -540,7 +540,7 @@
       "[CACHE]/builder/src/build/android/adb_logcat_printer.py",
       "--output-path",
       "[CACHE]/builder/src/out/Release/full_log",
-      "[CLEANUP]/logcat"
+      "[CACHE]/builder/src/out/logcat"
     ],
     "cwd": "[CACHE]/builder",
     "infra_step": true,

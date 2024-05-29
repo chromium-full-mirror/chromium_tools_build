@@ -220,10 +220,6 @@ class AndroidApi(recipe_api.RecipeApi):
     ]
     self.m.step('create adb symlink', cmd, infra_step=True)
 
-  @property
-  def _logcat_dir(self):
-    return self.m.path.cleanup_dir / 'logcat'
-
   def spawn_logcat_monitor(self):
     with self.m.context(env=self.m.chromium.get_env()):
       self.m.step(
@@ -233,7 +229,7 @@ class AndroidApi(recipe_api.RecipeApi):
               self.repo_resource('recipes', 'daemonizer.py'),
               '--',
               self.m.path.checkout_dir / 'build/android/adb_logcat_monitor.py',
-              self._logcat_dir,
+              self.m.chromium.build_dir(self.m.path.checkout_dir) / 'logcat',
               self.m.adb.adb_path(),
           ],
           infra_step=True,
@@ -630,9 +626,8 @@ class AndroidApi(recipe_api.RecipeApi):
           'vpython3',
           self.m.path.checkout_dir.joinpath('build', 'android',
                                             'adb_logcat_printer.py'),
-          '--output-path',
-          log_path,
-          self._logcat_dir,
+          '--output-path', log_path,
+          self.m.path.checkout_dir.joinpath('out', 'logcat')
       ]
       self.m.step('logcat_dump', cmd, infra_step=True)
       args = []
