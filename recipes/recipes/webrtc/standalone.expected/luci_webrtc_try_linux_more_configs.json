@@ -455,7 +455,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "bwe_test_logging",
+      "dummy_audio_file_devices_no_protobuf",
       "-v",
       "//out/Debug",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
@@ -518,7 +518,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "bwe_test_logging",
+      "dummy_audio_file_devices_no_protobuf",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -555,10 +555,10 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "bwe_test_logging",
+      "dummy_audio_file_devices_no_protobuf",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/bwe_test_logging"
+      "//out/dummy_audio_file_devices_no_protobuf"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -942,7 +942,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/bwe_test_logging",
+      "[CACHE]/builder/src/out/dummy_audio_file_devices_no_protobuf",
       "-j",
       "160"
     ],
@@ -972,7 +972,7 @@
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/bwe_test_logging",
+      "[CACHE]/builder/src/out/dummy_audio_file_devices_no_protobuf",
       "-j",
       "160",
       "-d",
@@ -1364,7 +1364,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/bwe_test_logging/.ninja_log",
+      "[CACHE]/builder/src/out/dummy_audio_file_devices_no_protobuf/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -1981,10 +1981,10 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "dummy_audio_file_devices_no_protobuf",
+      "rtti_no_sctp",
       "-v",
-      "//out/bwe_test_logging",
-      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
+      "//out/dummy_audio_file_devices_no_protobuf",
+      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": [\"dummy_test\"]}",
       "/path/to/tmp/json",
       "--json-output",
       "/path/to/tmp/json"
@@ -2019,7 +2019,9 @@
       "@@@STEP_LOG_LINE@json.output[failure_summary] (exception)@No JSON object could be decoded@@@",
       "@@@STEP_LOG_END@json.output[failure_summary] (exception)@@@",
       "@@@STEP_LOG_LINE@analyze_details@{@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [@@@",
+      "@@@STEP_LOG_LINE@analyze_details@    \"dummy_test\"@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [@@@",
       "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
       "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
@@ -2044,7 +2046,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "dummy_audio_file_devices_no_protobuf",
+      "rtti_no_sctp",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -2081,10 +2083,10 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "dummy_audio_file_devices_no_protobuf",
+      "rtti_no_sctp",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/dummy_audio_file_devices_no_protobuf"
+      "//out/rtti_no_sctp"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -2468,7 +2470,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/dummy_audio_file_devices_no_protobuf",
+      "[CACHE]/builder/src/out/rtti_no_sctp",
       "-j",
       "160"
     ],
@@ -2498,7 +2500,7 @@
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/dummy_audio_file_devices_no_protobuf",
+      "[CACHE]/builder/src/out/rtti_no_sctp",
       "-j",
       "160",
       "-d",
@@ -2803,7 +2805,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/dummy_audio_file_devices_no_protobuf/.ninja_log",
+      "[CACHE]/builder/src/out/rtti_no_sctp/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -3420,10 +3422,10 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "rtti_no_sctp",
+      "disable_trace_events",
       "-v",
-      "//out/dummy_audio_file_devices_no_protobuf",
-      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": [\"dummy_test\"]}",
+      "//out/rtti_no_sctp",
+      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
       "/path/to/tmp/json"
@@ -3460,9 +3462,7 @@
       "@@@STEP_LOG_LINE@json.output[failure_summary] (exception)@No JSON object could be decoded@@@",
       "@@@STEP_LOG_END@json.output[failure_summary] (exception)@@@",
       "@@@STEP_LOG_LINE@analyze_details@{@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [@@@",
-      "@@@STEP_LOG_LINE@analyze_details@    \"dummy_test\"@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
+      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [],@@@",
       "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [@@@",
       "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
       "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
@@ -3490,7 +3490,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "rtti_no_sctp",
+      "disable_trace_events",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -3527,12 +3527,12 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--phase",
-      "rtti_no_sctp",
+      "disable_trace_events",
       "--json-output",
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "//out/rtti_no_sctp"
+      "//out/disable_trace_events"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -3918,7 +3918,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/rtti_no_sctp",
+      "[CACHE]/builder/src/out/disable_trace_events",
       "-j",
       "160"
     ],
@@ -3948,7 +3948,7 @@
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/rtti_no_sctp",
+      "[CACHE]/builder/src/out/disable_trace_events",
       "-j",
       "160",
       "-d",
@@ -4253,7 +4253,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]/builder/src/out/rtti_no_sctp/.ninja_log",
+      "[CACHE]/builder/src/out/disable_trace_events/.ninja_log",
       "/path/to/tmp/"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -4879,7 +4879,7 @@
       "projects/example-cas-server/instances/default_instance",
       "-log-level",
       "debug",
-      "[CACHE]/builder/src/out/rtti_no_sctp/dummy_test.isolated.gen.json"
+      "[CACHE]/builder/src/out/disable_trace_events/dummy_test.isolated.gen.json"
     ],
     "luci_context": {
       "realm": {
@@ -4908,7 +4908,7 @@
       "-u",
       "RECIPE_MODULE[build::chromium_tests]/resources/find_command_lines.py",
       "--build-dir",
-      "[CACHE]/builder/src/out/rtti_no_sctp",
+      "[CACHE]/builder/src/out/disable_trace_events",
       "--output-json",
       "/path/to/tmp/json"
     ],
@@ -5647,1444 +5647,6 @@
       "@@@STEP_LOG_LINE@detailed stats@Total saved runtime from deduping: 0s@@@",
       "@@@STEP_LOG_LINE@detailed stats@Min/mean/max: 32s / 32s / 32s@@@",
       "@@@STEP_LOG_END@detailed stats@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "-c",
-      "core.quotePath=false",
-      "diff",
-      "--cached",
-      "--name-only"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "git diff to analyze patch (4)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@files@src/foo.cc@@@",
-      "@@@STEP_LOG_END@files@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CACHE]/builder/src/infra/specs/trybot_analyze_config.json",
-      "/path/to/tmp/"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "read filter exclusion spec (4)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@path: Path([CACHE], 'builder', 'src', 'infra', 'specs', 'trybot_analyze_config.json')@@@",
-      "@@@STEP_LOG_LINE@trybot_analyze_config.json@{@@@",
-      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  \"base\": {@@@",
-      "@@@STEP_LOG_LINE@trybot_analyze_config.json@    \"exclusions\": []@@@",
-      "@@@STEP_LOG_LINE@trybot_analyze_config.json@  }@@@",
-      "@@@STEP_LOG_LINE@trybot_analyze_config.json@}@@@",
-      "@@@STEP_LOG_END@trybot_analyze_config.json@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
-      "analyze",
-      "-m",
-      "tryserver.webrtc",
-      "-b",
-      "linux_more_configs",
-      "--config-file",
-      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
-      "--phase",
-      "disable_trace_events",
-      "-v",
-      "//out/rtti_no_sctp",
-      "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
-      "/path/to/tmp/json",
-      "--json-output",
-      "/path/to/tmp/json"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "analyze (4)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"compile_targets\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    \"all\"@@@",
-      "@@@STEP_LOG_LINE@json.output@  ],@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"status\": \"Found dependency\",@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"test_targets\": []@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
-      "@@@STEP_LOG_END@json.output[failure_summary]@@@",
-      "@@@STEP_LOG_LINE@analyze_details@{@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"test targets\": [],@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"additional compile targets\": [@@@",
-      "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  ],@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"affected test targets\": [],@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  \"affected compile targets\": [@@@",
-      "@@@STEP_LOG_LINE@analyze_details@    \"all\"@@@",
-      "@@@STEP_LOG_LINE@analyze_details@  ]@@@",
-      "@@@STEP_LOG_LINE@analyze_details@}@@@",
-      "@@@STEP_LOG_END@analyze_details@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
-      "lookup",
-      "-m",
-      "tryserver.webrtc",
-      "-b",
-      "linux_more_configs",
-      "--config-file",
-      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
-      "--phase",
-      "disable_trace_events",
-      "--quiet"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "lookup GN args (4)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>target_cpu = \"x86\"<br/>use_remoteexec = true@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "[CACHE]/builder/src/tools_webrtc/mb/mb.py",
-      "gen",
-      "-m",
-      "tryserver.webrtc",
-      "-b",
-      "linux_more_configs",
-      "--config-file",
-      "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
-      "--phase",
-      "disable_trace_events",
-      "--json-output",
-      "/path/to/tmp/json",
-      "//out/disable_trace_events"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "generate_build_files (4)",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
-      "@@@STEP_LOG_END@json.output[failure_summary]@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "preprocess for reclient (4)"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
-      "getdep",
-      "--var",
-      "download_remoteexec_cfg"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/try/linux_more_configs/8945511751514863184"
-    },
-    "env_suffixes": {
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).gclient check if download_remoteexec_cfg var exists",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
-      "getdep",
-      "--var",
-      "rbe_instance"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "webrtc/try/linux_more_configs/8945511751514863184"
-    },
-    "env_suffixes": {
-      "PATH": [
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).gclient check if rbe_instance var exists",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "preprocess for reclient (4).install reclient_cfgs (already run by DEPS hook)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CACHE]/builder/src/buildtools/reclient_cfgs",
-      "--recursive"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).list reclient_cfgs dir",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/src/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/src/buildtools/reclient_cfgs/reproxy.cfg@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CACHE]/builder/reclient/deps/linux_more_configs"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).reclient cache directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CACHE]/builder/reclient/deps/linux_more_configs"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).list reclient cache directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
-      "start",
-      "--cloudtail-path",
-      "cloudtail",
-      "--cloudtail-project-id",
-      "goma-logs",
-      "--cloudtail-log-path",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
-      "--pid-file",
-      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).start cloudtail: reproxy.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
-      "start",
-      "--cloudtail-path",
-      "cloudtail",
-      "--cloudtail-project-id",
-      "goma-logs",
-      "--cloudtail-log-path",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.INFO",
-      "--pid-file",
-      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).start cloudtail: reproxy-gomaip.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
-      "start",
-      "--cloudtail-path",
-      "cloudtail",
-      "--cloudtail-project-id",
-      "goma-logs",
-      "--cloudtail-log-path",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy_outerr.log",
-      "--pid-file",
-      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).start cloudtail: reproxy_outerr.log",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@cloudtail@https://console.cloud.google.com/logs/viewer?project=goma-logs&resource=gce_instance%2Finstance_id%2Ffakevm999-m9@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[CACHE]/builder/src/buildtools/reclient/bootstrap"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
-      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
-      "RBE_automatic_auth": "false",
-      "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
-      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux_more_configs",
-      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux_more_configs",
-      "RBE_deps_cache_max_mb": "256",
-      "RBE_enable_deps_cache": "true",
-      "RBE_fail_early_min_action_count": "4000",
-      "RBE_fail_early_min_fallback_ratio": "0.5",
-      "RBE_fast_log_collection": "true",
-      "RBE_grpc_keepalive_permit_without_stream": "false",
-      "RBE_grpc_keepalive_time": "30s",
-      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_re_proxy": "[CACHE]/builder/src/buildtools/reclient/reproxy",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
-      "RBE_service": "remotebuildexecution.googleapis.com:443",
-      "RBE_use_application_default_credentials": "false",
-      "RBE_use_gce_credentials": "true",
-      "RBE_use_unified_uploads": "true"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "preprocess for reclient (4).start reproxy via bootstrap",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "RECIPE_MODULE[build::chromium]/resources/ninja_wrapper.py",
-      "--ninja_info_output",
-      "/path/to/tmp/json",
-      "--failure_output",
-      "/path/to/tmp/",
-      "--",
-      "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-C",
-      "[CACHE]/builder/src/out/disable_trace_events",
-      "-j",
-      "160"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "webrtc/try/linux_more_configs/0",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "compile (4)"
-  },
-  {
-    "cmd": [
-      "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-C",
-      "[CACHE]/builder/src/out/disable_trace_events",
-      "-j",
-      "160",
-      "-d",
-      "explain",
-      "-n"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "RBE_exec_strategy": "remote_local_fallback",
-      "RBE_invocation_id": "webrtc/try/linux_more_configs/0",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "compile confirm no-op (4)"
-  },
-  {
-    "cmd": [],
-    "name": "postprocess for reclient (4)"
-  },
-  {
-    "cmd": [
-      "[CACHE]/builder/src/buildtools/reclient/bootstrap",
-      "-shutdown"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1",
-      "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
-      "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
-      "RBE_automatic_auth": "false",
-      "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
-      "RBE_cache_dir": "[CACHE]/builder/reclient/deps/linux_more_configs",
-      "RBE_deps_cache_dir": "[CACHE]/builder/reclient/deps/linux_more_configs",
-      "RBE_deps_cache_max_mb": "256",
-      "RBE_enable_deps_cache": "true",
-      "RBE_fail_early_min_action_count": "4000",
-      "RBE_fail_early_min_fallback_ratio": "0.5",
-      "RBE_fast_log_collection": "true",
-      "RBE_grpc_keepalive_permit_without_stream": "false",
-      "RBE_grpc_keepalive_time": "30s",
-      "RBE_instance": "projects/test-rbe-project/instances/default_instance",
-      "RBE_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_log_format": "reducedtext",
-      "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_4",
-      "RBE_re_proxy": "[CACHE]/builder/src/buildtools/reclient/reproxy",
-      "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
-      "RBE_service": "remotebuildexecution.googleapis.com:443",
-      "RBE_use_application_default_credentials": "false",
-      "RBE_use_gce_credentials": "true",
-      "RBE_use_unified_uploads": "true"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).shutdown reproxy via bootstrap",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
-      "stop",
-      "--killed-pid-file",
-      "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).stop cloudtail",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
-      "stop",
-      "--killed-pid-file",
-      "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).stop cloudtail (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/cloudtail_wrapper.py",
-      "stop",
-      "--killed-pid-file",
-      "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).stop cloudtail (3)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]/reclient_log_tmp_4/rbe_metrics.pb",
-      "/path/to/tmp/"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).load rbe_metrics.pb",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bqupload",
-      "goma-logs.rbe_metrics.builds"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload RBE metrics to BigQuery",
-    "stdin": "{\"build_id\": \"8945511751514863184\", \"created_at\": \"2012-05-14T12:53:30.500Z\", \"stats\": {\"proxy_info\": [{\"flags\": [{\"key\": \"abc\", \"value\": \"def\"}, {\"key\": \"foo\", \"value\": \"bar\"}], \"metrics\": [{\"key\": \"other\", \"value\": {\"int64_value\": \"7\"}}, {\"key\": \"some\", \"value\": {\"bool_value\": true}}], \"stats\": [{\"name\": \"CPU\"}, {\"name\": \"MEM\"}]}, {\"event_times\": [{\"key\": \"foo\", \"value\": {\"from\": \"2022-07-19T22:26:45Z\", \"to\": \"2022-07-21T02:13:25Z\"}}], \"metrics\": [{\"key\": \"test\", \"value\": {\"double_value\": 1.1}}]}]}}",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@{@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"build_id\": \"8945511751514863184\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"created_at\": \"2012-05-14T12:53:30.500Z\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  \"stats\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@    \"proxy_info\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"flags\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"abc\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"def\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": \"bar\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"other\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"int64_value\": \"7\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"some\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"bool_value\": true@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"stats\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"CPU\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"name\": \"MEM\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      },@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"event_times\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"foo\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"from\": \"2022-07-19T22:26:45Z\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"to\": \"2022-07-21T02:13:25Z\"@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ],@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        \"metrics\": [@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"key\": \"test\",@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            \"value\": {@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@              \"double_value\": 1.1@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@            }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@          }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@        ]@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@      }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@    ]@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@  }@@@",
-      "@@@STEP_LOG_LINE@rbe_metrics@}@@@",
-      "@@@STEP_LOG_END@rbe_metrics@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CACHE]/builder/src/out/disable_trace_events/.ninja_log",
-      "/path/to/tmp/"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).read ninja log",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "fake gzip data",
-      "[TMP_BASE]/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).create ninja log gzip",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[TMP_BASE]/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001340.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).gsutil upload ninja_log",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001340.gz@@@",
-      "@@@STEP_LINK@ninja_log@https://chromium-build-stats.appspot.com/ninja_log/2012/05/14/reclient/ninja_log.20120514-125332.00000000-0000-0000-0000-000000001340.gz@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/generate_rpl_gzip.py",
-      "--reclient-log-dir",
-      "[CLEANUP]/reclient_log_tmp_4",
-      "--output-gzip-path",
-      "[TMP_BASE]/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).gzip reproxy RPL",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[TMP_BASE]/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).gsutil upload reproxy RPL",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CLEANUP]/reclient_log_tmp_4"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).list reclient log directory",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy.INFO@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy.rpl@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log@@@",
-      "@@@STEP_LOG_LINE@listdir@[CLEANUP]/reclient_log_tmp_4/rewrapper.INFO@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "postprocess for reclient (4).upload logs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "/path/to/tmp/"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.read [CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.gsutil upload reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
-      "/path/to/tmp/"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.read [CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy.INFO",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.gsutil upload reproxy.INFO",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log",
-      "/path/to/tmp/"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.read [CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[CLEANUP]/reclient_log_tmp_4/reproxy_stderr.log",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.gsutil upload reproxy_stderr.log",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "fake tar contents",
-      "[TMP_BASE]/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.create reclient log tar",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
-      "--",
-      "RECIPE_REPO[depot_tools]/gsutil.py",
-      "----",
-      "cp",
-      "[TMP_BASE]/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz",
-      "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).upload logs.gsutil upload reclient logs",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "RECIPE_MODULE[build::reclient]/resources/perform_health_check.py",
-      "--reclient-log-dir",
-      "[CLEANUP]/reclient_log_tmp_4",
-      "--build-exit-status",
-      "0"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).perform reclient health check",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "rmtree",
-      "[CLEANUP]/reclient_log_tmp_4"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "webrtc:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "postprocess for reclient (4).cleanup reclient log dir",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
     ]
   },
   {
