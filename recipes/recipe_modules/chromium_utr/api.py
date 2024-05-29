@@ -465,7 +465,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if self.m.chromium.c.project_generator.tool == 'mb':
       gn_args, _ = self.m.gn.read_args(build_dir)
       args = self.m.gn.parse_gn_args(gn_args)
-      use_reclient = args.get('use_remoteexec') == 'true'
+      use_reclient = args.get('use_remoteexec') == 'true' and args.get(
+          'use_reclient') != 'false'
 
     if properties.no_rbe:
       use_reclient = False
