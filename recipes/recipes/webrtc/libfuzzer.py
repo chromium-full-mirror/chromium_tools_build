@@ -52,9 +52,9 @@ def RunSteps(api):
       builder_db=BUILDERS_DB)
   api.chromium_tests.configure_build(builder_config)
   update_result = api.chromium_checkout.ensure_checkout()
-  api.chromium.runhooks()
-  api.webrtc.run_mb(builder_id)
   source_dir = update_result.source_root.path
+  api.chromium.runhooks()
+  api.webrtc.run_mb(source_dir, builder_id)
   with api.context(cwd=source_dir):
     args = [
         '--root=%s' % str(source_dir),

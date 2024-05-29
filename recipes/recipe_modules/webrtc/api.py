@@ -76,13 +76,14 @@ class WebRTCApi(recipe_api.RecipeApi):
       assert self.m.properties.get('parent_got_revision'), (
           'Testers should only be run with "parent_got_revision" property.')
 
-  def determine_compilation_targets(self, builder_id, targets_config, phase):
+  def determine_compilation_targets(self, source_dir, builder_id,
+                                    targets_config, phase):
     """ Returns the tests to run and the targets to compile."""
     test_targets = _get_test_targets_from_config(targets_config, phase)
 
     patch_root = self.m.gclient.get_gerrit_patch_root()
     affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
-        relative_to=patch_root, cwd=self.m.path.checkout_dir)
+        relative_to=patch_root, cwd=source_dir)
 
     # The "all" and "default" rules for gn are different:
     # https://gn.googlesource.com/gn/+/main/docs/reference.md#the-all-and-default-rules
@@ -105,7 +106,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         affected_files,
         test_targets,
         additional_compile_targets=additional_targets,
-        mb_path=self.m.path.checkout_dir.joinpath('tools_webrtc', 'mb'),
+        mb_path=source_dir / 'tools_webrtc/mb',
         phase=phase)
 
     # Some trybots are used to calculate the binary size impact of the current
@@ -121,22 +122,18 @@ class WebRTCApi(recipe_api.RecipeApi):
     return (builders.BUILDERS_DB[builder_id].perf_id or
             _is_triggering_perf_tests(builder_id, builder_config))
 
-  def download_video_quality_tools(self):
+  def download_video_quality_tools(self, source_dir):
     with self.m.depot_tools.on_path():
       # Video quality tools
-      args_tools = [
-          self.m.path.checkout_dir.joinpath('tools_webrtc',
-                                            'video_quality_toolchain', 'linux')
-      ]
-      script_tools = self.m.path.checkout_dir.joinpath('tools_webrtc',
-                                                       'download_tools.py')
+      args_tools = [source_dir / 'tools_webrtc/video_quality_toolchain/linux']
+      script_tools = source_dir / 'tools_webrtc/download_tools.py'
       cmd_tools = ['vpython3', '-u', script_tools] + args_tools
       self.m.step('download video quality tools', cmd_tools)
 
       # AppRTC
       args_apprtc = [
           '--bucket=chromium-webrtc-resources', '--directory',
-          self.m.path.checkout_dir.joinpath('rtc_tools', 'testing')
+          source_dir / 'rtc_tools/testing'
       ]
       script_apprtc = self.m.depot_tools.download_from_google_storage_path
       cmd_apprtc = ['vpython3', '-u', script_apprtc] + args_apprtc
@@ -145,8 +142,7 @@ class WebRTCApi(recipe_api.RecipeApi):
       # Golang
       args_golang = [
           '--bucket=chromium-webrtc-resources', '--directory',
-          self.m.path.checkout_dir.joinpath('rtc_tools', 'testing', 'golang',
-                                            'linux')
+          source_dir / 'rtc_tools/testing/golang/linux'
       ]
       script_golang = self.m.depot_tools.download_from_google_storage_path
       cmd_golang = ['vpython3', '-u', script_golang] + args_golang
@@ -155,9 +151,9 @@ class WebRTCApi(recipe_api.RecipeApi):
   def should_generate_code_coverage(self, builder_id, builder_config):
     return builder_id.builder.lower() == 'linux_coverage'
 
-  def setup_code_coverage_module(self):
+  def setup_code_coverage_module(self, source_dir):
     """Configure internal constants of the code_coverage module."""
-    checkout_path = self.m.path.checkout_dir
+    checkout_path = source_dir
     self.m.profiles.src_dir = checkout_path
     self.m.code_coverage._use_clang_coverage = True
     self.m.code_coverage.src_dir = checkout_path
@@ -170,7 +166,12 @@ class WebRTCApi(recipe_api.RecipeApi):
       self.m.code_coverage.instrument(
           affected_files, is_deps_only_change=is_deps_only_change)
 
-  def run_mb(self, builder_id, phase=None, tests=None, mb_config_path=None):
+  def run_mb(self,
+             source_dir,
+             builder_id,
+             phase=None,
+             tests=None,
+             mb_config_path=None):
     if phase:
       # Set the out folder to be the same as the phase name, so caches of
       # consecutive builds don't interfere with each other.
@@ -189,7 +190,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         builder_id,
         use_reclient=True,
         phase=phase,
-        mb_path=self.m.path.checkout_dir.joinpath('tools_webrtc', 'mb'),
+        mb_path=source_dir.joinpath('tools_webrtc', 'mb'),
         mb_config_path=mb_config_path,
         isolated_targets=_get_isolated_targets(tests or []))
 
@@ -239,12 +240,11 @@ class WebRTCApi(recipe_api.RecipeApi):
     })
     self.m.chromium.set_build_properties(build_props)
 
-  def set_test_command_lines(self, builder_id, tests):
+  def set_test_command_lines(self, source_dir, builder_id, tests):
     if builders.BUILDERS_DB[builder_id].execution_mode != builder_spec.TEST:
       return self.m.chromium_tests.set_swarming_test_execution_info(
           tests, self.m.chromium_tests.find_swarming_command_lines(''),
-          self.m.path.relpath(self.m.chromium.output_dir,
-                              self.m.path.checkout_dir))
+          self.m.path.relpath(self.m.chromium.output_dir, source_dir))
 
     # Tester builders only triggers swarming tests built on 'builder' bots
     # so the swarming command line needs to be retrieved from build
@@ -260,7 +260,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         _sanitize_file_name(builder_id.builder),
         _sanitize_file_name(parent_buildername))
 
-    relative_cwd = self.m.path.relpath(output_dir, self.m.path.checkout_dir)
+    relative_cwd = self.m.path.relpath(output_dir, source_dir)
     for test in tests:
       if test.runs_on_swarming:
         command_line = swarming_command_lines.get(test.target_name, [])
@@ -291,12 +291,11 @@ class WebRTCApi(recipe_api.RecipeApi):
       step_result = self.m.step(step_name, cmd)
       p.build_exit_status = step_result.retcode
 
-  def build_android_archive(self):
+  def build_android_archive(self, source_dir):
     # Build the Android .aar archive and upload it to Google storage (except for
     # trybots). This should only be run on a single bot or the archive will be
     # overwritten (and it's a multi-arch build so one is enough).
-    build_script = self.m.path.checkout_dir.joinpath('tools_webrtc', 'android',
-                                                     'build_aar.py')
+    build_script = source_dir / 'tools_webrtc/android/build_aar.py'
     args = ['--verbose']
     if self.m.tryserver.is_tryserver:
       # To benefit from incremental builds for speed.
@@ -304,16 +303,16 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     cmd = ['vpython3', '-u', build_script] + args
 
-    with self.m.context(cwd=self.m.path.checkout_dir):
+    with self.m.context(cwd=source_dir):
       build_step_name = 'build android archive'
-      build_dir = self.m.path.join(self.m.path.checkout_dir, 'andriod-archive')
+      build_dir = source_dir / 'andriod-archive'
       cmd += ['--build-dir', build_dir]
       self.build_with_reclient(build_step_name, cmd)
       self.m.file.rmtree('Remove android archive dir', build_dir)
 
     if not self.m.tryserver.is_tryserver and not self.m.runtime.is_experimental:
       self.m.gsutil.upload(
-          self.m.path.checkout_dir / 'libwebrtc.aar',
+          source_dir / 'libwebrtc.aar',
           'chromium-webrtc',
           'android_archive/webrtc_android_%s.aar' % self.revision_number,
           args=['-a', 'public-read'],
@@ -338,14 +337,14 @@ class WebRTCApi(recipe_api.RecipeApi):
           args=['-a', 'public-read'],
           unauthenticated_url=True)
 
-  def run_tests(self, builder_id, tests):
+  def run_tests(self, source_dir, builder_id, tests):
     if not tests:
       return
 
     if builders.BUILDERS_DB[builder_id].perf_id:
       self.set_upload_build_properties(builder_id)
 
-    self.set_test_command_lines(builder_id, tests)
+    self.set_test_command_lines(source_dir, builder_id, tests)
     test_runner = self.m.chromium_tests.create_test_runner(
         tests, surface_invalid_results_as_infra_failure=True)
     test_failure_summary = test_runner()
