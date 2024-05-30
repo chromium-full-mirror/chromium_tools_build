@@ -1300,7 +1300,7 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 998, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 994, in RunSteps",
       "    _run_tests(api, source_dir, memory_tool, v8, xfa, skia, out_dir,",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 366, in _run_tests",
       "    test_runner = _TestRunner(api, source_root, memory_tool, resultdb, out_dir,",

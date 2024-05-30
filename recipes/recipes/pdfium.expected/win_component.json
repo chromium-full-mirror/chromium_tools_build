@@ -1303,7 +1303,7 @@
       "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component\\pdfium_unittests.exe",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_1"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1341,7 +1341,7 @@
       "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component\\pdfium_embeddertests.exe",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_2"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1384,7 +1384,7 @@
       "--gold_key",
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false symbol_level 1 v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1428,7 +1428,7 @@
       "clang true debug true is_standalone true javascript_runtime disabled os win skia false suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1472,7 +1472,7 @@
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1515,7 +1515,7 @@
       "--gold_key",
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false symbol_level 1 v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1559,7 +1559,7 @@
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false suite oneshot symbol_level 1 v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1603,7 +1603,7 @@
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false suite reverse_byte_order symbol_level 1 v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1647,7 +1647,7 @@
       "clang true debug true is_standalone true javascript_runtime disabled os win skia false suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1691,7 +1691,7 @@
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1734,7 +1734,7 @@
       "--gold_key",
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false symbol_level 1 v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1778,7 +1778,7 @@
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false suite oneshot symbol_level 1 v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1822,7 +1822,7 @@
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false suite reverse_byte_order symbol_level 1 v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1866,7 +1866,7 @@
       "clang true debug true is_standalone true javascript_runtime disabled os win skia false suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1910,7 +1910,7 @@
       "clang true debug true is_standalone true javascript_runtime enabled os win skia false suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\debug_xfa_v8_component",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"

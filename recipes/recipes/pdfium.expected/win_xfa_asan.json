@@ -1303,7 +1303,7 @@
       "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan\\pdfium_unittests.exe",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_1"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1344,7 +1344,7 @@
       "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan\\pdfium_embeddertests.exe",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_2"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1390,7 +1390,7 @@
       "--gold_key",
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1437,7 +1437,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1484,7 +1484,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false suite xfa_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1530,7 +1530,7 @@
       "--gold_key",
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1577,7 +1577,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false suite oneshot use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1624,7 +1624,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false suite reverse_byte_order use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1671,7 +1671,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1718,7 +1718,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false suite xfa_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1764,7 +1764,7 @@
       "--gold_key",
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1811,7 +1811,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false suite oneshot use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1858,7 +1858,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false suite reverse_byte_order use_asan_unowned_ptr true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1905,7 +1905,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime disabled os windows skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },
@@ -1952,7 +1952,7 @@
       "asan true clang true debug false is_standalone true javascript_runtime enabled os windows skia false suite xfa_disabled use_asan_unowned_ptr true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]\\builder\\pdfium\\out\\release_xfa_v8_clang_asan",
+    "cwd": "[CACHE]\\builder\\pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1"
     },

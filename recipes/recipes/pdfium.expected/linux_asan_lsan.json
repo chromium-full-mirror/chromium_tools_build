@@ -1266,7 +1266,7 @@
       "[CACHE]/builder/pdfium/out/debug_v8_asan/pdfium_unittests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_1"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1307,7 +1307,7 @@
       "[CACHE]/builder/pdfium/out/debug_v8_asan/pdfium_embeddertests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1353,7 +1353,7 @@
       "--gold_key",
       "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1400,7 +1400,7 @@
       "asan true debug true is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1446,7 +1446,7 @@
       "--gold_key",
       "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1493,7 +1493,7 @@
       "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1540,7 +1540,7 @@
       "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1587,7 +1587,7 @@
       "asan true debug true is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1633,7 +1633,7 @@
       "--gold_key",
       "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1680,7 +1680,7 @@
       "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite oneshot use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1727,7 +1727,7 @@
       "asan true debug true is_standalone true javascript_runtime enabled lsan true os linux skia false suite reverse_byte_order use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1774,7 +1774,7 @@
       "asan true debug true is_standalone true javascript_runtime disabled lsan true os linux skia false suite javascript_disabled use_asan_unowned_ptr true v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/debug_v8_asan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },

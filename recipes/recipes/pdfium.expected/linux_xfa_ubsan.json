@@ -1266,7 +1266,7 @@
       "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan/pdfium_unittests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_1"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1307,7 +1307,7 @@
       "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan/pdfium_embeddertests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1353,7 +1353,7 @@
       "--gold_key",
       "debug false is_standalone true javascript_runtime enabled os linux skia false ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1400,7 +1400,7 @@
       "debug false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1447,7 +1447,7 @@
       "debug false is_standalone true javascript_runtime enabled os linux skia false suite xfa_disabled ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1493,7 +1493,7 @@
       "--gold_key",
       "debug false is_standalone true javascript_runtime enabled os linux skia false ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1540,7 +1540,7 @@
       "debug false is_standalone true javascript_runtime enabled os linux skia false suite oneshot ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1587,7 +1587,7 @@
       "debug false is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1634,7 +1634,7 @@
       "debug false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1681,7 +1681,7 @@
       "debug false is_standalone true javascript_runtime enabled os linux skia false suite xfa_disabled ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1727,7 +1727,7 @@
       "--gold_key",
       "debug false is_standalone true javascript_runtime enabled os linux skia false ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime enabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1774,7 +1774,7 @@
       "debug false is_standalone true javascript_runtime enabled os linux skia false suite oneshot ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1821,7 +1821,7 @@
       "debug false is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime enabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1868,7 +1868,7 @@
       "debug false is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
@@ -1915,7 +1915,7 @@
       "debug false is_standalone true javascript_runtime enabled os linux skia false suite xfa_disabled ubsan_no_recover true ubsan_security true v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
-    "cwd": "[CACHE]/builder/pdfium/out/release_xfa_v8_ubsan",
+    "cwd": "[CACHE]/builder/pdfium",
     "env": {
       "UBSAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
