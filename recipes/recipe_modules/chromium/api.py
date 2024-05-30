@@ -138,16 +138,12 @@ class ChromiumApi(recipe_api.RecipeApi):
     """The path to the analyze config file."""
     return source_dir / self.c.analyze_config_path
 
-  def build_dir(self, source_dir: Path) -> Path:
-    """The path to the directory containing one or more output directories."""
-    return source_dir / self.c.build_dir
-
   @property
   def output_dir(self):
     """Return the path to the built executable directory."""
     if self._output_dir:
       return self._output_dir
-    return self.build_dir(self.m.path.checkout_dir) / self.c.build_config_fs
+    return self.m.path.checkout_dir / 'out' / self.c.build_config_fs
 
   @output_dir.setter
   def output_dir(self, value):

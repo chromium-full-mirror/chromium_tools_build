@@ -23,8 +23,6 @@ def RunSteps(api):
   api.assertions.assertEqual(
       api.chromium.analyze_config_path(source_dir),
       source_dir / 'testing/buildbot/trybot_analyze_config.json')
-  api.assertions.assertEqual(
-      api.chromium.build_dir(source_dir), source_dir / 'out')
 
 
 def GenTests(api):

@@ -11,7 +11,6 @@ def v8(c):
   c.project_generator.isolate_map_paths = [
       'infra/mb/gn_isolate_map.pyl',
   ]
-  c.build_dir = 'out'
   c.build_config_fs = 'build'
 
   if c.HOST_PLATFORM == 'mac' and c.TARGET_PLATFORM != 'ios':

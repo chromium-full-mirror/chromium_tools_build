@@ -11,7 +11,6 @@ def angle_base(c):
       'infra/specs/gn_isolate_map.pyl',
   ]
   c.project_generator.config_path = 'infra/specs/angle_mb_config.pyl'
-  c.build_dir = 'out'
   c.targets_spec_dir = 'infra/specs'
   c.analyze_config_path = 'infra/specs/trybot_analyze_config.json'
 

@@ -69,7 +69,7 @@ def _incremental_build_with_one_day_changes(api, source_dir, target):
     # Run a warm up build for remote caches at the current revision.
     api.chromium_build_perf.checkout(cur_rev)
 
-    build_dir = api.chromium.build_dir(source_dir)
+    build_dir_parent = api.chromium.output_dir.parent
 
     ##  Ninja+Reclient
     api.chromium_build_perf.recreate_build_dir(phase='ninja')
@@ -81,7 +81,7 @@ def _incremental_build_with_one_day_changes(api, source_dir, target):
 
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
-        phase='siso_reproxy', build_dir=build_dir / 'rbe')
+        phase='siso_reproxy', build_dir=build_dir_parent / 'rbe')
     suffix = ' with Siso in Reproxy mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -92,7 +92,7 @@ def _incremental_build_with_one_day_changes(api, source_dir, target):
 
     ## Siso native build
     api.chromium_build_perf.recreate_build_dir(
-        phase='siso_native', build_dir=build_dir / 'siso')
+        phase='siso_native', build_dir=build_dir_parent / 'siso')
     suffix = ' with Siso in native mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -117,7 +117,7 @@ def _incremental_build_with_one_day_changes(api, source_dir, target):
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_reproxy',
-        build_dir=build_dir / 'rbe',
+        build_dir=build_dir_parent / 'rbe',
         remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -129,7 +129,7 @@ def _incremental_build_with_one_day_changes(api, source_dir, target):
     ## Siso native
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_native',
-        build_dir=build_dir / 'siso',
+        build_dir=build_dir_parent / 'siso',
         remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
         target,
@@ -220,18 +220,18 @@ def _incremental_builds_with_patch(api, source_dir, target):
       gitlog_result.presentation.step_text = 'No commits to build'
       return
 
-    build_dir = api.chromium.build_dir(source_dir)
+    build_dir_parent = api.chromium.output_dir.parent
 
     # Set up build dirs for Ninja+Reclient/Siso+Reclient/Siso native builds.
     api.chromium_build_perf.recreate_build_dir(
         phase='ninja', remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_reproxy',
-        build_dir=build_dir / 'rbe',
+        build_dir=build_dir_parent / 'rbe',
         remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
         phase='siso_native',
-        build_dir=build_dir / 'siso',
+        build_dir=build_dir_parent / 'siso',
         remove_deps_cache=True)
 
     # Run a build at each revision.

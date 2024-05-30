@@ -80,11 +80,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           # support command prefixes.
           use_luci_auth=Single(bool, empty_val=False, required=False),
       ),
-      # build_dir is the path to the "out" directory relative to the top level
-      # repo
-      # Actual gn/ninja/compile artifacts are located in
-      # build_dir / build_config_fs.
-      build_dir=Single(str),
       cros_sdk=ConfigGroup(
           external=Single(bool, empty_val=True, required=False),
           args=List(str),
@@ -239,7 +234,7 @@ def mb_no_luci_auth(c):
 
 @config_ctx(group='builder')
 def ninja(c):
-  c.build_dir = 'out'
+  pass
 
 
 @config_ctx()
