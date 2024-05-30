@@ -205,11 +205,27 @@ def _note_observed_on(platforms, all_platforms, lint):
   return lint._replace(message=lint.message + '\n\n(%s)' % msg)
 
 
+def _fixup_lint_paths(lint):
+  # Filter out third_party/dawn from path if present. Chromium will not have third_party/dawn
+  # entries in the results because Dawn is pulled in from Deps. These show up when running
+  # clang-tidy on changes in the Dawn gerrit where the prefix needs to be stripped.
+  fixup_path = lambda x: x.removeprefix('third_party/dawn/')
+  fixup_replacements = lambda replacements: tuple(
+      x._replace(path=fixup_path(x.path)) for x in replacements)
+  return lint._replace(
+      path=fixup_path(lint.path),
+      suggestions=tuple(
+          suggestion._replace(
+              replacements=fixup_replacements(suggestion.replacements))
+          for suggestion in lint.suggestions),
+  )
+
+
 def _dedup_and_fixup_tricium_lints(all_platforms, lints):
   merged_lints = []
   for platform, platform_lints in lints.items():
     for l in platform_lints:
-      merged_lints.append((l, platform))
+      merged_lints.append((_fixup_lint_paths(l), platform))
 
   # _TriciumComments contain data which is unhashable, but comparable. While
   # the comparison order may not always be intuitive, we don't care; it's
@@ -570,6 +586,47 @@ def GenTests(api):
       api.post_process(
           _tricium_has_comment,
           _note_observed_on(_CHILD_BUILDERS, _CHILD_BUILDERS, comment0),
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  comment_dawn = _build_tricium_comment_with_defaults(
+      category='some other category',
+      message='some other message',
+      path='third_party/dawn/src/tint/foo2.cpp',
+      suggestions=(_TriciumSuggestion(
+          description='foo',
+          replacements=(_TriciumReplacement(
+              path='third_party/dawn/src/tint/foo.cc',
+              replacement='replaced',
+              start_line=0,
+              end_line=0,
+              start_char=0,
+              end_char=0,
+          ),),
+      ),),
+  )
+  comment_dawn_with_new_replacement = comment_dawn._replace(
+      path='src/tint/foo2.cpp',
+      suggestions=(_TriciumSuggestion(
+          description='foo',
+          replacements=(_TriciumReplacement(
+              path='src/tint/foo.cc',
+              replacement='replaced',
+              start_line=0,
+              end_line=0,
+              start_char=0,
+              end_char=0,
+          ),),
+      ),),
+  )
+  yield api.test(
+      'filter_dawn_paths',
+      test_data(tricium_data={_CHILD_BUILDERS[0]: [comment_dawn]}),
+      api.post_process(
+          _tricium_has_comment,
+          _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS,
+                            comment_dawn_with_new_replacement),
       ),
       api.post_process(post_process.DropExpectation),
   )
