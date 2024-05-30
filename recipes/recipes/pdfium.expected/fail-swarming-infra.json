@@ -2036,7 +2036,7 @@
       "out/debug_v8/pdfium_unittests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_1"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2074,7 +2074,7 @@
       "out/debug_v8/pdfium_embeddertests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2117,7 +2117,7 @@
       "--gold_key",
       "debug true is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2161,7 +2161,7 @@
       "debug true is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2204,7 +2204,7 @@
       "--gold_key",
       "debug true is_standalone true javascript_runtime enabled os linux skia false v8 true xfa false xfa_runtime disabled"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2248,7 +2248,7 @@
       "debug true is_standalone true javascript_runtime enabled os linux skia false suite oneshot v8 true xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2292,7 +2292,7 @@
       "debug true is_standalone true javascript_runtime enabled os linux skia false suite reverse_byte_order v8 true xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -2336,7 +2336,7 @@
       "debug true is_standalone true javascript_runtime disabled os linux skia false suite javascript_disabled v8 true xfa false xfa_runtime disabled",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"

@@ -1266,7 +1266,7 @@
       "[CACHE]/builder/pdfium/out/debug_v8/pdfium_unittests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_1"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1304,7 +1304,7 @@
       "[CACHE]/builder/pdfium/out/debug_v8/pdfium_embeddertests",
       "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1338,7 +1338,7 @@
       "--build-dir",
       "out/debug_v8"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1373,7 +1373,7 @@
       "out/debug_v8",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1407,7 +1407,7 @@
       "--build-dir",
       "out/debug_v8"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1442,7 +1442,7 @@
       "out/debug_v8",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1477,7 +1477,7 @@
       "out/debug_v8",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1512,7 +1512,7 @@
       "out/debug_v8",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1546,7 +1546,7 @@
       "--build-dir",
       "out/debug_v8"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1581,7 +1581,7 @@
       "out/debug_v8",
       "--render-oneshot"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1616,7 +1616,7 @@
       "out/debug_v8",
       "--reverse-byte-order"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"
@@ -1651,7 +1651,7 @@
       "out/debug_v8",
       "--disable-javascript"
     ],
-    "cwd": "[CACHE]/builder/pdfium",
+    "cwd": "[CACHE]/builder/pdfium/out/debug_v8",
     "luci_context": {
       "realm": {
         "name": "pdfium:ci"

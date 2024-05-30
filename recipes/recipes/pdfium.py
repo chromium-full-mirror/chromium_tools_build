@@ -826,9 +826,13 @@ class _TestRunner:
       # Defer individual failures until the end of this block.
       with self.api.defer.context() as defer:
         collecting = bool(self.swarming)
+        # MSAN-enabled binaries using the Ubuntu Noble instrumented libraries
+        # need to run from the out directory instead of the source directory.
+        # Launch all tests from the out directory for consistency.
+        out_dir = self.source_dir.joinpath(self.out_dir)
         while self.local_requests or collecting:
           if self.local_requests:
-            with self.api.context(cwd=self.source_dir, env=self.env):
+            with self.api.context(cwd=out_dir, env=self.env):
               for request in self.local_requests:
                 defer(self.api.step, request.step_name, request.command)
             self.local_requests.clear()
