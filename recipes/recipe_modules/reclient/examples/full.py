@@ -29,6 +29,10 @@ _NINJA_STEP_NAME = 'compile (reclient)'
 _BOOTSTRAP_STEP_NAME = 'preprocess for reclient.start reproxy via bootstrap'
 _BQ_UPLOAD_DISABLED_STEP_NAME = 'postprocess for reclient.upload RBE metrics to BigQuery (DISABLED)'
 _BQ_UPLOAD_STEP_NAME = 'postprocess for reclient.upload RBE metrics to BigQuery'
+_BOOTSTRAP_EXTRA_ENV = {
+    "RBE_bq_table": "reproxylogs.reproxy_log_kokoro",
+    "RBE_bq_project": "foundry-x-experiments"
+}
 
 
 def RunSteps(api):
@@ -70,7 +74,9 @@ def RunSteps(api):
       ninja_command=ninja_command,
       source_dir=source_dir,
       deps_cache_by_step=deps_cache_by_step,
-      exec_strategy=exec_strategy):
+      exec_strategy=exec_strategy,
+      bootstrap_extra_env=_BOOTSTRAP_EXTRA_ENV,
+  ):
     api.step(_NINJA_STEP_NAME, ninja_command)
   _ = api.reclient.instance  # for code coverage
   _ = api.reclient.metrics_project

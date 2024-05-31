@@ -208,7 +208,12 @@ def _configure_chromium_builder(api, recipe_config, build_number):
   api.chromium_checkout.ensure_checkout()
 
 
-def _compile(api, config_name, recipe_config, build_number):
+def _compile(
+    api,
+    config_name,
+    recipe_config,
+    build_number,
+):
   # Execute reclient build in '.{build_number}' out directory
   api.reclient.cache_silo = api.buildbucket.builder_name + f" build{build_number}"
   target = f'{api.chromium.c.build_config_fs}.{build_number}'
@@ -226,7 +231,10 @@ def _compile(api, config_name, recipe_config, build_number):
       recipe_config['targets'],
       name=f'Build {build_number}',
       use_reclient=True,
-      target=target)
+      target=target,
+      reclient_extra_env=recipe_config.get(f'reclient_extra_env_{build_number}',
+                                           None),
+  )
 
 
 def _get_config(buildername):

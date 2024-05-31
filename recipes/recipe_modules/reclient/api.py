@@ -366,6 +366,7 @@ class ReclientApi(recipe_api.RecipeApi):
       deps_cache_by_step=False,
       skip_log_upload=False,
       exec_strategy=None,
+      bootstrap_extra_env: dict | None = None,
   ):
     """Do preparation and cleanup steps for running the ninja command.
 
@@ -377,6 +378,7 @@ class ReclientApi(recipe_api.RecipeApi):
       buildtools_dir: The path to the buildtools directory. If not provided,
         then the 'buildtools' subdirectory of `source_dir` will be used.
       skip_log_upload: When true skip log uploading including cloudtail.
+      bootstrap_extra_env: Additional env vars for reclient to be used by bootstrap.
     """
     buildtools_dir = buildtools_dir or source_dir / 'buildtools'
     reclient_log_dir = self.m.path.mkdtemp('reclient_log')
@@ -405,7 +407,8 @@ class ReclientApi(recipe_api.RecipeApi):
         self._start_cloudtail(cloudtail_project_id, reclient_log_dir,
                               'reproxy_outerr.log')
 
-      self._start_reproxy(buildtools_dir, reclient_log_dir, deps_cache_path)
+      self._start_reproxy(buildtools_dir, reclient_log_dir, deps_cache_path,
+                          bootstrap_extra_env)
       # This will get the reclient version the first time it is run,
       # so get it here to ensure it is nested in 'preprocess for reclient'
       rewrapper_env = self._rewrapper_env(buildtools_dir, reclient_log_dir,
@@ -501,18 +504,18 @@ class ReclientApi(recipe_api.RecipeApi):
     self.m.file.listdir('list reclient cache directory', reclient_cache_dir)
 
   @contextlib.contextmanager
-  def _bootstrap_context(
-      self,
-      buildtools_dir: Path,
-      reclient_log_dir: Path,
-      reclient_cache_dir,
-  ):
+  def _bootstrap_context(self,
+                         buildtools_dir: Path,
+                         reclient_log_dir: Path,
+                         reclient_cache_dir,
+                         bootstrap_extra_env: dict | None = None):
     """Creates env dict for running bootstrap
 
     Args:
       reclient_cache_dir: Directory from which to load
                           the dependency cache at reproxy startup
                           and update at shutdown
+      bootstrap_extra_env: Additional env vars for reclient to be used by bootstrap.
     """
     reproxy_bin_path = self._get_reclient_exe_path(buildtools_dir, 'reproxy')
     enable_crash_dump = 'true' if self._scandeps_server else 'false'
@@ -609,15 +612,17 @@ class ReclientApi(recipe_api.RecipeApi):
     if self._ensure_verified:
       env['RBE_mismatch_ignore_config_path'] = self._ignored_mismatches_path
 
+    if bootstrap_extra_env is not None:
+      env = dict(bootstrap_extra_env) | env
+
     with self.m.context(env=env):
       yield
 
-  def _start_reproxy(
-      self,
-      buildtools_dir: Path,
-      reclient_log_dir: Path,
-      reclient_cache_dir,
-  ):
+  def _start_reproxy(self,
+                     buildtools_dir: Path,
+                     reclient_log_dir: Path,
+                     reclient_cache_dir,
+                     bootstrap_extra_env: dict | None = None):
     """Starts the reproxy via bootstrap.
 
     Args:
@@ -626,7 +631,7 @@ class ReclientApi(recipe_api.RecipeApi):
                           and update at shutdown
     """
     with self._bootstrap_context(buildtools_dir, reclient_log_dir,
-                                 reclient_cache_dir):
+                                 reclient_cache_dir, bootstrap_extra_env):
       self.m.step(
           'start reproxy via bootstrap',
           [self._bootstrap_bin_path(buildtools_dir)],

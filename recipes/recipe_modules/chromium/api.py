@@ -512,6 +512,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                                ninja_env,
                                name=None,
                                skip_log_upload=False,
+                               reclient_extra_env: dict | None = None,
                                **kwargs):
     """
     Run ninja with reclient.
@@ -524,6 +525,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       ninja_env: Environment for ninja.
       name: Name of the compile step.
       skip_log_upload: When true skip log uploading.
+      reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
 
     Returns:
       A named tuple with the fields
@@ -538,7 +540,8 @@ class ChromiumApi(recipe_api.RecipeApi):
         ninja_command,
         self.m.path.checkout_dir,
         deps_cache_by_step=self.c.compile_py.reclient_deps_cache_by_step,
-        skip_log_upload=skip_log_upload) as p:
+        skip_log_upload=skip_log_upload,
+        bootstrap_extra_env=reclient_extra_env) as p:
       ninja_result = self._run_ninja(
           ninja_command,
           name,
@@ -699,6 +702,7 @@ class ChromiumApi(recipe_api.RecipeApi):
               target=None,
               use_reclient=False,
               target_output_dir=None,
+              reclient_extra_env: dict | None = None,
               **kwargs):
     """Return a compile.py invocation.
 
@@ -714,6 +718,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         "Release" or "Debug").
       use_reclient (bool): If True, use reclient as the remote compiler.
       target_output_dir (BasePath): Path to the directory to be compiled.
+      reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
       resource_usage_output_file (BasePath): Path to the file which will hold stats related
                                             to resource usage while compiling
 
@@ -776,6 +781,7 @@ class ChromiumApi(recipe_api.RecipeApi):
             ninja_command=command,
             ninja_env=ninja_env,
             name=name or 'compile',
+            reclient_extra_env=reclient_extra_env,
             **kwargs)
       else:
         ninja_result = self._run_ninja_without_remote(
