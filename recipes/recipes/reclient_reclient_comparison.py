@@ -210,6 +210,7 @@ def _configure_chromium_builder(api, recipe_config, build_number):
 
 def _compile(api, config_name, recipe_config, build_number):
   # Execute reclient build in '.{build_number}' out directory
+  api.reclient.cache_silo = api.buildbucket.builder_name + f" build{build_number}"
   target = f'{api.chromium.c.build_config_fs}.{build_number}'
   build_dir = '//out/%s' % target
 
@@ -254,9 +255,9 @@ def RunSteps(api):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
-
+  order = [1, 2] if api.buildbucket.build.number % 2 == 0 else [2, 1]
   with api.context(cwd=solution_path):
-    _configure_chromium_builder(api, recipe_config, 1)
+    _configure_chromium_builder(api, recipe_config, order[0])
 
   base_out_dir = str(api.chromium.output_dir).rstrip('\\/')
   out_dirs = [base_out_dir] + [base_out_dir + '.' + ext for ext in '12']
@@ -269,23 +270,29 @@ def RunSteps(api):
     api.chromium.runhooks()
 
   try:
-    api.reclient.cache_silo = api.buildbucket.builder_name + " build1"
-    raw_result = _compile(api, config_name, recipe_config, 1)
+    raw_result = _compile(api, config_name, recipe_config, order[0])
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
     with api.context(cwd=solution_path):
-      _configure_chromium_builder(api, recipe_config, 2)
+      _configure_chromium_builder(api, recipe_config, order[1])
 
     _clean_output_dirs(api, out_dirs)
 
-    api.reclient.cache_silo = api.buildbucket.builder_name + " build2"
-    raw_result = _compile(api, config_name, recipe_config, 2)
+    raw_result = _compile(api, config_name, recipe_config, order[1])
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
   finally:
     # Always clean output directories after build
     _clean_output_dirs(api, out_dirs)
+
+
+def get_step_order_checker(want_step_order: list[str]):
+
+  def checker(check, steps):
+    check([s for s in steps if s in want_step_order] == want_step_order)
+
+  return checker
 
 
 def GenTests(api):
@@ -299,14 +306,30 @@ def GenTests(api):
     } if COMPARISON_BUILDERS[buildername]['platform'] == 'mac' else {}
     yield api.test(
         test_name,
-        api.chromium.ci_build(builder_group=builder_group, builder=buildername),
-        api.reclient.properties(),
+        api.chromium.ci_build(
+            builder_group=builder_group, builder=buildername, build_number=4),
+        api.reclient.properties(metrics_project="metricproject"),
         api.platform(COMPARISON_BUILDERS[buildername]['platform'], 64),
         api.properties(
             buildername=buildername,
             buildnumber=571,
             configuration='Release',
             **mac_test_props),
+        api.post_check(get_step_order_checker(["Build 1", "Build 2"])),
+        api.post_process(post_process.DropExpectation),
+    )
+    yield api.test(
+        test_name + "_odd",
+        api.chromium.ci_build(
+            builder_group=builder_group, builder=buildername, build_number=5),
+        api.reclient.properties(metrics_project="metricproject"),
+        api.platform(COMPARISON_BUILDERS[buildername]['platform'], 64),
+        api.properties(
+            buildername=buildername,
+            buildnumber=571,
+            configuration='Release',
+            **mac_test_props),
+        api.post_check(get_step_order_checker(["Build 2", "Build 1"])),
         api.post_process(post_process.DropExpectation),
     )
 
