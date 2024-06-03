@@ -38,6 +38,12 @@ DEPS = [
 RUNNER_PACKAGE_PATH = 'rr_tool_runner'
 TEST_BINARY_ISOLATE_FILENAME = 'runner.isolate'
 UPLOAD_BUCKET = 'chromium-rr-traces'
+TEST_SUITE_ALLOW_LIST = [
+    'blink_wpt_tests', 'blink_web_tests',
+    'not_site_per_process_blink_wpt_tests',
+    'not_site_per_process_blink_web_tests', 'high_dpi_blink_wpt_tests',
+    'high_dpi_blink_web_tests'
+]
 WEB_TEST_CMD = [
     'vpython3', 'third_party/blink/tools/run_web_tests.py', '-t', 'Release',
     '--no-retry-failures', '--driver-kill-timeout-secs=10',
@@ -84,7 +90,7 @@ def RunSteps(api):
   swarming_tasks = []
   for test_info in test_infos:
     # TODO(jiesheng): Support other test type for rr test launcher.
-    if 'blink' not in test_info.get('test_suite', ''):
+    if test_info.get('test_suite', '') not in TEST_SUITE_ALLOW_LIST:
       continue
     build_id = test_info.get('invocation_id', '').split('-')[-1]
     test_id = test_info.get('test_id', '')
@@ -214,11 +220,11 @@ def GenTests(api):
       api.override_step_data(
           'query test data',
           api.json.output([{
-              'test_suite': 'blink',
+              'test_suite': 'blink_wpt_tests',
               'invocation_id': 'build-123',
               'test_id': 'test_id_123'
           }, {
-              'test_suite': 'blink',
+              'test_suite': 'blink_wpt_tests',
               'invocation_id': 'build-123',
               'test_id': 'test_id_234'
           }])),
@@ -254,7 +260,7 @@ def GenTests(api):
       api.override_step_data(
           'query test data',
           api.json.output([{
-              'test_suite': 'blink',
+              'test_suite': 'blink_wpt_tests',
               'invocation_id': 'build-123',
               'test_id': 'test_id_123'
           }])),
@@ -284,7 +290,7 @@ def GenTests(api):
       api.override_step_data(
           'query test data',
           api.json.output([{
-              'test_suite': 'blink',
+              'test_suite': 'blink_wpt_tests',
               'test_id': 'test_id_123'
           }])),
       api.post_process(DropExpectation),
@@ -295,7 +301,7 @@ def GenTests(api):
       api.override_step_data(
           'query test data',
           api.json.output([{
-              'test_suite': 'blink',
+              'test_suite': 'blink_wpt_tests',
               'invocation_id': 'build-123',
               'test_id': 'test_id_123'
           }])),
