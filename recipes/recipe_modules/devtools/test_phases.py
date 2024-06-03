@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from contextlib import contextmanager
+from .commons import Results
 
 class TestRunPhase(ABC):
 
@@ -25,6 +25,7 @@ class TestRunPhase(ABC):
         task_on_builder()
       for r in runners:
         self.process_results(r)
+    return sum([t.results for t in runners], Results())
 
   @abstractmethod
   def nesting_name(self):
@@ -61,20 +62,24 @@ class ExonerationPhase(TestRunPhase):
     self.test_names = defaultdict(set)
 
   def init_phase(self):
-    inv_id = self.api.resultdb.current_invocation.replace('invocations/', '')
-    unexpected_results = self.api.resultdb.query(
-        inv_ids=[inv_id],
-        variants_with_unexpected_results=True,
-        tr_fields=['testId', 'tags'],
-    )
+
+
 
     def tag_value(result, tag):
       return next(t for t in result.tags if t.key == tag).value
 
-    for inv in unexpected_results.values():
+    for inv in self.unexpected_results().values():
       for result in inv.test_results:
         test_type = tag_value(result, 'test_type')
         self.test_names[test_type].add(result.test_id)
+
+  def unexpected_results(self):
+    inv_id = self.api.resultdb.current_invocation.replace('invocations/', '')
+    return self.api.resultdb.query(
+        inv_ids=[inv_id],
+        variants_with_unexpected_results=True,
+        tr_fields=['testId', 'tags'],
+    )
 
   def nesting_name(self):
     return 'Flake exonaration attempt'
@@ -84,3 +89,9 @@ class ExonerationPhase(TestRunPhase):
 
   def process_results(self, runner):
     runner.process_exoneration_results(self.test_names)
+
+  def run_all(self, runners, task_on_builder=None):
+    results = super().run_all(runners, task_on_builder)
+    if self.unexpected_results():
+      results.add_test_failure('Failed to exonerate some of the failing tests')
+    return results
