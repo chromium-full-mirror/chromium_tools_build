@@ -1671,9 +1671,8 @@
       "-json",
       "-n",
       "1000",
-      "-u",
       "-tr-fields",
-      "testId,tags",
+      "testId,tags,expected",
       "build:8945511751514863184"
     ],
     "env_prefixes": {
@@ -1705,6 +1704,40 @@
     "name": "Flake exonaration attempt.Trigger Tests",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "rdb",
+      "query",
+      "-json",
+      "-n",
+      "1000",
+      "-tr-fields",
+      "testId,tags,expected",
+      "build:8945511751514863184"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/devtools-frontend/third_party"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "devtools:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "rdb query",
+    "~followup_annotations": [
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },
   {

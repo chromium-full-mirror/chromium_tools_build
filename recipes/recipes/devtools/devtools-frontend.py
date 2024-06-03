@@ -88,11 +88,12 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   with api.devtools.depot_on_path(source_dir):
     api.devtools.clean_out_dir(source_dir, builder_config, clobber)
     api.chromium.run_gn()
+
     compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
-
     cas_digest = api.devtools.archive_to_cas(source_dir)
+
     divider = E2ETestDivider(api, source_dir, builder_config)
     tests = [
         UnitTests(api, source_dir, cas_digest, builder_config, coverage,
@@ -112,12 +113,11 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
         tests,
         task_on_builder=lambda: run_lint_check(api, builder_config, source_dir))
 
-    ExonerationPhase(api).run_all(tests)
+    results = ExonerationPhase(api).run_all(tests)
 
     publish_coverage_points(api, source_dir, skip=not coverage)
     publish_performance_benchmarks(api, source_dir, skip=not perf_benchmarks)
 
-    results = sum([t.results for t in tests], Results())
     return results.raw_result()
 
 
