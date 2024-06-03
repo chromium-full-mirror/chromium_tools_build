@@ -112,11 +112,12 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
         tests,
         task_on_builder=lambda: run_lint_check(api, builder_config, source_dir))
 
-    results = ExonerationPhase(api).run_all(tests)
+    ExonerationPhase(api).run_all(tests)
 
     publish_coverage_points(api, source_dir, skip=not coverage)
     publish_performance_benchmarks(api, source_dir, skip=not perf_benchmarks)
 
+    results = sum([t.results for t in tests], Results())
     return results.raw_result()
 
 
