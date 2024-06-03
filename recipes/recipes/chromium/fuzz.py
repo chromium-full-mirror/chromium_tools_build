@@ -9,7 +9,9 @@ from recipe_engine import post_process
 from recipe_engine.post_process import StepCommandRE, DropExpectation, LogEquals
 from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipes.build.chromium.fuzz import InputProperties
 from RECIPE_MODULES.build import chromium
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.attr_utils import attrs, attrib
 
 DEPS = [
@@ -17,6 +19,8 @@ DEPS = [
     'code_coverage',
     'chromium',
     'chromium_checkout',
+    'chromium_tests',
+    'chromium_tests_builder_config',
     'depot_tools/depot_tools',
     'depot_tools/tryserver',
     'filter',
@@ -32,297 +36,7 @@ DEPS = [
     'recipe_engine/step',
 ]
 
-
-@attrs()
-class FuzzEngineSpec(chromium.BuilderSpec):
-
-  archive_prefix = attrib(str, default='libfuzzer')
-  v8_targets_only = attrib(bool, default=False)
-  ios_targets_only = attrib(bool, default=False)
-  upload_bucket = attrib(str, default=None)
-  upload_directory = attrib(str, default=None)
-  collect_fuzz_coverage = attrib(bool, default=False)
-
-
-BUILDERS = freeze({
-    'chromium.coverage': {
-        'builders': {
-            'linux-fuzz-coverage':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                        'HOST_PLATFORM': 'linux',
-                    },
-                    collect_fuzz_coverage=True,
-                    gclient_apply_config=['use_clang_coverage'],
-                ),
-        }
-    },
-    'chromium.fuzz': {
-        'builders': {
-            'Libfuzzer Upload Chrome OS ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'chromeos',
-                        'TARGET_BITS': 64,
-                    },
-                    gclient_apply_config=['chromeos'],
-                    archive_prefix='libfuzzer-chromeos',
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='chromeos-asan',
-                ),
-            'Libfuzzer Upload iOS Catalyst Debug':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=[
-                        'clobber',
-                        'mac_toolchain',
-                    ],
-                    gclient_apply_config=['ios'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Debug',
-                        'TARGET_BITS': 64,
-                        'TARGET_PLATFORM': 'ios',
-                        'HOST_PLATFORM': 'mac',
-                    },
-                    archive_prefix='libfuzzer-ios',
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='ios-catalyst-debug',
-                    ios_targets_only=True,
-                ),
-            'Libfuzzer Upload Linux32 ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 32,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan',
-                ),
-            'Libfuzzer Upload Linux32 V8-ARM ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 32,
-                    },
-                    archive_prefix='libfuzzer-v8-arm',
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan-arm-sim',
-                    v8_targets_only=True,
-                ),
-            'Libfuzzer Upload Linux32 V8-ARM ASan Debug':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Debug',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 32,
-                    },
-                    archive_prefix='libfuzzer-v8-arm',
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan-arm-sim',
-                    v8_targets_only=True,
-                ),
-            'Libfuzzer Upload Linux ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan',
-                ),
-            'Libfuzzer Upload Linux ASan Debug':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Debug',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan',
-                ),
-            'Libfuzzer Upload Linux V8-ARM64 ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    archive_prefix='libfuzzer-v8-arm64',
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan-arm64-sim',
-                    v8_targets_only=True,
-                ),
-            'Libfuzzer Upload Linux V8-ARM64 ASan Debug':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Debug',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    archive_prefix='libfuzzer-v8-arm64',
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan-arm64-sim',
-                    v8_targets_only=True,
-                ),
-            'Libfuzzer Upload Linux MSan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber', 'msan'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='msan',
-                ),
-            'Libfuzzer Upload Linux UBSan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='ubsan',
-                ),
-            'Libfuzzer Upload Mac ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'mac',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan',
-                ),
-            'Libfuzzer Upload Windows ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'win',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-libfuzzer',
-                    upload_directory='asan',
-                ),
-            'Afl Upload Linux ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-afl',
-                    upload_directory='asan',
-                    archive_prefix='afl',
-                ),
-            'Centipede Upload Linux ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-centipede',
-                    upload_directory='asan',
-                    archive_prefix='centipede',
-                ),
-            'Centipede High End Upload Linux ASan':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['clobber'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                    upload_bucket='chromium-browser-centipede',
-                    upload_directory='asan',
-                    archive_prefix='centipede-high-end',
-                ),
-        },
-    },
-    'tryserver.chromium.linux': {
-        'builders': {
-            'linux-libfuzzer-asan-rel':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium',
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                ),
-            'linux-afl-asan-rel':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium',
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                ),
-            'linux-centipede-asan-rel':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium',
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                ),
-        },
-    },
-    'tryserver.chromium.win': {
-        'builders': {
-            'win-libfuzzer-asan-rel':
-                FuzzEngineSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'win',
-                        'TARGET_BITS': 64,
-                    },
-                ),
-        },
-    },
-})
+PROPERTIES = InputProperties
 
 
 def gn_refs(api, step_name, target):
@@ -420,10 +134,15 @@ def batched(iterable):
     yield batch
 
 
-def RunSteps(api):
-  builder_id, bot_config = api.chromium.configure_bot(BUILDERS, ['mb'])
-  update_result = api.chromium_checkout.ensure_checkout(
-      clobber=bot_config.clobber)
+def RunSteps(api, properties):
+  builder_id, builder_config = (
+      api.chromium_tests_builder_config.lookup_builder())
+  api.chromium_tests.configure_build(builder_config)
+
+  # Most CI fuzz bots clobber. But we don't want the trybots clobbering, since
+  # some of them are on the CQ.
+  should_clobber = builder_config.clobber and not api.tryserver.is_tryserver()
+  update_result = api.chromium_checkout.ensure_checkout(clobber=should_clobber)
 
   api.chromium.ensure_toolchains()
   api.chromium.runhooks()
@@ -433,12 +152,12 @@ def RunSteps(api):
   with api.context(cwd=source_dir, env=api.chromium.get_env()):
     all_fuzzers = gn_refs(api, 'calculate all_fuzzers',
                           '//testing/libfuzzer:fuzzing_engine')
-    if bot_config.v8_targets_only:
+    if properties.v8_targets_only:
       # Some builders only need the V8 targets as the only difference is code
       # generated by V8 simulators.
       v8_fuzzers = gn_refs(api, 'calculate v8_fuzzers', '//v8:fuzzer_support')
       all_fuzzers = all_fuzzers & v8_fuzzers
-    elif bot_config.ios_targets_only:
+    elif properties.ios_targets_only:
       ios_fuzzers = gn_refs(
           api, 'calculate ios_fuzzers',
           '//testing/libfuzzer:build_for_ios_clusterfuzz_job')
@@ -447,7 +166,7 @@ def RunSteps(api):
                              '//testing/libfuzzer:no_clusterfuzz')
     # If we're collecting coverage, we also want to know the coverage
     # of the main Chromium binary, so let's build that too.
-    if bot_config.collect_fuzz_coverage:
+    if properties.collect_fuzz_coverage:
       all_fuzzers.add("chrome")
     targets = sorted(all_fuzzers - no_clusterfuzz)
 
@@ -458,7 +177,7 @@ def RunSteps(api):
     api.step.active_result.presentation.logs['targets'] = targets
 
     outdir = api.chromium.output_dir
-    if api.tryserver.is_tryserver and not bot_config.collect_fuzz_coverage:
+    if api.tryserver.is_tryserver and not properties.collect_fuzz_coverage:
       # Filter out all targets that the patch doesn't affect.
       affected_files = api.chromium_checkout.get_files_affected_by_patch()
       test_targets, compile_targets = api.filter.analyze(
@@ -505,12 +224,12 @@ def RunSteps(api):
         return raw_result
 
     # Stop here if we're only running on a trybot.
-    if api.tryserver.is_tryserver and not bot_config.collect_fuzz_coverage:
+    if api.tryserver.is_tryserver and not properties.collect_fuzz_coverage:
       return raw_result
 
-    if not bot_config.collect_fuzz_coverage:
-      assert (bot_config.upload_directory is not None)
-      assert (bot_config.upload_bucket is not None)
+    if not properties.collect_fuzz_coverage:
+      assert (properties.upload_directory is not None)
+      assert (properties.upload_bucket is not None)
 
     # Make sure 32 bit archives are distinguished from 64 bit ones.
     kwargs = {}
@@ -518,7 +237,7 @@ def RunSteps(api):
       kwargs['use_legacy'] = False
       kwargs['bitness'] = 32
 
-    if bot_config.collect_fuzz_coverage:
+    if properties.collect_fuzz_coverage:
       with api.step.nest('process fuzz coverage') as step_result:
         try:
           corpora_dir = 'current-corpora-from-clusterfuzz'
@@ -591,27 +310,34 @@ def RunSteps(api):
       api.archive.clusterfuzz_archive(
           build_dir=api.chromium.output_dir,
           update_properties=update_result.properties,
-          gs_bucket=bot_config.upload_bucket,
-          archive_prefix=bot_config.archive_prefix,
-          archive_subdir_suffix=bot_config.upload_directory,
+          gs_bucket=properties.upload_bucket,
+          archive_prefix=properties.archive_prefix or 'libfuzzer',
+          archive_subdir_suffix=properties.upload_directory,
           gs_acl='public-read',
           **kwargs)
 
 
 def GenTests(api):
-  for test in api.chromium.gen_tests_for_builders(BUILDERS):
+
+  def generate_test(is_try=False, is_coverage=False, is_ios=False, is_v8=False):
+    test = api.properties(
+        upload_bucket='chromium-browser-libfuzzer',
+        upload_directory='fuzz',
+        v8_targets_only=is_v8,
+        ios_targets_only=is_ios,
+        collect_fuzz_coverage=is_coverage,
+    )
     test += api.reclient.properties()
     test += api.step_data(
         'calculate all_fuzzers',
         stdout=api.raw_io.output_text('target1\ntarget2\ntarget3\n')
     ) + api.step_data(
         'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
-    if not (("tryserver" in test.name) or ("fuzz_coverage" in test.name)):
+    if not (is_try or is_coverage):
       test += api.post_process(post_process.MustRun,
                                'generate runtime dependencies to copy')
       # this will lead to us having ../../path2 and ../../path4 as runtime dependencies to copy
-      if not (("V8" in test.name) or ("Win" in test.name) or
-              ("iOS" in test.name)):
+      if not (is_v8 or is_ios):
         step_output = ('some warning1\n\n'
                        'some warning2\n'
                        'Target target1\n'
@@ -651,22 +377,128 @@ def GenTests(api):
             'copy runtime dependencies to build directory.copying directory:[CACHE]/builder/src/path4'
         )
       test += api.post_process(post_process.MustRun, 'gsutil upload')
-    if "fuzz_coverage" in test.name:
+    if is_coverage:
       test += api.post_process(post_process.MustRun, 'process fuzz coverage')
       test += api.step_data(
           'process fuzz coverage.generate coverage metadata', retcode=1)
     test += api.post_process(post_process.DropExpectation)
-    if 'Upload_iOS' in test.name:
-      yield (test + api.properties(xcode_build_version='12345'))
-    else:
-      yield test
+    if is_ios:
+      return (test + api.properties(xcode_build_version='12345'))
+    return test
+
+  yield api.test(
+      'linux-32',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          chromium_config_kwargs={
+                              'TARGET_BITS': 32,
+                          },
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      generate_test(),
+  )
+
+  yield api.test(
+      'linux-dbg',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          chromium_config_kwargs={
+                              'BUILD_CONFIG': 'Debug',
+                          },
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      generate_test(),
+  )
+
+  yield api.test(
+      'v8',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      generate_test(is_v8=True),
+  )
+
+  yield api.test(
+      'ios',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                          chromium_config_kwargs={
+                              'TARGET_PLATFORM': 'ios',
+                          },
+                      ),
+              },
+          })),
+      api.platform.name('mac'),
+      generate_test(is_ios=True),
+  )
+
+  yield api.test(
+      'coverage',
+      api.chromium_tests_builder_config.ci_build(
+          builder_group='chromium.fuzz',
+          builder='some-ci-bot',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'some-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
+      api.platform.name('linux'),
+      generate_test(is_coverage=True),
+  )
 
   yield api.test(
       'compile_failure',
-      api.chromium.ci_build(
+      api.chromium_tests_builder_config.ci_build(
           builder_group='chromium.fuzz',
           builder='Libfuzzer Upload Mac ASan',
-      ),
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'Libfuzzer Upload Mac ASan':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          })),
       api.platform.name('mac'),
       api.reclient.properties(),
       api.step_data(
@@ -681,9 +513,25 @@ def GenTests(api):
 
   yield api.test(
       'basic_linux_tryjob_no_compile',
-      api.chromium.try_build(
+      api.chromium_tests_builder_config.try_build(
           builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel'),
+          builder='linux-libfuzzer-asan-rel',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'fuzz-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'tryserver.chromium.linux': {
+                  'linux-libfuzzer-asan-rel':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          'chromium.fuzz', 'fuzz-ci-bot'),
+              },
+          })),
       api.step_data(
           'calculate all_fuzzers',
           stdout=api.raw_io.output_text(
@@ -696,9 +544,25 @@ def GenTests(api):
 
   yield api.test(
       'basic_linux_tryjob_with_compile',
-      api.chromium.try_build(
+      api.chromium_tests_builder_config.try_build(
           builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel'),
+          builder='linux-libfuzzer-asan-rel',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'fuzz-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'tryserver.chromium.linux': {
+                  'linux-libfuzzer-asan-rel':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          'chromium.fuzz', 'fuzz-ci-bot'),
+              },
+          })),
       api.step_data(
           'calculate all_fuzzers',
           stdout=api.raw_io.output_text('\n'.join(
@@ -718,9 +582,25 @@ def GenTests(api):
 
   yield api.test(
       'basic_linux_tryjob_with_compile_many_targets',
-      api.chromium.try_build(
+      api.chromium_tests_builder_config.try_build(
           builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel'),
+          builder='linux-libfuzzer-asan-rel',
+          builder_db=ctbc.BuilderDatabase.create({
+              'chromium.fuzz': {
+                  'fuzz-ci-bot':
+                      ctbc.BuilderSpec.create(
+                          chromium_config='chromium',
+                          gclient_config='chromium',
+                      ),
+              },
+          }),
+          try_db=ctbc.TryDatabase.create({
+              'tryserver.chromium.linux': {
+                  'linux-libfuzzer-asan-rel':
+                      ctbc.TrySpec.create_for_single_mirror(
+                          'chromium.fuzz', 'fuzz-ci-bot'),
+              },
+          })),
       api.step_data(
           'calculate all_fuzzers',
           stdout=api.raw_io.output_text('\n'.join(

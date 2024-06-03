@@ -423,7 +423,6 @@
       "linux-libfuzzer-asan-rel",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--luci-auth",
       "--quiet"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -459,7 +458,6 @@
       "linux-libfuzzer-asan-rel",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
       "//out/Release"
@@ -636,7 +634,6 @@
       "linux-libfuzzer-asan-rel",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "--luci-auth",
       "-v",
       "//out/Release",
       "{\"additional_compile_targets\": [\"//foo/bar:target2\", \"//foo/bar:target3\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",

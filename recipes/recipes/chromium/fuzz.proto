@@ -1,0 +1,17 @@
+// Copyright 2024 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.chromium.fuzz;
+
+// Next ID: 7
+message InputProperties {
+  string archive_prefix = 1;
+  bool v8_targets_only = 2;
+  bool ios_targets_only = 3;
+  string upload_bucket = 4;
+  string upload_directory = 5;
+  bool collect_fuzz_coverage = 6;
+}
