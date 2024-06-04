@@ -397,11 +397,6 @@ def win_asan(_):
 
 
 @config_ctx(includes=['ninja', 'default_compiler'])
-def chromium_no_goma(c):
-  c.compile_py.default_targets = ['all']
-
-
-@config_ctx(includes=['ninja', 'default_compiler'])
 def chromium(c):
   c.compile_py.default_targets = ['all']
   c.cros_sdk.external = True
@@ -495,13 +490,13 @@ def clang_tot_android(_):
 
 @config_ctx(includes=['clang_tot_android', 'asan'])
 def clang_tot_android_asan(_):
-  # Like android_clang, minus goma, minus static_libarary, plus asan.
+  # Like android_clang, minus static_libarary, plus asan.
   pass
 
 
 @config_ctx(includes=['clang_tot_android'])
 def clang_tot_android_dbg(_):
-  # Like android_clang, minus goma, minus static_libarary.
+  # Like android_clang, minus static_libarary.
   pass
 
 
@@ -516,7 +511,7 @@ def clang_tot_fuchsia(_):
 
 # GYP_DEFINES must not include 'asan' or 'clang', else the tester bot will try
 # to compile clang.
-@config_ctx(includes=['chromium_no_goma'])
+@config_ctx(includes=['chromium'])
 def chromium_win_asan(c):
   c.runtests.run_asan_test = True
 
