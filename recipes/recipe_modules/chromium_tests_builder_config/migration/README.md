@@ -158,11 +158,11 @@ the chrome project.
 
         * There are builders that are not related to the removed builders via
           triggering or mirroring, but whose configuration is programatically
-          constructed based off of one of the removed builders (e.g. goma &
+          constructed based off of one of the removed builders (e.g.
           reclient versions of builders). To keep their definitions in sync, you
           should manually add a builder config for them using
           `builder_config.copy_from`. See
-          <https://crrev.com/c/3500816/4/infra/config/subprojects/goma/goma.star>
+          <https://crrev.com/c/3605737/3/infra/config/subprojects/reclient/reclient.star>
           for an example. You can use migrate.py to find any related builders
           and if there are any try builders, you should be able to copy the
           snippets for them. You would have to run migrate.py in another branch

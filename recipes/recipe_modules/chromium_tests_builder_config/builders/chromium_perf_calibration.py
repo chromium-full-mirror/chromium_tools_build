@@ -12,7 +12,7 @@ def _AddCalibrationTestSpec(name, platform, target_bits):
   """Defines the bot spec for calibration, which will build and test. The reason
   is that calibration is triggered daily and is not triggered by any specific
   builder. As we don't have any compiled version available to checkout, we will
-  build it again. Calibration targets on the Stable branch so Goma should save
+  build it again. Calibration targets on the Stable branch so RBE should save
   lots of compiling effort.
   This function means to be a union of BuildSpec and TestSpec from
   chromium_perf.py. More arguments and logic will be added when more builders
