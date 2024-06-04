@@ -60,7 +60,8 @@ BUILDERS = freeze({
 # Sample targets that are used to test the coverage script against clang tot
 # coverage tools.
 SAMPLE_TARGETS = [
-    'base_unittests', 'boringssl_crypto_tests', 'boringssl_ssl_tests'
+    'base_unittests', 'boringssl_crypto_tests', 'boringssl_ssl_tests',
+    'unit_tests'
 ]
 
 def RunSteps(api):

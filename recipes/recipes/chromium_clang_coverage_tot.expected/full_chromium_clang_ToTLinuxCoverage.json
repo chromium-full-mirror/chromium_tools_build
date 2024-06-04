@@ -335,12 +335,15 @@
       "base_unittests",
       "boringssl_crypto_tests",
       "boringssl_ssl_tests",
+      "unit_tests",
       "-c",
       "[CACHE]/builder/src/out/Release/base_unittests",
       "-c",
       "[CACHE]/builder/src/out/Release/boringssl_crypto_tests",
       "-c",
       "[CACHE]/builder/src/out/Release/boringssl_ssl_tests",
+      "-c",
+      "[CACHE]/builder/src/out/Release/unit_tests",
       "-b",
       "[CACHE]/builder/src/out/Release",
       "-o",
@@ -466,6 +469,38 @@
       "@@@STEP_LOG_LINE@boringssl_ssl_tests_output.log@aaa@@@",
       "@@@STEP_LOG_LINE@boringssl_ssl_tests_output.log@bbb@@@",
       "@@@STEP_LOG_END@boringssl_ssl_tests_output.log@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CACHE]/builder/src/out/clang_tot_coverage_report/linux/logs/unit_tests_output.log",
+      "/path/to/tmp/"
+    ],
+    "cwd": "[CACHE]/builder",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "read log output of unit_tests",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@unit_tests_output.log@aaa@@@",
+      "@@@STEP_LOG_LINE@unit_tests_output.log@bbb@@@",
+      "@@@STEP_LOG_END@unit_tests_output.log@@@"
     ]
   },
   {
