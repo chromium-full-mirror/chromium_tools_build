@@ -1310,7 +1310,7 @@
       "query",
       "-json",
       "-n",
-      "1000",
+      "0",
       "-tr-fields",
       "testId,tags,expected",
       "build:8945511751514863184"
@@ -1352,7 +1352,7 @@
       "query",
       "-json",
       "-n",
-      "1000",
+      "0",
       "-tr-fields",
       "testId,tags,expected",
       "build:8945511751514863184"

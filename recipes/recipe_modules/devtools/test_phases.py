@@ -75,6 +75,7 @@ class ExonerationPhase(TestRunPhase):
     response = self.api.resultdb.query(
         inv_ids=[inv_id],
         tr_fields=['testId', 'tags', 'expected'],
+        limit=0,
     )
     return sum((res.test_results for res in response.values()), [])
 
