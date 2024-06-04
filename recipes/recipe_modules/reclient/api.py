@@ -15,8 +15,8 @@ import time
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
 
-from google.protobuf import json_format
-from google.protobuf import timestamp_pb2
+from google.protobuf import json_format, timestamp_pb2
+from google.protobuf.message import DecodeError
 from PB.recipe_modules.build.reclient import rbe_metrics_bq
 
 
@@ -665,7 +665,17 @@ class ReclientApi(recipe_api.RecipeApi):
         'load rbe_metrics.pb',
         reclient_log_dir / 'rbe_metrics.pb',
         test_data=make_test_rbe_stats_pb().SerializeToString())
-    bq_pb.stats.ParseFromString(stats_raw)
+    try:
+      bq_pb.stats.ParseFromString(stats_raw)
+    except DecodeError as e:
+      self.m.step.empty(
+          'upload RBE metrics to BigQuery (FAILED)',
+          status=self.m.step.FAILURE,
+          log_name='rbe_metrics',
+          log_text="DecodeError while parsing rbe_metrics.pb: {}".format(e),
+          raise_on_failure=False)
+      return
+
     if self._ensure_verified:
       self._check_mismatch(bq_pb.stats)
 

@@ -499,6 +499,21 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+      'ensure_broken_rbestats_proto_gets_caught',
+      api.buildbucket.ci_build(project='chromium', builder='Linux reclient'),
+      api.reclient.properties(),
+      api.step_data(
+          'postprocess for reclient.load rbe_metrics.pb',
+          api.file.read_raw(
+              content="corrupt_rbestats_foobar_this_is_not_a_proto")),
+      api.post_process(
+          post_process.StepFailure,
+          'postprocess for reclient.upload RBE metrics to BigQuery (FAILED)'),
+      api.expect_status('SUCCESS'),
+      api.post_process(post_process.DropExpectation),
+  )
+
   def version_number_checker(check, steps):
     step = steps['preprocess for reclient.get reclient version']
     check(step.logs['reclient_version'] == api.json.dumps(
