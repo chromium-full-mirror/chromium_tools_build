@@ -19,6 +19,8 @@ class E2ETests(ExonerableTests):
     super().__init__(api, source_dir, cas_digest, builder_config, coverage,
                      step_name)
     self.divider = divider
+    if self.api.devtools.is_shuffled_run():
+      self.extra_args = ['--bail']
 
   def skip(self):
     return self.api.devtools.is_debug(self.builder_config)
@@ -27,7 +29,8 @@ class E2ETests(ExonerableTests):
     return [cmd + self.extra_args for cmd in self.divider.commands]
 
   def construct_commands(self):
-    is_exoneration_attempt = self.extra_args
+    is_exoneration_attempt = (
+        self.extra_args and not self.api.devtools.is_shuffled_run())
     if is_exoneration_attempt:
       return [self.run_tests_command('test/e2e')]
     return [
