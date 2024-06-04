@@ -681,4 +681,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         test.target_name: digest['hash'] + '/' + digest['size_bytes']
     }
 
+    # Prevent the task from getting deduped
+    test.spec = attr.evolve(test.spec, idempotent=False)
+
     self.m.isolate.set_isolated_tests(swarm_hashes)
