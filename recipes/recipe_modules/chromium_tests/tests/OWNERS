@@ -1,4 +1,0 @@
-file://recipes/recipe_modules/chromium_tests/CHROMIUM_TESTS_OWNERS
-
-# This is for json expectation changes from goma recipe_modules update.
-file://recipes/goma/GOMA_OWNERS
