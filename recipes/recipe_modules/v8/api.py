@@ -433,6 +433,9 @@ class V8Api(recipe_api.RecipeApi):
     """
     revision = self.get_revision(revision)
 
+    if not self.m.properties.get('apply_repo_bot_config_override'):
+      return bot_config
+
     builder_properties = self.m.gitiles.download_file(
         'https://chromium.googlesource.com/v8/v8',
         'infra/builder_properties.pyl',

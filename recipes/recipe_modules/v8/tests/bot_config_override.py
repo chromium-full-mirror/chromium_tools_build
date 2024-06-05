@@ -9,6 +9,7 @@ DEPS = [
     'depot_tools/gitiles',
     'recipe_engine/buildbucket',
     'recipe_engine/json',
+    'recipe_engine/properties',
     'v8',
 ]
 
@@ -35,6 +36,7 @@ def GenTests(api):
     return api.test(
         name,
         api.buildbucket.ci_build(builder=f'Builder {name}'),
+        api.properties(apply_repo_bot_config_override=True),
         *step_overrides,
         api.post_process(LogEquals, 'Retrieve bot_config', 'merged bot_config',
                          expected),
