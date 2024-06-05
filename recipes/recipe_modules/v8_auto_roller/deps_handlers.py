@@ -30,6 +30,7 @@ TRUSTED_ORIGIN_DEPS = {
     "https://chromium.googlesource.com/chromium/src/third_party/instrumented_libraries",
     "https://chromium.googlesource.com/chromium/src/third_party/jinja2",
     "https://chromium.googlesource.com/chromium/src/third_party/markupsafe",
+    "https://chromium.googlesource.com/chromium/src/third_party/protobuf",
     "https://chromium.googlesource.com/chromium/src/third_party/zlib",
     "https://chromium.googlesource.com/infra/luci/luci-py/client/libs/logdog",
     "https://chromium.googlesource.com/chromium/src/tools/clang",
