@@ -100,14 +100,10 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
-        'gclient_apply_config_2': ['reclient_test'],
+        'gclient_apply_config_1': [],
+        'gclient_apply_config_2': ['reclient_staging'],
         'reclient_extra_env_1': {},
-        'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision',
-            'RBE_bq_batch_size': 500,
-        },
+        'reclient_extra_env_2': {},
         'platform': 'mac',
         'chromium_config_kwargs': {
             'TARGET_BITS': 64,
