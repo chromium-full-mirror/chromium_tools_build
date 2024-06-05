@@ -17,23 +17,12 @@ from typing import Dict, List, Literal, Optional
 TRUSTED_ORIGIN_DEPS = {
     "https://chrome-infra-packages.appspot.com/fuchsia/third_party/aemu/linux-amd64",
     "https://chrome-infra-packages.appspot.com/p/fuchsia/qemu/linux-amd64",
-    "https://chromium.googlesource.com/chromium/src/base/trace_event/common",
-    "https://chromium.googlesource.com/chromium/src/build",
-    "https://chromium.googlesource.com/chromium/src/buildtools",
     "https://chromium.googlesource.com/devtools/devtools-frontend",
-    "https://chromium.googlesource.com/chromium/src/third_party/abseil-cpp",
-    "https://chromium.googlesource.com/chromium/src/third_party/android_platform",
-    "https://chromium.googlesource.com/chromium/src/third_party/boringssl",
-    "https://chromium.googlesource.com/chromium/src/third_party/fuchsia-gn-sdk",
-    "https://chromium.googlesource.com/chromium/src/third_party/fuzztest",
-    "https://chromium.googlesource.com/chromium/src/third_party/google_benchmark",
-    "https://chromium.googlesource.com/chromium/src/third_party/instrumented_libraries",
-    "https://chromium.googlesource.com/chromium/src/third_party/jinja2",
-    "https://chromium.googlesource.com/chromium/src/third_party/markupsafe",
-    "https://chromium.googlesource.com/chromium/src/third_party/protobuf",
-    "https://chromium.googlesource.com/chromium/src/third_party/zlib",
     "https://chromium.googlesource.com/infra/luci/luci-py/client/libs/logdog",
-    "https://chromium.googlesource.com/chromium/src/tools/clang",
+}
+
+TRUSTED_ORIGIN_PREFIXES = {
+    "https://chromium.googlesource.com/chromium/src/",
 }
 
 CIPD_DEP_URL_PREFIX = 'https://chrome-infra-packages.appspot.com/'
@@ -134,8 +123,11 @@ class TargetDep:
   @property
   def is_trusted(self) -> bool:
     trusted_origin = self.canonical_location in TRUSTED_ORIGIN_DEPS
+    trusted_prefix = any(
+        self.canonical_location.startswith(prefix)
+        for prefix in TRUSTED_ORIGIN_PREFIXES)
     from_chromium = self.source_system == 'chromium'
-    return trusted_origin or from_chromium
+    return trusted_origin or trusted_prefix or from_chromium
 
   @property
   def is_cipd(self) -> bool:
