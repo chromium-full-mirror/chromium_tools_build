@@ -203,6 +203,12 @@ _AddBuildSpec(
     bisect_archive_build=True,
     target_arch='arm',
 )
+_AddBuildSpec(
+    'mac-arm-no-brp-builder-perf',
+    'mac',
+    bisect_archive_build=False,
+    target_arch='arm',
+)
 
 # Adapted from 'lacros-amd64-generic-chrome' and 'lacros-arm-generic-chrome'
 # to measure binary size.
@@ -321,6 +327,11 @@ _AddIsolatedTestSpec(
     'mac-m1_mini_2020-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 _AddIsolatedTestSpec(
     'mac-m1_mini_2020-perf-pgo', 'mac', 'mac-arm-builder-perf-pgo', target_arch='arm')
+_AddIsolatedTestSpec(
+    'mac-m1_mini_2020-no-brp-perf',
+    'mac',
+    'mac-arm-no-brp-builder-perf',
+    target_arch='arm')
 _AddIsolatedTestSpec(
     'mac-m1-pro-perf', 'mac', 'mac-arm-builder-perf', target_arch='arm')
 _AddIsolatedTestSpec(
