@@ -46,6 +46,8 @@ def make_test_rbe_stats_pb():
   p1.flags['abc'] = 'def'
   p1.metrics['some'].bool_value = 1
   p1.metrics['other'].int64_value = 7
+  p1.bq_stats["failed_bq_uploads"] = 1
+  p1.bq_stats["success_bq_uploads"] = 42003
 
   s1 = p1.stats.add()
   s1.name = "CPU"
@@ -76,6 +78,11 @@ def proxy_info_to_bq(proxy_info):
         'key': flag,
         'value': proxy_info.flags[flag]
     } for flag in sorted(proxy_info.flags)]
+  if proxy_info.bq_stats:
+    proxy_info_bq['bq_stats'] = [{
+        'key': key,
+        'value': proxy_info.bq_stats[key]
+    } for key in sorted(proxy_info.bq_stats)]
   if proxy_info.stats:
     proxy_info_bq['stats'] = [
         json_format.MessageToDict(
