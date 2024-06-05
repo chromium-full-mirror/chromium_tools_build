@@ -105,7 +105,8 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {},
         'reclient_extra_env_2': {
             "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
+            'RBE_bq_table': 'reproxylogs.chrome_comparision',
+            'RBE_bq_batch_size': 500,
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -124,7 +125,8 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {},
         'reclient_extra_env_2': {
             "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
+            'RBE_bq_table': 'reproxylogs.chrome_comparision',
+            'RBE_bq_batch_size': 500,
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -144,7 +146,8 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {},
         'reclient_extra_env_2': {
             "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
+            'RBE_bq_table': 'reproxylogs.chrome_comparision',
+            'RBE_bq_batch_size': 500,
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -217,7 +220,8 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_1': {},
         'reclient_extra_env_2': {
             "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
+            'RBE_bq_table': 'reproxylogs.chrome_comparision',
+            'RBE_bq_batch_size': 500,
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
