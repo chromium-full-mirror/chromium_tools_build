@@ -900,26 +900,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'dynamic_junit_test',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec('fake-group', {
-          'fake-tester': {
-              'junit_tests': [{
-                  'test': 'base_junit_tests',
-              },],
-          },
-      }),
-  )
-
-  yield api.test(
       'dynamic_gtest_on_builder',
       api.platform('linux', 64),
       api.chromium.ci_build(

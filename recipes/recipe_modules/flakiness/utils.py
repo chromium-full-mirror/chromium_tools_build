@@ -79,18 +79,6 @@ def set_to_string(test_set):
   ])
 
 
-def apply_android_test_filter(test, test_filter, repeat_count):
-  # Android junit need the spec's additional_args updated with the
-  # repeat and filter clauses.
-  additional_args = list([
-      '--gtest_repeat=%s' % str(repeat_count),
-      '--gtest_filter=%s' % str(':'.join(test_filter)),
-      '--shards=1',
-  ])
-  test.spec = attr.evolve(test.spec, additional_args=additional_args)
-  return test
-
-
 def apply_script_test_filter(test, test_filter, repeat_count):
   script_args = list([
       '--gtest_repeat=%s' % str(repeat_count),

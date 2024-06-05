@@ -71,7 +71,6 @@ class Generator:
       for key, handler in (
           ('gtest_tests', self._generate_gtest_test_spec),
           ('isolated_scripts', self._generate_isolated_script_test_spec),
-          ('junit_tests', self._generate_junit_test_spec),
           ('scripts', self._generate_script_test_spec),
           ('skylab_tests', self._generate_skylab_test_spec),
       ):
@@ -473,19 +472,6 @@ class Generator:
 
     return self._generator_common(raw_test_spec, gtest_swarming_delegate,
                                   gtest_local_delegate)
-
-  def _generate_junit_test_spec(
-      self,
-      raw_test_spec: _RawTestSpec,
-  ) -> steps.TestSpec | None:
-    if self._remote_tests_only:
-      return None
-
-    kwargs = {}
-    kwargs['target_name'] = raw_test_spec['test']
-    kwargs['additional_args'] = raw_test_spec.get('args')
-    return steps.AndroidJunitTestSpec.create(
-        raw_test_spec.get('name', raw_test_spec['test']), **kwargs)
 
   def _generate_script_test_spec(
       self,

@@ -30,14 +30,6 @@ PROPERTIES = {
 }
 
 FAKE_TARGETS_SPEC = {
-    'junit_tests': [{
-        'name':
-            'android_webview_junit_tests',
-        'test':
-            'android_webview_junit_tests',
-        'test_id_prefix':
-            'ninja://android_webview/test:android_webview_junit_tests/'
-    }],
     'scripts': [{
         'isolate_profile_data': True,
         'name': 'check_static_initializers',
@@ -131,8 +123,8 @@ def GenTests(api):
           remote_tests_only=False,
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
-              'browser_tests_no_swarm', 'android_webview_junit_tests',
-              'check_static_initializers', 'basic_EVE_TOT'
+              'browser_tests_no_swarm', 'check_static_initializers',
+              'basic_EVE_TOT'
           ],
       ),
       fake_targets_spec(),
@@ -155,8 +147,8 @@ def GenTests(api):
           remote_tests_only=False,
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
-              'browser_tests_no_swarm', 'android_webview_junit_tests',
-              'check_static_initializers', 'basic_EVE_TOT'
+              'browser_tests_no_swarm', 'check_static_initializers',
+              'basic_EVE_TOT'
           ],
       ),
       fake_targets_spec(),
@@ -179,8 +171,8 @@ def GenTests(api):
           remote_tests_only=False,
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
-              'browser_tests_no_swarm', 'android_webview_junit_tests',
-              'check_static_initializers', 'basic_EVE_TOT'
+              'browser_tests_no_swarm', 'check_static_initializers',
+              'basic_EVE_TOT'
           ],
           targets_spec_dir=api.path.cleanup_dir / 'infra/specs',
       ),
@@ -219,8 +211,8 @@ def GenTests(api):
           remote_tests_only=False,
           expected_tests=[
               'angle_unittests', 'angle_unittests_no_swarm', 'browser_tests',
-              'browser_tests_no_swarm', 'android_webview_junit_tests',
-              'check_static_initializers', 'basic_EVE_TOT'
+              'browser_tests_no_swarm', 'check_static_initializers',
+              'basic_EVE_TOT'
           ],
           skip_tests=['browser_tests']),
       api.chromium_tests.simulate_previous_build(

@@ -114,7 +114,6 @@ def GenTests(api):
   def _generate_test_result(test_id,
                             variant_hash,
                             status=None,
-                            tags=None,
                             test_duration=10):
     status = status or test_result_pb2.PASS
     duration = duration_pb2.Duration()
@@ -126,9 +125,6 @@ def GenTests(api):
         status=status,
         duration=duration,
     )
-    if tags:
-      all_tags = getattr(tr, 'tags')
-      all_tags.append(tags)
     return tr
 
   ################################# EDGE CASES #################################
@@ -479,99 +475,6 @@ def GenTests(api):
           ('test new tests for flakiness.check_network_annotations '
            '(check flakiness shard #0)'),
       ),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  ################################# JUNIT TEST #################################
-
-  junit_test_spec = {
-      'fake-android-builder': {
-          'junit_tests': [{
-              'isolate_profile_data': True,
-              'name': 'chrome_junit_tests',
-              'resultdb': {
-                  'enable': True,
-                  'has_native_resultdb_integration': True
-              },
-              'test': 'chrome_junit_tests',
-              'test_id_prefix': 'ninja://chrome/android:chrome_junit_tests/'
-          }],
-      },
-  }
-
-  junit_tags = rdb_common_pb2.StringPair(
-      key='test_name',
-      value=('org.chromium.chrome.browser.safety_check.'
-             'SafetyCheckMediatorTest#testUpdatesCheckUpdated[0]'))
-  junit_v = _generate_variant(os='Ubuntu-16', test_suite='chrome_junit_tests')
-  junit_vh = _generate_variant_hash(junit_v)
-  junit_test_id = ('ninja://chrome/android:chrome_junit_tests/'
-                   'org.chromium.chrome.browser.safety_check.'
-                   'SafetyCheckMediatorTest#testUpdatesCheckUpdated[0]')
-  current_build_junit_test_results = {
-      'invocations/build:8945511751514863184':
-          api.resultdb.Invocation(test_results=[
-              _generate_test_result(
-                  test_id=(
-                      'ninja://chrome/android:chrome_junit_tests/'
-                      'org.chromium.chrome.browser.safety_check.'
-                      'SafetyCheckMediatorTest#testUpdatesCheckUpdated[0]'),
-                  variant_hash=junit_vh,
-                  tags=junit_tags),
-          ])
-  }
-
-  yield api.test(
-      'e2e: new android junit tests',
-      api.chromium_tests_builder_config.try_build(
-          builder_group='fake-try-group',
-          builder='fake-android-try-builder',
-          builder_db=builder_db,
-          try_db=ctbc.TryDatabase.create({
-              'fake-try-group': {
-                  'fake-android-try-builder':
-                      ctbc.TrySpec.create_for_single_mirror(
-                          builder_group='fake-group',
-                          buildername='fake-android-builder',
-                      ),
-              },
-          })),
-      api.chromium_tests.read_targets_spec('fake-group', junit_test_spec),
-      api.flakiness(check_for_flakiness_with_resultdb=True),
-      # TODO (crbug/1456545) - This overrides the file check to ensure that we
-      # have test files in the given patch. Remove when logic is removed.
-      api.step_data(
-          'git diff to analyze patch (2)',
-          api.raw_io.stream_output('chrome/test.cc\ncomponents/file2.cc')),
-      api.resultdb.query(
-          current_build_junit_test_results,
-          'chrome_junit_tests results',
-      ),
-      api.resultdb.query_new_test_variants(
-          rdb_pb2.QueryNewTestVariantsResponse(
-              is_baseline_ready=True,
-              new_test_variants=[
-                  rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
-                      test_id=junit_test_id,
-                      variant_hash=junit_vh,
-                  ),
-              ]),
-          step_name=('searching_for_new_tests with ResultDB.'
-                     'query_new_test_variants')),
-      api.post_process(
-          post_process.StepCommandContains,
-          ('searching_for_new_tests with ResultDB.query_new_test_variants'), [
-              'rdb',
-              'rpc',
-              'luci.resultdb.v1.ResultDB',
-              'QueryNewTestVariants',
-          ]),
-      api.post_process(
-          post_process.StepCommandContains,
-          ('test new tests for flakiness.chrome_junit_tests '
-           '(check flakiness shard #0)'),
-          ('--gtest_filter=org.chromium.chrome.browser.safety_check.'
-           'SafetyCheckMediatorTest#testUpdatesCheckUpdated[0]')),
       api.post_process(post_process.DropExpectation),
   )
 

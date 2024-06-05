@@ -769,37 +769,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'isolated_transfer__mixed_bt_isolated_tester',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.example',
-          builder='Isolated Transfer: mixed BT, isolated tester (BT)',
-          build_number=123,
-          bot_id='isolated_transfer_builder_tester_id',
-          builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_targets_spec(
-          'chromium.example', {
-              'Isolated Transfer: mixed BT, isolated tester (BT)': {
-                  'junit_tests': [{
-                      'test': 'base_junit_tests',
-                  },],
-              },
-              'Isolated Transfer: mixed BT, isolated tester (tester)': {
-                  'gtest_tests': [{
-                      'args': ['--sample-argument'],
-                      'swarming': {},
-                      'test': 'base_unittests',
-                  },],
-              },
-          }),
-      api.post_process(post_process.DoesNotRun, 'package build'),
-      api.post_process(
-          TriggersBuilderWithProperties,
-          builder='Isolated Transfer: mixed BT, isolated tester (tester)',
-          properties=['swarm_hashes']),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'package_transfer_builder',
       api.chromium_tests_builder_config.ci_build(
           builder_group='chromium.example',
@@ -842,42 +811,6 @@ def GenTests(api):
               },
           }),
       api.post_process(post_process.MustRun, 'extract build'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'multiple_triggers',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.example',
-          builder='Multiple Triggers: Builder',
-          build_number=123,
-          bot_id='multiple_triggers_builder_id',
-          builder_db=CUSTOM_BUILDERS),
-      api.chromium_tests.read_targets_spec(
-          'chromium.example', {
-              'Multiple Triggers: Mixed': {
-                  'gtest_tests': [{
-                      'args': ['--sample-argument'],
-                      'swarming': {},
-                      'test': 'base_unittests',
-                  },],
-                  'junit_tests': [{
-                      'test': 'base_junit_tests',
-                  },],
-              },
-              'Multiple Triggers: Isolated': {
-                  'gtest_tests': [{
-                      'args': ['--sample-argument'],
-                      'swarming': {},
-                      'test': 'base_unittests',
-                  },],
-              },
-          }),
-      api.post_process(post_process.MustRun, 'package build'),
-      api.post_process(
-          TriggersBuilderWithProperties,
-          builder='Multiple Triggers: Mixed',
-          properties=['swarm_hashes']),
       api.post_process(post_process.DropExpectation),
   )
 

@@ -784,11 +784,7 @@ class FlakinessApi(recipe_api.RecipeApi):
     # For each new test update all test filters to repeat and rerun 20 times.
     for test, metadata in filter_and_time_by_test_object.items():
       test_filter = metadata[0]
-      if isinstance(test.spec, steps.AndroidJunitTestSpec):
-        test_objects_by_suffix[self.test_suffix].append(
-            utils.apply_android_test_filter(test, test_filter,
-                                            self._repeat_count))
-      elif isinstance(test.spec, steps.ScriptTestSpec):
+      if isinstance(test.spec, steps.ScriptTestSpec):
         test_objects_by_suffix[self.test_suffix].append(
             utils.apply_script_test_filter(test, test_filter,
                                            self._repeat_count))
