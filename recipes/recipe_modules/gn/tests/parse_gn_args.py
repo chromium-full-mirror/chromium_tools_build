@@ -8,16 +8,13 @@ DEPS = [
     'gn',
 ]
 
-_INPUT_ARGS = (
-    '# some comments\n'
-    'goma_dir = "/b/build/slave/cache/goma_client"\n'
-    'target_cpu = "x86"\n'
-    'use_goma = true\n')
+_INPUT_ARGS = ('# some comments\n'
+               'target_cpu = "x86"\n'
+               'use_remoteexec = true\n')
 
 _EXPECTED_RESULT = {
-    'goma_dir': '"/b/build/slave/cache/goma_client"',
     'target_cpu': '"x86"',
-    'use_goma': 'true',
+    'use_remoteexec': 'true',
 }
 
 def RunSteps(api):
