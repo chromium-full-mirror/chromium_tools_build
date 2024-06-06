@@ -65,13 +65,10 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'android',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb', 'download_xr_test_apks'],
-        'gclient_apply_config_1': ['android', 'reclient_test'],
+        'gclient_apply_config_1': ['android'],
         'gclient_apply_config_2': ['android', 'reclient_test'],
         'reclient_extra_env_1': {},
-        'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
-        },
+        'reclient_extra_env_2': {},
         'chromium_config_kwargs': {
             'BUILD_CONFIG': 'Debug',
             'TARGET_BITS': 32,
@@ -86,12 +83,14 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb',],
-        'gclient_apply_config_1': ['reclient_test'],
-        'gclient_apply_config_2': ['reclient_test'],
-        'reclient_extra_env_1': {},
+        'gclient_apply_config_1': ['reclient_staging'],
+        'gclient_apply_config_2': ['reclient_staging'],
+        'reclient_extra_env_1': {
+            'enable_deps_cache=true': 'true',
+        },
         'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
+            'RBE_enable_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache': 'true',
         },
         'platform': 'linux',
         'targets': ['all'],
@@ -116,13 +115,14 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
-        'gclient_apply_config_2': ['reclient_test'],
-        'reclient_extra_env_1': {},
+        'gclient_apply_config_1': ['reclient_staging'],
+        'gclient_apply_config_2': ['reclient_staging'],
+        'reclient_extra_env_1': {
+            'enable_deps_cache=true': 'true',
+        },
         'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision',
-            'RBE_bq_batch_size': 500,
+            'RBE_enable_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache': 'true',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -137,14 +137,10 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {},
-        'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision',
-            'RBE_bq_batch_size': 500,
-        },
+        'reclient_extra_env_2': {},
         'platform': 'mac',
         'chromium_config_kwargs': {
             'TARGET_ARCH': 'arm',
@@ -158,12 +154,14 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
-        'gclient_apply_config_2': ['reclient_test'],
-        'reclient_extra_env_1': {},
+        'gclient_apply_config_1': ['reclient_staging'],
+        'gclient_apply_config_2': ['reclient_staging'],
+        'reclient_extra_env_1': {
+            'enable_deps_cache=true': 'true',
+        },
         'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
+            'RBE_enable_deps_cache': 'true',
+            'RBE_experimental_goma_deps_cache': 'true',
         },
         'platform': 'win',
         'targets': ['all'],
@@ -172,13 +170,10 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {},
-        'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
-        },
+        'reclient_extra_env_2': {},
         'platform': 'win',
         'targets': ['all'],
     },
@@ -186,17 +181,12 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [
-            'chromeos', 'reclient_test', 'checkout_lacros_sdk'
-        ],
+        'gclient_apply_config_1': ['chromeos', 'checkout_lacros_sdk'],
         'gclient_apply_config_2': [
             'chromeos', 'reclient_test', 'checkout_lacros_sdk'
         ],
         'reclient_extra_env_1': {},
-        'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision'
-        },
+        'reclient_extra_env_2': {},
         'platform': 'linux',
         'chromium_config_kwargs': {
             'TARGET_BITS': 64,
@@ -211,14 +201,10 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'ios',
         'chromium_apply_config': ['mb', 'mac_toolchain'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {},
-        'reclient_extra_env_2': {
-            "RBE_bq_project": 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparision',
-            'RBE_bq_batch_size': 500,
-        },
+        'reclient_extra_env_2': {},
         'platform': 'mac',
         'chromium_config_kwargs': {
             'TARGET_BITS': 64,
