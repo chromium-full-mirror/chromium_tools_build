@@ -6,6 +6,8 @@ from .test_runner_base import ExonerableTests, use_legacy_test_runner
 from functools import cached_property
 import re
 
+TEST_RELATIVE_PATH = 'test/e2e'
+
 
 class E2ETests(ExonerableTests):
 
@@ -85,14 +87,10 @@ class E2ETestDivider:
   def commands(self):
     if use_legacy_test_runner(self.api):
       return self.legacy_commands()
-    gen_root = self.source_dir / 'out' / self.builder_config / 'gen'
-    test_relative_path = 'test/e2e'
-    test_root = gen_root / test_relative_path
-    test_list_file_path = test_root / 'tests.txt'
-    contents = self.api.file.read_text('Read test list', test_list_file_path)
+    contents = read_test_list(self.api, self.source_dir, self.builder_config)
     all_tests = contents.splitlines()
     all_test_paths = [
-        self.api.path.join(test_relative_path, t) for t in all_tests
+        self.api.path.join(TEST_RELATIVE_PATH, t) for t in all_tests
     ]
     if self.api.devtools.is_shuffled_run():
       # TODO(liviurau) make this pseudo-random with a seed based e.g. on
@@ -110,3 +108,10 @@ def divide_list(lst, split_count):
     result.append(lst[chunk_start:chunk_start + current_size])
     chunk_start += current_size
   return result
+
+
+def read_test_list(api, source_dir, builder_config):
+  gen_root = source_dir / 'out' / builder_config / 'gen'
+  test_root = gen_root / TEST_RELATIVE_PATH
+  test_list_file_path = test_root / 'tests.txt'
+  return api.file.read_text('Read test list', test_list_file_path)

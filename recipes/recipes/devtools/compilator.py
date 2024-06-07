@@ -19,9 +19,12 @@ from PB.recipe_engine import result as result_pb2
 from recipe_engine.post_process import DropExpectation, SummaryMarkdown, MustRun, DoesNotRun
 from recipe_engine.recipe_api import Property
 
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import read_test_list
+
 DEPS = [
     'chromium',
     'devtools',
+    'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/properties',
     'recipe_engine/runtime',
@@ -72,7 +75,8 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
         return compilation_result
       cas_digest = api.devtools.archive_to_cas(source_dir)
 
-    emit_compilator_properties(api, cas_digest)
+    e2e_tests_list = read_test_list(api, source_dir, builder_config)
+    emit_compilator_properties(api, cas_digest, e2e_tests_list)
 
     run_lint_check(api, builder_config, source_dir)
   finally:
@@ -83,9 +87,10 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
           status=common_pb.CANCELED, summary_markdown=CANCELLATION_MESSAGE)
 
 
-def emit_compilator_properties(api, cas_digest):
+def emit_compilator_properties(api, cas_digest, e2e_tests_list):
   properties = dict()
   properties['cas_digest'] = cas_digest
+  properties['e2e_test_list'] = e2e_tests_list
 
   properties_step = api.step('compilator properties', [])
   properties_step.presentation.properties['compilator_properties'] = properties
