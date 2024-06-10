@@ -56,12 +56,8 @@ EXONERATE_FLAKES_MAX = 3
 
 def orchestrator_steps(api, compilator_name):
   v8 = api.v8_tests
-  compilator_handler = api.v8_orchestrator.create_compilator_handler()
 
-  with api.step.nest('initialization'):
-    # Start compilator build.
-    build = compilator_handler.trigger_compilator(compilator_name)
-
+  def initialize_v8_testing():
     # Initialize V8 testing.
     v8.set_config('v8')
     v8.read_cl_footer_flags()
@@ -70,23 +66,12 @@ def orchestrator_steps(api, compilator_name):
     api.swarming.ensure_client()
     v8.set_up_swarming()
 
-  # Wait for compilator build to complete and stream steps.
-  sub_build = compilator_handler.launch_compilator_watcher(build)
-
-  # This condition should be rare as swarming only propagates
-  # cancelations from parent -> child.
-  if sub_build.status == common_pb.CANCELED:
-    if api.runtime.in_global_shutdown:
-      return result_pb2.RawResult(
-          status=common_pb.CANCELED, summary_markdown=BUILD_CANCELED_SUMMARY)
-    raise api.step.InfraFailure(BUILD_WRONGLY_CANCELED_SUMMARY)
-
-  if 'compilator_properties' not in sub_build.output.properties:
-    return result_pb2.RawResult(
-        status=sub_build.status, summary_markdown=sub_build.summary_markdown)
+  comp_props, maybe_result = api.v8_orchestrator.orchestrated_compilation(
+      compilator_name, initialize_v8_testing)
+  if maybe_result:
+    return maybe_result
 
   # Initialize the test specs the compilator retrieved from the checkout.
-  comp_props = sub_build.output.properties['compilator_properties']
   tests = v8.extra_tests_from_properties(
       {'parent_test_spec': dict(comp_props['parent_test_spec'])})
 
@@ -208,44 +193,8 @@ def GenTests(api):
   )
 
   yield test(
-      'infra_failure',
-      subbuild_data({}, 'Timeout', common_pb.INFRA_FAILURE),
-      api.post_process(DoesNotRun, 'Check'),
-      api.post_process(DoesNotRun, 'Test262'),
-      api.post_process(SummaryMarkdown, 'Timeout'),
-      api.post_process(DropExpectation),
-      status='INFRA_FAILURE',
-  )
-
-  yield test(
       'no_subbuild',
       api.post_process(SummaryMarkdown, 'sub_build missing from step'),
-      api.post_process(DropExpectation),
-      status='INFRA_FAILURE',
-  )
-
-  yield test(
-      'testing_canceled',
-      subbuild_data(output_properties),
-      api.runtime.global_shutdown_on_step('Check'),
-      api.post_process(SummaryMarkdown, BUILD_CANCELED_SUMMARY),
-      api.post_process(DropExpectation),
-      status='CANCELED',
-  )
-
-  yield test(
-      'subbuild_canceled',
-      api.runtime.global_shutdown_on_step('compilator steps'),
-      subbuild_data({}, '', common_pb.CANCELED),
-      api.post_process(SummaryMarkdown, BUILD_CANCELED_SUMMARY),
-      api.post_process(DropExpectation),
-      status='CANCELED',
-  )
-
-  yield test(
-      'subbuild_canceled_before_parent',
-      subbuild_data({}, '', common_pb.CANCELED),
-      api.post_process(SummaryMarkdown, BUILD_WRONGLY_CANCELED_SUMMARY),
       api.post_process(DropExpectation),
       status='INFRA_FAILURE',
   )
@@ -260,36 +209,4 @@ def GenTests(api):
       api.post_process(SummaryMarkdown, 'No tests specified'),
       api.post_process(DropExpectation),
       status='FAILURE',
-  )
-
-  led_properties = {
-      '$recipe_engine/led':
-          led_properties_pb.InputProperties(
-              led_run_id='fake-run-id',
-          ),
-  }
-
-  build_proto_json = {
-    'status': common_pb.SUCCESS,
-    'summary': '',
-    'output': {
-      'properties': output_properties,
-    },
-  }
-
-  yield test(
-      'run_with_led',
-      api.properties(**led_properties),
-      api.step_data(
-          'read build.proto.json',
-          api.file.read_json(json_content=build_proto_json)),
-      api.post_process(MustRun, 'initialization.trigger compilator.led get-builder'),
-      api.post_process(MustRun, 'initialization.trigger compilator.led edit-cr-cl'),
-      api.post_process(MustRun, 'initialization.trigger compilator.led launch'),
-      api.post_process(MustRun, 'collect led compilator build'),
-      api.post_process(MustRun, 'read build.proto.json'),
-      api.post_process(MustRun, 'Check'),
-      api.post_process(MustRun, 'Test262'),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
   )

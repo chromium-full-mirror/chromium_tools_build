@@ -4,11 +4,16 @@
 
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine import result as result_pb2
 from recipe_engine import recipe_api
 from google.protobuf import json_format
 
 COMPILATOR_WATCHER_GIT_REVISION = '27c191f304c8d7329a393d8a69020fc14032c3c3'
 
+BUILD_CANCELED_SUMMARY = 'Build was canceled.'
+BUILD_WRONGLY_CANCELED_SUMMARY = (
+    'Compilator was canceled before the parent orchestrator was canceled.')
 
 class V8OrchestratorApi(recipe_api.RecipeApi):
 
@@ -20,6 +25,48 @@ class V8OrchestratorApi(recipe_api.RecipeApi):
       return LedCompilatorHandler(self.m, step_suffix=step_suffix)
     return ProdCompilatorHandler(self.m, step_suffix=step_suffix)
 
+  def orchestrated_compilation(self, compilator_name, initialize_testing):
+    """Orchestrate a compilation.
+
+    Args:
+      compilator_name: The name of the compilator to trigger.
+      initialize_testing: A initialization function that can be run while
+      waiting for the compilation to end. Used to initialize testing in V8.
+    Returns:
+      A tuple of (compilator_properties, result) where compilator_properties is
+      the properties of the compilator build and result is a RawResult if the
+      build was canceled or None otherwise.
+    """
+    try:
+      compilator_handler = self.create_compilator_handler()
+
+      with self.m.step.nest('initialization'):
+        # Start compilator build.
+        build = compilator_handler.trigger_compilator(compilator_name)
+        initialize_testing()
+
+      # Wait for compilator build to complete and stream steps.
+      sub_build = compilator_handler.launch_compilator_watcher(build)
+
+      # This condition should be rare as swarming only propagates
+      # cancellations from parent -> child.
+      if sub_build.status == common_pb.CANCELED:
+        raise self.m.step.InfraFailure(BUILD_WRONGLY_CANCELED_SUMMARY)
+
+      if 'compilator_properties' not in sub_build.output.properties:
+        return None, result_pb2.RawResult(
+            status=sub_build.status,
+            summary_markdown=sub_build.summary_markdown)
+
+      # Initialize the test specs the compilator retrieved from the checkout.
+      comp_props = sub_build.output.properties['compilator_properties']
+      return comp_props, None
+    finally:
+      if self.m.runtime.in_global_shutdown:
+        # pylint: disable=lost-exception
+        # Cancellation can cause all sorts of spurious exceptions.
+        return None, result_pb2.RawResult(
+            status=common_pb.CANCELED, summary_markdown=BUILD_CANCELED_SUMMARY)
 
 class CompilatorHandler:
   def __init__(self, api, step_suffix=None):
