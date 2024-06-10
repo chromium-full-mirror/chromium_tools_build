@@ -56,7 +56,9 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
       return
   bundle_dir = create_recipe_bundle(api, recipe_dir)
   for builder_suites in properties.builder_suites:
-    step_name = f'{builder_suites.bucket}:{builder_suites.builder_name}'
+    test_names = ', '.join(builder_suites.test_names)
+    step_name = (
+        f'{builder_suites.bucket}:{builder_suites.builder_name} - {test_names}')
     build_dir = api.chromium_checkout.source_dir / builder_suites.build_dir
     cmd = [
         'vpython3',
@@ -165,7 +167,7 @@ def GenTests(api: RecipeTestApi):
       'basic',
       api.properties(builder_suites=default_builder_suites),
       api.post_process(post_process.StepCommandContains,
-                       'fake-bucket:fake-builder', [
+                       'fake-bucket:fake-builder - testA, testB', [
                          '[CACHE]/builder/src/tools/utr/run.py', \
                          '--bucket', 'fake-bucket',
                          '--builder', 'fake-builder',
@@ -198,7 +200,7 @@ def GenTests(api: RecipeTestApi):
   yield api.test(
       'utr_fails',
       api.properties(builder_suites=default_builder_suites),
-      api.step_data('fake-bucket:fake-builder', retcode=1),
+      api.step_data('fake-bucket:fake-builder - testA, testB', retcode=1),
       api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
