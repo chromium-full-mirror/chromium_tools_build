@@ -50,9 +50,6 @@ BUILDERS = freeze({
     'device_flags_builder': {
         'device_flags': 'device_flags_file',
     },
-    'no_cache_builder': {
-        'use_git_cache': False,
-    },
     'json_results_file': {
         'json_results_file': 'json_results_file',
     },
@@ -64,13 +61,13 @@ BUILDERS = freeze({
         'disable_location': True,
     },
     'use_devil_adb': {
-      'android_apply_config': ['use_devil_adb'],
+        'android_apply_config': ['use_devil_adb'],
     },
     'remove_system_vrcore': {
-      'android_apply_config': ['remove_system_vrcore'],
+        'android_apply_config': ['remove_system_vrcore'],
     },
     'stackwalker': {
-      'run_stackwalker': True,
+        'run_stackwalker': True,
     },
 })
 
@@ -91,8 +88,7 @@ def RunSteps(api):
   for c in config.get('android_apply_config', []):
     api.chromium_android.apply_config(c)
 
-  api.chromium_android.init_and_sync(
-      use_git_cache=config.get('use_git_cache', True))
+  api.chromium_android.init_and_sync()
 
   api.chromium.runhooks()
   api.chromium_android.run_tree_truth(additional_repos=['foo'])

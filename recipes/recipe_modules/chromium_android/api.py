@@ -99,13 +99,8 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def init_and_sync(self,
                     gclient_config='android_bare',
-                    with_branch_heads=False,
-                    use_git_cache=True):
-    # TODO(crbug.com/726431): Remove this once downstream bots stop using it.
-    if use_git_cache:
-      spec = self.m.gclient.make_config(gclient_config)
-    else:
-      spec = self.m.gclient.make_config(gclient_config, CACHE_DIR=None)
+                    with_branch_heads=False):
+    spec = self.m.gclient.make_config(gclient_config)
     spec.target_os = ['android']
     s = spec.solutions[0]
     s.name = self.c.deps_dir
