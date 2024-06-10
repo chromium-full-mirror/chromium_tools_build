@@ -401,9 +401,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     self.m.chromium_tests.configure_build(builder_config, test_only=True)
 
-    # Set self.m.chromium.c.compile_py.compiler to empty string so that
-    # prepare_checkout() does not attempt to run ensure_goma()
-    self.m.chromium.c.compile_py.compiler = ''
     self.m.chromium_tests.report_builders(builder_config)
     self.m.chromium_tests.print_link_to_results()
 
