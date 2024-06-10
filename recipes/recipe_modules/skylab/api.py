@@ -226,9 +226,6 @@ class SkylabApi(recipe_api.RecipeApi):
         test_retries = test.spec.test_level_retries
       test_args.append('retries=%s' % test_retries)
 
-      if test.spec.shard_level_retries_on_ctp >= 0:
-        cmd.extend(['--retry', str(test.spec.shard_level_retries_on_ctp)])
-
       if test.exe_rel_path:
         test_args.append('exe_rel_path=%s' % test.exe_rel_path)
 
