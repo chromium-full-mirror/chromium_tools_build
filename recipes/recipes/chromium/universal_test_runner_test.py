@@ -15,6 +15,8 @@ from recipe_engine.config_types import Path
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
+from PB.go.chromium.org.luci.buildbucket.proto import common
+from PB.recipe_engine.result import RawResult
 from PB.recipes.build.chromium.universal_test_runner_test import InputProperties
 
 DEPS = [
@@ -63,6 +65,8 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
   # support symlinks on windows.
   with replace_bootstrap_proto_link(api, infra_dir):
     bundle_dir = create_recipe_bundle(api, recipe_dir, infra_dir)
+
+  failed_invocations = 0
   for builder_suites in properties.builder_suites:
     test_names = ', '.join(builder_suites.test_names)
     step_name = (
@@ -85,7 +89,13 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
     for test_name in builder_suites.test_names:
       cmd.extend(['--test', test_name])
     cmd.append('compile-and-test')
-    api.step(step_name, cmd)
+    step_result = api.step(step_name, cmd, raise_on_failure=False)
+    if step_result.retcode:
+      failed_invocations += 1
+  if failed_invocations:
+    return RawResult(
+        status=common.FAILURE,
+        summary_markdown=f'{failed_invocations} total failed UTR runs')
 
 
 def _is_affected(
@@ -212,12 +222,20 @@ def create_recipe_bundle(api: RecipeApi, recipe_dir: Path, infra_dir: Path):
 
 
 def GenTests(api: RecipeTestApi):
-  default_builder_suites = [{
-      'bucket': 'fake-bucket',
-      'builder_name': 'fake-builder',
-      'test_names': ['testA', 'testB'],
-      'build_dir': 'fake/build',
-  }]
+  default_builder_suites = [
+      {
+          'bucket': 'fake-bucket',
+          'builder_name': 'fake-builder',
+          'test_names': ['testA', 'testB'],
+          'build_dir': 'fake/build',
+      },
+      {
+          'bucket': 'fake-bucket',
+          'builder_name': 'fake-builder2',
+          'test_names': ['testZ'],
+          'build_dir': 'fake/build',
+      },
+  ]
   yield api.test(
       'basic',
       api.properties(builder_suites=default_builder_suites),
@@ -265,6 +283,8 @@ def GenTests(api: RecipeTestApi):
       'utr_fails',
       api.properties(builder_suites=default_builder_suites),
       api.step_data('fake-bucket:fake-builder - testA, testB', retcode=1),
+      api.step_data('fake-bucket:fake-builder2 - testZ', retcode=1),
       api.expect_status('FAILURE'),
+      api.post_process(post_process.SummaryMarkdown, '2 total failed UTR runs'),
       api.post_process(post_process.DropExpectation),
   )
