@@ -2893,6 +2893,9 @@ class SkylabTestSpec(TestSpec):
   # Only applies to Tast tests.
   # When set to non zero, failed test will be immediatelly retried.
   test_level_retries = attrib(int, default=0)
+  # Maximum number to retry a failed shard.
+  # When set to zero, retries continue infinitely until timeout.
+  shard_level_retries_on_ctp = attrib(int, default=-1)
   # The timeout for the test in second. Default is one hour.
   timeout_sec = attrib(int, default=3600)
   # The runtime timeout sent to the test execution environment.
