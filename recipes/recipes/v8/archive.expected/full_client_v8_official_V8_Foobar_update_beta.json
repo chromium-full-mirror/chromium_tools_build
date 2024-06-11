@@ -139,13 +139,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "sync (ref).workaround for read-only //build/cros_cache/ dir",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
     "cmd": [
       "vpython3",
       "-u",

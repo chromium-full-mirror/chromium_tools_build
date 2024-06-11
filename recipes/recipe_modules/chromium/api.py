@@ -1006,17 +1006,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     if self.c.clobber_before_runhooks:
       self.m.file.rmtree('clobber', self.output_dir)
 
-      # A CrOS-side change got rolled into m108 that makes a dir in
-      # //build/cros_cache/ read-only. This interferes with the CrOS SDK when
-      # it tries to redownload itself. So we forcibly clobber the dir here
-      # to let runhooks proceed safely.
-      # TODO(b/256012263): Remove this when the fix has been merged into m108.
-      with self.m.step.nest('workaround for read-only //build/cros_cache/ dir'):
-        cros_cache = self.m.path.checkout_dir.joinpath('build', 'cros_cache')
-        if self.m.path.exists(cros_cache):
-          self.m.step('chmod cros_cache', ['chmod', '-R', '744', cros_cache])
-          self.m.file.rmtree('clobber cros_cache', cros_cache)
-
   @_with_chromium_layout
   def runhooks(self, env=None, **kwargs):
     """Run the build-configuration hooks for chromium."""

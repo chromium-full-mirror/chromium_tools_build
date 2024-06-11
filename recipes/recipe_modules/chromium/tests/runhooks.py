@@ -41,21 +41,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'chromeos',
-      api.properties(
-          target_platform='chromeos', target_cros_boards='x86-generic'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  # TODO(b/256012263): Remove this when the fix has rolled in.
-  yield api.test(
-      'clobber_cros_cache_bug',
-      api.properties(clobber='1'),
-      api.path.exists(api.path.checkout_dir.joinpath('build', 'cros_cache')),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'mac',
       api.platform.name('mac'),
       api.properties(target_platform='mac'),

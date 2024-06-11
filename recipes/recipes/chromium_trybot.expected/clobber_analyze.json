@@ -601,10 +601,6 @@
     "name": "clobber"
   },
   {
-    "cmd": [],
-    "name": "workaround for read-only //build/cros_cache/ dir"
-  },
-  {
     "cmd": [
       "vpython3",
       "-u",
