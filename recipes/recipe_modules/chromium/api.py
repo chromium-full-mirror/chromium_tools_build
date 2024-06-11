@@ -1003,9 +1003,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     """Add an explicit clobber step if requested."""
     # clobber_before_runhooks is true for bots that apply the 'clobber' config,
     # that is for bots that do clobber bots on every build.
-    # properties.get('clobber') is true on bots that normally don't clobber,
-    # when the "Clobber" button in the buildbot UI is pressed.
-    if (self.c.clobber_before_runhooks or self.m.properties.get('clobber')):
+    if self.c.clobber_before_runhooks:
       self.m.file.rmtree('clobber', self.output_dir)
 
       # A CrOS-side change got rolled into m108 that makes a dir in

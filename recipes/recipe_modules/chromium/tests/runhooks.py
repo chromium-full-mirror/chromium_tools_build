@@ -18,6 +18,8 @@ def RunSteps(api):
       'chromium',
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
+  if api.properties.get('clobber'):
+    api.chromium.apply_config('clobber')
   api.chromium.apply_config('mb')
   api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
@@ -32,30 +34,16 @@ def GenTests(api):
   )
 
   yield api.test(
-      'chromeos',
-      api.properties(
-          target_platform='chromeos', target_cros_boards='x86-generic'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
       'clobber',
-      api.properties(clobber='1'),
+      api.properties(clobber=True),
       api.post_process(post_process.StepSuccess, 'clobber'),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'false_clobber',
-      api.properties(clobber=False),
-      api.post_process(post_process.DoesNotRun, 'clobber'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'no_clobber',
-      api.properties(),
-      api.post_process(post_process.DoesNotRun, 'clobber'),
+      'chromeos',
+      api.properties(
+          target_platform='chromeos', target_cros_boards='x86-generic'),
       api.post_process(post_process.DropExpectation),
   )
 
