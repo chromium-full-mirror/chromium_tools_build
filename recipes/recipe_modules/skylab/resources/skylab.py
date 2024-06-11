@@ -108,6 +108,14 @@ def schedule_skylab_tests(opts):
     req.params.decorations.tags.append(f'label-board:{opts.board}')
     req.params.software_attributes.build_target.name = opts.board
     req.params.time.maximum_duration.seconds = opts.timeout_mins * 60
+
+    if opts.retry >= 0:
+      # Needs to be critical to enable retry.
+      req.params.test_execution_behavior = \
+          ctp_request.Request.Params.TestExecutionBehavior.CRITICAL
+      req.params.retry.allow = True
+      req.params.retry.max = opts.retry
+
     if opts.model:
       req.params.hardware_attributes.model = opts.model
 
@@ -274,6 +282,12 @@ def main(args):
       type=int,
       default=60,
       help='Timeout in minute for the CTP build.')
+  subparser.add_argument(
+      '--retry',
+      type=int,
+      default=-1,
+      help='Specify the maximum number of retries (zero for infinite retries '
+      'until timeout, or negative number for no retry).')
   subparser.add_argument(
       '--total-shards', type=int, default=1, help='Total shards.')
   subparser.add_argument(
