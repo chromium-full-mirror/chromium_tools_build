@@ -7,38 +7,26 @@ from recipe_engine.config import Dict, List, Single, Static
 
 
 def BaseConfig(INTERNAL=False,
-               REPO_NAME=None,
-               REPO_URL=None,
                BUILD_CONFIG='Debug',
-               REVISION='',
                asan_symbolize=False,
                **_kwargs):  # pylint: disable=redefined-outer-name
   return ConfigGroup(
       INTERNAL=Static(INTERNAL),
-      REPO_NAME=Static(REPO_NAME),
-      REPO_URL=Static(REPO_URL),
       BUILD_CONFIG=Static(BUILD_CONFIG),
       cs_base_url=Single(
           str, required=False, empty_val='http://cs.chromium.org'),
       results_bucket=Single(
           str, required=False, empty_val='chromium-result-details'),
-      revision=Single(str, empty_val=REVISION),
-      revisions=Dict(value_type=(str, type(None))),
       asan_symbolize=Single(bool, required=False, empty_val=asan_symbolize),
       get_app_manifest_vars=Single(bool, required=False, empty_val=True),
       run_tree_truth=Single(bool, required=False, empty_val=True),
-      deps_file=Single(str, required=False, empty_val='.DEPS.git'),
       internal_dir_name=Single(str, required=False),
-      # deps_dir: where to checkout the gclient deps file
-      deps_dir=Single(str, required=False, empty_val=REPO_NAME),
-      managed=Single(bool, required=False, empty_val=True),
       extra_deploy_opts=List(inner_type=str),
       tests=List(inner_type=str),
       # Path to the test runner relative to the top level repo
       test_runner=Single(str),
       gclient_custom_deps=Dict(value_type=(str, type(None))),
       channel=Single(str, empty_val='chrome'),
-      gclient_custom_vars=Dict(value_type=(str, type(None))),
       coverage=Single(bool, required=False, empty_val=False),
       chrome_specific_wipe=Single(bool, required=False, empty_val=False),
       incremental_coverage=Single(bool, required=False, empty_val=False),

@@ -10,7 +10,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.chromium_android.set_config('main_builder', REPO_NAME='src')
+  api.chromium_android.set_config('main_builder')
   api.chromium_android.init_and_sync()
 
 

@@ -21,8 +21,6 @@ BUILDERS = freeze({
         'recipe_config': 'main_builder_mb',
         'kwargs': {
             'BUILD_CONFIG': 'Debug',
-            'REPO_URL': 'https://chromium.googlesource.com/chromium/src.git',
-            'REPO_NAME': 'src',
         },
         'use_reclient': False,
     },

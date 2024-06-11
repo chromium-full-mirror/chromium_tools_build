@@ -20,12 +20,7 @@ class CronetApi(recipe_api.RecipeApi):
   DASHBOARD_UPLOAD_URL = 'https://chromeperf.appspot.com'
 
   def init_and_sync(self, recipe_config, kwargs, chromium_apply_config=None):
-    default_kwargs = {
-        'REPO_URL': 'https://chromium.googlesource.com/chromium/src',
-        'INTERNAL': False,
-        'REPO_NAME': 'src',
-        'BUILD_CONFIG': 'Debug'
-    }
+    default_kwargs = {'INTERNAL': False, 'BUILD_CONFIG': 'Debug'}
     droid = self.m.chromium_android
     default_kwargs.update(kwargs)
     droid.configure_from_properties(recipe_config, **default_kwargs)

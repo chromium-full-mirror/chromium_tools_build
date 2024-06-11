@@ -2,11 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections.abc
 import contextlib
-import os
 import urllib
 
 from recipe_engine import recipe_api
+
+from RECIPE_MODULES.depot_tools import bot_update
 
 _RESULT_DETAILS_LINK = 'result_details (logcats, flakiness links)'
 
@@ -17,11 +19,6 @@ class AndroidApi(recipe_api.RecipeApi):
     super().__init__(**kwargs)
     self._devices = None
     self._file_changes_path = None
-
-  def get_config_defaults(self):
-    return {
-        'REVISION': self.m.buildbucket.gitiles_commit.id,
-    }
 
   @property
   def devices(self):
@@ -102,19 +99,6 @@ class AndroidApi(recipe_api.RecipeApi):
                     with_branch_heads=False):
     spec = self.m.gclient.make_config(gclient_config)
     spec.target_os = ['android']
-    s = spec.solutions[0]
-    s.name = self.c.deps_dir
-    s.url = self.c.REPO_URL
-    s.deps_file = self.c.deps_file
-    s.custom_vars = self.c.gclient_custom_vars or {}
-    s.managed = self.c.managed
-    s.revision = self.c.revision
-    spec.revisions = self.c.revisions
-
-    # TODO(sivachandra): Manufacture gclient spec such that it contains "src"
-    # solution + repo_name solution. Then checkout will be automatically
-    # correctly set by gclient.checkout
-    self.m.path.checkout_dir = self.m.path.start_dir / 'src'
 
     self.m.gclient.break_locks()
     refs = self.m.properties.get('event.patchSet.ref')
@@ -144,14 +128,16 @@ class AndroidApi(recipe_api.RecipeApi):
     ]
     self.m.step('clean local files', cmd, infra_step=True)
 
-  def run_tree_truth(self, additional_repos=None):
+  def run_tree_truth(
+      self,
+      update_result: bot_update.Result,
+      additional_repos: collections.abc.Iterable[str] | None = None,
+  ) -> None:
     # TODO(sivachandra): The downstream ToT builder will require
     # 'Show Revisions' step.
-    repos = ['src']
+    repos = list(update_result.fixed_revisions)
     if additional_repos:
       repos.extend(additional_repos)
-    if self.c.REPO_NAME not in repos and self.c.REPO_NAME:
-      repos.append(self.c.REPO_NAME)
     self.m.step('tree truth steps', [
         self.m.path.checkout_dir.joinpath('build', 'tree_truth.sh'),
         self.m.path.checkout_dir

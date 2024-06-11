@@ -76,11 +76,7 @@ def RunSteps(api):
   config = BUILDERS[api.buildbucket.builder_name]
 
   api.chromium_android.configure_from_properties(
-      'base_config',
-      REPO_URL='svn://svn.chromium.org/chrome/trunk/src',
-      REPO_NAME='src/repo',
-      INTERNAL=True,
-      BUILD_CONFIG='Release')
+      'base_config', INTERNAL=True, BUILD_CONFIG='Release')
 
   api.chromium_android.c.get_app_manifest_vars = True
   api.chromium_android.c.logcat_bucket = None
@@ -88,10 +84,10 @@ def RunSteps(api):
   for c in config.get('android_apply_config', []):
     api.chromium_android.apply_config(c)
 
-  api.chromium_android.init_and_sync()
+  update_result = api.chromium_android.init_and_sync()
 
   api.chromium.runhooks()
-  api.chromium_android.run_tree_truth(additional_repos=['foo'])
+  api.chromium_android.run_tree_truth(update_result, additional_repos=['foo'])
   assert 'MAJOR' in api.chromium.get_version()
 
   api.chromium_android.host_info()

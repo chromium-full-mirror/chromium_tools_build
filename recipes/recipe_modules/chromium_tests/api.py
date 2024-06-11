@@ -560,7 +560,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if self.m.chromium.c.TARGET_PLATFORM == 'android':
       self.m.chromium_android.clean_local_files()
-      self.m.chromium_android.run_tree_truth()
+      self.m.chromium_android.run_tree_truth(update_result)
 
     if execution_mode != ctbc.COMPILE_AND_TEST:
       return None, None
