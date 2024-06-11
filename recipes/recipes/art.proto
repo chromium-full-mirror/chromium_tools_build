@@ -31,8 +31,8 @@ message InputProperties {
   // Whether to enable the generational_cc build variant.
   bool generational_cc = 8;
 
-  // What level of cdex to use, default is 'none'.
-  string cdex_level = 9;
+  // Ignored - used to be the level of cdex to use.
+  string cdex_level = 9 [deprecated=true];
 
   // Whether to boot up a virtual machine before running tests.
   bool on_virtual_machine = 10;

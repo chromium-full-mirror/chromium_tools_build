@@ -55,7 +55,6 @@ def RunSteps(api, props):
           generational_cc=props.generational_cc,
           heap_poisoning=props.heap_poisoning,
           gcstress=props.gcstress,
-          cdex_level=props.cdex_level or 'none',
           manifest_branch=manifest_branch or 'master-art')
 
 def checkout(api, manifest_branch):
@@ -102,7 +101,6 @@ def setup_host_x86(api,
                    generational_cc=True,
                    heap_poisoning=False,
                    gcstress=False,
-                   cdex_level='none',
                    manifest_branch="master-art"):
   checkout(api, manifest_branch)
   clobber(api)
@@ -160,8 +158,6 @@ def setup_host_x86(api,
   else:
     env.update({ 'ART_HEAP_POISONING' : 'false' })
 
-  env.update({ 'ART_DEFAULT_COMPACT_DEX_LEVEL' : cdex_level })
-
   # Common options passed to testrunner.py.
   testrunner_cmd = [
       './art/test/testrunner/testrunner.py', '--verbose', '--host'
@@ -174,11 +170,6 @@ def setup_host_x86(api,
 
   if gcstress:
     testrunner_cmd += ['--gcstress']
-
-  # Pass down the cdex option to testrunner.py since it doesn't use the build
-  # default.
-  if cdex_level != 'none':
-    testrunner_cmd += ['--cdex-' + cdex_level]
 
   with api.context(env=env):
     api.step('build',
@@ -205,16 +196,6 @@ def setup_host_x86(api,
       defer(api.step, 'test baseline', testrunner_cmd + ['--baseline'])
 
       defer(api.step, 'test jit', testrunner_cmd + ['--jit'])
-
-      if cdex_level != "none":
-        defer(
-            api.step,
-            'test cdex-redefine-stress-optimizing', testrunner_cmd +
-            ['--optimizing', '--redefine-stress', '--debuggable'])
-        defer(
-            api.step,
-            'test cdex-redefine-stress-jit',
-            testrunner_cmd + ['--jit', '--redefine-stress', '--debuggable'])
 
       defer(api.step, 'test speed-profile',
             testrunner_cmd + ['--speed-profile'])
@@ -548,21 +529,16 @@ def GenTests(api):
   )
 
   yield api.test(
-    'host-x86_64-opts',
-    api.buildbucket.ci_build(
-      project='art',
-    ),
-    api.properties(
-      bitness=64,
-      debug=True,
-      generational_cc=False,
-      clobber='',
-      concurrent_collector=False,
-      heap_poisoning=True,
-      gcstress=True,
-      cdex_level='fast',
-    )
-  )
+      'host-x86_64-opts', api.buildbucket.ci_build(project='art',),
+      api.properties(
+          bitness=64,
+          debug=True,
+          generational_cc=False,
+          clobber='',
+          concurrent_collector=False,
+          heap_poisoning=True,
+          gcstress=True,
+      ))
 
   yield api.test(
     'target_angler_try',

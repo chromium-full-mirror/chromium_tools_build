@@ -115,7 +115,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -154,7 +153,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -195,7 +193,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -237,7 +234,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -279,7 +275,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -320,7 +315,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -361,7 +355,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -402,7 +395,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -441,7 +433,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -480,7 +471,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -520,7 +510,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "none",
       "ART_HEAP_POISONING": "false",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",

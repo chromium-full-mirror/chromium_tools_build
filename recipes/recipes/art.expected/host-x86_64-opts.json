@@ -116,7 +116,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -155,7 +154,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -192,13 +190,11 @@
       "--host",
       "--debug",
       "--gcstress",
-      "--cdex-fast",
       "--optimizing"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -235,14 +231,12 @@
       "--host",
       "--debug",
       "--gcstress",
-      "--cdex-fast",
       "--jit",
       "--debuggable"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -279,14 +273,12 @@
       "--host",
       "--debug",
       "--gcstress",
-      "--cdex-fast",
       "-j5",
       "--interpreter"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -323,13 +315,11 @@
       "--host",
       "--debug",
       "--gcstress",
-      "--cdex-fast",
       "--baseline"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -366,13 +356,11 @@
       "--host",
       "--debug",
       "--gcstress",
-      "--cdex-fast",
       "--jit"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -409,103 +397,11 @@
       "--host",
       "--debug",
       "--gcstress",
-      "--cdex-fast",
-      "--optimizing",
-      "--redefine-stress",
-      "--debuggable"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "false",
-      "BUILD_BROKEN_DISABLE_BAZEL": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "TARGET_RELEASE": "trunk_staging"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test cdex-redefine-stress-optimizing"
-  },
-  {
-    "cmd": [
-      "./art/test/testrunner/testrunner.py",
-      "--verbose",
-      "--host",
-      "--debug",
-      "--gcstress",
-      "--cdex-fast",
-      "--jit",
-      "--redefine-stress",
-      "--debuggable"
-    ],
-    "cwd": "[CACHE]/art",
-    "env": {
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
-      "ART_HEAP_POISONING": "true",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "false",
-      "BUILD_BROKEN_DISABLE_BAZEL": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "TARGET_RELEASE": "trunk_staging"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "test cdex-redefine-stress-jit"
-  },
-  {
-    "cmd": [
-      "./art/test/testrunner/testrunner.py",
-      "--verbose",
-      "--host",
-      "--debug",
-      "--gcstress",
-      "--cdex-fast",
       "--speed-profile"
     ],
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -546,7 +442,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
@@ -588,7 +483,6 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_DEFAULT_COMPACT_DEX_LEVEL": "fast",
       "ART_HEAP_POISONING": "true",
       "ART_TEST_KEEP_GOING": "true",
       "ART_TEST_RUN_TEST_2ND_ARCH": "false",
