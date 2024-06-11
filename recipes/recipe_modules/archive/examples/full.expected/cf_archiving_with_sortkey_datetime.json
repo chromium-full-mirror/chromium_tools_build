@@ -9,7 +9,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CLEANUP]/chrome_staging"
+      "[CLEANUP]/cs"
     ],
     "infra_step": true,
     "name": "create staging_dir"
@@ -134,7 +134,7 @@
       "python3",
       "RECIPE_MODULE[build::archive]/resources/zip_archive.py",
       "--output-dir",
-      "[CLEANUP]/chrome_staging",
+      "[CLEANUP]/cs",
       "--archive-name",
       "chrome-asan-linux-release-197001010001",
       "--json-file-list",
@@ -159,7 +159,7 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/chrome_staging/chrome-asan-linux-release-197001010001.zip",
+      "[CLEANUP]/cs/chrome-asan-linux-release-197001010001.zip",
       "gs://chromium/linux-release-subdir/chrome-asan-linux-release-197001010001.zip"
     ],
     "infra_step": true,
@@ -176,7 +176,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CLEANUP]/chrome_staging/chrome-asan-linux-release-197001010001.zip"
+      "[CLEANUP]/cs/chrome-asan-linux-release-197001010001.zip"
     ],
     "infra_step": true,
     "name": "chrome-asan-linux-release-197001010001.zip"

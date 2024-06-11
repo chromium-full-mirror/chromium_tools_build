@@ -62,7 +62,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         '--gsutil-py-path',
         self.m.depot_tools.gsutil_py_path,
         '--staging-dir',
-        self.m.path.cache_dir / 'chrome_staging',
+        self.m.path.cache_dir / 'cs',
         '--src-dir',
         src_dir,
     ]
@@ -243,7 +243,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       if commit_position:
         gs_metadata[GS_COMMIT_POSITION_KEY] = commit_position
     build_git_commit = self._get_git_commit(update_properties, primary_project)
-    staging_dir = self.m.path.cleanup_dir / 'chrome_staging'
+    staging_dir = self.m.path.cleanup_dir / 'cs'
     self.m.file.ensure_directory('create staging_dir', staging_dir)
 
     lzma_sdk_args = []

@@ -48,7 +48,7 @@ def GenTests(api):
           })),
       api.post_process(StepCommandContains, 'gsutil upload', [
           'public-read',
-          ('[CLEANUP]/chrome_staging/'
+          ('[CLEANUP]/cs/'
            'cf_archive_build_test-linux-release-170242.zip'),
           ('gs://clusterfuzz-gs-bucket/linux-release/'
            'cf_archive_build_test-linux-release-170242.zip'),

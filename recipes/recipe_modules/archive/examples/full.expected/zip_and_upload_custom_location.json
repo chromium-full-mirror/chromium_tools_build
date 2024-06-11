@@ -8,7 +8,7 @@
       "--gsutil-py-path",
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "--staging-dir",
-      "[CACHE]/chrome_staging",
+      "[CACHE]/cs",
       "--src-dir",
       "[CLEANUP]/fake-repo",
       "--use-build-url-name",

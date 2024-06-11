@@ -9,7 +9,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CLEANUP]/chrome_staging"
+      "[CLEANUP]/cs"
     ],
     "infra_step": true,
     "name": "create staging_dir"
@@ -135,7 +135,7 @@
       "python3",
       "RECIPE_MODULE[build::archive]/resources/zip_archive.py",
       "--output-dir",
-      "[CLEANUP]/chrome_staging",
+      "[CLEANUP]/cs",
       "--archive-name",
       "chrome-asan-mac-release-refs_heads_B1-123456",
       "--json-file-list",
@@ -164,7 +164,7 @@
       "cp",
       "-a",
       "public-read",
-      "[CLEANUP]/chrome_staging/chrome-asan-mac-release-refs_heads_B1-123456.zip",
+      "[CLEANUP]/cs/chrome-asan-mac-release-refs_heads_B1-123456.zip",
       "gs://chromium/mac-release-subdir/chrome-asan-mac-release-refs_heads_B1-123456.zip"
     ],
     "infra_step": true,
@@ -181,7 +181,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CLEANUP]/chrome_staging/chrome-asan-mac-release-refs_heads_B1-123456.zip"
+      "[CLEANUP]/cs/chrome-asan-mac-release-refs_heads_B1-123456.zip"
     ],
     "infra_step": true,
     "name": "chrome-asan-mac-release-refs_heads_B1-123456.zip"

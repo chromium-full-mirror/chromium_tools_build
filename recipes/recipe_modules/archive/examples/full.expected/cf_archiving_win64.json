@@ -9,7 +9,7 @@
       "ensure-directory",
       "--mode",
       "0o777",
-      "[CLEANUP]\\chrome_staging"
+      "[CLEANUP]\\cs"
     ],
     "infra_step": true,
     "name": "create staging_dir"
@@ -39,7 +39,7 @@
       "python3",
       "RECIPE_MODULE[build::archive]\\resources\\zip_archive.py",
       "--output-dir",
-      "[CLEANUP]\\chrome_staging",
+      "[CLEANUP]\\cs",
       "--archive-name",
       "chrome-asan-win64-release-refs_heads_B1-123456",
       "--json-file-list",
@@ -66,7 +66,7 @@
       "-h",
       "x-goog-meta-Cr-Git-Commit:5e3250aadda2b170692f8e762d43b7e8deadbeef",
       "cp",
-      "[CLEANUP]\\chrome_staging\\chrome-asan-win64-release-refs_heads_B1-123456.zip",
+      "[CLEANUP]\\cs\\chrome-asan-win64-release-refs_heads_B1-123456.zip",
       "gs://chromium/win64-release/chrome-asan-win64-release-refs_heads_B1-123456.zip"
     ],
     "infra_step": true,
@@ -83,7 +83,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CLEANUP]\\chrome_staging\\chrome-asan-win64-release-refs_heads_B1-123456.zip"
+      "[CLEANUP]\\cs\\chrome-asan-win64-release-refs_heads_B1-123456.zip"
     ],
     "infra_step": true,
     "name": "chrome-asan-win64-release-refs_heads_B1-123456.zip"
