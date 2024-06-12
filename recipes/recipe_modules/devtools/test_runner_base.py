@@ -11,11 +11,11 @@ FLAKE_DETECTION_MAX_TESTS = 20
 
 class DevToolsTests(ABC):
 
-  def __init__(self, api, source_dir, cas_digest, builder_config, coverage,
+  def __init__(self, api, source_dir, trigger, builder_config, coverage,
                step_name):
     self.api = api
     self.source_dir = source_dir
-    self.cas_digest = cas_digest
+    self.sw_trigger = trigger
     self.builder_config = builder_config
     self.step_name = step_name
     self.output_dir = self.api.path.mkdtemp()
@@ -68,11 +68,10 @@ class DevToolsTests(ABC):
 
   def trigger(self):
     with self.api.step.nest(f'Trigger {self.step_name}'):
-      self.tasks = self.api.devtools.trigger_test_swarming_tasks(
+      self.tasks = self.sw_trigger.trigger(
           step_name=self.step_name,
-          cas_digest=self.cas_digest,
-          task_output_dir=self.output_dir,
-          rdb_test_type=self.test_type_tag,
+          output_dir=self.output_dir,
+          test_type_tag=self.test_type_tag,
           commands=self.commands(),
           env=self.construct_env(),
       )
@@ -160,9 +159,9 @@ def use_legacy_test_runner(api):
 
 class ExonerableTests(DevToolsTests):
 
-  def __init__(self, api, source_dir, cas_digest, builder_config, coverage,
+  def __init__(self, api, source_dir, trigger, builder_config, coverage,
                step_name):
-    super().__init__(api, source_dir, cas_digest, builder_config, coverage,
+    super().__init__(api, source_dir, trigger, builder_config, coverage,
                      step_name)
     # Used to indicate that no task was triggered; may contain a failure if the
     # reason for not triggering qualifies as such

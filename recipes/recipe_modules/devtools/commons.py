@@ -60,3 +60,22 @@ class Results():
         summary_markdown=summary,
         status=common_pb.SUCCESS,
     )
+
+
+class SwarmingTrigger:
+
+  def __init__(self, api, cas_digest, target_dimensions=None):
+    self.api = api
+    self.cas_digest = cas_digest
+    self.target_dimensions = target_dimensions
+
+  def trigger(self, step_name, output_dir, test_type_tag, commands, env):
+    return self.api.devtools.trigger_test_swarming_tasks(
+        step_name=step_name,
+        cas_digest=self.cas_digest,
+        task_output_dir=output_dir,
+        rdb_test_type=test_type_tag,
+        commands=commands,
+        env=env,
+        target_dimensions=self.target_dimensions,
+    )

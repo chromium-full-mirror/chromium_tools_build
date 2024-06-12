@@ -16,9 +16,9 @@ class E2ETests(ExonerableTests):
     prefix = 'shuffled_' if self.api.devtools.is_shuffled_run() else ''
     return prefix + 'e2e_tests'
 
-  def __init__(self, api, source_dir, cas_digest, builder_config, coverage,
+  def __init__(self, api, source_dir, trigger, builder_config, coverage,
                step_name, divider):
-    super().__init__(api, source_dir, cas_digest, builder_config, coverage,
+    super().__init__(api, source_dir, trigger, builder_config, coverage,
                      step_name)
     self.divider = divider
     if self.api.devtools.is_shuffled_run():
@@ -115,3 +115,11 @@ def read_test_list(api, source_dir, builder_config):
   test_root = gen_root / TEST_RELATIVE_PATH
   test_list_file_path = test_root / 'tests.txt'
   return api.file.read_text('Read test list', test_list_file_path)
+
+
+def write_test_list(api, source_dir, builder_config, test_list):
+  gen_root = source_dir / 'out' / builder_config / 'gen'
+  test_root = gen_root / TEST_RELATIVE_PATH
+  api.step('Create E2E test root', ['mkdir', '-p', test_root])
+  test_list_file_path = test_root / 'tests.txt'
+  api.file.write_text('Write E2E test list', test_list_file_path, test_list)

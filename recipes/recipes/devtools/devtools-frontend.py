@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import defaultdict
 from google.protobuf import timestamp_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
@@ -13,7 +12,8 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (
 from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
                                         MustRun, SummaryMarkdown)
 from recipe_engine.recipe_api import Property
-from RECIPE_MODULES.build.devtools.test_runner_base import Results, FLAKE_DETECTION_MAX_TESTS
+from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
+from RECIPE_MODULES.build.devtools.test_runner_base import FLAKE_DETECTION_MAX_TESTS
 from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests, E2ETestDivider, RepeatE2EShuffledTests
 from RECIPE_MODULES.build.devtools.interactions_tests_runner import InteractionsTests
 from RECIPE_MODULES.build.devtools.performance_tests_runner import PerformanceTests
@@ -95,16 +95,17 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
     cas_digest = api.devtools.archive_to_cas(source_dir)
 
     divider = E2ETestDivider(api, source_dir, builder_config)
+    trigger = SwarmingTrigger(api, cas_digest)
     tests = [
-        UnitTests(api, source_dir, cas_digest, builder_config, coverage,
+        UnitTests(api, source_dir, trigger, builder_config, coverage,
                   'Unit Tests'),
-        InteractionsTests(api, source_dir, cas_digest, builder_config, coverage,
+        InteractionsTests(api, source_dir, trigger, builder_config, coverage,
                           'Interactions Tests'),
-        E2ETests(api, source_dir, cas_digest, builder_config, coverage,
+        E2ETests(api, source_dir, trigger, builder_config, coverage,
                  'E2E Tests', divider),
-        PerformanceTests(api, source_dir, cas_digest, builder_config, coverage,
+        PerformanceTests(api, source_dir, trigger, builder_config, coverage,
                          'Performance Tests'),
-        RepeatE2EShuffledTests(api, source_dir, cas_digest, builder_config,
+        RepeatE2EShuffledTests(api, source_dir, trigger, builder_config,
                                coverage, 'Repeat E2E Tests', divider),
     ]
     tests = [t for t in tests if not t.skip()]

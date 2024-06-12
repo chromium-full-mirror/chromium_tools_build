@@ -155,7 +155,8 @@ class DevToolsAPI(recipe_api.RecipeApi):
                                   task_output_dir=None,
                                   env=None,
                                   args=None,
-                                  rdb_test_type=None):
+                                  rdb_test_type=None,
+                                  target_dimensions=None):
     args = list(args or [])
     tasks = []
     if not env:
@@ -177,7 +178,8 @@ class DevToolsAPI(recipe_api.RecipeApi):
 
       task_slice = task.request[0]
       task_dimensions = task_slice.dimensions
-      task_dimensions.update(self.m.devtools.get_dimensions_for_platform())
+      task_dimensions.update(target_dimensions or
+                             self.get_dimensions_for_platform())
       task_slice = task_slice.with_dimensions(**task_dimensions)
       task.request = task.request.with_slice(0, task_slice)
 

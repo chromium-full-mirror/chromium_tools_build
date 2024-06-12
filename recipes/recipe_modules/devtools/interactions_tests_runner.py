@@ -16,13 +16,13 @@ class InteractionsTests(ExonerableTests):
   def __init__(self,
                api,
                source_dir,
-               cas_digest,
+               trigger,
                builder_config,
                coverage,
                step_name,
                bucket='devtools-frontend-screenshots'):
     self.bucket = bucket
-    super().__init__(api, source_dir, cas_digest, builder_config, coverage,
+    super().__init__(api, source_dir, trigger, builder_config, coverage,
                      step_name)
 
   def collect(self):

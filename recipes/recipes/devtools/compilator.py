@@ -60,6 +60,7 @@ CANCELLATION_MESSAGE = (
 
 def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
              clobber):
+  # TODO(liviurau): File touch. Remove comment after full review.
   try:
     api.devtools.configure(builder_config, is_official_build,
                            devtools_skip_typecheck)

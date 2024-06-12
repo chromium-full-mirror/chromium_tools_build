@@ -25,7 +25,9 @@ class V8OrchestratorApi(recipe_api.RecipeApi):
       return LedCompilatorHandler(self.m, step_suffix=step_suffix)
     return ProdCompilatorHandler(self.m, step_suffix=step_suffix)
 
-  def orchestrated_compilation(self, compilator_name, initialize_testing):
+  def orchestrated_compilation(self,
+                               compilator_name,
+                               initialize_testing=lambda: None):
     """Orchestrate a compilation.
 
     Args:
