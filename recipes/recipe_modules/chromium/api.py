@@ -999,20 +999,23 @@ class ChromiumApi(recipe_api.RecipeApi):
     if self.c.HOST_PLATFORM == 'mac':
       self.ensure_mac_toolchain(checkout_dir)
 
-  def clobber_if_needed(self):
-    """Add an explicit clobber step if requested."""
-    # clobber_before_runhooks is true for bots that apply the 'clobber' config,
-    # that is for bots that do clobber bots on every build.
-    if self.c.clobber_before_runhooks:
-      self.m.file.rmtree('clobber', self.output_dir)
-
   @_with_chromium_layout
-  def runhooks(self, env=None, **kwargs):
-    """Run the build-configuration hooks for chromium."""
+  def runhooks(self, env=None, clobber=None, **kwargs):
+    """Run the build-configuration hooks for chromium.
 
+    Args:
+      env: Additional env vars to set during runhooks
+      clobber: Whether to clobber the out dir prior to running hooks. Defaults
+        to the "clobber_before_runhooks" chromium config when not specified.
+      kwargs: Passthrough args to gclient.runhooks()
+    """
     # runhooks might write things into the output directory, so clobber before
-    # that.
-    self.clobber_if_needed()
+    # that. 'clobber_before_runhooks' is true for bots that apply the 'clobber'
+    # config.
+    if clobber is None:
+      clobber = self.c.clobber_before_runhooks
+    if clobber:
+      self.m.file.rmtree('clobber', self.output_dir)
 
     runhooks_env = self.get_env()
     runhooks_env.update(self.m.context.env)

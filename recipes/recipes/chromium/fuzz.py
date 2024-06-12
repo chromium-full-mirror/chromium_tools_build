@@ -145,7 +145,7 @@ def RunSteps(api, properties):
   update_result = api.chromium_checkout.ensure_checkout(clobber=should_clobber)
 
   api.chromium.ensure_toolchains()
-  api.chromium.runhooks()
+  api.chromium.runhooks(clobber=should_clobber)
   api.chromium.mb_gen(builder_id)
 
   source_dir = update_result.source_root.path
