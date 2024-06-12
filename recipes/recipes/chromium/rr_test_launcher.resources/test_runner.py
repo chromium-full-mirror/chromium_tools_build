@@ -76,9 +76,10 @@ def main(args):
       # dir.
       result = run_cmd(['rr_tool/bin/rr', 'pack', TRACE_DIR], '../')
       if result == 0:
-        with tarfile.open('trace.tar', 'w') as tar:
-          tar.add(f'../{TRACE_DIR}')
-        tar.close()
+        run_cmd([
+            'tar', '--exclude', './db*', '--use-compress-program=zstd', '-cf',
+            'trace.tar', f'../{TRACE_DIR}'
+        ], './')
         os.renames('trace.tar',
                    f'{args.output_dir}/{test_name_plain}/{str(i)}/trace.tar')
         os.renames(
