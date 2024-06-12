@@ -141,7 +141,8 @@ def RunSteps(api, properties):
 
   # Most CI fuzz bots clobber. But we don't want the trybots clobbering, since
   # some of them are on the CQ.
-  should_clobber = builder_config.clobber and not api.tryserver.is_tryserver()
+  should_clobber = (
+      api.chromium.c.clobber_before_runhooks and not api.tryserver.is_tryserver)
   update_result = api.chromium_checkout.ensure_checkout(clobber=should_clobber)
 
   api.chromium.ensure_toolchains()
@@ -396,6 +397,7 @@ def GenTests(api):
                   'some-ci-bot':
                       ctbc.BuilderSpec.create(
                           chromium_config='chromium',
+                          chromium_apply_config=['clobber'],
                           gclient_config='chromium',
                           chromium_config_kwargs={
                               'TARGET_BITS': 32,
@@ -404,6 +406,7 @@ def GenTests(api):
               },
           })),
       api.platform.name('linux'),
+      api.post_process(post_process.MustRun, 'clobber'),
       generate_test(),
   )
 
@@ -552,6 +555,7 @@ def GenTests(api):
                   'fuzz-ci-bot':
                       ctbc.BuilderSpec.create(
                           chromium_config='chromium',
+                          chromium_apply_config=['clobber'],
                           gclient_config='chromium',
                       ),
               },
@@ -578,6 +582,7 @@ def GenTests(api):
       ),
       api.step_data(
           'list gn targets', stdout=api.raw_io.output_text('target2')),
+      api.post_process(post_process.DoesNotRun, 'clobber'),
   )
 
   yield api.test(
