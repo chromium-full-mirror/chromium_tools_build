@@ -153,6 +153,198 @@
   },
   {
     "cmd": [],
+    "name": "branch-config0"
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/project/branch-script",
+      "initialize",
+      "--milestone",
+      "MMM",
+      "--branch",
+      "BBBB",
+      "--test-config"
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config0.initialize",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "branch-config0.verify",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "lucicfg",
+      "generate",
+      "entry-point1.star"
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config0.verify.lucicfg generate entry-point1.star",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "lucicfg",
+      "validate",
+      "entry-point1.star"
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config0.verify.lucicfg validate entry-point1.star",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "lucicfg",
+      "generate",
+      "entry-point2.star"
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config0.verify.lucicfg generate entry-point2.star",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "lucicfg",
+      "validate",
+      "entry-point2.star"
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config0.verify.lucicfg validate entry-point2.star",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "branch-config0.restore",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "restore",
+      "."
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config0.restore.git restore",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-f"
+    ],
+    "cwd": "[CACHE]/builder/project",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "branch-config0.restore.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "branch-config1"
   },
   {
@@ -543,7 +735,7 @@
       "--description",
       "testing",
       "--sheriff-rotation",
-      "sheriff-rotation"
+      "gardener-rotation"
     ],
     "cwd": "[CACHE]/builder/project",
     "luci_context": {
@@ -571,7 +763,7 @@
       "--description",
       "testing",
       "--sheriff-rotation",
-      "sheriff-rotation"
+      "gardener-rotation"
     ],
     "cwd": "[CACHE]/builder/project",
     "luci_context": {

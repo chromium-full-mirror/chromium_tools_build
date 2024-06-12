@@ -6,7 +6,7 @@ syntax = "proto3";
 package recipes.build.branch_configuration.tester;
 
 message BranchConfig {
-  // Next ID: 5
+  // Next ID: 7
 
   reserved 2;
   reserved "branch_types";
@@ -17,14 +17,40 @@ message BranchConfig {
   // identification.
   string name = 1;
 
-  // Required, the platforms to set for the configuration.
+  // The platforms to set for the configuration.
   //
   // The platforms must be strings that can be present in the platforms dict of
   // the project's settings.json.
+  //
+  // DEPRECATED instead, set one of the fields of the config_type oneof
   repeated string platforms = 3;
 
   // A sheriff_rotation to apply to the platforms being enabled.
+  //
+  // DEPRECATED instead, set one of the fields of the config_type oneof
   string sheriff_rotation = 4;
+
+  // A message indicating to run the initialize command of the branch script to
+  // set up the branch config
+  message InitializeConfig {}
+
+  message PlatformSetConfig {
+    // Next ID: 3
+
+    // Required, the platforms to set for the configuration.
+    //
+    // The platforms must be strings that can be present in the platforms dict
+    // of the project's settings.json.
+    repeated string platforms = 1;
+
+    // A gardener rotation to apply to the platforms being enabled.
+    string gardener_rotation = 2;
+  }
+
+  oneof config_type {
+    InitializeConfig initialize = 5;
+    PlatformSetConfig platform_set = 6;
+  }
 }
 
 message InputProperties {
@@ -34,17 +60,20 @@ message InputProperties {
   reserved "branch_types", "verification_scripts";
 
   // Required, the path within the repo to the branch script that can be used to
-  // enable a platform or set the branch type
+  // initialize the branch or enable a platform
   //
-  // If the platforms field is set in the branch configs, the script must be
-  // executable with a command of the form:
+  // If the initialize_config field is set in the branch config, the script will
+  // be called with a command of the form:
+  // <branch_script> initialize --milestone <milestone> --branch <branch> --test-config
+  // NOTE: The --test-config flag is a test-only flag that ensures the project
+  // name isn't changed so that "lucicfg validate" can be executed on the
+  // resulting config.
+  //
+  // If the platform_set or platforms field is set in the branch config, the
+  // script will be called with a command of the form:
   // <branch_script> enable-platform <platform> --description <description>
-  // It will be executed once for each element in branch_configs[i].platforms.
-  //
-  // If the branch_types field is set in the branch configs, the script must be
-  // executable with a command of the form:
-  // <branch_script> set-type --type <branch_type> [--type <branch_type>]...
-  // For each element <branch_type> in branch_configs[i].branch_types.
+  // It will be executed once for each element in
+  // branch_configs[i].platform_set.platforms or branch_configs[i].platforms.
   string branch_script = 1;
 
   // Required, the branch configs to verify

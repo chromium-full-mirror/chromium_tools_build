@@ -78,11 +78,18 @@ def _validate_properties(properties):
       else:
         config_map.setdefault(config.name, []).append(i)
 
-      if not config.platforms:
-        errors.append(f'branch_configs[{i}].platforms is empty')
-      else:
-        validate_repeated_field(f'branch_configs[{i}].platforms',
-                                config.platforms)
+      config_type = config.WhichOneof('config_type')
+      if not config_type:
+        if not config.platforms:
+          errors.append(f'branch_configs[{i}] must set'
+                        ' one of platforms, platform_set or initialize')
+        else:
+          validate_repeated_field(f'branch_configs[{i}].platforms',
+                                  config.platforms)
+
+      elif config_type == 'platform_set':
+        validate_repeated_field(f'branch_configs[{i}].platform_set.platforms',
+                                config.platform_set.platforms)
 
     for config, indices in config_map.items():
       if len(indices) > 1:
@@ -135,21 +142,41 @@ def RunSteps(api, properties):
     branch_script = repo_path / properties.branch_script
     for branch_config in properties.branch_configs:
       with api.step.nest(branch_config.name):
-        sheriff_rotation_args = []
-        if branch_config.sheriff_rotation:
-          sheriff_rotation_args = [
-              '--sheriff-rotation',
-              branch_config.sheriff_rotation,
-          ]
-        for p in branch_config.platforms:
-          api.step(f'enable {p}', [
+        config_type = branch_config.WhichOneof('config_type')
+        if config_type == 'initialize':
+          api.step('initialize', [
               branch_script,
-              'enable-platform',
-              p,
-              '--description',
-              'testing',
-              *sheriff_rotation_args,
+              'initialize',
+              '--milestone',
+              'MMM',
+              '--branch',
+              'BBBB',
+              '--test-config',
           ])
+        else:
+          platforms = branch_config.platforms
+          gardener_rotation = branch_config.sheriff_rotation
+          if not platforms:
+            platforms = branch_config.platform_set.platforms
+            gardener_rotation = branch_config.platform_set.gardener_rotation
+
+          gardener_rotation_args = []
+          if gardener_rotation:
+            gardener_rotation_args = [
+                # TODO: crbug.com/346832729 - Switch this to --gardener-rotation
+                # once the branch scripts have been updated
+                '--sheriff-rotation',
+                gardener_rotation,
+            ]
+          for p in platforms:
+            api.step(f'enable {p}', [
+                branch_script,
+                'enable-platform',
+                p,
+                '--description',
+                'testing',
+                *gardener_rotation_args,
+            ])
 
         with api.step.nest('verify'):
           try:
@@ -245,6 +272,97 @@ def GenTests(api):
               'testing',
               '--sheriff-rotation',
               'sheriff-rotation',
+          ],
+      ),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'updated-proto',
+      api.buildbucket.try_build(),
+      api.properties(
+          tester_pb.InputProperties(
+              branch_script='branch-script',
+              branch_configs=[
+                  tester_pb.BranchConfig(
+                      name='branch-config0',
+                      initialize=tester_pb.BranchConfig.InitializeConfig(),
+                  ),
+                  tester_pb.BranchConfig(
+                      name='branch-config1',
+                      platform_set=tester_pb.BranchConfig.PlatformSetConfig(
+                          platforms=['platform1']),
+                  ),
+                  tester_pb.BranchConfig(
+                      name='branch-config2',
+                      platform_set=tester_pb.BranchConfig.PlatformSetConfig(
+                          platforms=['platform2']),
+                  ),
+                  tester_pb.BranchConfig(
+                      name='branch-config3',
+                      platform_set=tester_pb.BranchConfig.PlatformSetConfig(
+                          platforms=['platform1', 'platform2'],
+                          gardener_rotation='gardener-rotation',
+                      ),
+                  ),
+              ],
+              starlark_entry_points=[
+                  'entry-point1.star',
+                  'entry-point2.star',
+              ],
+          )),
+      api.post_check(
+          post_process.MustRun,
+          'branch-config0.initialize',
+          'branch-config0.verify.lucicfg generate entry-point1.star',
+          'branch-config0.verify.lucicfg validate entry-point1.star',
+          'branch-config0.verify.lucicfg generate entry-point2.star',
+          'branch-config0.verify.lucicfg validate entry-point2.star',
+          'branch-config1.enable platform1',
+          'branch-config1.verify.lucicfg generate entry-point1.star',
+          'branch-config1.verify.lucicfg validate entry-point1.star',
+          'branch-config1.verify.lucicfg generate entry-point2.star',
+          'branch-config1.verify.lucicfg validate entry-point2.star',
+          'branch-config2.enable platform2',
+          'branch-config2.verify.lucicfg generate entry-point1.star',
+          'branch-config2.verify.lucicfg validate entry-point1.star',
+          'branch-config2.verify.lucicfg generate entry-point2.star',
+          'branch-config2.verify.lucicfg validate entry-point2.star',
+          'branch-config3.enable platform1',
+          'branch-config3.enable platform2',
+          'branch-config3.verify.lucicfg generate entry-point1.star',
+          'branch-config3.verify.lucicfg validate entry-point1.star',
+          'branch-config3.verify.lucicfg generate entry-point2.star',
+          'branch-config3.verify.lucicfg validate entry-point2.star',
+      ),
+      api.post_check(post_process.StepCommandContains,
+                     'branch-config0.initialize', ['--test-config']),
+      api.post_check(post_process.StepCommandContains,
+                     'branch-config1.enable platform1',
+                     ['platform1', '--description', 'testing']),
+      api.post_check(post_process.StepCommandContains,
+                     'branch-config2.enable platform2',
+                     ['platform2', '--description', 'testing']),
+      api.post_check(
+          post_process.StepCommandContains,
+          'branch-config3.enable platform1',
+          [
+              'platform1',
+              '--description',
+              'testing',
+              '--sheriff-rotation',
+              'gardener-rotation',
+          ],
+      ),
+      api.post_check(
+          post_process.StepCommandContains,
+          'branch-config3.enable platform2',
+          [
+              'platform2',
+              '--description',
+              'testing',
+              '--sheriff-rotation',
+              'gardener-rotation',
           ],
       ),
   )
@@ -361,7 +479,8 @@ def GenTests(api):
           )),
       invalid_properties(
           r'\bbranch_configs\[0\].name is empty\b',
-          r'\bbranch_configs\[0\].platforms is empty\b',
+          (r'\bbranch_configs\[0\] must set one of'
+           r' platforms, platform_set or initialize\b'),
           (r"\bmultiple configs named 'branch-config' "
            r'in branch_configs: \[1, 2\]'),
           r'\bstarlark_entry_points\[0\] is empty\b',
