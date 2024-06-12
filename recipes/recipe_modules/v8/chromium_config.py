@@ -65,6 +65,8 @@ def slow_dchecks(c):
 @CONFIG_CTX(includes=['ninja', 'gn', 'clang'])
 def node_ci(c):
   c.use_gyp_env = False
+  c.gn_args.append('v8_array_buffer_internal_field_count=2')
+  c.gn_args.append('v8_array_buffer_view_internal_field_count=2')
   if c.HOST_PLATFORM != 'win':
     c.gn_args.append('use_sysroot=true')
     c.gn_args.append('use_custom_libcxx=true')
