@@ -363,6 +363,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.step_data('cleandead', retcode=1),
-      api.post_check(post_process.MustRun, 'gn clean output dir (with patch)'),
+      api.post_check(post_process.MustRun,
+                     'generate_build_files (with patch) (2)'),
       api.post_process(post_process.DropExpectation),
   )

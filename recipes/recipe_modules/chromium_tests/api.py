@@ -1150,17 +1150,22 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                          android_version_code=None,
                          android_version_name=None):
     with self.m.chromium.guard_compile(suffix=name_suffix):
+      _mb_gen = None
       if self.m.chromium.c.project_generator.tool == 'mb':
-        gn_args = self.m.chromium.mb_gen(
-            builder_id,
-            phase=mb_phase,
-            mb_config_path=mb_config_path,
-            isolated_targets=isolated_targets,
-            name='generate_build_files%s' % name_suffix,
-            recursive_lookup=mb_recursive_lookup,
-            write_ide_json=mb_write_ide_json,
-            android_version_code=android_version_code,
-            android_version_name=android_version_name)
+
+        def _mb_gen():
+          return self.m.chromium.mb_gen(
+              builder_id,
+              phase=mb_phase,
+              mb_config_path=mb_config_path,
+              isolated_targets=isolated_targets,
+              name='generate_build_files%s' % name_suffix,
+              recursive_lookup=mb_recursive_lookup,
+              write_ide_json=mb_write_ide_json,
+              android_version_code=android_version_code,
+              android_version_name=android_version_name)
+
+        gn_args = _mb_gen()
         use_reclient = self._use_reclient(gn_args)
 
       # gn_logs.txt contains debug info for vars with smart defaults. Display
@@ -1183,8 +1188,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         try:
           self.m.chromium.cleandead()
         except self.m.step.StepFailure:
-          self.m.gn.clean(self.m.chromium.output_dir,
-                          'gn clean output dir' + name_suffix)
+          self.m.file.rmtree('remove output dir' + name_suffix,
+                             self.m.chromium.output_dir)
+          if _mb_gen:
+            _mb_gen()
           clean_step_presentation = self.m.step.active_result.presentation
           clean_step_presentation.step_text = 'reason: cleandead unsuccessful'
 
