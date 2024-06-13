@@ -73,12 +73,13 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
       compilation_result = api.chromium.compile()
       if compilation_result.status != common_pb.SUCCESS:
         return compilation_result
-      cas_digest = api.devtools.archive_to_cas(source_dir)
 
     e2e_tests_list = read_test_list(api, source_dir, builder_config)
-    emit_compilator_properties(api, cas_digest, e2e_tests_list)
 
     run_lint_check(api, builder_config, source_dir)
+
+    cas_digest = api.devtools.archive_to_cas(source_dir)
+    emit_compilator_properties(api, cas_digest, e2e_tests_list)
   finally:
     if api.runtime.in_global_shutdown:
       # pylint: disable=lost-exception
@@ -103,7 +104,7 @@ def run_lint_check(api, builder_config, source_dir):
     with api.step.nest('Linting'):
       api.devtools.run_node_script(source_dir, 'Lint Check with ESLint',
                                    'run_lint_check_js.mjs')
-      api.devtools.run_node_script(source_dir, 'Lint check with Stylelint',
+      api.devtools.run_node_script(source_dir, 'Lint Check with Stylelint',
                                    'run_lint_check_css.js')
 
 
@@ -121,6 +122,18 @@ def GenTests(api):
       *check_steps(DoesNotRun, 'archive', 'compilator properties'
                    'Linting.Lint Check with ESLint',
                    'Linting.Lint check with Stylelint'),
+      api.post_process(DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'linter failure',
+      api.step_data('Linting.Lint Check with ESLint', retcode=1),
+      *check_steps(MustRun, 'compile'),
+      *check_steps(DoesNotRun, 'Linting.Lint Check with Stylelint', 'archive',
+                   'compilator properties'),
+      api.post_process(SummaryMarkdown,
+                       "Step('Linting.Lint Check with ESLint') (retcode: 1)"),
       api.post_process(DropExpectation),
       status='FAILURE',
   )
