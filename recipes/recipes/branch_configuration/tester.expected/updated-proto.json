@@ -160,7 +160,7 @@
       "[CACHE]/builder/project/branch-script",
       "initialize",
       "--milestone",
-      "MMM",
+      "1000000",
       "--branch",
       "BBBB",
       "--test-config"

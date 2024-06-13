@@ -144,15 +144,19 @@ def RunSteps(api, properties):
       with api.step.nest(branch_config.name):
         config_type = branch_config.WhichOneof('config_type')
         if config_type == 'initialize':
-          api.step('initialize', [
-              branch_script,
+          api.step(
               'initialize',
-              '--milestone',
-              'MMM',
-              '--branch',
-              'BBBB',
-              '--test-config',
-          ])
+              [
+                  branch_script,
+                  'initialize',
+                  '--milestone',
+                  # The internal config actually evaluates the milestone as an
+                  # int, so it can't be any arbitrary string
+                  '1000000',
+                  '--branch',
+                  'BBBB',
+                  '--test-config',
+              ])
         else:
           platforms = branch_config.platforms
           gardener_rotation = branch_config.sheriff_rotation
