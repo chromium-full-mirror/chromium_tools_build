@@ -8,27 +8,14 @@ package recipes.build.branch_configuration.tester;
 message BranchConfig {
   // Next ID: 7
 
-  reserved 2;
-  reserved "branch_types";
+  reserved 2, 3, 4;
+  reserved "branch_types", "platforms", "sheriff_rotation";
 
   // Required, the name to identify the configuration.
   //
   // The name is arbitrary and is only used for display and human
   // identification.
   string name = 1;
-
-  // The platforms to set for the configuration.
-  //
-  // The platforms must be strings that can be present in the platforms dict of
-  // the project's settings.json.
-  //
-  // DEPRECATED instead, set one of the fields of the config_type oneof
-  repeated string platforms = 3;
-
-  // A sheriff_rotation to apply to the platforms being enabled.
-  //
-  // DEPRECATED instead, set one of the fields of the config_type oneof
-  string sheriff_rotation = 4;
 
   // A message indicating to run the initialize command of the branch script to
   // set up the branch config
@@ -69,11 +56,11 @@ message InputProperties {
   // name isn't changed so that "lucicfg validate" can be executed on the
   // resulting config.
   //
-  // If the platform_set or platforms field is set in the branch config, the
-  // script will be called with a command of the form:
+  // If the platform_set field is set in the branch config, the script will be
+  // called with a command of the form:
   // <branch_script> enable-platform <platform> --description <description>
   // It will be executed once for each element in
-  // branch_configs[i].platform_set.platforms or branch_configs[i].platforms.
+  // branch_configs[i].platform_set.platforms.
   string branch_script = 1;
 
   // Required, the branch configs to verify
