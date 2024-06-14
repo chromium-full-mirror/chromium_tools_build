@@ -156,9 +156,7 @@ def RunSteps(api, properties):
           gardener_rotation_args = []
           if gardener_rotation := branch_config.platform_set.gardener_rotation:
             gardener_rotation_args = [
-                # TODO: crbug.com/346832729 - Switch this to --gardener-rotation
-                # once the branch scripts have been updated
-                '--sheriff-rotation',
+                '--gardener-rotation',
                 gardener_rotation,
             ]
           for p in branch_config.platform_set.platforms:
@@ -267,7 +265,7 @@ def GenTests(api):
               'platform1',
               '--description',
               'testing',
-              '--sheriff-rotation',
+              '--gardener-rotation',
               'gardener-rotation',
           ],
       ),
@@ -278,7 +276,7 @@ def GenTests(api):
               'platform2',
               '--description',
               'testing',
-              '--sheriff-rotation',
+              '--gardener-rotation',
               'gardener-rotation',
           ],
       ),

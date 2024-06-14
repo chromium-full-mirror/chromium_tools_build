@@ -58,7 +58,7 @@ message InputProperties {
   //
   // If the platform_set field is set in the branch config, the script will be
   // called with a command of the form:
-  // <branch_script> enable-platform <platform> --description <description>
+  // <branch_script> enable-platform <platform> --description <description> [--gardener-rotation <rotation>]
   // It will be executed once for each element in
   // branch_configs[i].platform_set.platforms.
   string branch_script = 1;

@@ -734,7 +734,7 @@
       "platform1",
       "--description",
       "testing",
-      "--sheriff-rotation",
+      "--gardener-rotation",
       "gardener-rotation"
     ],
     "cwd": "[CACHE]/builder/project",
@@ -762,7 +762,7 @@
       "platform2",
       "--description",
       "testing",
-      "--sheriff-rotation",
+      "--gardener-rotation",
       "gardener-rotation"
     ],
     "cwd": "[CACHE]/builder/project",
