@@ -315,6 +315,9 @@
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],
@@ -1890,6 +1893,9 @@
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],
@@ -3447,6 +3453,9 @@
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],
@@ -4917,6 +4926,9 @@
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0",
       "-DCMAKE_C_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg",
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_mac.cfg"
     ],

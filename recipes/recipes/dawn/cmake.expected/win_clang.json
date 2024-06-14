@@ -347,7 +347,10 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=0"
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
@@ -458,7 +461,10 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=0"
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
@@ -693,7 +699,10 @@
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
-      "-DTINT_BUILD_FUZZERS=0"
+      "-DTINT_BUILD_FUZZERS=0",
+      "-DTINT_BUILD_SPIRV_TOOLS_FUZZER=0",
+      "-DTINT_BUILD_AST_FUZZER=0",
+      "-DTINT_BUILD_REGEX_FUZZER=0"
     ],
     "cwd": "[CACHE]\\uncached\\dawn",
     "env": {
