@@ -187,4 +187,12 @@ class SisoApi(recipe_api.RecipeApi):
     self.m.step('check siso version', [self.siso_path(source_dir), 'version'])
 
   def siso_path(self, source_dir: Path):
-    return source_dir / 'third_party/siso/siso'
+    """"Retrieve siso path without exections."""
+    # There are two possible paths :
+    # * third_party/siso/cipd/siso{.exe}
+    # * third_party/siso/siso{.exe}
+    # A path with cipd is preferable. To determine which one to use,
+    # check if cipd directory exists.
+    return source_dir / 'third_party/siso/cipd/siso' if \
+        self.m.path.exists(source_dir / 'third_party/siso/cipd') else \
+      source_dir / 'third_party/siso/siso'
