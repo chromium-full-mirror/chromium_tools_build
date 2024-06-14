@@ -426,20 +426,25 @@ def publish_tarball(api):
         source_dir.joinpath('third_party', 'depot_tools'),
     ])
 
-  node_modules_sha_path = source_dir.joinpath('third_party', 'node',
-                                              'node_modules.tar.gz.sha1')
-  if api.path.exists(node_modules_sha_path):
-    api.step('webui_node_modules', [
-        'python3',
-        api.depot_tools.download_from_google_storage_path,
-        '--no_resume',
-        '--extract',
-        '--no_auth',
-        '--bucket',
-        'chromium-nodejs',
-        '-s',
-        node_modules_sha_path,
-    ])
+  # The structure of the archive has been changed because of the GCS first class
+  # migration in https://crrev.com/c/5564966
+  # The archive will be downloaded and extracted in gclient sync and no longer
+  # use download_from_google_storage.py.
+  if [int(x) for x in version.split('.')] < [128, 0, 6534, 0]:
+    node_modules_sha_path = source_dir.joinpath('third_party', 'node',
+                                                'node_modules.tar.gz.sha1')
+    if api.path.exists(node_modules_sha_path):
+      api.step('webui_node_modules', [
+          'python3',
+          api.depot_tools.download_from_google_storage_path,
+          '--no_resume',
+          '--extract',
+          '--no_auth',
+          '--bucket',
+          'chromium-nodejs',
+          '-s',
+          node_modules_sha_path,
+      ])
 
   try:
     temp_dir = api.path.mkdtemp('gn')
@@ -530,13 +535,21 @@ def RunSteps(api):
 def GenTests(api):
   yield (
       api.test('basic') + api.buildbucket.generic_build() +
-      api.properties(version='121.0.6110.0') + api.platform('linux', 64) +
+      api.properties(version='128.0.6534.0') + api.platform('linux', 64) +
       api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
       api.step_data(
-          'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')) +
-      api.path.exists(
-          api.path.start_dir.joinpath('src', 'third_party', 'node',
-                                      'node_modules.tar.gz.sha1')))
+          'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')))
+
+  yield (api.test('basic-without-nacl-with-nodejs') +
+         api.buildbucket.generic_build() +
+         api.properties(version='121.0.6110.0') + api.platform('linux', 64) +
+         api.step_data('gsutil ls', stdout=api.raw_io.output_text('')) +
+         api.step_data(
+             'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)'))
+         + api.path.exists(
+             api.path.start_dir.joinpath('src', 'third_party', 'node',
+                                         'node_modules.tar.gz.sha1')) +
+         api.post_process(post_process.MustRun, 'webui_node_modules'))
 
   yield (
       api.test('basic-with-nacl') + api.buildbucket.generic_build() +
