@@ -286,9 +286,6 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
         '-DCMAKE_C_COMPILER=clang',
         '-DCMAKE_CXX_COMPILER=clang++',
         f'-DTINT_BUILD_FUZZERS={cmake_bool_arg(fixed_args.build_fuzzers)}',
-        f'-DTINT_BUILD_SPIRV_TOOLS_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
-        f'-DTINT_BUILD_AST_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
-        f'-DTINT_BUILD_REGEX_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
     ])
     if api.platform.is_linux:
       # On Linux, use the x64 sysroot specified in DEPS
@@ -449,11 +446,6 @@ def RunSteps(api,
               'Check fuzzers',
               ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
               wrapper=shell_wrapper)
-        # TODO(amaiorano): Build and run 'tint_ast_fuzzer_unittests' and 'tint_regex_fuzzer_unittests'
-        # by passing TINT_BUILD_TESTS=1 to CMake. Kokoro used to do this, but it hasn't for a while.
-        # Apparently, we will be removing these targets soon, so perhaps just delete?
-        run_target('tint_ast_fuzzer_unittests', False)
-        run_target('tint_regex_fuzzer_unittests', False)
 
       with api.context(cwd=source_dir):
         tint_exe = f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
