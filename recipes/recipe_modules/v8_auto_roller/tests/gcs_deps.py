@@ -2,64 +2,123 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import DoesNotRun, MustRun, DropExpectation
+from recipe_engine.post_process import DoesNotRun, DropExpectation, MustRun, StepCommandContains
 
 DEPS = [
     'recipe_engine/file',
     'v8_auto_roller',
 ]
 
-V8_DEPS = """deps = {
-  'llvm-build': {
+DEFAULT_V8_DEPS = """deps = {
+  'generic-dep-1': {
     'dep_type': 'gcs',
-    'bucket': 'chromium-browser-clang',
+    'bucket': 'generic-deps-bucket-1',
     'objects': [
       {
-        'object_name': 'Linux_x64/clang-llvmorg-19-init-10646-g084e2b53-7.tar.xz',
-        'sha256sum': 'd0464562eae265f314068f43bdd2c3f0781b13e462eebd7f5f82135cff673409',
-        'size_bytes': 50747404,
-        'generation': 1717404567139403,
-        'condition': 'host_os == "linux"',
+        'object_name': 'no-update',
+        'sha256sum': 'deadbeef1',
+        'size_bytes': 1,
+        'generation': 1,
       },
       {
-        'object_name': 'Linux_x64/clang-tidy-llvmorg-19-init-10646-g084e2b53-57.tar.xz',
-        'sha256sum': '0ca2bb8311f1abcb80ba0d8c9a97c1375a5e14ff1c7920633d10cf3137fa272b',
-        'size_bytes': 12898000,
-        'generation': 1717767136015811,
-        'condition': 'host_os == "linux" and checkout_clang_tidy',
+        'object_name': 'has-update-2',
+        'sha256sum': 'deadbeef2',
+        'size_bytes': 2,
+        'generation': 2,
       },
     ],
   },
 }"""
 
-CHROMIUM_DEPS = """deps = {
-  'src/llvm-build': {
+DEFAULT_CHROMIUM_DEPS = """deps = {
+  'src/generic-dep-1': {
+    'dep_type': 'gcs',
+    'bucket': 'generic-deps-bucket-1',
+    'objects': [
+      {
+        'object_name': 'no-update',
+        'sha256sum': 'deadbeef1',
+        'size_bytes': 1,
+        'generation': 1,
+      },
+      {
+        'object_name': 'has-update-4',
+        'sha256sum': 'deadbeef4',
+        'size_bytes': 4,
+        'generation': 4,
+      },
+      {
+        'object_name': 'additional-3',
+        'sha256sum': 'deadbeef3',
+        'size_bytes': 3,
+        'generation': 3,
+      },
+    ],
+  },
+}"""
+
+CLANG_V8_DEPS = """deps = {
+  'third_party/llvm-build/Release+Asserts': {
     'dep_type': 'gcs',
     'bucket': 'chromium-browser-clang',
     'objects': [
-      # Already up-to-date.
       {
-        'object_name': 'Linux_x64/clang-llvmorg-19-init-10646-g084e2b53-7.tar.xz',
-        'sha256sum': 'd0464562eae265f314068f43bdd2c3f0781b13e462eebd7f5f82135cff673409',
-        'size_bytes': 50747404,
-        'generation': 1717404567139403,
+        'object_name': 'Linux_x64/llvm-code-coverage-llvmorg-19-init-OLDVERSION.tar.xz',
+        'sha256sum': 'sum-4',
+        'size_bytes': 4,
+        'generation': 14,
+        'condition': 'host_os == "linux" and checkout_clang_coverage_tools',
+      },
+      {
+        'object_name': 'Linux_x64/clang-llvmorg-19-init-STABLEVERSION.tar.xz',
+        'sha256sum': 'sum-1',
+        'size_bytes': 1,
+        'generation': 11,
+        'condition': 'host_os == "linux"',
+      },
+    ]
+  },
+}"""
+
+CLANG_CHROMIUM_DEPS = """deps = {
+  'src/third_party/llvm-build/Release+Asserts': {
+    'dep_type': 'gcs',
+    'bucket': 'chromium-browser-clang',
+    'condition': 'not llvm_force_head_revision',
+    'objects': [
+      {
+        'object_name': 'Linux_x64/clang-llvmorg-19-init-STABLEVERSION.tar.xz',
+        'sha256sum': 'sum-1',
+        'size_bytes': 1,
+        'generation': 11,
         'condition': 'host_os == "linux" and non_git_source',
       },
-      # Newer dependency.
       {
-        'object_name': 'Linux_x64/clang-tidy-llvmorg-19-init-10646-g084e2b53-7.tar.xz',
-        'sha256sum': '5996cd916df018f07ba371971b7327299a4c0a66e02c8cfb1647687f201fcde3',
-        'size_bytes': 12918772,
-        'generation': 1717404567246693,
+        'object_name': 'Linux_x64/clang-tidy-llvmorg-19-init-10646-g084e2b53-57.tar.xz',
+        'sha256sum': 'sum-2',
+        'size_bytes': 2,
+        'generation': 12,
         'condition': 'host_os == "linux" and checkout_clang_tidy and non_git_source',
       },
-      # Additional dependency - does not exist in V8.
       {
-        'object_name': 'Linux_x64/clangd-llvmorg-19-init-10646-g084e2b53-7.tar.xz',
-        'sha256sum': 'aaac42bf958caa55ee954117adc1539a6416beea5a85c0ee63f0f3470479d019',
-        'size_bytes': 13290628,
-        'generation': 1717404567369813,
-        'condition': 'host_os == "linux" and checkout_clangd and non_git_source',
+        'object_name': 'Linux_x64/llvm-code-coverage-llvmorg-19-init-NEWVERSION.tar.xz',
+        'sha256sum': 'sum-3',
+        'size_bytes': 3,
+        'generation': 13,
+        'condition': 'host_os == "linux" and checkout_clang_coverage_tools and non_git_source',
+      },
+    ],
+  },
+  'src/third_party/rust-toolchain': {
+    'dep_type': 'gcs',
+    'bucket': 'chromium-browser-clang',
+    'objects': [
+      {
+        'object_name': 'Linux_x64/rust-toolchain-32dd3795bce8b347fda786529cf5e42a813e0b7d-2-llvmorg-19-init-10646-g084e2b53.tar.xz',
+        'sha256sum': 'sum-4',
+        'size_bytes': 4,
+        'generation': 14,
+        'condition': 'host_os == "linux" and non_git_source',
       },
     ],
   },
@@ -104,15 +163,26 @@ def GenTests(api):
 
   yield test(
       'update gcs deps',
-      CHROMIUM_DEPS,
-      V8_DEPS,
+      DEFAULT_CHROMIUM_DEPS,
+      DEFAULT_V8_DEPS,
       api.post_process(MustRun,
-                       'Update trusted deps.gclient setdep llvm-build'),
+                       'Update trusted deps.gclient setdep generic-dep-1'),
   )
+
+  yield test(
+      'update clang deps', CLANG_CHROMIUM_DEPS, CLANG_V8_DEPS,
+      api.post_process(
+          StepCommandContains,
+          'Update trusted deps.gclient setdep third_party_llvm-build_Release+Asserts',
+          [
+              'setdep', '-r',
+              'third_party/llvm-build/Release+Asserts@Linux_x64/llvm-code-coverage-llvmorg-19-init-NEWVERSION.tar.xz,sum-3,3,13?Linux_x64/clang-llvmorg-19-init-STABLEVERSION.tar.xz,sum-1,1,11'
+          ],
+      ))
 
   yield test(
       'fail to find matching source dep',
       "deps = {}",
-      V8_DEPS,
+      DEFAULT_V8_DEPS,
       api.expect_exception('NotImplementedError'),
   )

@@ -337,6 +337,9 @@ class CipdArtifact(BaseArtifact, RollToLatestArtifact):
     return f'{self.dep.path}:{package}@{self.version}'
 
 
+CLANG_MAPPING = lambda idx, oname: oname.split('-llvmorg-')[0]
+
+
 @dataclass
 class GcsArtifact(BaseArtifact):
   dep: GcsDep
@@ -345,13 +348,21 @@ class GcsArtifact(BaseArtifact):
 
   VERSION_KEYS = ['object_name', 'sha256sum', 'size_bytes', 'generation']
 
+  ID_MAPPINGS = {
+      'third_party/llvm-build/Release+Asserts': CLANG_MAPPING,
+      'src/third_party/llvm-build/Release+Asserts': CLANG_MAPPING,
+  }
+
   def __repr__(self):
     return (f"(gcs) {self.dep.path} · Source: {self.dep.spec['bucket']} · "
             f"Version: {self.version}")
 
   @property
   def identifier(self):
-    return f'gcs:{self.dep.spec["bucket"]}/{self.index}'
+    id_mapping = self.ID_MAPPINGS.get(self.dep.path, lambda idx, name: str(idx))
+    artifact_id = id_mapping(self.index, self.artifact['object_name'])
+
+    return f'gcs:{self.dep.spec["bucket"]}/{artifact_id}'
 
   @property
   def version(self):
