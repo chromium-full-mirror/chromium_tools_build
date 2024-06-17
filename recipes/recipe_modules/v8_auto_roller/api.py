@@ -12,7 +12,7 @@ from PB.recipe_engine import result as result_pb2
 from .cl_manager import CLManager
 from .commons import discard_local_changes
 from .deps_handlers import (TrustedRollHandler, UntrustedRollHandler,
-                            handle_failed_deps, get_dep_updates)
+                            get_dep_updates)
 from .chrome_handler import CfTPinRollHandler
 from .handler_base import DummyRollHandler
 from .test262_handler import Test262ImportHandler
@@ -108,16 +108,13 @@ class V8AutoRoller(recipe_api.RecipeApi):
   def regular_roll(self, autoroller_config, cl_manager, source_dir):
     with self.m.step.nest('Find updated deps') as step_presentation:
       discard_local_changes(self.m, source_dir)
-      trusted_updates, untrusted_updates, failed = get_dep_updates(
+      trusted_updates, untrusted_updates = get_dep_updates(
           self.m, step_presentation, autoroller_config)
 
     TrustedRollHandler(self, source_dir, autoroller_config,
                        trusted_updates).roll(cl_manager)
     UntrustedRollHandler(self, source_dir, autoroller_config,
                          untrusted_updates).roll(cl_manager)
-
-    with self.m.step.nest('Check failed deps'):
-      handle_failed_deps(self.m, failed)
 
   def cft_pin_roll(self, autoroller_config, cl_manager, source_dir):
     CfTPinRollHandler(self, source_dir, autoroller_config).roll(cl_manager)
