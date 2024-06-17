@@ -183,17 +183,17 @@
     "cmd": [],
     "name": "Find updated deps",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@filtered deps@buildtools @ 5fd66957f08bb752dca714a591c84587c9d70762 \u2192 chromium @ 5fd66957f08bb752dca714a591c84587c9d70762 (trusted) from https://chromium.googlesource.com/chromium/buildtools.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-package-latest:mock/package-latest @ 6fd66957f08bb752dca714a591c84587c9d70763 \u2192 cipd @ resolved-instance_id-of-instance_id_1--- (reviewed) from https://chrome-infra-packages.appspot.com/mock/package-latest@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-package-without-latest-ref:mock/package-without-latest-ref @ 7fd66957f08bb752dca714a591c84587c9d70764 \u2192 cipd @ resolved-instance_id-of-no-latest------- (reviewed) from https://chrome-infra-packages.appspot.com/mock/package-without-latest-ref@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-set-dep-failing @ 1 \u2192 chromium @ 2 (trusted) from mock/set-dep-failing.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-skip-chromium-roll @ 1 \u2192 tip_of_tree @ 3 (reviewed) from mock/skip-chromium-roll.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-tot-retsam-rolled @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ deadbeef (reviewed) from https://chromium.googlesource.com/tot-retsam-rolled.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@mock-tot-rolled @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ deadbeef (reviewed) from https://chromium.googlesource.com/tot-rolled.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@ninja:infra/3pp/tools/ninja/${platform} @ version:2@1.8.2.chromium.3 \u2192 chromium @ version:2@1.8.2.chromium.4 (trusted) from https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@@@",
-      "@@@STEP_LOG_LINE@filtered deps@tools/clang @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ 4 (trusted) from https://chromium.googlesource.com/chromium/src/tools/clang@@@",
-      "@@@STEP_LOG_LINE@filtered deps@tools/clang-reviewed @ d3f34f8dfaecc23202a6ef66957e83462d6c826d \u2192 tip_of_tree @ 5 (reviewed) from https://example.com/tools/clang-reviewed.git@@@",
-      "@@@STEP_LOG_LINE@filtered deps@tools/luci-go:infra/tools/luci/isolate/${platform} @ git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9 \u2192 chromium @ git_revision:3d8f881462b1a93c7525499381fafc8a08691be7 (trusted) from https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(git) buildtools \u00b7 Source: https://chromium.googlesource.com/chromium/buildtools.git \u00b7 Version: 5fd66957f08bb752dca714a591c84587c9d70762@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(cipd) mock-package-latest \u00b7 Source: mock/package-latest \u00b7 Version: 6fd66957f08bb752dca714a591c84587c9d70763@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(cipd) mock-package-without-latest-ref \u00b7 Source: mock/package-without-latest-ref \u00b7 Version: 7fd66957f08bb752dca714a591c84587c9d70764@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(git) mock-skip-chromium-roll \u00b7 Source: https://chromium.googlesource.com/mock/skip-chromium-roll.git \u00b7 Version: 1@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(git) mock-tot-retsam-rolled \u00b7 Source: https://chromium.googlesource.com/tot-retsam-rolled.git \u00b7 Version: d3f34f8dfaecc23202a6ef66957e83462d6c826d@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(git) mock-tot-rolled \u00b7 Source: https://chromium.googlesource.com/tot-rolled.git \u00b7 Version: d3f34f8dfaecc23202a6ef66957e83462d6c826d@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(git) mock-tot-rolled-no-upate \u00b7 Source: https://chromium.googlesource.com/tot-rolled-no-update.git \u00b7 Version: aaaaaaaa@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(cipd) ninja \u00b7 Source: infra/3pp/tools/ninja/${platform} \u00b7 Version: version:2@1.8.2.chromium.3@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(git) tools/clang \u00b7 Source: https://chromium.googlesource.com/chromium/src/tools/clang \u00b7 Version: d3f34f8dfaecc23202a6ef66957e83462d6c826d@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(git) tools/clang-reviewed \u00b7 Source: https://example.com/tools/clang-reviewed.git \u00b7 Version: d3f34f8dfaecc23202a6ef66957e83462d6c826d@@@",
+      "@@@STEP_LOG_LINE@filtered deps@(cipd) tools/luci-go \u00b7 Source: infra/tools/luci/isolate/${platform} \u00b7 Version: git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9@@@",
       "@@@STEP_LOG_END@filtered deps@@@"
     ]
   },
@@ -286,14 +286,55 @@
     "name": "Find updated deps.Read src/DEPS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@deps@{@@@",
-      "@@@STEP_LOG_LINE@deps@  \"buildtools\": \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-set-dep-failing\": \"mock/set-dep-failing.git@2\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-skip-chromium-roll\": \"mock/skip-chromium-roll.git@2\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"ninja:infra/3pp/tools/ninja/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.4\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"third_party/js_code_coverage:js_code_coverage/d538975c93eefc7bafd599b50f867e90c1ef17f3\": \"gs://chromium-nodejs/js_code_coverage/d538975c93eefc7bafd599b50f867e90c1ef17f3\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"tools/luci-go:infra/tools/luci/isolate/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@git_revision:3d8f881462b1a93c7525499381fafc8a08691be7\"@@@",
-      "@@@STEP_LOG_LINE@deps@}@@@",
+      "@@@STEP_LOG_LINE@deps@[@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"src/buildtools\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"src/mock-skip-chromium-roll\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"mock/skip-chromium-roll.git@2\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"src/ninja\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"dep_type\": \"cipd\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"packages\": [@@@",
+      "@@@STEP_LOG_LINE@deps@        {@@@",
+      "@@@STEP_LOG_LINE@deps@          \"package\": \"infra/3pp/tools/ninja/${platform}\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"version\": \"version:2@1.8.2.chromium.4\"@@@",
+      "@@@STEP_LOG_LINE@deps@        }@@@",
+      "@@@STEP_LOG_LINE@deps@      ]@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"src/third_party/js_code_coverage\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"bucket\": \"chromium-nodejs\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"dep_type\": \"gcs\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"objects\": [@@@",
+      "@@@STEP_LOG_LINE@deps@        {@@@",
+      "@@@STEP_LOG_LINE@deps@          \"generation\": 1657780123604338,@@@",
+      "@@@STEP_LOG_LINE@deps@          \"object_name\": \"js_code_coverage/d538975c93eefc7bafd599b50f867e90c1ef17f3\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"sha256sum\": \"646bb00ced0a930b2eb1e4dbcfac18ebbb8f889bb80599e0254d9d6505427914\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"size_bytes\": 1469185@@@",
+      "@@@STEP_LOG_LINE@deps@        }@@@",
+      "@@@STEP_LOG_LINE@deps@      ]@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"src/tools/luci-go\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"dep_type\": \"cipd\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"packages\": [@@@",
+      "@@@STEP_LOG_LINE@deps@        {@@@",
+      "@@@STEP_LOG_LINE@deps@          \"package\": \"infra/tools/luci/isolate/${platform}\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"version\": \"git_revision:3d8f881462b1a93c7525499381fafc8a08691be7\"@@@",
+      "@@@STEP_LOG_LINE@deps@        }@@@",
+      "@@@STEP_LOG_LINE@deps@      ]@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ]@@@",
+      "@@@STEP_LOG_LINE@deps@]@@@",
       "@@@STEP_LOG_END@deps@@@"
     ]
   },
@@ -312,19 +353,87 @@
     "name": "Find updated deps.Read dummy/DEPS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@deps@{@@@",
-      "@@@STEP_LOG_LINE@deps@  \"buildtools\": \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-package-latest:mock/package-latest\": \"https://chrome-infra-packages.appspot.com/mock/package-latest@6fd66957f08bb752dca714a591c84587c9d70763\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-package-without-latest-ref:mock/package-without-latest-ref\": \"https://chrome-infra-packages.appspot.com/mock/package-without-latest-ref@7fd66957f08bb752dca714a591c84587c9d70764\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-set-dep-failing\": \"mock/set-dep-failing.git@1\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-skip-chromium-roll\": \"mock/skip-chromium-roll.git@1\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-tot-retsam-rolled\": \"https://chromium.googlesource.com/tot-retsam-rolled.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"mock-tot-rolled\": \"https://chromium.googlesource.com/tot-rolled.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"ninja:infra/3pp/tools/ninja/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.3\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"tools/clang\": \"https://chromium.googlesource.com/chromium/src/tools/clang@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"tools/clang-reviewed\": \"https://example.com/tools/clang-reviewed.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\",@@@",
-      "@@@STEP_LOG_LINE@deps@  \"tools/luci-go:infra/tools/luci/isolate/${platform}\": \"https://chrome-infra-packages.appspot.com/infra/tools/luci/isolate/${platform}@git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9\"@@@",
-      "@@@STEP_LOG_LINE@deps@}@@@",
+      "@@@STEP_LOG_LINE@deps@[@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"buildtools\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"condition\": \"requires_buildtools\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"url\": \"https://chromium.googlesource.com/chromium/buildtools.git@5fd66957f08bb752dca714a591c84587c9d70762\"@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"mock-package-latest\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"dep_type\": \"cipd\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"packages\": [@@@",
+      "@@@STEP_LOG_LINE@deps@        {@@@",
+      "@@@STEP_LOG_LINE@deps@          \"package\": \"mock/package-latest\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"version\": \"6fd66957f08bb752dca714a591c84587c9d70763\"@@@",
+      "@@@STEP_LOG_LINE@deps@        }@@@",
+      "@@@STEP_LOG_LINE@deps@      ]@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"mock-package-without-latest-ref\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"dep_type\": \"cipd\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"packages\": [@@@",
+      "@@@STEP_LOG_LINE@deps@        {@@@",
+      "@@@STEP_LOG_LINE@deps@          \"package\": \"mock/package-without-latest-ref\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"version\": \"7fd66957f08bb752dca714a591c84587c9d70764\"@@@",
+      "@@@STEP_LOG_LINE@deps@        }@@@",
+      "@@@STEP_LOG_LINE@deps@      ]@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"mock-skip-chromium-roll\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://chromium.googlesource.com/mock/skip-chromium-roll.git@1\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"mock-tot-retsam-rolled\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://chromium.googlesource.com/tot-retsam-rolled.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"mock-tot-rolled\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://chromium.googlesource.com/tot-rolled.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"mock-tot-rolled-no-upate\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://chromium.googlesource.com/tot-rolled-no-update.git@aaaaaaaa\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"ninja\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"dep_type\": \"cipd\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"packages\": [@@@",
+      "@@@STEP_LOG_LINE@deps@        {@@@",
+      "@@@STEP_LOG_LINE@deps@          \"package\": \"infra/3pp/tools/ninja/${platform}\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"version\": \"version:2@1.8.2.chromium.3\"@@@",
+      "@@@STEP_LOG_LINE@deps@        }@@@",
+      "@@@STEP_LOG_LINE@deps@      ]@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"tools/clang\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://chromium.googlesource.com/chromium/src/tools/clang@d3f34f8dfaecc23202a6ef66957e83462d6c826d\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"tools/clang-reviewed\",@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://example.com/tools/clang-reviewed.git@d3f34f8dfaecc23202a6ef66957e83462d6c826d\"@@@",
+      "@@@STEP_LOG_LINE@deps@  ],@@@",
+      "@@@STEP_LOG_LINE@deps@  [@@@",
+      "@@@STEP_LOG_LINE@deps@    \"tools/luci-go\",@@@",
+      "@@@STEP_LOG_LINE@deps@    {@@@",
+      "@@@STEP_LOG_LINE@deps@      \"dep_type\": \"cipd\",@@@",
+      "@@@STEP_LOG_LINE@deps@      \"packages\": [@@@",
+      "@@@STEP_LOG_LINE@deps@        {@@@",
+      "@@@STEP_LOG_LINE@deps@          \"package\": \"infra/tools/luci/isolate/${platform}\",@@@",
+      "@@@STEP_LOG_LINE@deps@          \"version\": \"git_revision:8b15ba47cbaf07a56f93326e39f0c8e5069c19e9\"@@@",
+      "@@@STEP_LOG_LINE@deps@        }@@@",
+      "@@@STEP_LOG_LINE@deps@      ]@@@",
+      "@@@STEP_LOG_LINE@deps@    }@@@",
+      "@@@STEP_LOG_LINE@deps@  ]@@@",
+      "@@@STEP_LOG_LINE@deps@]@@@",
       "@@@STEP_LOG_END@deps@@@"
     ]
   },
@@ -404,7 +513,7 @@
     "cmd": [
       "git",
       "ls-remote",
-      "mock/skip-chromium-roll.git",
+      "https://chromium.googlesource.com/mock/skip-chromium-roll.git",
       "refs/heads/main"
     ],
     "cwd": "[CACHE]/builder/dummy",
@@ -460,6 +569,20 @@
     "cmd": [
       "git",
       "ls-remote",
+      "https://chromium.googlesource.com/tot-rolled-no-update.git",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "infra_step": true,
+    "name": "Find updated deps.look up mock-tot-rolled-no-upate (main)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "ls-remote",
       "https://chromium.googlesource.com/chromium/src/tools/clang",
       "refs/heads/main"
     ],
@@ -485,246 +608,11 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
-      "--json-file",
-      "/path/to/tmp/json",
-      "--url",
-      "mock/set-dep-failing/+log/1..2",
-      "--format",
-      "json",
-      "--log-limit",
-      "0"
-    ],
-    "name": "Find updated deps.gitiles log: 1..2",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@<br />2 commits fetched@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
-      "--json-file",
-      "/path/to/tmp/json",
-      "--url",
-      "mock/skip-chromium-roll/+log/1..3",
-      "--format",
-      "json",
-      "--log-limit",
-      "0"
-    ],
-    "name": "Find updated deps.gitiles log: 1..3",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@<br />2 commits fetched@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
-      "--json-file",
-      "/path/to/tmp/json",
-      "--url",
-      "https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
-      "--format",
-      "json",
-      "--log-limit",
-      "0"
-    ],
-    "name": "Find updated deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@<br />2 commits fetched@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
-      "--json-file",
-      "/path/to/tmp/json",
-      "--url",
-      "https://chromium.googlesource.com/tot-rolled/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
-      "--format",
-      "json",
-      "--log-limit",
-      "0"
-    ],
-    "name": "Find updated deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef (2)",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@<br />2 commits fetched@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
-      "--json-file",
-      "/path/to/tmp/json",
-      "--url",
-      "https://chromium.googlesource.com/chromium/src/tools/clang/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..4",
-      "--format",
-      "json",
-      "--log-limit",
-      "0"
-    ],
-    "name": "Find updated deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..4",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@<br />2 commits fetched@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
-      "--json-file",
-      "/path/to/tmp/json",
-      "--url",
-      "https://example.com/tools/clang-reviewed/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..5",
-      "--format",
-      "json",
-      "--log-limit",
-      "0"
-    ],
-    "name": "Find updated deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..5",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_TEXT@<br />2 commits fetched@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    },@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
-      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
-      "@@@STEP_LOG_LINE@json.output@      },@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@"
-    ]
-  },
-  {
     "cmd": [],
     "name": "Update trusted deps",
     "~followup_annotations": [
-      "@@@STEP_TEXT@4 trusted dep(s)@@@",
-      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@",
-      "@@@STEP_WARNINGS@@@"
+      "@@@STEP_TEXT@3 trusted dep(s)@@@",
+      "@@@STEP_LINK@CL@https://chromium-review.googlesource.com/c/dummy/+/123@@@"
     ]
   },
   {
@@ -859,32 +747,6 @@
       "RECIPE_REPO[depot_tools]/gclient.py",
       "setdep",
       "-r",
-      "mock-set-dep-failing@2"
-    ],
-    "cwd": "[CACHE]/builder/dummy",
-    "env_suffixes": {
-      "DEPOT_TOOLS_UPDATE": [
-        "0"
-      ],
-      "PATH": [
-        "RECIPE_REPO[depot_tools]",
-        "RECIPE_REPO[depot_tools]"
-      ]
-    },
-    "infra_step": true,
-    "name": "Update trusted deps.gclient setdep mock-set-dep-failing",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_WARNINGS@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_REPO[depot_tools]/gclient.py",
-      "setdep",
-      "-r",
       "ninja:infra/3pp/tools/ninja/${platform}@version:2@1.8.2.chromium.4"
     ],
     "cwd": "[CACHE]/builder/dummy",
@@ -898,7 +760,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update trusted deps.gclient setdep ninja:infra_3pp_tools_ninja_${platform}",
+    "name": "Update trusted deps.gclient setdep ninja",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -948,9 +810,57 @@
       ]
     },
     "infra_step": true,
-    "name": "Update trusted deps.gclient setdep tools_luci-go:infra_tools_luci_isolate_${platform}",
+    "name": "Update trusted deps.gclient setdep tools_luci-go",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/chromium/src/tools/clang/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..4",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update trusted deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..4",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
     ]
   },
   {
@@ -1125,7 +1035,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update reviewed deps.gclient setdep mock-package-latest:mock_package-latest",
+    "name": "Update reviewed deps.gclient setdep mock-package-latest",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1150,7 +1060,7 @@
       ]
     },
     "infra_step": true,
-    "name": "Update reviewed deps.gclient setdep mock-package-without-latest-ref:mock_package-without-latest-ref",
+    "name": "Update reviewed deps.gclient setdep mock-package-without-latest-ref",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1257,8 +1167,200 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/mock/skip-chromium-roll/+log/1..3",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update reviewed deps.gitiles log: 1..3",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update reviewed deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/tot-rolled/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update reviewed deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..deadbeef (2)",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://example.com/tools/clang-reviewed/+log/d3f34f8dfaecc23202a6ef66957e83462d6c826d..5",
+      "--format",
+      "json",
+      "--log-limit",
+      "0"
+    ],
+    "cwd": "[CACHE]/builder/dummy",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "name": "Update reviewed deps.gitiles log: d3f34f8dfaecc23202a6ef66957e83462d6c826d..5",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@<br />2 commits fetched@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"log\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Tex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"deadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 1\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"author\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"name\": \"Mex\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": \"beefdead\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"message\": \"Commit 0\\n\\nsecond line\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
       "()",
-      "{'subject': 'dummy roll (reviewed)', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling mock-package-latest: 6fd66957f08bb752dca714a591c84587c9d70763..resolved-instance_id-of-instance_id_1---', 'Rolling mock-package-without-latest-ref: 7fd66957f08bb752dca714a591c84587c9d70764..resolved-instance_id-of-no-latest-------', 'Rolling mock-skip-chromium-roll: mock/skip-chromium-roll/+log/1..3', 'Commit 1 (Tex)\\nmock/skip-chromium-roll/+/deadbee', 'Commit 0 (Mex)\\nmock/skip-chromium-roll/+/beefdea', 'Rolling mock-tot-retsam-rolled: https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/beefdea', 'Rolling mock-tot-rolled: https://chromium.googlesource.com/tot-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-rolled/+/beefdea', 'Rolling tools/clang-reviewed: https://example.com/tools/clang-reviewed/+log/d3f34f8..5', 'Commit 1 (Tex)\\nhttps://example.com/tools/clang-reviewed/+/deadbee', 'Commit 0 (Mex)\\nhttps://example.com/tools/clang-reviewed/+/beefdea', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
+      "{'subject': 'dummy roll (reviewed)', 'upload_flags': [], 'commit_msg_lines': ['This roll requires a manual review. See http://go/reviewed-rolls for guidance.', 'Rolling mock-package-latest: 6fd66957f08bb752dca714a591c84587c9d70763..resolved-instance_id-of-instance_id_1---', 'Rolling mock-package-without-latest-ref: 7fd66957f08bb752dca714a591c84587c9d70764..resolved-instance_id-of-no-latest-------', 'Rolling mock-skip-chromium-roll: https://chromium.googlesource.com/mock/skip-chromium-roll/+log/1..3', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/mock/skip-chromium-roll/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/mock/skip-chromium-roll/+/beefdea', 'Rolling mock-tot-retsam-rolled: https://chromium.googlesource.com/tot-retsam-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-retsam-rolled/+/beefdea', 'Rolling mock-tot-rolled: https://chromium.googlesource.com/tot-rolled/+log/d3f34f8..deadbee', 'Commit 1 (Tex)\\nhttps://chromium.googlesource.com/tot-rolled/+/deadbee', 'Commit 0 (Mex)\\nhttps://chromium.googlesource.com/tot-rolled/+/beefdea', 'Rolling tools/clang-reviewed: https://example.com/tools/clang-reviewed/+log/d3f34f8..5', 'Commit 1 (Tex)\\nhttps://example.com/tools/clang-reviewed/+/deadbee', 'Commit 0 (Mex)\\nhttps://example.com/tools/clang-reviewed/+/beefdea', '\\nRoll created at https://cr-buildbucket.appspot.com/build/0', 'R=piedone@punto.it', '', 'Also-Do: This', 'Also-Do: That'], 'add': False}"
     ],
     "cwd": "[CACHE]/builder/dummy",
     "env_suffixes": {
@@ -1273,10 +1375,6 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
-  },
-  {
-    "cmd": [],
-    "name": "Check failed deps"
   },
   {
     "cmd": [],
@@ -2186,6 +2284,6 @@
   },
   {
     "name": "$result",
-    "summaryMarkdown": "Updated 4 trusted dep(s), 6 reviewed dep(s), 1 chromium pin, Puppeteer Core, Browser Protocol, test262 import."
+    "summaryMarkdown": "Updated 3 trusted dep(s), 6 reviewed dep(s), 1 chromium pin, Puppeteer Core, Browser Protocol, test262 import."
   }
 ]
