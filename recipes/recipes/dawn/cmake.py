@@ -224,7 +224,6 @@ class CMakeFixedArgs:
   asan: bool
   ubsan: bool
   enable_remoteexec: bool
-  build_fuzzers: bool
   build_benchmarks: bool
   build_dxc: bool
 
@@ -238,17 +237,20 @@ def _cmake_build(flavor,
                  dawn_node=False,
                  build_as_other=False,
                  enable_readers_and_writers=True,
+                 build_fuzzers=False,
                  targets=None):
   if targets is None:
     targets = ['all']
   with api.step.nest(f'CMake build {flavor}'):
     return _do_cmake_build(flavor, api, source_dir, fixed_args, dawn_node,
-                           build_as_other, enable_readers_and_writers, targets)
+                           build_as_other, enable_readers_and_writers,
+                           build_fuzzers, targets)
 
 
 def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
                     dawn_node: bool, build_as_other: bool,
-                    enable_readers_and_writers: bool, targets: list):
+                    enable_readers_and_writers: bool, build_fuzzers: bool,
+                    targets: list):
   use_remoteexec = fixed_args.enable_remoteexec and fixed_args.clang and api.reclient.instance
   build_env_vars = {}
 
@@ -285,10 +287,7 @@ def _do_cmake_build(flavor, api, source_dir, fixed_args: CMakeFixedArgs,
     cmake_args.extend([
         '-DCMAKE_C_COMPILER=clang',
         '-DCMAKE_CXX_COMPILER=clang++',
-        f'-DTINT_BUILD_FUZZERS={cmake_bool_arg(fixed_args.build_fuzzers)}',
-        f'-DTINT_BUILD_SPIRV_TOOLS_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
-        f'-DTINT_BUILD_AST_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
-        f'-DTINT_BUILD_REGEX_FUZZER={cmake_bool_arg(fixed_args.build_fuzzers)}',
+        f'-DTINT_BUILD_FUZZERS={cmake_bool_arg(build_fuzzers)}',
     ])
     if api.platform.is_linux:
       # On Linux, use the x64 sysroot specified in DEPS
@@ -416,15 +415,20 @@ def RunSteps(api,
           asan,
           ubsan,
           enable_remoteexec,
-          # Only build and test fuzzers on Linux
-          build_fuzzers=api.platform.is_linux,
           # Skip benchmarks on Mac to speed up the build
           build_benchmarks=not api.platform.is_mac,
           # Skip dxc on Mac to speed up the build
           build_dxc=not api.platform.is_mac)
 
-      build_path = _cmake_build('default targets', api, source_dir,
-                                cmake_fixed_args)
+      # Only build and test fuzzers on Linux
+      build_fuzzers = api.platform.is_linux
+
+      build_path = _cmake_build(
+          'default targets',
+          api,
+          source_dir,
+          cmake_fixed_args,
+          build_fuzzers=build_fuzzers)
       rel_build_path = str(api.path.relpath(build_path,
                                             source_dir)).replace('\\', '/')
 
@@ -434,6 +438,7 @@ def RunSteps(api,
           source_dir,
           cmake_fixed_args,
           dawn_node=True,
+          build_fuzzers=build_fuzzers,
           targets=['dawn.node'])
 
       def run_target(target, must_exist):
@@ -443,17 +448,12 @@ def RunSteps(api,
 
       run_target('tint_unittests', True)
 
-      if cmake_fixed_args.build_fuzzers:
+      if build_fuzzers:
         with api.context(cwd=source_dir):
           api.step(
               'Check fuzzers',
               ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
               wrapper=shell_wrapper)
-        # TODO(amaiorano): Build and run 'tint_ast_fuzzer_unittests' and 'tint_regex_fuzzer_unittests'
-        # by passing TINT_BUILD_TESTS=1 to CMake. Kokoro used to do this, but it hasn't for a while.
-        # Apparently, we will be removing these targets soon, so perhaps just delete?
-        run_target('tint_ast_fuzzer_unittests', False)
-        run_target('tint_regex_fuzzer_unittests', False)
 
       with api.context(cwd=source_dir):
         tint_exe = f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
@@ -486,6 +486,7 @@ def RunSteps(api,
             source_dir,
             cmake_fixed_args,
             build_as_other=True,
+            build_fuzzers=build_fuzzers,
             targets=['tint_cmd_tint_cmd'])
 
       _cmake_build(
@@ -494,6 +495,7 @@ def RunSteps(api,
           source_dir,
           cmake_fixed_args,
           enable_readers_and_writers=False,
+          build_fuzzers=False,  # Cannot build fuzzers without readers/writers enabled
           targets=['tint_cmd_tint_cmd'])
 
 
