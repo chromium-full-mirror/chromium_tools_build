@@ -606,7 +606,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       raise self.m.step.StepFailure(
           f'No suites on the bot matched the request for {requested_test_name}')
 
-    tests = [_get_matching_test(n) for n in test_names]
+    # An empty list of tests implies we should use all
+    tests = targets_config.all_tests
+    if test_names:
+      tests = [_get_matching_test(n) for n in test_names]
 
     # TODO(crbug.com/335017001): Disable 'layout tests' archiving since we run
     # ci builders that would point to gcs dirs that devs do not have access to.
