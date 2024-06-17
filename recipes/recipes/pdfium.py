@@ -1072,6 +1072,22 @@ def GenTests(api):
   )
 
   yield api.test(
+      'win_no_v8_msvc_32',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, v8=False, msvc=True, target_cpu='x86'),
+      _gen_ci_build(api, 'windows_no_v8_msvc_32'),
+  )
+
+  yield api.test(
+      'win_no_v8_msvc',
+      api.platform('win', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, v8=False, msvc=True),
+      _gen_ci_build(api, 'windows_no_v8_msvc'),
+  )
+
+  yield api.test(
       'win_skia',
       api.platform('win', 64),
       api.builder_group.for_current('client.pdfium'),
@@ -1101,22 +1117,6 @@ def GenTests(api):
       api.builder_group.for_current('client.pdfium'),
       _gen_properties(api, xfa=True, rel=True),
       _gen_ci_build(api, 'windows_xfa_rel'),
-  )
-
-  yield api.test(
-      'win_xfa_msvc_32',
-      api.platform('win', 64),
-      api.builder_group.for_current('client.pdfium'),
-      _gen_properties(api, xfa=True, msvc=True, target_cpu='x86'),
-      _gen_ci_build(api, 'windows_xfa_msvc_32'),
-  )
-
-  yield api.test(
-      'win_xfa_msvc',
-      api.platform('win', 64),
-      api.builder_group.for_current('client.pdfium'),
-      _gen_properties(api, xfa=True, msvc=True),
-      _gen_ci_build(api, 'windows_xfa_msvc'),
   )
 
   yield api.test(
