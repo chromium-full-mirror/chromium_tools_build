@@ -71,7 +71,7 @@ def GenTests(api):
     )
 
   # includes / excludes
-  ie_v8_deps = "deps = {'third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4'}"
+  ie_v8_deps = "deps = {'v8/third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@364118a1d9da24bb5b770ac3d762ac144d6da5a4'}"
   ie_chromium_deps = "deps = {'src/third_party/icu': 'https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed'}"
 
   yield test(
