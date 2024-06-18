@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import base64
+import datetime
 import re
 import os
 
@@ -1171,8 +1172,16 @@ class ArchiveApi(recipe_api.RecipeApi):
         # TODO(akashmukherjee): Add support for custom backend url.
         # Need to report full destination path of the artifact.
         if report_artifacts:
-          self.m.bcid_reporter.report_gcs(
-              file_hash, 'gs://%s/%s' % (gcs_bucket, uploads[f]))
+
+          @self.m.time.exponential_retry(
+              retries=3,
+              delay=datetime.timedelta(seconds=60),
+          )
+          def _retry_report_gcs():
+            self.m.bcid_reporter.report_gcs(
+                file_hash, 'gs://%s/%s' % (gcs_bucket, uploads[f]))
+
+          _retry_report_gcs()
 
     if archive_data.prevent_overwrites:
       gcs_args.append('-n')
