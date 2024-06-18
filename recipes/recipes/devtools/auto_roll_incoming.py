@@ -22,8 +22,8 @@ CONFIG = {
     "excludes": [
         "extensions/cxx_debugging/third_party/lldb-eval/src",
         "extensions/cxx_debugging/third_party/llvm/src",
-        "third_party/cmake:infra/3pp/tools/cmake/${{platform}}",
-        "third_party/esbuild:infra/3pp/tools/esbuild/${{platform}}",
+        "third_party/cmake",
+        "third_party/esbuild",
     ],
     "show_commit_log": False,
 }
