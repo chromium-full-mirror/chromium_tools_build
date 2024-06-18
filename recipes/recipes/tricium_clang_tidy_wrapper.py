@@ -125,14 +125,16 @@ def RunSteps(api):
       # already does that for us, so set up a minimal build dir.
       gn_args_str = api.chromium.mb_lookup(me)
 
-      api.file.ensure_directory('ensure out dir', api.chromium.output_dir)
-      api.file.write_text('write args.gn', api.chromium.output_dir / 'args.gn',
+      api.file.ensure_directory('ensure out dir', api.chromium.build_dir)
+      api.file.write_text('write args.gn', api.chromium.build_dir / 'args.gn',
                           gn_args_str)
 
-      api.tricium_clang_tidy.lint_source_files(source_dir,
-                                               api.chromium.output_dir,
-                                               affected,
-                                               api.platform.name == 'win')
+      api.tricium_clang_tidy.lint_source_files(
+          source_dir,
+          api.chromium.build_dir,
+          affected,
+          api.platform.name == 'win',
+      )
 
 
 def GenTests(api):

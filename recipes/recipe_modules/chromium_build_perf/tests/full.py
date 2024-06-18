@@ -38,7 +38,7 @@ def RunSteps(api):
   api.chromium_build_perf.build_with_ninja(
       'all', with_remote_cache=False, step_name_suffix=' suffix')
   api.file.write_raw('write .siso_deps',
-                     api.path.join(api.chromium.output_dir, '.siso_deps'),
+                     api.path.join(api.chromium.build_dir, '.siso_deps'),
                      'siso deps')
   api.chromium_build_perf.recreate_build_dir()
   api.chromium_build_perf.recreate_build_dir(build_dir='foo')

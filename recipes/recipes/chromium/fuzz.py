@@ -44,7 +44,7 @@ def gn_refs(api, step_name, target):
   Returns: the list of matched targets.
   """
   return api.gn.refs(
-      api.chromium.output_dir, [target],
+      api.chromium.build_dir, [target],
       output_type='executable',
       step_name=step_name,
       output_format='label')
@@ -57,7 +57,7 @@ def copy_path(api, path_name):
       '../../'), path_name + " is expected to start with ../../"
   relative_path = path_name[len('../../'):]
   src = api.chromium_checkout.source_dir / relative_path
-  dest = api.chromium.output_dir.joinpath('src_root', relative_path)
+  dest = api.chromium.build_dir.joinpath('src_root', relative_path)
   src = api.path.abspath(str(src))
   dest = api.path.abspath(str(dest))
   if api.path.exists(dest):
@@ -177,7 +177,7 @@ def RunSteps(api, properties):
         sorted(no_clusterfuzz))
     api.step.active_result.presentation.logs['targets'] = targets
 
-    outdir = api.chromium.output_dir
+    outdir = api.chromium.build_dir
     if api.tryserver.is_tryserver and not properties.collect_fuzz_coverage:
       # Filter out all targets that the patch doesn't affect.
       affected_files = api.chromium_checkout.get_files_affected_by_patch()
@@ -295,7 +295,7 @@ def RunSteps(api, properties):
           'generate runtime dependencies to copy') as step_result:
         set_of_gn_targets = set(gn_targets)
         list_of_runtime_deps = api.gn.desc(
-            api.chromium.output_dir,
+            api.chromium.build_dir,
             "*",
             'runtime_deps',
             step_name='get runtime dependencies with pattern *')
@@ -309,7 +309,7 @@ def RunSteps(api, properties):
           copy_path(api, path_name)
 
       api.archive.clusterfuzz_archive(
-          build_dir=api.chromium.output_dir,
+          build_dir=api.chromium.build_dir,
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,
           archive_prefix=properties.archive_prefix or 'libfuzzer',

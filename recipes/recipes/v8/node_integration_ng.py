@@ -105,7 +105,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
-  build_output_path = api.chromium.output_dir
+  build_output_path = api.chromium.build_dir
 
   # Archive node executable and trigger performance bots on V8 ToT builders.
   if v8_tot:

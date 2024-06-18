@@ -739,7 +739,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "-v",
-      "//out/Release",
+      "[CACHE]/builder/src/out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": [\"blink_web_tests\"]}",
       "/path/to/tmp/json",
       "--json-output",
@@ -939,7 +939,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "blink_web_tests\n",
-      "//out/Release"
+      "[CACHE]/builder/src/out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

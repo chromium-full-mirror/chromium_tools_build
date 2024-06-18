@@ -59,7 +59,7 @@ def RunSteps(api):
     args = [
         '--root=%s' % str(source_dir),
         'refs',
-        str(api.chromium.output_dir),
+        str(api.chromium.build_dir),
         '--all',
         '--type=executable',
         '--as=output',

@@ -324,7 +324,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "//out/Mac_Asan"
+      "[CACHE]/builder/src/out/Mac_Asan"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

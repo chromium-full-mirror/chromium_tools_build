@@ -914,7 +914,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "-v",
-      "//out/Release",
+      "[CACHE]/builder/src/out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"third_party/swiftshader/foo.cc\"], \"test_targets\": [\"angle_end2end_tests\"]}",
       "/path/to/tmp/json",
       "--json-output",
@@ -1112,7 +1112,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Release"
+      "[CACHE]/builder/src/out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

@@ -340,7 +340,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Mac64_Builder"
+      "[CACHE]/builder/src/out/Mac64_Builder"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

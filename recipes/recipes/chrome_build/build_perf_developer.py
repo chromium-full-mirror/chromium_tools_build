@@ -69,7 +69,7 @@ def _incremental_build_with_one_day_changes(api, source_dir, target):
     # Run a warm up build for remote caches at the current revision.
     api.chromium_build_perf.checkout(cur_rev)
 
-    build_dir_parent = api.chromium.output_dir.parent
+    build_dir_parent = api.chromium.build_dir.parent
 
     ##  Ninja+Reclient
     api.chromium_build_perf.recreate_build_dir(phase='ninja')
@@ -220,7 +220,7 @@ def _incremental_builds_with_patch(api, source_dir, target):
       gitlog_result.presentation.step_text = 'No commits to build'
       return
 
-    build_dir_parent = api.chromium.output_dir.parent
+    build_dir_parent = api.chromium.build_dir.parent
 
     # Set up build dirs for Ninja+Reclient/Siso+Reclient/Siso native builds.
     api.chromium_build_perf.recreate_build_dir(

@@ -301,19 +301,20 @@ def _configure_chromium_builder(api, recipe_config, build_number):
   api.chromium.apply_config('reclient_deps_cache_by_step')
 
   # Checkout chromium.
-  api.chromium_checkout.ensure_checkout()
+  return api.chromium_checkout.ensure_checkout()
 
 
 def _compile(
     api,
+    source_dir,
     config_name,
     recipe_config,
     build_number,
 ):
   # Execute reclient build in '.{build_number}' out directory
   api.reclient.cache_silo = api.buildbucket.builder_name + f" build{build_number}"
-  target = f'{api.chromium.c.build_config_fs}.{build_number}'
-  build_dir = '//out/%s' % target
+  build_dir = (
+      source_dir / f'out/{api.chromium.c.build_config_fs}.{build_number}')
 
   builder_id = chromium.BuilderId.create_for_group(
       api.builder_group.for_current, config_name)
@@ -327,7 +328,7 @@ def _compile(
       recipe_config['targets'],
       name=f'Build {build_number}',
       use_reclient=True,
-      target=target,
+      build_dir=build_dir,
       reclient_extra_env=recipe_config.get(f'reclient_extra_env_{build_number}',
                                            None),
   )
@@ -361,9 +362,10 @@ def RunSteps(api):
   api.file.ensure_directory('init cache if not exists', solution_path)
   order = [1, 2] if api.buildbucket.build.number % 2 == 0 else [2, 1]
   with api.context(cwd=solution_path):
-    _configure_chromium_builder(api, recipe_config, order[0])
+    update_result = _configure_chromium_builder(api, recipe_config, order[0])
+  source_dir = update_result.source_root.path
 
-  base_out_dir = str(api.chromium.output_dir).rstrip('\\/')
+  base_out_dir = str(api.chromium.build_dir).rstrip('\\/')
   out_dirs = [base_out_dir] + [base_out_dir + '.' + ext for ext in '12']
 
   # Clear output directories for build
@@ -374,7 +376,7 @@ def RunSteps(api):
     api.chromium.runhooks()
 
   try:
-    raw_result = _compile(api, config_name, recipe_config, order[0])
+    raw_result = _compile(api, source_dir, config_name, recipe_config, order[0])
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
 
@@ -383,7 +385,7 @@ def RunSteps(api):
 
     _clean_output_dirs(api, out_dirs)
 
-    raw_result = _compile(api, config_name, recipe_config, order[1])
+    raw_result = _compile(api, source_dir, config_name, recipe_config, order[1])
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
   finally:

@@ -475,7 +475,7 @@
       "--android-version-name=example",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Release"
+      "[CACHE]/builder/src/out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -510,7 +510,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "/tmp/Release",
+      "[CACHE]/builder/src/out/Release",
       "All"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -529,35 +529,28 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "compile"
-  },
-  {
-    "cmd": [
-      "[CACHE]/builder/src/third_party/ninja/ninja",
-      "-C",
-      "/tmp/Release",
-      "All",
-      "-d",
-      "explain",
-      "-n"
-    ],
-    "cwd": "[CACHE]/builder/src",
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "compile confirm no-op"
+    "name": "compile",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@{@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@  \"failures\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@    {@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@      \"dependencies\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@        \"b/a.cc\"@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@      ],@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@      \"output\": \"        filename:row:col: error: error info\",@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@      \"output_nodes\": [@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@        \"a.o\"@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@      ],@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@      \"rule\": \"CXX\"@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@    }@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output[ninja_info]@}@@@",
+      "@@@STEP_LOG_END@json.output[ninja_info]@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[failure_summary]@[1/1] CXX a.o@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text[failure_summary]@filename:row:col: error: error info@@@",
+      "@@@STEP_LOG_END@raw_io.output_text[failure_summary]@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
   },
   {
     "cmd": [
@@ -566,11 +559,11 @@
       "--gsutil-py-path",
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "--ninja-log-outdir",
-      "/tmp/Release",
+      "[CACHE]/builder/src/out/Release",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"/tmp/Release\", \"All\"]",
+      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/src/out/Release\", \"All\"]",
       "--build-exit-status",
-      "0"
+      "1"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -591,6 +584,10 @@
     "name": "upload_ninja_log"
   },
   {
+    "failure": {
+      "failure": {},
+      "humanReason": "#### Step _compile_ failed. Error logs are shown below:\n```\n[1/1] CXX a.o\nfilename:row:col: error: error info\n```\n#### More information in [failure_summary](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)"
+    },
     "name": "$result"
   }
 ]

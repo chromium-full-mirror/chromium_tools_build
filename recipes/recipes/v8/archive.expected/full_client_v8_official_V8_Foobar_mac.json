@@ -5,7 +5,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/v8",
       "gen",
-      "//out/build",
+      "[CACHE]/builder/v8/out/build",
       "--args=is_clang=true dcheck_always_on=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/v8",

@@ -169,7 +169,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   @property
   def build_dir(self):
-    return self._build_dir or self.m.chromium.output_dir
+    return self._build_dir or self.m.chromium.build_dir
 
   @build_dir.setter
   def build_dir(self, value):
@@ -596,7 +596,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       files_to_instrument = self._all_eligible_files()
 
     if not output_dir:
-      output_dir = self.m.chromium.output_dir
+      output_dir = self.m.chromium.build_dir
     self.m.file.ensure_directory('create .code-coverage',
                                  self.src_dir / '.code-coverage')
     self.m.step(

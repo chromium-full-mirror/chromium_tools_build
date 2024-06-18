@@ -281,7 +281,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "//out/Android64_dbg"
+      "[CACHE]/builder/src/out/Android64_dbg"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

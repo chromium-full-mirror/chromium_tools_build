@@ -408,7 +408,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Debug"
+      "[CACHE]/builder/src/out/Debug"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -445,7 +445,7 @@
       "android-deterministic-dbg",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "//out/Debug"
+      "[CACHE]/builder/src/out/Debug"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1871,7 +1871,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Debug"
+      "[CACHE]/builder/src/out/Debug"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1908,7 +1908,7 @@
       "android-deterministic-dbg",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "//out/Debug"
+      "[CACHE]/builder/src/out/Debug"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

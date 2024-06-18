@@ -295,7 +295,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Fuchsia_Builder"
+      "[CACHE]/builder/src/out/Fuchsia_Builder"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

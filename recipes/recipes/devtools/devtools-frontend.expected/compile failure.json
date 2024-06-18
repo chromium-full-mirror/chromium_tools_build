@@ -151,7 +151,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/devtools-frontend",
       "gen",
-      "//out/Release",
+      "[CACHE]/builder/devtools-frontend/out/Release",
       "--args=devtools_dcheck_always_on=true is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",
