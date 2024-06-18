@@ -370,7 +370,7 @@
       "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
-      "[START_DIR]/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[START_DIR]/src",
     "env": {

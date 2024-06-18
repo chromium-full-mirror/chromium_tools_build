@@ -24,6 +24,7 @@ def RunSteps(api):
   use_reclient = api.properties.get('use_reclient', False)
   resource_usage_output_file = api.properties.get('resource_usage_output_file',
                                                   None)
+  out_dir = api.properties.get('out_dir', None)
 
   configs = api.properties.get('configs', [])
   assert api.chromium.build_properties == None
@@ -50,6 +51,7 @@ def RunSteps(api):
 
     return api.chromium.compile(
         targets=['All'],
+        out_dir=out_dir,
         use_reclient=use_reclient,
         resource_usage_output_file=resource_usage_output_file)
 
@@ -58,7 +60,7 @@ def GenTests(api):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
-      'basic',
+      'basic_out_dir',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
@@ -70,10 +72,11 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
+      api.properties(out_dir='/tmp'),
   )
 
   yield api.test(
-      'custom_mb_config',
+      'basic_out_dir_with_custom_mb_config',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
@@ -85,11 +88,14 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(mb_config_path='/custom/config.pyl'),
+      api.properties(
+          out_dir='/tmp',
+          mb_config_path='/custom/config.pyl',
+      ),
   )
 
   yield api.test(
-      'reclient',
+      'basic_out_dir_with_reclient',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
@@ -101,16 +107,19 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(use_reclient=True),
+      api.properties(
+          use_reclient=True,
+          out_dir='/tmp',
+      ),
       api.reclient.properties(),
-      api.post_check(
-          lambda check, steps: check({'RBE_server_address', 'RBE_log_dir'}.
-                                     issubset(steps['compile'].env))),
+      api.post_check(lambda check, steps: check({
+          'RBE_server_address', 'RBE_log_dir'
+      }.issubset(steps['compile'].env))),
       api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'siso',
+      'basic_out_dir_with_siso',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
@@ -122,7 +131,10 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(use_reclient=True),
+      api.properties(
+          use_reclient=True,
+          out_dir='/tmp',
+      ),
       api.reclient.properties(),
       api.siso.properties(),
       api.post_check(
@@ -131,8 +143,9 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
 
+
   yield api.test(
-      'ninja_build_failure',
+      'basic_out_dir_ninja_build_failure',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
@@ -144,12 +157,15 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
+      api.properties(
+          out_dir='/tmp',
+      ),
       api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'ninja_no_op_failure',
+      'basic_out_dir_ninja_no_op_failure',
       api.chromium.ci_build(
           builder_group='fake-group',
           builder='fake-builder',
@@ -161,6 +177,7 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
+      api.properties(out_dir='/tmp',),
       api.override_step_data(
           'compile confirm no-op',
           api.raw_io.output_text(
@@ -205,7 +222,10 @@ def GenTests(api):
               builder_group='fake-group',
               builder='fake-builder',
           ).assemble()),
-      api.properties(target_platform='mac'),
+      api.properties(
+          out_dir='/tmp',
+          target_platform='mac',
+      ),
   )
 
   yield api.test(
@@ -223,6 +243,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(
+          out_dir='/tmp',
           target_platform='mac',
           configs=['mac_toolchain'],
       ),
@@ -244,6 +265,7 @@ def GenTests(api):
               builder='fake-builder',
           ).assemble()),
       api.properties(
+          out_dir='/tmp',
           target_platform='mac',
           configs=['mac_toolchain'],
           xcode_build_version='12345',
@@ -278,4 +300,5 @@ def GenTests(api):
                   build_gs_bucket='chromium-chromiumos-archive',
               ),
           ).assemble()),
+      api.properties(out_dir='/tmp'),
   )

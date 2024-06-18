@@ -347,7 +347,7 @@
       "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
-      "[START_DIR]/src/out/Debug"
+      "//out/Debug"
     ],
     "cwd": "[START_DIR]/src",
     "env": {

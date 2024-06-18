@@ -64,14 +64,13 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     if step_name_suffix:
       step_name += step_name_suffix
     timeout = 60 * 60 * 1.5  # 1.5h
-    build_dir = self.m.path.checkout_dir / 'out' / out_sub_dir
     with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
             [target],
             name=step_name,
             timeout=timeout,
-            build_dir=build_dir,
+            target=out_sub_dir,  # target is a sub directory name at compile().
             use_reclient=use_rbe,
             siso_args=siso_args,
             resource_usage_output_file=resource_usage_output_file)
@@ -89,7 +88,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
                          remove_deps_cache=False):
     """Remove and create a build dir."""
     if not build_dir:
-      build_dir = self.m.chromium.build_dir
+      build_dir = self.m.chromium.output_dir
     # Preserve .siso_deps.
     siso_deps_path = self.m.path.join(build_dir, '.siso_deps')
     tmp_siso_deps_path = None

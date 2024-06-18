@@ -33,7 +33,7 @@ def GenTests(api):
           'RECIPE_REPO[depot_tools]/gn.py',
       ]),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Release',
+          '//out/Release',
           '--args=is_debug=false target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -53,7 +53,7 @@ def GenTests(api):
       api.platform('mac', 64),
       api.properties(target_platform='mac'),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Release',
+          '//out/Release',
           '--args=is_clang=true is_debug=false target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -63,7 +63,7 @@ def GenTests(api):
       'android',
       api.properties(target_platform='android'),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Release',
+          '//out/Release',
           '--args=is_debug=false target_os="android" target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -73,7 +73,7 @@ def GenTests(api):
       'debug',
       api.properties(build_config='Debug'),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Debug',
+          '//out/Debug',
           '--args=is_debug=true target_cpu="x64"',
       ]),
       api.post_process(DropExpectation),
@@ -83,7 +83,7 @@ def GenTests(api):
       'reclient',
       api.properties(build_config='Debug', use_remoteexec=True),
       api.post_process(StepCommandContains, 'gn', [
-          '[CACHE]/builder/src/out/Debug',
+          '//out/Debug',
           '--args=is_debug=true target_cpu="x64" use_remoteexec=true',
       ]),
       api.post_process(DropExpectation),

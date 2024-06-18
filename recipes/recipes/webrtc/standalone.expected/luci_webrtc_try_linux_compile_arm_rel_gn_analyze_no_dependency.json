@@ -444,7 +444,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/Release",
+      "//out/Release",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",

@@ -488,7 +488,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/Debug",
+      "//out/Debug",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
@@ -587,7 +587,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/mac_compile_dbg"
+      "//out/mac_compile_dbg"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

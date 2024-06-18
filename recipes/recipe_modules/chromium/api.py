@@ -39,7 +39,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   def __init__(self, input_properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self._build_dir = None
+    self._output_dir = None
     self._build_properties = None
     self._version = None
     self._clang_version = None
@@ -139,26 +139,15 @@ class ChromiumApi(recipe_api.RecipeApi):
     return source_dir / self.c.analyze_config_path
 
   @property
-  def build_dir(self) -> Path:
-    """The path to the built executable directory."""
-    if self._build_dir:
-      return self._build_dir
-    return self.m.path.checkout_dir / 'out' / self.c.build_config_fs
-
-  @build_dir.setter
-  def build_dir(self, value: Path) -> None:
-    assert not self._build_dir, 'build_dir can only be set once'
-    self._build_dir = value
-
-  # TODO: crbug.com/343511336 - Switch all uses to build_dir, then remove this
-  @property
   def output_dir(self):
     """Return the path to the built executable directory."""
-    return self.build_dir
+    if self._output_dir:
+      return self._output_dir
+    return self.m.path.checkout_dir / 'out' / self.c.build_config_fs
 
   @output_dir.setter
   def output_dir(self, value):
-    self.build_dir = value
+    self._output_dir = value
 
   @property
   def ninja_path(self):
@@ -647,13 +636,13 @@ class ChromiumApi(recipe_api.RecipeApi):
     TODO: b/315393741 - Remove this logic after Siso rollout.
     """
     should_clean = False
-    guard_path = self.build_dir / _CR_COMPILE_GUARD_NAME
+    guard_path = self.m.chromium.output_dir / _CR_COMPILE_GUARD_NAME
     if self.m.path.exists(guard_path):
       should_clean = True
       clean_reason = 'the last compile step was interrupted'
 
     build_system = 'siso' if self.m.siso.enabled else 'ninja'
-    last_build_system_path = self.build_dir / _LAST_BUILD_SYSTEM
+    last_build_system_path = self.m.chromium.output_dir / _LAST_BUILD_SYSTEM
     if self.m.path.exists(last_build_system_path):
       last_build_system = self.m.file.read_text('read %s' % _LAST_BUILD_SYSTEM,
                                                 last_build_system_path)
@@ -664,12 +653,12 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     if should_clean:
       self.m.file.rmtree('remove unreliable output dir' + suffix,
-                         self.build_dir)
+                         self.m.chromium.output_dir)
       clean_step_presentation = self.m.step.active_result.presentation
       clean_step_presentation.step_text = 'reason: ' + clean_reason
 
     self.m.file.ensure_directory('ensure output directory' + suffix,
-                                 self.build_dir)
+                                 self.m.chromium.output_dir)
     self.m.file.write_text('create compile guard' + suffix, guard_path,
                            _CR_COMPILE_GUARD_CONTENTS)
     self.m.file.write_text('write %s' % _LAST_BUILD_SYSTEM,
@@ -681,21 +670,27 @@ class ChromiumApi(recipe_api.RecipeApi):
       if not self.m.runtime.in_global_shutdown:
         self.m.file.remove('remove compile guard' + suffix, guard_path)
 
-  def cleandead(self, build_dir: Path | None = None):
+  def cleandead(self, out_dir=None, target=None):
     """Removes the no longer needed output files from the build directory.
 
     Args:
-      build_dir: The path to the built executable directory.
+      out_dir: Output directory for the compile.
+      target: Custom config name to use in the output directory (defaults to
+        "Release" or "Debug").
     """
     ninja_env = self.get_env()
     ninja_env.update(self.m.context.env)
 
-    build_dir = build_dir or self.build_dir
+    if out_dir is None:
+      out_dir = 'out'
+    target_output_dir = self.m.path.join(self.m.path.checkout_dir, out_dir,
+                                         target or self.c.build_config_fs)
+    target_output_dir = self.m.path.abspath(target_output_dir)
 
     command = [str(self.ninja_path)]
     if self.m.siso.enabled:
       command = [str(self.m.siso.siso_path(self.m.path.checkout_dir)), 'ninja']
-    command += ['-C', build_dir, '-t', 'cleandead']
+    command += ['-C', target_output_dir, '-t', 'cleandead']
     with self.m.context(env=ninja_env, cwd=self.m.path.checkout_dir):
       self.m.step(name='cleandead', cmd=command)
 
@@ -703,8 +698,10 @@ class ChromiumApi(recipe_api.RecipeApi):
   def compile(self,
               targets=None,
               name=None,
-              build_dir: Path | None = None,
+              out_dir=None,
+              target=None,
               use_reclient=False,
+              target_output_dir=None,
               reclient_extra_env: dict | None = None,
               **kwargs):
     """Return a compile.py invocation.
@@ -716,9 +713,11 @@ class ChromiumApi(recipe_api.RecipeApi):
         invokes ninja's behavior to build all targets that do not appear as an
         input to another target.
       name: Name of compile step.
-      build_dir: The path to the built executable directory. If not specified,
-        chromium.build_dir will be used.
+      out_dir: Output directory for the compile.
+      target: Custom config name to use in the output directory (defaults to
+        "Release" or "Debug").
       use_reclient (bool): If True, use reclient as the remote compiler.
+      target_output_dir (BasePath): Path to the directory to be compiled.
       reclient_extra_env: Additional env vars for reclient to be used by bootstrap.
       resource_usage_output_file (BasePath): Path to the file which will hold stats related
                                             to resource usage while compiling
@@ -754,8 +753,15 @@ class ChromiumApi(recipe_api.RecipeApi):
             ('%(PATH)s',
              str(self.m.path.dirname(self.ninja_path))))
 
-    build_dir = build_dir or self.build_dir
-    command = [str(self.ninja_path), '-C', str(build_dir)]
+    if out_dir is None:
+      out_dir = 'out'
+
+    if not target_output_dir:
+      target_output_dir = self.m.path.join(self.m.path.checkout_dir, out_dir,
+                                           target or self.c.build_config_fs)
+      target_output_dir = self.m.path.abspath(target_output_dir)
+
+    command = [str(self.ninja_path), '-C', target_output_dir]
 
     if self.c.compile_py.build_args:
       command.extend(self.c.compile_py.build_args)
@@ -780,7 +786,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       else:
         ninja_result = self._run_ninja_without_remote(
             ninja_command=command,
-            ninja_log_outdir=build_dir,
+            ninja_log_outdir=target_output_dir,
             name=name or 'compile',
             ninja_env=ninja_env,
             **kwargs)
@@ -1009,7 +1015,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if clobber is None:
       clobber = self.c.clobber_before_runhooks
     if clobber:
-      self.m.file.rmtree('clobber', self.build_dir)
+      self.m.file.rmtree('clobber', self.output_dir)
 
     runhooks_env = self.get_env()
     runhooks_env.update(self.m.context.env)
@@ -1033,19 +1039,15 @@ class ChromiumApi(recipe_api.RecipeApi):
         self.m.gclient.runhooks(**kwargs)
 
   @_with_chromium_layout
-  def run_gn(
-      self,
-      gn_path=None,
-      build_dir: Path | None = None,
-      use_reclient=False,
-      **kwargs,
-  ):
+  def run_gn(self, gn_path=None, build_dir=None, use_reclient=False, **kwargs):
     if not gn_path:
       gn_path = self.m.depot_tools.gn_py_path
 
     gn_args = list(self.c.gn_args)
 
-    build_dir = build_dir or self.build_dir
+    # TODO(dpranke): Figure out if we should use the '_x64' thing to
+    # consistent w/ GYP, or drop it to be consistent w/ the other platforms.
+    build_dir = build_dir or '//out/%s' % self.c.build_config_fs
 
     if self.c.BUILD_CONFIG == 'Debug':
       gn_args.append('is_debug=true')
@@ -1095,6 +1097,11 @@ class ChromiumApi(recipe_api.RecipeApi):
     for isolate_map_path in self.c.project_generator.isolate_map_paths:
       yield '--isolate-map-file'
       yield self.m.path.checkout_dir / isolate_map_path
+
+  def _mb_build_dir_args(self, build_dir):
+    if not build_dir:
+      build_dir = '//out/%s' % self.c.build_config_fs
+    return [build_dir]
 
   @_with_chromium_layout
   def run_mb_cmd(self,
@@ -1193,7 +1200,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                  mb_path=None,
                  mb_config_path=None,
                  chromium_config=None,
-                 build_dir: Path | None = None,
+                 build_dir=None,
                  phase=None,
                  test_analyze_output=None,
                  **kwargs):
@@ -1212,11 +1219,10 @@ class ChromiumApi(recipe_api.RecipeApi):
     Returns:
       The StepResult from the analyze command.
     """
-    build_dir = build_dir or self.build_dir
     name = name or 'analyze'
     mb_args = ['-v']
     mb_args.extend(self._mb_isolate_map_file_args())
-    mb_args.append(build_dir)
+    mb_args.extend(self._mb_build_dir_args(build_dir))
     mb_args.extend([self.m.json.input(analyze_input), self.m.json.output()])
     mb_args.extend(
         ['--json-output',
@@ -1354,7 +1360,7 @@ class ChromiumApi(recipe_api.RecipeApi):
              mb_config_path=None,
              use_reclient=True,
              isolated_targets=None,
-             build_dir: Path | None = None,
+             build_dir=None,
              phase=None,
              android_version_code=None,
              android_version_name=None,
@@ -1392,8 +1398,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     Returns:
       The content of the args.gn file.
     """
-    build_dir = build_dir or self.build_dir
-
     # Get the GN args before running any other steps so that if any subsequent
     # steps fail, developers will have the information about what the GN args
     # are so that they can reproduce the issue locally
@@ -1425,7 +1429,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if write_ide_json:
       mb_args += ['--write-ide-json']
 
-    mb_args.append(build_dir)
+    mb_args.extend(self._mb_build_dir_args(build_dir))
 
     name = name or 'generate_build_files'
     try:
@@ -1469,19 +1473,12 @@ class ChromiumApi(recipe_api.RecipeApi):
     return gn_args
 
   @_with_chromium_layout
-  def mb_isolate_everything(
-      self,
-      builder_id,
-      build_dir: Path | None = None,
-      phase=None,
-  ):
-    build_dir = build_dir or self.build_dir
-
+  def mb_isolate_everything(self, builder_id, build_dir=None, phase=None):
     args = []
 
     args.extend(self._mb_isolate_map_file_args())
 
-    args.append(build_dir)
+    args.extend(self._mb_build_dir_args(build_dir))
 
     name = 'generate .isolate files'
     self.run_mb_cmd(

@@ -189,7 +189,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/src",
       "gen",
-      "[CACHE]/builder/src/out/Debug",
+      "//out/Debug",
       "--args=is_component_build=false symbol_level=2 dcheck_always_on=true is_debug=true target_os=\"android\" target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",

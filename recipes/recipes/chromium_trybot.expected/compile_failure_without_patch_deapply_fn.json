@@ -729,7 +729,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/Release",
+      "//out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": [\"base_unittests\"]}",
       "/path/to/tmp/json",
       "--json-output",
@@ -927,7 +927,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -3054,7 +3054,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

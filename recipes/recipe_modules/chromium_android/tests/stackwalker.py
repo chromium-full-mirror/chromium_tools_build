@@ -17,7 +17,7 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.stackwalker(
       api.path.checkout_dir,
-      [api.chromium.build_dir.joinpath('lib.unstripped', 'libchrome.so')])
+      [api.chromium.output_dir.joinpath('lib.unstripped', 'libchrome.so')])
 
 
 def GenTests(api):

@@ -295,7 +295,8 @@ def RunSteps(api, properties):
         targets,
         name='compile%s' % name_suffix,
         use_reclient=use_reclient,
-        build_dir=out_path)
+        out_dir='out',
+        target=gen_repo_out_dir)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 

@@ -258,7 +258,7 @@ def get_src_side_dep_paths(api, source_dir):
     List of string paths
   """
   dep_paths = set()
-  runtime_deps_file = api.chromium.build_dir.joinpath(
+  runtime_deps_file = api.chromium.output_dir.joinpath(
       ORCHESTRATOR_RUNTIME_DEPS_FILE)
   paths = (
       api.file.read_text('read orchestrator_all.runtime_deps',
@@ -266,7 +266,7 @@ def get_src_side_dep_paths(api, source_dir):
   for path in paths:
     # Paths written in these files look like '../../testing/X.py' relative
     # to the output dir
-    file_path = api.path.relpath(api.chromium.build_dir / path, source_dir)
+    file_path = api.path.relpath(api.chromium.output_dir / path, source_dir)
     file_path = source_dir / file_path
 
     # Path can be a regex pattern

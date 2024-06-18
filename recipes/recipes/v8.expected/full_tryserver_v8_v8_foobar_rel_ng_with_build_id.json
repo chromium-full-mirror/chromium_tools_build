@@ -402,7 +402,7 @@
       "/path/to/tmp/json",
       "--isolate-map-file",
       "[CACHE]/builder/v8/infra/mb/gn_isolate_map.pyl",
-      "[CACHE]/builder/v8/out/build"
+      "//out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {

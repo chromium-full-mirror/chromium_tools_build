@@ -359,7 +359,7 @@
       "[CACHE]/builder/v8/infra/mb/gn_isolate_map.pyl",
       "--swarming-targets-file",
       "bot_default\n",
-      "[CACHE]/builder/v8/out/build"
+      "//out/build"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env": {

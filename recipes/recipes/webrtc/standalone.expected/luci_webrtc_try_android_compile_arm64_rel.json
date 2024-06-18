@@ -445,7 +445,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/Release",
+      "//out/Release",
       "{\"additional_compile_targets\": [\"default\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
@@ -544,7 +544,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/android_compile_arm64_rel"
+      "//out/android_compile_arm64_rel"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

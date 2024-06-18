@@ -285,7 +285,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/src",
       "gen",
-      "[CACHE]/builder/src/out/Release-iphoneos",
+      "//out/Release-iphoneos",
       "--args=is_clang=true ios_enable_code_signing=false target_os=\"ios\" is_debug=false target_cpu=\"arm\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",

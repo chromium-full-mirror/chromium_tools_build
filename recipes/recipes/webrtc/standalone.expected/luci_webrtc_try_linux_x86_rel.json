@@ -455,7 +455,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/Release",
+      "//out/Release",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": [\"dummy_test\"]}",
       "/path/to/tmp/json",
       "--json-output",
@@ -561,7 +561,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "[CACHE]/builder/src/out/linux_x86_rel"
+      "//out/linux_x86_rel"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

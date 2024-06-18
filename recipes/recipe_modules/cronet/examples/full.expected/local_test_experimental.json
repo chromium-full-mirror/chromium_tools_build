@@ -368,7 +368,7 @@
       "[START_DIR]/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[START_DIR]/src/out/Debug"
+      "//out/Debug"
     ],
     "cwd": "[START_DIR]/src",
     "env": {

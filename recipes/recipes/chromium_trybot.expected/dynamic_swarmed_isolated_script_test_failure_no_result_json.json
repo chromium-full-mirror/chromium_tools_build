@@ -735,7 +735,7 @@
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "-v",
-      "[CACHE]/builder/src/out/Release",
+      "//out/Release",
       "{\"additional_compile_targets\": [], \"files\": [\"foo.cc\"], \"test_targets\": [\"telemetry_gpu_unittests\"]}",
       "/path/to/tmp/json",
       "--json-output",
@@ -935,7 +935,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "telemetry_gpu_unittests\n",
-      "[CACHE]/builder/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

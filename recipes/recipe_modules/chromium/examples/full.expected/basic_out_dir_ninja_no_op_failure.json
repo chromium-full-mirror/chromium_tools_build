@@ -475,7 +475,7 @@
       "--android-version-name=example",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -510,7 +510,7 @@
       "--",
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/Release",
+      "/tmp/Release",
       "All"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -535,7 +535,7 @@
     "cmd": [
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
-      "[CACHE]/builder/src/out/Release",
+      "/tmp/Release",
       "All",
       "-d",
       "explain",
@@ -570,9 +570,9 @@
       "--gsutil-py-path",
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "--ninja-log-outdir",
-      "[CACHE]/builder/src/out/Release",
+      "/tmp/Release",
       "--ninja-log-command-file",
-      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"[CACHE]/builder/src/out/Release\", \"All\"]",
+      "[\"[CACHE]/builder/src/third_party/ninja/ninja\", \"-C\", \"/tmp/Release\", \"All\"]",
       "--build-exit-status",
       "1"
     ],

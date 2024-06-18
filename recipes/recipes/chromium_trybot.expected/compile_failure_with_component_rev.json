@@ -729,7 +729,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--luci-auth",
       "-v",
-      "[CACHE]/builder/src/out/Release",
+      "//out/Release",
       "{\"additional_compile_targets\": [\"base_unittests\"], \"files\": [\"v8/foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
@@ -927,7 +927,7 @@
       "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

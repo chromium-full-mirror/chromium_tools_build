@@ -377,7 +377,7 @@
       "local",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]\\builder\\src\\out\\Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -415,7 +415,7 @@
       "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--phase",
       "local",
-      "[CACHE]\\builder\\src\\out\\Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -577,7 +577,7 @@
       "reclient",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]\\builder\\src\\out\\Release.2"
+      "//out/Release.2"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -615,7 +615,7 @@
       "[CACHE]\\builder\\src\\tools\\mb\\mb_config.pyl",
       "--phase",
       "reclient",
-      "[CACHE]\\builder\\src\\out\\Release.2"
+      "//out/Release.2"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {

@@ -5,7 +5,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/devtools-frontend",
       "gen",
-      "[CACHE]/builder/devtools-frontend/out/Debug",
+      "//out/Debug",
       "--args=devtools_dcheck_always_on=true devtools_skip_typecheck=true is_debug=true target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/devtools-frontend",

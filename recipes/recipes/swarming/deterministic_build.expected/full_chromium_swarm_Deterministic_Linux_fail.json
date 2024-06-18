@@ -373,7 +373,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -409,7 +409,7 @@
       "Deterministic Linux",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "[CACHE]/builder/src/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1810,7 +1810,7 @@
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Release.2"
+      "//out/Release.2"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1846,7 +1846,7 @@
       "Deterministic Linux",
       "--config-file",
       "[CACHE]/builder/src/tools/mb/mb_config.pyl",
-      "[CACHE]/builder/src/out/Release.2"
+      "//out/Release.2"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

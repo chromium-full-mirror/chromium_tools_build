@@ -388,7 +388,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "[CACHE]/builder/src/out/Android64_Builder_arm64"
+      "//out/Android64_Builder_arm64"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

@@ -373,7 +373,7 @@
       "[CACHE]/builder/angle/infra/specs/gn_isolate_map.pyl",
       "--swarming-targets-file",
       "basic_isolate\n",
-      "[CACHE]/builder/angle/out/Release"
+      "//out/Release"
     ],
     "cwd": "[CACHE]/builder/angle",
     "env": {

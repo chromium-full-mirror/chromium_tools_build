@@ -606,7 +606,7 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def logcat_dump(self):
     if self.c.logcat_bucket:
-      log_path = self.m.chromium.build_dir / 'full_log'
+      log_path = self.m.chromium.output_dir / 'full_log'
       cmd = [
           'vpython3',
           self.m.path.checkout_dir.joinpath('build', 'android',
@@ -632,7 +632,7 @@ class AndroidApi(recipe_api.RecipeApi):
       cmd = [
           'vpython3',
           self.repo_resource('recipes', 'tee.py'),
-          self.m.chromium.build_dir / 'full_log',
+          self.m.chromium.output_dir / 'full_log',
           '--',
           self.m.path.checkout_dir.joinpath('build', 'android',
                                             'adb_logcat_printer.py'),
@@ -773,7 +773,7 @@ class AndroidApi(recipe_api.RecipeApi):
     self.stack_tool_steps(force_latest_version)
 
     if checkout_dir:
-      binary_dir = self.m.chromium.build_dir / 'lib.unstripped'
+      binary_dir = self.m.chromium.output_dir / 'lib.unstripped'
       breakpad_binaries = [binary_dir / 'libchrome.so']
       if self.m.path.exists(binary_dir / 'libwebviewchromium.so'):
         breakpad_binaries.append(binary_dir / 'libwebviewchromium.so')
@@ -979,11 +979,11 @@ class AndroidApi(recipe_api.RecipeApi):
       script = self.m.path.checkout_dir / self.c.test_runner
       env = {}
       if wrapper_script_suite_name:
-        script = self.m.chromium.build_dir.joinpath(
+        script = self.m.chromium.output_dir.joinpath(
             'bin', 'run_%s' % wrapper_script_suite_name)
       else:
         env['CHROMIUM_OUTPUT_DIR'] = self.m.context.env.get(
-            'CHROMIUM_OUTPUT_DIR', self.m.chromium.build_dir)
+            'CHROMIUM_OUTPUT_DIR', self.m.chromium.output_dir)
 
       with self.m.context(env=env):
         cmd = [script] + args

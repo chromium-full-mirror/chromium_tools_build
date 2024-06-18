@@ -620,7 +620,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
         self.m.isolate.write_isolate_files_for_binary_file_paths(
             file_paths, ALL_TEST_BINARIES_ISOLATE_NAME,
-            self.m.chromium.build_dir)
+            self.m.chromium.output_dir)
 
         additional_isolate_targets.append(ALL_TEST_BINARIES_ISOLATE_NAME)
 
@@ -655,7 +655,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def find_swarming_command_lines(self, suffix, build_dir=None):
     if not build_dir:
-      build_dir = self.m.chromium.build_dir
+      build_dir = self.m.chromium.output_dir
     script = self.m.chromium_tests.resource('find_command_lines.py')
     args = ['--build-dir', build_dir, '--output-json', self.m.json.output()]
 
@@ -725,7 +725,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # patch', with no parentheses, or ''. Wrap it in parens if needed.
     name_suffix = ' (%s)' % suffix if suffix else ''
     if not build_dir:
-      build_dir = self.m.chromium.build_dir
+      build_dir = self.m.chromium.output_dir
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.
@@ -894,12 +894,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # archive logic with InputProperties driven archiving.
     # https://crbug.com/1076679.
     upload_results = self.m.archive.generic_archive(
-        build_dir=self.m.chromium.build_dir,
+        build_dir=self.m.chromium.output_dir,
         update_properties=update_result.properties,
         custom_vars=custom_vars,
         report_artifacts=enable_snoopy)
 
-    self.m.symupload(self.m.chromium.build_dir)
+    self.m.symupload(self.m.chromium.output_dir)
     return upload_results
 
   def archive_clusterfuzz(
@@ -912,7 +912,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
       self.m.archive.clusterfuzz_archive(
-          build_dir=self.m.chromium.build_dir,
+          build_dir=self.m.chromium.output_dir,
           update_properties=update_result.properties,
           gs_bucket=builder_spec.cf_gs_bucket,
           gs_acl=builder_spec.cf_gs_acl,
@@ -1170,7 +1170,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       # gn_logs.txt contains debug info for vars with smart defaults. Display
       # its contents in the build for easy debugging.
-      gn_logs_path = self.m.chromium.build_dir / 'gn_logs.txt'
+      gn_logs_path = self.m.chromium.output_dir / 'gn_logs.txt'
       self.m.path.mock_add_paths(gn_logs_path)
       if self.m.path.exists(gn_logs_path):
         self.m.file.read_text('read gn_logs.txt', gn_logs_path)
@@ -1180,7 +1180,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         with self.m.context(env=self.m.chromium.get_env()):
           self.m.ssci.run(
               src_dir=self.m.path.checkout_dir,
-              build_dir=self.m.chromium.build_dir,
+              build_dir=self.m.chromium.output_dir,
               chrome_version=self._get_chrome_version())
 
       if ('chromium.enable_cleandead'
@@ -1189,7 +1189,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           self.m.chromium.cleandead()
         except self.m.step.StepFailure:
           self.m.file.rmtree('remove output dir' + name_suffix,
-                             self.m.chromium.build_dir)
+                             self.m.chromium.output_dir)
           if _mb_gen:
             _mb_gen()
           clean_step_presentation = self.m.step.active_result.presentation
@@ -1237,7 +1237,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         build_archive_url=build_archive_url)
 
     if read_gn_args:
-      self.m.gn.get_args(self.m.chromium.build_dir)
+      self.m.gn.get_args(self.m.chromium.output_dir)
 
   def _make_legacy_build_url(self, builder_spec, builder_group):
     # The group where the build was zipped and uploaded from.
@@ -1339,7 +1339,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # Clobber the bot upon compile failure without patch.
       # See crbug.com/724533 for more detail.
       if raw_result.status == common_pb.FAILURE:
-        self.m.file.rmtree('clobber', self.m.chromium.build_dir)
+        self.m.file.rmtree('clobber', self.m.chromium.output_dir)
 
       if raw_result.status != common_pb.SUCCESS:
         return raw_result, None
@@ -1797,7 +1797,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     #
     # The best way to ensure the old build directory is not used is to
     # remove it.
-    self.m.file.rmtree('remove build directory', self.m.chromium.build_dir)
+    self.m.file.rmtree('remove build directory', self.m.chromium.output_dir)
 
     if set(tests_using_isolates + tests_using_skylab) != set(tests):
       # There are some tests which don't run via swarming. These need the source
@@ -1893,8 +1893,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # Runtime files (TEST_TRIGGER_AND_COLLECT_DEPS_TARGET) are defined here:
     # https://source.chromium.org/chromium/chromium/src/+/main:infra/orchestrator/BUILD.gn
     base_dir = self.m.path.checkout_dir
-    output_dir = self.m.chromium.build_dir
-    runtime_deps_file = self.m.chromium.build_dir.joinpath(
+    output_dir = self.m.chromium.output_dir
+    runtime_deps_file = self.m.chromium.output_dir.joinpath(
         TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE)
 
     if not self.m.path.exists(runtime_deps_file):
@@ -2583,7 +2583,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """
     with self.m.step.nest('collect runtime deps for %s' % target) as step:
       src_dir = self.m.path.checkout_dir
-      build_dir = self.m.chromium.build_dir
+      build_dir = self.m.chromium.output_dir
       abs_runtime_deps = build_dir.joinpath(target + '.isolate')
       if not self.m.path.exists(abs_runtime_deps):
         failure_msg = 'Failed to find the %s.isolate.' % target
@@ -2623,17 +2623,17 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     with self.m.step.nest('upload skylab runtime deps for %s' % target):
       #TODO(crbug/1276489): Remove below condition once we get rid of the
       # build target lacros_version_metadata in src.
-      if not self.m.path.exists(self.m.chromium.build_dir / 'metadata.json'):
+      if not self.m.path.exists(self.m.chromium.output_dir / 'metadata.json'):
         version = self.m.chromium.get_version()
         version_str = '%(MAJOR)s.%(MINOR)s.%(BUILD)s.%(PATCH)s' % version
         self.m.file.write_json(
-            'write metadata.json', self.m.chromium.build_dir / 'metadata.json',
+            'write metadata.json', self.m.chromium.output_dir / 'metadata.json',
             dict(content={'version': version_str}, metadata_version=1))
 
       # Lacros TLS provision requires a metadata.json containing the chrome
       # version along with the squashfs file. If user does not configure it
       # in the compile targets, we create one for the tests.
-      out_dir = self.m.path.relpath(self.m.chromium.build_dir,
+      out_dir = self.m.path.relpath(self.m.chromium.output_dir,
                                     self.m.chromium_checkout.checkout_dir)
 
       metadata_arch = arch_prop.ArchiveData(
@@ -2731,7 +2731,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         test_success = False
 
       self.m.archive.generic_archive_after_tests(
-          build_dir=self.m.chromium.build_dir,
+          build_dir=self.m.chromium.output_dir,
           upload_results=upload_results,
           test_success=test_success)
       self.m.test_utils.record_suite_statuses(tests, '')

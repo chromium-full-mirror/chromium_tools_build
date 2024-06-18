@@ -193,10 +193,7 @@ def BASE(c):
   c.build_config_fs = c.BUILD_CONFIG
   if c.HOST_PLATFORM == 'win':
     if c.TARGET_BITS == 64 and c.TARGET_ARCH != 'arm':
-      # Windows requires x64 builds to be in <dir>_x64. (not true at this
-      # point?)
-      # TODO(dpranke): Figure out if we should use the '_x64' thing to
-      # consistent w/ GYP, or drop it to be consistent w/ the other platforms.
+      # Windows requires x64 builds to be in <dir>_x64.
       c.build_config_fs = c.BUILD_CONFIG + '_x64'
 
   c.targets_spec_dir = 'testing/buildbot'
