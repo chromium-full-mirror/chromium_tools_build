@@ -42,7 +42,7 @@ def _compile_without_remote_execution(api, target, resource_usage_output_dir):
   # Build without remote execution.
   api.chromium_build_perf.recreate_build_dir(remove_deps_cache=True)
   resource_usage_output_file = resource_usage_output_dir / 'resource_usage.json'
-  raw_result = api.chromium_build_perf.build_with_ninja(
+  raw_result = api.chromium_build_perf.build_with_siso(
       target,
       with_remote_cache=False,
       use_rbe=False,
