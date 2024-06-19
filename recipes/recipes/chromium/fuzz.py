@@ -143,7 +143,7 @@ def RunSteps(api, properties):
   # some of them are on the CQ.
   should_clobber = (
       api.chromium.c.clobber_before_runhooks and not api.tryserver.is_tryserver)
-  update_result = api.chromium_checkout.ensure_checkout(clobber=should_clobber)
+  update_result = api.chromium_checkout.ensure_checkout()
 
   api.chromium.ensure_toolchains()
   api.chromium.runhooks(clobber=should_clobber)
