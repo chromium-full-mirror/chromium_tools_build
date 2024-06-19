@@ -20,14 +20,10 @@ CONFIG = {
         "devtools-waterfall-sheriff-onduty@rotations.google.com",
     ],
     "excludes": [
-        "buildtools/linux64",
-        "buildtools/mac",
-        "buildtools/win",
         "extensions/cxx_debugging/third_party/lldb-eval/src",
         "extensions/cxx_debugging/third_party/llvm/src",
         "third_party/cmake",
         "third_party/esbuild",
-        "third_party/ninja",
     ],
     "show_commit_log": False,
 }
