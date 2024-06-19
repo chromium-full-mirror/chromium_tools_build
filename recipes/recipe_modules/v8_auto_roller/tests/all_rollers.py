@@ -95,7 +95,7 @@ CHROMIUM_DEPS = "deps = " + json.dumps({
         },],
     },
     "src/mock-skip-chromium-roll":
-        "mock/skip-chromium-roll.git@2",
+        "https://chromium.googlesource.com/mock/skip-chromium-roll.git@2",
     "src/third_party/js_code_coverage": {
         "dep_type":
             "gcs",

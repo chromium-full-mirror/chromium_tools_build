@@ -81,7 +81,9 @@ def get_dep_updates(api, step_presentation, autoroller_config):
   reviewed_updates = []
   for target_artifact in target_artifacts:
     source_artifact = source_artifacts_by_id.get(target_artifact.identifier)
-    if source_artifact:
+    dependency_sources = autoroller_config.get('dependency_version_sources', {})
+    source_system = dependency_sources.get(target_artifact.dep.path, 'chromium')
+    if source_artifact and source_system == 'chromium':
       roll_from_chromium(source_artifact, target_artifact, trusted_updates)
     else:
       roll_latest_version(target_artifact, trusted_updates, reviewed_updates)

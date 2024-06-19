@@ -293,7 +293,7 @@
       "@@@STEP_LOG_LINE@deps@  ],@@@",
       "@@@STEP_LOG_LINE@deps@  [@@@",
       "@@@STEP_LOG_LINE@deps@    \"src/mock-skip-chromium-roll\",@@@",
-      "@@@STEP_LOG_LINE@deps@    \"mock/skip-chromium-roll.git@2\"@@@",
+      "@@@STEP_LOG_LINE@deps@    \"https://chromium.googlesource.com/mock/skip-chromium-roll.git@2\"@@@",
       "@@@STEP_LOG_LINE@deps@  ],@@@",
       "@@@STEP_LOG_LINE@deps@  [@@@",
       "@@@STEP_LOG_LINE@deps@    \"src/ninja\",@@@",
