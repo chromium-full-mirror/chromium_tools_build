@@ -248,7 +248,13 @@ def RunSteps(api, target_cpu, debug, clang, gen_fuzz_corpus):
   api.step('Run the Dawn unittests', [dawn_unittests])
   api.step('Run the Dawn unittests with the wire',
            [dawn_unittests, '--use-wire'])
-  api.step('Run the Tint unittests', [tint_unittests])
+
+  tint_unittests_cmd = [tint_unittests]
+  if api.platform.is_win and debug:
+    # Exclude DeathTests from Windows Debug builds due to excessive runtimes.
+    # See crbug.com/346814503.
+    tint_unittests_cmd.append('--gtest_filter=-*DeathTest.*')
+  api.step('Run the Tint unittests', tint_unittests_cmd)
 
   api.step('Run the Dawn end2end tests with SwiftShader',
            [dawn_end2end_tests, '--adapter-vendor-id=0x1AE0'])
@@ -298,6 +304,13 @@ def GenTests(api):
       'win_rel_msvc_x86',
       api.platform('win', 64),
       api.properties(clang=False, debug=False, target_cpu='x86'),
+      api.buildbucket.ci_build(
+          project='dawn', builder='win', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'win_dbg_msvc_x64',
+      api.platform('win', 64),
+      api.properties(clang=False, debug=True),
       api.buildbucket.ci_build(
           project='dawn', builder='win', git_repo=DAWN_REPO),
   )
