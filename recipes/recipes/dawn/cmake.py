@@ -441,12 +441,12 @@ def RunSteps(api,
           build_fuzzers=build_fuzzers,
           targets=['dawn.node'])
 
-      def run_target(target, must_exist):
-        target_path = build_path / target
-        if must_exist or api.path.exists(target_path):
-          api.step(f'Run {target}', [target_path])
-
-      run_target('tint_unittests', True)
+      tint_unittests_cmd = [build_path / 'tint_unittests']
+      if api.platform.is_win and debug:
+        # Exclude DeathTests from Windows Debug builds due to excessive runtimes.
+        # See crbug.com/346814503.
+        tint_unittests_cmd.append('--gtest_filter=-*DeathTest.*')
+      api.step('Run tint_unittests', tint_unittests_cmd)
 
       if build_fuzzers:
         with api.context(cwd=source_dir):

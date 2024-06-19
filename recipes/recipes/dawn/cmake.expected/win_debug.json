@@ -486,7 +486,8 @@
   },
   {
     "cmd": [
-      "[CACHE]\\uncached\\dawn\\cmake-build\\tint_unittests"
+      "[CACHE]\\uncached\\dawn\\cmake-build\\tint_unittests",
+      "--gtest_filter=-*DeathTest.*"
     ],
     "env": {
       "DEPOT_TOOLS_WIN_TOOLCHAIN_ROOT": "[CACHE]\\win_toolchain",
