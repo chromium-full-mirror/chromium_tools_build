@@ -30,6 +30,8 @@ DEPS = [
 ]
 
 PROPERTIES = {
+    'did_complete_first_run': Property(default=True),
+    'did_complete_retry_shards': Property(default=True),
     'disable_resultdb': Property(default=False),
     'test_swarming': Property(default=False),
     'test_skylab': Property(default=False),
@@ -40,7 +42,8 @@ PROPERTIES = {
 }
 
 
-def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
+def RunSteps(api, did_complete_first_run, did_complete_retry_shards,
+             disable_resultdb, test_swarming, test_skylab, test_name,
              test_experimental, retry_failed_shards, retry_invalid_shards):
   api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
 
@@ -84,6 +87,11 @@ def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
       if self.name.endswith('invalid_results'):
         return False
       return super().has_valid_results(suffix)
+
+    def did_complete(self, suffix):
+      if suffix == '':
+        return did_complete_first_run
+      return did_complete_retry_shards
 
   if test_swarming:
     test_specs = [
@@ -140,12 +148,12 @@ def RunSteps(api, disable_resultdb, test_swarming, test_skylab, test_name,
     t.lacros_gcs_path = 'gs://dummy/lacros.zip'
     t.exe_rel_path = 'out/Lacros/chrome'
 
-  _, failed_tests = api.test_utils.run_tests(
+  invalid_suites, failed_tests = api.test_utils.run_tests(
       tests,
       '',
       retry_failed_shards=retry_failed_shards,
       retry_invalid_shards=retry_invalid_shards)
-  if failed_tests:
+  if failed_tests or invalid_suites:
     api.test_utils.record_suite_statuses(tests, '')
     raise api.step.StepFailure(
         'failed: %s' % ' '.join(t.name for t in failed_tests))
@@ -308,6 +316,80 @@ def GenTests(api):
                        'base_unittests_invalid_results (retry shards)'),
       api.post_process(post_process.DoesNotRun,
                        'base_unittests_invalid_results_2 (retry shards)'),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
+  )
+  yield api.test(
+      'shards_did_not_complete_then_did_complete_valid_results_exist',
+      api.chromium.generic_build(
+          builder_group='test_group', builder='test_builder'),
+      api.properties(
+          did_complete_first_run=False,
+          test_name='base_unittests_did_not_complete_then_did_complete',
+          test_swarming=True,
+          retry_invalid_shards=True,
+          swarm_hashes={
+              'base_unittests_did_not_complete_then_did_complete':
+                  '[dummy hash for base_unittests/size]',
+              'base_unittests_did_not_complete_then_did_complete_2':
+                  '[dummy hash for base_unittests/size]',
+          }),
+      api.override_step_data(
+          'base_unittests_did_not_complete_then_did_complete',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results(
+                  'base_unittests_did_not_complete_then_did_complete', 1),
+              failure=True)),
+      api.override_step_data(
+          'base_unittests_did_not_complete_then_did_complete_2',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results(
+                  'base_unittests_did_not_complete_then_did_complete_2', 1),
+              failure=True)),
+      api.post_process(
+          post_process.MustRun,
+          'base_unittests_did_not_complete_then_did_complete (retry shards)'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'shards_did_not_complete_then_did_not_complete_valid_results_exist',
+      api.chromium.generic_build(
+          builder_group='test_group', builder='test_builder'),
+      api.properties(
+          did_complete_first_run=False,
+          did_complete_retry_shards=False,
+          test_name='base_unittests_did_not_complete_then_did_not_complete',
+          test_swarming=True,
+          retry_invalid_shards=True,
+          swarm_hashes={
+              'base_unittests_did_not_complete_then_did_not_complete':
+                  '[dummy hash for base_unittests/size]',
+              'base_unittests_did_not_complete_then_did_not_complete_2':
+                  '[dummy hash for base_unittests/size]',
+          }),
+      api.override_step_data(
+          'base_unittests_did_not_complete_then_did_not_complete',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results(
+                  'base_unittests_did_not_complete_then_did_not_complete', 1),
+              failure=True)),
+      api.override_step_data(
+          'base_unittests_did_not_complete_then_did_not_complete_2',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results(
+                  'base_unittests_did_not_complete_then_did_not_complete_2', 1),
+              failure=True)),
+      api.override_step_data(
+          'base_unittests_did_not_complete_then_did_not_complete (retry shards)',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results(
+                  'base_unittests_did_not_complete_then_did_not_complete (retry shards)',
+                  1),
+              failure=True)),
+      api.post_process(
+          post_process.MustRun,
+          'base_unittests_did_not_complete_then_did_not_complete (retry shards)'
+      ),
       api.post_process(post_process.DropExpectation),
       api.expect_status('FAILURE'),
   )

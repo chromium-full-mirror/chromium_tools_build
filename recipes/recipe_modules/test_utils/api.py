@@ -197,7 +197,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     invalid_results = []
     for t in suites:
       # Note that this is technically O(n^2). We expect n to be small.
-      if not t.has_valid_results(suffix):
+      if t.is_experimental or not t.is_enabled:
+        continue
+      if not t.has_valid_results(suffix) or not t.did_complete(suffix):
         invalid_results.append(t)
       elif t.deterministic_failures(suffix) and t not in failed_test_suites:
         if not t.exceed_allowed_failure_rate(suffix):

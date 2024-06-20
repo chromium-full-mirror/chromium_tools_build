@@ -22,17 +22,19 @@ from RECIPE_MODULES.build.chromium_tests import steps
 PROPERTIES = {
     'per_suffix_valid': Property(default={}),
     'per_suffix_failures': Property(default={}),
+    'per_suffix_complete': Property(default={}),
     'expected_status': Property(default=''),
     'suffix': Property(default='')
 }
 
 
-def RunSteps(api, per_suffix_valid, per_suffix_failures, expected_status,
-             suffix):
+def RunSteps(api, per_suffix_valid, per_suffix_failures, per_suffix_complete,
+             expected_status, suffix):
   test_spec = steps.MockTestSpec.create(
       name='test_name',
       per_suffix_failures=per_suffix_failures,
-      per_suffix_valid=per_suffix_valid)
+      per_suffix_valid=per_suffix_valid,
+      per_suffix_complete=per_suffix_complete)
   test = test_spec.get_test(api.chromium_tests)
   # without patch looks at the rdb_results to figure out if all the failures are
   # still failing
@@ -60,6 +62,18 @@ def GenTests(api):
               'retry shards with patch': False,
           },
           expected_status='Invalid'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+      'all_incomplete',
+      api.properties(
+          suffix='with patch',
+          per_suffix_complete={
+              '': False,
+              'with patch': False,
+              'retry shards with patch': False,
+          },
+          expected_status='Incomplete'),
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(

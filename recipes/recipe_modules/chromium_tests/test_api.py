@@ -54,6 +54,7 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
                                    custom_os=None,
                                    invalid=False,
                                    failures=None,
+                                   internal_failure=False,
                                    successes=None,
                                    flaky_failing_tests=None,
                                    expected_failures=None,
@@ -78,6 +79,8 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
           test's step name.
       invalid: If True, marks the results as invalid.
       failures: List of names of test cases that failed.
+      internal_failure: If True, marks the test's `has_incomplete_shards` as
+          True.`
       flaky_failing_tests: List of names of test cases that failed and passed.
       expected_failures: List of names of test cases that failed expectedly.
       expected_failures: List of names of test cases that expectedly skipped.
@@ -104,6 +107,7 @@ class ChromiumTestsApi(recipe_test_api.RecipeTestApi):
         self.m.chromium_swarming.canned_summary_output(
             self.m.json.output({}),
             failure=bool(invalid or failures or skips or flaky_failing_tests),
+            internal_failure=internal_failure,
         )) + self.override_step_data(
             rdb_step_name,
             stdout=self.m.raw_io.output_text(

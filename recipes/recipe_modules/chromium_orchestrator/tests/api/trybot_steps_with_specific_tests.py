@@ -117,6 +117,159 @@ def GenTests(api):
   )
 
   yield api.test(
+      'expired_with_patch_and_valid_failures',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester'),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          with_patch=True, is_compile_phase=False),
+      api.chromium_orchestrator.override_compilator_steps(with_patch=False),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests',
+          'with patch',
+          failures=['test_case1'],
+          internal_failure=True),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'retry shards with patch', failures=['test_case1']),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'expired_both_suffixes_and_valid_failures',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester'),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          with_patch=True, is_compile_phase=False),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests',
+          'with patch',
+          failures=['test_case1'],
+          internal_failure=True),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests',
+          'retry shards with patch',
+          failures=['test_case1'],
+          internal_failure=True),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
+      'expired_with_patch_and_valid_failures_exonerated',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester'),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          with_patch=True, is_compile_phase=False),
+      api.chromium_orchestrator.override_compilator_steps(with_patch=False),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests',
+          'with patch',
+          failures=['test_case1'],
+          internal_failure=True),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'retry shards with patch', failures=['test_case2']),
+      api.luci_analysis.query_failure_rate_results([
+          api.luci_analysis.generate_analysis(
+              test_id='ninja://browser_tests/test_case1',
+              expected_count=0,
+              unexpected_count=10),
+      ]),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+      'expired_both_suffixes_and_valid_failures_exonerated',
+      api.chromium.try_build(
+          builder_group='fake-try-group',
+          builder='fake-orchestrator',
+          tags=api.buildbucket.tags(cq_attempt_key='fake-cq-attempt-key'),
+      ),
+      ctbc_properties(),
+      api.properties(
+          **{
+              '$build/chromium_orchestrator':
+                  InputProperties(
+                      compilator='fake-compilator',
+                      compilator_watcher_git_revision='e841fc',
+                  ),
+          }),
+      api.chromium_orchestrator.override_test_spec(
+          builder_group='fake-group',
+          builder='fake-builder',
+          tester='fake-tester'),
+      api.chromium_orchestrator.override_compilator_steps(),
+      api.chromium_orchestrator.override_compilator_steps(
+          with_patch=True, is_compile_phase=False),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests',
+          'with patch',
+          failures=['test_case1'],
+          internal_failure=True),
+      api.chromium_tests.gen_swarming_and_rdb_results(
+          'browser_tests', 'retry shards with patch', internal_failure=True),
+      api.luci_analysis.query_failure_rate_results([
+          api.luci_analysis.generate_analysis(
+              test_id='ninja://browser_tests/test_case1',
+              expected_count=0,
+              unexpected_count=10),
+      ]),
+      api.post_process(post_process.DropExpectation),
+      api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
       'skip_without_patch_does_not_prevent_cq_retry',
       api.chromium.try_build(
           builder_group='fake-try-group',

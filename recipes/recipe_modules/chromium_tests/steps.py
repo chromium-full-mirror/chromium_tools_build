@@ -88,6 +88,7 @@ RDB_INVOCATION_NAME_RE = re.compile(r'rdb-stream: included "(\S+)" in "\S+"')
 INCLUDE_CI_FOOTER = 'Include-Ci-Only-Tests'
 
 INVALID_SUITE_STATUS = 'Invalid'
+INCOMPLETE_SUITE_STATUS = 'Incomplete'
 FAILURE_SUITE_STATUS = 'Failure'
 SUCCESS_SUITE_STATUS = 'Success'
 
@@ -649,6 +650,8 @@ class AbstractTest(abc.ABC):
 
     Returns: A string designating the suite's current status
     """
+    if not self.did_complete(suffix):
+      return INCOMPLETE_SUITE_STATUS
     if suffix == 'with patch':
       valid, test_failures = self.with_patch_failures_including_retry()
       if not valid:
@@ -2728,7 +2731,8 @@ class MockTestSpec(TestSpec):
     * per_suffix_failures - A mapping of suffix to the test cases to
       report as failures for the suffix.
     * per_suffix_valid - A mapping of suffix to whether the test has
-      valid results for the suffix.
+    * per_suffix_complete - A mapping of suffix to whether the test had
+      complete shards..
     * invocation_names - Used as return value in |MockTest|'s
       |get_invocation_names| method.
     * retry_only_failed_tests - Whether to only retry failed tests, instead
@@ -2737,8 +2741,10 @@ class MockTestSpec(TestSpec):
 
   failures = attrib(sequence[str], default=())
   has_valid_results = attrib(bool, default=True)
+  did_complete = attrib(bool, default=True)
   per_suffix_failures = attrib(mapping[str, sequence[str]], default={})
   per_suffix_valid = attrib(mapping[str, bool], default={})
+  per_suffix_complete = attrib(mapping[str, bool], default={})
   runs_on_swarming = attrib(bool, default=False)
   shards = attrib(int, default=1)
   invocation_names = attrib(sequence[str], default=[])
@@ -2847,6 +2853,11 @@ class MockTest(AbstractSwarmingTest, Test):
     if suffix in self.spec.per_suffix_valid:  # pragma: no cover
       return self.spec.per_suffix_valid[suffix]
     return self.spec.has_valid_results
+
+  def did_complete(self, suffix: str) -> bool:
+    if suffix in self.spec.per_suffix_complete:  # pragma: no cover
+      return self.spec.per_suffix_complete[suffix]
+    return self.spec.did_complete
 
   def deterministic_failures(self, suffix: str) -> Set[str]:
     if suffix in self.spec.per_suffix_failures:  # pragma: no cover
