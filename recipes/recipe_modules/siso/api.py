@@ -152,6 +152,17 @@ class SisoApi(recipe_api.RecipeApi):
                 metadata={'Content-Type': 'text/plain; charset=utf-8'},
                 name='upload ' + file,
                 ok_ret=('any'))
+      if self._props.fail_if_reapi_used:
+        self.m.step(
+            name='fail if remote execution was used',
+            cmd=[
+                'python3',
+                self.resource('fail_if_reapi_used.py'),
+                '--siso_metrics_path',
+                self.m.path.abspath(
+                    self.m.path.join(ninja_dir, 'siso_metrics.json')),
+            ],
+            infra_step=True)
 
   def _assert_ninja_command(self, ninja_command):
     """Check ninja_command runs ninja

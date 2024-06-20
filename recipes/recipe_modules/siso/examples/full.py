@@ -116,3 +116,10 @@ def GenTests(api):
       api.siso.properties(),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'fail_if_reapi_used',
+      api.properties(build_command=['ninja']),
+      api.siso.properties(fail_if_reapi_used=True),
+      api.post_process(post_process.DropExpectation),
+  )
