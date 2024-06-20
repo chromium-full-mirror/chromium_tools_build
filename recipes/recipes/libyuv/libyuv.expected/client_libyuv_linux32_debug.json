@@ -128,7 +128,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/src",
       "gen",
-      "//out/Debug",
+      "[CACHE]/builder/src/out/Debug",
       "--args=is_component_build=false is_debug=true target_cpu=\"x86\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",

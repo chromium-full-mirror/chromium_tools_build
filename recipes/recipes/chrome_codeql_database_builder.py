@@ -39,9 +39,7 @@ def RunSteps(api):
   update_result = api.bot_update.ensure_checkout()
   source_dir = update_result.source_root.path
   api.gclient.runhooks()
-  out_dir = 'out'
-  target_dir = "release"
-  build_dir = out_dir + "/" + target_dir
+  build_dir = source_dir / 'out/release'
   gn_path = api.depot_tools.gn_py_path
   cipd_root = api.path.start_dir / 'cipd'
   db_path = api.path.mkdtemp('codeql_dbs')
@@ -58,7 +56,7 @@ def RunSteps(api):
         'gn gen out/release',
         ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
     api.chromium.compile(
-        use_reclient=True, targets=["all"], out_dir=out_dir, target=target_dir)
+        use_reclient=True, targets=["all"], build_dir=build_dir)
     codeql_script_path = source_dir.joinpath('tools', 'codeql',
                                              'index_target.py')
     api.step("index_target.py", [

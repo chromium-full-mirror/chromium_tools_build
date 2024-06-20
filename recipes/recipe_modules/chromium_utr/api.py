@@ -139,7 +139,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
             'out', self.m.chromium.c.build_config_fs)
 
     self.m.file.ensure_directory('ensure_build_dir', build_path)
-    self.m.chromium.output_dir = build_path
+    self.m.chromium.build_dir = build_path
     return build_path
 
   def get_gclient_config(self):
@@ -479,7 +479,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       tests: Iterable[Test],
       builder_id: chromium.BuilderId,
       preserve_gn_args: bool,
-      build_dir: str,
+      build_dir: Path,
       builder_recipe: str,
   ) -> result_pb2.RawResult:
     """Builds the test targets
@@ -564,7 +564,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return self.m.chromium.compile(
           targets,
           skip_log_upload=True,
-          target_output_dir=str(build_dir),
+          build_dir=build_dir,
           use_reclient=use_reclient), preserve_gn_args
 
     if properties.no_siso:

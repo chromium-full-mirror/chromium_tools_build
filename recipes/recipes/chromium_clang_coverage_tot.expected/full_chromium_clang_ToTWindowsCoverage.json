@@ -304,7 +304,7 @@
       "--luci-auth",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Release_x64"
+      "[CACHE]\\builder\\src\\out\\Release_x64"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {

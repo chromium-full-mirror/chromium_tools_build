@@ -283,7 +283,7 @@
       "dummy_audio_file_devices_no_protobuf",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/dummy_audio_file_devices_no_protobuf"
+      "[CACHE]/builder/src/out/dummy_audio_file_devices_no_protobuf"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1700,7 +1700,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "//out/rtti_no_sctp"
+      "[CACHE]/builder/src/out/rtti_no_sctp"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

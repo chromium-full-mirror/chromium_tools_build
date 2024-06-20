@@ -316,10 +316,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
     cmd = [generator_script]
     cmd += [
         '--size-config-json',
-        self.m.chromium.output_dir / self._size_config_json
+        self.m.chromium.build_dir / self._size_config_json,
     ]
     cmd += ['--staging-dir', staging_dir]
-    cmd += ['--chromium-output-directory', self.m.chromium.output_dir]
+    cmd += ['--chromium-output-directory', self.m.chromium.build_dir]
     return cmd
 
   def get_fuchsia_size_analysis_command(self, staging_dir):
@@ -332,14 +332,14 @@ class BinarySizeApi(recipe_api.RecipeApi):
     generator_script = self.m.path.checkout_dir.joinpath(
         'build', 'fuchsia', 'binary_sizes.py')
     cmd = [generator_script]
-    cmd += ['--build-out-dir', self.m.chromium.output_dir]
+    cmd += ['--build-out-dir', self.m.chromium.build_dir]
 
     size_path = self.m.path.checkout_dir.joinpath('tools', 'fuchsia',
                                                   'size_tests',
                                                   'fyi_sizes.json')
     cmd += ['--sizes-path', size_path]
 
-    output_file = self.m.chromium.output_dir / 'plugin.json'
+    output_file = self.m.chromium.build_dir / 'plugin.json'
     cmd += ['--size-plugin-json-path', output_file]
     cmd += ['--isolated-script-test-output', staging_dir / 'size_results.json']
     return cmd
@@ -534,7 +534,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         bucket=self.results_bucket, dest=gs_dest)
 
   def _get_failed_expectations(self, suffix):
-    with self.m.context(cwd=self.m.chromium.output_dir):
+    with self.m.context(cwd=self.m.chromium.build_dir):
       checker_script = self.resource('trybot_failed_expectations_checker.py')
 
       TEST_DATA = lambda: self.m.json.test_api.output({
@@ -549,7 +549,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
               '--results-path',
               self.m.json.output(),
               '--output-directory',
-              self.m.chromium.output_dir,
+              self.m.chromium.build_dir,
               '--clear-expectations',
           ],
           step_test_data=TEST_DATA)
@@ -609,6 +609,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
             checker_script,
             '--clear-expectations',
             '--output-directory',
-            self.m.chromium.output_dir,
+            self.m.chromium.build_dir,
         ],
         ok_ret='any')

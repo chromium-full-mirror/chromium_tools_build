@@ -295,7 +295,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/linux_libfuzzer_rel"
+      "[CACHE]/builder/src/out/linux_libfuzzer_rel"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

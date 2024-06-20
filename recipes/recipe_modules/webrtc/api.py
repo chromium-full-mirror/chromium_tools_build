@@ -205,7 +205,7 @@ class WebRTCApi(recipe_api.RecipeApi):
           ('swarm_hashes', commit_position, 'without_patch'))
 
       self.m.isolate.isolate_tests(
-          self.m.chromium.output_dir,
+          self.m.chromium.build_dir,
           targets=_get_isolated_targets(tests),
           swarm_hashes_property_name=swarm_hashes_property_name)
 
@@ -218,7 +218,7 @@ class WebRTCApi(recipe_api.RecipeApi):
           }]), self.m.cas.instance, self.m.isolate.isolated_tests)
     else:
       self.m.isolate.isolate_tests(
-          self.m.chromium.output_dir, targets=_get_isolated_targets(tests))
+          self.m.chromium.build_dir, targets=_get_isolated_targets(tests))
 
   def set_upload_build_properties(self, builder_id):
     experiment_prefix = 'Experimental' if self.m.runtime.is_experimental else ''
@@ -236,7 +236,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         'commit_position': self.revision_number,
         'webrtc_git_hash': self.revision,
         'perf_dashboard_machine_group': experiment_prefix + _PERF_MACHINE_GROUP,
-        'outdir': self.m.chromium.output_dir,
+        'outdir': self.m.chromium.build_dir,
     })
     self.m.chromium.set_build_properties(build_props)
 
@@ -244,7 +244,7 @@ class WebRTCApi(recipe_api.RecipeApi):
     if builders.BUILDERS_DB[builder_id].execution_mode != builder_spec.TEST:
       return self.m.chromium_tests.set_swarming_test_execution_info(
           tests, self.m.chromium_tests.find_swarming_command_lines(''),
-          self.m.path.relpath(self.m.chromium.output_dir, source_dir))
+          self.m.path.relpath(self.m.chromium.build_dir, source_dir))
 
     # Tester builders only triggers swarming tests built on 'builder' bots
     # so the swarming command line needs to be retrieved from build
@@ -256,7 +256,7 @@ class WebRTCApi(recipe_api.RecipeApi):
     )
     # Tester builders run their tests in the parent builder out directory.
     parent_buildername = builders.BUILDERS_DB[builder_id].parent_buildername
-    output_dir = str(self.m.chromium.output_dir).replace(
+    output_dir = str(self.m.chromium.build_dir).replace(
         _sanitize_file_name(builder_id.builder),
         _sanitize_file_name(parent_buildername))
 
@@ -270,7 +270,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
   def get_binary_sizes(self, files, base_dir=None):
     args = [
-        '--base-dir', base_dir or self.m.chromium.output_dir, '--output',
+        '--base-dir', base_dir or self.m.chromium.build_dir, '--output',
         self.m.json.output(), '--'
     ] + list(files)
     cmd = ['vpython3', '-u', self.resource('binary_sizes.py')] + args
@@ -320,7 +320,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
   def package_apprtcmobile(self, builder_id):
     # Zip and upload out/{Debug,Release}/apks/AppRTCMobile.apk
-    apk_root = self.m.chromium.output_dir / 'apks'
+    apk_root = self.m.chromium.build_dir / 'apks'
     zip_path = self.m.path.start_dir / 'AppRTCMobile_apk.zip'
 
     pkg = self.m.zip.make_package(apk_root, zip_path)

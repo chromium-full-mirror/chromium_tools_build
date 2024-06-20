@@ -240,7 +240,7 @@ def _BuildChromiumFromSource(api, test_root):
         isolated_targets=[],
         name_suffix=' (with patch)')
 
-  return api.chromium.output_dir, raw_result
+  return api.chromium.build_dir, raw_result
 
 
 def _UploadCelabBinariesToStorage(api, checkout, bin_dir):

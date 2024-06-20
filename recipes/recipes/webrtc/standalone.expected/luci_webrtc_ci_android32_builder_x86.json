@@ -266,7 +266,7 @@
       "[CACHE]/builder/src/tools_webrtc/mb/mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/Android32_Builder_x86"
+      "[CACHE]/builder/src/out/Android32_Builder_x86"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {

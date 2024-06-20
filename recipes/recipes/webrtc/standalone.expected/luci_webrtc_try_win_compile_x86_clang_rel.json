@@ -443,7 +443,7 @@
       "--config-file",
       "[CACHE]\\builder\\src\\tools_webrtc\\mb\\mb_config.pyl",
       "-v",
-      "//out/Release",
+      "[CACHE]\\builder\\src\\out\\Release",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
@@ -540,7 +540,7 @@
       "[CACHE]\\builder\\src\\tools_webrtc\\mb\\mb_config.pyl",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/win_compile_x86_clang_rel"
+      "[CACHE]\\builder\\src\\out\\win_compile_x86_clang_rel"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {

@@ -129,7 +129,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/src",
       "gen",
-      "//out/Release",
+      "[CACHE]/builder/src/out/Release",
       "--args=is_clang=false is_debug=false target_cpu=\"x64\""
     ],
     "cwd": "[CACHE]/builder/src",

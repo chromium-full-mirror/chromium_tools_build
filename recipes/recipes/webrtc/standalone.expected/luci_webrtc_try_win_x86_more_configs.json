@@ -457,7 +457,7 @@
       "--phase",
       "dummy_audio_file_devices_no_protobuf",
       "-v",
-      "//out/Debug_x64",
+      "[CACHE]\\builder\\src\\out\\Debug_x64",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
@@ -558,7 +558,7 @@
       "dummy_audio_file_devices_no_protobuf",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/dummy_audio_file_devices_no_protobuf"
+      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -2034,7 +2034,7 @@
       "--phase",
       "rtti_no_sctp",
       "-v",
-      "//out/dummy_audio_file_devices_no_protobuf",
+      "[CACHE]\\builder\\src\\out\\dummy_audio_file_devices_no_protobuf",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": [\"dummy_test\"]}",
       "/path/to/tmp/json",
       "--json-output",
@@ -2137,7 +2137,7 @@
       "rtti_no_sctp",
       "--json-output",
       "/path/to/tmp/json",
-      "//out/rtti_no_sctp"
+      "[CACHE]\\builder\\src\\out\\rtti_no_sctp"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {
@@ -3526,7 +3526,7 @@
       "--phase",
       "disable_trace_events",
       "-v",
-      "//out/rtti_no_sctp",
+      "[CACHE]\\builder\\src\\out\\rtti_no_sctp",
       "{\"additional_compile_targets\": [\"all\"], \"files\": [\"foo.cc\"], \"test_targets\": []}",
       "/path/to/tmp/json",
       "--json-output",
@@ -3634,7 +3634,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "dummy_test\n",
-      "//out/disable_trace_events"
+      "[CACHE]\\builder\\src\\out\\disable_trace_events"
     ],
     "cwd": "[CACHE]\\builder\\src",
     "env": {

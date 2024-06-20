@@ -331,7 +331,7 @@
       "/path/to/tmp/json",
       "--isolate-map-file",
       "[CACHE]/builder/angle/infra/specs/gn_isolate_map.pyl",
-      "//out/Release"
+      "[CACHE]/builder/angle/out/Release"
     ],
     "cwd": "[CACHE]/builder/angle",
     "env": {

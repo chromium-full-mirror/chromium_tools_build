@@ -234,7 +234,7 @@
       "RECIPE_REPO[depot_tools]/gn.py",
       "--root=[CACHE]/builder/src",
       "gen",
-      "//out/Release",
+      "[CACHE]/builder/src/out/Release",
       "--args=is_clang=true symbol_level=1 is_asan=true dcheck_always_on=true is_debug=false target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/src",

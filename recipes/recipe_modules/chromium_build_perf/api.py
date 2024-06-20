@@ -10,6 +10,7 @@ import tempfile
 
 from RECIPE_MODULES.build import chromium
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 
 class ChromiumBuildPerfApi(recipe_api.RecipeApi):
@@ -28,7 +29,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       target,
       with_remote_cache=None,
       step_name_suffix=None,
-      out_sub_dir=None,
+      build_dir: Path | None = None,
       use_rbe=True,
       resource_usage_output_file=None,
   ):
@@ -39,7 +40,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
           with_remote_cache: Use remote action caches if it's True,
                              Do not use, otherwise.
           step_name_suffix: suffix of the step name.
-          out_sub_dir: Custom name to use the output directory.
+          build_dir: Path to the built output directory.
           use_rbe: Whether to use remote build execution or not
           resource_usage_output_file: File which if provided will record the resource usage
                                      stats related to build step
@@ -70,7 +71,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
             [target],
             name=step_name,
             timeout=timeout,
-            target=out_sub_dir,  # target is a sub directory name at compile().
+            build_dir=build_dir,
             use_reclient=use_rbe,
             siso_args=siso_args,
             resource_usage_output_file=resource_usage_output_file)
@@ -88,7 +89,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
                          remove_deps_cache=False):
     """Remove and create a build dir."""
     if not build_dir:
-      build_dir = self.m.chromium.output_dir
+      build_dir = self.m.chromium.build_dir
     # Preserve .siso_deps.
     siso_deps_path = self.m.path.join(build_dir, '.siso_deps')
     tmp_siso_deps_path = None

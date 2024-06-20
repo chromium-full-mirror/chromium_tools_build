@@ -649,7 +649,7 @@
       "/path/to/tmp/json",
       "--swarming-targets-file",
       "telemetry_gpu_unittests\n",
-      "//out/Release"
+      "[CACHE]/builder/src/out/Release"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
