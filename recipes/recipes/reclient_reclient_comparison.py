@@ -113,7 +113,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb',],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -153,7 +153,7 @@ COMPARISON_BUILDERS = freeze({
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
         'gclient_apply_config_1': [],
-        'gclient_apply_config_2': ['reclient_test'],
+        'gclient_apply_config_2': ['reclient_staging'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
@@ -175,7 +175,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
