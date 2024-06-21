@@ -11,11 +11,9 @@ DEPS = [
 ]
 
 
-# TODO: crbug.com/343511336 - Switch to build_dir and rename file once all
-# downstream uses are switched to build_dir
 def RunSteps(api):
-  api.chromium.output_dir = api.path.checkout_dir
-  api.assertions.assertEqual(api.chromium.output_dir, api.path.checkout_dir)
+  api.chromium.build_dir = api.path.checkout_dir
+  api.assertions.assertEqual(api.chromium.build_dir, api.path.checkout_dir)
 
 
 def GenTests(api):

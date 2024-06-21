@@ -150,16 +150,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     assert not self._build_dir, 'build_dir can only be set once'
     self._build_dir = value
 
-  # TODO: crbug.com/343511336 - Switch all uses to build_dir, then remove this
-  @property
-  def output_dir(self):
-    """Return the path to the built executable directory."""
-    return self.build_dir
-
-  @output_dir.setter
-  def output_dir(self, value):
-    self.build_dir = value
-
   @property
   def ninja_path(self):
     return self.m.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja')
