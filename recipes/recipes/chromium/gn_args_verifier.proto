@@ -6,8 +6,11 @@ syntax = "proto3";
 
 package recipes.build.chromium.gn_args_verifier;
 
-// Next ID: 3
+// Next ID: 4
 message InputProperties {
+
+  // Required, the name of the gclient config to use to checkout the code.
+  string gclient_config = 3;
 
   // Required, the directory where the per-builder config files are located
   //

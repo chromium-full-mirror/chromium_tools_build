@@ -65,7 +65,7 @@ def RunSteps(api, properties):
         elements=errors,
         header='The following errors were found with the input properties:')
 
-  api.gclient.set_config('chromium')
+  api.gclient.set_config(properties.gclient_config)
   api.chromium.set_config('chromium')
   checkout_root = api.path.cache_dir / 'builder'
 
@@ -213,6 +213,7 @@ VALIDATORS = proto_validation.Registry()
 
 @VALIDATORS.register(gn_args_verifier_pb.InputProperties)
 def _validate_properties(message, ctx):
+  ctx.validate_field(message, 'gclient_config')
   ctx.validate_field(message, 'builder_config_directory')
   ctx.validate_field(message, 'mb_config_paths')
   if len(message.mb_config_paths) != 1:
@@ -239,6 +240,7 @@ def GenTests(api):
     data = api.buildbucket.try_build()
     data += api.properties(
         gn_args_verifier_pb.InputProperties(
+            gclient_config='chromium',
             builder_config_directory=builder_config_dir,
             mb_config_paths=[mb_config_path]))
     return data
@@ -679,6 +681,12 @@ def GenTests(api):
       test_data += api.post_check(post_process.ResultReasonRE, error)
     test_data += api.post_process(post_process.DropExpectation)
     return test_data
+
+  yield api.test(
+      'gclient-config-not-set',
+      api.buildbucket.try_build(),
+      invalid_properties('gclient_config is not set'),
+  )
 
   yield api.test(
       'builder-config-dir-not-set',
