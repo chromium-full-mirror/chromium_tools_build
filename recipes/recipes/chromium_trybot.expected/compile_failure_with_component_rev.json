@@ -539,7 +539,7 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"try:v8_linux_chromium_gn_rel\", \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"v8/v8\"}], \"gitilesCommit\": {\"commitHash\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"host\": \"fake.org\", \"position\": \"43426\", \"project\": \"src/v8\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"try:v8_linux_chromium_gn_rel\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"chromium-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"v8/v8\"}], \"gitilesCommit\": {\"commitHash\": \"801ada225ddc271c132c3a35f03975671d43e399\", \"host\": \"fake.org\", \"position\": \"43426\", \"project\": \"src/v8\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -547,6 +547,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
       "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"try:v8_linux_chromium_gn_rel\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
       "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
@@ -568,7 +569,7 @@
       "@@@STEP_LOG_LINE@json.input@      }@@@",
       "@@@STEP_LOG_LINE@json.input@    }@@@",
       "@@@STEP_LOG_LINE@json.input@  },@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec,baselineId\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@"
     ]

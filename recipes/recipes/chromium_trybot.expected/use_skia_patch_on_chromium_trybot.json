@@ -549,7 +549,7 @@
       }
     },
     "name": "set rdb sources.update invocation",
-    "stdin": "{\"invocation\": {\"baselineId\": \"try:fake-try-builder\", \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"skia-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"skia\"}], \"gitilesCommit\": {\"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,baselineId\"}",
+    "stdin": "{\"invocation\": {\"baselineId\": \"try:fake-try-builder\", \"isSourceSpecFinal\": true, \"name\": \"invocations/build:8945511751514863184\", \"sourceSpec\": {\"sources\": {\"changelists\": [{\"change\": \"456789\", \"host\": \"skia-review.googlesource.com\", \"patchset\": \"12\", \"project\": \"skia\"}], \"gitilesCommit\": {\"commitHash\": \"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\", \"host\": \"fake.org\", \"position\": \"170242\", \"project\": \"src\", \"ref\": \"refs/heads/main\"}}}}, \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
@@ -557,6 +557,7 @@
       "@@@STEP_LOG_LINE@json.input@{@@@",
       "@@@STEP_LOG_LINE@json.input@  \"invocation\": {@@@",
       "@@@STEP_LOG_LINE@json.input@    \"baselineId\": \"try:fake-try-builder\",@@@",
+      "@@@STEP_LOG_LINE@json.input@    \"isSourceSpecFinal\": true,@@@",
       "@@@STEP_LOG_LINE@json.input@    \"name\": \"invocations/build:8945511751514863184\",@@@",
       "@@@STEP_LOG_LINE@json.input@    \"sourceSpec\": {@@@",
       "@@@STEP_LOG_LINE@json.input@      \"sources\": {@@@",
@@ -578,7 +579,7 @@
       "@@@STEP_LOG_LINE@json.input@      }@@@",
       "@@@STEP_LOG_LINE@json.input@    }@@@",
       "@@@STEP_LOG_LINE@json.input@  },@@@",
-      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec,baselineId\"@@@",
+      "@@@STEP_LOG_LINE@json.input@  \"updateMask\": \"sourceSpec,isSourceSpecFinal,baselineId\"@@@",
       "@@@STEP_LOG_LINE@json.input@}@@@",
       "@@@STEP_LOG_END@json.input@@@"
     ]

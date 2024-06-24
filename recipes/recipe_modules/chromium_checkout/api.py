@@ -267,6 +267,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
           self.m.buildbucket.builder_name)
       self.m.resultdb.update_invocation(
           step_name='update invocation',
+          is_source_spec_final=True,
           source_spec=invocation_pb.SourceSpec(
               sources=invocation_pb.Sources(
                   gitiles_commit=common_rdb_pb.GitilesCommit(
