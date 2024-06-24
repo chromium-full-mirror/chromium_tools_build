@@ -1079,7 +1079,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
@@ -1151,7 +1151,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
@@ -1220,7 +1220,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),

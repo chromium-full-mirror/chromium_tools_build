@@ -95,7 +95,7 @@ def GenTests(api):
           {
               'linux-angle-chromium-intel': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_integration_test',
+                      'test': 'telemetry_gpu_integration_test',
                       'name': 'webgl_conformance_gl_tests',
                   }],
               },

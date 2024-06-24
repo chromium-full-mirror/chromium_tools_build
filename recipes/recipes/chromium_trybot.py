@@ -157,7 +157,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -186,7 +186,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -217,7 +217,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -253,7 +253,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'args': ['--correct-common-arg'],
                       'non_precommit_args':
@@ -288,7 +288,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -837,7 +837,7 @@ def GenTests(api):
             'fake-group', {
                 'fake-builder': {
                     'isolated_scripts': [{
-                        'isolate_name': 'blink_web_tests',
+                        'test': 'blink_web_tests',
                         'name': 'blink_web_tests',
                         'resultdb': {
                             'enable': True

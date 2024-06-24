@@ -245,7 +245,7 @@ def GenTests(api):
               'fake-builder': {
                   'isolated_scripts': [
                       {
-                          "isolate_name":
+                          "test":
                               "ios_chrome_bookmarks_eg2tests_module",
                           "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                    "Air 2 14.4"),
@@ -260,7 +260,7 @@ def GenTests(api):
                                "ios_chrome_bookmarks_eg2tests_module/")
                       },
                       {
-                          "isolate_name":
+                          "test":
                               "ios_chrome_web_eg2tests_module",
                           "name": ("ios_chrome_web_eg2tests_module_iPad "
                                    "Air 2 14.4"),
@@ -443,7 +443,7 @@ def GenTests(api):
           'fake-group', {
               'fake-android-builder': {
                   'isolated_scripts': [{
-                      "isolate_name": "base_unittests",
+                      "test": "base_unittests",
                       "name": "base_unittests",
                       "test_id_prefix": "ninja://base:base_unittests/",
                   },],
@@ -491,7 +491,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_web_eg2tests_module",
                       "name": ("ios_chrome_web_eg2tests_module_iPad "
                                "Air 2 14.4"),
@@ -604,7 +604,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name": "base_unittests",
+                      "test": "base_unittests",
                       "name": "base_unittests",
                       "swarming": {
                           "dimensions": {
@@ -677,7 +677,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
@@ -764,7 +764,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
@@ -845,7 +845,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
@@ -941,7 +941,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),
@@ -1021,7 +1021,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      "isolate_name":
+                      "test":
                           "ios_chrome_bookmarks_eg2tests_module",
                       "name": ("ios_chrome_bookmarks_eg2tests_module_iPad "
                                "Air 2 14.4"),

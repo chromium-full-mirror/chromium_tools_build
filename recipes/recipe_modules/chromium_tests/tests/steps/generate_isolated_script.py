@@ -55,15 +55,14 @@ def GenTests(api):
     })
 
     test_name = test_spec['name']
-    isolate_name = test_spec.get('isolate_name') or test_name
+    test = test_spec.get('test') or test_name
 
     step_filter = post_process.Filter()
     # Any step with the test name in it
     step_filter = step_filter.include_re(
         r'.*\b{}\b'.format(test_name), at_least=0)
     # Any step with the isolate name in it
-    step_filter = step_filter.include_re(
-        r'.*\b{}\b'.format(isolate_name), at_least=0)
+    step_filter = step_filter.include_re(r'.*\b{}\b'.format(test), at_least=0)
     # Any errors resulting from generating the test
     step_filter = step_filter.include_re(r'.*\bspec format error$', at_least=0)
     # The final result of the recipe
@@ -109,7 +108,7 @@ def GenTests(api):
       'basic',
       ci_build(test_spec={
           'name': 'base_unittests',
-          'isolate_name': 'base_unittests_run',
+          'test': 'base_unittests_run',
       }),
       api.post_process(post_process.StepCommandContains, 'base_unittests', [
           'vpython3',
@@ -127,7 +126,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'results_handler': 'fake',
               'swarming': {},
           }),
@@ -139,7 +138,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'test_id_prefix': 'ninja://chrome/test:base_unittests/',
               'merge': {
                   'script': '//path/to/script.py',
@@ -162,7 +161,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'swarming': {
                   'service_account': 'test-account@serviceaccount.com',
               },
@@ -179,7 +178,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'trigger_script': {
                   'script': '//path/to/script.py',
               },
@@ -200,7 +199,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'trigger_script': {
                   'script': 'bad',
               },
@@ -217,7 +216,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'swarming': {
                   'dimensions': {
                       'os': 'Linux',
@@ -254,7 +253,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'swarming': {
                   'optional_dimensions': {
                       '60': [{
@@ -307,7 +306,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'results_handler': 'bogus',
           }),
       test_spec_format_error(
@@ -323,7 +322,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'merge': {
                   'script': 'path/to/script.py',
               },
@@ -341,7 +340,7 @@ def GenTests(api):
       try_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'args': ['--should-be-in-output',],
               'precommit_args': ['--should-also-be-in-output',],
           }),
@@ -358,7 +357,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'blink_web_tests',
-              'isolate_name': 'webkit_tests',
+              'test': 'webkit_tests',
               'results_handler': 'layout tests',
               'swarming': {
                   'dimensions': {
@@ -377,7 +376,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'custom_webkit_tests',
-              'isolate_name': 'webkit_tests',
+              'test': 'webkit_tests',
               'results_handler': 'layout tests',
               'swarming': {},
           }),
@@ -390,7 +389,7 @@ def GenTests(api):
       ci_build(
           test_spec={
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
               'trigger_script': {
                   'script': '//path/to/script.py',
               },
@@ -417,7 +416,7 @@ def GenTests(api):
           test_spec={
               'experiment_percentage': '100',
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
           }),
       api.step_data('base_unittests (experimental)', retcode=1),
       api.post_process(post_process.DropExpectation),
@@ -429,7 +428,7 @@ def GenTests(api):
           test_spec={
               'experiment_percentage': '0',
               'name': 'base_unittests',
-              'isolate_name': 'base_unittests_run',
+              'test': 'base_unittests_run',
           }),
       api.post_process(post_process.StepCommandEmpty,
                        'base_unittests (experimental)'),

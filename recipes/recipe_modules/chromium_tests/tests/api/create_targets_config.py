@@ -36,11 +36,11 @@ FAKE_TARGETS_SPEC = {
         'script': 'check_static_initializers.py',
     }],
     'isolated_scripts': [{
-        'isolate_name': 'angle_unittests',
+        'test': 'angle_unittests',
         'name': 'angle_unittests',
         'swarming': {},
     }, {
-        'isolate_name': 'angle_unittests_no_swarm',
+        'test': 'angle_unittests_no_swarm',
         'name': 'angle_unittests_no_swarm',
     }],
     'gtest_tests': [

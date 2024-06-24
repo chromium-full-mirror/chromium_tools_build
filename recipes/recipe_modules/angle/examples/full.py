@@ -197,7 +197,7 @@ def GenTests(api):
           'angle', {
               'linux-clang-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'basic_isolate',
+                      'test': 'basic_isolate',
                       'name': 'basic_isolate_tests',
                   },],
               },
@@ -212,7 +212,7 @@ def GenTests(api):
           'angle', {
               'linux-clang-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'basic_isolate',
+                      'test': 'basic_isolate',
                       'name': 'basic_isolate_tests',
                   },],
               },

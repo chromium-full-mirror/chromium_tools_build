@@ -236,7 +236,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                   },],
               },
@@ -266,7 +266,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name':
+                      'test':
                           'telemetry_gpu_unittests',
                       'name':
                           'telemetry_gpu_unittests',
@@ -306,7 +306,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                   },],
               },
@@ -342,7 +342,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                   },],
               },
@@ -372,7 +372,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'results_handler': 'fake',
                   },],
@@ -409,7 +409,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                   },],
               },
@@ -435,7 +435,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -470,7 +470,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -507,7 +507,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -543,7 +543,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -582,7 +582,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -618,7 +618,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -662,7 +662,7 @@ def GenTests(api):
               'fake-tester': {
                   'isolated_scripts': [
                       {
-                          'isolate_name': 'telemetry_gpu_unittests',
+                          'test': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests',
                           'swarming': {
                               'dimensions': {
@@ -701,7 +701,7 @@ def GenTests(api):
               'fake-tester': {
                   'isolated_scripts': [
                       {
-                          'isolate_name': 'telemetry_gpu_unittests',
+                          'test': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests intel',
                           'swarming': {
                               'dimensions': {
@@ -712,7 +712,7 @@ def GenTests(api):
                           },
                       },
                       {
-                          'isolate_name': 'telemetry_gpu_unittests',
+                          'test': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests nvidia',
                           'swarming': {
                               'dimensions': {
@@ -752,7 +752,7 @@ def GenTests(api):
               'fake-tester': {
                   'isolated_scripts': [
                       {
-                          'isolate_name': 'telemetry_gpu_unittests',
+                          'test': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests nvidia',
                           'swarming': {
                               'dimensions': {
@@ -763,7 +763,7 @@ def GenTests(api):
                           },
                       },
                       {
-                          'isolate_name': 'telemetry_gpu_unittests',
+                          'test': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests amd',
                           'swarming': {
                               'dimensions': {
@@ -774,7 +774,7 @@ def GenTests(api):
                           },
                       },
                       {
-                          'isolate_name': 'telemetry_gpu_unittests',
+                          'test': 'telemetry_gpu_unittests',
                           'name': 'telemetry_gpu_unittests vmware',
                           'swarming': {
                               'dimensions': {
@@ -812,7 +812,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -847,7 +847,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -885,7 +885,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'telemetry_gpu_unittests',
+                      'test': 'telemetry_gpu_unittests',
                       'name': 'telemetry_gpu_unittests',
                       'swarming': {
                           'dimensions': {
@@ -1183,7 +1183,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'fake_test',
+                      'test': 'fake_test',
                       'name': 'fake_test',
                       'merge': {
                           'script': '//fake_merge_script.py',
@@ -1222,7 +1222,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'fake_test',
+                      'test': 'fake_test',
                       'name': 'fake_test',
                       'merge': {
                           'script': 'bad_fake_merge_script.py',
@@ -1261,7 +1261,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'fake_test',
+                      'test': 'fake_test',
                       'name': 'fake_test',
                       'merge': {
                           'script': '//fake_merge_script.py',
@@ -1304,7 +1304,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'fake_test',
+                      'test': 'fake_test',
                       'name': 'fake_test',
                       'results_handler': 'fake',
                       'swarming': {
@@ -1341,7 +1341,7 @@ def GenTests(api):
           'fake-group', {
               'fake-tester': {
                   'isolated_scripts': [{
-                      'isolate_name': 'fake_test',
+                      'test': 'fake_test',
                       'name': 'fake_test',
                       'results_handler': 'unknown',
                   },],

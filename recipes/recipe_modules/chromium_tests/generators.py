@@ -340,7 +340,7 @@ class Generator:
 
     kwargs = {}
 
-    target_name = raw_test_spec.get('test') or raw_test_spec.get('isolate_name')
+    target_name = raw_test_spec.get('test')
     name = raw_test_spec.get('name', target_name)
 
     kwargs['target_name'] = target_name

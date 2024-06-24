@@ -45,7 +45,7 @@ def GenTests(api):
           'fake-group', {
               'fake-builder': {
                   'isolated_scripts': [{
-                      'isolate_name': 'blink_web_tests',
+                      'test': 'blink_web_tests',
                       'name': 'blink_web_tests',
                       'swarming': {},
                       'results_handler': 'layout tests',
