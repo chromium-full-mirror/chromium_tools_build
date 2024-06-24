@@ -8,6 +8,7 @@ irrelevant.
 """
 
 from collections.abc import Iterable
+import contextlib
 import difflib
 import re
 
@@ -104,38 +105,37 @@ def RunSteps(api, properties):
             gn_args_json_by_file_path[file_path] = api.file.read_json(
                 f'read {file_path}', repo_path / f)
 
-    # Find GN args with patch applied.
-    gn_args_by_builder_id = {}
+    # For non-phased builders, there will only be a single entry in the leaf
+    # dicts, with None as the key
+    gn_args_by_phase_by_builder_id: dict[BuilderId, dict[str | None, str]] = {}
     file_path_by_builder_id = {}
     for file_path, gn_args_json in gn_args_json_by_file_path.items():
       builder_id = BuilderId.create_for_group(
           builder_group_by_gn_args_file_path[file_path],
           file_path.split('/')[1])
       file_path_by_builder_id[builder_id] = file_path
-      mb_step_name = f'mb lookup - {str(builder_id)}'
-      if 'phases' in gn_args_json:
-        phased_gn_args = {}
-        for phase in gn_args_json['phases']:
-          phased_gn_args[phase] = api.chromium.mb_lookup(
-              builder_id,
-              name=f'{mb_step_name}, phase: {phase}',
-              mb_config_path=mb_config_path,
-              phase=phase,
-              raise_on_failure=True)
-        gn_args_by_builder_id[builder_id] = phased_gn_args
-      else:
-        gn_args_by_builder_id[builder_id] = api.chromium.mb_lookup(
+
+      phases = gn_args_json.get('phases') or [None]
+      gn_args_by_phase = {}
+      for phase in phases:
+        suffix = '' if phase is None else f', phase: {phase}'
+        gn_args_by_phase[phase] = api.chromium.mb_lookup(
             builder_id,
-            name=mb_step_name,
+            name=f'mb lookup - {builder_id}{suffix}',
             mb_config_path=mb_config_path,
-            raise_on_failure=True)
+            phase=phase,
+            raise_on_failure=True,
+        )
+
+      gn_args_by_phase_by_builder_id[builder_id] = gn_args_by_phase
+
 
   with api.context(cwd=checkout_root):
     api.bot_update.deapply_patch(update_result)
 
   # Verify each builder.
   failures = []
-  for builder_id, post_patch_args in gn_args_by_builder_id.items():
+  for builder_id, gn_args_by_phase in gn_args_by_phase_by_builder_id.items():
     with api.step.nest(
         f'verify {file_path_by_builder_id[builder_id]}') as presentation:
       if api.path.exists(builder_config_root /
@@ -144,37 +144,28 @@ def RunSteps(api, properties):
         continue
 
       success = True
-      if isinstance(post_patch_args, dict):
-        for phase, phase_args in post_patch_args.items():
-          with api.step.nest(f'phase: {phase}') as phase_presentation:
-            try:
-              pre_patch_args = api.chromium.mb_lookup(
-                  builder_id,
-                  mb_config_path=mb_config_path,
-                  phase=phase,
-                  raise_on_failure=True)
-            except api.step.StepFailure:
-              phase_presentation.status = api.step.SUCCESS
-              phase_presentation.step_text = (
-                  '\ncould not load GN args from mb config, skip.')
-              continue
-            if not _verify_gn_args(api, pre_patch_args, phase_args,
-                                   phase_presentation):
-              success = False
-      else:
-        try:
-          pre_patch_args = api.chromium.mb_lookup(
-              builder_id,
-              mb_config_path=mb_config_path,
-              raise_on_failure=True)
-        except api.step.StepFailure:
-          presentation.status = api.step.SUCCESS
-          presentation.step_text = (
-              '\ncould not load GN args from mb config, skip.')
-          continue
 
-        success = _verify_gn_args(api, pre_patch_args, post_patch_args,
-                                  presentation)
+      for phase, post_patch_args in gn_args_by_phase.items():
+        ctx = (
+            contextlib.nullcontext(presentation)
+            if phase is None else api.step.nest(f'phase: {phase}'))
+        with ctx as presentation:
+          try:
+            pre_patch_args = api.chromium.mb_lookup(
+                builder_id,
+                mb_config_path=mb_config_path,
+                phase=phase,
+                raise_on_failure=True,
+            )
+          except api.step.StepFailure:
+            presentation.status = api.step.SUCCESS
+            presentation.step_text = (
+                '\ncould not load GN args from mb config, skip.')
+            continue
+          if not _verify_gn_args(api, pre_patch_args, post_patch_args,
+                                 presentation):
+            success = False
+
       if not success:
         failures.append(str(builder_id))
 
