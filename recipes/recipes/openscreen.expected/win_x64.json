@@ -183,8 +183,7 @@
       "RECIPE_REPO[depot_tools]\\gn.py",
       "gen",
       "[START_DIR]\\openscreen\\out\\Default",
-      "--check",
-      "--args=is_debug=true"
+      "--check"
     ],
     "cwd": "[START_DIR]\\openscreen",
     "luci_context": {

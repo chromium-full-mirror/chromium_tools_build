@@ -184,7 +184,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_debug=true is_clang=false use_custom_libcxx=false"
+      "--args=is_clang=false use_custom_libcxx=false"
     ],
     "cwd": "[START_DIR]/openscreen",
     "luci_context": {

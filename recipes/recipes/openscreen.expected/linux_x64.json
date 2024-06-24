@@ -184,7 +184,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_debug=true is_asan=true"
+      "--args=is_asan=true"
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {

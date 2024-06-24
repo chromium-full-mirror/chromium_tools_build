@@ -184,7 +184,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_tsan=true"
+      "--args=is_debug=false is_tsan=true"
     ],
     "cwd": "[START_DIR]/openscreen",
     "luci_context": {
