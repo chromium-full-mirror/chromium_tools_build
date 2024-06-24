@@ -124,7 +124,6 @@ def RunSteps(api, properties):
             name=f'mb lookup - {builder_id}{suffix}',
             mb_config_path=mb_config_path,
             phase=phase,
-            raise_on_failure=True,
         )
 
       gn_args_by_phase_by_builder_id[builder_id] = gn_args_by_phase
@@ -155,7 +154,6 @@ def RunSteps(api, properties):
                 builder_id,
                 mb_config_path=mb_config_path,
                 phase=phase,
-                raise_on_failure=True,
             )
           except api.step.StepFailure:
             presentation.status = api.step.SUCCESS
