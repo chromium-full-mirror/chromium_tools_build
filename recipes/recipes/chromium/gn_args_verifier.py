@@ -115,16 +115,17 @@ def RunSteps(api, properties):
           file_path.split('/')[1])
       file_path_by_builder_id[builder_id] = file_path
 
-      phases = gn_args_json.get('phases') or [None]
-      gn_args_by_phase = {}
-      for phase in phases:
-        suffix = '' if phase is None else f', phase: {phase}'
-        gn_args_by_phase[phase] = api.chromium.mb_lookup(
-            builder_id,
-            name=f'mb lookup - {builder_id}{suffix}',
-            mb_config_path=mb_config_path,
-            phase=phase,
-        )
+      with api.step.nest(file_path):
+        phases = gn_args_json.get('phases') or [None]
+        gn_args_by_phase = {}
+        for phase in phases:
+          suffix = '' if phase is None else f', phase: {phase}'
+          gn_args_by_phase[phase] = api.chromium.mb_lookup(
+              builder_id,
+              name=f'mb lookup - {builder_id}{suffix}',
+              mb_config_path=mb_config_path,
+              phase=phase,
+          )
 
       gn_args_by_phase_by_builder_id[builder_id] = gn_args_by_phase
 
@@ -314,8 +315,9 @@ def GenTests(api):
           api.file.read_json(sl_gn_args))
       if 'phases' in sl_gn_args:
         for phase, phase_args in sl_gn_args['phases'].items():
-          step_name = ('process data from patch.mb lookup - '
-                       f'{group}:{builder}, phase: {phase}')
+          step_name = (
+              f'process data from patch.{bucket}/{builder}/gn-args.json'
+              f'.mb lookup - {group}:{builder}, phase: {phase}')
           if builder_data.mb_lookup_failure_with_patch:
             test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
             break
@@ -325,7 +327,8 @@ def GenTests(api):
               stdout=api.raw_io.output_text(
                   dict_to_gn_args_str(phase_args['gn_args'])))
       else:
-        step_name = f'process data from patch.mb lookup - {group}:{builder}'
+        step_name = (f'process data from patch.{bucket}/{builder}/gn-args.json'
+                     f'.mb lookup - {group}:{builder}')
         if builder_data.mb_lookup_failure_with_patch:
           test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
         else:
