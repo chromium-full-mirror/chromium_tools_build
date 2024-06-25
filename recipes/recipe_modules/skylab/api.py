@@ -161,9 +161,11 @@ class SkylabApi(recipe_api.RecipeApi):
       if test.spec.use_lkgm:
         assert not test.spec.cros_img, 'cros_img should be empty when use_lkgm is True'
         is_public = test.spec.bucket.startswith('chromiumos-')
+        build_target = test.spec.cros_build_target
+        if not build_target:
+          build_target = test.spec.cros_board
         cros_img = self.get_lkgm_version(
-            test.spec.cros_board, str(self.m.chromium_checkout.source_dir),
-            is_public)
+            build_target, str(self.m.chromium_checkout.source_dir), is_public)
         assert cros_img, 'chromite build_api command not found'
       else:
         cros_img = test.spec.cros_img
@@ -172,17 +174,26 @@ class SkylabApi(recipe_api.RecipeApi):
 
       if test.spec.secondary_cros_board:
         boards = test.spec.secondary_cros_board.split(',')
+        build_targets = [''] * len(boards)
         imgs = [''] * len(boards)
+        if test.spec.secondary_cros_build_target:
+          build_targets = test.spec.secondary_cros_build_target.split(',')
+          assert len(build_targets) == len(
+              boards
+          ), "if specified, secondary_cros_build_target must have same length as secondary_cros_board"
         if test.spec.secondary_cros_img:
           imgs = test.spec.secondary_cros_img.split(',')
           if len(boards) != len(imgs):
             raise recipe_api.StepFailure('Length of secondary_cros_img'
                                          ' must match secondary_cros_board')
-        for b, img in zip(boards, imgs):
+        for b, img, build_target in zip(boards, imgs, build_targets):
           if img == 'use_lkgm':
+            if not build_target:
+              build_target = b
             is_public = test.spec.bucket.startswith('chromiumos-')
             img = self.get_lkgm_version(
-                b, str(self.m.chromium_checkout.source_dir), is_public)
+                build_target, str(self.m.chromium_checkout.source_dir),
+                is_public)
           cmd.extend(['--secondary-boards', b])
           cmd.extend(['--secondary-images', img])
 

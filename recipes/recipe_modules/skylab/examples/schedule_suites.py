@@ -170,6 +170,26 @@ REQUESTS = [
     ),
 ]
 
+BUILD_VARIANT_REQUESTS = [
+    gen_skylab_test(
+        'build_variant',
+        tast_expr=None,
+        test_args=LACROS_GTEST_ARGS,
+        cros_board='eve',
+        cros_build_target='eve-arc-t',
+        cros_img='',
+        use_lkgm=True,
+        autotest_name='chromium',
+    ),
+    gen_skylab_test(
+        'multi_dut_build_variant',
+        secondary_cros_board='atlas,pixel6,octopus',
+        secondary_cros_img='use_lkgm,,use_lkgm',
+        secondary_cros_build_target='atlas-arc-t,,octopus-arc-t',
+        autotest_name='tast.nearby-share',
+    ),
+]
+
 MULTI_DUT_REQUESTS = [
     gen_skylab_test(
         'multi_dut',
@@ -286,6 +306,33 @@ def RunSteps(api, requests):
 
 
 def GenTests(api):
+
+  def check_find_lkgm_build_target(check: post_process.Filter, step_odict: dict,
+                                   step: str, value: str):
+    """Check that a step's command contained expected build_target value
+
+    Examine the --input-json flag value and check if `build_target.name` value
+    is set as expected.
+
+    Args:
+    * check: Passed by the recipe test framework.
+    * step_odict: Passed by the recipe test framework.
+    * step: The name of the step to check the command of.
+    * value: The expected value of `build_target.name`
+    """
+
+    INPUT_JSON_FLAG_NAME = '--input-json'
+    step_cmd = step_odict[step].cmd
+    flag_name_position = None
+    for i in range(len(step_cmd)):
+      if step_cmd[i] == INPUT_JSON_FLAG_NAME:
+        flag_name_position = i
+        break
+    check(f'command line for step {step} contained {INPUT_JSON_FLAG_NAME}',
+          flag_name_position is not None)
+    input_json = json.loads(step_cmd[flag_name_position + 1])
+    check(f'input JSON for step {step} has build_target.name={value}',
+          input_json['build_target']['name'] == value)
 
   def check_use_external_config(check: post_process.Filter, step_odict: dict,
                                 step: str, value: bool):
@@ -404,6 +451,78 @@ def GenTests(api):
       api.post_process(post_process.StepCommandContains,
                        'schedule skylab test.' + REQUESTS[5].name + '.schedule',
                        'chromium_Graphics'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'build_variant',
+      api.properties(requests=BUILD_VARIANT_REQUESTS),
+      # Single DUT
+      api.post_process(
+          check_find_lkgm_build_target, 'schedule skylab test.' +
+          BUILD_VARIANT_REQUESTS[0].name + '.call build API', 'eve-arc-t'),
+      api.step_data(
+          'schedule skylab test.' + BUILD_VARIANT_REQUESTS[0].name +
+          '.call build API',
+          api.json.output({
+              "chromeosLkgm": "15300.0.0",
+              "configName": "eve-arc-t-release",
+              "fullVersion": "R111-15300.0.0"
+          })),
+      api.post_process(
+          post_process.StepCommandContains, 'schedule skylab test.' +
+          BUILD_VARIANT_REQUESTS[0].name + '.schedule', [
+              'request', '--board', 'eve', '--pool', 'DUT_POOL_QUOTA',
+              '--image', 'eve-arc-t-release/R111-15300.0.0', '--timeout-mins',
+              '60', '--qs-account', 'lacros'
+          ]),
+      # Multi-DUT
+      api.post_process(
+          check_find_lkgm_build_target, 'schedule skylab test.' +
+          BUILD_VARIANT_REQUESTS[1].name + '.call build API', 'atlas-arc-t'),
+      api.step_data(
+          'schedule skylab test.' + BUILD_VARIANT_REQUESTS[1].name +
+          '.call build API',
+          api.json.output({
+              "chromeosLkgm": "15580.0.0",
+              "configName": "atlas-arc-t-release",
+              "fullVersion": "R118-15580.0.0"
+          })),
+      api.post_process(
+          check_find_lkgm_build_target, 'schedule skylab test.' +
+          BUILD_VARIANT_REQUESTS[1].name + '.call build API (2)',
+          'octopus-arc-t'),
+      api.step_data(
+          'schedule skylab test.' + BUILD_VARIANT_REQUESTS[1].name +
+          '.call build API (2)',
+          api.json.output({
+              "chromeosLkgm": "15580.0.0",
+              "configName": "octopus-arc-t-release",
+              "fullVersion": "R118-15580.0.0"
+          })),
+      api.post_process(
+          post_process.StepCommandContains, 'schedule skylab test.' +
+          BUILD_VARIANT_REQUESTS[1].name + '.schedule', [
+              'request',
+              '--board',
+              'eve',
+              '--pool',
+              'DUT_POOL_QUOTA',
+              '--image',
+              'eve-release/R88-13545.0.0',
+              '--secondary-boards',
+              'atlas',
+              '--secondary-images',
+              'atlas-arc-t-release/R118-15580.0.0',
+              '--secondary-boards',
+              'pixel6',
+              '--secondary-images',
+              '',
+              '--secondary-boards',
+              'octopus',
+              '--secondary-images',
+              'octopus-arc-t-release/R118-15580.0.0',
+          ]),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -536,6 +655,9 @@ def GenTests(api):
   yield api.test(
       'multi_dut_secondary_cros_img_use_lkgm',
       api.properties(requests=MULTI_DUT_REQUESTS[3:4]),
+      api.post_process(
+          check_find_lkgm_build_target, 'schedule skylab test.' +
+          MULTI_DUT_REQUESTS[3].name + '.call build API', 'atlas'),
       api.step_data(
           'schedule skylab test.' + MULTI_DUT_REQUESTS[3].name +
           '.call build API',
@@ -544,6 +666,9 @@ def GenTests(api):
               "configName": "atlas-release",
               "fullVersion": "R118-15580.0.0"
           })),
+      api.post_process(
+          check_find_lkgm_build_target, 'schedule skylab test.' +
+          MULTI_DUT_REQUESTS[3].name + '.call build API (2)', 'octopus'),
       api.step_data(
           'schedule skylab test.' + MULTI_DUT_REQUESTS[3].name +
           '.call build API (2)',
@@ -585,6 +710,10 @@ def GenTests(api):
           check_use_external_config,
           'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
           False),
+      api.post_process(
+          check_find_lkgm_build_target,
+          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
+          'eve'),
       api.step_data(
           'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
           api.json.output({
@@ -610,6 +739,10 @@ def GenTests(api):
       api.post_process(
           check_use_external_config,
           'schedule skylab test.m88_tast_with_retry_lkgm.call build API', True),
+      api.post_process(
+          check_find_lkgm_build_target,
+          'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
+          'eve'),
       api.step_data(
           'schedule skylab test.m88_tast_with_retry_lkgm.call build API',
           api.json.output({

@@ -2874,8 +2874,11 @@ class MockTest(AbstractSwarmingTest, Test):
 @attrs()
 class SkylabTestSpec(TestSpec):
   """Spec for a suite that runs on CrOS Skylab."""
-  # The CrOS build target name, e.g. eve, kevin.
+  # The CrOS board name, e.g. eve, kevin.
   cros_board = attrib(str)
+  # Build target of the ChromeOS board. If unspecified, cros_board will be used.
+  # BUild_target is used to look for LKGM image if needed.
+  cros_build_target = attrib(str, default='')
   # The CrOS DUT model.
   cros_model = attrib(str, default='')
   # Use the LKGM version of CrOS image.
@@ -2931,6 +2934,7 @@ class SkylabTestSpec(TestSpec):
   # Spec for the Multi-DUT tests.
   secondary_cros_board = attrib(str, default='')
   secondary_cros_img = attrib(str, default='')
+  secondary_cros_build_target = attrib(str, default='')
   # Optional argument to control whether to provision browser files
   # through `secondary_lacros_gcs_path` in the `crosfleet` command.
   # If True, `skip` is put in `secondary_lacros_gcs_path`

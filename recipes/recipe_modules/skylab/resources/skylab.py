@@ -106,6 +106,8 @@ def schedule_skylab_tests(opts):
     req.params.scheduling.CopyFrom(_scheduling_for_pool(opts.pool))
     req.params.scheduling.qs_account = opts.qs_account
     req.params.decorations.tags.append(f'label-board:{opts.board}')
+    # TODO(b/242007010): Known issues in CTP that mixes build_target and DUT board.
+    # Keep DUT board until issues is fixed.
     req.params.software_attributes.build_target.name = opts.board
     req.params.time.maximum_duration.seconds = opts.timeout_mins * 60
 
@@ -143,6 +145,8 @@ def schedule_skylab_tests(opts):
         secondary_device = req.params.secondary_devices.add()
         secondary_sw_dep = secondary_device.software_dependencies.add()
         secondary_sw_dep.chromeos_build = img
+        # TODO(b/242007010): Known issues in CTP that mixes build_target and DUT board.
+        # Keep DUT board until issues is fixed.
         secondary_device.software_attributes.build_target.name = board
 
       if any(opts.secondary_lacros_gcs_path):
