@@ -225,28 +225,18 @@ def GenTests(api):
   builder_config_dir = 'builder-config-dir'
   mb_config_path = 'src/tools/mb/mb_config.pyl'
 
-  def common_test_data(api) -> recipe_test_api.StepTestData:
-    """Set up common test data for the build"""
-    data = api.buildbucket.try_build()
-    data += api.properties(
-        gn_args_verifier_pb.InputProperties(
-            gclient_config='chromium',
-            builder_config_directory=builder_config_dir,
-            mb_config_paths=[mb_config_path]))
-    return data
-
   @attrs()
   class BuilderDataEntry:
     """ An object that contsins test data for an individual builder."""
 
     # Builder group name
-    group = attrib(str, default='')
+    group = attrib(str)
 
     # Bucket name
-    bucket = attrib(str, default='')
+    bucket = attrib(str)
 
     # Builder name
-    builder = attrib(str, default='')
+    builder = attrib(str)
 
     # Whether the builder is being removed in the patch.
     builder_removed = attrib(bool, default=False)
@@ -271,7 +261,7 @@ def GenTests(api):
     mb_lookup_phase_failure = attrib(str, default='')
 
   def gn_args_test_data(
-      api, builder_entries: Iterable[BuilderDataEntry]
+      builder_entries: Iterable[BuilderDataEntry],
   ) -> recipe_test_api.StepTestData:
     """Set up test data for GN args verification steps
 
@@ -291,7 +281,12 @@ def GenTests(api):
         lines.append(f'{arg} = {str_val}')
       return '\n'.join(lines)
 
-    test_steps = api.empty_test_data()
+    data = api.properties(
+        gn_args_verifier_pb.InputProperties(
+            gclient_config='chromium',
+            builder_config_directory=builder_config_dir,
+            mb_config_paths=[mb_config_path]))
+
     locations_json = {}
     gn_args_json_paths = []
     for builder_data in builder_entries:
@@ -309,7 +304,7 @@ def GenTests(api):
 
       # Setup Starlark GN args test data
       sl_gn_args = builder_data.sl_gn_args
-      test_steps += api.step_data(
+      data += api.step_data(
           'process data from patch.'
           f'parse gn-args.json files.read {file_path}',
           api.file.read_json(sl_gn_args))
@@ -319,10 +314,10 @@ def GenTests(api):
               f'process data from patch.{bucket}/{builder}/gn-args.json'
               f'.mb lookup - {group}:{builder}, phase: {phase}')
           if builder_data.mb_lookup_failure_with_patch:
-            test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
+            data += api.step_data(step_name, retcode=1, status='FAILURE')
             break
 
-          test_steps += api.step_data(
+          data += api.step_data(
               step_name,
               stdout=api.raw_io.output_text(
                   dict_to_gn_args_str(phase_args['gn_args'])))
@@ -330,9 +325,9 @@ def GenTests(api):
         step_name = (f'process data from patch.{bucket}/{builder}/gn-args.json'
                      f'.mb lookup - {group}:{builder}')
         if builder_data.mb_lookup_failure_with_patch:
-          test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
+          data += api.step_data(step_name, retcode=1, status='FAILURE')
         else:
-          test_steps += api.step_data(
+          data += api.step_data(
               step_name,
               stdout=api.raw_io.output_text(
                   dict_to_gn_args_str(sl_gn_args['gn_args'])))
@@ -343,13 +338,12 @@ def GenTests(api):
       # Setup mb config GN args test data
       if builder_data.migrated:
         # Builder already migrated
-        test_steps += api.path.exists(
+        data += api.path.exists(
             api.path.cache_dir.joinpath('builder',
                                         'src').joinpath(path_in_repo))
-        test_steps += api.post_process(
-            post_process.StepTextEquals,
-            f'verify {bucket}/{builder}/gn-args.json',
-            '<br/>builder already migrated, skip.')
+        data += api.post_process(post_process.StepTextEquals,
+                                 f'verify {bucket}/{builder}/gn-args.json',
+                                 '<br/>builder already migrated, skip.')
       else:
         mb_gn_args = builder_data.mb_gn_args
         if 'phases' in mb_gn_args:
@@ -357,35 +351,34 @@ def GenTests(api):
             step_name = (f'verify {bucket}/{builder}/gn-args.json.'
                          f'phase: {phase}.lookup GN args')
             if phase == builder_data.mb_lookup_phase_failure:
-              test_steps += api.step_data(
-                  step_name, retcode=1, status='FAILURE')
+              data += api.step_data(step_name, retcode=1, status='FAILURE')
             else:
-              test_steps += api.step_data(
+              data += api.step_data(
                   step_name,
                   stdout=api.raw_io.output_text(
                       dict_to_gn_args_str(phase_args['gn_args'])))
         else:
           step_name = (f'verify {bucket}/{builder}/gn-args.json.lookup GN args')
           if builder_data.mb_lookup_failure:
-            test_steps += api.step_data(step_name, retcode=1, status='FAILURE')
+            data += api.step_data(step_name, retcode=1, status='FAILURE')
           else:
-            test_steps += api.step_data(
+            data += api.step_data(
                 step_name,
                 stdout=api.raw_io.output_text(
                     dict_to_gn_args_str(mb_gn_args['gn_args'])))
 
-    test_steps += api.tryserver.get_files_affected_by_patch(
+    data += api.tryserver.get_files_affected_by_patch(
         [*gn_args_json_paths],
         step_name=('process data from patch.git diff to analyze patch'))
-    test_steps += api.step_data(
+    data += api.step_data(
         'process data from patch.'
         'read gn_args_locations.json', api.file.read_json(locations_json))
-    return test_steps
+    return data
 
   yield api.test(
       'basic',
-      common_test_data(api),
-      gn_args_test_data(api, [
+      api.buildbucket.try_build(),
+      gn_args_test_data([
           BuilderDataEntry(
               group='group1',
               bucket='bucket1',
@@ -445,8 +438,8 @@ def GenTests(api):
 
   yield api.test(
       'gn_args_mismatch',
-      common_test_data(api),
-      gn_args_test_data(api, [
+      api.buildbucket.try_build(),
+      gn_args_test_data([
           BuilderDataEntry(
               group='group1',
               bucket='bucket1',
@@ -510,8 +503,8 @@ def GenTests(api):
 
   yield api.test(
       'already_migrated_builder',
-      common_test_data(api),
-      gn_args_test_data(api, [
+      api.buildbucket.try_build(),
+      gn_args_test_data([
           BuilderDataEntry(
               group='group1',
               bucket='bucket1',
@@ -532,8 +525,8 @@ def GenTests(api):
 
   yield api.test(
       'mb_lookup_failure_without_patch',
-      common_test_data(api),
-      gn_args_test_data(api, [
+      api.buildbucket.try_build(),
+      gn_args_test_data([
           BuilderDataEntry(
               group='group1',
               bucket='bucket1',
@@ -593,8 +586,8 @@ def GenTests(api):
 
   yield api.test(
       'mb_lookup_failure_with_patch_non_phased',
-      common_test_data(api),
-      gn_args_test_data(api, [
+      api.buildbucket.try_build(),
+      gn_args_test_data([
           BuilderDataEntry(
               group='group1',
               bucket='bucket1',
@@ -607,8 +600,8 @@ def GenTests(api):
 
   yield api.test(
       'mb_lookup_failure_with_patch_phased',
-      common_test_data(api),
-      gn_args_test_data(api, [
+      api.buildbucket.try_build(),
+      gn_args_test_data([
           BuilderDataEntry(
               group='group2',
               bucket='bucket2',
@@ -650,8 +643,8 @@ def GenTests(api):
 
   yield api.test(
       'add_and_remove_builders',
-      common_test_data(api),
-      gn_args_test_data(api, [
+      api.buildbucket.try_build(),
+      gn_args_test_data([
           BuilderDataEntry(
               group='group1',
               bucket='bucket1',
