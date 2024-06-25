@@ -21,6 +21,8 @@ WITH
         failures_table.sources,
         (SELECT value FROM UNNEST(failures_table.variant)
             WHERE key = "test_suite") AS test_suite,
+        (SELECT value FROM UNNEST(failures_table.variant)
+            WHERE key = "builder") AS builder,
         (SELECT value FROM UNNEST(failures_table.tags)
             WHERE key = "target_platform") AS test_platform
       ))[0] AS test_data
