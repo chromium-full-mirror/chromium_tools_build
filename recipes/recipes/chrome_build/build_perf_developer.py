@@ -171,11 +171,17 @@ def _incremental_builds_with_patch(api, source_dir, target):
   """
   with api.step.nest('Incremental builds with patch'):
     # Get a revision from the last job of this builder.
-    builds = api.buildbucket.search(
-        builds_service_pb.BuildPredicate(
-            builder=api.buildbucket.build.builder,
-            status=common_pb.Status.ENDED_MASK),
-        limit=1)
+    builds = None
+    try:
+      builds = api.buildbucket.search(
+          builds_service_pb.BuildPredicate(
+              builder=api.buildbucket.build.builder,
+              status=common_pb.Status.ENDED_MASK),
+          limit=1)
+    except api.step.InfraFailure:
+      # Ignore search failure.
+      pass
+
     last_rev = None
     if builds:
       last_rev = builds[0].input.gitiles_commit.id
@@ -399,6 +405,26 @@ def GenTests(api):
       api.reclient.properties(),
       api.siso.properties(),
       _buildbucket_search_results(),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'buildbucket_search_error',
+      api.chromium.ci_build(**builder),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder_spec=ctbc.BuilderSpec.create(
+                  gclient_config='chromium',
+                  chromium_config='chromium',
+                  build_gs_bucket=None,
+              ),
+              **builder).assemble()),
+      api.reclient.properties(),
+      api.siso.properties(),
+      api.buildbucket.simulated_batch_search_output(
+          builds_service_pb.BatchResponse(
+              responses=[dict(error=dict(code=5, message="error"))]),
+          step_name='Incremental builds with patch.buildbucket.search'),
       api.post_process(post_process.DropExpectation),
   )
 
