@@ -8,6 +8,8 @@ and then invokes the UTR against the checked out build repo. This will allow
 this recipe to test both UTR cli and recipe changes. The tests invoked are
 configurable as input properties."""
 
+import re
+
 from contextlib import contextmanager
 
 from recipe_engine import post_process
@@ -53,9 +55,8 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
       affected_files = api.tryserver.get_files_affected_by_patch(recipe_dir)
     is_affected = _is_affected(
         api,
+        recipe_dir,
         affected_files,
-        recipe_dir / 'recipes' / 'recipes.py',
-        recipe_dir / 'infra' / 'config' / 'recipes.cfg',
     )
     if not is_affected:
       api.step.empty('UTR is unaffected by the change')
@@ -98,33 +99,79 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
         summary_markdown=f'{failed_invocations} total failed UTR runs')
 
 
+# The recipes are considered affected by any file in the directory of any recipe
+# module that the recipe transitively depends on. Some of the files are not part
+# of the recipe code or only contain static config that doesn't impact the
+# recipes being tested, so don't put them in the input to recipes.py analyze. An
+# affected file will be ignored if the path relative to the root of the repo
+# full matches against any of these regexes.
+_FILES_TO_IGNORE_REGEXES = [
+    re.compile(p) for p in (
+        # The universal test runner requires the configs to be src-side, so they
+        # won't be impacted by changes to recipe-side specs
+        r'recipes/recipe_modules/chromium_tests_builder_config/builders/.*\.py',
+        r'recipes/recipe_modules/chromium_tests_builder_config/trybots\.py',
+
+        # recipe_modules tests and examples are not part of the production code
+        r'recipe_modules/[^/]+/examples/.+',
+        r'recipe_modules/[^/]+/tests/.+',
+
+        # OWNERS files contain repository metadata and are not part of the
+        # recipes
+        r'(.+/)*[A-Z_]*OWNERS',
+
+        # PRESUBMIT.py scripts are executed by the presubmit builder, not
+        # consumed by chromium recipes
+        r'(.+/)*PRESUBMIT.py',
+    )
+]
+
+
 def _is_affected(
     api: RecipeApi,
+    recipe_dir: Path,
     affected_files: list[str],
-    recipes_py_path: Path,
-    recipes_cfg_path: Path,
 ):
   """Determine whether UTR or this recipe is affected by the recipe change.
 
   Args:
     api - The recipe API object.
+    recipe_dir - The root directory of the recipe repo.
     affected_files - The set of files affected by the change.
-    recipes_py_path - A Path object identifying the location of the
-      recipes.py script.
-    recipes_cfg_path - A Path object identifying the location of the
-      recipes.cfg file.
 
   Returns:
     Whether the run is affected by the change.
   """
+  considered_affected_files = []
+  ignored_affected_files = []
+  for f in affected_files:
+    f = api.path.relpath(f, recipe_dir)
+    if any(r.fullmatch(f) for r in _FILES_TO_IGNORE_REGEXES):
+      ignored_affected_files.append(f)
+    else:
+      considered_affected_files.append(f)
+
+  if ignored_affected_files:
+    step_text = None
+    if not considered_affected_files:
+      step_text = 'all affected files are ignored, skipping analyze'
+    api.step.empty(
+        'ignored affected files',
+        step_text=step_text,
+        log_name='files',
+        log_text=ignored_affected_files,
+    )
+    if not considered_affected_files:
+      return False
+
   cmd = [
       'vpython3',
-      recipes_py_path,
+      recipe_dir / 'recipes/recipes.py',
       '--package',
-      recipes_cfg_path,
+      recipe_dir / 'infra/config/recipes.cfg',
       'analyze',
       api.json.input({
-          'files': sorted(affected_files),
+          'files': sorted(considered_affected_files),
           'recipes': sorted(RECIPES),
       }),
       api.json.output(),
@@ -271,11 +318,34 @@ def GenTests(api: RecipeTestApi):
       api.step_data(
           'determine affected recipes',
           api.json.output({
-              'recipes': '',
+              'recipes': [],
               'error': '',
               'invalid_recipes': [],
           }),
           retcode=0),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'all-files-ignored',
+      api.properties(builder_suites=default_builder_suites),
+      api.buildbucket.try_build(project='chromium/tools/build'),
+      api.tryserver.get_files_affected_by_patch([
+          'recipes/recipe_modules/chromium_tests_builder_config/builders/x.py',
+          'recipes/recipe_modules/chromium_tests_builder_config/trybots.py',
+          'recipe_modules/foo/examples/bar.py',
+          'recipe_modules/foo/tests/bar.py',
+          'OWNERS',
+          'foo/BAR_OWNERS',
+          'PRESUBMIT.py',
+          'foo/PRESUBMIT.py',
+      ]),
+      api.post_check(
+          post_process.StepTextEquals,
+          'ignored affected files',
+          'all affected files are ignored, skipping analyze',
+      ),
+      api.post_check(post_process.MustRun, 'UTR is unaffected by the change'),
       api.post_process(post_process.DropExpectation),
   )
 
