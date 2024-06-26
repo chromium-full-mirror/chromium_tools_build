@@ -2636,6 +2636,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           gcs_bucket=gcs_bucket,
           gcs_path='%s/%s/lacros_compressed.squash' % (gcs_path, target),
           archive_type=arch_prop.ArchiveData.ARCHIVE_TYPE_SQUASHFS,
+          squashfs_params=arch_prop.SquashfsParams(
+              algorithm='zstd',
+              compression_level=5,
+          ),
           base_dir='src',
           files=[v for v in runtime_deps.values() if is_file(v)],
           dirs=[v for v in runtime_deps.values() if is_dir(v)],

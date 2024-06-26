@@ -692,6 +692,7 @@ def GenTests(api):
   archive_data.gcs_path = 'x86/{%position%}/chrome'
   archive_data.archive_type = properties.ArchiveData.ARCHIVE_TYPE_SQUASHFS
   archive_data.squashfs_params.algorithm = 'zstd'
+  archive_data.squashfs_params.compression_level = 9
   archive_data.squashfs_params.block_size = '256K'
   archive_data.revisions_file.gcs_path = 'x86/{%position%}/REVISIONS'
   input_properties.archive_datas.extend([archive_data])

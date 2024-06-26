@@ -50,6 +50,8 @@ message SquashfsParams {
   // Source of truth:
   // https://github.com/plougher/squashfs-tools/blob/4.5.1/README-4.5.1#L250
   string block_size = 2;
+  // If not set, it uses default level for gzip, or 22(highest) for zstd.
+  int32 compression_level = 3;
 }
 
 // Next id: 20

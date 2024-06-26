@@ -1151,6 +1151,8 @@ class ArchiveApi(recipe_api.RecipeApi):
           algorithm = archive_data.squashfs_algorithm
         # We just set compression_level to 22(highest).
         compression_level = 22
+      if archive_data.squashfs_params.compression_level:
+        compression_level = archive_data.squashfs_params.compression_level
       if archive_data.squashfs_params.block_size:
         block_size = archive_data.squashfs_params.block_size
       self.m.squashfs.mksquashfs(base_path, archive_file, algorithm,
