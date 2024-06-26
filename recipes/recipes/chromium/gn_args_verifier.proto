@@ -14,10 +14,10 @@ message InputProperties {
 
   // Required, the directory where the per-builder config files are located
   //
-  // The path is relative to the root of the repo. For each builder, the
-  // relative path to the GN args file from the builder config directory must
-  // be <bucket>/<builder>/gn-args.json. And the location of the GN args file
-  // should be recorded in gn_args_locations.json file in builder config
+  // The path is relative to the root of the repo under test. For each builder,
+  // the relative path to the GN args file from the builder config directory
+  // must be <bucket>/<builder>/gn-args.json. And the location of the GN args
+  // file should be recorded in gn_args_locations.json file in builder config
   // directory.
   string builder_config_directory = 1;
 

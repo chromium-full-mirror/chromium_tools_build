@@ -69,16 +69,14 @@ def RunSteps(api, properties):
 
   api.gclient.set_config(properties.gclient_config)
   api.chromium.set_config('chromium')
-  checkout_root = api.path.cache_dir / 'builder'
 
-  with api.context(cwd=checkout_root):
+  with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout(patch=True)
-  repo_path = update_result.source_root.path
-  # Absolute path of the per-builder config directory root.
-  builder_config_root = repo_path / properties.builder_config_directory
+  checkout_dir = update_result.checkout_dir
+  patch_dir = update_result.patch_root.path
 
-  # TODO(crbug.com/1471251): Add support for multiple mb config files.
-  mb_config_path = checkout_root / properties.mb_config_paths[0]
+  # Absolute path of the per-builder config directory root.
+  builder_config_root = patch_dir / properties.builder_config_directory
 
   with api.step.nest('process data from patch'):
     gn_args_file_path_by_builder_by_builder_group = api.file.read_json(
@@ -91,7 +89,7 @@ def RunSteps(api, properties):
       for file_path in gn_args_file_path_by_builder.values():
         builder_group_by_gn_args_file_path[file_path] = builder_group
 
-    with api.context(cwd=repo_path):
+    with api.context(cwd=patch_dir):
       affected_files = set(api.tryserver.get_files_affected_by_patch(''))
     with api.step.nest('parse gn-args.json files'):
       # Mapping from per-builder gn-args.json to its content.
@@ -104,7 +102,9 @@ def RunSteps(api, properties):
           # being removed by the patch.
           if file_path in builder_group_by_gn_args_file_path:
             gn_args_json_by_file_path[file_path] = api.file.read_json(
-                f'read {file_path}', repo_path / f)
+                f'read {file_path}', patch_dir / f)
+
+    failures = []
 
     gn_args_by_phase_by_builder_id: dict[BuilderId, _GnArgsByPhase] = {}
     file_path_by_builder_id = {}
@@ -116,16 +116,25 @@ def RunSteps(api, properties):
 
       gn_args_by_phase = _get_post_patch_gn_args(
           api,
+          checkout_dir,
           file_path,
           builder_id,
           gn_args_json,
-          mb_config_path,
+          properties.mb_config_paths,
       )
+      if gn_args_by_phase is not None:
+        gn_args_by_phase_by_builder_id[builder_id] = gn_args_by_phase
+      else:
+        failures.append(str(BuilderId))
 
-      gn_args_by_phase_by_builder_id[builder_id] = gn_args_by_phase
+  if failures:
+    return _result(
+        status=common_pb.FAILURE,
+        elements=list(failures),
+        header=('could not get GN args with patch applied'
+                ' for the following builders:'))
 
-
-  with api.context(cwd=checkout_root):
+  with api.context(cwd=checkout_dir):
     api.bot_update.deapply_patch(update_result)
 
   # Verify each builder.
@@ -134,17 +143,19 @@ def RunSteps(api, properties):
   for builder_id, gn_args_by_phase in gn_args_by_phase_by_builder_id.items():
     file_path = file_path_by_builder_id[builder_id]
     step_name = f'verify {file_path}'
+
     if api.path.exists(builder_config_root / file_path):
       api.step.empty(
-          name=step_name, step_text='\nbuilder already migrated, skip.')
+          name=step_name, step_text='builder already migrated, skip.')
       continue
 
     success = _verify_gn_args(
         api,
+        checkout_dir,
         step_name,
         builder_id,
         gn_args_by_phase,
-        mb_config_path,
+        properties.mb_config_paths,
     )
 
     if not success:
@@ -168,83 +179,130 @@ _GnArgsByPhase = dict[str | None, str]
 
 def _get_post_patch_gn_args(
     api,
+    checkout_dir: config_types.Path,
     step_name: str,
     builder_id: BuilderId,
     gn_args_json: _GnArgsJson,
-    mb_config_path: config_types.Path,
-) -> _GnArgsByPhase:
+    mb_config_paths: list[str],
+) -> _GnArgsByPhase | None:
   """Get a builder's GN args with the patch applied.
 
   Args:
     api: The recipe API object.
+    checkout_dir: The directory where the checkout was performed. The source
+      should already be checked out, with the patch from the CL applied.
     step_name: The name of the step to use for getting the GN args.
     builder_id: The ID of the builder to get GN args for.
-    gn_args_json: The json decoded contents of the builder's gn_args.json file.
-    mb_config_paths: The path to the MB config files to try to look up the
-      builder's GN args in.
-  """
-  with api.step.nest(step_name):
-    phases = gn_args_json.get('phases') or [None]
-    gn_args_by_phase = {}
-    for phase in phases:
-      suffix = '' if phase is None else f', phase: {phase}'
-      gn_args_by_phase[phase] = api.chromium.mb_lookup(
-          builder_id,
-          name=f'mb lookup - {builder_id}{suffix}',
-          mb_config_path=mb_config_path,
-          phase=phase,
-      )
+    mb_config_paths: The paths to the MB config files to try to look up the
+      builder's GN args in. The paths are relative to checkout_dir. It is an
+      error if the builder isn't present in any of the config files.
 
-  return gn_args_by_phase
+  Returns:
+    The GN args for each phase of the builder or None if the GN args couldn't be
+    looked up for the builder (the builder isn't present in any of the config
+    files or some other error occurs running mb lookup).
+  """
+  with api.step.nest(step_name) as presentation:
+    phases = gn_args_json.get('phases') or [None]
+
+    for mb_config_path in mb_config_paths:
+      with api.step.nest(f'check in {mb_config_path}'):
+        gn_args_by_phase = {}
+
+        for phase in phases:
+          suffix = '' if phase is None else f', phase: {phase}'
+          try:
+            gn_args = _mb_lookup(
+                api,
+                f'mb lookup - {builder_id}{suffix}',
+                builder_id,
+                checkout_dir / mb_config_path,
+                phase,
+            )
+          except api.step.StepFailure:
+            return None
+
+          # If the builder isn't present in the config file, we don't need to
+          # check each phase
+          if gn_args is None:
+            presentation.step_text = f'{builder_id} is not present'
+            break
+
+          gn_args_by_phase[phase] = gn_args
+
+        else:
+          return gn_args_by_phase
+
+    presentation.status = api.step.FAILURE
+    presentation.step_text = 'not present in any of the config files'
+    return None
 
 
 def _verify_gn_args(
     api,
+    checkout_dir: config_types.Path,
     step_name: str,
     builder_id: BuilderId,
     post_patch_gn_args_by_phase: _GnArgsByPhase,
-    mb_config_path: config_types.Path,
+    mb_config_paths: list[str],
 ) -> bool:
   """Get a builder's GN args with the patch applied.
 
   Args:
     api: The recipe API object.
+    checkout_dir: The directory where the checkout was performed. The source
+      should already be checked out, without the patch from the CL applied.
     step_name: The name of the step to use for the verification.
     builder_id: The ID of the builder to verify GN args for.
     post_patch_gn_args_by_phase: The GN args for the builder with the patch
       applied for each phase.
-    mb_config_path: The path to the MB config file to look up the builder's GN
-      args in.
+    mb_config_paths: The paths to the MB config files to try to look up the
+      builder's GN args in. The paths are relative to checkout_dir. It is an
+      error if the builder isn't present in any of the config files.
 
   Returns:
     True if the verification succeeds (the GN args for each phase are equal or
     the builder doesn't exist in any of the config files). False if the
-    verifications fails (there is a difference in GN args).
+    verifications fails (there is a difference in GN args) or some error occurs
+    when getting the GN args for the builder.
   """
   with api.step.nest(step_name) as presentation:
-    success = True
+    for mb_config_path in mb_config_paths:
+      with api.step.nest(f'check in {mb_config_path}') as file_presentation:
 
-    for phase, post_patch_args in post_patch_gn_args_by_phase.items():
-      ctx = (
-          contextlib.nullcontext(presentation)
-          if phase is None else api.step.nest(f'phase: {phase}'))
-      with ctx as presentation:
-        try:
-          pre_patch_args = api.chromium.mb_lookup(
-              builder_id,
-              mb_config_path=mb_config_path,
-              phase=phase,
-          )
-        except api.step.StepFailure:
-          presentation.status = api.step.SUCCESS
-          presentation.step_text = (
-              '\ncould not load GN args from mb config, skip.')
-          continue
-        if not _compare_gn_args(api, pre_patch_args, post_patch_args,
-                                presentation):
-          success = False
+        success = True
 
-  return success
+        for phase, post_patch_args in post_patch_gn_args_by_phase.items():
+          ctx = (
+              contextlib.nullcontext(presentation)
+              if phase is None else api.step.nest(f'phase: {phase}'))
+          with ctx as presentation:
+            try:
+              pre_patch_args = _mb_lookup(
+                  api,
+                  'mb lookup',
+                  builder_id,
+                  checkout_dir / mb_config_path,
+                  phase,
+              )
+            except api.step.StepFailure:
+              return False
+
+            # If the builder isn't present in the config file, we don't need to
+            # check each phase
+            if pre_patch_args is None:
+              file_presentation.step_text = f'{builder_id} is not present'
+              break
+
+            if not _compare_gn_args(api, pre_patch_args, post_patch_args,
+                                    presentation):
+              success = False
+
+        else:
+          return success
+
+    presentation.step_text = "new builder: wasn't present in any config file"
+    return True
 
 
 def _compare_gn_args(api, pre_patch_args: str, post_patch_args: str,
@@ -263,11 +321,56 @@ def _compare_gn_args(api, pre_patch_args: str, post_patch_args: str,
   if diff:
     presentation.logs['diff'] = diff
     presentation.status = api.step.FAILURE
-    presentation.step_text = '\nGN args mismatch; see "diff" log for details'
+    presentation.step_text = 'GN args mismatch; see "diff" log for details'
     return False
 
-  presentation.step_text = '\nGN args match between starlark and mb config'
+  presentation.step_text = 'GN args match between starlark and mb config'
   return True
+
+
+_UNKNOWN_BUILDER_RETCODE = 2
+
+
+def _mb_lookup(
+    api,
+    step_name: str,
+    builder_id: BuilderId,
+    mb_config_path: config_types.Path,
+    phase: str | None,
+) -> str | None:
+  """Lookup the GN args for a builder.
+
+  Args:
+    api: The recipe API object.
+    step_name: The name of the step to use for the lookup.
+    builder_id: The ID of the builder to get GN args for.
+    mb_config_paths: The path to the MB config file to lookup the builder's GN
+      args in.
+    phase: The phase of the GN args to look up.
+
+  Returns:
+    The GN args as returned by "mb lookup" if the builder is present in
+    the config file. None if the builder is not present in the config
+    file.
+
+  Raises:
+    StepFailure if some error occurs executing the lookup besides the builder
+    not being present in the config file.
+  """
+  result = api.chromium.run_mb_cmd(
+      step_name,
+      'lookup',
+      builder_id,
+      mb_config_path=mb_config_path,
+      phase=phase,
+      additional_args=['--quiet'],
+      ok_ret=(0, _UNKNOWN_BUILDER_RETCODE),
+      stdout=api.raw_io.output_text(add_output_log='on_failure'),
+  )
+  if result.retcode == _UNKNOWN_BUILDER_RETCODE:
+    return None
+  gn_args = result.presentation.step_text = f'\n{result.stdout}'
+  return gn_args
 
 
 VALIDATORS = proto_validation.Registry()
@@ -277,9 +380,7 @@ VALIDATORS = proto_validation.Registry()
 def _validate_properties(message, ctx):
   ctx.validate_field(message, 'gclient_config')
   ctx.validate_field(message, 'builder_config_directory')
-  ctx.validate_field(message, 'mb_config_paths')
-  if len(message.mb_config_paths) != 1:
-    ctx.error('Only a single mb config path is supported at the moment.')
+  ctx.validate_repeated_field(message, 'mb_config_paths')
 
 
 def _result(
@@ -295,11 +396,10 @@ def _result(
 def GenTests(api):
 
   builder_config_dir = 'builder-config-dir'
-  mb_config_path = 'src/tools/mb/mb_config.pyl'
 
   @attrs()
   class BuilderDataEntry:
-    """ An object that contsins test data for an individual builder."""
+    """ An object that contains test data for an individual builder."""
 
     # Builder group name
     group = attrib(str)
@@ -310,30 +410,36 @@ def GenTests(api):
     # Builder name
     builder = attrib(str)
 
-    # Whether the builder is being removed in the patch.
-    builder_removed = attrib(bool, default=False)
+    # The mb config file that the builder should be present in, as a path
+    # relative to the directory where the checkout would be performed
+    mb_config_path = attrib(str, default=None)
 
     # Content of gn-args.json generated by Starlark definition.
-    sl_gn_args = attrib(dict, default={})
+    sl_gn_args = attrib(dict, default={'gn_args': {}})
 
     # GN args defined in mb config file, but stored in the same format as
     # the sl_gn_args dict.
-    mb_gn_args = attrib(dict, default={})
+    mb_gn_args = attrib(dict, default={'gn_args': {}})
+
+    # Whether the builder is being removed in the patch.
+    builder_removed = attrib(bool, default=False)
+
+    # Whether the builder is being added in the patch
+    builder_added = attrib(bool, default=False)
 
     # Whether the builder has already been migrated to Starlark GN args
-    migrated = attrib(bool, default=False)
+    already_migrated = attrib(bool, default=False)
 
-    # Whether the mb_lookup step will fail while patch applied
-    mb_lookup_failure_with_patch = attrib(bool, default=False)
+    # Whether the mb_lookup step will fail with patch applied
+    mb_lookup_error_with_patch = attrib(bool, default=False)
 
-    # Whether the mb_lookup step will fail without patch
-    mb_lookup_failure = attrib(bool, default=False)
-
-    # The phase for which the mb_lookup step will fail without patch
-    mb_lookup_phase_failure = attrib(str, default='')
+    # Whether the mb_lookup step will fail without patch applied
+    mb_lookup_error_without_patch = attrib(bool, default=False)
 
   def gn_args_test_data(
       builder_entries: Iterable[BuilderDataEntry],
+      *,
+      mb_config_paths: list[str] | None = None,
   ) -> recipe_test_api.StepTestData:
     """Set up test data for GN args verification steps
 
@@ -353,11 +459,18 @@ def GenTests(api):
         lines.append(f'{arg} = {str_val}')
       return '\n'.join(lines)
 
+    if mb_config_paths is None:
+      mb_config_paths = list({
+          e.mb_config_path: None
+          for e in builder_entries
+          if e.mb_config_path is not None
+      })
+
     data = api.properties(
         gn_args_verifier_pb.InputProperties(
             gclient_config='chromium',
             builder_config_directory=builder_config_dir,
-            mb_config_paths=[mb_config_path]))
+            mb_config_paths=mb_config_paths))
 
     locations_json = {}
     gn_args_json_paths = []
@@ -365,79 +478,100 @@ def GenTests(api):
       group = builder_data.group
       bucket = builder_data.bucket
       builder = builder_data.builder
-      removed = builder_data.builder_removed
       file_path = f'{bucket}/{builder}/gn-args.json'
       path_in_repo = f'{builder_config_dir}/{file_path}'
       gn_args_json_paths.append(path_in_repo)
-      if removed:
+      if builder_data.builder_removed:
         continue
 
       locations_json.setdefault(group, {})[builder] = file_path
 
       # Setup Starlark GN args test data
       sl_gn_args = builder_data.sl_gn_args
+
       data += api.step_data(
           'process data from patch.'
           f'parse gn-args.json files.read {file_path}',
           api.file.read_json(sl_gn_args))
+
       if 'phases' in sl_gn_args:
-        for phase, phase_args in sl_gn_args['phases'].items():
+        sl_gn_args_and_suffixes = [
+            (value['gn_args'], f', phase: {phase}')
+            for phase, value in sl_gn_args['phases'].items()
+        ]
+      else:
+        sl_gn_args_and_suffixes = [(sl_gn_args['gn_args'], '')]
+
+      for mb_config_path in mb_config_paths:
+        builder_in_config_file = mb_config_path == builder_data.mb_config_path
+        for gn_args, step_name in sl_gn_args_and_suffixes:
           step_name = (
               f'process data from patch.{bucket}/{builder}/gn-args.json'
-              f'.mb lookup - {group}:{builder}, phase: {phase}')
-          if builder_data.mb_lookup_failure_with_patch:
-            data += api.step_data(step_name, retcode=1, status='FAILURE')
+              f'.check in {mb_config_path}'
+              f'.mb lookup - {group}:{builder}{step_name}')
+          # We'll only check a single phase for a builder that's not in the
+          # config file
+          if not builder_in_config_file:
+            data += api.step_data(step_name, retcode=_UNKNOWN_BUILDER_RETCODE)
             break
-
+          if builder_data.mb_lookup_error_with_patch:
+            data += api.step_data(step_name, retcode=1)
+            break
           data += api.step_data(
               step_name,
-              stdout=api.raw_io.output_text(
-                  dict_to_gn_args_str(phase_args['gn_args'])))
-      else:
-        step_name = (f'process data from patch.{bucket}/{builder}/gn-args.json'
-                     f'.mb lookup - {group}:{builder}')
-        if builder_data.mb_lookup_failure_with_patch:
-          data += api.step_data(step_name, retcode=1, status='FAILURE')
-        else:
-          data += api.step_data(
-              step_name,
-              stdout=api.raw_io.output_text(
-                  dict_to_gn_args_str(sl_gn_args['gn_args'])))
+              stdout=api.raw_io.output_text(dict_to_gn_args_str(gn_args)))
+        # Once the config file containing the builder is found, we don't check
+        # remaining files
+        if builder_in_config_file:
+          break
 
-      if builder_data.mb_lookup_failure_with_patch:
-        break
+      # Verification doesn't happen if there was an error when looking up GN
+      # args or if the builder was never found in any config file
+      if (builder_data.mb_lookup_error_with_patch or
+          builder_data.mb_config_path not in mb_config_paths):
+        continue
 
       # Setup mb config GN args test data
-      if builder_data.migrated:
-        # Builder already migrated
-        data += api.path.exists(
-            api.path.cache_dir.joinpath('builder',
-                                        'src').joinpath(path_in_repo))
+      if builder_data.already_migrated:
+        data += api.path.exists(api.path.cache_dir / 'builder/src' /
+                                path_in_repo)
         data += api.post_process(post_process.StepTextEquals,
                                  f'verify {bucket}/{builder}/gn-args.json',
-                                 '<br/>builder already migrated, skip.')
+                                 'builder already migrated, skip.')
+        continue
+
+      mb_gn_args = builder_data.mb_gn_args
+      if 'phases' in mb_gn_args:
+        mb_gn_args_and_phase_steps = [
+            (value['gn_args'], f'.phase: {phase}')
+            for phase, value in mb_gn_args['phases'].items()
+        ]
       else:
-        mb_gn_args = builder_data.mb_gn_args
-        if 'phases' in mb_gn_args:
-          for phase, phase_args in mb_gn_args['phases'].items():
-            step_name = (f'verify {bucket}/{builder}/gn-args.json.'
-                         f'phase: {phase}.lookup GN args')
-            if phase == builder_data.mb_lookup_phase_failure:
-              data += api.step_data(step_name, retcode=1, status='FAILURE')
-            else:
-              data += api.step_data(
-                  step_name,
-                  stdout=api.raw_io.output_text(
-                      dict_to_gn_args_str(phase_args['gn_args'])))
-        else:
-          step_name = (f'verify {bucket}/{builder}/gn-args.json.lookup GN args')
-          if builder_data.mb_lookup_failure:
-            data += api.step_data(step_name, retcode=1, status='FAILURE')
-          else:
-            data += api.step_data(
-                step_name,
-                stdout=api.raw_io.output_text(
-                    dict_to_gn_args_str(mb_gn_args['gn_args'])))
+        mb_gn_args_and_phase_steps = [(mb_gn_args['gn_args'], '')]
+
+      for mb_config_path in mb_config_paths:
+        builder_in_config_file = (
+            mb_config_path == builder_data.mb_config_path and
+            not builder_data.builder_added)
+        for gn_args, phase_step in mb_gn_args_and_phase_steps:
+          step_name = (f'verify {bucket}/{builder}/gn-args.json'
+                       f'.check in {mb_config_path}'
+                       f'{phase_step}.mb lookup')
+          # We'll only check a single phase for a builder that's not in the
+          # config file
+          if not builder_in_config_file:
+            data += api.step_data(step_name, retcode=_UNKNOWN_BUILDER_RETCODE)
+            break
+          if builder_data.mb_lookup_error_without_patch:
+            data += api.step_data(step_name, retcode=1)
+            break
+          data += api.step_data(
+              step_name,
+              stdout=api.raw_io.output_text(dict_to_gn_args_str(gn_args)))
+        # Once the config file containing the builder is found, we don't check
+        # remaining files
+        if builder_in_config_file:
+          break
 
     data += api.tryserver.get_files_affected_by_patch(
         [*gn_args_json_paths],
@@ -455,6 +589,7 @@ def GenTests(api):
               group='group1',
               bucket='bucket1',
               builder='builder1',
+              mb_config_path='src/tools/mb/mb_config.pyl',
               sl_gn_args={
                   'gn_args': {
                       'str_arg': 'test1',
@@ -474,6 +609,7 @@ def GenTests(api):
               group='group2',
               bucket='bucket2',
               builder='builder2',
+              mb_config_path='src/internal/tools/mb/mb_config.pyl',
               sl_gn_args={
                   'phases': {
                       'phase1': {
@@ -516,6 +652,7 @@ def GenTests(api):
               group='group1',
               bucket='bucket1',
               builder='builder1',
+              mb_config_path='src/tools/mb/mb_config.pyl',
               sl_gn_args={
                   'gn_args': {
                       'str_arg': 'test1',
@@ -535,6 +672,7 @@ def GenTests(api):
               group='group2',
               bucket='bucket2',
               builder='builder2',
+              mb_config_path='src/internal/tools/mb/mb_config.pyl',
               sl_gn_args={
                   'phases': {
                       'phase1': {
@@ -581,6 +719,7 @@ def GenTests(api):
               group='group1',
               bucket='bucket1',
               builder='builder1',
+              mb_config_path='src/tools/mb/mb_config.pyl',
               sl_gn_args={
                   'gn_args': {
                       'str_arg': 'test1',
@@ -588,7 +727,7 @@ def GenTests(api):
                       'bool_arg': False
                   }
               },
-              migrated=True,
+              already_migrated=True,
           )
       ]),
       api.post_process(post_process.DropExpectation),
@@ -596,134 +735,85 @@ def GenTests(api):
   )
 
   yield api.test(
-      'mb_lookup_failure_without_patch',
+      'builder-not-in-any-config-files',
+      api.buildbucket.try_build(),
+      gn_args_test_data(
+          [
+              BuilderDataEntry(
+                  group='group1', bucket='bucket1', builder='builder1'),
+          ],
+          mb_config_paths=['src/tools/mb/mb_config.pyl'],
+      ),
+      api.post_check(post_process.DoesNotRun, 'bot_update (without patch)'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'mb-lookup-error-with-patch',
       api.buildbucket.try_build(),
       gn_args_test_data([
           BuilderDataEntry(
               group='group1',
               bucket='bucket1',
               builder='builder1',
-              sl_gn_args={
-                  'gn_args': {
-                      'str_arg': 'test1',
-                      'int_arg': 1,
-                      'bool_arg': False
-                  }
-              },
-              mb_lookup_failure=True,
-          ),
-          BuilderDataEntry(
-              group='group2',
-              bucket='bucket2',
-              builder='builder2',
-              sl_gn_args={
-                  'phases': {
-                      'phase1': {
-                          'gn_args': {
-                              'is_phase1': True,
-                          }
-                      },
-                      'phase2': {
-                          'gn_args': {
-                              'is_phase2': True,
-                          }
-                      }
-                  }
-              },
-              mb_gn_args={
-                  'phases': {
-                      'phase1': {
-                          'gn_args': {
-                              'is_phase1': True,
-                          }
-                      },
-                      'phase2': {}
-                  }
-              },
-              mb_lookup_phase_failure='phase2'),
+              mb_config_path='src/tools/mb/mb_config.pyl',
+              mb_lookup_error_with_patch=True),
       ]),
-      api.post_process(post_process.StepSuccess,
-                       'verify bucket1/builder1/gn-args.json'),
-      api.post_process(post_process.StepTextEquals,
-                       'verify bucket1/builder1/gn-args.json',
-                       '<br/>could not load GN args from mb config, skip.'),
-      api.post_process(post_process.StepSuccess,
-                       'verify bucket2/builder2/gn-args.json.phase: phase2'),
-      api.post_process(post_process.StepTextEquals,
-                       'verify bucket2/builder2/gn-args.json.phase: phase2',
-                       '<br/>could not load GN args from mb config, skip.'),
+      api.post_check(post_process.DoesNotRun, 'bot_update (without patch)'),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'mb-lookup-error-without-patch',
+      api.buildbucket.try_build(),
+      gn_args_test_data([
+          BuilderDataEntry(
+              group='group1',
+              bucket='bucket1',
+              builder='builder1',
+              mb_config_path='src/tools/mb/mb_config.pyl',
+              sl_gn_args={'gn_args': {}},
+              mb_lookup_error_without_patch=True),
+      ]),
+      api.post_process(post_process.DropExpectation),
+      status='FAILURE',
+  )
+
+  yield api.test(
+      'added-builder',
+      api.buildbucket.try_build(),
+      gn_args_test_data([
+          BuilderDataEntry(
+              group='group1',
+              bucket='bucket1',
+              builder='builder1',
+              mb_config_path='src/tools/mb/mb_config.pyl',
+              builder_added=True,
+          )
+      ]),
+      api.post_check(post_process.StepTextEquals,
+                     'verify bucket1/builder1/gn-args.json',
+                     "new builder: wasn't present in any config file"),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
   )
 
   yield api.test(
-      'mb_lookup_failure_with_patch_non_phased',
+      'removed-builder',
       api.buildbucket.try_build(),
-      gn_args_test_data([
-          BuilderDataEntry(
-              group='group1',
-              bucket='bucket1',
-              builder='builder1',
-              mb_lookup_failure_with_patch=True),
-      ]),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE',
-  )
-
-  yield api.test(
-      'mb_lookup_failure_with_patch_phased',
-      api.buildbucket.try_build(),
-      gn_args_test_data([
-          BuilderDataEntry(
-              group='group2',
-              bucket='bucket2',
-              builder='builder2',
-              mb_lookup_failure_with_patch=True,
-              sl_gn_args={
-                  'phases': {
-                      'phase1': {
-                          'gn_args': {
-                              'is_phase1': True,
-                          }
-                      },
-                      'phase2': {
-                          'gn_args': {
-                              'is_phase2': True,
-                          }
-                      }
-                  }
-              },
-              mb_gn_args={
-                  'phases': {
-                      'phase1': {
-                          'gn_args': {
-                              'is_phase1': True,
-                          }
-                      },
-                      'phase2': {
-                          'gn_args': {
-                              'is_phase2': True,
-                          }
-                      }
-                  }
-              },
-          ),
-      ]),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE',
-  )
-
-  yield api.test(
-      'add_and_remove_builders',
-      api.buildbucket.try_build(),
-      gn_args_test_data([
-          BuilderDataEntry(
-              group='group1',
-              bucket='bucket1',
-              builder='builder1',
-              builder_removed=True,
-          )
-      ]),
+      gn_args_test_data(
+          [
+              BuilderDataEntry(
+                  group='group1',
+                  bucket='bucket1',
+                  builder='builder1',
+                  builder_removed=True,
+              )
+          ],
+          mb_config_paths=['src/tools/mb/mb_config.pyl'],
+      ),
       api.post_process(post_process.DropExpectation),
       status='SUCCESS',
   )
@@ -754,5 +844,5 @@ def GenTests(api):
   yield api.test(
       'mb-config-paths-not-set',
       api.buildbucket.try_build(),
-      invalid_properties('mb_config_paths is not set'),
+      invalid_properties('mb_config_paths is empty'),
   )
