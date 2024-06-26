@@ -193,6 +193,7 @@ def _get_post_patch_gn_args(
       should already be checked out, with the patch from the CL applied.
     step_name: The name of the step to use for getting the GN args.
     builder_id: The ID of the builder to get GN args for.
+    gn_args_json: The json decoded contents of the builder's gn_args.json file.
     mb_config_paths: The paths to the MB config files to try to look up the
       builder's GN args in. The paths are relative to checkout_dir. It is an
       error if the builder isn't present in any of the config files.
