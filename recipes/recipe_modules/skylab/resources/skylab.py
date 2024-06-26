@@ -201,11 +201,13 @@ def read_ctp_results(opts):
 
   res = {}
   for k, v in sharded_resp.items():
+    task_result = v.task_results[-1]
+
     # The field name should align with TestRunner defined in ../test_runner.py.
     res[k] = {
-        'url': v.task_results[0].task_url,
-        'log_url': v.task_results[0].log_data.testhaus_url,
-        'status': _check_build_status(v.task_results[0].task_url, opts),
+        'url': task_result.task_url,
+        'log_url': task_result.log_data.testhaus_url,
+        'status': _check_build_status(task_result.task_url, opts),
     }
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
