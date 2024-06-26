@@ -1282,42 +1282,20 @@ class ChromiumApi(recipe_api.RecipeApi):
     lookup_test_data = 'target_cpu = "x86"\n'
     if use_reclient:
       lookup_test_data += 'use_remoteexec = true\n'
-    try:
-      result = self.run_mb_cmd(
-          name,
-          'lookup',
-          builder_id,
-          mb_path=mb_path,
-          mb_config_path=mb_config_path,
-          chromium_config=chromium_config,
-          phase=phase,
-          android_version_code=android_version_code,
-          android_version_name=android_version_name,
-          additional_args=additional_args,
-          stdout=self.m.raw_io.output_text(),
-          step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-              lookup_test_data))
-    # TODO(crbug.com/1429167) - Removing the block below when we don't
-    # need to check earlier commits in Pinpoint. Let's aim at M114
-    except self.m.step.StepFailure:
-      if builder_id.group != 'chromium.perf.pinpoint':
-        raise
-      pinpoint_builder = chromium.BuilderId.create_for_group(
-          'chromium.perf', builder_id.builder)
-      result = self.run_mb_cmd(
-          name,
-          'lookup',
-          pinpoint_builder,
-          mb_path=mb_path,
-          mb_config_path=mb_config_path,
-          chromium_config=chromium_config,
-          phase=phase,
-          android_version_code=android_version_code,
-          android_version_name=android_version_name,
-          additional_args=additional_args,
-          stdout=self.m.raw_io.output_text(),
-          step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-              lookup_test_data))
+    result = self.run_mb_cmd(
+        name,
+        'lookup',
+        builder_id,
+        mb_path=mb_path,
+        mb_config_path=mb_config_path,
+        chromium_config=chromium_config,
+        phase=phase,
+        android_version_code=android_version_code,
+        android_version_name=android_version_name,
+        additional_args=additional_args,
+        stdout=self.m.raw_io.output_text(),
+        step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+            lookup_test_data))
 
     gn_args = result.stdout
     reformatted_gn_args = self.m.gn.reformat_args(gn_args)
@@ -1411,31 +1389,11 @@ class ChromiumApi(recipe_api.RecipeApi):
     mb_args.append(build_dir)
 
     name = name or 'generate_build_files'
-    try:
-      with self.mb_failure_handler(name):
-        result = self.run_mb_cmd(
-            name,
-            'gen',
-            builder_id,
-            mb_path=mb_path,
-            mb_config_path=mb_config_path,
-            phase=phase,
-            android_version_code=android_version_code,
-            android_version_name=android_version_name,
-            additional_args=mb_args,
-            step_test_data=step_test_data,
-            **kwargs)
-    except Exception:
-      if builder_id.group != 'chromium.perf.pinpoint':
-        raise
-      # TODO(crbug.com/1429167) - Removing the block below when we don't
-      # need to check earlier commits in Pinpoint. Let's aim at M114
-      pinpoint_builder = chromium.BuilderId.create_for_group(
-          'chromium.perf', builder_id.builder)
+    with self.mb_failure_handler(name):
       result = self.run_mb_cmd(
           name,
           'gen',
-          pinpoint_builder,
+          builder_id,
           mb_path=mb_path,
           mb_config_path=mb_config_path,
           phase=phase,
