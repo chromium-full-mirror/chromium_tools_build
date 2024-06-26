@@ -11,10 +11,11 @@ from collections.abc import Iterable
 import contextlib
 import difflib
 import re
+import typing
 
+from recipe_engine import config_types
 from recipe_engine import post_process
 from recipe_engine import recipe_test_api
-from recipe_engine.config_types import Path
 from recipe_engine.engine_types import StepPresentation
 
 from RECIPE_MODULES.build import proto_validation
@@ -105,9 +106,7 @@ def RunSteps(api, properties):
             gn_args_json_by_file_path[file_path] = api.file.read_json(
                 f'read {file_path}', repo_path / f)
 
-    # For non-phased builders, there will only be a single entry in the leaf
-    # dicts, with None as the key
-    gn_args_by_phase_by_builder_id: dict[BuilderId, dict[str | None, str]] = {}
+    gn_args_by_phase_by_builder_id: dict[BuilderId, _GnArgsByPhase] = {}
     file_path_by_builder_id = {}
     for file_path, gn_args_json in gn_args_json_by_file_path.items():
       builder_id = BuilderId.create_for_group(
@@ -115,17 +114,13 @@ def RunSteps(api, properties):
           file_path.split('/')[1])
       file_path_by_builder_id[builder_id] = file_path
 
-      with api.step.nest(file_path):
-        phases = gn_args_json.get('phases') or [None]
-        gn_args_by_phase = {}
-        for phase in phases:
-          suffix = '' if phase is None else f', phase: {phase}'
-          gn_args_by_phase[phase] = api.chromium.mb_lookup(
-              builder_id,
-              name=f'mb lookup - {builder_id}{suffix}',
-              mb_config_path=mb_config_path,
-              phase=phase,
-          )
+      gn_args_by_phase = _get_post_patch_gn_args(
+          api,
+          file_path,
+          builder_id,
+          gn_args_json,
+          mb_config_path,
+      )
 
       gn_args_by_phase_by_builder_id[builder_id] = gn_args_by_phase
 
@@ -135,38 +130,25 @@ def RunSteps(api, properties):
 
   # Verify each builder.
   failures = []
+
   for builder_id, gn_args_by_phase in gn_args_by_phase_by_builder_id.items():
-    with api.step.nest(
-        f'verify {file_path_by_builder_id[builder_id]}') as presentation:
-      if api.path.exists(builder_config_root /
-                         file_path_by_builder_id[builder_id]):
-        presentation.step_text = '\nbuilder already migrated, skip.'
-        continue
+    file_path = file_path_by_builder_id[builder_id]
+    step_name = f'verify {file_path}'
+    if api.path.exists(builder_config_root / file_path):
+      api.step.empty(
+          name=step_name, step_text='\nbuilder already migrated, skip.')
+      continue
 
-      success = True
+    success = _verify_gn_args(
+        api,
+        step_name,
+        builder_id,
+        gn_args_by_phase,
+        mb_config_path,
+    )
 
-      for phase, post_patch_args in gn_args_by_phase.items():
-        ctx = (
-            contextlib.nullcontext(presentation)
-            if phase is None else api.step.nest(f'phase: {phase}'))
-        with ctx as presentation:
-          try:
-            pre_patch_args = api.chromium.mb_lookup(
-                builder_id,
-                mb_config_path=mb_config_path,
-                phase=phase,
-            )
-          except api.step.StepFailure:
-            presentation.status = api.step.SUCCESS
-            presentation.step_text = (
-                '\ncould not load GN args from mb config, skip.')
-            continue
-          if not _verify_gn_args(api, pre_patch_args, post_patch_args,
-                                 presentation):
-            success = False
-
-      if not success:
-        failures.append(str(builder_id))
+    if not success:
+      failures.append(str(builder_id))
 
   if failures:
     return _result(
@@ -175,8 +157,98 @@ def RunSteps(api, properties):
         header='verification failed for the following builders:')
 
 
-def _verify_gn_args(api, pre_patch_args: str, post_patch_args: str,
-                    presentation: StepPresentation) -> bool:
+class _GnArgsJson(typing.TypedDict, total=False):
+  phases: dict[str, typing.Any]
+
+
+# For non-phased builders, there will only be a single entry  with None as the
+# key
+_GnArgsByPhase = dict[str | None, str]
+
+
+def _get_post_patch_gn_args(
+    api,
+    step_name: str,
+    builder_id: BuilderId,
+    gn_args_json: _GnArgsJson,
+    mb_config_path: config_types.Path,
+) -> _GnArgsByPhase:
+  """Get a builder's GN args with the patch applied.
+
+  Args:
+    api: The recipe API object.
+    step_name: The name of the step to use for getting the GN args.
+    builder_id: The ID of the builder to get GN args for.
+    gn_args_json: The json decoded contents of the builder's gn_args.json file.
+    mb_config_paths: The path to the MB config files to try to look up the
+      builder's GN args in.
+  """
+  with api.step.nest(step_name):
+    phases = gn_args_json.get('phases') or [None]
+    gn_args_by_phase = {}
+    for phase in phases:
+      suffix = '' if phase is None else f', phase: {phase}'
+      gn_args_by_phase[phase] = api.chromium.mb_lookup(
+          builder_id,
+          name=f'mb lookup - {builder_id}{suffix}',
+          mb_config_path=mb_config_path,
+          phase=phase,
+      )
+
+  return gn_args_by_phase
+
+
+def _verify_gn_args(
+    api,
+    step_name: str,
+    builder_id: BuilderId,
+    post_patch_gn_args_by_phase: _GnArgsByPhase,
+    mb_config_path: config_types.Path,
+) -> bool:
+  """Get a builder's GN args with the patch applied.
+
+  Args:
+    api: The recipe API object.
+    step_name: The name of the step to use for the verification.
+    builder_id: The ID of the builder to verify GN args for.
+    post_patch_gn_args_by_phase: The GN args for the builder with the patch
+      applied for each phase.
+    mb_config_path: The path to the MB config file to look up the builder's GN
+      args in.
+
+  Returns:
+    True if the verification succeeds (the GN args for each phase are equal or
+    the builder doesn't exist in any of the config files). False if the
+    verifications fails (there is a difference in GN args).
+  """
+  with api.step.nest(step_name) as presentation:
+    success = True
+
+    for phase, post_patch_args in post_patch_gn_args_by_phase.items():
+      ctx = (
+          contextlib.nullcontext(presentation)
+          if phase is None else api.step.nest(f'phase: {phase}'))
+      with ctx as presentation:
+        try:
+          pre_patch_args = api.chromium.mb_lookup(
+              builder_id,
+              mb_config_path=mb_config_path,
+              phase=phase,
+          )
+        except api.step.StepFailure:
+          presentation.status = api.step.SUCCESS
+          presentation.step_text = (
+              '\ncould not load GN args from mb config, skip.')
+          continue
+        if not _compare_gn_args(api, pre_patch_args, post_patch_args,
+                                presentation):
+          success = False
+
+  return success
+
+
+def _compare_gn_args(api, pre_patch_args: str, post_patch_args: str,
+                     presentation: StepPresentation) -> bool:
   pre_patch_args_lines = pre_patch_args.splitlines()
   post_patch_args_lines = post_patch_args.splitlines()
   diff = list(
