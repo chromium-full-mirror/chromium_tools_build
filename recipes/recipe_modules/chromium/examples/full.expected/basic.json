@@ -1,155 +1,5 @@
 [
   {
-    "cmd": [],
-    "name": "builder cache",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@builder cache is absent, expect a slow build@@@",
-      "@@@SET_BUILD_PROPERTY@is_cached@false@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "listdir",
-      "[CACHE]/builder"
-    ],
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "builder cache.check if empty",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_END@listdir@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "gclient config",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@config@{@@@",
-      "@@@STEP_LOG_LINE@config@  \"BUILDSPEC_VERSION\": null,@@@",
-      "@@@STEP_LOG_LINE@config@  \"USE_MIRROR\": true,@@@",
-      "@@@STEP_LOG_LINE@config@  \"cache_dir\": \"[CACHE]/git\",@@@",
-      "@@@STEP_LOG_LINE@config@  \"delete_unversioned_trees\": true,@@@",
-      "@@@STEP_LOG_LINE@config@  \"deps_os\": {},@@@",
-      "@@@STEP_LOG_LINE@config@  \"got_revision_mapping\": {},@@@",
-      "@@@STEP_LOG_LINE@config@  \"got_revision_reverse_mapping\": {@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_angle_revision\": \"src/third_party/angle\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_buildtools_revision\": \"src/buildtools\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_dawn_revision\": \"src/third_party/dawn\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_nacl_revision\": \"src/native_client\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_revision\": \"src\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_swiftshader_revision\": \"src/third_party/swiftshader\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_v8_revision\": \"src/v8\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"got_webrtc_revision\": \"src/third_party/webrtc\"@@@",
-      "@@@STEP_LOG_LINE@config@  },@@@",
-      "@@@STEP_LOG_LINE@config@  \"hooks\": [],@@@",
-      "@@@STEP_LOG_LINE@config@  \"parent_got_revision_mapping\": {@@@",
-      "@@@STEP_LOG_LINE@config@    \"parent_got_angle_revision\": \"angle_revision\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"parent_got_dawn_revision\": \"dawn_revision\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"parent_got_nacl_revision\": \"nacl_revision\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"parent_got_revision\": null,@@@",
-      "@@@STEP_LOG_LINE@config@    \"parent_got_swiftshader_revision\": \"swiftshader_revision\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"parent_got_v8_revision\": \"v8_revision\",@@@",
-      "@@@STEP_LOG_LINE@config@    \"parent_got_webrtc_revision\": \"webrtc_revision\"@@@",
-      "@@@STEP_LOG_LINE@config@  },@@@",
-      "@@@STEP_LOG_LINE@config@  \"repo_path_map\": {@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/angle/angle\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/angle\",@@@",
-      "@@@STEP_LOG_LINE@config@      null@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/catapult\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/catapult\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/buildtools\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/buildtools\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/deps/flac\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/flac\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/deps/icu\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/icu\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/chromium/src\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src\",@@@",
-      "@@@STEP_LOG_LINE@config@      null@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/devtools/devtools-frontend\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/devtools-frontend/src\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://chromium.googlesource.com/v8/v8\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/v8\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://dawn.googlesource.com/dawn\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/dawn\",@@@",
-      "@@@STEP_LOG_LINE@config@      null@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://pdfium.googlesource.com/pdfium\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/pdfium\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://skia.googlesource.com/skia\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/skia\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://swiftshader.googlesource.com/SwiftShader/\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/swiftshader\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"refs/heads/master\"@@@",
-      "@@@STEP_LOG_LINE@config@    ],@@@",
-      "@@@STEP_LOG_LINE@config@    \"https://webrtc.googlesource.com/src\": [@@@",
-      "@@@STEP_LOG_LINE@config@      \"src/third_party/webrtc\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"HEAD\"@@@",
-      "@@@STEP_LOG_LINE@config@    ]@@@",
-      "@@@STEP_LOG_LINE@config@  },@@@",
-      "@@@STEP_LOG_LINE@config@  \"revisions\": {},@@@",
-      "@@@STEP_LOG_LINE@config@  \"solutions\": [@@@",
-      "@@@STEP_LOG_LINE@config@    {@@@",
-      "@@@STEP_LOG_LINE@config@      \"custom_deps\": {},@@@",
-      "@@@STEP_LOG_LINE@config@      \"custom_vars\": {@@@",
-      "@@@STEP_LOG_LINE@config@        \"checkout_telemetry_dependencies\": \"False\"@@@",
-      "@@@STEP_LOG_LINE@config@      },@@@",
-      "@@@STEP_LOG_LINE@config@      \"deps_file\": \".DEPS.git\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"managed\": true,@@@",
-      "@@@STEP_LOG_LINE@config@      \"name\": \"src\",@@@",
-      "@@@STEP_LOG_LINE@config@      \"revision\": null,@@@",
-      "@@@STEP_LOG_LINE@config@      \"safesync_url\": null,@@@",
-      "@@@STEP_LOG_LINE@config@      \"url\": \"https://chromium.googlesource.com/chromium/src.git\"@@@",
-      "@@@STEP_LOG_LINE@config@    }@@@",
-      "@@@STEP_LOG_LINE@config@  ],@@@",
-      "@@@STEP_LOG_LINE@config@  \"target_cpu\": [],@@@",
-      "@@@STEP_LOG_LINE@config@  \"target_cpu_only\": false,@@@",
-      "@@@STEP_LOG_LINE@config@  \"target_os\": [],@@@",
-      "@@@STEP_LOG_LINE@config@  \"target_os_only\": false,@@@",
-      "@@@STEP_LOG_LINE@config@  \"with_branch_heads\": false,@@@",
-      "@@@STEP_LOG_LINE@config@  \"with_tags\": false@@@",
-      "@@@STEP_LOG_LINE@config@}@@@",
-      "@@@STEP_LOG_END@config@@@"
-    ]
-  },
-  {
     "cmd": [
       "vpython3",
       "-u",
@@ -167,8 +17,7 @@
       "--revision",
       "src@2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--refs",
-      "refs/heads/main",
-      "--no_fetch_tags"
+      "refs/heads/main"
     ],
     "cwd": "[CACHE]/builder",
     "env": {
@@ -342,22 +191,6 @@
     ]
   },
   {
-    "cmd": [],
-    "name": "set rdb sources"
-  },
-  {
-    "cmd": [],
-    "name": "set rdb sources.missing gitiles commit info",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@gitiles_commit@@@@",
-      "@@@STEP_LOG_END@gitiles_commit@@@",
-      "@@@STEP_LOG_LINE@gerrit_changes@[]@@@",
-      "@@@STEP_LOG_END@gerrit_changes@@@",
-      "@@@SET_BUILD_PROPERTY@failed_rdb_invocation_update@true@@@"
-    ]
-  },
-  {
     "cmd": [
       "vpython3",
       "-u",
@@ -387,40 +220,6 @@
       }
     },
     "name": "gclient runhooks"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CACHE]/builder/src/testing/buildbot/fake-group.json",
-      "/path/to/tmp/"
-    ],
-    "env": {
-      "CHROME_HEADLESS": "1"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "chromium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "read test spec (fake-group.json)",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@path: [CACHE]/builder/src/testing/buildbot/fake-group.json@@@",
-      "@@@STEP_LOG_LINE@fake-group.json@{}@@@",
-      "@@@STEP_LOG_END@fake-group.json@@@"
-    ]
   },
   {
     "cmd": [

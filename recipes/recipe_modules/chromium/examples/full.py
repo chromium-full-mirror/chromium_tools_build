@@ -8,15 +8,16 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 DEPS = [
     'chromium',
-    'chromium_tests',
-    'chromium_tests_builder_config',
+    'reclient',
+    'siso',
+    'depot_tools/bot_update',
+    'depot_tools/gclient',
+    'recipe_engine/context',
     'recipe_engine/json',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
-    'reclient',
-    'siso',
 ]
 
 
@@ -25,20 +26,25 @@ def RunSteps(api):
   resource_usage_output_file = api.properties.get('resource_usage_output_file',
                                                   None)
 
-  configs = api.properties.get('configs', [])
+  api.gclient.set_config('chromium')
+  for c in api.properties.get('gclient_configs', []):
+    api.gclient.apply_config(c)
+  api.chromium.set_config('chromium',
+                          **api.properties.get('chromium_config_kwargs', {}))
+  for c in api.properties.get('chromium_configs', []):
+    api.chromium.apply_config(c)
+
   assert api.chromium.build_properties == None
 
   with api.chromium.chromium_layout():
-    builder_id, builder_config = (
-        api.chromium_tests_builder_config.lookup_builder())
-    api.chromium_tests.configure_build(builder_config)
+    builder_id = api.chromium.get_builder_id()
 
     api.chromium.get_build_target_arch()
 
-    for config in configs:
-      api.chromium.apply_config(config)
-
-    api.chromium_tests.prepare_checkout(builder_config, set_output_commit=False)
+    with api.context(cwd=api.path.cache_dir / 'builder'):
+      api.bot_update.ensure_checkout()
+    api.chromium.ensure_toolchains()
+    api.chromium.runhooks()
 
     mb_config_path = api.properties.get('mb_config_path')
 
@@ -55,8 +61,6 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  ctbc_api = api.chromium_tests_builder_config
-
   yield api.test(
       'basic',
       api.chromium.ci_build(
@@ -65,11 +69,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
   )
 
   yield api.test(
@@ -80,11 +79,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
       api.properties(mb_config_path='/custom/config.pyl'),
   )
 
@@ -96,11 +90,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
       api.properties(use_reclient=True),
       api.reclient.properties(),
       api.post_check(
@@ -117,11 +106,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
       api.properties(use_reclient=True),
       api.reclient.properties(),
       api.siso.properties(),
@@ -139,11 +123,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
       api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),
   )
@@ -156,11 +135,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
       api.override_step_data(
           'compile confirm no-op',
           api.raw_io.output_text(
@@ -178,11 +152,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
       api.properties(resource_usage_output_file=api.path.cache_dir /
                      'resource_usage' / 'time_log.txt'),
       api.reclient.properties(),
@@ -200,12 +169,6 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(target_platform='mac'),
   )
 
   yield api.test(
@@ -217,15 +180,7 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(
-          target_platform='mac',
-          configs=['mac_toolchain'],
-      ),
+      api.properties(chromium_configs=['mac_toolchain']),
       api.expect_status('FAILURE'),
   )
 
@@ -238,20 +193,15 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
       api.properties(
-          target_platform='mac',
-          configs=['mac_toolchain'],
+          chromium_configs=['mac_toolchain'],
           xcode_build_version='12345',
       ),
   )
 
+  # Coverage for the chromeos gclient config defined in this module
   yield api.test(
-      'chromeos_simplechrome',
+      'chromeos',
       api.platform('linux', 64),
       api.chromium.ci_build(
           builder_group='chromium.chromiumos',
@@ -259,23 +209,14 @@ def GenTests(api):
           bot_id='build1-a1',
           build_number=77457,
       ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='chromium.chromiumos',
-              builder='chromeos-amd64-generic-rel',
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  gclient_apply_config=['chromeos'],
-                  chromium_config='chromium',
-                  chromium_apply_config=['mb'],
-                  chromium_config_kwargs={
-                      'BUILD_CONFIG': 'Release',
-                      'TARGET_ARCH': 'intel',
-                      'TARGET_BITS': 64,
-                      'TARGET_PLATFORM': 'chromeos',
-                      'CROS_BOARDS_WITH_QEMU_IMAGES': 'amd64-generic-vm',
-                  },
-                  build_gs_bucket='chromium-chromiumos-archive',
-              ),
-          ).assemble()),
+      api.properties(
+          gclient_configs=['chromeos'],
+          chromium_config_kwargs={
+              'BUILD_CONFIG': 'Release',
+              'TARGET_ARCH': 'intel',
+              'TARGET_BITS': 64,
+              'TARGET_PLATFORM': 'chromeos',
+              'CROS_BOARDS_WITH_QEMU_IMAGES': 'amd64-generic-vm',
+          },
+      ),
   )
