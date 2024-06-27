@@ -670,3 +670,71 @@ class IntervalStats:
   # unexpected results (and at least one unexpected result),
   # excluding skips.
   total_run_unexpected_verdicts = attrib(int, default=0)
+
+
+@attrs()
+class StabilityAnalysisPerSuite:
+  """Wraps a list of IndividualTestStabilityAnalysis instances per test suite"""
+  suite_name = attrib(str)
+  # List of IndividualTestStabilityAnalysis
+  stability_analysis_list = attrib(list)
+  # List of failing test_ids, each correlating to an
+  # IndividualTestStabilityAnalysis object in stability_analysis_list
+  test_ids = attrib(set_[str])
+
+  @classmethod
+  def create(cls, suite_name, stability_analysis_list):
+    test_ids = set(analysis.test_id for analysis in stability_analysis_list)
+    return cls(
+        suite_name=suite_name,
+        stability_analysis_list=stability_analysis_list,
+        test_ids=test_ids,
+    )
+
+  def append_stability_analysis(self, stability_analysis):
+    """Append an IndividualTestStabilityAnalysis
+
+    Will assert that there is not already a stability_analysis for the same test
+
+    Args:
+      failure_analysis: An IndividualTestStabilityAnalysis instance to add
+    """
+    test_id = stability_analysis.test_id
+    assert_msg = 'Already have an IndividualTestStabilityAnalysis for {}'
+    assert test_id not in self.test_ids, assert_msg.format(test_id)
+    self.stability_analysis_list.append(stability_analysis)
+
+
+@attrs()
+class IndividualTestStabilityAnalysis:
+  # Full test ID.
+  # Consists of a suite prefix + the test_name
+  # e.g. ninja://gpu:gpu_unittests/FeatureInfoTest.Basic/Service.0
+  test_id = attrib(str)
+  # Name of test
+  # e.g. FeatureInfoTest.Basic/Service.0
+  test_name = attrib(str)
+  suite_name = attrib(str)
+  variant_hash = attrib(str)
+
+  failure_rate_is_met = attrib(bool)
+  flake_rate_is_met = attrib(bool)
+
+  run_flaky_verdicts_1wd = attrib(int)
+  run_flaky_verdicts_12h = attrib(int)
+
+  @classmethod
+  def create(cls, stability_analysis, suite_name, test_name):
+    """Wraps a TestVariantStabilityAnalysis instance for one individual test"""
+    return cls(
+        test_id=stability_analysis.test_id,
+        test_name=test_name,
+        suite_name=suite_name,
+        variant_hash=stability_analysis.variant_hash,
+        failure_rate_is_met=stability_analysis.failure_rate.is_met,
+        flake_rate_is_met=stability_analysis.flake_rate.is_met,
+        run_flaky_verdicts_1wd=(
+            stability_analysis.flake_rate.run_flaky_verdicts_1wd),
+        run_flaky_verdicts_12h=(
+            stability_analysis.flake_rate.run_flaky_verdicts_12h),
+    )
