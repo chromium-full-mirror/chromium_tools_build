@@ -11,6 +11,7 @@ from recipe_engine.config_types import Path
 # GCS bucket for Siso reports.
 _GS_BUCKET = 'chrome-build-logs'
 
+_TIME_CMD = '/usr/bin/time'
 
 class SisoApi(recipe_api.RecipeApi):
   """A module for interacting with siso."""
@@ -42,6 +43,7 @@ class SisoApi(recipe_api.RecipeApi):
                 siso_args=None,
                 post_step_func=None,
                 skip_log_upload=False,
+                resource_usage_output_file=None,
                 **kwargs):
     """Run the ninja command with siso.
 
@@ -53,6 +55,8 @@ class SisoApi(recipe_api.RecipeApi):
           siso_args: siso arguments.
           post_step_func: a function that runs on the step result.
           skip_log_upload: When true skip log.
+          resource_usage_output_file: File which if provided will
+            record the resource usage stats related to build step.
 
         Returns:
           step_data.StepData of the build step.
@@ -61,17 +65,27 @@ class SisoApi(recipe_api.RecipeApi):
           - InfraFailure when an unexpected failure occured.
     """
     assert self.enabled, 'siso is not enabled'
-
     self._assert_ninja_command(ninja_command)
+
+    cmd = []
+
+    if resource_usage_output_file:
+      cmd.extend([
+          _TIME_CMD,
+          '--format={"ru_utime": %U}',
+          '-o',
+          resource_usage_output_file,
+      ])
+
     ninja_dir = self._ninja_dir(ninja_command)
-    cmd = [
+    cmd.extend([
         self.siso_path(source_dir),
         'ninja',
         '--project',
         self._props.project,
         '--job_id',
         self.m.buildbucket.build.id,
-    ]
+    ])
     if not skip_log_upload:
       cmd.append('--enable_cloud_logging')
     if self._props.reapi_address:

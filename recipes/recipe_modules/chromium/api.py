@@ -401,6 +401,7 @@ class ChromiumApi(recipe_api.RecipeApi):
             name=name,
             step_test_data=step_test_data,
             skip_log_upload=skip_log_upload,
+            resource_usage_output_file=resource_usage_output_file,
             **kwargs)
       else:
         cmd = [

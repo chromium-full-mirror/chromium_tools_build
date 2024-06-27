@@ -24,6 +24,8 @@ def RunSteps(api):
         ninja_env=env,
         name=api.properties.get('name', 'compile'),
         siso_args=api.properties.get('siso_args'),
+        resource_usage_output_file=api.properties.get(
+            'resource_usage_output_file', None),
         post_step_func=lambda s: s,
     )
   with api.siso.disable():
@@ -121,5 +123,20 @@ def GenTests(api):
       'fail_if_reapi_used',
       api.properties(build_command=['ninja']),
       api.siso.properties(fail_if_reapi_used=True),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'resource_usage',
+      api.properties(
+          build_command=['ninja', '-C', 'out/Release'],
+          resource_usage_output_file=api.path.cache_dir /
+          'resource_usage.json'),
+      api.siso.properties(),
+      api.post_process(post_process.StepCommandContains, 'compile', [
+          '/usr/bin/time', '--format={"ru_utime": %U}', '-o',
+          '[CACHE]/resource_usage.json',
+          '[CACHE]/builder/src/third_party/siso/siso', 'ninja'
+      ]),
       api.post_process(post_process.DropExpectation),
   )
