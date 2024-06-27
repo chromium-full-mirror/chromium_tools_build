@@ -897,17 +897,6 @@ class ChromiumApi(recipe_api.RecipeApi):
         self.m.cipd.EnsureFile().add_package(cipd_pkg, pkg_version))
     return cipd_root / cmd
 
-  # TODO(crbug.com/797051): remove this when the old "hermetic" flow is
-  # no longer used.
-  def delete_old_mac_toolchain(self):
-    """Remove the old "hermetic" toolchain cache.
-
-    This is to expose any lingering dependencies on the old cache.
-    """
-    old_cache = self.m.path.checkout_dir.joinpath(
-        'build', '%s_files' % self.m.chromium.c.TARGET_PLATFORM)
-    self.m.file.rmtree('delete deprecated Xcode cache', old_cache)
-
   def ensure_mac_toolchain(self, checkout_dir=None):
     if not self.c.mac_toolchain.enabled or self.c.HOST_PLATFORM != 'mac':
       return
@@ -934,8 +923,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     with self.m.step.nest('ensure xcode') as step_result:
       step_result.step_text = ('Ensuring Xcode version %s in %s' %
                                (xcode_build_version, xcode_app_path))
-
-      self.delete_old_mac_toolchain()
 
       mac_toolchain_cmd = self.get_mac_toolchain_installer()
       install_args = [
