@@ -492,6 +492,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           with the builder_id's gn args
         build_dir: Path to the directory to use for building
         builder_recipe: The recipe normally run by the requested builder
+    Returns tuple of (a RawResult object for the compile or None if it was
+        skipped, a boolean indicating if the *.isolate files were generated)
     """
     targets = list(itertools.chain(*[t.compile_targets() for t in tests]))
 
@@ -514,9 +516,9 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     # If we can use mb_gen it is preferable but if a gn arg needs to be removed
     # or we've been asked to preserve whatever is in the build dir's existing
     # args.gn file then fall back to using gn gen and handling the gn args here
-    if gn_args_to_remove or gn_args_to_update:
-      preserve_gn_args = True
-    if preserve_gn_args:
+    missing_isolates = (
+        preserve_gn_args or gn_args_to_remove or gn_args_to_update)
+    if missing_isolates:
       if not self.m.path.exists(build_dir / 'args.gn'):
         gn_args = self.m.chromium.mb_lookup(
             builder_id, recursive=False, name='lookup_builder_gn_args')
@@ -548,6 +550,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           build_dir=build_dir,
           isolated_targets=tests_to_isolate)
 
+    # Some tests don't require anything to be compiled.
+    if not targets:
+      return None, not missing_isolates
+
     use_reclient = self.get_remote_compile_options(build_dir, properties)
 
     if use_reclient:
@@ -565,7 +571,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           targets,
           skip_log_upload=True,
           build_dir=build_dir,
-          use_reclient=use_reclient), preserve_gn_args
+          use_reclient=use_reclient), not missing_isolates
 
     if properties.no_siso:
       with self.m.siso.disable():
@@ -627,13 +633,13 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return None, tests
 
     if should_build:
-      raw_result, preserve_gn_args = self.compile_targets(
+      raw_result, generated_isolates = self.compile_targets(
           properties, tests, builder_id, preserve_gn_args, build_dir,
           builder_recipe)
-      if raw_result.status != common_pb2.SUCCESS:
+      if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
     skylab_tests = [test for test in tests if test.is_skylabtest]
-    if not should_build or preserve_gn_args or skylab_tests:
+    if not should_build or not generated_isolates or skylab_tests:
       # When compiling, "mb.py gen" will produce the *.isolate files for us. In
       # all other instances, we need to ask mb.py to do so specifically. Do so
       # for *all* possible targets. This shouldn't take much longer, and

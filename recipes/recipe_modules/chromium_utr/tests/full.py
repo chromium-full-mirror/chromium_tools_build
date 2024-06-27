@@ -684,6 +684,23 @@ target_os=['os']
   )
 
   yield api.test(
+      'ScriptTest_skips_compile',
+      boilerplate(
+          test_names=['check_network_annotations'],
+          target_spec={
+              'fake-tester': {
+                  'scripts': [{
+                      'name': 'check_network_annotations',
+                      'script': 'check_network_annotations.py',
+                  }],
+              }
+          },
+      ),
+      api.post_process(post_process.DoesNotRun, 'compile'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
       'disabled_remote_options',
       boilerplate(no_rbe=True, no_siso=True),
       api.post_process(post_process.MustRun, 'generate .isolate files'),
