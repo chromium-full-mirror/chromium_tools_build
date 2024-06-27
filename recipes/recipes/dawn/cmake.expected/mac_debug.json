@@ -1,0 +1,748 @@
+[
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/uncached"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "init cache if not exists"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::bot_update]/resources/bot_update.py",
+      "--spec-path",
+      "cache_dir = '[CACHE]/git'\nsolutions = [{'custom_vars': {'dawn_node': 'True', 'dawn_root': 'dawn', 'download_remoteexec_cfg': 'True', 'fetch_cmake': 'True', 'rbe_instance': 'projects/test-rbe-project/instances/default_instance'}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'dawn', 'url': 'https://dawn.googlesource.com/dawn.git'}]",
+      "--revision_mapping_file",
+      "{\"got_revision\": \"dawn\"}",
+      "--git-cache-dir",
+      "[CACHE]/git",
+      "--cleanup-dir",
+      "[CLEANUP]/bot_update",
+      "--output_json",
+      "/path/to/tmp/json",
+      "--revision",
+      "dawn@2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--refs",
+      "refs/heads/main"
+    ],
+    "cwd": "[CACHE]/uncached",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184",
+      "GIT_BACKENDINFO": "1",
+      "GIT_DAPPER_TRACE": "1",
+      "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
+      "GIT_HTTP_LOW_SPEED_TIME": "1800",
+      "GIT_SSH_COMMAND": "ssh -o SendEnv=GIT_DAPPER_TRACE -o SendEnv=GIT_BACKENDINFO",
+      "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
+      "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
+      "GIT_TRACE_CURL_NO_DATA": "1",
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+    },
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "bot_update",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Some step text@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"did_run\": true,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"fixed_revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dawn\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"repository\": \"https://fake.org/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"patch_root\": null,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"got_revision_cp\": \"refs/heads/main@{#120015}\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"root\": \"dawn\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"source_manifest\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"directories\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"dawn\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"git_checkout\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"repo_url\": \"https://fake.org/dawn.git\",@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"revision\": \"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"version\": 0@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"step_text\": \"Some step text\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision@\"2d72510e447ab60a9728aeea2362d8be2cbd7789\"@@@",
+      "@@@SET_BUILD_PROPERTY@got_revision_cp@\"refs/heads/main@{#120015}\"@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gclient.py",
+      "runhooks"
+    ],
+    "cwd": "[CACHE]/uncached",
+    "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/mac/8945511751514863184"
+    },
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gclient runhooks"
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/osx_sdk",
+      "-ensure-file",
+      "infra/tools/mac_toolchain/${platform} git_revision:26bb3effce1bc1896a3776c21b84e76ae82c3917",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure_installed",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-git_revision:26b\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"infra/tools/mac_toolchain/resolved-platform\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "sw_vers",
+      "-productVersion"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "find macOS version",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Running on '14.4'.@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/osx_sdk/mac_toolchain",
+      "install",
+      "-kind",
+      "mac",
+      "-xcode-version",
+      "15e204a",
+      "-output-dir",
+      "[CACHE]/osx_sdk/XCode.app"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "install xcode"
+  },
+  {
+    "cmd": [
+      "sudo",
+      "xcode-select",
+      "--switch",
+      "[CACHE]/osx_sdk/XCode.app"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "select XCode"
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=DEBUG",
+      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_WERROR=1",
+      "-DDAWN_USE_BUILT_DXC=0",
+      "-DTINT_BUILD_SPV_READER=1",
+      "-DTINT_BUILD_WGSL_READER=1",
+      "-DTINT_BUILD_GLSL_WRITER=1",
+      "-DTINT_BUILD_HLSL_WRITER=1",
+      "-DTINT_BUILD_MSL_WRITER=1",
+      "-DTINT_BUILD_SPV_WRITER=1",
+      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=0",
+      "-DTINT_BUILD_AS_OTHER_OS=0"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.CMake generate step for default targets",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "--build",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "--parallel",
+      "--target",
+      "all"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets.Compile default targets",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build default targets with dawn.node enabled"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=DEBUG",
+      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_WERROR=1",
+      "-DDAWN_USE_BUILT_DXC=0",
+      "-DTINT_BUILD_SPV_READER=1",
+      "-DTINT_BUILD_WGSL_READER=1",
+      "-DTINT_BUILD_GLSL_WRITER=1",
+      "-DTINT_BUILD_HLSL_WRITER=1",
+      "-DTINT_BUILD_MSL_WRITER=1",
+      "-DTINT_BUILD_SPV_WRITER=1",
+      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=1",
+      "-DTINT_BUILD_AS_OTHER_OS=0"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.CMake generate step for default targets with dawn.node enabled",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "--build",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "--parallel",
+      "--target",
+      "dawn.node"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build default targets with dawn.node enabled.Compile default targets with dawn.node enabled",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/cmake-build/tint_unittests"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run tint_unittests"
+  },
+  {
+    "cmd": [
+      "./tools/run",
+      "tests",
+      "--tint",
+      "cmake-build/tint",
+      "--verbose",
+      "--format",
+      "wgsl,spvasm,msl,hlsl"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run Tint end-to-end tests"
+  },
+  {
+    "cmd": [
+      "./tools/run",
+      "tests",
+      "--tint",
+      "cmake-build/tint",
+      "--verbose",
+      "--format",
+      "spvasm",
+      "--use-ir"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run Tint end-to-end tests for SPIR-V IR backend"
+  },
+  {
+    "cmd": [],
+    "name": "CMake build _other.cc files"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=DEBUG",
+      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_WERROR=1",
+      "-DDAWN_USE_BUILT_DXC=0",
+      "-DTINT_BUILD_SPV_READER=1",
+      "-DTINT_BUILD_WGSL_READER=1",
+      "-DTINT_BUILD_GLSL_WRITER=1",
+      "-DTINT_BUILD_HLSL_WRITER=1",
+      "-DTINT_BUILD_MSL_WRITER=1",
+      "-DTINT_BUILD_SPV_WRITER=1",
+      "-DTINT_BUILD_WGSL_WRITER=1",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=0",
+      "-DTINT_BUILD_AS_OTHER_OS=1"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.CMake generate step for _other.cc files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "--build",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "--parallel",
+      "--target",
+      "tint_cmd_tint_cmd"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build _other.cc files.Compile _other.cc files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "CMake build disabled readers and writers"
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "-S",
+      "[CACHE]/uncached/dawn",
+      "-B",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "-GNinja",
+      "-DCMAKE_BUILD_TYPE=DEBUG",
+      "-DTINT_BUILD_BENCHMARKS=0",
+      "-DTINT_RANDOMIZE_HASHES=1",
+      "-DDAWN_WERROR=1",
+      "-DDAWN_USE_BUILT_DXC=0",
+      "-DTINT_BUILD_SPV_READER=0",
+      "-DTINT_BUILD_WGSL_READER=0",
+      "-DTINT_BUILD_GLSL_WRITER=0",
+      "-DTINT_BUILD_HLSL_WRITER=0",
+      "-DTINT_BUILD_MSL_WRITER=0",
+      "-DTINT_BUILD_SPV_WRITER=0",
+      "-DTINT_BUILD_WGSL_WRITER=0",
+      "-DDAWN_ENABLE_ASAN=0",
+      "-DDAWN_ENABLE_UBSAN=0",
+      "-DDAWN_BUILD_NODE_BINDINGS=0",
+      "-DTINT_BUILD_AS_OTHER_OS=0"
+    ],
+    "cwd": "[CACHE]/uncached/dawn",
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/third_party/ninja",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.CMake generate step for disabled readers and writers",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/uncached/dawn/tools/cmake/bin/cmake",
+      "--build",
+      "[CACHE]/uncached/dawn/cmake-build",
+      "--parallel",
+      "--target",
+      "tint_cmd_tint_cmd"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "CMake build disabled readers and writers.Compile disabled readers and writers",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "sudo",
+      "xcode-select",
+      "--reset"
+    ],
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools"
+      ]
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "reset XCode"
+  },
+  {
+    "name": "$result"
+  }
+]

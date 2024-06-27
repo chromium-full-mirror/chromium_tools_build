@@ -459,7 +459,7 @@ def RunSteps(api,
         tint_exe = f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
 
         # TODO(crbug.com/tint/2034): Add back glsl once we fix the ~7x slowdown in Windows Debug builds
-        if api.platform.is_win and debug:
+        if (api.platform.is_win or api.platform.is_mac) and debug:
           e2e_test_formats = 'wgsl,spvasm,msl,hlsl'
         else:
           e2e_test_formats = 'wgsl,spvasm,msl,hlsl,glsl'
@@ -535,6 +535,14 @@ def GenTests(api):
       'mac',
       api.reclient.properties(),
       api.platform('mac', 64),
+      api.buildbucket.ci_build(
+          project='dawn', builder='mac', git_repo=DAWN_REPO),
+  )
+  yield api.test(
+      'mac_debug',
+      api.reclient.properties(),
+      api.platform('mac', 64),
+      api.properties(debug=True),
       api.buildbucket.ci_build(
           project='dawn', builder='mac', git_repo=DAWN_REPO),
   )
