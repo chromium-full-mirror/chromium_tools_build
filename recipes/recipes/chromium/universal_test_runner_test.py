@@ -24,6 +24,8 @@ from PB.recipes.build.chromium.universal_test_runner_test import InputProperties
 DEPS = [
     'chromium',
     'chromium_checkout',
+    'chromium_tests',
+    'chromium_tests_builder_config',
     'depot_tools/gclient',
     'depot_tools/git',
     'depot_tools/bot_update',
@@ -197,8 +199,8 @@ def checkout(api: RecipeApi):
     infra/infra.git checkout). The src checkout can be accessed at
     `api.chromium_checkout.source_dir`.
   """
-  api.gclient.set_config('chromium')
-  api.chromium.set_config('chromium')
+  _, builder_config = api.chromium_tests_builder_config.lookup_builder()
+  api.chromium_tests.configure_build(builder_config)
 
   # Add the infra superproject to get the build repo
   s = api.gclient.c.solutions.add()
@@ -269,6 +271,19 @@ def create_recipe_bundle(api: RecipeApi, recipe_dir: Path, infra_dir: Path):
 
 
 def GenTests(api: RecipeTestApi):
+  ctbc_api = api.chromium_tests_builder_config
+
+  def gen_test_props():
+    t = api.chromium.ci_build(
+        builder_group='fake-group',
+        builder='fake-builder',
+    )
+    return t + ctbc_api.properties(
+        ctbc_api.properties_assembler_for_ci_builder(
+            builder_group='fake-group',
+            builder='fake-builder',
+        ).assemble())
+
   default_builder_suites = [
       {
           'bucket': 'fake-bucket',
@@ -285,6 +300,7 @@ def GenTests(api: RecipeTestApi):
   ]
   yield api.test(
       'basic',
+      gen_test_props(),
       api.properties(builder_suites=default_builder_suites),
       api.post_process(post_process.StepCommandContains,
                        'fake-bucket:fake-builder - testA, testB', [
@@ -304,6 +320,7 @@ def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'win',
+      gen_test_props(),
       api.platform.name('win'),
       api.properties(builder_suites=default_builder_suites),
       api.post_process(post_process.MustRun, 'store proto link'),
@@ -313,6 +330,7 @@ def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'build_repo_change',
+      gen_test_props(),
       api.properties(builder_suites=default_builder_suites),
       api.buildbucket.try_build(project='chromium/tools/build'),
       api.step_data(
@@ -328,6 +346,7 @@ def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'all-files-ignored',
+      gen_test_props(),
       api.properties(builder_suites=default_builder_suites),
       api.buildbucket.try_build(project='chromium/tools/build'),
       api.tryserver.get_files_affected_by_patch([
@@ -351,6 +370,7 @@ def GenTests(api: RecipeTestApi):
 
   yield api.test(
       'utr_fails',
+      gen_test_props(),
       api.properties(builder_suites=default_builder_suites),
       api.step_data('fake-bucket:fake-builder - testA, testB', retcode=1),
       api.step_data('fake-bucket:fake-builder2 - testZ', retcode=1),
