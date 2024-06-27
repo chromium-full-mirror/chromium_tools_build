@@ -63,6 +63,16 @@ def RunSteps(api):
           '-baseline-id', 'ci:Linux Tests', '--'
       ] + cmd,
   )
+  api.assertions.assertEqual(
+      rdb.wrap(
+          api,
+          cmd,
+          inv_extended_properties_dir='${ISOLATED_OUTDIR}/invocations'),
+      [
+          'rdb', 'stream', '-inherit-sources', '-baseline-id', 'ci:Linux Tests',
+          '-inv-extended-properties-dir', '${ISOLATED_OUTDIR}/invocations', '--'
+      ] + cmd,
+  )
 
   # step_name
   rdb = ResultDB.create(

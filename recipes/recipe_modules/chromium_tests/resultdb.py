@@ -46,6 +46,11 @@ class ResultDB:
       included in the parent invocation.
     * sources - JSON-serialized luci.resultdb.v1.Sources object that
       contains information about the code sources tested by the invocation.
+    * inv_extended_properties_dir - Path to a directory that contains files
+      for the invocation's extended_properties in JSON format.
+      Only files directly under this dir with the extension ".jsonpb" will be
+      read. The filename after removing ".jsonpb" and the file content will be
+      added as a key-value pair to the invocation's extended_properties map.
   """
   enable = attrib(bool, default=True)
   has_native_resultdb_integration = attrib(bool, default=False)
@@ -77,6 +82,7 @@ class ResultDB:
   # result_adapter deployed via the pool config. That is, result_adapter
   # w/o preceding path.
   result_adapter_path = attrib(str, default='result_adapter')
+  inv_extended_properties_dir = attrib(str, default='')
 
   @classmethod
   def create(cls, **kwargs):
@@ -192,6 +198,7 @@ class ResultDB:
         include=configs.include,
         inherit_sources=True,
         baseline_id=configs.baseline_id,
+        inv_extended_properties_dir=configs.inv_extended_properties_dir,
     )
 
   def unwrap(self, api, cmd: list[str]) -> list[str]:
