@@ -85,8 +85,6 @@ def BaseConfig(HOST_PLATFORM, HOST_ARCH, HOST_BITS, TARGET_PLATFORM,
           args=List(str),
       ),
       runtests=ConfigGroup(
-          enable_memcheck=Single(bool, empty_val=False, required=False),
-          memory_tests_runner=Single(str),
           enable_asan=Single(bool, empty_val=False, required=False),
           enable_lsan=Single(bool, empty_val=False, required=False),
           enable_msan=Single(bool, empty_val=False, required=False),
@@ -202,9 +200,6 @@ def BASE(c):
   c.targets_spec_dir = 'testing/buildbot'
   c.analyze_config_path = 'testing/buildbot/trybot_analyze_config.json'
   # Test runner memory tools that are not compile-time based.
-
-  ext = 'bat' if c.HOST_PLATFORM == 'win' else 'sh'
-  c.runtests.memory_tests_runner = f'tools/valgrind/chrome_tests.{ext}'
 
   if c.HOST_PLATFORM == 'mac':
     c.mac_toolchain.installer_cipd_package = (
@@ -341,11 +336,6 @@ def ubsan_vptr(c):
   if 'clang' not in c.compile_py.compiler:  # pragma: no cover
     raise BadConf('ubsan_vptr requires clang')
   c.gn_args.append('is_ubsan_vptr=true')
-
-
-@config_ctx(group='memory_tool')
-def memcheck(c):
-  c.runtests.enable_memcheck = True
 
 
 @config_ctx(deps=['compiler'], group='memory_tool')

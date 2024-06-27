@@ -186,10 +186,7 @@ def _BuildTestBinaryCommand(_build_dir, test_exe_path, options):
 
 def _UsingGtestJson(options):
   """Returns True if we're using GTest JSON summary."""
-  return (
-      options.parse_gtest_output and not options.run_python_script and
-      not options.run_shell_script
-  )
+  return options.parse_gtest_output and not options.run_python_script
 
 
 def _CreateLogProcessor(options):
@@ -314,9 +311,7 @@ def _MainMac(options, args, extra_env):
   # directory from previous test runs (i.e.- from crashes or unittest leaks).
   bot_utils.RemoveChromeTemporaryFiles()
 
-  if options.run_shell_script:
-    command = ['bash', test_exe_path]
-  elif options.run_python_script:
+  if options.run_python_script:
     command = [sys.executable, test_exe]
   else:
     command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
@@ -498,9 +493,7 @@ def _MainLinux(options, args, extra_env):
   extra_env['LD_LIBRARY_PATH'
            ] += '%s:%s/lib:%s/lib.target' % (bin_dir, bin_dir, bin_dir)
 
-  if options.run_shell_script:
-    command = ['bash', test_exe_path]
-  elif options.run_python_script:
+  if options.run_python_script:
     command = [sys.executable, test_exe]
   else:
     command = _BuildTestBinaryCommand(build_dir, test_exe_path, options)
@@ -753,28 +746,9 @@ def main():
   option_parser.add_option(
       '--target', default='Release', help='build target (Debug or Release)'
   )
-  option_parser.add_option(
-      '--pass-target',
-      action='store_true',
-      default=False,
-      help='pass --target to the spawned test script'
-  )
   option_parser.add_option('--build-dir', help='ignored')
   option_parser.add_option(
-      '--pass-build-dir',
-      action='store_true',
-      default=False,
-      help='pass --build-dir to the spawned test script'
-  )
-  option_parser.add_option(
       '--test-platform', help='Platform to test on, e.g. ios-simulator'
-  )
-  option_parser.add_option(
-      '--run-shell-script',
-      action='store_true',
-      default=False,
-      help='treat first argument as the shell script'
-      'to run.'
   )
   option_parser.add_option(
       '--run-python-script',
@@ -877,24 +851,12 @@ def main():
   logging.basicConfig(level=logging.DEBUG)
   logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-  if options.run_shell_script and options.run_python_script:
-    sys.stderr.write(
-        'Use either --run-shell-script OR --run-python-script, '
-        'not both.'
-    )
-    return 1
-
   print('[Running on builder: "%s"]' % options.builder_name)
 
   did_launch_dbus = _LaunchDBus()
 
   try:
     options.build_dir = build_directory.GetBuildOutputDirectory()
-
-    if options.pass_target and options.target:
-      args.extend(['--target', options.target])
-    if options.pass_build_dir:
-      args.extend(['--build-dir', options.build_dir])
 
     # We will use this to accumulate overrides for the command under test,
     # That we may not need or want for other support commands.

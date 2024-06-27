@@ -11,10 +11,6 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 def libyuv(c):
   _libyuv_common(c)
 
-  # Test runner memory tools that are not compile-time based.
-  ext = 'bat' if c.HOST_PLATFORM == 'win' else 'sh'
-  c.runtests.memory_tests_runner = f'tools_libyuv/valgrind/chrome_tests.{ext}'
-
 @CONFIG_CTX(includes=['chromium_clang'])
 def libyuv_clang(c):
   _libyuv_common(c)

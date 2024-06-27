@@ -844,19 +844,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       full_args.append('--enable-msan')
     if self.c.runtests.enable_tsan:
       full_args.append('--enable-tsan')
-    if self.c.runtests.enable_memcheck:
-      full_args.extend([
-          '--pass-build-dir',
-          '--pass-target',
-          '--run-shell-script',
-          self.m.path.checkout_dir / self.c.runtests.memory_tests_runner,
-          '--test',
-          t_name,
-          '--tool',
-          'memcheck',
-      ])
-    else:
-      full_args.append(test)
+    full_args.append(test)
 
     full_args.extend(args)
 

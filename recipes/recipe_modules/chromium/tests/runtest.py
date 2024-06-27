@@ -161,26 +161,6 @@ def GenTests(api):
   )
 
   yield api.test(
-      'memcheck',
-      api.properties(
-          buildername='test_buildername',
-          buildnumber=123,
-          bot_id='test_bot_id',
-          chromium_apply_config=['memcheck']),
-      api.post_process(StepCommandContains, 'base_unittests', [
-          '--pass-build-dir',
-          '--pass-target',
-          '--run-shell-script',
-          '[CACHE]/builder/src/tools/valgrind/chrome_tests.sh',
-          '--test',
-          'base_unittests',
-          '--tool',
-          'memcheck',
-      ]),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
       'tsan',
       api.properties(
           buildername='test_buildername',
