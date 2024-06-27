@@ -13,8 +13,8 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.profiles.src_dir = api.path.cleanup_dir
-  assert api.profiles.llvm_profdata_exec == api.profiles.src_dir.joinpath(
+  api.profiles.source_dir = api.path.cleanup_dir
+  assert api.profiles.llvm_profdata_exec == api.profiles.source_dir.joinpath(
       'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-profdata')
   new_path = '/some/other/path/llvm-profdata'
   api.profiles.llvm_profdata_exec = new_path

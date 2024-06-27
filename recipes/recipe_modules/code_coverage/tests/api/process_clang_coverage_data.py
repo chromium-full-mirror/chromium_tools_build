@@ -30,8 +30,8 @@ def RunSteps(api):
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(builder_config)
   # Fake path.
-  api.profiles.src_dir = api.path.start_dir
-  api.code_coverage.src_dir = api.path.start_dir
+  api.profiles.source_dir = api.path.start_dir
+  api.code_coverage.source_dir = api.path.start_dir
   api.path.checkout_dir = api.path.start_dir
 
   api.path.mock_add_paths(

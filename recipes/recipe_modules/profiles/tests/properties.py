@@ -12,7 +12,7 @@ DEPS = [
 
 def RunSteps(api):
   # coverage only
-  api.profiles.src_dir = api.path.cleanup_dir
+  api.profiles.source_dir = api.path.cleanup_dir
   _ = api.profiles.merge_scripts_dir
   _ = api.profiles.merge_steps_script
   _ = api.profiles.merge_results_script

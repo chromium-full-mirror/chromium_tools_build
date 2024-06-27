@@ -154,9 +154,9 @@ class WebRTCApi(recipe_api.RecipeApi):
   def setup_code_coverage_module(self, source_dir):
     """Configure internal constants of the code_coverage module."""
     checkout_path = source_dir
-    self.m.profiles.src_dir = checkout_path
+    self.m.profiles.source_dir = checkout_path
     self.m.code_coverage._use_clang_coverage = True
-    self.m.code_coverage.src_dir = checkout_path
+    self.m.code_coverage.source_dir = checkout_path
 
     # For presubmit, only instrument changed files.
     if self.m.tryserver.is_tryserver:

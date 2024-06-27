@@ -20,27 +20,26 @@ class ProfilesApi(recipe_api.RecipeApi):
     # Dictionary to map subdirectories
     self._profile_subdirs = {}
     # Path to checkout
-    self._src_dir = None
+    self._source_dir = None
     # Path to llvm-profdata executable
     self._llvm_profdata_exec = None
 
   @property
-  def src_dir(self):
-    assert self._src_dir, 'src_dir must be set for this recipe_module'
-    return self._src_dir
+  def source_dir(self):
+    assert self._source_dir, 'source_dir must be set for this recipe_module'
+    return self._source_dir
 
-  @src_dir.setter
-  def src_dir(self, value):
-    self._src_dir = value
+  @source_dir.setter
+  def source_dir(self, value):
+    self._source_dir = value
 
   @property
   def merge_scripts_dir(self):
     # TODO(crbug.com/1076055) - Refactor the code_coverage folder to a common
     # profiles folder
     if not self._merge_scripts_dir:  # pragma: no cover
-      self._merge_scripts_dir = self.src_dir.joinpath('testing',
-                                                      'merge_scripts',
-                                                      'code_coverage')
+      self._merge_scripts_dir = (
+          self.source_dir / 'testing/merge_scripts/code_coverage')
     return self._merge_scripts_dir
 
   @property
@@ -57,8 +56,8 @@ class ProfilesApi(recipe_api.RecipeApi):
 
   def llvm_exec_path(self, name):
     if not self._llvm_base_path:
-      self._llvm_base_path = self.src_dir.joinpath('third_party', 'llvm-build',
-                                                   'Release+Asserts', 'bin')
+      self._llvm_base_path = (
+          self.source_dir / 'third_party/llvm-build/Release+Asserts/bin')
     name += '.exe' if self.m.platform.is_win else ''
     return self._llvm_base_path / name
 

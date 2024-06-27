@@ -37,7 +37,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     # Temp dir for metadata
     self._metadata_root_dir = None
     # Path to checked out repo
-    self._src_dir = None
+    self._source_dir = None
     # Path to director containing the build artifacts e.g. <root>/out/coverage
     self._build_dir = None
     # When set, subset of source files to include in the coverage report for
@@ -176,13 +176,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     self._build_dir = value
 
   @property
-  def src_dir(self):
-    assert self._src_dir, 'src_dir must be set for this recipe_module'
-    return self._src_dir
+  def source_dir(self):
+    assert self._source_dir, 'source_dir must be set for this recipe_module'
+    return self._source_dir
 
-  @src_dir.setter
-  def src_dir(self, value):
-    self._src_dir = value
+  @source_dir.setter
+  def source_dir(self, value):
+    self._source_dir = value
 
   @property
   def bot_to_gerrit_mapping_file(self):
@@ -214,7 +214,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
               '--patchset',
               gerrit_change.patchset,
               '--src-path',
-              self.src_dir,
+              self.source_dir,
               '--output-file',
               local_to_gerrit_diff_mapping_file,
           ] + self._all_eligible_files(),
@@ -598,16 +598,16 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     if not output_dir:
       output_dir = self.m.chromium.build_dir
     self.m.file.ensure_directory('create .code-coverage',
-                                 self.src_dir / '.code-coverage')
+                                 self.source_dir / '.code-coverage')
     self.m.step(
         'save paths of affected files',
         [
             'python3',
             self.resource('write_paths_to_instrument.py'),
             '--write-to',
-            self.src_dir.joinpath('.code-coverage', 'files_to_instrument.txt'),
+            self.source_dir / '.code-coverage/files_to_instrument.txt',
             '--src-path',
-            self.src_dir,
+            self.source_dir,
             '--build-path',
             output_dir,
         ] + files_to_instrument,
@@ -831,7 +831,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             'python3',
             self.resource('generate_coverage_metadata_for_java.py'),
             '--src-path',
-            self.src_dir,
+            self.source_dir,
             '--output-dir',
             output_dir,
             '--coverage-dir',
@@ -944,7 +944,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
             'python3',
             self.resource('generate_coverage_metadata_for_javascript.py'),
             '--src-path',
-            self.src_dir,
+            self.source_dir,
             '--output-dir',
             output_dir,
             '--coverage-dir',
@@ -1144,7 +1144,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     cmd.extend(binaries)
     cmd.append('--sources')
     cmd.extend([
-        self.src_dir / s
+        self.source_dir / s
         for s in self._eligible_files_by_tool[constants.tools.CLANG]
     ])
 
@@ -1207,8 +1207,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           '--java-coverage-dir',
           self.build_dir / constants.JAVA_COVERAGE_DIR,
           '--jacococli-path',
-          self.src_dir.joinpath('third_party', 'jacoco', 'lib',
-                                'jacococli.jar'),
+          self.source_dir / 'third_party/jacoco/lib/jacococli.jar',
           '--merged-jacoco-filename',
           self.m.profiles.normalize(step_name),
       ])
@@ -1217,7 +1216,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           '--javascript-coverage-dir',
           self.build_dir / constants.JS_COVERAGE_DIR,
           '--chromium-src-dir',
-          self.src_dir,
+          self.source_dir,
           '--build-dir',
           self.build_dir,
       ])
@@ -1238,15 +1237,14 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         script=self.m.profiles.merge_results_script, args=args)
 
   def get_chromium_fuzz_coverage(self,
-                                 src_dir,
+                                 source_dir,
                                  build_dir,
                                  llvm_raw_data,
                                  profdata_dir,
                                  test_type=constants.test_types.OVERALL):
     """ Generates fuzz coverage information. """
     llvm_cov = (
-        src_dir / 'third_party' / 'llvm-build' / 'Release+Asserts' / 'bin' /
-        'llvm-cov')
+        source_dir / 'third_party/llvm-build/Release+Asserts/bin/llvm-cov')
     self.m.file.chmod('chmod llvm file', llvm_cov, 0o777)
     output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
     cmd = [
@@ -1259,7 +1257,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         '--llvm-cov',
         llvm_cov,
         '--src-path',
-        src_dir,
+        source_dir,
         '--profdata-path',
         llvm_raw_data,
         '--fuzz',
@@ -1302,10 +1300,12 @@ class CodeCoverageApi(recipe_api.RecipeApi):
   def _generate_dir_metadata(self):
     """Extracts directory metadata, e.g. mapping to monorail component."""
     dir_metadata = self.m.path.mkdtemp() / constants.DIR_METADATA_FILE_NAME
-    with self.m.context(cwd=self.src_dir):
+    with self.m.context(cwd=self.source_dir):
       self.m.step('Extract directory metadata', [
-          self.src_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
-          'export', '-out', dir_metadata
+          self.source_dir / 'third_party/depot_tools/dirmd',
+          'export',
+          '-out',
+          dir_metadata,
       ])
     return dir_metadata
 
@@ -1319,7 +1319,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         '--build-dir',
         self.build_dir,
         '--src-path',
-        self.src_dir,
+        self.source_dir,
         '--output-dir',
         output_dir,
         '--profdata-path',

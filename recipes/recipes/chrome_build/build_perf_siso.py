@@ -77,7 +77,7 @@ def RunSteps(api):
   source_dir = update_result.source_root.path
 
   if api.code_coverage.using_coverage:
-    api.code_coverage.src_dir = api.chromium_checkout.source_dir
+    api.code_coverage.source_dir = api.chromium_checkout.source_dir
     api.code_coverage.instrument([])
   with api.context(cwd=solution_path):
     api.chromium.runhooks()

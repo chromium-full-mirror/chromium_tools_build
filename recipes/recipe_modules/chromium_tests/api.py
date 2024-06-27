@@ -1256,8 +1256,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           require_device_steps):
         self.m.chromium_android.common_tests_setup_steps()
 
-      self.m.code_coverage.src_dir = self.m.chromium_checkout.source_dir
-      self.m.profiles.src_dir = self.m.chromium_checkout.source_dir
+      self.m.code_coverage.source_dir = self.m.chromium_checkout.source_dir
+      self.m.profiles.source_dir = self.m.chromium_checkout.source_dir
 
       try:
         yield
@@ -2340,7 +2340,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     # Must happen before without patch steps.
     if self.m.code_coverage.using_coverage:
-      self.m.code_coverage.src_dir = self.m.chromium_checkout.source_dir
+      self.m.code_coverage.source_dir = self.m.chromium_checkout.source_dir
       self.m.code_coverage.instrument(
           affected_files, is_deps_only_change=is_deps_only_change)
       # Don't isolate output files if coverage is skipped anyway

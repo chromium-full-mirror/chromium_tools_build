@@ -356,7 +356,7 @@ def SetCodeCoverageConstants(api, checkout_path, host_tool_label):
   api.code_coverage._platform = host_tool_label
   api.code_coverage._use_clang_coverage = True
   api.code_coverage._include_component_mapping = False
-  api.code_coverage.src_dir = checkout_path
+  api.code_coverage.source_dir = checkout_path
 
   exists = {
       str(p): api.path.exists(p) for p in [
@@ -507,7 +507,7 @@ def RunSteps(api):
   GenerateCoverageTestConstants(api, paths)
 
   env = {}
-  api.profiles.src_dir = paths.checkout_path
+  api.profiles.source_dir = paths.checkout_path
   if api.properties.get('is_asan', False):
     env['ASAN_SYMBOLIZER_PATH'] = str(
         api.profiles.llvm_exec_path('llvm-symbolizer'))

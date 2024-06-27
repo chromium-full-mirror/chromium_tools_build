@@ -40,8 +40,8 @@ def RunSteps(api):
   api.chromium_checkout.ensure_checkout()
 
   # Fake path.
-  api.profiles.src_dir = api.chromium_checkout.source_dir
-  api.code_coverage.src_dir = api.chromium_checkout.source_dir
+  api.profiles.source_dir = api.chromium_checkout.source_dir
+  api.code_coverage.source_dir = api.chromium_checkout.source_dir
 
   if api.tryserver.is_tryserver:
     api.code_coverage.instrument(

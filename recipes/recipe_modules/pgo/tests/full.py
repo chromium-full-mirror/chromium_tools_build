@@ -64,7 +64,7 @@ def RunSteps(api):
   api.pgo.configure_llvm_tooling_path(builder_id, is_cros=use_lacros)
 
   # Fake path.
-  api.profiles.src_dir = api.path.start_dir
+  api.profiles.source_dir = api.path.start_dir
 
   if api.properties.get('mock_merged_profdata', True):
     api.path.mock_add_paths(

@@ -40,7 +40,7 @@ def RunSteps(api, expected_paths, target_platform):
           api.chromium_tests)
   ]
 
-  api.code_coverage.src_dir = api.path.cleanup_dir
+  api.code_coverage.source_dir = api.path.cleanup_dir
   api.code_coverage.build_dir = api.path.cleanup_dir.joinpath('out', 'Release')
   file_paths = api.code_coverage.get_required_build_output_files(tests)
 

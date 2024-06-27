@@ -55,7 +55,7 @@ def RunSteps(api, properties):
     checkout_time = int(api.time.time())
 
     if api.code_coverage.using_coverage:
-      api.code_coverage.src_dir = api.chromium_checkout.source_dir
+      api.code_coverage.source_dir = api.chromium_checkout.source_dir
       api.code_coverage.instrument([])
 
     raw_result, _ = api.chromium_tests.compile_specific_targets(

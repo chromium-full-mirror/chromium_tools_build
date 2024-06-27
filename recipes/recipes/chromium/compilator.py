@@ -91,7 +91,7 @@ def compilator_steps(api, properties):
       # code coverage is ignored for without patch steps, but compile will
       # error if there is no files_to_instrument.txt file
       if api.code_coverage.using_coverage:
-        api.code_coverage.src_dir = api.chromium_checkout.source_dir
+        api.code_coverage.source_dir = api.chromium_checkout.source_dir
         api.code_coverage.instrument([])
 
       # properties.test_targets should only be targets required for
