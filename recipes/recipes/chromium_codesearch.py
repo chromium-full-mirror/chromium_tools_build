@@ -214,12 +214,6 @@ def RunSteps(api, properties):
   api.chromium.set_build_properties(update_result.properties)
   source_dir = update_result.source_root.path
 
-  # Remove the llvm-build directory, so that gclient runhooks will download
-  # a new clang binary and not use the previous one downloaded by
-  # api.codesearch.run_clang_tool().
-  api.file.rmtree('llvm-build', source_dir.joinpath('third_party',
-                                                    'llvm-build'))
-
   api.chromium.set_config(
       'codesearch',
       BUILD_CONFIG='Debug',
