@@ -34,21 +34,21 @@ def RunSteps(api, properties):
 
   source_dir = update_result.source_root.path
   androidx_dir = source_dir / 'third_party/androidx'
-  androidx_libs_dir = androidx_dir / 'libs'
+  androidx_cipd_dir = androidx_dir / 'cipd'
 
-  api.file.ensure_directory('ensure libs dir exists', androidx_libs_dir)
-  api.file.rmcontents('delete libs dir contents', androidx_libs_dir)
+  api.file.ensure_directory('ensure libs dir exists', androidx_cipd_dir)
+  api.file.rmcontents('delete libs dir contents', androidx_cipd_dir)
 
-  if api.file.listdir('check libs empty', androidx_libs_dir):
+  if api.file.listdir('check libs empty', androidx_cipd_dir):
     return result_pb.RawResult(
         status=common_pb.INFRA_FAILURE,
         summary_markdown='Unable to delete androidx libs directory.')
 
   fetch_all_cmd = androidx_dir / 'fetch_all_androidx.py'
   api.step('fetch_all', [fetch_all_cmd, '-v'])
-  api.path.mock_add_paths(androidx_dir / 'cipd.yaml')
+  api.path.mock_add_paths(androidx_cipd_dir / 'cipd.yaml')
 
-  yaml_path = androidx_dir / 'cipd.yaml'
+  yaml_path = androidx_cipd_dir / 'cipd.yaml'
   yaml_lines = api.file.read_text('read cipd.yaml', yaml_path).split('\n')
 
   api.step('extract version', None)
