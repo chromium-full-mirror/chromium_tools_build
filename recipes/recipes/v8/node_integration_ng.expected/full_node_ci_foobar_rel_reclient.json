@@ -134,7 +134,7 @@
       "--root=[CACHE]/builder/node-ci",
       "gen",
       "[CACHE]/builder/node-ci/out/Release",
-      "--args=is_clang=true v8_array_buffer_internal_field_count=2 v8_array_buffer_view_internal_field_count=2 use_sysroot=true use_custom_libcxx=true node_use_custom_libcxx=true icu_use_data_file=false is_debug=false target_cpu=\"x64\" use_remoteexec=true"
+      "--args=is_clang=true node_enable_deprecated_declarations_warnings=true v8_imminent_deprecation_warnings=false v8_array_buffer_internal_field_count=2 v8_array_buffer_view_internal_field_count=2 use_sysroot=true use_custom_libcxx=true icu_use_data_file=false is_debug=false target_cpu=\"x64\" use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/node-ci",
     "env": {
