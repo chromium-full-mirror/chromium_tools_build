@@ -5,6 +5,7 @@
 DEPS = [
     'build',
     'chromium',
+    'chromium_checkout',
     'chromium_android',
     'chromium_tests',
     'depot_tools/bot_update',
@@ -31,7 +32,8 @@ def RunSteps(api):
       'chromium',
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
   api.chromium_android.set_config('main_builder')
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
+  api.chromium_checkout.set_paths_from_update_result(update_result)
 
   test = steps.LocalGTestTestSpec.create(
       'base_unittests',

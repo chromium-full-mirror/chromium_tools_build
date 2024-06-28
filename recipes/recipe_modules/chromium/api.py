@@ -790,7 +790,9 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @_with_chromium_layout
   def runtest(self,
+              checkout_dir: Path,
               test,
+              *,
               args=None,
               xvfb=False,
               name=None,
@@ -849,11 +851,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     full_args.extend(args)
 
     runtest_path = self.repo_resource('recipes', 'runtest.py')
-    # We need this, as otherwise runtest.py fails due to expecting the cwd to
-    # be the checkout, when instead it's kitchen-workdir. We also can't use
-    # self.m.path.checkout_dir since that has an extra '/src' added onto it
-    # compared to what runtest.py expects.
-    with self.m.context(cwd=self.m.path.cache_dir / 'builder'):
+    with self.m.context(cwd=checkout_dir):
       resultdb = kwargs.pop('resultdb', None)
       cmd = ['python3', runtest_path] + full_args
       if resultdb:

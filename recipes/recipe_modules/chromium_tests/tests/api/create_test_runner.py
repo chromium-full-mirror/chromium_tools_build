@@ -9,6 +9,7 @@ from RECIPE_MODULES.build.chromium_tests import steps
 DEPS = [
     'builder_group',
     'chromium',
+    'chromium_checkout',
     'chromium_tests',
     'depot_tools/tryserver',
     'recipe_engine/path',
@@ -26,7 +27,7 @@ def RunSteps(api):
       'got_revision': 'd3adv3ggie',
       'got_revision_cp': 'refs/heads/main@{#54321}',
   })
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  api.chromium_checkout.set_paths(api.path.cache_dir / 'builder', 'src')
 
   test_runner = api.chromium_tests.create_test_runner(
       tests=[

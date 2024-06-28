@@ -173,6 +173,7 @@ class LibyuvApi(recipe_api.RecipeApi):
           # just self.m.chromium.runtest that adds the flag.
           defer(
               self.m.chromium.runtest,
+              self.m.chromium_checkout.checkout_dir,
               'libyuv_unittest',
               args=['--undefok=no-sandbox'],
           )

@@ -1813,6 +1813,7 @@ class LocalGTestTest(LocalTest):
     kwargs['test_launcher_summary_output'] = gtest_results_file
 
     step_result = self.api.m.chromium.runtest(
+        self.api.m.chromium_checkout.checkout_dir,
         self.target_name,
         builder_group=self.spec.waterfall_builder_group,
         stderr=self.api.m.raw_io.output_text(

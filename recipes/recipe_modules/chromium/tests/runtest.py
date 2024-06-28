@@ -24,7 +24,8 @@ def RunSteps(api):
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  checkout_dir = api.path.cache_dir / 'builder'
+  api.path.checkout_dir = checkout_dir / 'src'
 
   kwargs = {}
   if api.properties.get('parse_gtest_output'):
@@ -37,6 +38,7 @@ def RunSteps(api):
     kwargs['resultdb'] = ResultDB.create(enable=True)
 
   api.chromium.runtest(
+      checkout_dir,
       'base_unittests',
       builder_group=api.properties.get('builder_group'),
       python_mode=api.properties.get('python_mode', False),
