@@ -15,10 +15,12 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 DEPS = [
     'chromium',
     'chromium_checkout',
+    'chromium_swarming',
     'chromium_tests',
     'chromium_tests_builder_config',
     'chromium_utr',
     'code_coverage',
+    'test_utils',
     'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/json',
@@ -192,6 +194,20 @@ solutions = [
           post_process.StepCommandDoesNotContain, 'isolate tests',
           ['fake_root/fake_out/Debug/not_run_test.isolated.gen.json']),
       api.post_process(post_process.DoesNotRun, 'not_run_test'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'invalid_swarming_task',
+      boilerplate(),
+      api.override_step_data(
+          'browser_tests',
+          api.chromium_swarming.canned_summary_output(
+              api.test_utils.gtest_results('invalid results', 1),
+              failure=True)),
+      api.post_process(post_process.MustRun,
+                       'test_pre_run.[trigger] browser_tests'),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

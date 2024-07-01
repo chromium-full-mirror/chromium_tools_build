@@ -6,6 +6,7 @@
 import attr
 import copy
 import itertools
+import uuid
 from collections.abc import Iterable, Mapping
 from google.protobuf import json_format
 from google.protobuf.json_format import MessageToDict
@@ -92,7 +93,18 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       # check for sure using the UTR-specific tag below, and reassess if needed.
       self.m.chromium_swarming.default_priority = 20
       self.m.chromium_swarming.add_default_tag('is_utr:1')
-      return test_runner()
+      invocation_uuid = str(uuid.uuid4())
+      self.m.chromium_swarming.add_default_tag('utr_invocation_uuid:' +
+                                               invocation_uuid)
+
+      ret = test_runner()
+      if any(not test.has_valid_results('') for test in tests):
+        self.m.step('print swarming tasks link', [
+            'python3',
+            '-c',
+            f'print("https://chromium-swarm.appspot.com/tasklist?f=utr_invocation_uuid-tag%3A{invocation_uuid}")',
+        ])
+      return ret
 
   def get_compiling_builder_config(
       self, builder_id: chromium.BuilderId, builder_config: ctbc.BuilderConfig
