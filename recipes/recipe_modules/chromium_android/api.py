@@ -7,6 +7,7 @@ import contextlib
 import urllib
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 from RECIPE_MODULES.depot_tools import bot_update
 
@@ -17,6 +18,7 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
+    self._adb_path: Path | None = None
     self._devices = None
     self._file_changes_path = None
 
@@ -25,6 +27,10 @@ class AndroidApi(recipe_api.RecipeApi):
     assert self._devices is not None,\
         'devices is only available after device_status()'
     return self._devices
+
+  def adb_path(self) -> Path:
+    return (self._adb_path or
+            self.m.adb.default_adb_path(self.m.path.checkout_dir))
 
   @property
   def out_path(self):
@@ -187,8 +193,7 @@ class AndroidApi(recipe_api.RecipeApi):
                                                    'devil')
     cmd = ['vpython3', self.resource('initialize_devil.py'), devil_path]
     self.m.step('initialize devil', cmd)
-    self.m.adb.set_adb_path(
-        devil_path.joinpath('bin', 'deps', 'linux2', 'x86_64', 'bin', 'adb'))
+    self._adb_path = devil_path / 'bin/deps/linux2/x86_64/bin/adb'
 
   def create_adb_symlink(self):
     # Creates a sym link to the adb executable in the home dir
@@ -196,7 +201,7 @@ class AndroidApi(recipe_api.RecipeApi):
         'vpython3',
         self.m.path.checkout_dir.joinpath('build', 'symlink.py'),
         '-f',
-        self.m.adb.adb_path(),
+        self.adb_path(),
         self.m.path.join('~', 'adb'),
     ]
     self.m.step('create adb symlink', cmd, infra_step=True)
@@ -215,7 +220,7 @@ class AndroidApi(recipe_api.RecipeApi):
               '--',
               self.m.path.checkout_dir / 'build/android/adb_logcat_monitor.py',
               self._logcat_dir,
-              self.m.adb.adb_path(),
+              self.adb_path(),
           ],
           infra_step=True,
       )
@@ -236,7 +241,7 @@ class AndroidApi(recipe_api.RecipeApi):
             '--',
             device_monitor_script,
             '--adb-path',
-            self.m.adb.adb_path(),
+            self.adb_path(),
             '--denylist-file',
             self.denylist_file,
         ],
@@ -266,7 +271,7 @@ class AndroidApi(recipe_api.RecipeApi):
               self.resource('authorize_adb_devices.py'),
               '--verbose',
               '--adb-path',
-              self.m.adb.adb_path(),
+              self.adb_path(),
           ],
           infra_step=True,
       )
@@ -366,7 +371,7 @@ class AndroidApi(recipe_api.RecipeApi):
         '--known-devices-file',
         self.known_devices_file,
         '--adb-path',
-        self.m.adb.adb_path(),
+        self.adb_path(),
         '-v',
     ]
     with self.m.context(env=self.m.chromium.get_env()):
@@ -384,7 +389,7 @@ class AndroidApi(recipe_api.RecipeApi):
         '--buildbot-path',
         buildbot_file,
         '--adb-path',
-        self.m.adb.adb_path(),
+        self.adb_path(),
         '-v',
         '--overwrite-known-devices-files',
     ]
@@ -500,7 +505,7 @@ class AndroidApi(recipe_api.RecipeApi):
         'vpython3',
         provision_path,
         '--adb-path',
-        self.m.adb.adb_path(),
+        self.adb_path(),
         '--denylist-file',
         self.denylist_file,
         '--output-device-denylist',
@@ -542,7 +547,7 @@ class AndroidApi(recipe_api.RecipeApi):
         self.denylist_file,
     ]
     if int(self.m.chromium.get_version().get('MAJOR', 0)) > 50:
-      install_cmd += ['--adb-path', self.m.adb.adb_path()]
+      install_cmd += ['--adb-path', self.adb_path()]
     if devices and isinstance(devices, list):
       for d in devices:
         install_cmd += ['-d', d]
@@ -750,7 +755,7 @@ class AndroidApi(recipe_api.RecipeApi):
     ]
     if (force_latest_version or
         int(self.m.chromium.get_version().get('MAJOR', 0)) > 52):
-      tombstones_cmd += ['--adb-path', self.m.adb.adb_path()]
+      tombstones_cmd += ['--adb-path', self.adb_path()]
     with self.m.context(env=env):
       self.m.step('stack_tool_for_tombstones', tombstones_cmd, infra_step=True)
 
@@ -974,7 +979,7 @@ class AndroidApi(recipe_api.RecipeApi):
     if not args:  # pragma: no cover
       args = []
     if pass_adb_path:
-      args.extend(['--adb-path', self.m.adb.adb_path()])
+      args.extend(['--adb-path', self.adb_path()])
     with self.handle_exit_codes():
       script = self.m.path.checkout_dir / self.c.test_runner
       env = {}

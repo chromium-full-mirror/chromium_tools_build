@@ -111,7 +111,7 @@ def RunSteps(api):
         keep_data=config.get('keep_data', False),
     )
 
-  api.adb.root_devices()
+  api.adb.root_devices(api.chromium_android.adb_path())
   api.chromium_android.spawn_logcat_monitor()
 
   failure = False

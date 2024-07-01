@@ -1,14 +1,5 @@
 [
   {
-    "cmd": [],
-    "name": "adb paths",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@result@default: Path([CACHE], 'builder', 'src', 'third_party', 'android_sdk', 'public', 'platform-tools', 'adb')@@@",
-      "@@@STEP_LOG_LINE@result@custom: Path([CACHE], 'builder', 'src', 'custom', 'adb', 'path')@@@",
-      "@@@STEP_LOG_END@result@@@"
-    ]
-  },
-  {
     "cmd": [
       "python3",
       "RECIPE_MODULE[build::adb]/resources/list_devices.py",

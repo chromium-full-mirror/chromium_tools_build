@@ -3,30 +3,20 @@
 # found in the LICENSE file.
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
+
 
 class AdbApi(recipe_api.RecipeApi):
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-    self._custom_adb_path = None
-    self._devices = None
 
-  def set_adb_path(self, adb_path):
-    self._custom_adb_path = adb_path
+  @staticmethod
+  def default_adb_path(source_dir: Path):
+    return source_dir / 'third_party/android_sdk/public/platform-tools/adb'
 
-  def adb_path(self):
-    if self._custom_adb_path:
-      return self._custom_adb_path
-    return self.m.path.checkout_dir.joinpath('third_party', 'android_sdk',
-                                             'public', 'platform-tools', 'adb')
-
-  def list_devices(self, step_test_data=None, **kwargs):
+  def list_devices(self, adb_path: Path, *, step_test_data=None, **kwargs):
     cmd = [
         'python3',
         self.resource('list_devices.py'),
-        repr([
-            str(self.adb_path()),
-            'devices',
-        ]),
+        repr([str(adb_path), 'devices']),
         self.m.json.output(),
     ]
 
@@ -36,19 +26,15 @@ class AdbApi(recipe_api.RecipeApi):
         step_test_data=step_test_data or self.test_api.device_list,
         **kwargs)
 
-    self._devices = result.json.output
+    return result.json.output
 
-  @property
-  def devices(self):
-    assert self._devices is not None, (
-        "devices is only available after yielding list_devices()")
-    return self._devices
-
-  def root_devices(self, **kwargs):
-    self.list_devices(**kwargs)
-    cmd = ([
+  def root_devices(self, adb_path: Path, **kwargs):
+    devices = self.list_devices(adb_path, **kwargs)
+    cmd = [
         'python3',
         self.resource('root_devices.py'),
-        self.adb_path(),
-    ] + self.devices)
+        adb_path,
+        *devices,
+    ]
     self.m.step('Root devices', cmd, **kwargs)
+    return devices
