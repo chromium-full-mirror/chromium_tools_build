@@ -47,6 +47,7 @@ PROPERTIES = {
     'rel': Property(default=False, kind=bool),
     'renderers': Property(default=None, kind=Set(str)),
     'run_skia_gold': Property(default=True, kind=bool),
+    'rust': Property(default=False, kind=bool),
     'skia': Property(default=False, kind=bool),
     'skip_test': Property(default=False, kind=bool),
     'swarming': Property(default=None, kind=dict),
@@ -192,11 +193,15 @@ def _checkout_step(api, target_os, reclient_enabled):
     return update_result
 
 
-def _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel, component):
+def _generate_out_path(memory_tool, skia, rust, xfa, v8, clang, msvc, rel,
+                       component):
   out_dir = 'release' if rel else 'debug'
 
   if skia:
     out_dir += '_skia'
+  if rust:
+    assert (skia)
+    out_dir += '_rust'
   if xfa:
     out_dir += '_xfa'
   if v8:
@@ -222,8 +227,8 @@ def _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel, component):
 
 # _gn_gen_builds() calls 'gn gen' and returns a dictionary of
 # the used build configuration to be used by Gold.
-def _gn_gen_builds(api, source_root, memory_tool, skia, xfa, v8, target_cpu,
-                   clang, msvc, rel, component, target_os, out_dir):
+def _gn_gen_builds(api, source_root, memory_tool, skia, rust, xfa, v8,
+                   target_cpu, clang, msvc, rel, component, target_os, out_dir):
   enable_reclient = _is_reclient_enabled(api, msvc)
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
@@ -231,8 +236,11 @@ def _gn_gen_builds(api, source_root, memory_tool, skia, xfa, v8, target_cpu,
 
   # Prepare the arguments to pass in.
   args = [
+      'enable_rust=%s' % gn_bool[rust],
+      'enable_rust_cxx=%s' % gn_bool[rust],
       'is_debug=%s' % gn_bool[not rel],
       'is_component_build=%s' % gn_bool[component],
+      'pdf_enable_fontations=%s' % gn_bool[rust],
       'pdf_enable_v8=%s' % gn_bool[v8],
       'pdf_enable_xfa=%s' % gn_bool[xfa],
       'pdf_use_skia=%s' % gn_bool[skia],
@@ -964,16 +972,16 @@ def _gen_properties(api, **kwargs):
   return api.properties(**updated_kwargs)
 
 
-def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
-             run_skia_gold, component, skip_test, target_os, renderers,
+def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, clang, msvc,
+             rel, run_skia_gold, component, skip_test, target_os, renderers,
              swarming):
   update_result = _checkout_step(api, target_os,
                                  _is_reclient_enabled(api, msvc))
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
 
-  out_dir = _generate_out_path(memory_tool, skia, xfa, v8, clang, msvc, rel,
-                               component)
+  out_dir = _generate_out_path(memory_tool, skia, rust, xfa, v8, clang, msvc,
+                               rel, component)
 
   with api.osx_sdk('mac'):
     # buildbot sets 'clobber' to the empty string which evaluates to false if
@@ -981,8 +989,8 @@ def RunSteps(api, memory_tool, skia, xfa, v8, target_cpu, clang, msvc, rel,
     if 'clobber' in api.properties:
       api.file.rmtree('clobber', source_dir.joinpath('out', out_dir))
 
-    build_config = _gn_gen_builds(api, source_dir, memory_tool, skia, xfa, v8,
-                                  target_cpu, clang, msvc, rel, component,
+    build_config = _gn_gen_builds(api, source_dir, memory_tool, skia, rust, xfa,
+                                  v8, target_cpu, clang, msvc, rel, component,
                                   target_os, out_dir)
     if not run_skia_gold:
       build_config = {}
@@ -1133,6 +1141,14 @@ def GenTests(api):
       api.builder_group.for_current('client.pdfium'),
       _gen_properties(api, skia=True, xfa=True),
       _gen_ci_build(api, 'linux_skia'),
+  )
+
+  yield api.test(
+      'linux_skia_rust',
+      api.platform('linux', 64),
+      api.builder_group.for_current('client.pdfium'),
+      _gen_properties(api, skia=True, rust=True, xfa=True),
+      _gen_ci_build(api, 'linux_skia_rust'),
   )
 
   yield api.test(

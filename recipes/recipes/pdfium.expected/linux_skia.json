@@ -157,7 +157,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_skia_xfa_v8",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=true pdf_is_standalone=true use_remoteexec=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=true pdf_is_standalone=true use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1395,7 +1395,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true v8 true xfa true xfa_runtime enabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1438,7 +1438,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime disabled os linux skia true suite javascript_disabled v8 true xfa true xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia true suite javascript_disabled v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1482,7 +1482,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true suite xfa_disabled v8 true xfa true xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true suite xfa_disabled v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1526,7 +1526,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true v8 true xfa true xfa_runtime enabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1569,7 +1569,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true suite oneshot v8 true xfa true xfa_runtime enabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true suite oneshot v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1613,7 +1613,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime disabled os linux skia true suite javascript_disabled v8 true xfa true xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia true suite javascript_disabled v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1657,7 +1657,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true suite xfa_disabled v8 true xfa true xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true suite xfa_disabled v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1701,7 +1701,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true v8 true xfa true xfa_runtime enabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1744,7 +1744,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true suite oneshot v8 true xfa true xfa_runtime enabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true suite oneshot v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1788,7 +1788,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime disabled os linux skia true suite javascript_disabled v8 true xfa true xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux skia true suite javascript_disabled v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1832,7 +1832,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime enabled os linux skia true suite xfa_disabled v8 true xfa true xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux skia true suite xfa_disabled v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]/builder/pdfium",

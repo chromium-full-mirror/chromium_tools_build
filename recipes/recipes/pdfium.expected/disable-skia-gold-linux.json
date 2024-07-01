@@ -157,7 +157,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_v8",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {

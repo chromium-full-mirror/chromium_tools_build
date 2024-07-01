@@ -269,7 +269,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=false pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=false pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1467,7 +1467,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime disabled os mac skia false v8 false xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os mac skia false v8 false xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1510,7 +1510,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime disabled os mac skia false suite oneshot v8 false xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os mac skia false suite oneshot v8 false xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",
@@ -1554,7 +1554,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime disabled os mac skia false v8 false xfa false xfa_runtime disabled"
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os mac skia false v8 false xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -1597,7 +1597,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "debug true is_standalone true javascript_runtime disabled os mac skia false suite oneshot v8 false xfa false xfa_runtime disabled",
+      "debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os mac skia false suite oneshot v8 false xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]/builder/pdfium",

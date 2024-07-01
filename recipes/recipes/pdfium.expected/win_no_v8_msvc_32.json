@@ -157,7 +157,7 @@
       "--root=[CACHE]\\builder\\pdfium",
       "gen",
       "//out/debug_msvc",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=false pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true symbol_level=1 is_clang=false target_cpu=\"x86\""
+      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=false pdf_enable_xfa=false pdf_use_skia=false pdf_is_standalone=true symbol_level=1 is_clang=false target_cpu=\"x86\""
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -297,7 +297,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang false debug true is_standalone true javascript_runtime disabled os windows skia false symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled"
+      "clang false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia false symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -340,7 +340,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang false debug true is_standalone true javascript_runtime disabled os windows skia false suite oneshot symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
+      "clang false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia false suite oneshot symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -384,7 +384,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang false debug true is_standalone true javascript_runtime disabled os windows skia false suite reverse_byte_order symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
+      "clang false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia false suite reverse_byte_order symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -428,7 +428,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang false debug true is_standalone true javascript_runtime disabled os windows skia false symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled"
+      "clang false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia false symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -471,7 +471,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang false debug true is_standalone true javascript_runtime disabled os windows skia false suite oneshot symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
+      "clang false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia false suite oneshot symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -515,7 +515,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang false debug true is_standalone true javascript_runtime disabled os windows skia false suite reverse_byte_order symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
+      "clang false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia false suite reverse_byte_order symbol_level 1 target_cpu \"x86\" v8 false xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",

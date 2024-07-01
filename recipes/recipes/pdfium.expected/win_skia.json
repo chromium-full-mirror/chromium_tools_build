@@ -157,7 +157,7 @@
       "--root=[CACHE]\\builder\\pdfium",
       "gen",
       "//out/debug_skia_xfa_v8",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=true pdf_is_standalone=true use_remoteexec=true symbol_level=1 is_clang=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=true pdf_is_standalone=true use_remoteexec=true symbol_level=1 is_clang=true"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -1432,7 +1432,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true symbol_level 1 v8 true xfa true xfa_runtime enabled"
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true symbol_level 1 v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -1475,7 +1475,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime disabled os windows skia true suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia true suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -1519,7 +1519,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -1563,7 +1563,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true symbol_level 1 v8 true xfa true xfa_runtime enabled"
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true symbol_level 1 v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -1606,7 +1606,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true suite oneshot symbol_level 1 v8 true xfa true xfa_runtime enabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true suite oneshot symbol_level 1 v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -1650,7 +1650,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime disabled os windows skia true suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia true suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -1694,7 +1694,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -1738,7 +1738,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true symbol_level 1 v8 true xfa true xfa_runtime enabled"
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true symbol_level 1 v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -1781,7 +1781,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true suite oneshot symbol_level 1 v8 true xfa true xfa_runtime enabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true suite oneshot symbol_level 1 v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -1825,7 +1825,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime disabled os windows skia true suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows skia true suite javascript_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -1869,7 +1869,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "clang true debug true is_standalone true javascript_runtime enabled os windows skia true suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
+      "clang true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os windows skia true suite xfa_disabled symbol_level 1 v8 true xfa true xfa_runtime disabled",
       "--disable-xfa"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",

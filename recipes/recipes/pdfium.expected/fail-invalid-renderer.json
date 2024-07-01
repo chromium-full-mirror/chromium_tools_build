@@ -157,7 +157,7 @@
       "--root=[CACHE]\\builder\\pdfium",
       "gen",
       "//out/debug_xfa_v8",
-      "--args=is_debug=true is_component_build=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true symbol_level=1 is_clang=true"
+      "--args=enable_rust=false enable_rust_cxx=false is_debug=true is_component_build=false pdf_enable_fontations=false pdf_enable_v8=true pdf_enable_xfa=true pdf_use_skia=false pdf_is_standalone=true use_remoteexec=true symbol_level=1 is_clang=true"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -1310,15 +1310,15 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 994, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 1002, in RunSteps",
       "    _run_tests(api, source_dir, memory_tool, v8, xfa, skia, out_dir,",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 366, in _run_tests",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 374, in _run_tests",
       "    test_runner = _TestRunner(api, source_root, memory_tool, resultdb, out_dir,",
       "                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 638, in __init__",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 646, in __init__",
       "    self.embedder_test_renderers = _validate_renderers('pdfium_embeddertests',",
       "                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 623, in _validate_renderers",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 631, in _validate_renderers",
       "    raise ValueError(f'Invalid {context_name} renderer: {\", \".join(invalid)}')",
       "ValueError: Invalid pdfium_embeddertests renderer: fake"
     ]
