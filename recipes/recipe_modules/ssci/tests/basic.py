@@ -15,10 +15,10 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
 
   api.ssci.run(
-      src_dir=api.path.abspath(api.path.checkout_dir),
+      src_dir=api.path.abspath(source_dir),
       build_dir='out/Release',
       sbom_bucket='my-bucket',
       sbom_folder='os/version',
@@ -26,7 +26,7 @@ def RunSteps(api):
       targets=["//example:example"])
 
   res = api.ssci.run(
-      src_dir=api.path.abspath(api.path.checkout_dir),
+      src_dir=api.path.abspath(source_dir),
       build_dir='out/Release',
       sbom_bucket='my-bucket',
       sbom_folder='os/version',
