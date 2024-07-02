@@ -811,7 +811,7 @@
     },
     "name": "hello_world on Windows-10",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--foo 42```<br/><br>Pending time: 1m 11s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--foo 42```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b test_buildername -t hello_world compile-and-test```<br/><br>Pending time: 1m 11s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

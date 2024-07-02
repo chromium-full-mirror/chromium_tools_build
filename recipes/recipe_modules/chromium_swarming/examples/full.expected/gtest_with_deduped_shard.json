@@ -978,7 +978,7 @@
     },
     "name": "hello_world on Ubuntu-16.04",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```hello_world.exe --test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br>Total shard runtime (0s) + overhead(0s): 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-16.04'<br/>Test command:<br/>```hello_world.exe --test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b test_buildername -t hello_world compile-and-test```<br/><br>Total shard runtime (0s) + overhead(0s): 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

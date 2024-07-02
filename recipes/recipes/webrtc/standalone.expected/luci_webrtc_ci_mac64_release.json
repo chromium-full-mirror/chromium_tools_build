@@ -2477,7 +2477,7 @@
     },
     "name": "dummy_test on Mac-10.13",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br/>Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Mac-10.13'<br/>Test command:<br/>```--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b \"Mac64 Release\" -t dummy_test compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@{@@@",
       "@@@STEP_LOG_LINE@chromium_swarming.summary@  \"shards\": [@@@",

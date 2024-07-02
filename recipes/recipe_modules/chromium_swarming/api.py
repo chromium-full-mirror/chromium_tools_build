@@ -53,40 +53,6 @@ _ALLOWED_BUILD_PROPERTIES = [
     "got_webrtc_revision", "got_revision", "perf_dashboard_machine_group"
 ]
 
-def _text_for_task(task):
-  lines = []
-
-  dimensions = task.request[0].dimensions
-  if dimensions.get('id'):
-    lines.append('Bot id: %r' % dimensions['id'])
-
-  # Platforms like Android mainly use "device_os" rather than "os" to
-  # select the test device.
-  if dimensions.get('device_os'):
-    lines.append('Run on Device OS: %r' % dimensions['device_os'])
-  elif dimensions.get('os'):
-    lines.append('Run on OS: %r' % dimensions['os'])
-
-  cmd = ' '.join(task.base_command + task.extra_args)
-  # The `luci-auth context` bit is used for a small subset of tests that need
-  # to make authenticated GS calls. Were a dev to run the test command locally,
-  # it'd likely be unneeded since:
-  # - They're probably not running a test that makes GS calls.
-  # - They probably have latent GS creds locally that gsutil will use.
-  # TODO(crbug.com/1498156): Remove this once swarming sets up BOTO itself.
-  # "disable=no-member" since pylint doesn't recongize this is running under
-  # a newer version of python that has removeprefix().
-  # TODO(crbug.com/1500415): Remove the "no-member" pylint disable.
-  cmd = cmd.removeprefix('luci-auth context -- ')  # pylint: disable=no-member
-  cmd = cmd.removeprefix('luci-auth.exe context -- ')  # pylint: disable=no-member
-  if len(cmd) <= 1000:
-    lines.append('Test command:')
-    lines.append('```' + cmd + '```')
-  else:
-    lines.append('Test command too long to list. See "shard #0" link below '
-                 'for the full invocation.')
-  lines.append('')
-  return '<br/>'.join(lines)
 
 
 def _parse_time(value):
@@ -991,7 +957,9 @@ class SwarmingApi(recipe_api.RecipeApi):
                                          shard_indices, resultdb_enabled),
         infra_step=True,
         **kwargs)
-    step_result.presentation.step_text += _text_for_task(task)
+    step_result.presentation.step_text += task.text_for_step(
+        self.m.buildbucket.build.builder.bucket,
+        self.m.buildbucket.build.builder.builder)
 
     task._trigger_output = step_result.json.output
     links = step_result.presentation.links
@@ -1036,7 +1004,9 @@ class SwarmingApi(recipe_api.RecipeApi):
                                          [shard_index], resultdb_enabled),
         infra_step=True,
         **kwargs)
-    step_result.presentation.step_text += _text_for_task(task)
+    step_result.presentation.step_text += task.text_for_step(
+        self.m.buildbucket.build.builder.bucket,
+        self.m.buildbucket.build.builder.builder)
 
     # While it might make more sense to update all presentation links in
     # trigger_task(), this is currently not possible. Steps are run in series,
@@ -1372,7 +1342,9 @@ class SwarmingApi(recipe_api.RecipeApi):
         task_args=collect_task_args,
         step_test_data=step_test_data,
         **kwargs)
-    step_result.presentation.step_text = _text_for_task(task)
+    step_result.presentation.step_text += task.text_for_step(
+        self.m.buildbucket.build.builder.bucket,
+        self.m.buildbucket.build.builder.builder)
 
     links = {}
     if hasattr(step_result, 'json') and hasattr(
@@ -1870,6 +1842,83 @@ class SwarmingTask:
     return {
         'tasks': {task['shard_index']: task for task in tasks},
     }
+
+  def text_for_step(self, bucket_name, builder_name):
+    """Returns the markdown step text for the test's step display in Milo."""
+    lines = []
+
+    dimensions = self.request[0].dimensions
+    if dimensions.get('id'):
+      lines.append('Bot id: %r' % dimensions['id'])
+
+    # Platforms like Android mainly use "device_os" rather than "os" to
+    # select the test device.
+    if dimensions.get('device_os'):
+      lines.append('Run on Device OS: %r' % dimensions['device_os'])
+    elif dimensions.get('os'):
+      lines.append('Run on OS: %r' % dimensions['os'])
+
+    # TODO(crbug.com/349529661): Milo's native repro instructions feature
+    # potentially obviates this + the UTR cmd below. Need to reassess after that
+    # feature is deployed on Chrome bots.
+    cmd = ' '.join(self.base_command + self.extra_args)
+    # The `luci-auth context` bit is used for a small subset of tests that need
+    # to make authenticated GS calls. Were a dev to run the test command locally,
+    # it'd likely be unneeded since:
+    # - They're probably not running a test that makes GS calls.
+    # - They probably have latent GS creds locally that gsutil will use.
+    # TODO(crbug.com/1498156): Remove this once swarming sets up BOTO itself.
+    # "disable=no-member" since pylint doesn't recongize this is running under
+    # a newer version of python that has removeprefix().
+    # TODO(crbug.com/1500415): Remove the "no-member" pylint disable.
+    cmd = cmd.removeprefix('luci-auth context -- ')  # pylint: disable=no-member
+    cmd = cmd.removeprefix('luci-auth.exe context -- ')  # pylint: disable=no-member
+    if len(cmd) <= 1000:
+      lines.append('Test command:')
+      lines.append('```' + cmd + '```')
+    else:
+      lines.append('Test command too long to list. See "shard #0" link below '
+                   'for the full invocation.')
+
+    # This "test_suite" tag depends on the value set in steps.py, so might not
+    # be set for all uses of this recipe module.
+    # TODO(crbug.com/350641999): Clean-up how we handle and set swarming tags
+    # throughout the Chromium recipe stack.
+    test_name = None
+    for t in self.request.tags or []:
+      k, v = t.split(':', 1)
+      if k == 'test_suite':
+        test_name = v
+        break
+    if not test_name:
+      # This might not work right if the suite's name has whitespace in it.
+      # Hopefully the "test_suite:" tag is set above for us.
+      test_name = self.request.name.split(' ')[0]
+    bucket_name = bucket_name.replace('.shadow', '')
+
+    def quote_as_needed(s):
+      if len(s.split()) > 1:
+        return '"' + s + '"'
+      return s
+
+    utr_cmd = [
+        'vpython3',
+        'tools/utr',
+        '-B',
+        quote_as_needed(bucket_name),
+        '-b',
+        quote_as_needed(builder_name),
+        '-t',
+        quote_as_needed(test_name),
+        'compile-and-test',
+    ]
+    utr_cmd = ' '.join(utr_cmd)
+    lines.append('')
+    lines.append(
+        'UTR command to reproduce locally, from your Chromium checkout:')
+    lines.append('```' + utr_cmd + '```')
+    lines.append('')
+    return '<br/>'.join(lines)
 
   def collect_cmd_input(self):
     """Returns a list of tasks.

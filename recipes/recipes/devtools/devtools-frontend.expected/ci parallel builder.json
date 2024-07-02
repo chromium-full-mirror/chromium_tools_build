@@ -2060,7 +2060,7 @@
     "name": "Run tests.Unit Tests.Unit Tests shards results.Unit Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage front_end```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage front_end```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t Unit compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2148,7 +2148,7 @@
     "name": "Run tests.Interactions Tests.Interactions Tests shards results.Interactions Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage test/interactions```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage test/interactions```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t Interactions compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2236,7 +2236,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t E2E compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2324,7 +2324,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #1) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t E2E compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2412,7 +2412,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #2) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t E2E compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2500,7 +2500,7 @@
     "name": "Run tests.E2E Tests.E2E Tests shards results.E2E Tests (Shard #3) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t E2E compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2588,7 +2588,7 @@
     "name": "Run tests.Repeat E2E Tests.Repeat E2E Tests shards results.Repeat E2E Tests (Shard #0) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t Repeat compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2676,7 +2676,7 @@
     "name": "Run tests.Repeat E2E Tests.Repeat E2E Tests shards results.Repeat E2E Tests (Shard #1) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t Repeat compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2764,7 +2764,7 @@
     "name": "Run tests.Repeat E2E Tests.Repeat E2E Tests shards results.Repeat E2E Tests (Shard #2) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t Repeat compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -2852,7 +2852,7 @@
     "name": "Run tests.Repeat E2E Tests.Repeat E2E Tests shards results.Repeat E2E Tests (Shard #3) on Ubuntu-22.04",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@3@@@",
-      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Ubuntu-22.04'<br/>Test command:<br/>```vpython3 -u third_party/node/node.py --output out/Release/gen/test/run.js --artifacts-dir=${ISOLATED_OUTDIR} --skip-ninja -v --coverage --bail```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b parallel_shuffled_linux -t Repeat compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
