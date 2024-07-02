@@ -489,31 +489,13 @@ class TestUtilsApi(recipe_api.RecipeApi):
           step_text='Too many failed tests: %d' % total_failing_variants)
       return
 
-    test_variants_to_query = []
-    test_info_for_zip = []
-    for suite in tests_to_check:
-      rdb_results = suite.get_rdb_results('with patch')
-      failing_tests = rdb_results.unexpected_failing_tests
-      for failing_test in failing_tests:
-        test_variants_to_query.append({
-            'testId': failing_test.test_id,
-            'variantHash': rdb_results.variant_hash,
-        })
-        test_info_for_zip.append({
-            'test_name': failing_test.test_name,
-            'suite_name': suite.name,
-        })
-
     if ('chromium.luci_analysis_v2'
         in self.m.buildbucket.build.input.experiments):
-      self._query_stability_rate(tests_to_check, test_variants_to_query,
-                                 test_info_for_zip)
+      self._query_stability_rate(tests_to_check)
     else:
-      self._query_failure_rate(tests_to_check, test_variants_to_query,
-                               test_info_for_zip)
+      self._query_failure_rate(tests_to_check)
 
-  def _query_failure_rate(self, tests_to_check, test_variants_to_query,
-                          test_info_for_zip):
+  def _query_failure_rate(self, tests_to_check):
     """Get flaky or deterministically failing tests by querying LUCI Analysis
 
     Exoneration criteria:
@@ -532,10 +514,22 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     Args:
       tests_to_check (List(Test)): List of failing test suites
-      test_variants_to_query: List of test variant dicts to query
-      test_info_zip: List of test info to zip with RPC response
 
     """
+    test_variants_to_query = []
+    test_info_for_zip = []
+    for suite in tests_to_check:
+      rdb_results = suite.get_rdb_results('with patch')
+      failing_tests = rdb_results.unexpected_failing_tests
+      for failing_test in failing_tests:
+        test_variants_to_query.append({
+            'testId': failing_test.test_id,
+            'variantHash': rdb_results.variant_hash,
+        })
+        test_info_for_zip.append({
+            'test_name': failing_test.test_name,
+            'suite_name': suite.name,
+        })
     failure_analysis_protos = []
     query_failure_rate_step_error_msg = None
     try:
@@ -663,8 +657,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     query_luci_analysis_step.presentation.properties['luci_analysis_info'] = (
         luci_analysis_build_output)
 
-  def _query_stability_rate(self, tests_to_check, test_variants_to_query,
-                            test_info_for_zip):
+  def _query_stability_rate(self, tests_to_check):
     """Get flaky or deterministically failing tests by querying LUCI Analysis
 
     Exoneration criteria is defined in infra/config/luci-analysis.cfg in
@@ -678,10 +671,39 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     Args:
       tests_to_check (List(Test)): List of failing test suites
-      test_variants_to_query: List of test variant dicts to query
-      test_info_zip: List of test info to zip with RPC response
 
     """
+    test_variants_to_query = []
+    test_info_for_zip = []
+    for suite in tests_to_check:
+      rdb_results = suite.get_rdb_results('with patch')
+      failing_tests = rdb_results.unexpected_failing_tests
+      for failing_test in failing_tests:
+        gitiles_commit = self.m.buildbucket.build.output.gitiles_commit
+        sources = {
+            'gitilesCommit': {
+                'host': gitiles_commit.host,
+                'project': gitiles_commit.project,
+                'commitHash': gitiles_commit.id,
+                'ref': gitiles_commit.ref,
+                'position': gitiles_commit.position,
+            },
+            'changelists': [{
+                'host': change.host,
+                'project': change.project,
+                'change': change.change,
+                'patchset': change.patchset,
+            } for change in self.m.buildbucket.build.input.gerrit_changes],
+        }
+        test_variants_to_query.append({
+            'testId': failing_test.test_id,
+            'variantHash': rdb_results.variant_hash,
+            'sources': sources,
+        })
+        test_info_for_zip.append({
+            'test_name': failing_test.test_name,
+            'suite_name': suite.name,
+        })
     stability_analysis_protos = []
     query_stability_rate_step_error_msg = None
     try:
