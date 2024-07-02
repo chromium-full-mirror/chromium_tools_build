@@ -1757,7 +1757,7 @@
     },
     "name": "telemetry_gpu_unittests nvidia on NVIDIA GPU on Windows",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b fake-tester -t \"telemetry_gpu_unittests nvidia\" compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b fake-tester -t \"telemetry_gpu_unittests nvidia\" compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1866,7 +1866,7 @@
     },
     "name": "telemetry_gpu_unittests amd on AMD GPU on Windows",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b fake-tester -t \"telemetry_gpu_unittests amd\" compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b fake-tester -t \"telemetry_gpu_unittests amd\" compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",
@@ -1975,7 +1975,7 @@
     },
     "name": "telemetry_gpu_unittests vmware on (15ad) GPU on Windows",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b fake-tester -t \"telemetry_gpu_unittests vmware\" compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>[UTR](https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md) command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b fake-tester -t \"telemetry_gpu_unittests vmware\" compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

@@ -814,7 +814,7 @@
     },
     "name": "hello_world on Windows-10",
     "~followup_annotations": [
-      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br/><br/>UTR command to reproduce locally, from your Chromium checkout:<br/>```vpython3 tools/utr -B ci -b test_buildername -t hello_world compile-and-test```<br/><br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
+      "@@@STEP_TEXT@Run on OS: 'Windows-10'<br/>Test command:<br/>```--isolated-script-test-output=${ISOLATED_OUTDIR}/output.json --isolated-script-test-perf-output=${ISOLATED_OUTDIR}/perftest-output.json```<br>Pending time: 1m 11s<br>Shard runtime (32s) + overhead (29s): 1m 0s@@@",
       "@@@STEP_LOG_LINE@json.output@{}@@@",
       "@@@STEP_LOG_END@json.output@@@",
       "@@@STEP_LOG_END@raw_io.output[Merge script log]@@@",

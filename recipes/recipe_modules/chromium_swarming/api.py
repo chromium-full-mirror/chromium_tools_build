@@ -1880,8 +1880,6 @@ class SwarmingTask:
       lines.append('Test command too long to list. See "shard #0" link below '
                    'for the full invocation.')
 
-    # This "test_suite" tag depends on the value set in steps.py, so might not
-    # be set for all uses of this recipe module.
     # TODO(crbug.com/350641999): Clean-up how we handle and set swarming tags
     # throughout the Chromium recipe stack.
     test_name = None
@@ -1890,10 +1888,11 @@ class SwarmingTask:
       if k == 'test_suite':
         test_name = v
         break
+    # This "test_suite" tag depends on the value set in steps.py, so might not
+    # be set for all uses of this recipe module. Use that as an indication that
+    # this module is being used outside of a Chrome/Chromium builder.
     if not test_name:
-      # This might not work right if the suite's name has whitespace in it.
-      # Hopefully the "test_suite:" tag is set above for us.
-      test_name = self.request.name.split(' ')[0]
+      return '<br/>'.join(lines)
     bucket_name = bucket_name.replace('.shadow', '')
 
     def quote_as_needed(s):
@@ -1913,9 +1912,11 @@ class SwarmingTask:
         'compile-and-test',
     ]
     utr_cmd = ' '.join(utr_cmd)
+    utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
     lines.append('')
     lines.append(
-        'UTR command to reproduce locally, from your Chromium checkout:')
+        f'[UTR]({utr_readme_url}) command to reproduce locally, from your '
+        'Chromium checkout:')
     lines.append('```' + utr_cmd + '```')
     lines.append('')
     return '<br/>'.join(lines)
