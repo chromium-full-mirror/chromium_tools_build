@@ -175,7 +175,7 @@ def _is_reclient_enabled(api, msvc):
   return not msvc and api.reclient.instance
 
 
-def _checkout_step(api, target_os, reclient_enabled):
+def _checkout_step(api, target_os, reclient_enabled, rust):
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
 
@@ -187,6 +187,8 @@ def _checkout_step(api, target_os, reclient_enabled):
     api.gclient.c.got_revision_mapping['pdfium'] = 'got_revision'
     if reclient_enabled:
       api.reclient.use_download_remoteexec_cfg_hook(api.gclient.c.solutions[0])
+    if rust:
+      api.gclient.c.solutions[0].custom_vars['checkout_rust'] = 'True'
     update_result = api.bot_update.ensure_checkout()
 
     api.gclient.runhooks()
@@ -976,7 +978,7 @@ def RunSteps(api, memory_tool, skia, rust, xfa, v8, target_cpu, clang, msvc,
              rel, run_skia_gold, component, skip_test, target_os, renderers,
              swarming):
   update_result = _checkout_step(api, target_os,
-                                 _is_reclient_enabled(api, msvc))
+                                 _is_reclient_enabled(api, msvc), rust)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
 
