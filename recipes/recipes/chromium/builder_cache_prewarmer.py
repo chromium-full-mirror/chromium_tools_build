@@ -48,18 +48,17 @@ def RunSteps(api, properties):
     api.chromium_tests.report_builders(builder_config)
 
     api.chromium_tests.configure_build(builder_config)
-    update_result, targets_config = api.chromium_tests.prepare_checkout(
+    update_result, build_dir, targets_config = api.chromium_tests.prepare_checkout(
         builder_config, no_fetch_tags=True)
 
     # Get timestamp before compiling since that could take a while
     checkout_time = int(api.time.time())
 
     if api.code_coverage.using_coverage:
-      api.code_coverage.source_dir = api.chromium_checkout.source_dir
       api.code_coverage.instrument([])
 
     raw_result, _ = api.chromium_tests.compile_specific_targets(
-        builder_id, builder_config, update_result, targets_config,
+        build_dir, builder_id, builder_config, update_result, targets_config,
         targets_config.compile_targets, targets_config.all_tests)
 
     if raw_result and raw_result.status != common_pb.SUCCESS:

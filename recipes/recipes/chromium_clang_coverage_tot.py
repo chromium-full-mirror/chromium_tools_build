@@ -72,11 +72,13 @@ def RunSteps(api):
 
 def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
   update_result = api.bot_update.ensure_checkout()
+  checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
 
-  api.chromium.ensure_toolchains()
+  api.chromium.ensure_toolchains(checkout_dir)
 
-  api.chromium.runhooks()
+  api.chromium.runhooks(source_dir, build_dir)
   clang_revision_file = source_dir.joinpath('third_party', 'llvm-build',
                                             'Release+Asserts',
                                             'cr_build_revision')
@@ -84,14 +86,13 @@ def _RunStepsInBuilderCacheDir(api, builder_id, bot_config):
       'Read clang revision', clang_revision_file, test_data='332838-1')
   api.step.active_result.presentation.step_text = revision
 
-  api.chromium.mb_gen(builder_id)
+  api.chromium.mb_gen(source_dir, build_dir, builder_id)
 
   coverage_script = 'coverage.py'
   coverage_script_path = source_dir.joinpath('tools', 'code_coverage',
                                              coverage_script)
   output_dir_name = 'clang_tot_coverage_report'
   output_dir_path = source_dir.joinpath('out', output_dir_name)
-  build_dir = api.chromium.build_dir
 
   cmd = ['python3', coverage_script_path]
   cmd.extend(SAMPLE_TARGETS)

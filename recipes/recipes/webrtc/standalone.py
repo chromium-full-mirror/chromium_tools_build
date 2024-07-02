@@ -32,6 +32,8 @@ def RunSteps(api):
 
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
+
   targets_config = api.chromium_tests.create_targets_config(
       builder_config, update_result.properties, source_dir)
 
@@ -42,14 +44,14 @@ def RunSteps(api):
     api.webrtc.download_video_quality_tools(source_dir)
 
   if api.webrtc.should_generate_code_coverage(builder_id, builder_config):
-    api.webrtc.setup_code_coverage_module(source_dir)
+    api.webrtc.setup_code_coverage_module(source_dir, build_dir)
 
-  api.chromium.ensure_toolchains()
-  api.chromium.runhooks()
+  api.chromium.ensure_toolchains(update_result.checkout_dir)
+  api.chromium.runhooks(source_dir, build_dir)
 
   for phase in builders.BUILDERS_DB[builder_id].phases:
     test_targets, compile_targets = api.webrtc.determine_compilation_targets(
-        source_dir, builder_id, targets_config, phase)
+        source_dir, build_dir, builder_id, targets_config, phase)
     if not compile_targets:
       step_result = api.step('No further steps are necessary.', cmd=None)
       step_result.presentation.status = api.step.SUCCESS
@@ -59,32 +61,36 @@ def RunSteps(api):
         t for t in targets_config.all_tests if t.target_name in test_targets
     ]
 
-    api.webrtc.run_mb(source_dir, builder_id, phase, tests_to_compile)
-    raw_result = api.chromium.compile(compile_targets, use_reclient=True)
+    # run_mb creates a build_dir dependening on the builder and phase
+    build_dir = api.webrtc.run_mb(source_dir, builder_id, phase,
+                                  tests_to_compile)
+    raw_result = api.chromium.compile(
+        source_dir, build_dir, targets=compile_targets, use_reclient=True)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
-    api.webrtc.isolate(builder_id, builder_config, tests_to_compile)
+    api.webrtc.isolate(build_dir, builder_id, builder_config, tests_to_compile)
 
     builder_spec = builders.BUILDERS_DB[builder_id]
     if builder_spec.binary_size_files:
-      api.webrtc.get_binary_sizes(builder_spec.binary_size_files)
+      api.webrtc.get_binary_sizes(builder_spec.binary_size_files, build_dir)
     if builder_spec.build_android_archive:
       api.webrtc.build_android_archive(source_dir)
     if builder_spec.archive_apprtc:
-      api.webrtc.package_apprtcmobile(builder_id)
+      api.webrtc.package_apprtcmobile(build_dir, builder_id)
 
     tests_to_run = [
         t for t in targets_config.tests_on(builder_id)
         if t.target_name in test_targets
     ]
 
-    test_failure_summary = api.webrtc.run_tests(source_dir, builder_id,
-                                                tests_to_run)
+    test_failure_summary = api.webrtc.run_tests(source_dir, build_dir,
+                                                builder_id, tests_to_run)
 
     if test_failure_summary:
       return test_failure_summary
 
-  api.webrtc.trigger_child_builds(builder_id, builder_config, update_result)
+  api.webrtc.trigger_child_builds(builder_id, builder_config, build_dir,
+                                  update_result)
 
 
 def GenTests(api):

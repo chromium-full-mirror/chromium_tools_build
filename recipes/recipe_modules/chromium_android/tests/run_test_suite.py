@@ -17,10 +17,13 @@ DEPS = [
 def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('main_builder')
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-  api.chromium_android.run_test_suite('test_suite', shard_timeout=1200)
+  source_dir = api.path.cache_dir / 'builder/src'
+  api.path.checkout_dir = source_dir
+  build_dir = source_dir / 'out/Release'
   api.chromium_android.run_test_suite(
-      'test_suite-with-rdb', resultdb=ResultDB.create(enable=True))
+      build_dir, 'test_suite', shard_timeout=1200)
+  api.chromium_android.run_test_suite(
+      build_dir, 'test_suite-with-rdb', resultdb=ResultDB.create(enable=True))
 
 
 def GenTests(api):

@@ -144,12 +144,13 @@ class FilterApi(recipe_api.RecipeApi):
 
   def _run_mb_analyze(
       self,
+      build_dir: config_types.Path,
       analyze_input: _AnalyzeInput,
       test_analyze_output: _AnalyzeOutput,
+      *,
       builder_id: chromium.BuilderId | None,
       mb_path: config_types.Path | None,
       mb_config_path: config_types.Path | None,
-      build_output_dir: config_types.Path | None,
       phase: str | None,
   ) -> step_data.StepData:
     env = {}
@@ -161,11 +162,12 @@ class FilterApi(recipe_api.RecipeApi):
     with self.m.context(env=env):
       builder_id = builder_id or self.m.chromium.get_builder_id()
       return self.m.chromium.mb_analyze(
+          self.m.path.checkout_dir,
+          build_dir,
           builder_id,
           analyze_input,
           mb_path=mb_path,
           mb_config_path=mb_config_path,
-          build_dir=build_output_dir,
           phase=phase,
           test_analyze_output=test_analyze_output)
 
@@ -258,6 +260,7 @@ class FilterApi(recipe_api.RecipeApi):
 
   def analyze(
       self,
+      build_dir: config_types.Path,
       affected_files: Collection[str],
       test_targets: Collection[str] | None,
       additional_compile_targets: Collection[str] | None,
@@ -268,7 +271,6 @@ class FilterApi(recipe_api.RecipeApi):
       builder_id: chromium.BuilderId | None = None,
       mb_path: config_types.Path | None = None,
       mb_config_path: config_types.Path | None = None,
-      build_output_dir: config_types.Path | None = None,
       phase: str | None = None,
   ) -> tuple[Collection[str], Collection[str]]:
     """Runs "analyze" step to determine targets affected by the patch.
@@ -301,6 +303,7 @@ class FilterApi(recipe_api.RecipeApi):
     checkout will be used.
 
     Args:
+      build_dir: The path to the build output directory.
       affected_files: Collection of files affected by the current patch.
         Paths should only use forward slashes ("/") on all platforms.
       test_targets: The possible set of executables that are desired to
@@ -326,7 +329,6 @@ class FilterApi(recipe_api.RecipeApi):
       mb_path: The path to the source directory containing the mb.py
         script.
       mb_config_path: The path to the MB config file.
-      build_output_dir: The path to the build output directory.
       phase: String to distinguish the phase of a builder.
 
     Returns:
@@ -362,10 +364,10 @@ class FilterApi(recipe_api.RecipeApi):
     if self.m.chromium.c.project_generator.tool == 'mb':
       analyzer = functools.partial(
           self._run_mb_analyze,
+          build_dir,
           builder_id=builder_id,
           mb_path=mb_path,
           mb_config_path=mb_config_path,
-          build_output_dir=build_output_dir,
           phase=phase,
       )
     else:

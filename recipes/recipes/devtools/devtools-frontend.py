@@ -85,11 +85,12 @@ def RunSteps(api, builder_config, is_official_build, devtools_skip_typecheck,
   update_result = api.devtools.update()
 
   source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
   with api.devtools.depot_on_path(source_dir):
     api.devtools.clean_out_dir(source_dir, builder_config, clobber)
-    api.chromium.run_gn()
+    api.chromium.run_gn(source_dir, build_dir)
 
-    compilation_result = api.chromium.compile()
+    compilation_result = api.chromium.compile(source_dir, build_dir)
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
     cas_digest = api.devtools.archive_to_cas(source_dir)

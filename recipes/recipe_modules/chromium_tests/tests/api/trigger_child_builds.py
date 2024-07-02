@@ -35,7 +35,7 @@ def RunSteps(api, commit, set_output_commit):
     builder_id, builder_config = (
         api.chromium_tests_builder_config.lookup_builder())
     api.chromium_tests.configure_build(builder_config)
-    update_step, _ = api.chromium_tests.prepare_checkout(
+    update_step, _, _ = api.chromium_tests.prepare_checkout(
         builder_config, set_output_commit=set_output_commit)
     if commit is not None:
       commit = common_pb.GitilesCommit(**commit)

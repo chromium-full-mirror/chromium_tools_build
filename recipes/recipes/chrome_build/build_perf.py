@@ -6,7 +6,8 @@
 """
 
 from recipe_engine import post_process
-from recipe_engine.engine_types import freeze
+from recipe_engine.config_types import Path
+
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -19,6 +20,7 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'code_coverage',
+    'profiles',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -35,17 +37,17 @@ def _raise_raw_result_on_failure(api, raw_result):
     raise api.step.StepFailure(raw_result.summary_markdown)
 
 
-def _compile_with_and_without_remote_cache(api, target):
+def _compile_with_and_without_remote_cache(api, build_dir: Path, target):
   # First build without remote cache.
-  api.chromium_build_perf.recreate_build_dir(remove_deps_cache=True)
+  api.chromium_build_perf.recreate_build_dir(build_dir, remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_ninja(
-      target, with_remote_cache=False)
+      build_dir, target, with_remote_cache=False)
   _raise_raw_result_on_failure(api, raw_result)
 
   # Second build with remote cache produced by the previous build.
-  api.chromium_build_perf.recreate_build_dir()
+  api.chromium_build_perf.recreate_build_dir(build_dir)
   raw_result = api.chromium_build_perf.build_with_ninja(
-      target, with_remote_cache=True)
+      build_dir, target, with_remote_cache=True)
   _raise_raw_result_on_failure(api, raw_result)
 
 
@@ -60,19 +62,23 @@ def RunSteps(api):
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
 
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
+  source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
   api.chromium.ensure_toolchains(
       checkout_dir=api.chromium_checkout.checkout_dir)
 
   if api.code_coverage.using_coverage:
-    api.code_coverage.source_dir = api.chromium_checkout.source_dir
+    api.profiles.source_dir = source_dir
+    api.code_coverage.source_dir = source_dir
+    api.code_coverage.build_dir = build_dir
     api.code_coverage.instrument([])
 
   with api.context(cwd=solution_path):
-    api.chromium.runhooks()
+    api.chromium.runhooks(source_dir, build_dir)
 
   # Build target: all
-  _compile_with_and_without_remote_cache(api, 'all')
+  _compile_with_and_without_remote_cache(api, build_dir, 'all')
 
 
 def GenTests(api):

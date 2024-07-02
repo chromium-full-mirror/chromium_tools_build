@@ -10,6 +10,7 @@ DEPS = [
     'code_coverage',
     'gn',
     'isolate',
+    'profiles',
     'reclient',
     'siso',
     'depot_tools/gclient',

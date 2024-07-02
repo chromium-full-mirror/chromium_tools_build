@@ -31,9 +31,12 @@ def RunSteps(api):
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
+  build_dir = source_dir / 'out/Release'
 
   api.chromium.mb_gen(
+      source_dir,
+      build_dir,
       chromium.BuilderId.create_for_group('test-group', 'test-builder'),
       phase='test_phase',
       isolated_targets=['base_unittests_run'],

@@ -24,7 +24,9 @@ def RunSteps(api):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
   update_result = api.v8.checkout()
-  api.v8.runhooks()
+  source_dir = update_result.source_root.path
+  build_dir = api.v8.build_dir(source_dir)
+  api.v8.runhooks(source_dir, build_dir)
 
   # Run node tests for js-fuzzer using the node docker image.
   source_dir = update_result.source_root.path

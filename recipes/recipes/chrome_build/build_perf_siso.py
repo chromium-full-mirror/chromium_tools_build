@@ -5,6 +5,8 @@
 """
 
 from recipe_engine import post_process
+from recipe_engine.config_types import Path
+
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -18,6 +20,7 @@ DEPS = [
     'chromium_tests_builder_config',
     'code_coverage',
     'depot_tools/gclient',
+    'profiles',
     'recipe_engine/buildbucket',
     'recipe_engine/context',
     'recipe_engine/file',
@@ -40,26 +43,33 @@ def _get_builder_id(api):
   return chromium.BuilderId.create_for_group(api.builder_group.for_current,
                                              buildername)
 
-def _run_builds(api, target, phase, step_name_suffix=None):
+
+def _run_builds(api, build_dir: Path, target, phase, step_name_suffix=None):
   # First build without remote cache.
   api.chromium_build_perf.recreate_build_dir(
-      phase=phase, remove_deps_cache=True)
+      build_dir, phase=phase, remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_siso(
-      target, with_remote_cache=False, step_name_suffix=step_name_suffix)
+      build_dir,
+      target,
+      with_remote_cache=False,
+      step_name_suffix=step_name_suffix)
   _raise_raw_result_on_failure(api, raw_result)
 
   # Warm-up the remote cache when not using reproxy, because otherwise
   # C++ actions will not get cache hits due to their deps changing
   # after parsing the depsfile. TODO(b/283341125)
   if phase == 'builtin':
-    api.chromium_build_perf.recreate_build_dir(phase=phase)
+    api.chromium_build_perf.recreate_build_dir(build_dir, phase=phase)
     raw_result = api.chromium_build_perf.build_with_siso(
-        target, with_remote_cache=True, step_name_suffix=' (warmup)')
+        build_dir, target, with_remote_cache=True, step_name_suffix=' (warmup)')
 
   # Second build with remote cache produced by the previous build.
-  api.chromium_build_perf.recreate_build_dir(phase=phase)
+  api.chromium_build_perf.recreate_build_dir(build_dir, phase=phase)
   raw_result = api.chromium_build_perf.build_with_siso(
-      target, with_remote_cache=True, step_name_suffix=step_name_suffix)
+      build_dir,
+      target,
+      with_remote_cache=True,
+      step_name_suffix=step_name_suffix)
   _raise_raw_result_on_failure(api, raw_result)
 
 
@@ -75,18 +85,22 @@ def RunSteps(api):
   update_result = api.chromium_checkout.ensure_checkout()
   api.chromium.ensure_toolchains(checkout_dir=update_result.checkout_dir)
   source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
 
   if api.code_coverage.using_coverage:
-    api.code_coverage.source_dir = api.chromium_checkout.source_dir
+    api.profiles.source_dir = source_dir
+    api.code_coverage.source_dir = source_dir
+    api.code_coverage.build_dir = build_dir
     api.code_coverage.instrument([])
   with api.context(cwd=solution_path):
-    api.chromium.runhooks()
+    api.chromium.runhooks(source_dir, build_dir)
 
   api.step('check siso version', [api.siso.siso_path(source_dir), 'version'])
 
   # Build target: all
-  _run_builds(api, 'all', phase='builtin')
-  _run_builds(api, 'all', phase='reproxy', step_name_suffix=' with reproxy')
+  _run_builds(api, build_dir, 'all', phase='builtin')
+  _run_builds(
+      api, build_dir, 'all', phase='reproxy', step_name_suffix=' with reproxy')
 
 
 def GenTests(api):

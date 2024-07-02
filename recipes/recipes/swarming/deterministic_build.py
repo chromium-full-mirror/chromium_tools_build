@@ -169,6 +169,7 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     update_result = ConfigureChromiumBuilder(api, recipe_config)
   source_dir = update_result.source_root.path
+  default_build_dir = api.chromium.default_build_dir(source_dir)
 
   # The default setup by this recipe is to do a clobber build in one directory,
   # move it elsewhere, then do another clobber build in the original directory,
@@ -185,18 +186,18 @@ def RunSteps(api):
   # Since disk lacks in Mac, we need to remove files before build.
   # In check_different_build_dirs, only the .2 build dir exists here.
   for ext in '12':
-    p = str(api.chromium.build_dir).rstrip('\\/') + '.' + ext
+    p = str(default_build_dir).rstrip('\\/') + '.' + ext
     api.file.rmtree('rmtree %s' % p, p)
   if check_different_build_dirs:
     # In this setup, one build dir does incremental builds. Make sure no stale
     # .runtime_deps (explicitly also in subdirectories) files hang around.
-    api.file.rmglob('rm old .runtime_deps', api.chromium.build_dir,
+    api.file.rmglob('rm old .runtime_deps', default_build_dir,
                     '**/*.runtime_deps')
 
   targets = recipe_config['targets']
 
   with api.context(cwd=solution_path):
-    api.chromium.runhooks()
+    api.chromium.runhooks(source_dir, default_build_dir)
 
   # Whether do first build in local or use reclient.
   compare_local = recipe_config.get('compare_local', False)
@@ -206,51 +207,68 @@ def RunSteps(api):
   # Do a first build and move the build artifact to the temp directory.
   builder_id = chromium.BuilderId.create_for_group(
       api.builder_group.for_current, buildername)
-  api.chromium.mb_gen(builder_id, phase='local' if compare_local else None)
+  api.chromium.mb_gen(
+      source_dir,
+      default_build_dir,
+      builder_id,
+      phase='local' if compare_local else None)
   api.chromium.mb_isolate_everything(
-      builder_id, phase='local' if compare_local else None)
+      source_dir,
+      default_build_dir,
+      builder_id,
+      phase='local' if compare_local else None)
 
   raw_result = api.chromium.compile(
-      targets, name='First build', use_reclient=not compare_local)
+      source_dir,
+      default_build_dir,
+      targets=targets,
+      name='First build',
+      use_reclient=not compare_local)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   if not check_different_build_dirs:
-    MoveBuildDirectory(api, str(api.chromium.build_dir),
-                       str(api.chromium.build_dir).rstrip('\\/') + '.1')
+    MoveBuildDirectory(api, str(default_build_dir),
+                       str(default_build_dir).rstrip('\\/') + '.1')
 
   # Do the second build and move the build artifact to the temp directory.
-  build_dir = None
+  build_dir = default_build_dir
   if check_different_build_dirs:
     build_dir = source_dir / f'out/{api.chromium.c.build_config_fs}.2'
 
   api.chromium.mb_gen(
+      source_dir,
+      build_dir,
       builder_id,
-      build_dir=build_dir,
       phase=remote_phase if compare_local else None)
 
   api.chromium.mb_isolate_everything(
+      source_dir,
+      build_dir,
       builder_id,
-      build_dir=build_dir,
       phase=remote_phase if compare_local else None)
   raw_result = api.chromium.compile(
-      targets, name='Second build', use_reclient=True, build_dir=build_dir)
+      source_dir,
+      build_dir,
+      targets=targets,
+      name='Second build',
+      use_reclient=True)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
   if not check_different_build_dirs:
-    MoveBuildDirectory(api, str(api.chromium.build_dir),
-                       str(api.chromium.build_dir).rstrip('\\/') + '.2')
+    MoveBuildDirectory(api, str(default_build_dir),
+                       str(default_build_dir).rstrip('\\/') + '.2')
 
   # Compare the artifacts from the 2 builds, raise an exception if they're
   # not equals.
   # TODO(sebmarchand): Do a smarter comparison.
-  first_dir = str(api.chromium.build_dir)
+  first_dir = str(default_build_dir)
   if not check_different_build_dirs:
     first_dir = first_dir.rstrip('\\/') + '.1'
   api.isolate.compare_build_artifacts(
       first_dir,
-      str(api.chromium.build_dir).rstrip('\\/') + '.2')
+      str(default_build_dir).rstrip('\\/') + '.2')
 
 
 def _sanitize_nonalpha(text):

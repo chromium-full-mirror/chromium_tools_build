@@ -105,7 +105,7 @@ def generate_compilation_database(api, source_dir, out_path,
 
 
 def generate_gn_compilation_database(api, source_dir, out_path, targets):
-  with api.context(cwd=source_dir, env=api.chromium.get_env()):
+  with api.context(cwd=source_dir, env=api.chromium.get_env(source_dir)):
     export_compile_cmd = '--export-compile-commands'
     if targets:
       export_compile_cmd += '=' + ','.join(targets)
@@ -122,7 +122,7 @@ def generate_gn_target_list(api,
                             out_path,
                             gn_targets_json_file,
                             targets=None):
-  with api.context(cwd=source_dir, env=api.chromium.get_env()):
+  with api.context(cwd=source_dir, env=api.chromium.get_env(source_dir)):
     targets_cmd = '*'
     if targets:
       targets_cmd = ' '.join(targets)
@@ -159,13 +159,6 @@ def RunSteps(api, properties):
   gen_repo_branch = bot_config.gen_repo_branch or 'main'
   gen_repo_out_dir = bot_config.gen_repo_out_dir or 'Debug'
   internal = bot_config.internal or False
-
-  # These values are identical to those in config.py.
-  # TODO(crbug.com/1378059): Remove config.py?
-  checkout_path = api.path.cache_dir.joinpath('builder', 'src')
-  out_path = checkout_path.joinpath('out', gen_repo_out_dir)
-  compile_commands_json_file = out_path / 'compile_commands.json'
-  gn_targets_json_file = out_path / 'gn_targets.json'
 
   project = 'chromium' if not internal else 'chrome'
   api.codesearch.set_config(
@@ -213,6 +206,9 @@ def RunSteps(api, properties):
         root_solution_revision=properties.root_solution_revision)
   api.chromium.set_build_properties(update_result.properties)
   source_dir = update_result.source_root.path
+  build_dir = source_dir / 'out' / gen_repo_out_dir
+  compile_commands_json_file = build_dir / 'compile_commands.json'
+  gn_targets_json_file = build_dir / 'gn_targets.json'
 
   api.chromium.set_config(
       'codesearch',
@@ -221,12 +217,13 @@ def RunSteps(api, properties):
       HOST_PLATFORM=host_os)
 
   if target_os == 'ios':
-    api.chromium.ensure_toolchains()
+    api.chromium.ensure_toolchains(checkout_dir)
 
   # CHROME_HEADLESS makes sure that running 'gclient runhooks' doesn't require
   # entering 'y' to agree to a license.
   with api.context(env={'CHROME_HEADLESS': '1'}):
-    api.chromium.runhooks(name='runhooks%s' % name_suffix)
+    api.chromium.runhooks(
+        source_dir, build_dir, name='runhooks%s' % name_suffix)
 
   sentinel_path = api.path.cache_dir.joinpath('builder', 'cr-cs-sentinel')
   if api.path.exists(sentinel_path):
@@ -241,8 +238,9 @@ def RunSteps(api, properties):
     api.codesearch.cleanup_old_generated()
 
   gn_args = api.chromium.mb_gen(
+      source_dir,
+      build_dir,
       chromium.BuilderId.create_for_group(builder_id.group, builder_id.builder),
-      build_dir=out_path,
       name='generate build files')
 
   if platform == 'webview':
@@ -252,17 +250,17 @@ def RunSteps(api, properties):
     # target list.
     webview_gn_targets = ['//android_webview:system_webview_apk']
     generate_gn_compilation_database(
-        api=api, source_dir=source_dir, out_path=out_path, targets=targets)
-    generate_gn_target_list(api, source_dir, out_path, gn_targets_json_file,
+        api=api, source_dir=source_dir, out_path=build_dir, targets=targets)
+    generate_gn_target_list(api, source_dir, build_dir, gn_targets_json_file,
                             webview_gn_targets)
   else:
     generate_compilation_database(
         api=api,
         source_dir=source_dir,
-        out_path=out_path,
+        out_path=build_dir,
         compile_commands_json_file=compile_commands_json_file,
         targets=targets)
-    generate_gn_target_list(api, source_dir, out_path, gn_targets_json_file)
+    generate_gn_target_list(api, source_dir, build_dir, gn_targets_json_file)
 
   # Prepare Java Kythe output directory
   kzip_dir = api.codesearch.c.javac_extractor_output_dir
@@ -286,10 +284,11 @@ def RunSteps(api, properties):
           'KYTHE_CORPUS': corpus
       }):
     raw_result = api.chromium.compile(
-        targets,
+        source_dir,
+        build_dir,
+        targets=targets,
         name='compile%s' % name_suffix,
-        use_reclient=use_reclient,
-        build_dir=out_path)
+        use_reclient=use_reclient)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 

@@ -211,7 +211,7 @@ class AndroidApi(recipe_api.RecipeApi):
     return self.m.path.cleanup_dir / 'logcat'
 
   def spawn_logcat_monitor(self):
-    with self.m.context(env=self.m.chromium.get_env()):
+    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
       self.m.step(
           'spawn_logcat_monitor',
           [
@@ -263,7 +263,7 @@ class AndroidApi(recipe_api.RecipeApi):
     )
 
   def authorize_adb_devices(self):
-    with self.m.context(env=self.m.chromium.get_env()):
+    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
       return self.m.step(
           'authorize_adb_devices',
           [
@@ -300,7 +300,8 @@ class AndroidApi(recipe_api.RecipeApi):
           known_devices_arg = ['--known-devices-file', self.known_devices_file]
           args.extend(['--args', self.m.json.input(known_devices_arg)])
         args.extend(['run', '--output', self.m.json.output()])
-        with self.m.context(env=self.m.chromium.get_env()):
+        with self.m.context(
+            env=self.m.chromium.get_env(self.m.path.checkout_dir)):
           results = self.m.step(
               'Host Info',
               [
@@ -374,7 +375,7 @@ class AndroidApi(recipe_api.RecipeApi):
         self.adb_path(),
         '-v',
     ]
-    with self.m.context(env=self.m.chromium.get_env()):
+    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
       self.m.step('device_recovery', cmd, infra_step=True, **kwargs)
 
   def device_status(self, **kwargs):
@@ -394,7 +395,8 @@ class AndroidApi(recipe_api.RecipeApi):
         '--overwrite-known-devices-files',
     ]
     try:
-      with self.m.context(env=self.m.chromium.get_env()):
+      with self.m.context(
+          env=self.m.chromium.get_env(self.m.path.checkout_dir)):
         result = self.m.step(
             'device_status',
             [
@@ -529,7 +531,7 @@ class AndroidApi(recipe_api.RecipeApi):
       cmd.append('--chrome-specific-wipe')
     if emulators:
       cmd.append('--emulators')
-    with self.m.context(env=self.m.chromium.get_env()):
+    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
       with self.handle_exit_codes():
         return self.m.step('provision_devices', cmd, infra_step=True, **kwargs)
 
@@ -546,7 +548,9 @@ class AndroidApi(recipe_api.RecipeApi):
         '--denylist-file',
         self.denylist_file,
     ]
-    if int(self.m.chromium.get_version().get('MAJOR', 0)) > 50:
+    if int(
+        self.m.chromium.get_version(self.m.path.checkout_dir).get('MAJOR',
+                                                                  0)) > 50:
       install_cmd += ['--adb-path', self.adb_path()]
     if devices and isinstance(devices, list):
       for d in devices:
@@ -557,11 +561,11 @@ class AndroidApi(recipe_api.RecipeApi):
       install_cmd.append('--keep_data')
     if self.m.chromium.c.BUILD_CONFIG == 'Release':
       install_cmd.append('--release')
-    with self.m.context(env=self.m.chromium.get_env()):
+    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
       return self.m.step(
           'install ' + self.m.path.basename(apk), install_cmd, infra_step=True)
 
-  def monkey_test(self, **kwargs):
+  def monkey_test(self, build_dir: Path, **kwargs):
     args = [
         'monkey',
         '-v',
@@ -571,7 +575,7 @@ class AndroidApi(recipe_api.RecipeApi):
         self.denylist_file,
     ]
     with self.m.context(env={'BUILDTYPE': self.c.BUILD_CONFIG}):
-      return self.test_runner('Monkey Test', args, **kwargs)
+      return self.test_runner(build_dir, 'Monkey Test', args=args, **kwargs)
 
   def create_result_details(self, step_name, json_results_file):
     try:
@@ -609,9 +613,9 @@ class AndroidApi(recipe_api.RecipeApi):
       return ('https://storage.googleapis.com/chromium-result-details/'
               'UploadQuietFailure.txt')
 
-  def logcat_dump(self):
+  def logcat_dump(self, build_dir: Path):
     if self.c.logcat_bucket:
-      log_path = self.m.chromium.build_dir / 'full_log'
+      log_path = build_dir / 'full_log'
       cmd = [
           'vpython3',
           self.m.path.checkout_dir.joinpath('build', 'android',
@@ -637,7 +641,7 @@ class AndroidApi(recipe_api.RecipeApi):
       cmd = [
           'vpython3',
           self.repo_resource('recipes', 'tee.py'),
-          self.m.chromium.build_dir / 'full_log',
+          build_dir / 'full_log',
           '--',
           self.m.path.checkout_dir.joinpath('build', 'android',
                                             'adb_logcat_printer.py'),
@@ -737,7 +741,7 @@ class AndroidApi(recipe_api.RecipeApi):
     # failures on older script versions (e.g. when doing bisects).
     # TODO(agrieve): Switch to --output-directory once we don't need bisects
     #     to be able to try revisions that happened before Feb 2016.
-    env = self.m.chromium.get_env()
+    env = self.m.chromium.get_env(self.m.path.checkout_dir)
     env['CHROMIUM_OUTPUT_DIR'] = str(build_dir)
     with self.m.context(env=env):
       self.m.step(
@@ -753,8 +757,9 @@ class AndroidApi(recipe_api.RecipeApi):
         '-s',
         '-w',
     ]
-    if (force_latest_version or
-        int(self.m.chromium.get_version().get('MAJOR', 0)) > 52):
+    if (force_latest_version or int(
+        self.m.chromium.get_version(self.m.path.checkout_dir).get('MAJOR', 0))
+        > 52):
       tombstones_cmd += ['--adb-path', self.adb_path()]
     with self.m.context(env=env):
       self.m.step('stack_tool_for_tombstones', tombstones_cmd, infra_step=True)
@@ -771,14 +776,16 @@ class AndroidApi(recipe_api.RecipeApi):
     self.device_status()
 
   def common_tests_final_steps(self,
+                               build_dir: Path,
+                               *,
                                force_latest_version=False,
                                checkout_dir=None):
     self.shutdown_device_monitor()
-    self.logcat_dump()
+    self.logcat_dump(build_dir)
     self.stack_tool_steps(force_latest_version)
 
     if checkout_dir:
-      binary_dir = self.m.chromium.build_dir / 'lib.unstripped'
+      binary_dir = build_dir / 'lib.unstripped'
       breakpad_binaries = [binary_dir / 'libchrome.so']
       if self.m.path.exists(binary_dir / 'libwebviewchromium.so'):
         breakpad_binaries.append(binary_dir / 'libwebviewchromium.so')
@@ -804,7 +811,9 @@ class AndroidApi(recipe_api.RecipeApi):
     ] + args, **kwargs)
 
   def run_test_suite(self,
+                     build_dir: Path,
                      suite,
+                     *,
                      verbose=True,
                      result_details=False,
                      store_tombstones=False,
@@ -829,9 +838,14 @@ class AndroidApi(recipe_api.RecipeApi):
       args.extend(['-t', str(shard_timeout)])
     step_name = name or str(suite)
     try:
-      with self.m.context(env=self.m.chromium.get_env()):
+      with self.m.context(
+          env=self.m.chromium.get_env(self.m.path.checkout_dir)):
         self.test_runner(
-            step_name, args=args, wrapper_script_suite_name=suite, **kwargs)
+            build_dir,
+            step_name,
+            args=args,
+            wrapper_script_suite_name=suite,
+            **kwargs)
     finally:
       result_step = self.m.step.active_result
       if result_details:
@@ -844,7 +858,9 @@ class AndroidApi(recipe_api.RecipeApi):
               details_link)
 
   def run_java_unit_test_suite(self,
+                               build_dir: Path,
                                suite,
+                               *,
                                target_name=None,
                                verbose=True,
                                json_results_file=None,
@@ -861,8 +877,9 @@ class AndroidApi(recipe_api.RecipeApi):
     if additional_args:
       args.extend(additional_args)
 
-    with self.m.context(env=self.m.chromium.get_env()):
+    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
       return self.test_runner(
+          build_dir,
           '%s%s' % (str(suite), ' (%s)' % suffix if suffix else ''),
           args=args,
           wrapper_script_suite_name=str(target_name or suite),
@@ -958,7 +975,9 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def test_runner(
       self,
+      build_dir: Path,
       step_name,
+      *,
       args=None,
       wrapper_script_suite_name=None,
       pass_adb_path=True,
@@ -984,11 +1003,10 @@ class AndroidApi(recipe_api.RecipeApi):
       script = self.m.path.checkout_dir / self.c.test_runner
       env = {}
       if wrapper_script_suite_name:
-        script = self.m.chromium.build_dir.joinpath(
-            'bin', 'run_%s' % wrapper_script_suite_name)
+        script = build_dir / f'bin/run_{wrapper_script_suite_name}'
       else:
         env['CHROMIUM_OUTPUT_DIR'] = self.m.context.env.get(
-            'CHROMIUM_OUTPUT_DIR', self.m.chromium.build_dir)
+            'CHROMIUM_OUTPUT_DIR', build_dir)
 
       with self.m.context(env=env):
         cmd = [script] + args

@@ -62,7 +62,7 @@ def RunSteps(api):
     builder_id, builder_config = (
         api.chromium_tests_builder_config.lookup_builder())
     api.chromium_tests.configure_build(builder_config)
-    update_step, targets_config = (
+    update_step, build_dir, targets_config = (
         api.chromium_tests.prepare_checkout(builder_config))
 
   tests = []
@@ -72,6 +72,7 @@ def RunSteps(api):
             api.chromium_tests))
 
   return api.chromium_tests.compile_specific_targets(
+      build_dir,
       builder_id,
       builder_config,
       update_step,
