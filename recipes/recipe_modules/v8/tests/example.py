@@ -29,7 +29,6 @@ def RunSteps(api):
           }},
           ['TestBuilder'],
       ),
-      out_dir=api.properties.get('out_dir'),
   )
   if compile_failure:
     return compile_failure
@@ -42,12 +41,6 @@ def GenTests(api):
          _job_exists(api, 'v8_triggered_bot') +
          api.v8.check_in_any_arg('compile', 'v8/out/build') +
          api.v8.check_in_any_arg('isolate tests (perf)', 'v8/out/build') +
-         api.post_process(post_process.DropExpectation))
-
-  yield (api.v8.test(
-      'client.v8', 'V8 Foobar', 'custom_out_dir', out_dir='out-ref') +
-         api.v8.check_in_any_arg('compile', 'v8/out-ref/build') +
-         api.v8.check_in_any_arg('isolate tests (perf)', 'v8/out-ref/build') +
          api.post_process(post_process.DropExpectation))
 
   yield (api.v8.test('client.v8', 'V8 Foobar', 'compile_failure') +

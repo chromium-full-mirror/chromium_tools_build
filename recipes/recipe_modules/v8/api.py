@@ -649,8 +649,6 @@ class V8Api(recipe_api.RecipeApi):
       build_dir: Path to the directory containing built executables.
       isolate_targets: Targets to isolate.
     """
-    build_dir = build_dir or self.m.chromium.build_dir
-
     # Special handling for 'perf' target, since perf tests are going to be
     # executed on an internal swarming server and thus need to be uploaded to
     # internal isolate server.
@@ -742,12 +740,7 @@ class V8Api(recipe_api.RecipeApi):
     point.update(point_defaults)
     self.m.perf_dashboard.add_point([point], halt_on_failure=True)
 
-  def compile(self,
-              source_dir,
-              test_spec=None,
-              mb_config_path=None,
-              out_dir=None,
-              **kwargs):
+  def compile(self, source_dir, test_spec=None, mb_config_path=None, **kwargs):
     """Compile all desired targets and isolate tests.
 
     Args:
@@ -758,8 +751,6 @@ class V8Api(recipe_api.RecipeApi):
           isolated.
       mb_config_path: Path to the MB config file. Defaults to
           infra/mb/mb_config.py in the checkout.
-      out_dir: Name of the build output directory, e.g. 'out-ref'. Defaults to
-        'out'. Note that it is not a path, but just the name of the directory.
 
     Returns:
       if there is a compile failure:
@@ -781,9 +772,6 @@ class V8Api(recipe_api.RecipeApi):
       # Sort and dedupe.
       isolate_targets = sorted(list(set(isolate_targets)))
 
-      build_dir = None
-      if out_dir:  # pragma: no cover
-        build_dir = source_dir / out_dir / self.m.chromium.c.build_config_fs
       if self.m.chromium.c.project_generator.tool == 'mb':
         mb_config_rel_path = self.m.properties.get(
             'mb_config_path', 'infra/mb/mb_config.pyl')
@@ -794,7 +782,6 @@ class V8Api(recipe_api.RecipeApi):
             self.m.chromium.get_builder_id(),
             mb_config_path=mb_config_path,
             isolated_targets=isolate_targets,
-            build_dir=build_dir,
             gn_args_location=self.m.gn.LOGS)
 
         self.m.v8_tests.gn_args = gn_args.splitlines()
@@ -804,16 +791,14 @@ class V8Api(recipe_api.RecipeApi):
         presentation = self.m.step.active_result.presentation
         presentation.logs['gn_args'] = self.m.v8_tests.gn_args
       elif self.m.chromium.c.project_generator.tool == 'gn':
-        self.m.chromium.run_gn(
-            build_dir=build_dir,
-            use_reclient=self.use_remoteexec)
+        self.m.chromium.run_gn(use_reclient=self.use_remoteexec)
 
       raw_result = self.m.chromium.compile(
-          build_dir=build_dir, use_reclient=self.use_remoteexec, **kwargs)
+          use_reclient=self.use_remoteexec, **kwargs)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
-      self.isolate_tests(build_dir, isolate_targets)
+      self.isolate_tests(self.m.chromium.build_dir, isolate_targets)
 
   @property
   def should_collect_post_compile_metrics(self):
