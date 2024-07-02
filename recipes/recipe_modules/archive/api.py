@@ -581,9 +581,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
   def _get_milestone_position(self):
     canary_milestone = self._get_canary_milestone()
-    milestone = int(
-        self.m.chromium.get_version(
-            self.m.chromium_checkout.source_dir)['MAJOR'])
+    milestone = int(self.m.chromium.get_version()['MAJOR'])
     position = canary_milestone - milestone
 
     return "canary" if position == 0 else "canary-%s" % position
@@ -596,9 +594,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       'legacy<milestone>' or no return with an empty step.
     """
     canary_milestone = self._get_canary_milestone()
-    milestone = int(
-        self.m.chromium.get_version(
-            self.m.chromium_checkout.source_dir)['MAJOR'])
+    milestone = int(self.m.chromium.get_version()['MAJOR'])
 
     # Compare the milestone of latest Chromium with the current build to
     # determine the channel.
@@ -708,7 +704,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     chromium_version_placeholder = '{%chromium_version%}'
     if chromium_version_placeholder in input_str:
-      version = self.m.chromium.get_version(self.m.chromium_checkout.source_dir)
+      version = self.m.chromium.get_version()
       value = "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
                                version['BUILD'], version['PATCH'])
       input_str = input_str.replace(chromium_version_placeholder, value)
@@ -725,10 +721,8 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     milestone_placeholder = '{%milestone%}'
     if milestone_placeholder in input_str:
-      input_str = input_str.replace(
-          milestone_placeholder,
-          self.m.chromium.get_version(
-              self.m.chromium_checkout.source_dir)['MAJOR'])
+      input_str = input_str.replace(milestone_placeholder,
+                                    self.m.chromium.get_version()['MAJOR'])
 
     if custom_vars:
       for placeholder, key in re.findall('({%(.*?)%})', input_str):

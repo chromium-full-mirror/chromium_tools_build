@@ -26,9 +26,7 @@ def RunSteps(api):
           triggers=[],
           triggers_proxy=False))
   update_result = api.v8.checkout()
-  source_dir = update_result.source_root.path
-  build_dir = api.v8.build_dir(source_dir)
-  with api.v8.maybe_clang_coverage(source_dir, build_dir):
+  with api.v8.maybe_clang_coverage(update_result.source_root.path):
     api.step('run tests', cmd=['run-some-tests.py'])
   return api.v8.recipe_result
 

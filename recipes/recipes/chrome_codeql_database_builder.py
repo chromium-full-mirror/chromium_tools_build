@@ -56,7 +56,7 @@ def RunSteps(api):
         'gn gen out/release',
         ['python3', gn_path, 'gen', build_dir, '--args=use_remoteexec=true'])
     api.chromium.compile(
-        source_dir, build_dir, use_reclient=True, targets=["all"])
+        use_reclient=True, targets=["all"], build_dir=build_dir)
     codeql_script_path = source_dir.joinpath('tools', 'codeql',
                                              'index_target.py')
     api.step("index_target.py", [

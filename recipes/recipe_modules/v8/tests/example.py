@@ -18,11 +18,9 @@ def RunSteps(api):
       {'triggers': ['v8_triggered_bot'], 'triggers_proxy': True})
   update_result = api.v8.checkout()
   source_dir = update_result.source_root.path
-  build_dir = api.v8.build_dir(source_dir)
   api.v8_tests.load_static_test_configs()
   compile_failure = api.v8.compile(
       source_dir,
-      build_dir,
       test_spec=api.v8_tests.TEST_SPEC.from_python_literal(
           {'TestBuilder': {
               'tests': [{

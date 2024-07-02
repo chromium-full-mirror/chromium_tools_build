@@ -21,11 +21,9 @@ def RunSteps(api):
   if api.properties.get('clobber'):
     api.chromium.apply_config('clobber')
   api.chromium.apply_config('mb')
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
-  source_dir = api.path.cache_dir / 'builder/src'
-  build_dir = source_dir / 'out/Release'
-
-  api.chromium.runhooks(source_dir, build_dir=build_dir)
+  api.chromium.runhooks()
 
 
 def GenTests(api):

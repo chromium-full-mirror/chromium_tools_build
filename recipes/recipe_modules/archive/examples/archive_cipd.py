@@ -27,12 +27,11 @@ non_existing_spec_path = ['non', 'existing', 'foo.json']
 def RunSteps(api):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
+  build_dir = api.chromium.build_dir
   update_properties = api.properties.get('update_properties')
   custom_vars = api.properties.get('custom_vars')
 
-  update_result = api.chromium_checkout.ensure_checkout()
-  source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
+  api.chromium_checkout.ensure_checkout()
 
   # Calling generic_archive_after_tests without generic_archive first
   # should result in a no-op.

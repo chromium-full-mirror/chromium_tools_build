@@ -19,10 +19,9 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
-  source_dir = api.path.cache_dir / 'builder/src'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   gn_args = api.chromium.mb_lookup(
-      source_dir,
       chromium.BuilderId.create_for_group('test-group', 'test-builder'),
       recursive=api.properties.get('recursive', False),
       use_reclient=True)

@@ -18,7 +18,7 @@ def RunSteps(api):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   api.chromium_tests.configure_build(builder_config)
-  update_step, _, _ = api.chromium_tests.prepare_checkout(builder_config)
+  update_step, _ = api.chromium_tests.prepare_checkout(builder_config)
   api.chromium_tests.package_build(
       builder_id, update_step, builder_config, reasons=['for test coverage'])
 

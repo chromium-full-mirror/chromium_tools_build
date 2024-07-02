@@ -338,7 +338,7 @@ def SwarmTests(api, paths, dimensions):
 
 
 
-def SetCodeCoverageConstants(api, checkout_path, output_path, host_tool_label):
+def SetCodeCoverageConstants(api, checkout_path, host_tool_label):
   """Performs dependency injection on internal constants of the code_coverage
      module needed to allow for the code coverage module to function correctly.
 
@@ -351,14 +351,12 @@ def SetCodeCoverageConstants(api, checkout_path, output_path, host_tool_label):
                                     'Release+Asserts', 'bin')
   merge_libs_dir = checkout_path.joinpath('build', 'code_coverage')
 
-  api.profiles.source_dir = checkout_path
   api.profiles._merge_scripts_dir = merge_libs_dir
   api.profiles._llvm_base_path = llvm_dir
   api.code_coverage._platform = host_tool_label
   api.code_coverage._use_clang_coverage = True
   api.code_coverage._include_component_mapping = False
   api.code_coverage.source_dir = checkout_path
-  api.code_coverage.build_dir = output_path
 
   exists = {
       str(p): api.path.exists(p) for p in [
@@ -523,12 +521,7 @@ def RunSteps(api):
         coverage_step.status = api.step.SUCCESS
         try:
           host_tool_label = GetHostToolLabel(api.platform)
-          SetCodeCoverageConstants(
-              api,
-              paths.checkout_path,
-              paths.output_path,
-              host_tool_label,
-          )
+          SetCodeCoverageConstants(api, paths.checkout_path, host_tool_label)
 
           # Only continuous integration bots run full-repo coverage--trybots
           # only run per-cl coverage.

@@ -38,7 +38,7 @@ def RunSteps(api):
     })
     api.chromium.set_config('chromium')
     # Fake path, as the real one depends on having done a chromium checkout.
-    api.profiles.src_dir = api.path.start_dir
+    api.profiles.source_dir = api.path.start_dir
 
     _, builder_config = api.chromium_tests_builder_config.lookup_builder()
     api.chromium_tests.configure_build(builder_config)
@@ -149,8 +149,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'base_unittests on Intel GPU on Linux (with patch)',
-          [('[CACHE]/builder/src/testing/merge_scripts/code_coverage/'
-            'merge_results.py')],
+          ['[START_DIR]/testing/merge_scripts/code_coverage/merge_results.py'],
       ),
       api.post_process(post_process.DropExpectation),
   )

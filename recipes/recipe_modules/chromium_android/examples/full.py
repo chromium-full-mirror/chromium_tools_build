@@ -85,17 +85,15 @@ def RunSteps(api):
     api.chromium_android.apply_config(c)
 
   update_result = api.chromium_android.init_and_sync()
-  source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
 
-  api.chromium.runhooks(source_dir, build_dir)
+  api.chromium.runhooks()
   api.chromium_android.run_tree_truth(update_result, additional_repos=['foo'])
-  assert 'MAJOR' in api.chromium.get_version(source_dir)
+  assert 'MAJOR' in api.chromium.get_version()
 
   api.chromium_android.host_info()
 
   if config.get('build', False):
-    raw_result = api.chromium.compile(source_dir, build_dir)
+    raw_result = api.chromium.compile()
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
     api.chromium_android.make_zip_archive(
@@ -134,10 +132,9 @@ def RunSteps(api):
   except api.step.StepFailure as f:
     failure = f
 
-  api.chromium_android.monkey_test(build_dir)
+  api.chromium_android.monkey_test()
 
   api.chromium_android.run_test_suite(
-      build_dir,
       'unittests',
       result_details=config.get('result_details'),
       store_tombstones=config.get('store_tombstones'))
@@ -145,7 +142,7 @@ def RunSteps(api):
     api.chromium_android.run_bisect_script(
         extra_src='test.py', path_to_config='test.py')
 
-  api.chromium_android.logcat_dump(build_dir)
+  api.chromium_android.logcat_dump()
   api.chromium_android.stack_tool_steps()
 
   if config.get('run_stackwalker'):
@@ -164,7 +161,7 @@ def RunSteps(api):
     api.path.mock_add_paths(microdump_stackwalk_binary)
 
     api.chromium_android.common_tests_final_steps(
-        build_dir, checkout_dir=api.path.checkout_dir)
+        checkout_dir=api.path.checkout_dir)
 
 
   if failure:

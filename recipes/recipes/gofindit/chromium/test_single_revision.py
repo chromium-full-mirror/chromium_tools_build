@@ -60,7 +60,7 @@ def RunSteps(api, properties):
       api.chromium.c.clobber_before_runhooks = True
 
     with api.chromium.chromium_layout():
-      update_step, build_dir, targets_config = api.chromium_tests.prepare_checkout(
+      update_step, targets_config = api.chromium_tests.prepare_checkout(
           builder_config, set_output_commit=False)
       api.chromium_swarming.configure_swarming('chromium', precommit=False)
 
@@ -73,7 +73,6 @@ def RunSteps(api, properties):
 
       # Compile.
       compile_result, _ = api.chromium_tests.compile_specific_targets(
-          build_dir,
           builder_id,
           builder_config,
           update_step,
@@ -96,7 +95,7 @@ def RunSteps(api, properties):
         api.chromium_swarming.default_priority -= 1
 
       suffix = 'bisection'
-      with api.chromium_tests.wrap_chromium_tests(build_dir, tests=step_tests):
+      with api.chromium_tests.wrap_chromium_tests(tests=step_tests):
         api.test_utils.run_tests_once(step_tests, suffix)
       test_results = fetch_test_results(api, properties.tests_to_run,
                                         step_tests, suffix)

@@ -62,8 +62,7 @@ class PgoApi(recipe_api.RecipeApi):
       return
 
     with self.m.step.nest('searching cros llvm toolchain') as p:
-      gn_args = self.m.chromium.mb_lookup(
-          self.m.path.checkout_dir, builder_id, recursive=True)
+      gn_args = self.m.chromium.mb_lookup(builder_id, recursive=True)
       dict_gn_args = self.m.gn.parse_gn_args(self.m.gn.reformat_args(gn_args))
       # crbug/1417071 - We use cros_target_cxx, but this should be its own
       # llvm-profdata arg at some point instead of deducing it.

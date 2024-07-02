@@ -35,7 +35,7 @@ def RunSteps(api, properties):
                                                     properties.should_clobber)
 
     # Check out the code.
-    bot_update_step, build_dir, build_config = api.chromium_tests.prepare_checkout(
+    bot_update_step, build_config = api.chromium_tests.prepare_checkout(
         builder_config, set_output_commit=False)
     api.chromium_swarming.configure_swarming('chromium', precommit=False)
 
@@ -45,7 +45,6 @@ def RunSteps(api, properties):
       compile_targets = build_config.compile_targets
 
     compile_result, _ = api.chromium_tests.compile_specific_targets(
-        build_dir,
         builder_id,
         builder_config,
         bot_update_step,

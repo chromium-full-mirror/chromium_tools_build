@@ -17,10 +17,8 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('try_builder')
   api.chromium_android.c.logcat_bucket = api.properties.get('logcat_bucket')
-  source_dir = api.path.cache_dir / 'builder/src'
-  api.path.checkout_dir = source_dir
-  build_dir = source_dir / 'out/Release'
-  api.chromium_android.logcat_dump(build_dir)
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  api.chromium_android.logcat_dump()
 
 
 def GenTests(api):

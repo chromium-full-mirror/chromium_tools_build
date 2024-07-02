@@ -23,10 +23,9 @@ def RunSteps(api):
   api.gclient.set_config('v8')
   api.chromium.set_config('v8')
   update_result = api.v8.checkout()
-  source_dir = update_result.source_root.path
-  build_dir = api.v8.build_dir(source_dir)
-  api.v8.runhooks(source_dir, build_dir)
+  api.v8.runhooks()
 
+  source_dir = update_result.source_root.path
   depot_tools_path = source_dir.joinpath('third_party', 'depot_tools')
   with api.context(env_prefixes={'PATH': [depot_tools_path]}):
     api.git('branch', '-D', 'gcmole_update', ok_ret='any')

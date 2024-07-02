@@ -169,12 +169,10 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   @property
   def build_dir(self):
-    assert self._build_dir, 'build_dir must be set for this recipe module'
-    return self._build_dir
+    return self._build_dir or self.m.chromium.build_dir
 
   @build_dir.setter
   def build_dir(self, value):
-    assert self._build_dir is None, 'build_dir cannot be set multiple times'
     self._build_dir = value
 
   @property
@@ -184,7 +182,6 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   @source_dir.setter
   def source_dir(self, value):
-    assert self._source_dir is None, 'source_dir cannot be set multiple times'
     self._source_dir = value
 
   @property
@@ -599,7 +596,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
       files_to_instrument = self._all_eligible_files()
 
     if not output_dir:
-      output_dir = self.build_dir
+      output_dir = self.m.chromium.build_dir
     self.m.file.ensure_directory('create .code-coverage',
                                  self.source_dir / '.code-coverage')
     self.m.step(

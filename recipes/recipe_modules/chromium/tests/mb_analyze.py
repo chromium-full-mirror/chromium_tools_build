@@ -17,20 +17,14 @@ DEPS = [
 def RunSteps(api):
   api.gclient.set_config('chromium')
   api.chromium.set_config('chromium')
-  update_result = api.chromium_checkout.ensure_checkout()
-  source_dir = update_result.source_root.path
-  build_dir = source_dir / 'out/Release'
+  api.chromium_checkout.ensure_checkout()
   with api.context(cwd=api.chromium_checkout.checkout_dir):
     api.chromium.mb_analyze(
-        source_dir,
-        build_dir,
-        api.chromium.get_builder_id(),
-        {
+        api.chromium.get_builder_id(), {
             'files': ['base/test/launcher/test_launcher.cc'],
             'test_targets': ['base_unittests'],
             'additional_compile_targets': ['chrome']
-        },
-    )
+        })
 
 
 def GenTests(api):

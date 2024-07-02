@@ -84,10 +84,10 @@ def RunSteps(api):
       if value[1] == 'HEAD':
         # Pinpoint should use the exact revision given in DEPS, instead of HEAD.
         api.gclient.c.repo_path_map[key] = (value[0], None)
-    update_step, build_dir, targets_config = (
+    update_step, targets_config = (
         api.chromium_tests.prepare_checkout(builder_config, enforce_fetch=True))
     return api.chromium_tests.compile_specific_targets(
-        build_dir, builder_id, builder_config, update_step, targets_config,
+        builder_id, builder_config, update_step, targets_config,
         targets_config.compile_targets, targets_config.all_tests)[0]
 
 

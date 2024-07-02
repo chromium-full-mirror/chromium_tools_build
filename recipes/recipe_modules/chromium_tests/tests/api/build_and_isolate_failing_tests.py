@@ -38,7 +38,7 @@ def RunSteps(api, properties):
           builder_id=orch_builder_id))
   api.chromium_tests.configure_build(orch_builder_config)
 
-  update_step, build_dir, targets_config = (
+  update_step, targets_config = (
       api.chromium_tests.prepare_checkout(orch_builder_config))
 
   test_suites = [t for t in targets_config.all_tests if t.uses_isolate]
@@ -48,7 +48,6 @@ def RunSteps(api, properties):
     additional_compile_targets.append('infra_orchestrator:orchestrator_all')
 
   api.chromium_tests.build_and_isolate_failing_tests(
-      build_dir,
       orch_builder_id,
       orch_builder_config,
       test_suites,

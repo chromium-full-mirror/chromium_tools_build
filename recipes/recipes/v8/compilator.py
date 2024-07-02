@@ -119,14 +119,13 @@ def compilator_steps(api, custom_deps, default_targets, gclient_vars,
   with api.step.nest('initialization'):
     update_result = v8.checkout(revision)
     source_dir = update_result.source_root.path
-    build_dir = api.v8.build_dir(source_dir)
     api.v8_tests.set_up_swarming()
-    api.v8.runhooks(source_dir, build_dir)
+    v8.runhooks()
 
     test_spec = read_test_spec(api, source_dir)
 
   with api.step.nest('build'):
-    compile_failure = v8.compile(source_dir, build_dir, test_spec)
+    compile_failure = v8.compile(source_dir, test_spec)
     if compile_failure:
       return compile_failure
 

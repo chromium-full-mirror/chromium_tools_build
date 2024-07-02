@@ -4,10 +4,8 @@
 """Recipe to measure build time.
    See also go/chrome-build-time
 """
-
 from recipe_engine import post_process
-from recipe_engine.config_types import Path
-
+from recipe_engine.engine_types import freeze
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -40,17 +38,11 @@ def _raise_raw_result_on_failure(api, raw_result):
     raise api.step.StepFailure(raw_result.summary_markdown)
 
 
-def _compile_without_remote_execution(
-    api,
-    build_dir: Path,
-    target,
-    resource_usage_output_dir,
-):
+def _compile_without_remote_execution(api, target, resource_usage_output_dir):
   # Build without remote execution.
-  api.chromium_build_perf.recreate_build_dir(build_dir, remove_deps_cache=True)
+  api.chromium_build_perf.recreate_build_dir(remove_deps_cache=True)
   resource_usage_output_file = resource_usage_output_dir / 'resource_usage.json'
   raw_result = api.chromium_build_perf.build_with_siso(
-      build_dir,
       target,
       with_remote_cache=False,
       use_rbe=False,
@@ -90,25 +82,19 @@ def RunSteps(api):
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
 
-  update_result = api.chromium_checkout.ensure_checkout()
-  source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
-  api.chromium.ensure_toolchains(checkout_dir=update_result.checkout_dir)
+  api.chromium_checkout.ensure_checkout()
+  api.chromium.ensure_toolchains(
+      checkout_dir=api.chromium_checkout.checkout_dir)
 
   with api.context(cwd=solution_path):
-    api.chromium.runhooks(source_dir, build_dir)
+    api.chromium.runhooks()
 
   resource_usage_output_dir = api.path.cache_dir / 'resource_usage'
   api.file.ensure_directory('init resource usage dir if not exists',
                             resource_usage_output_dir)
 
   # Build target: chrome
-  _compile_without_remote_execution(
-      api,
-      build_dir,
-      'chrome',
-      resource_usage_output_dir,
-  )
+  _compile_without_remote_execution(api, 'chrome', resource_usage_output_dir)
 
 
 def GenTests(api):

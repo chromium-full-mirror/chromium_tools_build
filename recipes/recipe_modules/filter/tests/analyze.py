@@ -22,22 +22,17 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   for c in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(c)
-  source_dir = api.path.cache_dir / 'builder/src'
-  api.path.checkout_dir = source_dir
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   # We convert these kwargs in analyze_kwargs from checkout-relative paths to
   # Path objects by joining them to api.path.checkout_dir
   kwargs = dict(api.properties.get('analyze_kwargs', {}))
-  for k in ('mb_path', 'mb_config_path', 'build_dir'):
+  for k in ('mb_path', 'mb_config_path', 'build_output_dir'):
     if (val := kwargs.get(k)) is not None:
       kwargs[k] = api.path.checkout_dir.joinpath(*val)
-  build_dir = kwargs.pop('build_dir', None)
-  if build_dir is None:
-    build_dir = source_dir / 'out/Release'
 
   affected_test_targets, affected_compile_targets = (
       api.filter.analyze(
-          build_dir,
           api.properties.get('affected_files', ['file1', 'file2']),
           api.properties.get('test_targets', ['test1', 'test2']),
           api.properties.get('compile_targets', ['compile1', 'compile2']),
@@ -200,7 +195,7 @@ def GenTests(api):
           analyze_kwargs={
               'mb_path': ['fake-mb-path'],
               'mb_config_path': ['fake-mb-config-path'],
-              'build_dir': ['fake-build-dir'],
+              'build_output_dir': ['fake-build-output-dir'],
               'phase': 'fake-phase',
           }),
       api.post_check(post_process.StepCommandContains, 'analyze',
@@ -209,7 +204,7 @@ def GenTests(api):
                      ['--config-file',
                       re.compile('.+/fake-mb-config-path')]),
       api.post_check(post_process.StepCommandContains, 'analyze',
-                     [re.compile('.+/fake-build-dir')]),
+                     [re.compile('.+/fake-build-output-dir')]),
       api.post_check(post_process.StepCommandContains, 'analyze',
                      ['--phase', 'fake-phase']),
       api.post_process(post_process.DropExpectation),

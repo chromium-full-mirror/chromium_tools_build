@@ -24,10 +24,9 @@ def RunSteps(api):
   api.gclient.set_config('v8_with_bazel')
   api.chromium.set_config('v8')
   update_result = api.v8.checkout()
-  source_dir = update_result.source_root.path
-  build_dir = api.v8.build_dir(source_dir)
-  api.v8.runhooks(source_dir, build_dir)
+  api.v8.runhooks()
 
+  source_dir = update_result.source_root.path
   bazel = source_dir.joinpath('tools', 'bazel', 'bazel')
   clang = source_dir.joinpath('third_party', 'llvm-build', 'Release+Asserts',
                               'bin')

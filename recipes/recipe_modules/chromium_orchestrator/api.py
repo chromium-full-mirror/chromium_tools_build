@@ -6,7 +6,6 @@ import re
 
 from google.protobuf.json_format import MessageToDict
 from recipe_engine import recipe_api
-from recipe_engine.config_types import Path
 from recipe_engine.engine_types import thaw
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
@@ -189,24 +188,20 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # explicitly set as `None`, and api.path.checkout_dir should remain unset.
     self.m.chromium_checkout.set_paths(self.m.path.cleanup_dir,
                                        self.m.gclient.c.solutions[0].name)
-    source_dir = self.m.chromium_checkout.source_dir
-    build_dir = self.m.chromium.default_build_dir(source_dir)
-    self.m.code_coverage.source_dir = source_dir
-    self.m.code_coverage.build_dir = build_dir
-    self.m.profiles.source_dir = source_dir
 
     self.m.cas.download(
         'download src-side deps',
         comp_output.src_side_deps_digest,
-        source_dir,
+        self.m.chromium_checkout.source_dir,
     )
 
     affected_files = comp_output.affected_files
     targets_config = self.m.chromium_tests.create_targets_config(
         builder_config,
         comp_output.got_revisions,
-        source_dir,
-        targets_spec_dir=source_dir / comp_output.src_side_test_spec_dir,
+        self.m.chromium_checkout.source_dir,
+        targets_spec_dir=self.m.chromium_checkout.source_dir.joinpath(
+            comp_output.src_side_test_spec_dir),
         remote_tests_only=True)
     # This is used to set build properties on swarming tasks
     self.m.chromium.set_build_properties(comp_output.got_revisions)
@@ -215,7 +210,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # outputed by the compilator
     tests = []
     if comp_output.swarming_props:
-      tests = self.process_swarming_props(build_dir, comp_output.swarming_props,
+      tests = self.process_swarming_props(comp_output.swarming_props,
                                           builder_config, targets_config)
     # Add any skylab tests
     if comp_output.skylab_props:
@@ -235,7 +230,11 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       self.m.code_coverage.set_is_per_cl_coverage(True)
       self.m.code_coverage.filter_and_set_eligible_files(affected_files)
 
-      self.m.file.ensure_directory('ensure output directory', build_dir)
+      output_dir = self.m.chromium_checkout.source_dir.joinpath(
+          'out', self.m.chromium.c.build_config_fs)
+      self.m.code_coverage.build_dir = output_dir
+
+      self.m.file.ensure_directory('ensure output directory', output_dir)
 
       # Downloading these binaries can take up to 2 minutes, so start this
       # download in the background.
@@ -244,7 +243,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
               'downloading cas digest {}'.format(ALL_TEST_BINARIES_ISOLATE_NAME
                                                 ),
               self.m.isolate.isolated_tests[ALL_TEST_BINARIES_ISOLATE_NAME],
-              build_dir,
+              output_dir,
           ))
 
     # Trigger and wait for the tests (and process coverage data, if enabled)!
@@ -281,8 +280,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         new_tests = self.m.flakiness.find_tests_for_flakiness(
             tests, affected_files=affected_files)
         if new_tests:
-          result = self.m.chromium_tests.run_tests_for_flakiness(
-              build_dir, new_tests)
+          result = self.m.chromium_tests.run_tests_for_flakiness(new_tests)
 
           # If the swarming checks for flakiness succeed, we'll only need to
           # check for the compilator's failures. On success, None is returned by
@@ -354,7 +352,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     if comp_output.swarming_props:
       self.process_swarming_props(
-          build_dir,
           comp_output.swarming_props,
           builder_config,
           targets_config,
@@ -647,7 +644,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         status=sub_build.status, summary_markdown=sub_build.summary_markdown)
 
   def process_swarming_props(self,
-                             build_dir: Path,
                              swarming_props,
                              builder_config,
                              targets_config,
@@ -684,7 +680,6 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # running a without patch step, so the command lines aren't actually
     # updated to anything different.
     self.m.chromium_tests.download_command_lines_for_tests(
-        build_dir,
         tests,
         builder_config,
         swarming_command_lines_digest=swarming_digest,

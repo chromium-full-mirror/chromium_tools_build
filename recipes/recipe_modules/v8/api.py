@@ -15,7 +15,6 @@ from PB.recipe_engine.result import RawResult
 from RECIPE_MODULES.depot_tools import bot_update
 
 from recipe_engine import recipe_api
-from recipe_engine.config_types import Path
 from recipe_engine.engine_types import freeze, thaw
 from . import bisection
 
@@ -247,7 +246,6 @@ class V8Api(recipe_api.RecipeApi):
     self.revision_number = None
     self.use_remoteexec = properties.get('use_remoteexec', False)
     self.recipe_result = RawResult(status=common_pb.SUCCESS)
-    self._build_config = None
 
   # TODO(machenbach): Temporary convenience method to update recipe
   # dependencies.
@@ -515,9 +513,6 @@ class V8Api(recipe_api.RecipeApi):
     self.m.file.ensure_directory('ensure builder cache dir', path)
     return path
 
-  def build_dir(self, source_dir: Path):
-    return self.m.chromium.default_build_dir(source_dir)
-
   def get_revision(self, revision=None):
     return revision or self.m.buildbucket.gitiles_commit.id or 'HEAD'
 
@@ -564,8 +559,8 @@ class V8Api(recipe_api.RecipeApi):
       _, self.revision_number = self.m.commit_position.parse(self.revision_cp)
       self.revision_number = str(self.revision_number)
 
-  def runhooks(self, *args, **kwargs):
-    self.m.chromium.runhooks(*args, **kwargs)
+  def runhooks(self, **kwargs):
+    self.m.chromium.runhooks(**kwargs)
 
   @property
   def bot_type(self):
@@ -679,10 +674,10 @@ class V8Api(recipe_api.RecipeApi):
       if self.m.v8_tests.isolated_tests:
         self.upload_isolated_json()
 
-  def target_bits(self, build_dir):
+  @property
+  def target_bits(self):
     """Returns target bits (as int) inferred from V8's build artifacts."""
-    build_config = self.get_build_config(build_dir)
-    return 64 if '64' in build_config.get('target_cpu', 'x64') else 32
+    return 64 if '64' in self.build_config.get('target_cpu', 'x64') else 32
 
   @contextlib.contextmanager
   def ensure_osx_sdk_if_needed(self):
@@ -717,7 +712,7 @@ class V8Api(recipe_api.RecipeApi):
     if points:
       self.m.perf_dashboard.add_point(points, halt_on_failure=True)
 
-  def _track_binary_size(self, build_dir: Path, binary, category):
+  def _track_binary_size(self, binary, category):
     """Track and upload binary size of configured binaries.
 
     Args:
@@ -725,7 +720,8 @@ class V8Api(recipe_api.RecipeApi):
       category: ChromePerf category for qualifying the graph names, e.g.
           linux32 or linux64.
     """
-    size = self.m.file.filesizes('Check binary size', [build_dir / binary])[0]
+    size = self.m.file.filesizes('Check binary size',
+                                 [self.build_output_dir / binary])[0]
 
     point_defaults = {
       'units': 'bytes',
@@ -744,17 +740,11 @@ class V8Api(recipe_api.RecipeApi):
     point.update(point_defaults)
     self.m.perf_dashboard.add_point([point], halt_on_failure=True)
 
-  def compile(self,
-              source_dir: Path,
-              build_dir: Path,
-              test_spec=None,
-              mb_config_path=None,
-              **kwargs):
+  def compile(self, source_dir, test_spec=None, mb_config_path=None, **kwargs):
     """Compile all desired targets and isolate tests.
 
     Args:
       source_dir: The path to the top-level repo.
-      build_dir: The path to the directory containing built outputs.
       test_spec: Optional TestSpec object as returned by read_test_spec().
           Expected to contain only specifications for the current builder and
           all triggered builders. All corrensponding extra targets will also be
@@ -789,8 +779,6 @@ class V8Api(recipe_api.RecipeApi):
         mb_config_path = mb_config_path or source_dir / mb_config_rel_path
 
         gn_args = self.m.chromium.mb_gen(
-            source_dir,
-            build_dir,
             self.m.chromium.get_builder_id(),
             mb_config_path=mb_config_path,
             isolated_targets=isolate_targets,
@@ -803,15 +791,14 @@ class V8Api(recipe_api.RecipeApi):
         presentation = self.m.step.active_result.presentation
         presentation.logs['gn_args'] = self.m.v8_tests.gn_args
       elif self.m.chromium.c.project_generator.tool == 'gn':
-        self.m.chromium.run_gn(
-            source_dir, build_dir, use_reclient=self.use_remoteexec)
+        self.m.chromium.run_gn(use_reclient=self.use_remoteexec)
 
       raw_result = self.m.chromium.compile(
-          source_dir, build_dir, use_reclient=self.use_remoteexec, **kwargs)
+          use_reclient=self.use_remoteexec, **kwargs)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
 
-      self.isolate_tests(build_dir, isolate_targets)
+      self.isolate_tests(self.m.chromium.build_dir, isolate_targets)
 
   @property
   def should_collect_post_compile_metrics(self):
@@ -820,7 +807,7 @@ class V8Api(recipe_api.RecipeApi):
             self.m.v8.bot_config.get('track_build_dependencies') or
             self.m.v8.bot_config.get('binary_size_tracking')))
 
-  def collect_post_compile_metrics(self, source_dir: Path, build_dir: Path):
+  def collect_post_compile_metrics(self, source_dir):
     with self.ensure_osx_sdk_if_needed():
       if self.bot_config.get('track_build_dependencies',
                              False) and not self._is_muted_branch():
@@ -830,12 +817,9 @@ class V8Api(recipe_api.RecipeApi):
               name='track build dependencies (fyi)',
               script=self.resource('build-dep-stats.py'),
               args=[
-                  '-C',
-                  build_dir,
-                  '-x',
-                  '/third_party/',
-                  '-o',
-                  self.m.json.output(),
+                '-C', self.build_output_dir,
+                '-x', '/third_party/',
+                '-o', self.m.json.output(),
               ],
               step_test_data=self.test_api.example_build_dependencies,
               ok_ret='any',
@@ -847,9 +831,8 @@ class V8Api(recipe_api.RecipeApi):
       tracking_config = self.bot_config.get('binary_size_tracking', {})
       if tracking_config and not self._is_muted_branch():
         self._track_binary_size(
-            build_dir,
-            tracking_config['binary'],
-            tracking_config['category'],
+          tracking_config['binary'],
+          tracking_config['category'],
         )
 
   def _is_muted_branch(self):
@@ -884,30 +867,23 @@ class V8Api(recipe_api.RecipeApi):
         args=['-a', 'public-read'],
     )
 
-  def get_build_config(self, build_dir):
-    if self._build_config is None:
-      build_config_path = build_dir / 'v8_build_config.json'
-      self._build_config = self.m.file.read_json(
-          'read build config',
-          build_config_path,
-          test_data=self.test_api.example_build_config())
-    return self._build_config
+  @cached_property
+  def build_config(self):
+    build_config_path = self.build_output_dir / 'v8_build_config.json'
+    return self.m.file.read_json(
+        'read build config',
+        build_config_path,
+        test_data=self.test_api.example_build_config())
 
-  def get_build_type(self, build_dir):
+  def get_build_type(self):
     """Returns the given build type: 'debug' if gn args is_debug or
     dcheck_always_on are set, 'release' otherwise.
     """
-    build_config = self.get_build_config(build_dir)
-    debug = (
-        build_config.get('is_DEBUG_defined', False) or
-        build_config.get('DEBUG_defined', False))
+    debug = (self.build_config.get('is_DEBUG_defined', False) or
+             self.build_config.get('DEBUG_defined', False))
     return 'debug' if debug else 'release'
 
-  def maybe_create_clusterfuzz_archive(
-      self,
-      build_dir: Path,
-      update_result: bot_update.Result,
-  ):
+  def maybe_create_clusterfuzz_archive(self, update_result: bot_update.Result):
     clusterfuzz_archive = self.bot_config.get('clusterfuzz_archive')
     if clusterfuzz_archive:
       kwargs = {}
@@ -916,8 +892,8 @@ class V8Api(recipe_api.RecipeApi):
         kwargs['bitness'] = clusterfuzz_archive['bitness']
       self.m.archive.clusterfuzz_archive(
           revision_dir='v8',
-          build_config=self.get_build_type(build_dir),
-          build_dir=build_dir,
+          build_config=self.get_build_type(),
+          build_dir=self.build_output_dir,
           update_properties=update_result.properties,
           gs_bucket=clusterfuzz_archive.get('bucket'),
           gs_acl='public-read',
@@ -936,8 +912,13 @@ class V8Api(recipe_api.RecipeApi):
     step_result = self.m.step.active_result
     self.m.v8_tests.isolated_tests = step_result.json.output
 
+  @property
+  def build_output_dir(self):
+    """Absolute path to the build product based on the 'checkout' path."""
+    return self.m.chromium.build_dir
+
   @contextlib.contextmanager
-  def maybe_clang_coverage(self, source_dir: Path, build_dir: Path):
+  def maybe_clang_coverage(self, source_dir):
     """Context manager for wrapping a local test execution with
     coverage-collection logic (switched by the 'coverage' property).
     """
@@ -945,7 +926,6 @@ class V8Api(recipe_api.RecipeApi):
       yield
     else:
       assert source_dir
-      assert build_dir
       profile_path = self.m.path.cleanup_dir / 'profraw'
       profile_template = profile_path.joinpath('default-%%9m.profraw')
       try:
@@ -956,9 +936,8 @@ class V8Api(recipe_api.RecipeApi):
           with self.m.context(cwd=source_dir):
             profiles = self.find_profiles(profile_path)
             total_profile = self.merge_profiles(source_dir, profiles)
-            report_dir = self.create_report(source_dir, build_dir,
-                                            total_profile)
-            link = self.upload_report(build_dir, report_dir)
+            report_dir = self.create_report(source_dir, total_profile)
+            link = self.upload_report(report_dir)
             parent_presentation.links['report'] = link
             self.recipe_result = RawResult(
                 status=common_pb.SUCCESS,
@@ -994,7 +973,7 @@ class V8Api(recipe_api.RecipeApi):
 
     return total_profile
 
-  def create_report(self, source_dir, build_dir, total_profile):
+  def create_report(self, source_dir, total_profile):
     """Creates an html coverage report for a merged profile."""
     report_dir = self.m.path.cleanup_dir / 'report'
     self.m.file.ensure_directory('Ensure report directory', report_dir)
@@ -1003,7 +982,7 @@ class V8Api(recipe_api.RecipeApi):
         self.llvm_tool(source_dir, 'llvm-cov'),
         'show',
         '-format=html',
-        f'-compilation-dir={build_dir}',
+        f'-compilation-dir={self.build_output_dir}',
         f'-output-dir={report_dir}',
         f'-instr-profile={total_profile}',
         '-Xdemangler',
@@ -1013,20 +992,19 @@ class V8Api(recipe_api.RecipeApi):
     ]
     for exe in V8_EXECUTABLES:
       cmd.append('--object')
-      cmd.append(str(build_dir / exe))
+      cmd.append(str(self.build_output_dir / exe))
 
     self.m.step('Create report', cmd=cmd)
 
     return report_dir
 
-  def upload_report(self, build_dir: Path, report_dir):
+  def upload_report(self, report_dir):
     """Uploads the coverage-report directory structure to google storage."""
-    build_type = self.get_build_type(build_dir)
-    type_suffix = 'rel' if build_type == 'release' else 'dbg'
+    type_suffix = 'rel' if self.get_build_type() == 'release' else 'dbg'
     if self.m.tryserver.is_tryserver:
       dest = 'try/%s%d_%s/%d/%d/%d' % (
           self.m.platform.name,
-          self.target_bits(build_dir),
+          self.target_bits,
           type_suffix,
           self.m.tryserver.gerrit_change_number,
           self.m.tryserver.gerrit_patchset_number,
@@ -1035,7 +1013,7 @@ class V8Api(recipe_api.RecipeApi):
     else:
       dest = 'ci/%s%d_%s/%s' % (
           self.m.platform.name,
-          self.target_bits(build_dir),
+          self.target_bits,
           type_suffix,
           self.revision,
       )
@@ -1054,13 +1032,7 @@ class V8Api(recipe_api.RecipeApi):
     return (self.bot_type == 'tester' and
             self.bot_config.get('enable_swarming', True))
 
-  def maybe_bisect(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      test_results,
-      test_spec,
-  ):
+  def maybe_bisect(self, source_dir, test_results, test_spec):
     """Build-local bisection for one failure."""
     if (self.bot_config.get('disable_auto_bisect') or
         self.m.properties.get('disable_auto_bisect')):
@@ -1100,8 +1072,8 @@ class V8Api(recipe_api.RecipeApi):
           # TODO(machenbach): Only compile on demand. We could first check if
           # download_isolated_json already provides isolated targets for this
           # revision. Only compile if not.
-          self.runhooks(source_dir, build_dir)
-          compile_failure = self.compile(source_dir, build_dir, test_spec)
+          self.runhooks()
+          compile_failure = self.compile(source_dir, test_spec)
           if compile_failure:
             # TODO: Consider changing control flow
             # to handle returning of compile failures

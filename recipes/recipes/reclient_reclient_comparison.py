@@ -319,18 +319,16 @@ def _compile(
   builder_id = chromium.BuilderId.create_for_group(
       api.builder_group.for_current, config_name)
   api.chromium.mb_gen(
-      source_dir,
-      build_dir,
       builder_id,
+      build_dir=build_dir,
       phase=f'build{build_number}',
       recursive_lookup=True)
 
   return api.chromium.compile(
-      source_dir,
-      build_dir,
-      targets=recipe_config['targets'],
+      recipe_config['targets'],
       name=f'Build {build_number}',
       use_reclient=True,
+      build_dir=build_dir,
       reclient_extra_env=recipe_config.get(f'reclient_extra_env_{build_number}',
                                            None),
   )
@@ -366,17 +364,16 @@ def RunSteps(api):
   with api.context(cwd=solution_path):
     update_result = _configure_chromium_builder(api, recipe_config, order[0])
   source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
 
-  base_out_dir = str(build_dir).rstrip('\\/')
+  base_out_dir = str(api.chromium.build_dir).rstrip('\\/')
   out_dirs = [base_out_dir] + [base_out_dir + '.' + ext for ext in '12']
 
   # Clear output directories for build
   _clean_output_dirs(api, out_dirs)
 
-  api.chromium.ensure_toolchains(update_result.checkout_dir)
+  api.chromium.ensure_toolchains()
   with api.context(cwd=solution_path):
-    api.chromium.runhooks(source_dir, build_dir)
+    api.chromium.runhooks()
 
   try:
     raw_result = _compile(api, source_dir, config_name, recipe_config, order[0])

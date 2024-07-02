@@ -125,13 +125,10 @@ class Task:
   # Holds state on build properties. Used to pass state between methods.
   update_result = attrib(bot_update.Result)
 
-  # path to the top level repo.
-  source_dir = attrib(Path)
+  # The root directory of the checkout.
+  root_dir = attrib(Path)
 
-  # The path to the directory containing built outputs.
-  build_dir = attrib(Path)
-
-  # A list of paths (strings) affected by the CL, relative to source_dir.
+  # A list of paths (strings) affected by the CL, relative to root_dir.
   affected_files = attrib(sequence[str])
 
   # How to execute each test in 'tests' which runs on swarming.
@@ -318,17 +315,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       root_solution_revision=None,
       runhooks_suffix=None,
       **kwargs,
-  ) -> tuple[bot_update.Result, Path, targets_config_module.TargetsConfig]:
-    """Perform the checkout to enable testing.
-
+  ) -> tuple[bot_update.Result, targets_config_module.TargetsConfig]:
+    """
     Args:
       runhooks_suffix: Suffix for gclient runhooks step name
-
-    Returns:
-      A tuple containing:
-      * The bot_update Result object describing the checkout.
-      * The path to the build directory that was readied.
-      * The configuration for the builder's targets.
     """
     checkout_dir = self.m.chromium_checkout.default_checkout_dir
     if report_cache_state:
@@ -355,31 +345,29 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         set_output_commit=set_output_commit,
         root_solution_revision=root_solution_revision,
         **kwargs)
-    source_dir = update_result.source_root.path
-    build_dir = self.m.chromium.default_build_dir(source_dir)
-    self.m.code_coverage.source_dir = source_dir
-    self.m.code_coverage.build_dir = build_dir
-    self.m.profiles.source_dir = source_dir
 
     # Installs toolchains configured in the current bot, if any.
-    self.m.chromium.ensure_toolchains(checkout_dir)
+    self.m.chromium.ensure_toolchains(
+        checkout_dir=self.m.chromium_checkout.checkout_dir)
 
     # For some reason, we treat the runhooks step as special and support a
     # suffix (automatically using 'without patch' for try builders), even though
     # we don't add a suffix to bot_update. This is legacy behavior and who knows
     # what queries depend on it.
-    runhooks_kwargs = {}
     if runhooks_suffix:
-      runhooks_kwargs['name'] = f'runhooks ({runhooks_suffix})'
+      self.m.chromium.runhooks(name='runhooks ({})'.format(runhooks_suffix))
     elif self.m.tryserver.is_tryserver:
-      runhooks_kwargs['name'] = 'runhooks (with patch)'
-    self.m.chromium.runhooks(source_dir, build_dir, **runhooks_kwargs)
+      self.m.chromium.runhooks(name='runhooks (with patch)')
+    else:
+      self.m.chromium.runhooks()
 
-    targets_config = self.create_targets_config(builder_config,
-                                                update_result.properties,
-                                                source_dir)
+    targets_config = self.create_targets_config(
+        builder_config,
+        update_result.properties,
+        self.m.chromium_checkout.source_dir,
+    )
 
-    return update_result, build_dir, targets_config
+    return update_result, targets_config
 
   def _generate_tests_from_targets_spec(
       self,
@@ -499,14 +487,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         'use_reclient') != 'false'
 
   def compile_specific_targets(self,
-                               build_dir: Path,
                                builder_id,
                                builder_config,
                                update_result: bot_update.Result,
                                targets_config,
                                compile_targets,
                                tests,
-                               *,
                                mb_phase=None,
                                mb_config_path=None,
                                mb_recursive_lookup=True,
@@ -522,7 +508,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     information.
 
     Args:
-      build_dir - The path to the directory containing built outputs.
       builder_id - A BuilderId identifying the configuration to use when running
         mb.
       builder_config - The configuration for the builder being executed.
@@ -599,7 +584,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           set(compile_targets) | {TEST_TRIGGER_AND_COLLECT_DEPS_TARGET})
 
     raw_result = self.run_mb_and_compile(
-        build_dir,
         builder_id,
         compile_targets,
         [t.isolate_target for t in isolated_tests] + skylab_isolates,
@@ -624,14 +608,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             isolated_tests)
 
         self.m.isolate.write_isolate_files_for_binary_file_paths(
-            file_paths, ALL_TEST_BINARIES_ISOLATE_NAME, build_dir)
+            file_paths, ALL_TEST_BINARIES_ISOLATE_NAME,
+            self.m.chromium.build_dir)
 
         additional_isolate_targets.append(ALL_TEST_BINARIES_ISOLATE_NAME)
 
       # 'compile' just prepares all information needed for the isolation,
       # and the isolation is a separate step.
       execution_info = self.isolate_tests(
-          build_dir,
           builder_config,
           isolated_tests,
           suffix,
@@ -654,13 +638,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if skylab_isolates:
       self.prepare_artifact_for_skylab(
           builder_config,
-          build_dir,
-          [t for t in tests if t.target_name in skylab_isolates],
-      )
+          [t for t in tests if t.target_name in skylab_isolates])
 
     return raw_result, execution_info
 
-  def find_swarming_command_lines(self, suffix, build_dir: Path):
+  def find_swarming_command_lines(self, suffix, build_dir=None):
+    if not build_dir:
+      build_dir = self.m.chromium.build_dir
     script = self.m.chromium_tests.resource('find_command_lines.py')
     args = ['--build-dir', build_dir, '--output-json', self.m.json.output()]
 
@@ -675,14 +659,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def isolate_tests(
       self,
-      build_dir: Path,
       builder_config,
       tests,
       suffix,
       got_revision_cp,
-      *,
       swarm_hashes_property_name='',
       additional_isolate_targets=None,
+      build_dir=None,
   ):
     """Uploads prepared isolated tests.
 
@@ -691,7 +674,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     set_swarming_test_execution_info for its potential side effects.
 
     Args:
-      * build_dir: A Path to the build directory to create the isolates
       * builder_config: The builder we're isolating tests for.
       * tests: A list of Test objects we should isolate. The isolate_target
         attribute for each test will be isolated.
@@ -704,6 +686,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         into.
       * additional_isolate_targets: Any additional isolate targets which aren't
         already included in 'tests'.
+      * build_dir: A Path to the build directory to create the isolates
 
     Returns:
       SwarmingExecutionInfo describing how to execute the isolate tests in the
@@ -730,6 +713,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # in parentheses, if it exists. Suffix currently is something like 'with
     # patch', with no parentheses, or ''. Wrap it in parens if needed.
     name_suffix = ' (%s)' % suffix if suffix else ''
+    if not build_dir:
+      build_dir = self.m.chromium.build_dir
     # This has the side effect of setting self.m.isolate.isolated_tests,
     # which we use elsewhere. We should probably instead return that and pass it
     # around.
@@ -742,18 +727,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
     return self.set_swarming_test_execution_info(
-        build_dir,
         tests,
         command_lines,
         self.m.path.relpath(build_dir, self.m.path.checkout_dir),
         expose_to_properties=builder_config.expose_trigger_properties)
 
   def set_swarming_test_execution_info(self,
-                                       build_dir: Path,
                                        tests,
                                        command_lines,
                                        rel_cwd,
-                                       *,
                                        expose_to_properties=False):
     """Sets the execution information for a list of swarming tests.
 
@@ -765,7 +747,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     which can be used by other processes to use the results of this build.
 
     Args:
-      * build_dir: The path to the directory containing built outputs.
       * tests: The list of tests to set command lines for.
       * command_lines: A dict mapping target name to a list of strings that
         represent the command line invocation to execute that test.
@@ -795,8 +776,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if expose_to_properties:
       execution_info = execution_info.ensure_command_lines_archived(self)
       trigger_properties = execution_info.as_trigger_prop()
-      trigger_properties['test_trigger_deps_digest'] = (
-          self._archive_test_trigger_deps_digest(build_dir))
+      trigger_properties[
+          'test_trigger_deps_digest'] = self._archive_test_trigger_deps_digest(
+          )
 
       step_result = self.m.step.empty('expose execution properties')
       step_result.presentation.properties[
@@ -879,9 +861,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def archive_build(
       self,
-      build_dir: Path,
       update_result: bot_update.Result,
-      *,
       enable_snoopy=False,
   ):
     """Archive the build if the bot is configured to do so.
@@ -903,12 +883,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # archive logic with InputProperties driven archiving.
     # https://crbug.com/1076679.
     upload_results = self.m.archive.generic_archive(
-        build_dir=build_dir,
+        build_dir=self.m.chromium.build_dir,
         update_properties=update_result.properties,
         custom_vars=custom_vars,
         report_artifacts=enable_snoopy)
 
-    self.m.symupload(build_dir)
+    self.m.symupload(self.m.chromium.build_dir)
     return upload_results
 
   def archive_clusterfuzz(
@@ -916,13 +896,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_id,
       update_result: bot_update.Result,
       builder_config,
-      build_dir: Path,
   ):
     builder_spec = builder_config.builder_db[builder_id]
 
     if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
       self.m.archive.clusterfuzz_archive(
-          build_dir=build_dir,
+          build_dir=self.m.chromium.build_dir,
           update_properties=update_result.properties,
           gs_bucket=builder_spec.cf_gs_bucket,
           gs_acl=builder_spec.cf_gs_acl,
@@ -940,7 +919,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def _get_affected_spec_files(
       self,
-      source_dir: Path,
+      root_dir: Path,
       affected_files: Iterable[str],
       builder_config: ctbc.BuilderConfig,
       targets_spec_dir: Path,
@@ -948,9 +927,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """Returns any files in the CL that affects the builder's testing specs.
 
     Args:
-      source_dir: The path to the top level repo.
-      affected_files: The paths to the files that are modified by the CL being
-        tested, relative to source_dir.
+      root_dir: The directory which the affected files paths are relative to.
+        For checking out chromium, this will be the src directory.
+      affected_Files: Paths of files that are affected by the CL being tested,
+        relative to root_dir.
       builder_config: A BuilderConfig object for the currently executing
         builder.
       targets_spec_dir: The directory containing the targets spec files for the
@@ -961,8 +941,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       by the CL being tested.
     """
     absolute_affected_files = set(
-        str(source_dir / f).replace('/', self.m.path.sep)
-        for f in affected_files)
+        str(root_dir / f).replace('/', self.m.path.sep) for f in affected_files)
     absolute_spec_files = set(
         str(targets_spec_dir / f)
         for f in builder_config.targets_spec_files.values())
@@ -1149,26 +1128,22 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return properties
 
   def run_mb_and_compile(self,
-                         build_dir: Path,
                          builder_id,
                          compile_targets,
                          isolated_targets,
                          name_suffix,
-                         *,
                          mb_phase=None,
                          mb_config_path=None,
                          mb_recursive_lookup=False,
                          mb_write_ide_json=False,
                          android_version_code=None,
                          android_version_name=None):
-    with self.m.chromium.guard_compile(build_dir, suffix=name_suffix):
+    with self.m.chromium.guard_compile(suffix=name_suffix):
       _mb_gen = None
       if self.m.chromium.c.project_generator.tool == 'mb':
 
         def _mb_gen():
           return self.m.chromium.mb_gen(
-              self.m.chromium_checkout.source_dir,
-              build_dir,
               builder_id,
               phase=mb_phase,
               mb_config_path=mb_config_path,
@@ -1184,27 +1159,26 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       # gn_logs.txt contains debug info for vars with smart defaults. Display
       # its contents in the build for easy debugging.
-      gn_logs_path = build_dir / 'gn_logs.txt'
+      gn_logs_path = self.m.chromium.build_dir / 'gn_logs.txt'
       self.m.path.mock_add_paths(gn_logs_path)
       if self.m.path.exists(gn_logs_path):
         self.m.file.read_text('read gn_logs.txt', gn_logs_path)
 
       # run experimental dependency analysis for SSCI.
       if ('ssci.experimental' in self.m.buildbucket.build.input.experiments):
-        with self.m.context(
-            env=self.m.chromium.get_env(self.m.chromium_checkout.source_dir)):
+        with self.m.context(env=self.m.chromium.get_env()):
           self.m.ssci.run(
               src_dir=self.m.path.checkout_dir,
-              build_dir=build_dir,
+              build_dir=self.m.chromium.build_dir,
               chrome_version=self._get_chrome_version())
 
       if ('chromium.enable_cleandead'
           in self.m.buildbucket.build.input.experiments):
         try:
-          self.m.chromium.cleandead(self.m.chromium_checkout.source_dir,
-                                    build_dir)
+          self.m.chromium.cleandead()
         except self.m.step.StepFailure:
-          self.m.file.rmtree('remove output dir' + name_suffix, build_dir)
+          self.m.file.rmtree('remove output dir' + name_suffix,
+                             self.m.chromium.build_dir)
           if _mb_gen:
             _mb_gen()
           clean_step_presentation = self.m.step.active_result.presentation
@@ -1212,18 +1186,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
 
       return self.m.chromium.compile(
-          self.m.chromium_checkout.source_dir,
-          build_dir,
-          targets=compile_targets,
+          compile_targets,
           name='compile%s' % name_suffix,
           use_reclient=use_reclient)
 
   def download_and_unzip_build(self,
-                               build_dir: Path,
                                builder_id,
                                update_result: bot_update.Result,
                                builder_config,
-                               *,
                                build_archive_url=None,
                                build_revision=None,
                                override_execution_mode=None,
@@ -1256,7 +1226,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         build_archive_url=build_archive_url)
 
     if read_gn_args:
-      self.m.gn.get_args(build_dir)
+      self.m.gn.get_args(self.m.chromium.build_dir)
 
   def _make_legacy_build_url(self, builder_spec, builder_group):
     # The group where the build was zipped and uploaded from.
@@ -1272,10 +1242,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                               else source_group))
 
   @contextlib.contextmanager
-  def wrap_chromium_tests(self, build_dir, *, tests=None):
+  def wrap_chromium_tests(self, tests=None):
     with self.m.context(
         cwd=self.m.chromium_checkout.checkout_dir,
-        env=self.m.chromium.get_env(self.m.chromium_checkout.source_dir)):
+        env=self.m.chromium.get_env()):
       # Some recipes use this wrapper to setup devices and have their own way
       # to run tests. If platform is Android and tests is None, run device
       # steps.
@@ -1286,6 +1256,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           require_device_steps):
         self.m.chromium_android.common_tests_setup_steps()
 
+      self.m.code_coverage.source_dir = self.m.chromium_checkout.source_dir
+      self.m.profiles.source_dir = self.m.chromium_checkout.source_dir
+
       try:
         yield
       finally:
@@ -1293,33 +1266,27 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
           if require_device_steps:
             self.m.chromium_android.common_tests_final_steps(
-                build_dir, checkout_dir=checkout_dir)
+                checkout_dir=checkout_dir)
 
-  def deapply_patch(self, bot_update_step, build_dir: Path):
+  def deapply_patch(self, bot_update_step):
     assert self.m.tryserver.is_tryserver
 
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
       self.m.bot_update.deapply_patch(bot_update_step)
 
     with self.m.context(cwd=self.m.path.checkout_dir):
-      self.m.chromium.runhooks(
-          self.m.chromium_checkout.source_dir,
-          build_dir,
-          name='runhooks (without patch)')
+      self.m.chromium.runhooks(name='runhooks (without patch)')
 
   def build_and_isolate_failing_tests(self,
-                                      build_dir: Path,
                                       builder_id,
                                       builder_config,
                                       failing_tests,
                                       update_result: bot_update.Result,
                                       suffix,
-                                      *,
                                       additional_compile_targets=None):
     """Builds and isolates test suites in |failing_tests|.
 
     Args:
-      build_dir: The path to the directory containing built outputs.
       builder_config: A BuilderConfig wth the configuration for the running bot.
       failing_tests: An iterable of test_suites that need to be rebuilt.
       bot_update_step: Contains information about the current checkout. Used to
@@ -1354,14 +1321,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     failing_swarming_tests = [t for t in failing_tests if t.uses_isolate]
 
     raw_result = self.run_mb_and_compile(
-        build_dir, builder_id, compile_targets,
+        builder_id, compile_targets,
         [t.isolate_target for t in failing_swarming_tests] + skylab_isolates,
         ' (%s)' % suffix)
     if raw_result:
       # Clobber the bot upon compile failure without patch.
       # See crbug.com/724533 for more detail.
       if raw_result.status == common_pb.FAILURE:
-        self.m.file.rmtree('clobber', build_dir)
+        self.m.file.rmtree('clobber', self.m.chromium.build_dir)
 
       if raw_result.status != common_pb.SUCCESS:
         return raw_result, None
@@ -1369,14 +1336,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if skylab_isolates:
       self.prepare_artifact_for_skylab(
           builder_config,
-          build_dir,
           [t for t in failing_tests if t.target_name in skylab_isolates],
-          phase=suffix)
+          suffix)
     if not failing_swarming_tests:
       return None, None
 
     return None, self.isolate_tests(
-        build_dir,
         builder_config,
         failing_swarming_tests,
         suffix,
@@ -1387,7 +1352,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def should_skip_without_patch(
       self,
       builder_config: ctbc.BuilderConfig,
-      source_dir: Path,
+      root_dir: Path,
       affected_files: Iterable[str],
       targets_spec_dir: Path,
   ) -> bool:
@@ -1399,9 +1364,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     Args:
       builder_config: A BuilderConfig object for the currently executing
         builder.
-      source_dir: The path to the top level repo.
-      affected_files: The paths to the files that are modified by the CL being
-        tested, relative to source_dir.
+      root_dir: The directory which the affected files paths are relative to.
+        For checking out chromium, this will be the src directory.
+      affected_Files: Paths of files that are affected by the CL being tested,
+        relative to root_dir.
       targets_spec_dir: The directory containing the targets spec files for the
         builder.
 
@@ -1410,7 +1376,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """
     reasons = []
     logs = {}
-    affected_spec_files = self._get_affected_spec_files(source_dir,
+    affected_spec_files = self._get_affected_spec_files(root_dir,
                                                         affected_files,
                                                         builder_config,
                                                         targets_spec_dir)
@@ -1478,7 +1444,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if self.m.code_coverage.use_clang_coverage:
       self.m.code_coverage.ensure_clang_coverage_tools()
 
-    with self.wrap_chromium_tests(task.build_dir, tests=task.test_suites):
+    with self.wrap_chromium_tests(task.test_suites):
       # Run the test. The isolates have already been created.
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests_with_patch(
@@ -1501,14 +1467,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       # Also exit if there are failures but we shouldn't deapply the patch
       targets_spec_dir = self.get_targets_spec_dir(task.builder_config)
-      if self.should_skip_without_patch(task.builder_config, task.source_dir,
+      if self.should_skip_without_patch(task.builder_config, task.root_dir,
                                         task.affected_files, targets_spec_dir):
         self.summarize_test_failures(task.test_suites)
         return None, failing_test_suites
 
-      deapply_changes(task.update_result, task.build_dir)
+      deapply_changes(task.update_result)
       raw_result, _ = self.build_and_isolate_failing_tests(
-          task.build_dir, builder_id, task.builder_config, failing_test_suites,
+          builder_id, task.builder_config, failing_test_suites,
           task.update_result, 'without patch')
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result, []
@@ -1653,7 +1619,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('fetch')
-    update_step, build_dir, targets_config = self.prepare_checkout(
+    update_step, targets_config = self.prepare_checkout(
         builder_config,
         timeout=3600,
         root_solution_revision=root_solution_revision,
@@ -1673,7 +1639,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('compile')
     compile_result, swarming_execution_info = self.compile_specific_targets(
-        build_dir,
         builder_id,
         builder_config,
         update_step,
@@ -1686,7 +1651,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if compile_result and compile_result.status != common_pb.SUCCESS:
       return compile_result
 
-    self.inbound_transfer(build_dir, builder_config, builder_id, update_step,
+    self.inbound_transfer(builder_config, builder_id, update_step,
                           targets_config)
     additional_trigger_properties = self.outbound_transfer(
         builder_id, builder_config, update_step, targets_config,
@@ -1702,21 +1667,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('upload')
 
-    self.archive_clusterfuzz(builder_id, update_step, builder_config, build_dir)
-    upload_results = self.archive_build(
-        build_dir, update_step, enable_snoopy=self._enable_snoopy)
+    self.archive_clusterfuzz(builder_id, update_step, builder_config)
+    upload_results = self.archive_build(update_step, self._enable_snoopy)
 
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('upload-complete')
 
     tests = targets_config.tests_on(builder_id)
-    return self.run_tests(
-        build_dir,
-        builder_id,
-        builder_config,
-        tests,
-        upload_results=upload_results)
+    return self.run_tests(builder_id, builder_config, tests, upload_results)
 
   def outbound_transfer(self,
                         builder_id,
@@ -1797,14 +1756,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return trigger_properties
 
-  def inbound_transfer(
-      self,
-      build_dir: Path,
-      builder_config,
-      builder_id,
-      bot_update_step,
-      targets_config,
-  ):
+  def inbound_transfer(self, builder_config, builder_id, bot_update_step,
+                       targets_config):
     """Handles the tester half of the builder->tester transfer flow.
 
     See outbound_transfer for a discussion of transfer mechanisms.
@@ -1813,7 +1766,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     For package-based transfer, this downloads the build from GS.
 
     Args:
-      build_dir: The path to the directory containing built outputs.
       builder_config: a BuilderConfig object for the currently executing tester.
       bot_update_step: the result of a previously executed bot_update step.
       targets_config: a TargetsConfig object.
@@ -1834,13 +1786,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     #
     # The best way to ensure the old build directory is not used is to
     # remove it.
-    self.m.file.rmtree('remove build directory', build_dir)
+    self.m.file.rmtree('remove build directory', self.m.chromium.build_dir)
 
     if set(tests_using_isolates + tests_using_skylab) != set(tests):
       # There are some tests which don't run via swarming. These need the source
       # checkout in order to execute.
       self.download_and_unzip_build(
-          build_dir,
           builder_id,
           bot_update_step,
           targets_config.builder_config,
@@ -1853,8 +1804,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
               if t not in set(tests_using_isolates + tests_using_skylab)
           ]))
 
-    self.download_command_lines_for_tests(build_dir, tests_using_isolates,
-                                          builder_config)
+    self.download_command_lines_for_tests(tests_using_isolates, builder_config)
     self._set_skylab_test_execution_info(tests_using_skylab)
 
   def _set_skylab_test_execution_info(self, skylab_tests):
@@ -1875,13 +1825,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       }
     return properties
 
-  def download_command_lines_for_tests(self,
-                                       build_dir: Path,
-                                       tests,
-                                       builder_config,
-                                       *,
-                                       swarming_command_lines_digest=None,
-                                       swarming_command_lines_cwd=None):
+  def download_command_lines_for_tests(
+      self,
+      tests,
+      builder_config,
+      swarming_command_lines_digest=None,
+      swarming_command_lines_cwd=None):
     """Download and set command lines for tests.
 
     This method checks the 'swarming_command_lines_digest' and
@@ -1889,7 +1838,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     to download.
 
     Args:
-      build_dir: The path to the directory containing built outputs.
       tests: The tests to download command line arguments for.
       builder_config: The currently configured builder.
       swarming_command_lines_digest: If set, the digest we should download.
@@ -1904,7 +1852,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if digest:
       command_lines = self._download_command_lines(digest)
       self.set_swarming_test_execution_info(
-          build_dir,
           tests,
           command_lines,
           rel_cwd,
@@ -1925,7 +1872,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     return self.m.cas.archive('archive command lines to RBE-CAS',
                               self.m.path.cleanup_dir, command_lines_file)
 
-  def _archive_test_trigger_deps_digest(self, build_dir: Path):
+  def _archive_test_trigger_deps_digest(self):
     # Runtime files are listed relative to output dir, we upload to CAS relative
     # to checkout dir (src checkout folder) as those will be used in the srcless
     # builder as they were checked out. Note, it's possible that test-trigger
@@ -1935,8 +1882,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # Runtime files (TEST_TRIGGER_AND_COLLECT_DEPS_TARGET) are defined here:
     # https://source.chromium.org/chromium/chromium/src/+/main:infra/orchestrator/BUILD.gn
     base_dir = self.m.path.checkout_dir
-    runtime_deps_file = (
-        build_dir / TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE)
+    output_dir = self.m.chromium.build_dir
+    runtime_deps_file = self.m.chromium.build_dir.joinpath(
+        TEST_TRIGGER_AND_COLLECT_DEPS_RUNTIME_DEPS_FILE)
 
     if not self.m.path.exists(runtime_deps_file):
       self.m.step.empty('test-trigger deps not compiled, ignored (%s)' %
@@ -1949,7 +1897,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           self.m.file.read_text('read test-trigger deps file',
                                 runtime_deps_file).rstrip().split('\n'))
       for path in paths:
-        file_path = self.m.path.relpath(build_dir / path, base_dir)
+        file_path = self.m.path.relpath(output_dir / path, base_dir)
         file_path = base_dir / file_path
 
         if "*" in str(file_path):
@@ -1988,7 +1936,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return valid, invalid
 
-  def deapply_deps(self, update_result: bot_update.Result, build_dir: Path):
+  def deapply_deps(self, update_result: bot_update.Result):
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
       # If tests fail, we want to fix Chromium revision only. Tests will use
       # the dependencies versioned in 'src' tree.
@@ -2011,10 +1959,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     with self.m.context(cwd=self.m.path.checkout_dir):
       # NOTE: "without patch" phrase is used to keep consistency with the API
-      self.m.chromium.runhooks(
-          self.m.chromium_checkout.source_dir,
-          build_dir,
-          name='runhooks (without patch)')
+      self.m.chromium.runhooks(name='runhooks (without patch)')
 
   def integration_steps(self, builder_id, builder_config):
     return self.run_tests_with_and_without_changes(
@@ -2089,8 +2034,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    self.archive_build(
-        task.build_dir, task.update_result, enable_snoopy=self._enable_snoopy)
+    self.archive_build(task.update_result, self._enable_snoopy)
 
     self.m.step.empty('mark: before_tests')
     if task.test_suites:
@@ -2118,7 +2062,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         if new_tests:
           # Executing for flakiness checks is done in chromium_tests so that we
           # avoid a circular dependency between chromium_tests and flakiness.
-          return self.run_tests_for_flakiness(task.build_dir, new_tests)
+          return self.run_tests_for_flakiness(new_tests)
 
     return None
 
@@ -2224,12 +2168,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return '\n\n'.join(test_summary_lines)
 
-  def run_tests_for_flakiness(self, build_dir: Path, test_objects_by_suffix):
+  def run_tests_for_flakiness(self, test_objects_by_suffix):
     """Runs tests for flake endorser.
 
 
     Args:
-      build_dir: The path to the directory containing built outputs.
       test_objects_by_suffix: A dict mapping from test suffixes to lists of
         steps.AbstractTest objects.
 
@@ -2247,8 +2190,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                      'Infra>Test>Flakiness component.')
       # |general_suffix| is always in |test_objects_by_suffix| dict and all
       # local tests are under this key.
-      with self.wrap_chromium_tests(
-          build_dir, tests=test_objects_by_suffix[general_suffix]):
+      with self.wrap_chromium_tests(test_objects_by_suffix[general_suffix]):
         self.m.test_utils.run_tests_for_flake_endorser(test_objects_by_suffix)
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
@@ -2257,8 +2199,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self,
       builder_id: chromium.BuilderId,
       builder_config: ctbc.BuilderConfig,
-      source_dir: Path,
-      build_dir: Path,
+      root_dir: Path,
       affected_files: Iterable[str],
       targets_config: targets_config_module.TargetsConfig,
       *,
@@ -2270,10 +2211,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_id: A BuilderId for identifying a builder.
       builder_config: A BuilderConfig for accessing the static builder
         configuration.
-      source_dir: The path to the top level repo.
-      build_dir: The path to the directory containing built outputs.
-      affected_files: The paths to the files that are modified by the CL being
-        tested, relative to source_dir.
+      root_dir: The directory which the affected files paths are relative to.
+        For checking out chromium, this will be the src directory.
+      affected_files: The files that are modified by the CL being tested, if
+        any.
       targets_config: The TargetsConfig providing the configured targets for the
         builder.
       skip_analysis_reasons: Reasons to skip analysis. If set to a non-empty
@@ -2299,7 +2240,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       skip_analysis_logs = {}
 
       affected_spec_files = self._get_affected_spec_files(
-          source_dir, affected_files, builder_config,
+          root_dir, affected_files, builder_config,
           self.get_targets_spec_dir(builder_config))
       # If any of the spec files that we used for determining the targets/tests
       # is affected, skip doing analysis, just build/test all of them
@@ -2326,7 +2267,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           for exclusion in builder_config.additional_exclusions
       }
       test_targets, compile_targets = self.m.filter.analyze(
-          build_dir,
           affected_files,
           test_targets,
           additional_compile_targets,
@@ -2387,7 +2327,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # update all DEPS.
     # Chromium has a lot of tags which slow us down, we don't need them on
     # trybots, so don't fetch them.
-    update_result, build_dir, targets_config = self.prepare_checkout(
+    update_result, targets_config = self.prepare_checkout(
         builder_config,
         timeout=3600,
         no_fetch_tags=True,
@@ -2400,6 +2340,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     # Must happen before without patch steps.
     if self.m.code_coverage.using_coverage:
+      self.m.code_coverage.source_dir = self.m.chromium_checkout.source_dir
       self.m.code_coverage.instrument(
           affected_files, is_deps_only_change=is_deps_only_change)
       # Don't isolate output files if coverage is skipped anyway
@@ -2411,13 +2352,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if not builder_config.is_compile_only:
       tests = targets_config.all_tests
 
-    source_dir = update_result.source_root.path
+    root_dir = update_result.source_root.path
 
     test_targets, compile_targets = self.determine_compilation_targets(
         builder_id,
         builder_config,
-        source_dir,
-        build_dir,
+        root_dir,
         affected_files,
         targets_config,
         skip_analysis_reasons=skip_analysis_reasons)
@@ -2434,7 +2374,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       compile_targets = sorted(set(compile_targets))
       raw_result, execution_info = self.compile_specific_targets(
-          build_dir,
           builder_id,
           builder_config,
           update_result,
@@ -2462,16 +2401,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       else:
         tests = []
 
-    task = Task(
-        builder_config=builder_config,
-        test_suites=tests,
-        update_result=update_result,
-        source_dir=source_dir,
-        build_dir=build_dir,
-        affected_files=affected_files,
-        swarming_execution_info=execution_info,
-    )
-    return raw_result, task
+    return raw_result, Task(builder_config, tests, update_result, root_dir,
+                            affected_files, execution_info)
 
   def get_first_tag(self, key):
     '''Returns the first buildbucket tag value for a given key
@@ -2617,7 +2548,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     android_version_name, android_version_code = (
         self.get_android_version_details(parent_builder_spec.android_version))
     self.m.chromium.mb_lookup(
-        self.m.chromium_checkout.source_dir,
         parent_builder_id,
         mb_config_path=mb_config_path,
         chromium_config=parent_chromium_config,
@@ -2626,7 +2556,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         android_version_code=android_version_code,
         name='lookup builder GN args')
 
-  def _gen_runtime_dict_for_skylab(self, build_dir: Path, target):
+  def _gen_runtime_dict_for_skylab(self, target):
     """Generate the rel path of runtime deps to src dir.
 
     Skylab DUT in CrOS does not support isolate. We reuse the isolate file
@@ -2636,13 +2566,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       target: The ninja build target for the test, e.g. url_unittests.
 
     Returns:
-      build_dir: The path to the directory containing built outputs.
       runtime_dict: Relative paths to the src dir of the runtime deps, with
           the key of its relative path to build dir, original form in the
           isolate file.
     """
     with self.m.step.nest('collect runtime deps for %s' % target) as step:
       src_dir = self.m.path.checkout_dir
+      build_dir = self.m.chromium.build_dir
       abs_runtime_deps = build_dir.joinpath(target + '.isolate')
       if not self.m.path.exists(abs_runtime_deps):
         failure_msg = 'Failed to find the %s.isolate.' % target
@@ -2670,14 +2600,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       return runtime_dict
 
-  def _upload_runtime_deps_for_skylab(
-      self,
-      build_dir: Path,
-      gcs_bucket,
-      gcs_path,
-      target,
-      runtime_deps,
-  ):
+  def _upload_runtime_deps_for_skylab(self, gcs_bucket, gcs_path, target,
+                                      runtime_deps):
 
     def is_dir(rel_path):
       return self.m.path.isdir(self.m.path.checkout_dir / rel_path)
@@ -2688,18 +2612,17 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     with self.m.step.nest('upload skylab runtime deps for %s' % target):
       #TODO(crbug/1276489): Remove below condition once we get rid of the
       # build target lacros_version_metadata in src.
-      if not self.m.path.exists(build_dir / 'metadata.json'):
-        version = self.m.chromium.get_version(
-            self.m.chromium_checkout.source_dir)
+      if not self.m.path.exists(self.m.chromium.build_dir / 'metadata.json'):
+        version = self.m.chromium.get_version()
         version_str = '%(MAJOR)s.%(MINOR)s.%(BUILD)s.%(PATCH)s' % version
         self.m.file.write_json(
-            'write metadata.json', build_dir / 'metadata.json',
+            'write metadata.json', self.m.chromium.build_dir / 'metadata.json',
             dict(content={'version': version_str}, metadata_version=1))
 
       # Lacros TLS provision requires a metadata.json containing the chrome
       # version along with the squashfs file. If user does not configure it
       # in the compile targets, we create one for the tests.
-      out_dir = self.m.path.relpath(build_dir,
+      out_dir = self.m.path.relpath(self.m.chromium.build_dir,
                                     self.m.chromium_checkout.checkout_dir)
 
       metadata_arch = arch_prop.ArchiveData(
@@ -2734,9 +2657,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def prepare_artifact_for_skylab(self,
                                   builder_config,
-                                  build_dir: Path,
                                   tests,
-                                  *,
                                   phase='with patch'):
     if not (builder_config.skylab_gs_bucket and tests):
       raise self.m.step.InfraFailure(
@@ -2754,13 +2675,13 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       for t in tests:
         tests_by_target[t.target_name].append(t)
       runtime_dict_by_target = {
-          t: self._gen_runtime_dict_for_skylab(build_dir, t)
+          t: self._gen_runtime_dict_for_skylab(t)
           for t in sorted(tests_by_target)
       }
       gcs_path_by_target = {
           t:
-              self._upload_runtime_deps_for_skylab(
-                  build_dir, builder_config.skylab_gs_bucket, gcs_path, t, r)
+          self._upload_runtime_deps_for_skylab(builder_config.skylab_gs_bucket,
+                                               gcs_path, t, r)
           for t, r in runtime_dict_by_target.items()
       }
       for target, tests_for_target in tests_by_target.items():
@@ -2773,15 +2694,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           t.tast_expr_file = runtime_dict_by_target.get(target).get(
               'bin/%s.filter' % t.target_name)
 
-  def run_tests(
-      self,
-      build_dir: Path,
-      builder_id,
-      builder_config,
-      tests,
-      *,
-      upload_results=None,
-  ):
+  def run_tests(self, builder_id, builder_config, tests, upload_results=None):
     if not tests:
       return
 
@@ -2797,7 +2710,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             t.is_skylabtest or (t.runs_on_swarming and t.isolate_profile_data)
             for t in tests),
     )
-    with self.wrap_chromium_tests(build_dir, tests=tests):
+    with self.wrap_chromium_tests(tests):
       test_failure_summary = test_runner()
 
       if self.m.code_coverage.using_coverage:
@@ -2811,7 +2724,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         test_success = False
 
       self.m.archive.generic_archive_after_tests(
-          build_dir=build_dir,
+          build_dir=self.m.chromium.build_dir,
           upload_results=upload_results,
           test_success=test_success)
       self.m.test_utils.record_suite_statuses(tests, '')

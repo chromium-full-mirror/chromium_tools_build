@@ -94,18 +94,18 @@ def RunSteps(api, is_debug, triggers, v8_tot):
     with api.context(cwd=api.path.cache_dir / 'builder'):
       update_result = api.bot_update.ensure_checkout()
 
-    source_dir = update_result.source_root.path
-    build_dir = api.v8.build_dir(source_dir)
-    api.v8.runhooks(source_dir, build_dir)
+    api.chromium.runhooks()
 
+  source_dir = update_result.source_root.path
   with api.step.nest('build'):
     depot_tools_path = source_dir.joinpath('third_party', 'depot_tools')
     with api.context(env_prefixes={'PATH': [depot_tools_path]}):
-      api.chromium.run_gn(source_dir, build_dir, use_reclient=True)
-      raw_result = api.chromium.compile(
-          source_dir, build_dir, use_reclient=True)
+      api.chromium.run_gn(use_reclient=True)
+      raw_result = api.chromium.compile(use_reclient=True)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
+
+  build_output_path = api.chromium.build_dir
 
   # Archive node executable and trigger performance bots on V8 ToT builders.
   if v8_tot:
@@ -120,8 +120,9 @@ def RunSteps(api, is_debug, triggers, v8_tot):
       zip_file = api.path.cleanup_dir / archive_name
 
       # Zip build.
-      package = api.zip.make_package(build_dir, zip_file)
-      package.add_file(build_dir.joinpath('node'), api.path.join('bin', 'node'))
+      package = api.zip.make_package(build_output_path, zip_file)
+      package.add_file(
+          build_output_path.joinpath('node'), api.path.join('bin', 'node'))
       package.zip('zipping')
 
       # Upload to google storage bucket.
@@ -150,7 +151,7 @@ def RunSteps(api, is_debug, triggers, v8_tot):
   has_flakes = False
   with api.context(cwd=source_dir / 'node'):
     run_cctest = lambda step_name: api.step(step_name,
-                                            [build_dir / 'node_cctest'])
+                                            [build_output_path / 'node_cctest'])
     has_flakes |= run_with_retry(api, 'run cctest', run_cctest)
 
     suites = [
@@ -168,10 +169,13 @@ def RunSteps(api, is_debug, triggers, v8_tot):
           '--flaky-tests',
           'run',
           '--shell',
-          build_dir / 'node',
+          build_output_path / 'node',
       ]
       if use_test_root:
-        args += ['--test-root', build_dir.joinpath('gen', 'node', 'test')]
+        args += [
+            '--test-root',
+            build_output_path.joinpath('gen', 'node', 'test')
+        ]
       run_test = lambda step_name: api.v8.python(
           name=step_name,
           script=api.path.join('tools', 'test.py'),

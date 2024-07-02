@@ -38,13 +38,11 @@ def RunSteps(api):
             script_args=['some', 'args']))
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
-
-  update_result = api.chromium_checkout.ensure_checkout()
-  source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
-
+  # Remove this once the following code is not relying on paths being set by
+  # chromium_checkout
+  api.chromium_checkout.ensure_checkout()
   tests = [s.get_test(api.chromium_tests) for s in test_specs]
-  with api.chromium_tests.wrap_chromium_tests(build_dir, tests=tests):
+  with api.chromium_tests.wrap_chromium_tests(tests=tests):
     pass
 
 

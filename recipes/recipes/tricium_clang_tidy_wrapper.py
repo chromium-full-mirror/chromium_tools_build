@@ -110,28 +110,28 @@ def RunSteps(api):
     update_result = api.chromium_checkout.ensure_checkout(
         clobber=config.clobber, gerrit_no_rebase_patch_ref=True)
 
-    source_dir = update_result.source_root.path
-    build_dir = api.chromium.default_build_dir(source_dir)
-    api.chromium.runhooks(source_dir, build_dir, name='runhooks (with patch)')
+    api.chromium.runhooks(name='runhooks (with patch)')
 
+    source_dir = update_result.source_root.path
     with api.context(cwd=source_dir):
       affected = [
           source_dir.joinpath(_normalize_path_for_os(api, f))
           for f in api.chromium_checkout.get_files_affected_by_patch()
       ]
 
-      api.chromium.ensure_toolchains(update_result.checkout_dir)
+      api.chromium.ensure_toolchains()
 
       # `gn gen` can take up to a minute, and the script we call out to
       # already does that for us, so set up a minimal build dir.
-      gn_args_str = api.chromium.mb_lookup(source_dir, me)
+      gn_args_str = api.chromium.mb_lookup(me)
 
-      api.file.ensure_directory('ensure out dir', build_dir)
-      api.file.write_text('write args.gn', build_dir / 'args.gn', gn_args_str)
+      api.file.ensure_directory('ensure out dir', api.chromium.build_dir)
+      api.file.write_text('write args.gn', api.chromium.build_dir / 'args.gn',
+                          gn_args_str)
 
       api.tricium_clang_tidy.lint_source_files(
           source_dir,
-          build_dir,
+          api.chromium.build_dir,
           affected,
           api.platform.name == 'win',
       )

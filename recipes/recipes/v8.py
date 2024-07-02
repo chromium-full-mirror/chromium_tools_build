@@ -110,7 +110,6 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
 
   if v8.is_pure_swarming_tester:
     source_dir = None
-    build_dir = None
     with api.step.nest('initialization'):
       # This is to install golang swarming client via CIPD.
       with api.swarming.on_path():
@@ -129,10 +128,9 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
     with api.step.nest('initialization'):
       update_step = v8.checkout(clobber=clobber_all)
       source_dir = update_step.source_root.path
-      build_dir = api.v8.build_dir(source_dir)
 
       api.v8_tests.set_up_swarming()
-      v8.runhooks(source_dir, build_dir)
+      v8.runhooks()
 
       # Dynamically load more test specifications from all discovered test
       # roots.
@@ -145,16 +143,16 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
 
     if v8.should_build:
       with api.step.nest('build'):
-        compile_failure = v8.compile(source_dir, build_dir, test_spec)
+        compile_failure = v8.compile(source_dir, test_spec)
         if compile_failure:
           return compile_failure
 
-    v8.maybe_create_clusterfuzz_archive(build_dir, update_step)
+    v8.maybe_create_clusterfuzz_archive(update_step)
 
   if v8.should_test and tests:
-    with v8.maybe_clang_coverage(source_dir, build_dir):
+    with v8.maybe_clang_coverage(source_dir):
       test_results = api.v8_tests.runtests(source_dir, tests)
-    v8.maybe_bisect(source_dir, build_dir, test_results, test_spec)
+    v8.maybe_bisect(source_dir, test_results, test_spec)
 
     if not api.tryserver.is_tryserver and test_results.is_negative:
       # Let the overall build fail for failures and flakes.
@@ -168,7 +166,7 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
 
   if api.v8.should_collect_post_compile_metrics:
     with api.step.nest('measurements'):
-      api.v8.collect_post_compile_metrics(source_dir, build_dir)
+      api.v8.collect_post_compile_metrics(source_dir)
 
   return v8.recipe_result
 

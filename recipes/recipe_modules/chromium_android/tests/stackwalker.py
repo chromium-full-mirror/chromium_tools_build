@@ -12,13 +12,12 @@ DEPS = [
 
 
 def RunSteps(api):
-  source_dir = api.path.start_dir / 'checkout'
-  api.path.checkout_dir = source_dir
-  build_dir = source_dir / 'out/Release'
+  api.path.checkout_dir = api.path.start_dir / 'checkout'
 
   api.chromium.set_config('chromium')
-  api.chromium_android.stackwalker(source_dir,
-                                   [build_dir / 'lib.unstripped/libchrome.so'])
+  api.chromium_android.stackwalker(
+      api.path.checkout_dir,
+      [api.chromium.build_dir.joinpath('lib.unstripped', 'libchrome.so')])
 
 
 def GenTests(api):

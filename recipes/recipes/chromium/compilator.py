@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 """Compiles with patch and isolates tests"""
 
-from recipe_engine.config_types import Path
-
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium.compilator import InputProperties
 from PB.recipe_engine import result as result_pb2
@@ -82,7 +80,7 @@ def compilator_steps(api, properties):
           orch_builder_config,
       )
       api.chromium.apply_config('trybot_flavor')
-      update_result, build_dir, targets_config = api.chromium_tests.prepare_checkout(
+      update_result, targets_config = api.chromium_tests.prepare_checkout(
           orch_builder_config,
           timeout=3600,
           no_fetch_tags=True,
@@ -93,6 +91,7 @@ def compilator_steps(api, properties):
       # code coverage is ignored for without patch steps, but compile will
       # error if there is no files_to_instrument.txt file
       if api.code_coverage.using_coverage:
+        api.code_coverage.source_dir = api.chromium_checkout.source_dir
         api.code_coverage.instrument([])
 
       # properties.test_targets should only be targets required for
@@ -104,7 +103,6 @@ def compilator_steps(api, properties):
       ]
       raw_result, execution_info = (
           api.chromium_tests.build_and_isolate_failing_tests(
-              build_dir,
               orch_builder_id,
               orch_builder_config,
               test_suites,
@@ -121,7 +119,6 @@ def compilator_steps(api, properties):
       execution_info = task.swarming_execution_info
       test_suites = task.test_suites
       update_result = task.update_result
-      build_dir = task.build_dir
 
       # In case a without patch build is needed later, output the needed
       # deps override
@@ -154,7 +151,7 @@ def compilator_steps(api, properties):
             # else you'll get a file not found error
             if f not in deleted_files
         ]
-      archive_src_side_deps(api, orch_builder_config, source_dir, build_dir,
+      archive_src_side_deps(api, orch_builder_config, source_dir,
                             affected_files_to_archive)
 
       if any(t.runs_on_swarming and t.is_enabled for t in test_suites):
@@ -192,7 +189,7 @@ def compilator_steps(api, properties):
           local_tests,
           suffix='with patch',
       )
-      with api.chromium_tests.wrap_chromium_tests(build_dir, tests=local_tests):
+      with api.chromium_tests.wrap_chromium_tests(local_tests):
         raw_result = test_runner()
         if raw_result and raw_result.status != common_pb.SUCCESS:
           return raw_result
@@ -202,8 +199,7 @@ def compilator_steps(api, properties):
         new_tests = api.flakiness.find_tests_for_flakiness(
             local_tests, affected_files=task.affected_files)
         if new_tests:
-          return api.chromium_tests.run_tests_for_flakiness(
-              build_dir, new_tests)
+          return api.chromium_tests.run_tests_for_flakiness(new_tests)
 
     return raw_result
 
@@ -211,8 +207,7 @@ def compilator_steps(api, properties):
 def archive_src_side_deps(
     api,
     orch_builder_config: ctbc.BuilderConfig,
-    source_dir: Path,
-    build_dir: Path,
+    source_dir,
     affected_files,
 ):
   """Archives src-side deps that the Orchestrator needs to run tests/coverage.
@@ -225,9 +220,7 @@ def archive_src_side_deps(
   with api.step.nest('archive src-side dep paths') as nested_step:
     # Dedupe in case a file from src_side_dep_paths is also an affected file
     dep_paths = sorted(
-        set(
-            get_src_side_dep_paths(api, source_dir, build_dir) +
-            affected_files))
+        set(get_src_side_dep_paths(api, source_dir) + affected_files))
 
     # We need the files relative to the checkout dir so they can get downloaded
     # correctly on the orchestrator. And the .isolate file inherits the cwd of
@@ -254,7 +247,7 @@ def archive_src_side_deps(
     nested_step.logs['dep paths'] = api.json.dumps(dep_paths, indent=2)
 
 
-def get_src_side_dep_paths(api, source_dir: Path, build_dir: Path):
+def get_src_side_dep_paths(api, source_dir):
   """Get src-side paths to archive.
 
   The chromium compile step writes which src-side deps to archive.
@@ -265,14 +258,15 @@ def get_src_side_dep_paths(api, source_dir: Path, build_dir: Path):
     List of string paths
   """
   dep_paths = set()
-  runtime_deps_file = build_dir / ORCHESTRATOR_RUNTIME_DEPS_FILE
+  runtime_deps_file = api.chromium.build_dir.joinpath(
+      ORCHESTRATOR_RUNTIME_DEPS_FILE)
   paths = (
       api.file.read_text('read orchestrator_all.runtime_deps',
                          runtime_deps_file).rstrip().split('\n'))
   for path in paths:
     # Paths written in these files look like '../../testing/X.py' relative
     # to the output dir
-    file_path = api.path.relpath(build_dir / path, source_dir)
+    file_path = api.path.relpath(api.chromium.build_dir / path, source_dir)
     file_path = source_dir / file_path
 
     # Path can be a regex pattern

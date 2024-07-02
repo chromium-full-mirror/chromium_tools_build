@@ -45,13 +45,9 @@ def RunSteps(api):
     update_result = api.chromium_checkout.ensure_checkout()
     got_revision = update_result.properties['got_revision']
 
-    source_dir = update_result.source_root.path
-    build_dir = api.chromium.default_build_dir(source_dir)
-
-    api.chromium.runhooks(source_dir, build_dir, name='runhooks')
+    api.chromium.runhooks(name='runhooks')
 
     raw_result = api.chromium_tests.run_mb_and_compile(
-        build_dir,
         api.chromium.get_builder_id(),
         api.binary_size.compile_targets,
         None,
@@ -64,8 +60,7 @@ def RunSteps(api):
     staging_dir = api.path.mkdtemp('binary-size-generator-tot')
     api.step(
         name='Generate commit size analysis files',
-        cmd=api.binary_size.get_android_size_analysis_command(
-            build_dir, staging_dir))
+        cmd=api.binary_size.get_android_size_analysis_command(staging_dir))
 
     zip_path = staging_dir / 'analysis_files.zip'
     api.zip.directory(

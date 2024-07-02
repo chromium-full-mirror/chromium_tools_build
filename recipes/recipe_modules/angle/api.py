@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 from recipe_engine import recipe_api
-from recipe_engine.config_types import Path
 
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -54,7 +53,7 @@ class ANGLEApi(recipe_api.RecipeApi):
     stepdata.presentation.step_text = '<br/>commit position: %d' % commit_pos
     return commit_pos
 
-  def _checkout(self) -> tuple[bot_update.Result, Path]:
+  def _checkout(self) -> bot_update.Result:
     # Checkout angle and its dependencies (specified in DEPS) using gclient.
     solution_path = self.m.path.cache_dir / 'builder'
     self.m.file.ensure_directory('init cache if not exists', solution_path)
@@ -71,16 +70,13 @@ class ANGLEApi(recipe_api.RecipeApi):
     build_properties = update_result.properties
     build_properties['angle_commit_pos'] = self._get_angle_commit_pos()
 
-    source_dir = update_result.source_root.path
-    build_dir = self.m.chromium.default_build_dir(source_dir)
-
     self.m.chromium.set_build_properties(update_result.properties)
-    self.m.chromium.runhooks(source_dir, build_dir)
-    return update_result, build_dir
+    self.m.chromium.runhooks()
+    return update_result
 
-  def _compile(self, build_dir: Path, isolated_targets):
+  def _compile(self, isolated_targets):
     raw_result = self.m.chromium_tests.run_mb_and_compile(
-        build_dir, self._builder_id, ['all'], isolated_targets, '')
+        self._builder_id, ['all'], isolated_targets, '')
     return raw_result
 
   def _run_trace_tests(self, checkout, gtest_filter, step_name):
@@ -114,13 +110,13 @@ class ANGLEApi(recipe_api.RecipeApi):
     platform = self.m.properties.get('platform', self.m.platform.name)
     test_mode = self.m.properties.get('test_mode')
     self._apply_builder_config(platform, toolchain, test_mode)
-    update_result, build_dir = self._checkout()
+    update_result = self._checkout()
     if test_mode == 'checkout_only':
       pass
     elif test_mode == 'trace_tests':
       self._trace_tests()
     elif test_mode == 'compile_only':
-      raw_result = self._compile(build_dir, None)
+      raw_result = self._compile(None)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     else:
@@ -142,13 +138,8 @@ class ANGLEApi(recipe_api.RecipeApi):
             report_via_property=True)
         test_targets, compile_targets = (
             self.m.chromium_tests.determine_compilation_targets(
-                self._builder_id,
-                self._builder_config,
-                self.m.path.checkout_dir,
-                build_dir,
-                affected_files,
-                targets_config,
-            ))
+                self._builder_id, self._builder_config,
+                self.m.path.checkout_dir, affected_files, targets_config))
 
         compile_targets = sorted(list(set(test_targets)))
         tests = self.m.chromium_tests.tests_in_compile_targets(
@@ -158,21 +149,19 @@ class ANGLEApi(recipe_api.RecipeApi):
         test_targets = [t.isolate_target for t in tests if t.uses_isolate]
         compile_targets = sorted(list(set(test_targets)))
 
-      compile_step = self._compile(build_dir, compile_targets)
+      compile_step = self._compile(compile_targets)
       if compile_step.status != common_pb.SUCCESS:
         return compile_step
 
       self.m.isolate.isolate_tests(
-          build_dir,
+          self.m.chromium.build_dir,
           targets=compile_targets,
           verbose=True,
       )
       self.m.chromium_tests.set_swarming_test_execution_info(
-          build_dir,
-          tests,
-          self.m.chromium_tests.find_swarming_command_lines("", build_dir),
-          self.m.path.relpath(build_dir, self.m.path.checkout_dir),
-      )
+          tests, self.m.chromium_tests.find_swarming_command_lines(""),
+          self.m.path.relpath(self.m.chromium.build_dir,
+                              self.m.path.checkout_dir))
       # ANGLE marks entire failing shards as invalid. We retry them here.
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests(tests, "", retry_invalid_shards=True))

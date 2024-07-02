@@ -34,12 +34,11 @@ def RunSteps(api, clobber):
       builder_config, is_official_build=False, devtools_skip_typecheck=True)
   update_result = api.devtools.update()
   source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
 
   with api.devtools.depot_on_path(source_dir):
     api.devtools.clean_out_dir(source_dir, builder_config, clobber)
-    api.chromium.run_gn(source_dir, build_dir)
-    compilation_result = api.chromium.compile(source_dir, build_dir)
+    api.chromium.run_gn()
+    compilation_result = api.chromium.compile()
     if compilation_result.status != common_pb.SUCCESS:
       return compilation_result
 

@@ -35,25 +35,20 @@ class CronetApi(recipe_api.RecipeApi):
             targets=None,
             use_reclient=True):
     builder_id = builder_id or self.m.chromium.get_builder_id()
-    source_dir = self.m.path.checkout_dir
-    build_dir = self.m.chromium.default_build_dir(source_dir)
-    self.m.chromium.runhooks(source_dir, build_dir)
+    self.m.chromium.runhooks()
     if self.m.chromium.c.project_generator.tool == 'gn':  # pragma: no cover
       assert (self.m.chromium.c.HOST_PLATFORM == 'linux' and
               self.m.chromium.c.HOST_BITS == 64)
-      gn_path = source_dir / 'buildtools/linux64/gn'
+      gn_path = self.m.path.checkout_dir.joinpath('buildtools', 'linux64', 'gn')
       if not self.m.path.exists(gn_path):
-        gn_path = source_dir / 'third_party/gn/gn'
-      self.m.chromium.run_gn(
-          source_dir, build_dir, use_reclient=use_reclient, gn_path=gn_path)
+        gn_path = self.m.path.checkout_dir.joinpath('third_party', 'gn', 'gn')
+      self.m.chromium.run_gn(use_reclient=use_reclient, gn_path=gn_path)
     elif self.m.chromium.c.project_generator.tool == 'mb':
-      self.m.chromium.mb_gen(
-          source_dir, build_dir, builder_id, use_reclient=use_reclient)
-    return self.m.chromium.compile(
-        source_dir, build_dir, targets=targets, use_reclient=use_reclient)
+      self.m.chromium.mb_gen(builder_id, use_reclient=use_reclient)
+    return self.m.chromium.compile(targets=targets, use_reclient=use_reclient)
 
   def get_version(self):
-    version = self.m.chromium.get_version(self.m.path.checkout_dir)
+    version = self.m.chromium.get_version()
     return "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
                             version['BUILD'], version['PATCH'])
 

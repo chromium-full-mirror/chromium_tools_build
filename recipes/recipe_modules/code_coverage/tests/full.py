@@ -39,16 +39,9 @@ def RunSteps(api):
   api.chromium_tests.configure_build(builder_config)
   api.chromium_checkout.ensure_checkout()
 
-  # Fake paths.
-  source_dir = api.chromium_checkout.source_dir
-  if api.properties.get('build_dir'):
-    build_dir = source_dir / api.properties.get('build_dir')
-  else:
-    build_dir = api.chromium.default_build_dir(source_dir)
-  api.profiles.source_dir = source_dir
-  api.code_coverage.source_dir = source_dir
-  api.code_coverage.build_dir = build_dir
-  api.path.checkout_dir = source_dir
+  # Fake path.
+  api.profiles.source_dir = api.chromium_checkout.source_dir
+  api.code_coverage.source_dir = api.chromium_checkout.source_dir
 
   if api.tryserver.is_tryserver:
     api.code_coverage.instrument(
@@ -69,7 +62,10 @@ def RunSteps(api):
     api.path.mock_add_paths(metadata_dir / 'all.json.gz')
   if api.properties.get('mock_javascript_lcov_path', True):
     api.path.mock_add_paths(
-        build_dir.joinpath('js_coverage').joinpath('lcov.info'))
+        api.chromium.build_dir.joinpath('js_coverage').joinpath('lcov.info'))
+  if api.properties.get('build_dir'):
+    api.code_coverage.build_dir = (
+        api.path.start_dir / api.properties.get('build_dir'))
   if api.properties.get('ensure_clang_coverage_tools'):
     api.code_coverage.ensure_clang_coverage_tools()
 

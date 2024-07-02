@@ -14,13 +14,9 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  source_dir = api.path.cache_dir / 'builder/src'
-  build_dir = source_dir / 'out/Release'
+  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.chromium.mb_isolate_everything(
-      source_dir,
-      build_dir,
-      chromium.BuilderId.create_for_group('test-group', 'test-builder'),
-  )
+      chromium.BuilderId.create_for_group('test-group', 'test-builder'))
 
 
 def GenTests(api):

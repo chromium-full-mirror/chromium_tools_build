@@ -31,27 +31,23 @@ def RunSteps(api):
   libyuv = api.libyuv
   libyuv.apply_bot_config(libyuv.BUILDERS, libyuv.RECIPE_CONFIGS)
 
-  update_result = libyuv.checkout()
-  source_dir = update_result.source_root.path
-  build_dir = api.chromium.default_build_dir(source_dir)
-  api.chromium.runhooks(source_dir, build_dir)
+  libyuv.checkout()
+  api.chromium.runhooks()
 
   if libyuv.should_build:
     with libyuv.ensure_sdk():
-      api.chromium.run_gn(
-          source_dir, build_dir, use_reclient=libyuv.should_use_reclient)
-      raw_result = api.chromium.compile(
-          source_dir, build_dir, use_reclient=libyuv.should_use_reclient)
+      api.chromium.run_gn(use_reclient=libyuv.should_use_reclient)
+      raw_result = api.chromium.compile(use_reclient=libyuv.should_use_reclient)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     if libyuv.should_upload_build:
       libyuv.package_build()
 
   if libyuv.should_download_build:
-    libyuv.extract_build(build_dir)
+    libyuv.extract_build()
 
   if libyuv.should_test:
-    libyuv.runtests(build_dir)
+    libyuv.runtests()
 
   libyuv.maybe_trigger()
 

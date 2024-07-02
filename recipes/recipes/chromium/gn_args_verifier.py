@@ -73,7 +73,6 @@ def RunSteps(api, properties):
   with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout(patch=True)
   checkout_dir = update_result.checkout_dir
-  source_dir = update_result.source_root.path
   patch_dir = update_result.patch_root.path
 
   # Absolute path of the per-builder config directory root.
@@ -118,7 +117,6 @@ def RunSteps(api, properties):
       gn_args_by_phase = _get_post_patch_gn_args(
           api,
           checkout_dir,
-          source_dir,
           file_path,
           builder_id,
           gn_args_json,
@@ -154,7 +152,6 @@ def RunSteps(api, properties):
     success = _verify_gn_args(
         api,
         checkout_dir,
-        source_dir,
         step_name,
         builder_id,
         gn_args_by_phase,
@@ -183,7 +180,6 @@ _GnArgsByPhase = dict[str | None, str]
 def _get_post_patch_gn_args(
     api,
     checkout_dir: config_types.Path,
-    source_dir: config_types.Path,
     step_name: str,
     builder_id: BuilderId,
     gn_args_json: _GnArgsJson,
@@ -196,7 +192,6 @@ def _get_post_patch_gn_args(
     checkout_dir: The directory where the checkout was performed. The source
       should already be checked out, with the patch from the CL applied.
     step_name: The name of the step to use for getting the GN args.
-    source_dir: The path to the top level repo.
     builder_id: The ID of the builder to get GN args for.
     gn_args_json: The json decoded contents of the builder's gn_args.json file.
     mb_config_paths: The paths to the MB config files to try to look up the
@@ -220,7 +215,6 @@ def _get_post_patch_gn_args(
           try:
             gn_args = _mb_lookup(
                 api,
-                source_dir,
                 f'mb lookup - {builder_id}{suffix}',
                 builder_id,
                 checkout_dir / mb_config_path,
@@ -248,7 +242,6 @@ def _get_post_patch_gn_args(
 def _verify_gn_args(
     api,
     checkout_dir: config_types.Path,
-    source_dir: config_types.Path,
     step_name: str,
     builder_id: BuilderId,
     post_patch_gn_args_by_phase: _GnArgsByPhase,
@@ -261,7 +254,6 @@ def _verify_gn_args(
     checkout_dir: The directory where the checkout was performed. The source
       should already be checked out, without the patch from the CL applied.
     step_name: The name of the step to use for the verification.
-    source_dir: The path to the top level repo.
     builder_id: The ID of the builder to verify GN args for.
     post_patch_gn_args_by_phase: The GN args for the builder with the patch
       applied for each phase.
@@ -289,7 +281,6 @@ def _verify_gn_args(
             try:
               pre_patch_args = _mb_lookup(
                   api,
-                  source_dir,
                   'mb lookup',
                   builder_id,
                   checkout_dir / mb_config_path,
@@ -343,7 +334,6 @@ _UNKNOWN_BUILDER_RETCODE = 2
 
 def _mb_lookup(
     api,
-    source_dir: config_types.Path,
     step_name: str,
     builder_id: BuilderId,
     mb_config_path: config_types.Path,
@@ -371,7 +361,6 @@ def _mb_lookup(
   result = api.chromium.run_mb_cmd(
       step_name,
       'lookup',
-      source_dir,
       builder_id,
       mb_config_path=mb_config_path,
       phase=phase,

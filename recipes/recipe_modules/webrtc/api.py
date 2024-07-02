@@ -5,8 +5,6 @@
 import urllib
 
 from recipe_engine import recipe_api
-from recipe_engine.config_types import Path
-
 from RECIPE_MODULES.build.chromium_tests_builder_config import builder_spec
 
 from . import builders
@@ -78,14 +76,8 @@ class WebRTCApi(recipe_api.RecipeApi):
       assert self.m.properties.get('parent_got_revision'), (
           'Testers should only be run with "parent_got_revision" property.')
 
-  def determine_compilation_targets(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      builder_id,
-      targets_config,
-      phase,
-  ):
+  def determine_compilation_targets(self, source_dir, builder_id,
+                                    targets_config, phase):
     """ Returns the tests to run and the targets to compile."""
     test_targets = _get_test_targets_from_config(targets_config, phase)
 
@@ -111,7 +103,6 @@ class WebRTCApi(recipe_api.RecipeApi):
       return test_targets, additional_targets
 
     test_targets, compile_targets = self.m.filter.analyze(
-        build_dir,
         affected_files,
         test_targets,
         additional_compile_targets=additional_targets,
@@ -160,12 +151,12 @@ class WebRTCApi(recipe_api.RecipeApi):
   def should_generate_code_coverage(self, builder_id, builder_config):
     return builder_id.builder.lower() == 'linux_coverage'
 
-  def setup_code_coverage_module(self, source_dir: Path, build_dir: Path):
+  def setup_code_coverage_module(self, source_dir):
     """Configure internal constants of the code_coverage module."""
-    self.m.profiles.source_dir = source_dir
+    checkout_path = source_dir
+    self.m.profiles.source_dir = checkout_path
     self.m.code_coverage._use_clang_coverage = True
-    self.m.code_coverage.source_dir = source_dir
-    self.m.code_coverage.build_dir = build_dir
+    self.m.code_coverage.source_dir = checkout_path
 
     # For presubmit, only instrument changed files.
     if self.m.tryserver.is_tryserver:
@@ -176,7 +167,7 @@ class WebRTCApi(recipe_api.RecipeApi):
           affected_files, is_deps_only_change=is_deps_only_change)
 
   def run_mb(self,
-             source_dir: Path,
+             source_dir,
              builder_id,
              phase=None,
              tests=None,
@@ -195,11 +186,7 @@ class WebRTCApi(recipe_api.RecipeApi):
       self.m.chromium.c.build_config_fs = _sanitize_file_name(
           builder_id.builder)
 
-    build_dir = self.m.chromium.default_build_dir(source_dir)
-
-    self.m.chromium.mb_gen(
-        source_dir,
-        build_dir,
+    return self.m.chromium.mb_gen(
         builder_id,
         use_reclient=True,
         phase=phase,
@@ -207,9 +194,7 @@ class WebRTCApi(recipe_api.RecipeApi):
         mb_config_path=mb_config_path,
         isolated_targets=_get_isolated_targets(tests or []))
 
-    return build_dir
-
-  def isolate(self, build_dir: Path, builder_id, builder_config, tests):
+  def isolate(self, builder_id, builder_config, tests):
     if builders.BUILDERS_DB[builder_id].execution_mode == builder_spec.TEST:
       # The tests running on a 'tester' bot are isolated by the 'builder'.
       self.m.isolate.check_swarm_hashes(_get_isolated_targets(tests))
@@ -220,7 +205,7 @@ class WebRTCApi(recipe_api.RecipeApi):
           ('swarm_hashes', commit_position, 'without_patch'))
 
       self.m.isolate.isolate_tests(
-          build_dir,
+          self.m.chromium.build_dir,
           targets=_get_isolated_targets(tests),
           swarm_hashes_property_name=swarm_hashes_property_name)
 
@@ -233,9 +218,9 @@ class WebRTCApi(recipe_api.RecipeApi):
           }]), self.m.cas.instance, self.m.isolate.isolated_tests)
     else:
       self.m.isolate.isolate_tests(
-          build_dir, targets=_get_isolated_targets(tests))
+          self.m.chromium.build_dir, targets=_get_isolated_targets(tests))
 
-  def set_upload_build_properties(self, build_dir: Path, builder_id):
+  def set_upload_build_properties(self, builder_id):
     experiment_prefix = 'Experimental' if self.m.runtime.is_experimental else ''
     bucketname = self.m.buildbucket.bucket_v1
     build_url = 'https://ci.chromium.org/p/%s/builders/%s/%s/%s' % (
@@ -251,24 +236,15 @@ class WebRTCApi(recipe_api.RecipeApi):
         'commit_position': self.revision_number,
         'webrtc_git_hash': self.revision,
         'perf_dashboard_machine_group': experiment_prefix + _PERF_MACHINE_GROUP,
-        'outdir': build_dir,
+        'outdir': self.m.chromium.build_dir,
     })
     self.m.chromium.set_build_properties(build_props)
 
-  def set_test_command_lines(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      builder_id,
-      tests,
-  ):
+  def set_test_command_lines(self, source_dir, builder_id, tests):
     if builders.BUILDERS_DB[builder_id].execution_mode != builder_spec.TEST:
       return self.m.chromium_tests.set_swarming_test_execution_info(
-          build_dir,
-          tests,
-          self.m.chromium_tests.find_swarming_command_lines('', build_dir),
-          self.m.path.relpath(build_dir, source_dir),
-      )
+          tests, self.m.chromium_tests.find_swarming_command_lines(''),
+          self.m.path.relpath(self.m.chromium.build_dir, source_dir))
 
     # Tester builders only triggers swarming tests built on 'builder' bots
     # so the swarming command line needs to be retrieved from build
@@ -280,7 +256,7 @@ class WebRTCApi(recipe_api.RecipeApi):
     )
     # Tester builders run their tests in the parent builder out directory.
     parent_buildername = builders.BUILDERS_DB[builder_id].parent_buildername
-    output_dir = str(build_dir).replace(
+    output_dir = str(self.m.chromium.build_dir).replace(
         _sanitize_file_name(builder_id.builder),
         _sanitize_file_name(parent_buildername))
 
@@ -292,13 +268,10 @@ class WebRTCApi(recipe_api.RecipeApi):
           test.raw_cmd = command_line
           test.relative_cwd = relative_cwd
 
-  def get_binary_sizes(self, files, build_dir):
+  def get_binary_sizes(self, files, base_dir=None):
     args = [
-        '--base-dir',
-        build_dir,
-        '--output',
-        self.m.json.output(),
-        '--',
+        '--base-dir', base_dir or self.m.chromium.build_dir, '--output',
+        self.m.json.output(), '--'
     ] + list(files)
     cmd = ['vpython3', '-u', self.resource('binary_sizes.py')] + args
 
@@ -345,9 +318,9 @@ class WebRTCApi(recipe_api.RecipeApi):
           args=['-a', 'public-read'],
           unauthenticated_url=True)
 
-  def package_apprtcmobile(self, build_dir: Path, builder_id):
+  def package_apprtcmobile(self, builder_id):
     # Zip and upload out/{Debug,Release}/apks/AppRTCMobile.apk
-    apk_root = build_dir / 'apks'
+    apk_root = self.m.chromium.build_dir / 'apks'
     zip_path = self.m.path.start_dir / 'AppRTCMobile_apk.zip'
 
     pkg = self.m.zip.make_package(apk_root, zip_path)
@@ -364,14 +337,14 @@ class WebRTCApi(recipe_api.RecipeApi):
           args=['-a', 'public-read'],
           unauthenticated_url=True)
 
-  def run_tests(self, source_dir: Path, build_dir: Path, builder_id, tests):
+  def run_tests(self, source_dir, builder_id, tests):
     if not tests:
       return
 
     if builders.BUILDERS_DB[builder_id].perf_id:
-      self.set_upload_build_properties(build_dir, builder_id)
+      self.set_upload_build_properties(builder_id)
 
-    self.set_test_command_lines(source_dir, build_dir, builder_id, tests)
+    self.set_test_command_lines(source_dir, builder_id, tests)
     test_runner = self.m.chromium_tests.create_test_runner(
         tests, surface_invalid_results_as_infra_failure=True)
     test_failure_summary = test_runner()
@@ -381,13 +354,7 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     return test_failure_summary
 
-  def trigger_child_builds(
-      self,
-      builder_id,
-      builder_config,
-      build_dir: Path,
-      update_step,
-  ):
+  def trigger_child_builds(self, builder_id, builder_config, update_step):
     # If the builder is triggered by pinpoint, don't trigger any bots.
     if any('pinpoint_job_id' in t.key for t in self.m.buildbucket.build.tags):
       return
@@ -396,8 +363,7 @@ class WebRTCApi(recipe_api.RecipeApi):
       # Replace ISOLATED_OUTDIR by WILL_BE_ISOLATED_OUTDIR to prevent
       # the variable to be expanded by the builder instead of the tester.
       swarming_command_lines = _replace_string_in_dict(
-          self.m.chromium_tests.find_swarming_command_lines(
-              suffix='', build_dir=build_dir),
+          self.m.chromium_tests.find_swarming_command_lines(suffix=''),
           'ISOLATED_OUTDIR',
           'WILL_BE_ISOLATED_OUTDIR',
       )
