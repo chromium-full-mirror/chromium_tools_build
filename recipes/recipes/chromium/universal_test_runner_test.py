@@ -38,6 +38,7 @@ DEPS = [
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
 
@@ -75,6 +76,19 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
     step_name = (
         f'{builder_suites.bucket}:{builder_suites.builder_name} - {test_names}')
     build_dir = api.chromium_checkout.source_dir / builder_suites.build_dir
+    # TODO(crbug.com/351004038): Nested a luci-auth can't seem to reliably
+    # create the token. The current theory is that the token expires and will
+    # attempt to be reused. As a mitigation, refresh the token in this outer
+    # context
+    api.step(
+        'refresh token', [
+            'luci-auth',
+            'token',
+            '-scopes-context',
+            '-json-output=-',
+            '-lifetime=10m',
+        ],
+        stdout=api.raw_io.output_text())
     cmd = [
         'vpython3',
         api.chromium_checkout.source_dir.joinpath('tools', 'utr', 'run.py'),
