@@ -4,6 +4,6 @@
 """Reclient-related constants."""
 
 STAGING_VERSION = 're_client_version:0.149.0.419b58d3-gomaip'
-TEST_VERSION = 're_client_version:0.150.0.c8b9fcfa-gomaip'
+TEST_VERSION = 're_client_version:0.152.0.f74254ae-gomaip'
 CLANG_SCAN_DEPS_VERSION = 're_client_version:0.41.4.3f0d8bb'
 EXPERIMENTAL_VERSION = 'git_revision:21cbd17123b5d00232f53b5b4575e94638a17477'
