@@ -40,7 +40,7 @@ message Request {
   // when a --forced run is desired.
   string output_properties_file = 5;
 
-  // Next ID: 6
+  // Next ID: 7
   message RerunOptions {
     // Skip checking .gclient mismatches
     bool bypass_gclient = 1;
@@ -59,6 +59,9 @@ message Request {
 
     // How to proceed if the bypass_branch_check is bypassed
     bool skip_instrumentation = 5;
+
+    // Skip verifying the config is compatible with the builder and host
+    bool skip_config_validation = 6;
   }
 
   // The recipe being run by the builder. The 'recipe' input property gets

@@ -305,25 +305,26 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         step_test_data=lambda: self.m.raw_io.test_api.stream_output(
             'origin/main\n'))
 
+  def create_prompt_option(self, properties: Request, prompt: str, **kwargs):
+    if not kwargs:
+      return (prompt, Request())
+    rerun_properties = copy.deepcopy(properties.rerun_options)
+    update = Request.RerunOptions(**kwargs)
+    rerun_properties.MergeFrom(update)
+    return (prompt, rerun_properties)
+
   def prerun_checks(
       self, properties: Request, build_path: Path,
       compiling_builder_id: chromium.BuilderId) -> result_pb2.RawResult:
     # TODO(crbug.com/41492686): Combine these checks so they can be prompted in
     # one interation of the recipe invocations
-    def create_prompt_option(prompt: str, **kwargs):
-      if not kwargs:
-        return (prompt, Request())
-      rerun_properties = copy.deepcopy(properties.rerun_options)
-      update = Request.RerunOptions(**kwargs)
-      rerun_properties.MergeFrom(update)
-      return (prompt, rerun_properties)
 
     if not properties.rerun_options.bypass_gclient:
       error_message = self.check_gclient()
       if error_message:
         rerun_options = [
-            create_prompt_option('yes', bypass_gclient=True),
-            create_prompt_option('no')
+            self.create_prompt_option(properties, 'yes', bypass_gclient=True),
+            self.create_prompt_option(properties, 'no')
         ]
         return self.create_rerun_result(rerun_options, error_message,
                                         properties.output_properties_file)
@@ -332,11 +333,17 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       error_message = self.check_gn_args(build_path, compiling_builder_id)
       if error_message:
         rerun_options = [
-            create_prompt_option(
-                'continue', bypass_gn_args=True, preserve_gn_args=True),
-            create_prompt_option(
-                'overwrite', bypass_gn_args=True, preserve_gn_args=False),
-            create_prompt_option('abort')
+            self.create_prompt_option(
+                properties,
+                'continue',
+                bypass_gn_args=True,
+                preserve_gn_args=True),
+            self.create_prompt_option(
+                properties,
+                'overwrite',
+                bypass_gn_args=True,
+                preserve_gn_args=False),
+            self.create_prompt_option(properties, 'abort')
         ]
         return self.create_rerun_result(rerun_options, error_message,
                                         properties.output_properties_file)
@@ -346,15 +353,17 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       error_message = self.check_upstream_branch()
       if error_message:
         rerun_options = [
-            create_prompt_option(
+            self.create_prompt_option(
+                properties,
                 'instrument everything',
                 bypass_branch_check=True,
                 skip_instrumentation=False),
-            create_prompt_option(
+            self.create_prompt_option(
+                properties,
                 'skip instrumentation',
                 bypass_branch_check=True,
                 skip_instrumentation=True),
-            create_prompt_option('abort')
+            self.create_prompt_option(properties, 'abort')
         ]
         return self.create_rerun_result(rerun_options, error_message,
                                         properties.output_properties_file)

@@ -18,6 +18,8 @@ def RunSteps(api):
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_BITS=api.properties.get('target_bits', 64))
 
+  api.chromium.verify_config |= True
+
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
 

@@ -43,6 +43,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     self._build_properties = None
     self._version = None
     self._clang_version = None
+    self._verify_config = True
     # TODO(yueshe@) - migrate this property to xcode module once downstream
     # no longer sets this property
     self._xcode_build_version = input_properties.xcode_build_version
@@ -51,15 +52,24 @@ class ChromiumApi(recipe_api.RecipeApi):
   def xcode_build_version(self):
     return self._xcode_build_version
 
+  @property
+  def verify_config(self):
+    return self._verify_config
+
+  @verify_config.setter
+  def verify_config(self, value: bool) -> None:
+    self._verify_config = value
+
   def make_config_params(self, *args, **kwargs):
     config_object, params = super().make_config_params(*args, **kwargs)
-    if config_object is not None:
+    if config_object is not None and self._verify_config:
       validate_config(config_object)
     return config_object, params
 
   def apply_config(self, config_name, config_object=None, optional=False):
     super().apply_config(config_name, config_object, optional)
-    validate_config(config_object or self.c)
+    if self._verify_config:
+      validate_config(config_object or self.c)
 
   @contextlib.contextmanager
   def chromium_layout(self):
