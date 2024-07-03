@@ -571,7 +571,7 @@ class AndroidApi(recipe_api.RecipeApi):
         self.denylist_file,
     ]
     with self.m.context(env={'BUILDTYPE': self.c.BUILD_CONFIG}):
-      return self.test_runner('Monkey Test', args, **kwargs)
+      return self.test_runner('Monkey Test', args=args, **kwargs)
 
   def create_result_details(self, step_name, json_results_file):
     try:
@@ -771,6 +771,7 @@ class AndroidApi(recipe_api.RecipeApi):
     self.device_status()
 
   def common_tests_final_steps(self,
+                               *,
                                force_latest_version=False,
                                checkout_dir=None):
     self.shutdown_device_monitor()
@@ -805,6 +806,7 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def run_test_suite(self,
                      suite,
+                     *,
                      verbose=True,
                      result_details=False,
                      store_tombstones=False,
@@ -845,6 +847,7 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def run_java_unit_test_suite(self,
                                suite,
+                               *,
                                target_name=None,
                                verbose=True,
                                json_results_file=None,
@@ -959,6 +962,7 @@ class AndroidApi(recipe_api.RecipeApi):
   def test_runner(
       self,
       step_name,
+      *,
       args=None,
       wrapper_script_suite_name=None,
       pass_adb_path=True,

@@ -27,6 +27,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
   def _build(
       self,
       target,
+      *,
       with_remote_cache=None,
       step_name_suffix=None,
       build_dir: Path | None = None,
@@ -68,7 +69,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
-            [target],
+            targets=[target],
             name=step_name,
             timeout=timeout,
             build_dir=build_dir,
@@ -84,6 +85,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
 
   def recreate_build_dir(self,
+                         *,
                          phase=None,
                          build_dir=None,
                          remove_deps_cache=False):

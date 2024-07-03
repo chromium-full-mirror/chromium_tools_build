@@ -335,6 +335,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   def _run_ninja(self,
                  ninja_command,
+                 *,
                  name=None,
                  ninja_env=None,
                  siso_args=None,
@@ -512,6 +513,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   def _run_ninja_with_reclient(self,
                                ninja_command,
                                ninja_env,
+                               *,
                                name=None,
                                skip_log_upload=False,
                                reclient_extra_env: dict | None = None,
@@ -546,8 +548,8 @@ class ChromiumApi(recipe_api.RecipeApi):
         bootstrap_extra_env=reclient_extra_env) as p:
       ninja_result = self._run_ninja(
           ninja_command,
-          name,
-          ninja_env,
+          name=name,
+          ninja_env=ninja_env,
           skip_log_upload=skip_log_upload,
           **kwargs)
       p.build_exit_status = ninja_result.retcode
@@ -556,6 +558,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   def _run_ninja_without_remote(self,
                                 ninja_command,
                                 ninja_log_outdir,
+                                *,
                                 name=None,
                                 ninja_env=None,
                                 skip_log_upload=False,
@@ -613,7 +616,7 @@ class ChromiumApi(recipe_api.RecipeApi):
             ] + upload_ninja_log_args)
 
   @contextlib.contextmanager
-  def guard_compile(self, suffix=''):
+  def guard_compile(self, *, suffix=''):
     """Ensure that the output directory gets cleaned for the following
     conditions.
 
@@ -692,6 +695,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @_with_chromium_layout
   def compile(self,
+              *,
               targets=None,
               name=None,
               build_dir: Path | None = None,
@@ -958,7 +962,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       self.ensure_mac_toolchain(checkout_dir)
 
   @_with_chromium_layout
-  def runhooks(self, env=None, clobber=None, **kwargs):
+  def runhooks(self, *, env=None, clobber=None, **kwargs):
     """Run the build-configuration hooks for chromium.
 
     Args:
@@ -999,6 +1003,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   @_with_chromium_layout
   def run_gn(
       self,
+      *,
       gn_path=None,
       build_dir: Path | None = None,
       use_reclient=False,
@@ -1065,6 +1070,7 @@ class ChromiumApi(recipe_api.RecipeApi):
                  name,
                  mb_command,
                  builder_id,
+                 *,
                  mb_path=None,
                  mb_config_path=None,
                  chromium_config=None,
@@ -1153,6 +1159,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   def mb_analyze(self,
                  builder_id,
                  analyze_input,
+                 *,
                  name=None,
                  mb_path=None,
                  mb_config_path=None,
@@ -1209,6 +1216,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   @_with_chromium_layout
   def mb_lookup(self,
                 builder_id,
+                *,
                 name=None,
                 mb_path=None,
                 mb_config_path=None,
@@ -1284,6 +1292,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   @_with_chromium_layout
   def mb_gen(self,
              builder_id,
+             *,
              name=None,
              mb_path=None,
              mb_config_path=None,
@@ -1387,6 +1396,7 @@ class ChromiumApi(recipe_api.RecipeApi):
   def mb_isolate_everything(
       self,
       builder_id,
+      *,
       build_dir: Path | None = None,
       phase=None,
   ):

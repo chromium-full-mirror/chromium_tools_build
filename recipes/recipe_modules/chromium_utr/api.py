@@ -86,7 +86,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return result_pb2.RawResult(status=common_pb2.SUCCESS)
 
     test_runner = self.m.chromium_tests.create_test_runner(tests)
-    with self.m.chromium_tests.wrap_chromium_tests(tests):
+    with self.m.chromium_tests.wrap_chromium_tests(tests=tests):
       self.m.chromium_tests.configure_swarming(True)
       # Lower pri for faster turn-around time in debugging. The UTR shouldn't
       # get so much use that it affects CI/CQ traffic substantially. But we can
@@ -580,7 +580,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     def compile_fn():
       return self.m.chromium.compile(
-          targets,
+          targets=targets,
           skip_log_upload=True,
           build_dir=build_dir,
           use_reclient=use_reclient), not missing_isolates

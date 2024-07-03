@@ -211,7 +211,7 @@ def RunSteps(api):
       builder_id, phase='local' if compare_local else None)
 
   raw_result = api.chromium.compile(
-      targets, name='First build', use_reclient=not compare_local)
+      targets=targets, name='First build', use_reclient=not compare_local)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -234,7 +234,10 @@ def RunSteps(api):
       build_dir=build_dir,
       phase=remote_phase if compare_local else None)
   raw_result = api.chromium.compile(
-      targets, name='Second build', use_reclient=True, build_dir=build_dir)
+      targets=targets,
+      name='Second build',
+      use_reclient=True,
+      build_dir=build_dir)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 

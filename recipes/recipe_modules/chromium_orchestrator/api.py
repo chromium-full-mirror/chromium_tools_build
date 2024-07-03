@@ -247,7 +247,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           ))
 
     # Trigger and wait for the tests (and process coverage data, if enabled)!
-    with self.m.chromium_tests.wrap_chromium_tests(tests):
+    with self.m.chromium_tests.wrap_chromium_tests(tests=tests):
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests_with_patch(
               tests,
@@ -361,11 +361,9 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           comp_output.skylab_props, targets_config, tests=failing_test_suites)
 
     # Trigger and wait for the (without patch) tests!
-    with self.m.chromium_tests.wrap_chromium_tests(failing_test_suites):
+    with self.m.chromium_tests.wrap_chromium_tests(tests=failing_test_suites):
       self.m.test_utils.run_tests(
-          failing_test_suites,
-          'without patch',
-          sort_by_shard=True)
+          failing_test_suites, 'without patch', sort_by_shard=True)
 
     # unrecoverable_test_suites are those that passed without a patch, so the
     # failures must be due to the CL

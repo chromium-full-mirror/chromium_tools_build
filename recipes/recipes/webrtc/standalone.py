@@ -60,7 +60,8 @@ def RunSteps(api):
     ]
 
     api.webrtc.run_mb(source_dir, builder_id, phase, tests_to_compile)
-    raw_result = api.chromium.compile(compile_targets, use_reclient=True)
+    raw_result = api.chromium.compile(
+        targets=compile_targets, use_reclient=True)
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
     api.webrtc.isolate(builder_id, builder_config, tests_to_compile)

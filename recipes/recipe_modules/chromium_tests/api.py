@@ -493,6 +493,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                targets_config,
                                compile_targets,
                                tests,
+                               *,
                                mb_phase=None,
                                mb_config_path=None,
                                mb_recursive_lookup=True,
@@ -663,6 +664,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       tests,
       suffix,
       got_revision_cp,
+      *,
       swarm_hashes_property_name='',
       additional_isolate_targets=None,
       build_dir=None,
@@ -736,6 +738,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                        tests,
                                        command_lines,
                                        rel_cwd,
+                                       *,
                                        expose_to_properties=False):
     """Sets the execution information for a list of swarming tests.
 
@@ -862,6 +865,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def archive_build(
       self,
       update_result: bot_update.Result,
+      *,
       enable_snoopy=False,
   ):
     """Archive the build if the bot is configured to do so.
@@ -1132,6 +1136,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                          compile_targets,
                          isolated_targets,
                          name_suffix,
+                         *,
                          mb_phase=None,
                          mb_config_path=None,
                          mb_recursive_lookup=False,
@@ -1186,7 +1191,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
 
       return self.m.chromium.compile(
-          compile_targets,
+          targets=compile_targets,
           name='compile%s' % name_suffix,
           use_reclient=use_reclient)
 
@@ -1194,6 +1199,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                builder_id,
                                update_result: bot_update.Result,
                                builder_config,
+                               *,
                                build_archive_url=None,
                                build_revision=None,
                                override_execution_mode=None,
@@ -1242,7 +1248,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                               else source_group))
 
   @contextlib.contextmanager
-  def wrap_chromium_tests(self, tests=None):
+  def wrap_chromium_tests(self, *, tests=None):
     with self.m.context(
         cwd=self.m.chromium_checkout.checkout_dir,
         env=self.m.chromium.get_env()):
@@ -1283,6 +1289,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                       failing_tests,
                                       update_result: bot_update.Result,
                                       suffix,
+                                      *,
                                       additional_compile_targets=None):
     """Builds and isolates test suites in |failing_tests|.
 
@@ -1337,7 +1344,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       self.prepare_artifact_for_skylab(
           builder_config,
           [t for t in failing_tests if t.target_name in skylab_isolates],
-          suffix)
+          phase=suffix)
     if not failing_swarming_tests:
       return None, None
 
@@ -1444,7 +1451,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if self.m.code_coverage.use_clang_coverage:
       self.m.code_coverage.ensure_clang_coverage_tools()
 
-    with self.wrap_chromium_tests(task.test_suites):
+    with self.wrap_chromium_tests(tests=task.test_suites):
       # Run the test. The isolates have already been created.
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests_with_patch(
@@ -1668,14 +1675,16 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.bcid_reporter.report_stage('upload')
 
     self.archive_clusterfuzz(builder_id, update_step, builder_config)
-    upload_results = self.archive_build(update_step, self._enable_snoopy)
+    upload_results = self.archive_build(
+        update_step, enable_snoopy=self._enable_snoopy)
 
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('upload-complete')
 
     tests = targets_config.tests_on(builder_id)
-    return self.run_tests(builder_id, builder_config, tests, upload_results)
+    return self.run_tests(
+        builder_id, builder_config, tests, upload_results=upload_results)
 
   def outbound_transfer(self,
                         builder_id,
@@ -1825,12 +1834,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       }
     return properties
 
-  def download_command_lines_for_tests(
-      self,
-      tests,
-      builder_config,
-      swarming_command_lines_digest=None,
-      swarming_command_lines_cwd=None):
+  def download_command_lines_for_tests(self,
+                                       tests,
+                                       builder_config,
+                                       *,
+                                       swarming_command_lines_digest=None,
+                                       swarming_command_lines_cwd=None):
     """Download and set command lines for tests.
 
     This method checks the 'swarming_command_lines_digest' and
@@ -2034,7 +2043,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
-    self.archive_build(task.update_result, self._enable_snoopy)
+    self.archive_build(task.update_result, enable_snoopy=self._enable_snoopy)
 
     self.m.step.empty('mark: before_tests')
     if task.test_suites:
@@ -2190,7 +2199,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                      'Infra>Test>Flakiness component.')
       # |general_suffix| is always in |test_objects_by_suffix| dict and all
       # local tests are under this key.
-      with self.wrap_chromium_tests(test_objects_by_suffix[general_suffix]):
+      with self.wrap_chromium_tests(
+          tests=test_objects_by_suffix[general_suffix]):
         self.m.test_utils.run_tests_for_flake_endorser(test_objects_by_suffix)
 
     return self.m.flakiness.check_run_results(test_objects_by_suffix)
@@ -2658,6 +2668,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
   def prepare_artifact_for_skylab(self,
                                   builder_config,
                                   tests,
+                                  *,
                                   phase='with patch'):
     if not (builder_config.skylab_gs_bucket and tests):
       raise self.m.step.InfraFailure(
@@ -2694,7 +2705,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           t.tast_expr_file = runtime_dict_by_target.get(target).get(
               'bin/%s.filter' % t.target_name)
 
-  def run_tests(self, builder_id, builder_config, tests, upload_results=None):
+  def run_tests(self,
+                builder_id,
+                builder_config,
+                tests,
+                *,
+                upload_results=None):
     if not tests:
       return
 
@@ -2710,7 +2726,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             t.is_skylabtest or (t.runs_on_swarming and t.isolate_profile_data)
             for t in tests),
     )
-    with self.wrap_chromium_tests(tests):
+    with self.wrap_chromium_tests(tests=tests):
       test_failure_summary = test_runner()
 
       if self.m.code_coverage.using_coverage:

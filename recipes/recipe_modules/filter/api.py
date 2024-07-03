@@ -146,6 +146,7 @@ class FilterApi(recipe_api.RecipeApi):
       self,
       analyze_input: _AnalyzeInput,
       test_analyze_output: _AnalyzeOutput,
+      *,
       builder_id: chromium.BuilderId | None,
       mb_path: config_types.Path | None,
       mb_config_path: config_types.Path | None,

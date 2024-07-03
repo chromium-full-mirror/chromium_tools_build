@@ -286,7 +286,7 @@ def RunSteps(api, properties):
           'KYTHE_CORPUS': corpus
       }):
     raw_result = api.chromium.compile(
-        targets,
+        targets=targets,
         name='compile%s' % name_suffix,
         use_reclient=use_reclient,
         build_dir=out_path)

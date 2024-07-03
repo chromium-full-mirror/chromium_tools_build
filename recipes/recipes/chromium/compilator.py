@@ -189,7 +189,7 @@ def compilator_steps(api, properties):
           local_tests,
           suffix='with patch',
       )
-      with api.chromium_tests.wrap_chromium_tests(local_tests):
+      with api.chromium_tests.wrap_chromium_tests(tests=local_tests):
         raw_result = test_runner()
         if raw_result and raw_result.status != common_pb.SUCCESS:
           return raw_result

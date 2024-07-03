@@ -325,7 +325,7 @@ def _compile(
       recursive_lookup=True)
 
   return api.chromium.compile(
-      recipe_config['targets'],
+      targets=recipe_config['targets'],
       name=f'Build {build_number}',
       use_reclient=True,
       build_dir=build_dir,
