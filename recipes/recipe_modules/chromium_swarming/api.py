@@ -958,6 +958,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         infra_step=True,
         **kwargs)
     step_result.presentation.step_text += task.text_for_step(
+        self.m.buildbucket.build.builder.project,
         self.m.buildbucket.build.builder.bucket,
         self.m.buildbucket.build.builder.builder)
 
@@ -1005,6 +1006,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         infra_step=True,
         **kwargs)
     step_result.presentation.step_text += task.text_for_step(
+        self.m.buildbucket.build.builder.project,
         self.m.buildbucket.build.builder.bucket,
         self.m.buildbucket.build.builder.builder)
 
@@ -1343,6 +1345,7 @@ class SwarmingApi(recipe_api.RecipeApi):
         step_test_data=step_test_data,
         **kwargs)
     step_result.presentation.step_text += task.text_for_step(
+        self.m.buildbucket.build.builder.project,
         self.m.buildbucket.build.builder.bucket,
         self.m.buildbucket.build.builder.builder)
 
@@ -1843,7 +1846,7 @@ class SwarmingTask:
         'tasks': {task['shard_index']: task for task in tasks},
     }
 
-  def text_for_step(self, bucket_name, builder_name):
+  def text_for_step(self, project_name, bucket_name, builder_name):
     """Returns the markdown step text for the test's step display in Milo."""
     lines = []
 
@@ -1903,6 +1906,8 @@ class SwarmingTask:
     utr_cmd = [
         'vpython3',
         'tools/utr',
+        '-p',
+        quote_as_needed(project_name),
         '-B',
         quote_as_needed(bucket_name),
         '-b',
