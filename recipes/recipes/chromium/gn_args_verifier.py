@@ -125,7 +125,7 @@ def RunSteps(api, properties):
       if gn_args_by_phase is not None:
         gn_args_by_phase_by_builder_id[builder_id] = gn_args_by_phase
       else:
-        failures.append(str(BuilderId))
+        failures.append(str(builder_id))
 
   if failures:
     return _result(
