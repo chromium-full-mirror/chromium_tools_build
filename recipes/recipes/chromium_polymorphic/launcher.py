@@ -57,16 +57,23 @@ def _trigger_runner(api, target_builder, runner_builder_id):
         common_pb.RequestedDimension(key=k, value=v)
         for k, v in target_builder.dimensions.items()
     ]
-    api.buildbucket.schedule([
-        api.buildbucket.schedule_request(
-            project=runner_builder_id.project,
-            bucket=runner_builder_id.bucket,
-            builder=runner_builder_id.builder,
-            properties=properties,
-            dimensions=dimensions,
-            can_outlive_parent=True,
-        ),
-    ])
+    api.buildbucket.schedule(
+        [
+            api.buildbucket.schedule_request(
+                project=runner_builder_id.project,
+                bucket=runner_builder_id.bucket,
+                builder=runner_builder_id.builder,
+                properties=properties,
+                dimensions=dimensions,
+                can_outlive_parent=True,
+            ),
+        ],
+        # Save each sub build as a separate invocation. This is needed because
+        # ResultBD only exports test suites for build whose "IsExportRoot" is
+        # true, which is set when a build has not parent or explicitly requested
+        # on the schedule request.
+        include_sub_invs=False,
+    )
 
 
 def GenTests(api):
