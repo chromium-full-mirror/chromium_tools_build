@@ -140,3 +140,14 @@ def GenTests(api):
       ]),
       api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+      'report_uplaod_failure',
+      api.properties(build_command=['ninja', '-C', 'out/Release'],),
+      api.siso.properties(),
+      api.step_data(
+          'upload siso reports.gsutil upload siso_metrics.json', retcode=1),
+      api.post_process(post_process.StepWarning,
+                       'upload siso reports.gsutil upload siso_metrics.json'),
+      api.post_process(post_process.DropExpectation),
+  )

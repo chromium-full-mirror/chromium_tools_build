@@ -157,15 +157,18 @@ class SisoApi(recipe_api.RecipeApi):
             if not self.m.path.exists(abs_path):
               continue
             gs_filename = '%s/%s' % (gs_foldername, file)
-            # Allow failure to not block the build.
-            self.m.gsutil.upload(
-                abs_path,
-                _GS_BUCKET,
-                gs_filename,
-                # Set text/plain for browser to detect the file type.
-                metadata={'Content-Type': 'text/plain; charset=utf-8'},
-                name='upload ' + file,
-                ok_ret=('any'))
+            try:
+              self.m.gsutil.upload(
+                  abs_path,
+                  _GS_BUCKET,
+                  gs_filename,
+                  # Set text/plain for browser to detect the file type.
+                  metadata={'Content-Type': 'text/plain; charset=utf-8'},
+                  name='upload ' + file)
+            except self.m.step.StepFailure:
+              # Allow failure to not block the build.
+              self.m.step.active_result.presentation.status = self.m.step.WARNING
+
       if self._props.fail_if_reapi_used:
         self.m.step(
             name='fail if remote execution was used',
