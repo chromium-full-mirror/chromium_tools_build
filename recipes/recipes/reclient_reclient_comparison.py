@@ -89,7 +89,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'android',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb', 'download_xr_test_apks'],
-        'gclient_apply_config_1': ['android'],
+        'gclient_apply_config_1': ['android', 'reclient_staging'],
         'gclient_apply_config_2': ['android', 'reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -113,7 +113,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -130,7 +130,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -152,7 +152,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -175,7 +175,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -198,7 +198,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -215,7 +215,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -234,6 +234,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_apply_config': ['mb'],
         'gclient_apply_config_1': [
             'chromeos',
+            'reclient_staging',
             'checkout_lacros_sdk',
         ],
         'gclient_apply_config_2': [
@@ -263,7 +264,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'ios',
         'chromium_apply_config': ['mb', 'mac_toolchain'],
-        'gclient_apply_config_1': [],
+        'gclient_apply_config_1': ['reclient_staging'],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
