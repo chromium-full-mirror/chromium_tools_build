@@ -89,7 +89,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'android',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb', 'download_xr_test_apks'],
-        'gclient_apply_config_1': ['android', 'reclient_test'],
+        'gclient_apply_config_1': ['android'],
         'gclient_apply_config_2': ['android', 'reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -98,8 +98,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'chromium_config_kwargs': {
             'BUILD_CONFIG': 'Debug',
@@ -115,7 +113,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -124,8 +122,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'linux',
         'targets': ['all'],
@@ -134,7 +130,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -143,8 +139,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -158,7 +152,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -167,8 +161,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -183,7 +175,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -192,8 +184,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
@@ -208,7 +198,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -217,8 +207,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'win',
         'targets': ['all'],
@@ -227,7 +215,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'chromium',
         'chromium_apply_config': ['mb'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -236,8 +224,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'win',
         'targets': ['all'],
@@ -248,7 +234,6 @@ COMPARISON_BUILDERS = freeze({
         'chromium_apply_config': ['mb'],
         'gclient_apply_config_1': [
             'chromeos',
-            'reclient_test',
             'checkout_lacros_sdk',
         ],
         'gclient_apply_config_2': [
@@ -263,8 +248,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'linux',
         'chromium_config_kwargs': {
@@ -280,7 +263,7 @@ COMPARISON_BUILDERS = freeze({
         'chromium_config': 'chromium',
         'gclient_config': 'ios',
         'chromium_apply_config': ['mb', 'mac_toolchain'],
-        'gclient_apply_config_1': ['reclient_test'],
+        'gclient_apply_config_1': [],
         'gclient_apply_config_2': ['reclient_test'],
         'reclient_extra_env_1': {
             'RBE_enable_deps_cache': 'true',
@@ -289,8 +272,6 @@ COMPARISON_BUILDERS = freeze({
         'reclient_extra_env_2': {
             'RBE_enable_deps_cache': 'true',
             'RBE_experimental_goma_deps_cache': 'true',
-            'RBE_bq_project': 'foundry-x-experiments',
-            'RBE_bq_table': 'reproxylogs.chrome_comparison',
         },
         'platform': 'mac',
         'chromium_config_kwargs': {
