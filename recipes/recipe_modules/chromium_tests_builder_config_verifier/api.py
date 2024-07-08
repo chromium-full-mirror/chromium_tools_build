@@ -150,13 +150,14 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_api.RecipeApi):
         return success(f'{_CTBC_PROPERTY} is not set, nothing to verify')
 
       if f in files_at_head:
-        result = self.m.git(
-            'cat-file',
-            f'HEAD:{f}',
-            '--textconv',
-            name='read file at HEAD',
-            stdout=self.m.raw_io.output_text(),
-        )
+        with self.m.context(cwd=repo_path):
+          result = self.m.git(
+              'cat-file',
+              f'HEAD:{f}',
+              '--textconv',
+              name='read file at HEAD',
+              stdout=self.m.raw_io.output_text(),
+          )
         result.presentation.logs[f.rsplit('/', 1)[-1]] = result.stdout
         prev_properties = self.m.json.loads(result.stdout)
 
