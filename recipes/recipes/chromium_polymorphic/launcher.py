@@ -69,7 +69,7 @@ def _trigger_runner(api, target_builder, runner_builder_id):
             ),
         ],
         # Save each sub build as a separate invocation. This is needed because
-        # ResultBD only exports test suites for build whose "IsExportRoot" is
+        # ResultDB only exports test suites for build whose "IsExportRoot" is
         # true, which is set when a build has not parent or explicitly requested
         # on the schedule request.
         include_sub_invs=False,
