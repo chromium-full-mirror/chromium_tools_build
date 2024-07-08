@@ -31,7 +31,6 @@ def RunSteps(api):
   api.profiles.source_dir = source_dir
   api.code_coverage.source_dir = source_dir
   api.code_coverage.build_dir = build_dir
-  api.path.checkout_dir = source_dir
 
   api.path.mock_add_paths(
       api.profiles.profile_dir().joinpath('unit-merged.profdata'))

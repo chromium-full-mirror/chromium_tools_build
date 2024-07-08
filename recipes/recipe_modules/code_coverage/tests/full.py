@@ -48,7 +48,6 @@ def RunSteps(api):
   api.profiles.source_dir = source_dir
   api.code_coverage.source_dir = source_dir
   api.code_coverage.build_dir = build_dir
-  api.path.checkout_dir = source_dir
 
   if api.tryserver.is_tryserver:
     api.code_coverage.instrument(
