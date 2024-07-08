@@ -111,6 +111,7 @@ class WebRTCApi(recipe_api.RecipeApi):
       return test_targets, additional_targets
 
     test_targets, compile_targets = self.m.filter.analyze(
+        source_dir,
         build_dir,
         affected_files,
         test_targets,

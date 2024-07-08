@@ -234,8 +234,14 @@ class BinarySizeApi(recipe_api.RecipeApi):
       self._clear_failed_expectation_files(build_dir)
 
       affected_files = self.m.chromium_checkout.get_files_affected_by_patch()
-      if not self.m.filter.analyze(build_dir, affected_files,
-                                   self._analyze_targets, None)[0]:
+      affected_test_targets, _ = self.m.filter.analyze(
+          self.m.path.checkout_dir,
+          build_dir,
+          affected_files,
+          self._analyze_targets,
+          None,
+      )
+      if not affected_test_targets:
         step_result = self.m.step.active_result
         step_result.presentation.properties[
             constants.PLUGIN_OUTPUT_PROPERTY_NAME] = {

@@ -185,7 +185,7 @@ def RunSteps(api, properties):
       # Filter out all targets that the patch doesn't affect.
       affected_files = api.chromium_checkout.get_files_affected_by_patch()
       test_targets, compile_targets = api.filter.analyze(
-          build_dir, affected_files, None, targets)
+          source_dir, build_dir, affected_files, None, targets)
       targets = sorted(test_targets + compile_targets)
       if not targets:
         return

@@ -2332,6 +2332,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           for exclusion in builder_config.additional_exclusions
       }
       test_targets, compile_targets = self.m.filter.analyze(
+          self.m.chromium_checkout.source_dir,
           build_dir,
           affected_files,
           test_targets,

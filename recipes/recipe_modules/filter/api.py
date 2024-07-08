@@ -144,6 +144,7 @@ class FilterApi(recipe_api.RecipeApi):
 
   def _run_mb_analyze(
       self,
+      source_dir: config_types.Path,
       build_dir: config_types.Path,
       analyze_input: _AnalyzeInput,
       test_analyze_output: _AnalyzeOutput,
@@ -162,7 +163,7 @@ class FilterApi(recipe_api.RecipeApi):
     with self.m.context(env=env):
       builder_id = builder_id or self.m.chromium.get_builder_id()
       return self.m.chromium.mb_analyze(
-          self.m.path.checkout_dir,
+          source_dir,
           build_dir,
           builder_id,
           analyze_input,
@@ -173,6 +174,7 @@ class FilterApi(recipe_api.RecipeApi):
 
   def _run_chromium_gyp_analyze(
       self,
+      source_dir: config_types.Path,
       analyze_input: _AnalyzeInput,
       test_analyze_output: _AnalyzeOutput,
   ) -> step_data.StepData:
@@ -183,7 +185,7 @@ class FilterApi(recipe_api.RecipeApi):
       return self.m.step(
           'analyze', [
               'python3',
-              self.m.path.checkout_dir.joinpath('build', 'gyp_chromium'),
+              source_dir / 'build/gyp_chromium',
               '--analyzer',
               self.m.json.input(analyze_input),
               self.m.json.output(),
@@ -260,6 +262,7 @@ class FilterApi(recipe_api.RecipeApi):
 
   def analyze(
       self,
+      source_dir: config_types.Path,
       build_dir: config_types.Path,
       affected_files: Collection[str],
       test_targets: Collection[str] | None,
@@ -340,8 +343,7 @@ class FilterApi(recipe_api.RecipeApi):
       additional_names = ['chromium']
 
     if config_path is None:
-      config_path = self.m.chromium.analyze_config_path(
-          self.m.path.checkout_dir)
+      config_path = self.m.chromium.analyze_config_path(source_dir)
       assert config_path, (
           'either config_path must be passed in'
           ' or the chromium config must set analyze_config_path')
@@ -364,6 +366,7 @@ class FilterApi(recipe_api.RecipeApi):
     if self.m.chromium.c.project_generator.tool == 'mb':
       analyzer = functools.partial(
           self._run_mb_analyze,
+          source_dir,
           build_dir,
           builder_id=builder_id,
           mb_path=mb_path,
@@ -371,7 +374,7 @@ class FilterApi(recipe_api.RecipeApi):
           phase=phase,
       )
     else:
-      analyzer = self._run_chromium_gyp_analyze
+      analyzer = functools.partial(self._run_chromium_gyp_analyze, source_dir)
 
     analyze_test_targets, analyze_compile_targets = (
         self._determine_affected_targets(

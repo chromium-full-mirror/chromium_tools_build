@@ -23,20 +23,20 @@ def RunSteps(api):
   for c in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(c)
   source_dir = api.path.cache_dir / 'builder/src'
-  api.path.checkout_dir = source_dir
 
   # We convert these kwargs in analyze_kwargs from checkout-relative paths to
   # Path objects by joining them to api.path.checkout_dir
   kwargs = dict(api.properties.get('analyze_kwargs', {}))
   for k in ('mb_path', 'mb_config_path', 'build_dir'):
     if (val := kwargs.get(k)) is not None:
-      kwargs[k] = api.path.checkout_dir.joinpath(*val)
+      kwargs[k] = source_dir / val
   build_dir = kwargs.pop('build_dir', None)
   if build_dir is None:
     build_dir = source_dir / 'out/Release'
 
   affected_test_targets, affected_compile_targets = (
       api.filter.analyze(
+          source_dir,
           build_dir,
           api.properties.get('affected_files', ['file1', 'file2']),
           api.properties.get('test_targets', ['test1', 'test2']),
@@ -198,9 +198,9 @@ def GenTests(api):
       api.platform('linux', 64),
       api.properties(
           analyze_kwargs={
-              'mb_path': ['fake-mb-path'],
-              'mb_config_path': ['fake-mb-config-path'],
-              'build_dir': ['fake-build-dir'],
+              'mb_path': 'fake-mb-path',
+              'mb_config_path': 'fake-mb-config-path',
+              'build_dir': 'fake-build-dir',
               'phase': 'fake-phase',
           }),
       api.post_check(post_process.StepCommandContains, 'analyze',
