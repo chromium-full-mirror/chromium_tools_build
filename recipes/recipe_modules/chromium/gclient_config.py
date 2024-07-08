@@ -453,6 +453,13 @@ def ios_webkit_tot(c):
 
 
 @CONFIG_CTX()
+def ninja_staging(c):
+  cv = c.solutions[0].custom_vars
+  cv['ninja_package'] = 'infra/3pp/tools/ninja/'
+  cv['ninja_version'] = 'version:2@1.12.1.chromium.4'
+
+
+@CONFIG_CTX()
 def no_generate_location_tags(c):
   c.solutions[0].custom_vars['generate_location_tags'] = 'False'
 

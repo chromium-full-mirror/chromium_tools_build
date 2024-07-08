@@ -119,6 +119,11 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation),
   )
   yield api.test(
+      'ninja_staging',
+      api.properties(apply_gclient_config='ninja_staging'),
+      api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
       'reclient_staging',
       api.properties(apply_gclient_config='reclient_staging'),
       api.post_process(post_process.DropExpectation),
