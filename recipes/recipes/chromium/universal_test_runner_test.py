@@ -222,7 +222,9 @@ def checkout(api: RecipeApi):
   s.name = 'infra'
 
   update_result = api.chromium_checkout.ensure_checkout()
-  api.chromium.runhooks()
+  source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
+  api.chromium.runhooks(source_dir, build_dir)
 
   infra_source_dir = update_result.checkout_dir / 'infra'
   return infra_source_dir / 'build', infra_source_dir / 'infra'

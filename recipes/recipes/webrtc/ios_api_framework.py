@@ -24,7 +24,7 @@ def RunSteps(api):
   api.chromium.set_config(
       'webrtc_default', TARGET_PLATFORM='ios', HOST_PLATFORM='mac')
   api.chromium.apply_config('mac_toolchain')
-  api.chromium.ensure_toolchains()
+  api.chromium.ensure_toolchains(update_result.checkout_dir)
 
   source_dir = update_result.source_root.path
   build_script = source_dir.joinpath('tools_webrtc', 'ios', 'build_ios_libs.py')
@@ -38,7 +38,7 @@ def RunSteps(api):
 
   api.webrtc.get_binary_sizes(
       files=['WebRTC.xcframework/ios-arm64/WebRTC.framework/WebRTC'],
-      base_dir=output_dir)
+      build_dir=output_dir)
 
 
 def GenTests(api):

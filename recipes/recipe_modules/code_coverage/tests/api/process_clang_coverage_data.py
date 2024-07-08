@@ -29,10 +29,14 @@ def RunSteps(api):
   _, builder_config = (
       api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
   api.chromium_tests.configure_build(builder_config)
-  # Fake path.
-  api.profiles.source_dir = api.path.start_dir
-  api.code_coverage.source_dir = api.path.start_dir
-  api.path.checkout_dir = api.path.start_dir
+
+  # Fake paths.
+  source_dir = api.path.start_dir
+  build_dir = api.chromium.default_build_dir(source_dir)
+  api.profiles.source_dir = source_dir
+  api.code_coverage.source_dir = source_dir
+  api.code_coverage.build_dir = build_dir
+  api.path.checkout_dir = source_dir
 
   api.path.mock_add_paths(
       api.profiles.profile_dir().joinpath('unit-merged.profdata'))

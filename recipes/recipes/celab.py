@@ -4,7 +4,7 @@
 
 import re
 
-from recipe_engine import post_process
+from recipe_engine.config_types import Path
 from recipe_engine.post_process import DoesNotRun
 from recipe_engine.post_process import DropExpectation
 from recipe_engine.post_process import MustRun
@@ -123,9 +123,9 @@ def _RunStepsChromium(api):
     raise ValueError('Chromium bots must define `tests`.')
 
   # Build Chromium binaries from source and get CELab from CIPD.
-  checkout = _CheckoutChromiumRepo(api)
-  test_root = checkout.joinpath('chrome', 'test', 'enterprise', 'e2e')
-  chromium_bin_dir, raw_result = _BuildChromiumFromSource(api, test_root)
+  source_dir, build_dir = _CheckoutChromiumRepo(api)
+  test_root = source_dir / 'chrome/test/enterprise/e2e'
+  raw_result = _BuildChromiumFromSource(api, build_dir)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -134,10 +134,10 @@ def _RunStepsChromium(api):
 
   # Run tests for all chromium bots.
   cel_ctl = celab_bin_dir.joinpath(_get_ctl_binary_name(api))
-  omaha_updater = chromium_bin_dir / 'updater.exe'
-  omaha_installer = chromium_bin_dir / 'UpdaterSetup.exe'
-  installer = chromium_bin_dir / 'mini_installer.exe'
-  chromedriver = chromium_bin_dir / 'chromedriver.exe'
+  omaha_updater = build_dir / 'updater.exe'
+  omaha_installer = build_dir / 'UpdaterSetup.exe'
+  installer = build_dir / 'mini_installer.exe'
+  chromedriver = build_dir / 'chromedriver.exe'
   test_py_args = '--cel_ctl=%s' % cel_ctl
   test_py_args += ' --test_arg=--omaha_updater=%s' % omaha_updater
   test_py_args += ' --test_arg=--omaha_installer=%s' % omaha_installer
@@ -224,23 +224,26 @@ def _CheckoutChromiumRepo(api):
     api.chromium_tests.configure_build(builder_config)
     update_result = api.chromium_checkout.ensure_checkout(
         clobber=builder_config.clobber)
-    api.chromium.runhooks()
+    source_dir = update_result.source_root.path
+    build_dir = api.chromium.default_build_dir(source_dir)
+    api.chromium.runhooks(source_dir, build_dir)
 
-  return update_result.source_root.path
+  return source_dir, build_dir
 
 
-def _BuildChromiumFromSource(api, test_root):
+def _BuildChromiumFromSource(api, build_dir: Path):
   with api.chromium.chromium_layout():
     compile_targets = [
         'chrome/updater', 'chrome/installer/mini_installer', 'chromedriver'
     ]
     raw_result = api.chromium_tests.run_mb_and_compile(
+        build_dir,
         api.chromium.get_builder_id(),
         compile_targets,
         isolated_targets=[],
         name_suffix=' (with patch)')
 
-  return api.chromium.build_dir, raw_result
+  return raw_result
 
 
 def _UploadCelabBinariesToStorage(api, checkout, bin_dir):

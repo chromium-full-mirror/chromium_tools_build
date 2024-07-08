@@ -17,8 +17,9 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium_clang'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
       TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-  return api.chromium.cleandead()
+  source_dir = api.path.cache_dir / 'builder/src'
+  build_dir = source_dir / 'out/Release'
+  return api.chromium.cleandead(source_dir, build_dir)
 
 
 def GenTests(api):

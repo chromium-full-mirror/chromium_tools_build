@@ -13,9 +13,11 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder'
   api.chromium.set_config('chromium')
-  api.chromium_tests.find_swarming_command_lines('chromium')
+  source_dir = api.path.cache_dir / 'builder'
+  api.path.checkout_dir = source_dir
+  build_dir = api.chromium.default_build_dir(source_dir)
+  api.chromium_tests.find_swarming_command_lines('chromium', build_dir)
 
 
 def GenTests(api):

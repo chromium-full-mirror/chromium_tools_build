@@ -98,11 +98,11 @@ def make_archive(api,
         return None, None
 
     # This automatically deletes build_dir since we specify clobber above.
-    api.v8.runhooks()
+    build_dir = api.v8.build_dir(source_dir)
+    api.v8.runhooks(source_dir, build_dir)
 
-  build_dir = api.chromium.build_dir
   with api.step.nest('build' + step_suffix):
-    compile_failure = api.v8.compile(source_dir)
+    compile_failure = api.v8.compile(source_dir, build_dir)
     if compile_failure:
       return None, compile_failure
 

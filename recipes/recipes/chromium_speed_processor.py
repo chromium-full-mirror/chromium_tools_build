@@ -31,7 +31,7 @@ def RunSteps(api, properties):
           step_text='Unexpected execution mode. Expect: %s, Actual: %s' %
           (ctbc.TEST, execution_mode))
     api.chromium_tests.configure_build(builder_config)
-    update_result, _ = api.chromium_tests.prepare_checkout(
+    update_result, _, _ = api.chromium_tests.prepare_checkout(
         builder_config, timeout=3600, no_fetch_tags=True)
 
     # 2. run collect task for each group

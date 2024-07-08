@@ -17,12 +17,16 @@ def RunSteps(api):
       api.properties.get('chromium_config', 'chromium'),
       BUILD_CONFIG=api.properties.get('build_config', 'Release'),
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
+  build_dir = api.chromium.default_build_dir(source_dir)
 
   use_remoteexec = api.properties.get('use_remoteexec', False)
 
   api.chromium.run_gn(
-      gn_path=api.properties.get('gn_path'), use_reclient=use_remoteexec)
+      source_dir,
+      build_dir,
+      gn_path=api.properties.get('gn_path'),
+      use_reclient=use_remoteexec)
 
 
 def GenTests(api):

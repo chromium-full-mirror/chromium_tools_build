@@ -22,8 +22,9 @@ def RunSteps(api):
   with api.step.nest('setup steps'):
     _, builder_config = api.chromium_tests_builder_config.lookup_builder()
     api.chromium_tests.configure_build(builder_config)
-    update_step, _ = api.chromium_tests.prepare_checkout(builder_config)
-  api.chromium_tests.deapply_patch(update_step)
+    update_step, build_dir, _ = api.chromium_tests.prepare_checkout(
+        builder_config)
+  api.chromium_tests.deapply_patch(update_step, build_dir)
 
 
 def GenTests(api):

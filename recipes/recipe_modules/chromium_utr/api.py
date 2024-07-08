@@ -70,6 +70,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         builder_id, builder_config)
 
     build_path = self.configure_build_dir(properties.build_dir)
+    self.m.profiles.source_dir = self.m.chromium_checkout.source_dir
+    self.m.code_coverage.source_dir = self.m.chromium_checkout.source_dir
+    self.m.code_coverage.build_dir = build_path
+
     result = self.prerun_checks(properties, build_path, compiling_builder_id)
     if result != None:
       return result
@@ -86,7 +90,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return result_pb2.RawResult(status=common_pb2.SUCCESS)
 
     test_runner = self.m.chromium_tests.create_test_runner(tests)
-    with self.m.chromium_tests.wrap_chromium_tests(tests=tests):
+    with self.m.chromium_tests.wrap_chromium_tests(build_path, tests=tests):
       self.m.chromium_tests.configure_swarming(True)
       # Lower pri for faster turn-around time in debugging. The UTR shouldn't
       # get so much use that it affects CI/CQ traffic substantially. But we can
@@ -245,7 +249,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return [l.strip() for l in args.splitlines() if l.startswith('import(')]
 
     builder_gn_args = self.m.chromium.mb_lookup(
-        builder_id, recursive=False, name='lookup_builder_gn_args')
+        self.m.path.checkout_dir,
+        builder_id,
+        recursive=False,
+        name='lookup_builder_gn_args')
     builder_imports = get_imports(builder_gn_args)
     builder_gn_args = self.m.gn.parse_gn_args(builder_gn_args)
 
@@ -476,7 +483,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       paths.sort()
       if self.m.platform.is_win:
         paths = [path.replace('\\', '/') for path in paths]
-    self.m.code_coverage.source_dir = self.m.chromium_checkout.source_dir
     self.m.code_coverage.instrument(paths)
     return []
 
@@ -542,7 +548,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if missing_isolates:
       if not self.m.path.exists(build_dir / 'args.gn'):
         gn_args = self.m.chromium.mb_lookup(
-            builder_id, recursive=False, name='lookup_builder_gn_args')
+            self.m.path.checkout_dir,
+            builder_id,
+            recursive=False,
+            name='lookup_builder_gn_args')
       else:
         gn_args, _ = self.m.gn.read_args(build_dir)
 
@@ -565,10 +574,11 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     else:
       tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
       self.m.chromium.mb_gen(
+          self.m.path.checkout_dir,
+          build_dir,
           builder_id,
           name='generate_build_files',
           recursive_lookup=True,
-          build_dir=build_dir,
           isolated_targets=tests_to_isolate)
 
     # Some tests don't require anything to be compiled.
@@ -589,9 +599,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     def compile_fn():
       return self.m.chromium.compile(
+          self.m.path.checkout_dir,
+          build_dir,
           targets=targets,
           skip_log_upload=True,
-          build_dir=build_dir,
           use_reclient=use_reclient), not missing_isolates
 
     if properties.no_siso:
@@ -665,12 +676,13 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       # all other instances, we need to ask mb.py to do so specifically. Do so
       # for *all* possible targets. This shouldn't take much longer, and
       # simplifies things a bit.
-      self.m.chromium.mb_isolate_everything(None, build_dir=build_dir)
+      self.m.chromium.mb_isolate_everything(self.m.path.checkout_dir, build_dir,
+                                            None)
 
     isolate_tests = [test for test in tests if test.isolate_target]
     if isolate_tests:
-      self.m.chromium_tests.isolate_tests(
-          builder_config, isolate_tests, '', '', build_dir=build_dir)
+      self.m.chromium_tests.isolate_tests(build_dir, builder_config,
+                                          isolate_tests, '', '')
 
     # TODO(crbug.com/41492686): Prepare skylab artifacts
     return None, tests

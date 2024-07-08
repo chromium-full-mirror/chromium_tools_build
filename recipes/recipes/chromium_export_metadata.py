@@ -42,13 +42,14 @@ def RunSteps(api):
   api.gclient.apply_config('use_clang_coverage')
   with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout()
+  source_dir = update_result.source_root.path
   # TODO(gbeaty) If none of the hooks are downloading directories containing
   # DIR_METADATA files, then it shouldn't be necessary to run the hooks as part
   # of this recipe
   api.chromium.set_config('chromium')
-  api.chromium.runhooks()
+  build_dir = api.chromium.default_build_dir(source_dir)
+  api.chromium.runhooks(source_dir, build_dir)
 
-  source_dir = update_result.source_root.path
   api.step('dirmd chromium-update', [
       source_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
       'chromium-update',

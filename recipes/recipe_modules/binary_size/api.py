@@ -7,6 +7,8 @@ import os
 import re
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
+
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 from . import constants
@@ -223,14 +225,17 @@ class BinarySizeApi(recipe_api.RecipeApi):
           gs_zip_path = None
           bot_update_step = self.m.chromium_checkout.ensure_checkout()
 
-      suffix = ' (with patch)'
-      self.m.chromium.runhooks(name='runhooks' + suffix)
+      source_dir = bot_update_step.source_root.path
+      build_dir = self.m.chromium.default_build_dir(source_dir)
 
-      self._clear_failed_expectation_files()
+      suffix = ' (with patch)'
+      self.m.chromium.runhooks(source_dir, build_dir, name='runhooks' + suffix)
+
+      self._clear_failed_expectation_files(build_dir)
 
       affected_files = self.m.chromium_checkout.get_files_affected_by_patch()
-      if not self.m.filter.analyze(affected_files, self._analyze_targets,
-                                   None)[0]:
+      if not self.m.filter.analyze(build_dir, affected_files,
+                                   self._analyze_targets, None)[0]:
         step_result = self.m.step.active_result
         step_result.presentation.properties[
             constants.PLUGIN_OUTPUT_PROPERTY_NAME] = {
@@ -248,12 +253,13 @@ class BinarySizeApi(recipe_api.RecipeApi):
       # case use_gs_analysis == False.
       expectations_without_patch_json = None
       with_results_dir, raw_result = self._build_and_measure(
-          True, staging_dir, analysis_cmd_func)
+          True, build_dir, staging_dir, analysis_cmd_func)
 
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result
 
-      expectations_with_patch_json = self._get_failed_expectations(suffix)
+      expectations_with_patch_json = self._get_failed_expectations(
+          build_dir, suffix)
 
       if gs_zip_path:
         without_results_dir = self._download_recent_tot_analysis(
@@ -265,15 +271,17 @@ class BinarySizeApi(recipe_api.RecipeApi):
         with self.m.context(cwd=self.m.path.checkout_dir):
           suffix = ' (without patch)'
 
-          self.m.chromium.runhooks(name='runhooks' + suffix)
+          self.m.chromium.runhooks(
+              source_dir, build_dir, name='runhooks' + suffix)
           without_results_dir, raw_result = self._build_and_measure(
-              False, staging_dir, analysis_cmd_func)
+              False, build_dir, staging_dir, analysis_cmd_func)
 
           if raw_result and raw_result.status != common_pb.SUCCESS:
             self.m.step.empty(constants.PATCH_FIXED_BUILD_STEP_NAME)
             return None
 
-        expectations_without_patch_json = self._get_failed_expectations(suffix)
+        expectations_without_patch_json = self._get_failed_expectations(
+            build_dir, suffix)
 
         # Re-apply patch so that the diff scripts can be tested via tryjobs.
         # We could build without-patch first to avoid having to apply the patch
@@ -282,7 +290,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
         with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
           bot_update_step = self.m.bot_update.ensure_checkout(
               suffix=suffix, patch=True)
-        self.m.chromium.runhooks(name='runhooks' + suffix)
+        self.m.chromium.runhooks(
+            source_dir, build_dir, name='runhooks' + suffix)
 
       with self.m.context(cwd=self.m.path.checkout_dir):
         size_results_path = staging_dir / 'size_results.json'
@@ -304,7 +313,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           raise self.m.step.StepFailure(
               binary_size_result.presentation.step_text)
 
-  def get_android_size_analysis_command(self, staging_dir):
+  def get_android_size_analysis_command(self, build_dir: Path, staging_dir):
     """Returns the Android command to compute size analysis files.
 
     Args:
@@ -314,15 +323,12 @@ class BinarySizeApi(recipe_api.RecipeApi):
     generator_script = self.m.path.checkout_dir.joinpath(
         'tools', 'binary_size', 'generate_commit_size_analysis.py')
     cmd = [generator_script]
-    cmd += [
-        '--size-config-json',
-        self.m.chromium.build_dir / self._size_config_json,
-    ]
+    cmd += ['--size-config-json', build_dir / self._size_config_json]
     cmd += ['--staging-dir', staging_dir]
-    cmd += ['--chromium-output-directory', self.m.chromium.build_dir]
+    cmd += ['--chromium-output-directory', build_dir]
     return cmd
 
-  def get_fuchsia_size_analysis_command(self, staging_dir):
+  def get_fuchsia_size_analysis_command(self, build_dir: Path, staging_dir):
     """Returns the Fuchsia command to compute size analysis files.
 
     Args:
@@ -332,14 +338,14 @@ class BinarySizeApi(recipe_api.RecipeApi):
     generator_script = self.m.path.checkout_dir.joinpath(
         'build', 'fuchsia', 'binary_sizes.py')
     cmd = [generator_script]
-    cmd += ['--build-out-dir', self.m.chromium.build_dir]
+    cmd += ['--build-out-dir', build_dir]
 
     size_path = self.m.path.checkout_dir.joinpath('tools', 'fuchsia',
                                                   'size_tests',
                                                   'fyi_sizes.json')
     cmd += ['--sizes-path', size_path]
 
-    output_file = self.m.chromium.build_dir / 'plugin.json'
+    output_file = build_dir / 'plugin.json'
     cmd += ['--size-plugin-json-path', output_file]
     cmd += ['--isolated-script-test-output', staging_dir / 'size_results.json']
     return cmd
@@ -408,12 +414,23 @@ class BinarySizeApi(recipe_api.RecipeApi):
     self.m.zip.unzip('Unzipping tot analysis', local_zip, results_dir)
     return results_dir
 
-  def _build_and_measure(self, with_patch, staging_dir, analysis_cmd_func):
+  def _build_and_measure(
+      self,
+      with_patch,
+      build_dir: Path,
+      staging_dir,
+      analysis_cmd_func,
+  ):
     suffix = ' (with patch)' if with_patch else ' (without patch)'
     results_basename = 'with_patch' if with_patch else 'without_patch'
 
     raw_result = self.m.chromium_tests.run_mb_and_compile(
-        self.m.chromium.get_builder_id(), self.compile_targets, None, suffix)
+        build_dir,
+        self.m.chromium.get_builder_id(),
+        self.compile_targets,
+        None,
+        suffix,
+    )
 
     if raw_result.status != common_pb.SUCCESS:
       return None, raw_result
@@ -423,7 +440,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
     self.m.step(
         name='Generate commit size analysis files',
-        cmd=analysis_cmd_func(results_dir))
+        cmd=analysis_cmd_func(build_dir, results_dir))
 
     return results_dir, None
 
@@ -512,9 +529,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
       cmd = [checker_script]
       cmd += ['--before-dir', before_dir]
       cmd += ['--after-dir', after_dir]
-      milestone = int(self.m.chromium.get_version()['MAJOR'])
-      if (milestone >=
-          constants.FUCHSIA_AUTHOR_FLOW_MILESTONE):  # pragma: no cover
+      milestone = int(
+          self.m.chromium.get_version(self.m.path.checkout_dir)['MAJOR'])
+      if (milestone
+          >= constants.FUCHSIA_AUTHOR_FLOW_MILESTONE):  # pragma: no cover
         cmd += ['--author', author]
       cmd += ['--results-path', results_path]
       self.m.step(name='Generate diffs', cmd=cmd)
@@ -533,8 +551,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
     return constants.ARCHIVED_URL_FMT.format(
         bucket=self.results_bucket, dest=gs_dest)
 
-  def _get_failed_expectations(self, suffix):
-    with self.m.context(cwd=self.m.chromium.build_dir):
+  def _get_failed_expectations(self, build_dir: Path, suffix):
+    with self.m.context(cwd=build_dir):
       checker_script = self.resource('trybot_failed_expectations_checker.py')
 
       TEST_DATA = lambda: self.m.json.test_api.output({
@@ -549,7 +567,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
               '--results-path',
               self.m.json.output(),
               '--output-directory',
-              self.m.chromium.build_dir,
+              build_dir,
               '--clear-expectations',
           ],
           step_test_data=TEST_DATA)
@@ -590,7 +608,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
       return allow_expectations_regressions
 
-  def _clear_failed_expectation_files(self):
+  def _clear_failed_expectation_files(self, build_dir: Path):
     """Clear expectation files from a previous build."""
 
     checker_script = self.resource('trybot_failed_expectations_checker.py')
@@ -609,6 +627,6 @@ class BinarySizeApi(recipe_api.RecipeApi):
             checker_script,
             '--clear-expectations',
             '--output-directory',
-            self.m.chromium.build_dir,
+            build_dir,
         ],
         ok_ret='any')

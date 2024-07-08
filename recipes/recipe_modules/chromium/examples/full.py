@@ -42,19 +42,28 @@ def RunSteps(api):
     api.chromium.get_build_target_arch()
 
     with api.context(cwd=api.path.cache_dir / 'builder'):
-      api.bot_update.ensure_checkout()
-    api.chromium.ensure_toolchains()
-    api.chromium.runhooks()
+      update_result = api.bot_update.ensure_checkout()
+
+    checkout_dir = update_result.checkout_dir
+    source_dir = update_result.source_root.path
+    build_dir = api.chromium.default_build_dir(source_dir)
+
+    api.chromium.ensure_toolchains(checkout_dir)
+    api.chromium.runhooks(source_dir, build_dir)
 
     mb_config_path = api.properties.get('mb_config_path')
 
     api.chromium.mb_gen(
+        source_dir,
+        build_dir,
         builder_id,
         mb_config_path=mb_config_path,
         android_version_code=3,
         android_version_name="example")
 
     return api.chromium.compile(
+        source_dir,
+        build_dir,
         targets=['All'],
         use_reclient=use_reclient,
         resource_usage_output_file=resource_usage_output_file)

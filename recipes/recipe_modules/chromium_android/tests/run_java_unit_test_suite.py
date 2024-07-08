@@ -22,13 +22,17 @@ def RunSteps(api):
   api.gclient.apply_config('android')
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('main_builder', BUILD_CONFIG='Release')
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
+  source_dir = update_result.source_root.path
+  build_dir = source_dir / 'out/Release'
   api.chromium_android.run_java_unit_test_suite(
+      build_dir,
       'test_suite',
       target_name=api.properties.get('target_name', 'test_suite'),
       additional_args=api.properties.get('additional_args'),
       json_results_file=api.test_utils.gtest_results())
   api.chromium_android.run_java_unit_test_suite(
+      build_dir,
       'test_suite-with-rdb',
       target_name=api.properties.get('target_name', 'test_suite'),
       additional_args=api.properties.get('additional_args'),

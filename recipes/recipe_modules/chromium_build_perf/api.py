@@ -26,11 +26,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
   def _build(
       self,
+      build_dir: Path,
       target,
       *,
       with_remote_cache=None,
       step_name_suffix=None,
-      build_dir: Path | None = None,
       use_rbe=True,
       resource_usage_output_file=None,
   ):
@@ -69,10 +69,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
+            self.m.path.checkout_dir,
+            build_dir,
             targets=[target],
             name=step_name,
             timeout=timeout,
-            build_dir=build_dir,
             use_reclient=use_rbe,
             siso_args=siso_args,
             resource_usage_output_file=resource_usage_output_file)
@@ -85,13 +86,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
 
   def recreate_build_dir(self,
+                         build_dir: Path,
                          *,
                          phase=None,
-                         build_dir=None,
                          remove_deps_cache=False):
     """Remove and create a build dir."""
-    if not build_dir:
-      build_dir = self.m.chromium.build_dir
     # Preserve .siso_deps.
     siso_deps_path = self.m.path.join(build_dir, '.siso_deps')
     tmp_siso_deps_path = None
@@ -103,7 +102,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     builder_id = chromium.BuilderId.create_for_group(
         self.m.builder_group.for_current, self.m.buildbucket.builder_name)
     self.m.chromium.mb_gen(
-        builder_id, recursive_lookup=True, phase=phase, build_dir=build_dir)
+        self.m.path.checkout_dir,
+        build_dir,
+        builder_id,
+        recursive_lookup=True,
+        phase=phase)
     if tmp_siso_deps_path:
       self.m.file.move('restore %s' % siso_deps_path, tmp_siso_deps_path,
                        siso_deps_path)
@@ -111,11 +114,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       self.m.file.rmtree('rmtree %s' % self.m.reclient.deps_cache_path,
                          self.m.reclient.deps_cache_path)
 
-  def checkout(self, revision):
+  def checkout(self, build_dir: Path, revision):
     """Check out to a specified revision."""
     cfg = copy.deepcopy(self.m.gclient.c)
     cfg.revisions['src'] = revision
     with self.m.context(cwd=self.m.path.cache_dir / 'builder'):
       self.m.gclient.sync(cfg)
-      self.m.chromium.runhooks()
+      self.m.chromium.runhooks(self.m.path.checkout_dir, build_dir)
     self.m.siso.check_version(self.m.path.checkout_dir)

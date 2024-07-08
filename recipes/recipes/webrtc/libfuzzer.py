@@ -53,13 +53,15 @@ def RunSteps(api):
   api.chromium_tests.configure_build(builder_config)
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
-  api.chromium.runhooks()
-  api.webrtc.run_mb(source_dir, builder_id)
+  build_dir = api.chromium.default_build_dir(source_dir)
+  api.chromium.runhooks(source_dir, build_dir)
+  # run_mb creates a build_dir dependening on the builder and phase
+  build_dir = api.webrtc.run_mb(source_dir, builder_id)
   with api.context(cwd=source_dir):
     args = [
         '--root=%s' % str(source_dir),
         'refs',
-        str(api.chromium.build_dir),
+        str(build_dir),
         '--all',
         '--type=executable',
         '--as=output',
@@ -72,7 +74,8 @@ def RunSteps(api):
 
   targets = step_result.stdout.split()
   api.step.active_result.presentation.logs['targets'] = targets
-  return api.chromium.compile(targets=targets, use_reclient=True)
+  return api.chromium.compile(
+      source_dir, build_dir, targets=targets, use_reclient=True)
 
 
 def GenTests(api):

@@ -16,12 +16,16 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
+  build_dir = source_dir / 'out/Release'
 
-  with api.chromium.guard_compile():
+  with api.chromium.guard_compile(build_dir):
     api.chromium.mb_gen(
-        chromium.BuilderId.create_for_group('fake-group', 'fake-builder'))
-    return api.chromium.compile()
+        source_dir,
+        build_dir,
+        chromium.BuilderId.create_for_group('fake-group', 'fake-builder'),
+    )
+    return api.chromium.compile(source_dir, build_dir)
 
 
 def GenTests(api):
@@ -58,11 +62,11 @@ def GenTests(api):
 
   yield api.test(
       'recovery',
-      api.path.exists(
-          api.path.checkout_dir.joinpath('out', 'Release',
-                                         'CR_COMPILE_GUARD.txt')),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/CR_COMPILE_GUARD.txt'),
       api.post_check(post_process.MustRun, 'remove unreliable output dir'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'no_last_build_system',
@@ -70,37 +74,39 @@ def GenTests(api):
       api.post_process(post_process.DropExpectation))
 
   yield api.test(
-      'build_system_siso_to_siso', api.siso.properties(),
-      api.path.exists(
-          api.path.checkout_dir.joinpath('out', 'Release',
-                                         'LAST_BUILD_SYSTEM.txt')),
+      'build_system_siso_to_siso',
+      api.siso.properties(),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/LAST_BUILD_SYSTEM.txt'),
       api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('siso')),
       api.post_check(post_process.DoesNotRun, 'remove unreliable output dir'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'build_system_ninja_to_ninja',
-      api.path.exists(
-          api.path.checkout_dir.joinpath('out', 'Release',
-                                         'LAST_BUILD_SYSTEM.txt')),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/LAST_BUILD_SYSTEM.txt'),
       api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('ninja')),
       api.post_check(post_process.DoesNotRun, 'remove unreliable output dir'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
-      'build_system_ninja_to_siso', api.siso.properties(),
-      api.path.exists(
-          api.path.checkout_dir.joinpath('out', 'Release',
-                                         'LAST_BUILD_SYSTEM.txt')),
+      'build_system_ninja_to_siso',
+      api.siso.properties(),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/LAST_BUILD_SYSTEM.txt'),
       api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('ninja')),
       api.post_check(post_process.MustRun, 'remove unreliable output dir'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+  )
 
   yield api.test(
       'build_system_siso_to_ninja',
-      api.path.exists(
-          api.path.checkout_dir.joinpath('out', 'Release',
-                                         'LAST_BUILD_SYSTEM.txt')),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/LAST_BUILD_SYSTEM.txt'),
       api.step_data('read LAST_BUILD_SYSTEM.txt', api.file.read_text('siso')),
       api.post_check(post_process.MustRun, 'remove unreliable output dir'),
-      api.post_process(post_process.DropExpectation))
+      api.post_process(post_process.DropExpectation),
+  )

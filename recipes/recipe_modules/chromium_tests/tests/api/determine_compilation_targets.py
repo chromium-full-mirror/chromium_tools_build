@@ -21,13 +21,19 @@ def RunSteps(api):
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   api.chromium_tests.configure_build(builder_config)
-  update_result, targets_config = api.chromium_tests.prepare_checkout(
+  update_result, _, targets_config = api.chromium_tests.prepare_checkout(
       builder_config)
-  root_dir = update_result.source_root.path
+  source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
   affected_files = api.properties['affected_files']
-  api.chromium_tests.determine_compilation_targets(builder_id, builder_config,
-                                                   root_dir, affected_files,
-                                                   targets_config)
+  api.chromium_tests.determine_compilation_targets(
+      builder_id,
+      builder_config,
+      source_dir,
+      build_dir,
+      affected_files,
+      targets_config,
+  )
 
 
 def GenTests(api):

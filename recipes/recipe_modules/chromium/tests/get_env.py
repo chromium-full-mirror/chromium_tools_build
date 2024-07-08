@@ -17,7 +17,9 @@ DEPS = [
 def RunSteps(api):
   api.chromium.set_config('chromium', TARGET_PLATFORM='mac')
 
-  with api.context(env=api.chromium.get_env()):
+  source_dir = api.path.cache_dir / 'builder/src'
+
+  with api.context(env=api.chromium.get_env(source_dir)):
     api.step('test', ['echo', 'foo'])
 
 

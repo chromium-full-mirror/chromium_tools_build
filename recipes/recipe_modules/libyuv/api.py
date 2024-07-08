@@ -5,6 +5,8 @@
 import contextlib
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
+
 from . import builders as libyuv_builders
 
 
@@ -136,7 +138,7 @@ class LibyuvApi(recipe_api.RecipeApi):
         upload_url,
         build_revision=self.revision)
 
-  def extract_build(self):
+  def extract_build(self, build_dir: Path):
     if not self.m.properties.get('parent_got_revision'):
       raise self.m.step.StepFailure(
          'Testers cannot be forced without providing revision information. '
@@ -144,7 +146,7 @@ class LibyuvApi(recipe_api.RecipeApi):
          'for a Builder instead (will trigger new runs for the testers).')
 
     # Ensure old build directory isn't being used by removing it.
-    self.m.file.rmtree('build directory', self.m.chromium.build_dir)
+    self.m.file.rmtree('build directory', build_dir)
 
     download_url = self.m.archive.legacy_download_url(
         self.group_config.get('build_gs_bucket'),
@@ -155,17 +157,22 @@ class LibyuvApi(recipe_api.RecipeApi):
         download_url,
         build_revision=self.revision)
 
-  def runtests(self):
+  def runtests(self, build_dir: Path):
     """Add a suite of test steps."""
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
       with self.m.defer.context() as defer:
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
           defer(self.m.chromium_android.common_tests_setup_steps)
-          defer(self.m.chromium_android.run_test_suite, 'libyuv_unittest')
+          defer(
+              self.m.chromium_android.run_test_suite,
+              build_dir,
+              'libyuv_unittest',
+          )
           defer(self.m.chromium_android.shutdown_device_monitor)
-          defer(self.m.chromium_android.logcat_dump)
-          defer(self.m.chromium_android.stack_tool_steps,
-                force_latest_version=True)
+          defer(self.m.chromium_android.logcat_dump, build_dir)
+          defer(
+              self.m.chromium_android.stack_tool_steps,
+              force_latest_version=True)
         else:
           # Ignoring --no-sandbox because libyuv uses absl/flags which
           # raises an error when flags are unknown to the binary.
