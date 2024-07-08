@@ -11,7 +11,6 @@ from recipe_engine import post_process
 DEPS = [
     'archive',
     'chromium',
-    'chromium_checkout',
     'squashfs',
     'recipe_engine/assertions',
     'recipe_engine/file',
@@ -35,22 +34,25 @@ TEST_COMMIT_POSITON_COMPONENT = 'refs/heads/main@{#234}'
 
 
 def RunSteps(api):
-  api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
+  checkout_dir = api.path.cleanup_dir
+  source_dir = checkout_dir / 'fake-repo'
 
   if 'test_get_channel_name' in api.properties:
     api.assertions.assertEqual(
-        api.properties.get('channel'), api.archive.get_channel_name())
+        api.properties.get('channel'), api.archive.get_channel_name(source_dir))
     return
 
   if 'test_get_milestone_position' in api.properties:
     api.assertions.assertEqual(
         api.properties.get('milestone_position'),
-        api.archive._get_milestone_position())
+        api.archive._get_milestone_position(source_dir))
     return
 
   if 'build_archive_url' in api.properties:
     api.archive.zip_and_upload_build(
-        step_name='zip build', target=api.path.checkout_dir / '/Release/out')
+        step_name='zip build',
+        target=source_dir / 'Release/out',
+        source_dir=source_dir)
     return
 
   if 'gcs_archive' in api.properties:
@@ -64,28 +66,33 @@ def RunSteps(api):
     update_properties = api.properties.get('update_properties')
     custom_vars = api.properties.get('custom_vars')
     upload_results = api.archive.generic_archive(
+        checkout_dir=checkout_dir,
+        source_dir=source_dir,
         build_dir=build_dir,
         update_properties=update_properties,
         custom_vars=custom_vars,
         report_artifacts=True,
         should_batch=api.properties.get('should_batch', False))
     api.archive.generic_archive_after_tests(
-        build_dir=build_dir, upload_results=upload_results, test_success=True)
+        checkout_dir=checkout_dir,
+        source_dir=source_dir,
+        build_dir=build_dir,
+        upload_results=upload_results,
+        test_success=True)
     return
 
   if 'no_llvm' not in api.properties:
-    llvm_bin_dir = api.path.checkout_dir.joinpath('third_party', 'llvm-build',
-                                                  'Release+Asserts', 'bin')
+    llvm_bin_dir = source_dir / 'third_party/llvm-build/Release+Asserts/bin'
     api.path.mock_add_paths(api.path.join(llvm_bin_dir, 'llvm-symbolizer'))
     api.path.mock_add_paths(api.path.join(llvm_bin_dir, 'sancov'))
 
-    llvm_lib_dir = api.path.checkout_dir.joinpath('third_party', 'llvm-build',
-                                                  'Release+Asserts', 'lib')
+    llvm_lib_dir = source_dir / 'third_party/llvm-build/Release+Asserts/lib'
     api.path.mock_add_paths(api.path.join(llvm_lib_dir, 'libstdc++.so.6'))
 
   build_dir = api.path.start_dir.joinpath('src', 'out', 'Release')
 
   api.archive.clusterfuzz_archive(
+      source_dir=source_dir,
       build_dir=build_dir,
       update_properties=api.properties.get('update_properties'),
       gs_bucket='chromium',

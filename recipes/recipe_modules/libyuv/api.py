@@ -128,17 +128,18 @@ class LibyuvApi(recipe_api.RecipeApi):
           project='libyuv', jobs=triggers)
 
 
-  def package_build(self):
+  def package_build(self, source_dir: Path):
     upload_url = self.m.archive.legacy_upload_url(
         self.group_config.get('build_gs_bucket'),
         extra_url_components=self.m.builder_group.for_current)
     self.m.archive.zip_and_upload_build(
         'package build',
         self.m.chromium.c.build_config_fs,
-        upload_url,
+        source_dir,
+        build_url=upload_url,
         build_revision=self.revision)
 
-  def extract_build(self, build_dir: Path):
+  def extract_build(self, source_dir: Path, build_dir: Path):
     if not self.m.properties.get('parent_got_revision'):
       raise self.m.step.StepFailure(
          'Testers cannot be forced without providing revision information. '
@@ -155,6 +156,7 @@ class LibyuvApi(recipe_api.RecipeApi):
         'extract build',
         self.m.chromium.c.build_config_fs,
         download_url,
+        source_dir,
         build_revision=self.revision)
 
   def runtests(self, build_dir: Path):

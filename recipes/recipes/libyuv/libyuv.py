@@ -45,10 +45,10 @@ def RunSteps(api):
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     if libyuv.should_upload_build:
-      libyuv.package_build()
+      libyuv.package_build(source_dir)
 
   if libyuv.should_download_build:
-    libyuv.extract_build(build_dir)
+    libyuv.extract_build(source_dir, build_dir)
 
   if libyuv.should_test:
     libyuv.runtests(build_dir)

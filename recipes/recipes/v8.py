@@ -149,7 +149,7 @@ def RunSteps(api, binary_size_tracking, build_config, clobber, clobber_all,
         if compile_failure:
           return compile_failure
 
-    v8.maybe_create_clusterfuzz_archive(build_dir, update_step)
+    v8.maybe_create_clusterfuzz_archive(source_dir, build_dir, update_step)
 
   if v8.should_test and tests:
     with v8.maybe_clang_coverage(source_dir, build_dir):

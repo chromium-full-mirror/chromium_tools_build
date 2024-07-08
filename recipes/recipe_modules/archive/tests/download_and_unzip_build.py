@@ -12,13 +12,14 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
   api.archive.download_and_unzip_build(
       'extract build',
-      target=api.path.checkout_dir.joinpath('Release', 'out'),
+      target=source_dir / 'Release/out',
       build_url=api.archive.legacy_download_url('bucket_name'),
       build_archive_url=api.properties.get('build_archive_url'),
       build_revision='example_sha',
+      source_dir=source_dir,
   )
 
 

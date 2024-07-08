@@ -843,6 +843,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         bisect_package_step = self.m.archive.zip_and_upload_build(
             'package build for bisect',
             self.m.chromium.c.build_config_fs,
+            self.m.chromium_checkout.source_dir,
             build_url=self._build_bisect_gs_archive_url(builder_spec),
             build_revision=build_revision,
             update_properties=update_result.properties,
@@ -862,6 +863,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         package_step = self.m.archive.zip_and_upload_build(
             'package build',
             self.m.chromium.c.build_config_fs,
+            self.m.chromium_checkout.source_dir,
             build_url=self._build_gs_archive_url(builder_spec, builder_id.group,
                                                  builder_id.builder),
             build_revision=build_revision,
@@ -903,6 +905,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # archive logic with InputProperties driven archiving.
     # https://crbug.com/1076679.
     upload_results = self.m.archive.generic_archive(
+        self.m.chromium_checkout.checkout_dir,
+        self.m.chromium_checkout.source_dir,
         build_dir=build_dir,
         update_properties=update_result.properties,
         custom_vars=custom_vars,
@@ -922,6 +926,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if builder_spec.cf_archive_build and not self.m.tryserver.is_tryserver:
       self.m.archive.clusterfuzz_archive(
+          self.m.chromium_checkout.source_dir,
           build_dir=build_dir,
           update_properties=update_result.properties,
           gs_bucket=builder_spec.cf_gs_bucket,
@@ -1249,6 +1254,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
                                                      builder_id.group)
 
     self.m.archive.download_and_unzip_build(
+        source_dir=self.m.chromium_checkout.source_dir,
         step_name='extract build',
         target=self.m.chromium.c.build_config_fs,
         build_url=legacy_build_url,
@@ -2723,6 +2729,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           root_permission_override='755',
       )
       self.m.archive.generic_archive(
+          self.m.chromium_checkout.checkout_dir,
+          self.m.chromium_checkout.source_dir,
           build_dir=self.m.chromium_checkout.checkout_dir,
           update_properties={},
           config=arch_prop.InputProperties(
@@ -2811,6 +2819,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         test_success = False
 
       self.m.archive.generic_archive_after_tests(
+          self.m.chromium_checkout.checkout_dir,
+          self.m.chromium_checkout.source_dir,
           build_dir=build_dir,
           upload_results=upload_results,
           test_success=test_success)

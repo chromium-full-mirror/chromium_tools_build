@@ -313,6 +313,7 @@ def RunSteps(api, properties):
           copy_path(api, source_dir, build_dir, path_name)
 
       api.archive.clusterfuzz_archive(
+          source_dir=source_dir,
           build_dir=build_dir,
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,

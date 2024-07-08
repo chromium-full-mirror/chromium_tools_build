@@ -13,9 +13,9 @@ from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 DEPS = [
     'archive',
     'chromium',
-    'chromium_checkout',
     'chromium_tests',
     'chromium_tests_builder_config',
+    'depot_tools/bot_update',
     'recipe_engine/path',
     'recipe_engine/properties',
 ]
@@ -30,25 +30,35 @@ def RunSteps(api):
   update_properties = api.properties.get('update_properties')
   custom_vars = api.properties.get('custom_vars')
 
-  update_result = api.chromium_checkout.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
+  checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
 
   # Calling generic_archive_after_tests without generic_archive first
   # should result in a no-op.
   api.archive.generic_archive_after_tests(
-      build_dir=build_dir, test_success=False)
+      checkout_dir=checkout_dir,
+      source_dir=source_dir,
+      build_dir=build_dir,
+      test_success=False)
 
   api.path.mock_add_paths(
-      api.chromium_checkout.checkout_dir.joinpath(*source_side_spec_path))
+      update_result.checkout_dir.joinpath(*source_side_spec_path))
 
   upload_results = api.archive.generic_archive(
+      checkout_dir=checkout_dir,
+      source_dir=source_dir,
       build_dir=build_dir,
       update_properties=update_properties,
       custom_vars=custom_vars,
       report_artifacts=True)
   api.archive.generic_archive_after_tests(
-      build_dir=build_dir, upload_results=upload_results, test_success=True)
+      checkout_dir=checkout_dir,
+      source_dir=source_dir,
+      build_dir=build_dir,
+      upload_results=upload_results,
+      test_success=True)
 
 
 def _cipd_archive_data():
@@ -99,13 +109,26 @@ def GenTests(api):
           major=91, step_name='Generic Archiving Steps.get version'),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def',
-              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
-              '-ref', 'canary', '-tag', 'version:1.2.3.4', '-pkg-var',
-              'targetarch:arm64', '-compression-level', '8', '-json-output',
-              '/path/to/tmp/json'
-          ]),
+          "Generic Archiving Steps.create foo",
+          [
+              'cipd',
+              'create',
+              '-pkg-def',
+              '[START_DIR]/src/out/Release/foo',
+              '-hash-algo',
+              'sha256',
+              '-ref',
+              'canary',
+              '-tag',
+              'version:1.2.3.4',
+              '-pkg-var',
+              'targetarch:arm64',
+              '-compression-level',
+              '8',
+              '-json-output',
+              '/path/to/tmp/json',
+          ],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -138,13 +161,26 @@ def GenTests(api):
           major=91, step_name='Generic Archiving Steps.get version'),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def',
-              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
-              '-ref', 'canary', '-tag', 'version:1.2.3.4', '-pkg-var',
-              'targetarch:amd64', '-compression-level', '8', '-json-output',
-              '/path/to/tmp/json'
-          ]),
+          "Generic Archiving Steps.create foo",
+          [
+              'cipd',
+              'create',
+              '-pkg-def',
+              '[START_DIR]/src/out/Release/foo',
+              '-hash-algo',
+              'sha256',
+              '-ref',
+              'canary',
+              '-tag',
+              'version:1.2.3.4',
+              '-pkg-var',
+              'targetarch:amd64',
+              '-compression-level',
+              '8',
+              '-json-output',
+              '/path/to/tmp/json',
+          ],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -220,12 +256,22 @@ def GenTests(api):
           }),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def',
-              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
-              '-ref', 'legacy88', '-tag', 'version:2.3.4.5', '-json-output',
-              '/path/to/tmp/json'
-          ]),
+          "Generic Archiving Steps.create foo",
+          [
+              'cipd',
+              'create',
+              '-pkg-def',
+              '[START_DIR]/src/out/Release/foo',
+              '-hash-algo',
+              'sha256',
+              '-ref',
+              'legacy88',
+              '-tag',
+              'version:2.3.4.5',
+              '-json-output',
+              '/path/to/tmp/json',
+          ],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -306,13 +352,26 @@ def GenTests(api):
           major=89, step_name='Generic Archiving Steps.get version'),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def',
-              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
-              '-tag', 'version:1.2.3.4', '-pkg-var', 'targetarch:arm32',
-              '-compression-level', '8', '-verification-timeout', '5m',
-              '-json-output', '/path/to/tmp/json'
-          ]),
+          "Generic Archiving Steps.create foo",
+          [
+              'cipd',
+              'create',
+              '-pkg-def',
+              '[START_DIR]/src/out/Release/foo',
+              '-hash-algo',
+              'sha256',
+              '-tag',
+              'version:1.2.3.4',
+              '-pkg-var',
+              'targetarch:arm32',
+              '-compression-level',
+              '8',
+              '-verification-timeout',
+              '5m',
+              '-json-output',
+              '/path/to/tmp/json',
+          ],
+      ),
       api.post_process(post_process.StepCommandContains,
                        "Generic Archiving Steps After Tests.cipd set-ref foo", [
                            'cipd', 'set-ref', 'foo', '-version',
@@ -357,13 +416,28 @@ def GenTests(api):
                        "Generic Archiving Steps.create foo"),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def',
-              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
-              '-ref', 'canary', '-ref', '91', '-tag', 'version:1.2.3.4',
-              '-pkg-var', 'targetarch:arm64', '-compression-level', '8',
-              '-json-output', '/path/to/tmp/json'
-          ]),
+          "Generic Archiving Steps.create foo",
+          [
+              'cipd',
+              'create',
+              '-pkg-def',
+              '[START_DIR]/src/out/Release/foo',
+              '-hash-algo',
+              'sha256',
+              '-ref',
+              'canary',
+              '-ref',
+              '91',
+              '-tag',
+              'version:1.2.3.4',
+              '-pkg-var',
+              'targetarch:arm64',
+              '-compression-level',
+              '8',
+              '-json-output',
+              '/path/to/tmp/json',
+          ],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -405,14 +479,30 @@ def GenTests(api):
                        "Generic Archiving Steps.create foo"),
       api.post_process(
           post_process.StepCommandContains,
-          "Generic Archiving Steps.create foo", [
-              'cipd', 'create', '-pkg-def',
-              '[CACHE]/builder/src/out/Release/foo', '-hash-algo', 'sha256',
-              '-ref', 'canary', '-ref', 'm91_fuchsia_ready', '-tag',
-              'canary-milestone:91', '-tag', 'version:1.2.3.4', '-pkg-var',
-              'targetarch:arm64', '-compression-level', '8', '-json-output',
-              '/path/to/tmp/json'
-          ]),
+          "Generic Archiving Steps.create foo",
+          [
+              'cipd',
+              'create',
+              '-pkg-def',
+              '[START_DIR]/src/out/Release/foo',
+              '-hash-algo',
+              'sha256',
+              '-ref',
+              'canary',
+              '-ref',
+              'm91_fuchsia_ready',
+              '-tag',
+              'canary-milestone:91',
+              '-tag',
+              'version:1.2.3.4',
+              '-pkg-var',
+              'targetarch:arm64',
+              '-compression-level',
+              '8',
+              '-json-output',
+              '/path/to/tmp/json',
+          ],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -446,14 +536,28 @@ def GenTests(api):
           major=90, step_name='Generic Archiving Steps.get version'),
       api.post_process(post_process.MustRun,
                        "Generic Archiving Steps.create foo"),
-      api.post_process(post_process.StepCommandContains,
-                       "Generic Archiving Steps.create foo", [
-                           'cipd', 'create', '-pkg-def',
-                           '[CACHE]/builder/src/out/Release/foo', '-hash-algo',
-                           'sha256', '-ref', 'beta', '-tag', 'version:1.2.3.4',
-                           '-pkg-var', 'targetarch:arm64', '-compression-level',
-                           '8', '-json-output', '/path/to/tmp/json'
-                       ]),
+      api.post_process(
+          post_process.StepCommandContains,
+          "Generic Archiving Steps.create foo",
+          [
+              'cipd',
+              'create',
+              '-pkg-def',
+              '[START_DIR]/src/out/Release/foo',
+              '-hash-algo',
+              'sha256',
+              '-ref',
+              'beta',
+              '-tag',
+              'version:1.2.3.4',
+              '-pkg-var',
+              'targetarch:arm64',
+              '-compression-level',
+              '8',
+              '-json-output',
+              '/path/to/tmp/json',
+          ],
+      ),
       api.post_process(post_process.DropExpectation),
   )
 

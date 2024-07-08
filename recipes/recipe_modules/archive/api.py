@@ -14,6 +14,7 @@ from google.protobuf import json_format
 from PB.recipe_modules.build.archive.properties import ArchiveData, \
                                                        InputProperties
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 # Regular expression to identify a Git hash.
 GIT_COMMIT_HASH_RE = re.compile(r'[a-zA-Z0-9]{40}')
@@ -43,8 +44,9 @@ class ArchiveApi(recipe_api.RecipeApi):
   def zip_and_upload_build(self,
                            step_name,
                            target,
+                           source_dir: Path,
+                           *,
                            build_url=None,
-                           src_dir=None,
                            build_revision=None,
                            package_dsym_files=False,
                            exclude_files=None,
@@ -55,8 +57,6 @@ class ArchiveApi(recipe_api.RecipeApi):
                            **kwargs):
     """Returns a step invoking zip_build.py to zip up a Chromium build.
        If build_url is specified, also uploads the build."""
-    if not src_dir:
-      src_dir = self.m.path.checkout_dir
     args = [
         '--target',
         target,
@@ -65,7 +65,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         '--staging-dir',
         self.m.path.cache_dir / 'cs',
         '--src-dir',
-        src_dir,
+        source_dir,
     ]
     if 'build_archive_url' in self.m.properties:
       args.extend([
@@ -166,10 +166,12 @@ class ArchiveApi(recipe_api.RecipeApi):
     return str(number)
 
   def clusterfuzz_archive(self,
-                          build_dir,
+                          source_dir: Path,
+                          build_dir: Path,
                           update_properties,
                           gs_bucket,
                           archive_prefix,
+                          *,
                           archive_subdir_suffix='',
                           gs_acl=None,
                           revision_dir=None,
@@ -201,6 +203,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     component is checked out in branch main with commit position number 234.
 
     Args:
+      source_dir: The path to the top-level repo.
       build_dir: The absolute path to the build output directory, e.g.
                  [cache]/builder/src/out/Release
       update_properties: The properties from the bot_update step (containing
@@ -251,11 +254,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     can_fetch_7zip = self.m.platform.is_mac or (self.m.platform.is_linux and
                                                 self.m.platform.arch == "intel"
                                                 and self.m.platform.bits == 64)
-    if self.m.path.exists(self.m.path.checkout_dir) and self.m.platform.is_win:
-      lzma_sdk_args = [
-          self.m.path.checkout_dir.joinpath('third_party', 'lzma_sdk', 'bin',
-                                            'win64')
-      ]
+    if self.m.path.exists(source_dir) and self.m.platform.is_win:
+      lzma_sdk_args = [source_dir / 'third_party/lzma_sdk/bin/win64']
     elif can_fetch_7zip:
       cipd_pkg = 'infra/3pp/tools/7z/${platform}'
       lzma_sdk_args = [
@@ -263,9 +263,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       ]
 
     llvm_tools_to_copy = ['llvm-symbolizer', 'sancov']
-    llvm_bin_dir = self.m.path.checkout_dir.joinpath('third_party',
-                                                     'llvm-build',
-                                                     'Release+Asserts', 'bin')
+    llvm_bin_dir = source_dir / 'third_party/llvm-build/Release+Asserts/bin'
     ext = '.exe' if self.m.platform.is_win else ''
 
     for tool in llvm_tools_to_copy:
@@ -284,9 +282,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         pass
 
     if not self.m.platform.is_win:
-      llvm_lib_dir = self.m.path.checkout_dir.joinpath('third_party',
-                                                       'llvm-build',
-                                                       'Release+Asserts', 'lib')
+      llvm_lib_dir = source_dir / 'third_party/llvm-build/Release+Asserts/lib'
       libstdcplusplus_lib = 'libstdc++.so.6'
       libstdcplusplus_lib_src = self.m.path.join(llvm_lib_dir,
                                                  libstdcplusplus_lib)
@@ -383,21 +379,20 @@ class ArchiveApi(recipe_api.RecipeApi):
                                step_name,
                                target,
                                build_url,
-                               src_dir=None,
+                               source_dir: Path,
+                               *,
                                build_revision=None,
                                build_archive_url=None,
                                **kwargs):
     """Returns a step invoking extract_build.py to download and unzip
        a Chromium build."""
-    if not src_dir:
-      src_dir = self.m.path.checkout_dir
     args = [
         '--gsutil-py-path',
         self.m.depot_tools.gsutil_py_path,
         '--target',
         target,
         '--src-dir',
-        src_dir,
+        source_dir,
     ]
     if build_archive_url:
       args.extend(['--build-archive-url', build_archive_url])
@@ -579,26 +574,25 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     return canary_milestone
 
-  def _get_milestone_position(self):
+  def _get_milestone_position(self, source_dir: Path) -> str:
     canary_milestone = self._get_canary_milestone()
-    milestone = int(
-        self.m.chromium.get_version(
-            self.m.chromium_checkout.source_dir)['MAJOR'])
+    milestone = int(self.m.chromium.get_version(source_dir)['MAJOR'])
     position = canary_milestone - milestone
 
     return "canary" if position == 0 else "canary-%s" % position
 
-  def get_channel_name(self):
+  def get_channel_name(self, source_dir: Path) -> str:
     """Get the current branch's channel name.
+
+    Args:
+      source_dir: The path to the top-level repo.
 
     Returns:
       The string of channel's name: it can be 'canary', 'beta', 'stable'
       'legacy<milestone>' or no return with an empty step.
     """
     canary_milestone = self._get_canary_milestone()
-    milestone = int(
-        self.m.chromium.get_version(
-            self.m.chromium_checkout.source_dir)['MAJOR'])
+    milestone = int(self.m.chromium.get_version(source_dir)['MAJOR'])
 
     # Compare the milestone of latest Chromium with the current build to
     # determine the channel.
@@ -616,7 +610,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         status=self.m.step.FAILURE,
         step_text='Can not find channel for milestone: %s' % milestone)
 
-  def _evaluate_condition(self, condition):
+  def _evaluate_condition(self, source_dir: Path, condition):
     """Evaluates a condition from the following `when` placeholder. See
     _replace_placeholders.
 
@@ -624,13 +618,19 @@ class ArchiveApi(recipe_api.RecipeApi):
       A boolean value to indicate the evaluated result of the condition.
     """
     if condition == 'is_canary':
-      return self.get_channel_name() == 'canary'
+      return self.get_channel_name(source_dir) == 'canary'
     self.m.step.empty(
         'Unknown condition',
         status=self.m.step.FAILURE,
         step_text=condition + ' can not be evaluated')
 
-  def _replace_placeholders(self, update_properties, custom_vars, input_str):
+  def _replace_placeholders(
+      self,
+      source_dir: Path,
+      update_properties,
+      custom_vars,
+      input_str,
+  ):
     # Evaluate the condition placeholder formatting like:
     # {% text when condition %}.
     # The text can contain other placeholders as well; the condition is
@@ -643,10 +643,11 @@ class ArchiveApi(recipe_api.RecipeApi):
     # {% m{%milestone}_fuchsia_ready when is_canary %}.
     for placeholder, value, condition in re.findall(
         '({%\s(.*?)\swhen\s(.*?)\s%})', input_str):
-      if self._evaluate_condition(condition):
+      if self._evaluate_condition(source_dir, condition):
         input_str = input_str.replace(
             placeholder,
-            self._replace_placeholders(update_properties, custom_vars, value))
+            self._replace_placeholders(source_dir, update_properties,
+                                       custom_vars, value))
       else:
         input_str = input_str.replace(placeholder, '')
 
@@ -665,13 +666,13 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     milestone_position_placeholder = '{%milestone_position%}'
     if milestone_position_placeholder in input_str:
-      milestone_position = self._get_milestone_position()
+      milestone_position = self._get_milestone_position(source_dir)
       input_str = input_str.replace(milestone_position_placeholder,
                                     milestone_position)
 
     channel_placeholder = '{%channel%}'
     if channel_placeholder in input_str:
-      channel = self.get_channel_name()
+      channel = self.get_channel_name(source_dir)
       input_str = input_str.replace(channel_placeholder, channel)
 
     arch_placeholder = '{%arch%}'
@@ -708,7 +709,7 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     chromium_version_placeholder = '{%chromium_version%}'
     if chromium_version_placeholder in input_str:
-      version = self.m.chromium.get_version(self.m.chromium_checkout.source_dir)
+      version = self.m.chromium.get_version(source_dir)
       value = "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
                                version['BUILD'], version['PATCH'])
       input_str = input_str.replace(chromium_version_placeholder, value)
@@ -727,8 +728,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     if milestone_placeholder in input_str:
       input_str = input_str.replace(
           milestone_placeholder,
-          self.m.chromium.get_version(
-              self.m.chromium_checkout.source_dir)['MAJOR'])
+          self.m.chromium.get_version(source_dir)['MAJOR'])
 
     if custom_vars:
       for placeholder, key in re.findall('({%(.*?)%})', input_str):
@@ -765,14 +765,13 @@ class ArchiveApi(recipe_api.RecipeApi):
         'path: %s' % source_side_archive_spec_path)
     return source_side_archive_spec
 
-  def _get_source_side_archive_spec(self, spec_path):
-    source_side_archive_spec_path = self.m.chromium_checkout.checkout_dir.joinpath(
-        *spec_path)
+  def _get_source_side_archive_spec(self, checkout_dir: Path, spec_path):
+    source_side_archive_spec_path = checkout_dir.joinpath(*spec_path)
     archive_spec = self._read_source_side_archive_spec(
         source_side_archive_spec_path)
     return archive_spec
 
-  def _get_archive_config(self, config):
+  def _get_archive_config(self, checkout_dir: Path, config):
     if config is None:
       config = self._default_config
 
@@ -780,7 +779,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       return config
 
     source_side_archive_spec = self._get_source_side_archive_spec(
-        config.source_side_spec_path)
+        checkout_dir, config.source_side_spec_path)
     if source_side_archive_spec:
       return json_format.ParseDict(
           source_side_archive_spec,
@@ -817,8 +816,11 @@ class ArchiveApi(recipe_api.RecipeApi):
     return valid
 
   def generic_archive(self,
-                      build_dir,
+                      checkout_dir: Path,
+                      source_dir: Path,
+                      build_dir: Path,
                       update_properties,
+                      *,
                       custom_vars=None,
                       config=None,
                       report_artifacts=False,
@@ -829,6 +831,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     archive/properties.proto.
 
     Args:
+      checkout_dir: The directory where the checkout was performed.
+      source_dir: The path to the top-level repo.
       build_dir: The absolute path to the build output directory, e.g.
                  [cache]/builder/src/out/Release
       update_properties: The properties from the bot_update step (containing
@@ -860,7 +864,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     upload_results['update_properties'] = update_properties
     upload_results['custom_vars'] = custom_vars
 
-    archive_config = self._get_archive_config(config)
+    archive_config = self._get_archive_config(checkout_dir, config)
 
     if (not archive_config.archive_datas and
         not archive_config.cipd_archive_datas):
@@ -869,18 +873,32 @@ class ArchiveApi(recipe_api.RecipeApi):
     with self.m.step.nest('Generic Archiving Steps', status='last'):
       for archive_data in archive_config.archive_datas:
         if not archive_data.only_upload_on_tests_success:
-          gcs_uploads = self.gcs_archive(build_dir, update_properties,
-                                         archive_data, custom_vars,
-                                         report_artifacts, should_batch)
+          gcs_uploads = self.gcs_archive(
+              checkout_dir,
+              source_dir,
+              build_dir,
+              update_properties,
+              archive_data,
+              custom_vars=custom_vars,
+              report_artifacts=report_artifacts,
+              should_batch=should_batch)
           upload_results['gcs'].append(gcs_uploads)
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
-            self.cipd_archive(build_dir, update_properties, custom_vars,
-                              cipd_archive_data, report_artifacts))
+            self.cipd_archive(
+                source_dir,
+                build_dir,
+                update_properties,
+                custom_vars,
+                cipd_archive_data,
+                report_artifacts=report_artifacts))
     return upload_results
 
   def generic_archive_after_tests(self,
-                                  build_dir,
+                                  checkout_dir: Path,
+                                  source_dir: Path,
+                                  build_dir: Path,
+                                  *,
                                   config=None,
                                   upload_results=None,
                                   test_success=False):
@@ -893,6 +911,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     package with only_set_refs_on_tests_success set to True.
 
     Args:
+      checkout_dir: The path to where the checkout was performed.
+      source_dir: The path to the top-level repo.
       upload_results: The upload results from generic_archive.
 
     For information about other args see generic_archive.
@@ -900,7 +920,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     if not upload_results or not test_success:
       return
 
-    archive_config = self._get_archive_config(config)
+    archive_config = self._get_archive_config(checkout_dir, config)
 
     if (not archive_config.archive_datas and
         not archive_config.cipd_archive_datas):
@@ -909,8 +929,14 @@ class ArchiveApi(recipe_api.RecipeApi):
     with self.m.step.nest('Generic Archiving Steps After Tests'):
       for archive_data in archive_config.archive_datas:
         if archive_data.only_upload_on_tests_success:
-          self.gcs_archive(build_dir, upload_results['update_properties'],
-                           archive_data, upload_results['custom_vars'])
+          self.gcs_archive(
+              checkout_dir,
+              source_dir,
+              build_dir,
+              upload_results['update_properties'],
+              archive_data,
+              custom_vars=upload_results['custom_vars'],
+          )
       if upload_results['cipd']:
         for pkg in upload_results['cipd']:
           self.m.cipd.set_ref(
@@ -938,9 +964,12 @@ class ArchiveApi(recipe_api.RecipeApi):
     ])
 
   def gcs_archive(self,
-                  build_dir,
+                  checkout_dir: Path,
+                  source_dir: Path,
+                  build_dir: Path,
                   update_properties,
                   archive_data,
+                  *,
                   custom_vars=None,
                   report_artifacts=False,
                   should_batch=False):
@@ -950,6 +979,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     archive/properties.proto.
 
     Args:
+      checkout_dir: The directory where the checkout was performed.
+      source_dir: The path to the top-level repo.
       build_dir: The absolute path to the build output directory, e.g.
                  [cache]/builder/src/out/Release
       update_properties: The properties from the bot_update step (containing
@@ -970,18 +1001,16 @@ class ArchiveApi(recipe_api.RecipeApi):
       return ('/'.join([x for x in gcs if x]) + '/' +
               '/'.join([x for x in f if x]))
 
-    def _resolve_base_dir(base_dir):
-      return self.m.chromium_checkout.checkout_dir / base_dir
-
     base_path = build_dir
     if archive_data.base_dir:
-      base_path = _resolve_base_dir(archive_data.base_dir)
+      base_path = checkout_dir / archive_data.base_dir
 
     # Perform dynamic configuration from placeholders, if necessary.
-    gcs_path = self._replace_placeholders(update_properties, custom_vars,
-                                          archive_data.gcs_path)
+    gcs_path = self._replace_placeholders(source_dir, update_properties,
+                                          custom_vars, archive_data.gcs_path)
 
-    gcs_bucket = self._replace_placeholders(update_properties, custom_vars,
+    gcs_bucket = self._replace_placeholders(source_dir, update_properties,
+                                            custom_vars,
                                             archive_data.gcs_bucket)
 
     experimental = self.m.runtime.is_experimental
@@ -1048,7 +1077,8 @@ class ArchiveApi(recipe_api.RecipeApi):
       expanded_files.remove(rename_file.from_file)
 
       # Support placeholder replacement for file renames.
-      new_filename = self._replace_placeholders(update_properties, custom_vars,
+      new_filename = self._replace_placeholders(source_dir, update_properties,
+                                                custom_vars,
                                                 rename_file.to_file)
       expanded_files.add(new_filename)
       self.m.file.move("Move file",
@@ -1064,8 +1094,8 @@ class ArchiveApi(recipe_api.RecipeApi):
         continue
 
       # Support placeholder replacement for renames.
-      new_dirname = self._replace_placeholders(update_properties, custom_vars,
-                                               rename_dir.to_dir)
+      new_dirname = self._replace_placeholders(source_dir, update_properties,
+                                               custom_vars, rename_dir.to_dir)
 
       move_from_path = self.m.path.join(base_path, rename_dir.from_dir)
       for idx, dirname in enumerate(updated_dirs):
@@ -1091,8 +1121,8 @@ class ArchiveApi(recipe_api.RecipeApi):
       # moving the archive to a subdir of itself).
       # The archive dir is temporarily moved to a new path because you can't
       # actually move a dir into a subdir of itself.
-      new_dirname = self._replace_placeholders(update_properties, custom_vars,
-                                               root_rename.to_dir)
+      new_dirname = self._replace_placeholders(source_dir, update_properties,
+                                               custom_vars, root_rename.to_dir)
       move_from_path = self.m.path.mkdtemp().joinpath(
           self.m.path.basename(base_path))
       self.m.file.move("Prep archive root move", base_path, move_from_path)
@@ -1213,14 +1243,15 @@ class ArchiveApi(recipe_api.RecipeApi):
                        'latest_gcs_file_content must be non-empty.'))
 
       latest_path = self._replace_placeholders(
-          update_properties, custom_vars, archive_data.latest_upload.gcs_path)
+          source_dir, update_properties, custom_vars,
+          archive_data.latest_upload.gcs_path)
       content = self._replace_placeholders(
-          update_properties, custom_vars,
+          source_dir, update_properties, custom_vars,
           archive_data.latest_upload.gcs_file_content)
 
       if archive_data.latest_upload.gcs_bucket:
         latest_gcs_bucket = self._replace_placeholders(
-            update_properties, custom_vars,
+            source_dir, update_properties, custom_vars,
             archive_data.latest_upload.gcs_bucket)
       else:
         latest_gcs_bucket = gcs_bucket
@@ -1279,7 +1310,8 @@ class ArchiveApi(recipe_api.RecipeApi):
       output_file = temp_dir / 'revisions.txt'
       self.m.file.write_text('Write REVISIONS file', output_file, content_json)
       revisions_path = self._replace_placeholders(
-          update_properties, custom_vars, archive_data.revisions_file.gcs_path)
+          source_dir, update_properties, custom_vars,
+          archive_data.revisions_file.gcs_path)
       self.m.gsutil.upload(
           output_file,
           bucket=gcs_bucket,
@@ -1288,25 +1320,42 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     return uploads
 
-  def _replace_placeholders_in_list(self, update_properties, custom_vars,
-                                    values):
+  def _replace_placeholders_in_list(
+      self,
+      source_dir: Path,
+      update_properties,
+      custom_vars,
+      values,
+  ):
     ret = []
     for value in values:
-      value = self._replace_placeholders(update_properties, custom_vars, value)
+      value = self._replace_placeholders(source_dir, update_properties,
+                                         custom_vars, value)
       if value:
         ret.append(value)
     return ret
 
-  def _replace_placeholders_in_dict(self, update_properties, custom_vars,
-                                    values):
+  def _replace_placeholders_in_dict(
+      self,
+      source_dir: Path,
+      update_properties,
+      custom_vars,
+      values,
+  ):
     ret = dict(values)
     for key in ret:
-      ret[key] = self._replace_placeholders(update_properties, custom_vars,
-                                            ret[key])
+      ret[key] = self._replace_placeholders(source_dir, update_properties,
+                                            custom_vars, ret[key])
     return {k: v for k, v in ret.items() if v}
 
-  def cipd_archive(self, build_dir, update_properties, custom_vars,
-                   cipd_archive_data, report_artifacts=False):
+  def cipd_archive(self,
+                   source_dir: Path,
+                   build_dir: Path,
+                   update_properties,
+                   custom_vars,
+                   cipd_archive_data,
+                   *,
+                   report_artifacts=False):
     """Archives packages to CIPD.
 
     Args:
@@ -1319,11 +1368,13 @@ class ArchiveApi(recipe_api.RecipeApi):
       cipd_archive_data: An instance of archive/properties.proto:
                          InputProperties.cipd_archive_datas.
     """
-    refs = self._replace_placeholders_in_list(update_properties, custom_vars,
+    refs = self._replace_placeholders_in_list(source_dir, update_properties,
+                                              custom_vars,
                                               cipd_archive_data.refs)
-    tags = self._replace_placeholders_in_dict(update_properties, custom_vars,
+    tags = self._replace_placeholders_in_dict(source_dir, update_properties,
+                                              custom_vars,
                                               cipd_archive_data.tags)
-    pkg_vars = self._replace_placeholders_in_dict(update_properties,
+    pkg_vars = self._replace_placeholders_in_dict(source_dir, update_properties,
                                                   custom_vars,
                                                   cipd_archive_data.pkg_vars)
 

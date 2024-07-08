@@ -7,7 +7,6 @@ from PB.recipe_modules.build.archive import properties
 DEPS = [
     'build',
     'chromium',
-    'chromium_checkout',
     'depot_tools/depot_tools',
     'depot_tools/gitiles',
     'depot_tools/gsutil',

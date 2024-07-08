@@ -905,6 +905,7 @@ class V8Api(recipe_api.RecipeApi):
 
   def maybe_create_clusterfuzz_archive(
       self,
+      source_dir: Path,
       build_dir: Path,
       update_result: bot_update.Result,
   ):
@@ -917,6 +918,7 @@ class V8Api(recipe_api.RecipeApi):
       self.m.archive.clusterfuzz_archive(
           revision_dir='v8',
           build_config=self.get_build_type(build_dir),
+          source_dir=source_dir,
           build_dir=build_dir,
           update_properties=update_result.properties,
           gs_bucket=clusterfuzz_archive.get('bucket'),
