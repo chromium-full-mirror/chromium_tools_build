@@ -44,11 +44,17 @@ def _get_builder_id(api):
                                              buildername)
 
 
-def _run_builds(api, build_dir: Path, target, phase, step_name_suffix=None):
+def _run_builds(api,
+                source_dir: Path,
+                build_dir: Path,
+                target,
+                phase,
+                step_name_suffix=None):
   # First build without remote cache.
   api.chromium_build_perf.recreate_build_dir(
-      build_dir, phase=phase, remove_deps_cache=True)
+      source_dir, build_dir, phase=phase, remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_siso(
+      source_dir,
       build_dir,
       target,
       with_remote_cache=False,
@@ -59,13 +65,19 @@ def _run_builds(api, build_dir: Path, target, phase, step_name_suffix=None):
   # C++ actions will not get cache hits due to their deps changing
   # after parsing the depsfile. TODO(b/283341125)
   if phase == 'builtin':
-    api.chromium_build_perf.recreate_build_dir(build_dir, phase=phase)
+    api.chromium_build_perf.recreate_build_dir(
+        source_dir, build_dir, phase=phase)
     raw_result = api.chromium_build_perf.build_with_siso(
-        build_dir, target, with_remote_cache=True, step_name_suffix=' (warmup)')
+        source_dir,
+        build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=' (warmup)')
 
   # Second build with remote cache produced by the previous build.
-  api.chromium_build_perf.recreate_build_dir(build_dir, phase=phase)
+  api.chromium_build_perf.recreate_build_dir(source_dir, build_dir, phase=phase)
   raw_result = api.chromium_build_perf.build_with_siso(
+      source_dir,
       build_dir,
       target,
       with_remote_cache=True,
@@ -98,9 +110,14 @@ def RunSteps(api):
   api.step('check siso version', [api.siso.siso_path(source_dir), 'version'])
 
   # Build target: all
-  _run_builds(api, build_dir, 'all', phase='builtin')
+  _run_builds(api, source_dir, build_dir, 'all', phase='builtin')
   _run_builds(
-      api, build_dir, 'all', phase='reproxy', step_name_suffix=' with reproxy')
+      api,
+      source_dir,
+      build_dir,
+      'all',
+      phase='reproxy',
+      step_name_suffix=' with reproxy')
 
 
 def GenTests(api):

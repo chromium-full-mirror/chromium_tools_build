@@ -42,14 +42,17 @@ def _raise_raw_result_on_failure(api, raw_result):
 
 def _compile_without_remote_execution(
     api,
+    source_dir: Path,
     build_dir: Path,
     target,
     resource_usage_output_dir,
 ):
   # Build without remote execution.
-  api.chromium_build_perf.recreate_build_dir(build_dir, remove_deps_cache=True)
+  api.chromium_build_perf.recreate_build_dir(
+      source_dir, build_dir, remove_deps_cache=True)
   resource_usage_output_file = resource_usage_output_dir / 'resource_usage.json'
   raw_result = api.chromium_build_perf.build_with_siso(
+      source_dir,
       build_dir,
       target,
       with_remote_cache=False,
@@ -105,6 +108,7 @@ def RunSteps(api):
   # Build target: chrome
   _compile_without_remote_execution(
       api,
+      source_dir,
       build_dir,
       'chrome',
       resource_usage_output_dir,

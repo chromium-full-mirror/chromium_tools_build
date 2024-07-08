@@ -43,6 +43,7 @@ def _raise_raw_result_on_failure(api, raw_result):
 
 def _incremental_build_with_one_day_changes(
     api,
+    source_dir: Path,
     default_build_dir: Path,
     target,
 ):
@@ -73,13 +74,15 @@ def _incremental_build_with_one_day_changes(
             'abcd\nefgh\n')).stdout.split()[0]
 
     # Run a warm up build for remote caches at the current revision.
-    api.chromium_build_perf.checkout(default_build_dir, cur_rev)
+    api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
 
     build_dir_parent = default_build_dir.parent
 
     ##  Ninja+Reclient
-    api.chromium_build_perf.recreate_build_dir(default_build_dir, phase='ninja')
+    api.chromium_build_perf.recreate_build_dir(
+        source_dir, default_build_dir, phase='ninja')
     raw_result = api.chromium_build_perf.build_with_ninja(
+        source_dir,
         default_build_dir,
         target,
         with_remote_cache=True,
@@ -89,29 +92,38 @@ def _incremental_build_with_one_day_changes(
     ## Siso+Reclient
     rbe_build_dir = build_dir_parent / 'rbe'
     api.chromium_build_perf.recreate_build_dir(
-        rbe_build_dir, phase='siso_reproxy')
+        source_dir, rbe_build_dir, phase='siso_reproxy')
     suffix = ' with Siso in Reproxy mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
-        rbe_build_dir, target, with_remote_cache=True, step_name_suffix=suffix)
+        source_dir,
+        rbe_build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=suffix)
     _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso native build
     siso_build_dir = build_dir_parent / 'siso'
     api.chromium_build_perf.recreate_build_dir(
-        siso_build_dir, phase='siso_native')
+        source_dir, siso_build_dir, phase='siso_native')
     suffix = ' with Siso in native mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
-        siso_build_dir, target, with_remote_cache=True, step_name_suffix=suffix)
+        source_dir,
+        siso_build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=suffix)
     _raise_raw_result_on_failure(api, raw_result)
 
     # Clean up deps cache and check out to the base revision.
-    api.chromium_build_perf.checkout(default_build_dir, base_rev)
+    api.chromium_build_perf.checkout(source_dir, default_build_dir, base_rev)
 
     # Run a warm up build for local build dir.
     ## Ninja+Reclient
     api.chromium_build_perf.recreate_build_dir(
-        default_build_dir, phase='ninja', remove_deps_cache=True)
+        source_dir, default_build_dir, phase='ninja', remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_ninja(
+        source_dir,
         default_build_dir,
         target,
         with_remote_cache=True,
@@ -120,8 +132,9 @@ def _incremental_build_with_one_day_changes(
 
     ## Siso+Reclient
     api.chromium_build_perf.recreate_build_dir(
-        rbe_build_dir, phase='siso_reproxy', remove_deps_cache=True)
+        source_dir, rbe_build_dir, phase='siso_reproxy', remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         rbe_build_dir,
         target,
         with_remote_cache=True,
@@ -130,8 +143,9 @@ def _incremental_build_with_one_day_changes(
 
     ## Siso native
     api.chromium_build_perf.recreate_build_dir(
-        siso_build_dir, phase='siso_native', remove_deps_cache=True)
+        source_dir, siso_build_dir, phase='siso_native', remove_deps_cache=True)
     raw_result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         siso_build_dir,
         target,
         with_remote_cache=True,
@@ -139,15 +153,16 @@ def _incremental_build_with_one_day_changes(
     _raise_raw_result_on_failure(api, raw_result)
 
     # Incremental build with remote caches at the current revision.
-    api.chromium_build_perf.checkout(default_build_dir, cur_rev)
+    api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
 
     ## Ninja+Reclient
     raw_result = api.chromium_build_perf.build_with_ninja(
-        default_build_dir, target, with_remote_cache=True)
+        source_dir, default_build_dir, target, with_remote_cache=True)
     _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso+Reclient
     raw_result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         rbe_build_dir,
         target,
         with_remote_cache=True,
@@ -156,6 +171,7 @@ def _incremental_build_with_one_day_changes(
 
     ## Siso native
     raw_result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         siso_build_dir,
         target,
         with_remote_cache=True,
@@ -163,7 +179,12 @@ def _incremental_build_with_one_day_changes(
     _raise_raw_result_on_failure(api, raw_result)
 
 
-def _incremental_builds_with_patch(api, default_build_dir: Path, target):
+def _incremental_builds_with_patch(
+    api,
+    source_dir: Path,
+    default_build_dir: Path,
+    target,
+):
   """Steps to run incremental builds with a patch, which represent builds with
      local modifications.
 
@@ -230,15 +251,21 @@ def _incremental_builds_with_patch(api, default_build_dir: Path, target):
 
     # Set up build dirs for Ninja+Reclient/Siso+Reclient/Siso native builds.
     api.chromium_build_perf.recreate_build_dir(
-        default_build_dir, phase='ninja', remove_deps_cache=True)
+        source_dir, default_build_dir, phase='ninja', remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
-        build_dir_parent / 'rbe', phase='siso_reproxy', remove_deps_cache=True)
+        source_dir,
+        build_dir_parent / 'rbe',
+        phase='siso_reproxy',
+        remove_deps_cache=True)
     api.chromium_build_perf.recreate_build_dir(
-        build_dir_parent / 'siso', phase='siso_native', remove_deps_cache=True)
+        source_dir,
+        build_dir_parent / 'siso',
+        phase='siso_native',
+        remove_deps_cache=True)
 
     # Run a build at each revision.
     for i, rev in enumerate(revs):
-      api.chromium_build_perf.checkout(default_build_dir, rev)
+      api.chromium_build_perf.checkout(source_dir, default_build_dir, rev)
 
       if i == 0:
         # The warm up builds at base revision won't be included
@@ -253,6 +280,7 @@ def _incremental_builds_with_patch(api, default_build_dir: Path, target):
 
       # Ninja+Reclient
       raw_result = api.chromium_build_perf.build_with_ninja(
+          source_dir,
           default_build_dir,
           target,
           with_remote_cache=with_remote_cache,
@@ -262,6 +290,7 @@ def _incremental_builds_with_patch(api, default_build_dir: Path, target):
       # Siso+Reclient
       rbe_build_dir = build_dir_parent / 'rbe'
       raw_result = api.chromium_build_perf.build_with_siso(
+          source_dir,
           rbe_build_dir,
           target,
           with_remote_cache=with_remote_cache,
@@ -271,6 +300,7 @@ def _incremental_builds_with_patch(api, default_build_dir: Path, target):
       # Siso native build
       siso_build_dir = build_dir_parent / 'siso'
       raw_result = api.chromium_build_perf.build_with_siso(
+          source_dir,
           siso_build_dir,
           target,
           with_remote_cache=with_remote_cache,
@@ -278,35 +308,39 @@ def _incremental_builds_with_patch(api, default_build_dir: Path, target):
       _raise_raw_result_on_failure(api, raw_result)
 
 
-def _clean_builds(api, build_dir: Path, target):
+def _clean_builds(api, source_dir: Path, build_dir: Path, target):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
     # Ninja+Reclient builds.
     phase = 'ninja'
     api.chromium_build_perf.recreate_build_dir(
-        build_dir, phase=phase, remove_deps_cache=True)
+        source_dir, build_dir, phase=phase, remove_deps_cache=True)
     result = api.chromium_build_perf.build_with_ninja(
-        build_dir, target, with_remote_cache=False)
+        source_dir, build_dir, target, with_remote_cache=False)
     _raise_raw_result_on_failure(api, result)
 
-    api.chromium_build_perf.recreate_build_dir(build_dir, phase=phase)
+    api.chromium_build_perf.recreate_build_dir(
+        source_dir, build_dir, phase=phase)
     result = api.chromium_build_perf.build_with_ninja(
-        build_dir, target, with_remote_cache=True)
+        source_dir, build_dir, target, with_remote_cache=True)
 
     # Siso+Reclient builds.
     phase = 'siso_reproxy'
     step_name_suffix = ' with Siso in Reproxy mode'
     api.chromium_build_perf.recreate_build_dir(
-        build_dir, phase=phase, remove_deps_cache=True)
+        source_dir, build_dir, phase=phase, remove_deps_cache=True)
     result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         build_dir,
         target,
         with_remote_cache=False,
         step_name_suffix=step_name_suffix)
     _raise_raw_result_on_failure(api, result)
 
-    api.chromium_build_perf.recreate_build_dir(build_dir, phase=phase)
+    api.chromium_build_perf.recreate_build_dir(
+        source_dir, build_dir, phase=phase)
     result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         build_dir,
         target,
         with_remote_cache=True,
@@ -317,16 +351,19 @@ def _clean_builds(api, build_dir: Path, target):
     phase = 'siso_native'
     step_name_suffix = ' with Siso in native mode'
     api.chromium_build_perf.recreate_build_dir(
-        build_dir, phase=phase, remove_deps_cache=True)
+        source_dir, build_dir, phase=phase, remove_deps_cache=True)
     result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         build_dir,
         target,
         with_remote_cache=False,
         step_name_suffix=step_name_suffix)
     _raise_raw_result_on_failure(api, result)
 
-    api.chromium_build_perf.recreate_build_dir(build_dir, phase=phase)
+    api.chromium_build_perf.recreate_build_dir(
+        source_dir, build_dir, phase=phase)
     result = api.chromium_build_perf.build_with_siso(
+        source_dir,
         build_dir,
         target,
         with_remote_cache=True,
@@ -369,12 +406,12 @@ def RunSteps(api):
   }
   with api.context(env=env):
     # Clean builds.
-    _clean_builds(api, build_dir, target)
+    _clean_builds(api, source_dir, build_dir, target)
 
     # Incremental build with 1-day of changes. a.k.a morning build.
-    _incremental_build_with_one_day_changes(api, build_dir, target)
+    _incremental_build_with_one_day_changes(api, source_dir, build_dir, target)
 
-    _incremental_builds_with_patch(api, build_dir, target)
+    _incremental_builds_with_patch(api, source_dir, build_dir, target)
 
 
 def GenTests(api):

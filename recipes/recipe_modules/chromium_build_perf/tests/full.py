@@ -29,25 +29,30 @@ def RunSteps(api):
       builder_id, use_try_db=False)
   api.chromium_tests.configure_build(builder_config)
   source_dir = api.path.cache_dir / 'builder/src'
-  api.path.checkout_dir = source_dir
   build_dir = api.chromium.default_build_dir(source_dir)
 
   api.chromium_build_perf.build_with_ninja(
-      build_dir, 'all', with_remote_cache=True)
+      source_dir, build_dir, 'all', with_remote_cache=True)
   api.chromium_build_perf.build_with_ninja(
-      build_dir, 'all', with_remote_cache=False)
+      source_dir, build_dir, 'all', with_remote_cache=False)
   api.chromium_build_perf.build_with_siso(
-      build_dir, 'all', with_remote_cache=True)
+      source_dir, build_dir, 'all', with_remote_cache=True)
   api.chromium_build_perf.build_with_siso(
-      build_dir, 'all', with_remote_cache=False)
-  api.chromium_build_perf.build_with_siso(build_dir, 'all', use_rbe=False)
+      source_dir, build_dir, 'all', with_remote_cache=False)
+  api.chromium_build_perf.build_with_siso(
+      source_dir, build_dir, 'all', use_rbe=False)
   api.chromium_build_perf.build_with_ninja(
-      build_dir, 'all', with_remote_cache=False, step_name_suffix=' suffix')
+      source_dir,
+      build_dir,
+      'all',
+      with_remote_cache=False,
+      step_name_suffix=' suffix')
   api.file.write_raw('write .siso_deps', build_dir / '.siso_deps', 'siso deps')
-  api.chromium_build_perf.recreate_build_dir(build_dir)
-  api.chromium_build_perf.recreate_build_dir('foo')
-  api.chromium_build_perf.recreate_build_dir(build_dir, remove_deps_cache=True)
-  api.chromium_build_perf.checkout(build_dir, 'abcd')
+  api.chromium_build_perf.recreate_build_dir(source_dir, build_dir)
+  api.chromium_build_perf.recreate_build_dir(source_dir, 'foo')
+  api.chromium_build_perf.recreate_build_dir(
+      source_dir, build_dir, remove_deps_cache=True)
+  api.chromium_build_perf.checkout(source_dir, build_dir, 'abcd')
 
 
 def GenTests(api):

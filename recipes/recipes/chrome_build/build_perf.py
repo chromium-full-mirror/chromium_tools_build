@@ -37,17 +37,23 @@ def _raise_raw_result_on_failure(api, raw_result):
     raise api.step.StepFailure(raw_result.summary_markdown)
 
 
-def _compile_with_and_without_remote_cache(api, build_dir: Path, target):
+def _compile_with_and_without_remote_cache(
+    api,
+    source_dir: Path,
+    build_dir: Path,
+    target,
+):
   # First build without remote cache.
-  api.chromium_build_perf.recreate_build_dir(build_dir, remove_deps_cache=True)
+  api.chromium_build_perf.recreate_build_dir(
+      source_dir, build_dir, remove_deps_cache=True)
   raw_result = api.chromium_build_perf.build_with_ninja(
-      build_dir, target, with_remote_cache=False)
+      source_dir, build_dir, target, with_remote_cache=False)
   _raise_raw_result_on_failure(api, raw_result)
 
   # Second build with remote cache produced by the previous build.
-  api.chromium_build_perf.recreate_build_dir(build_dir)
+  api.chromium_build_perf.recreate_build_dir(source_dir, build_dir)
   raw_result = api.chromium_build_perf.build_with_ninja(
-      build_dir, target, with_remote_cache=True)
+      source_dir, build_dir, target, with_remote_cache=True)
   _raise_raw_result_on_failure(api, raw_result)
 
 
@@ -65,8 +71,7 @@ def RunSteps(api):
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
-  api.chromium.ensure_toolchains(
-      checkout_dir=api.chromium_checkout.checkout_dir)
+  api.chromium.ensure_toolchains(checkout_dir=update_result.checkout_dir)
 
   if api.code_coverage.using_coverage:
     api.profiles.source_dir = source_dir
@@ -78,7 +83,7 @@ def RunSteps(api):
     api.chromium.runhooks(source_dir, build_dir)
 
   # Build target: all
-  _compile_with_and_without_remote_cache(api, build_dir, 'all')
+  _compile_with_and_without_remote_cache(api, source_dir, build_dir, 'all')
 
 
 def GenTests(api):

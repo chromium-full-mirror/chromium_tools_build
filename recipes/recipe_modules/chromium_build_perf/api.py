@@ -26,6 +26,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
   def _build(
       self,
+      source_dir: Path,
       build_dir: Path,
       target,
       *,
@@ -69,7 +70,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     with self.m.context(env=env, cwd=self.m.path.cache_dir / 'builder'):
       try:
         return self.m.chromium.compile(
-            self.m.path.checkout_dir,
+            source_dir,
             build_dir,
             targets=[target],
             name=step_name,
@@ -86,6 +87,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
 
 
   def recreate_build_dir(self,
+                         source_dir: Path,
                          build_dir: Path,
                          *,
                          phase=None,
@@ -102,11 +104,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     builder_id = chromium.BuilderId.create_for_group(
         self.m.builder_group.for_current, self.m.buildbucket.builder_name)
     self.m.chromium.mb_gen(
-        self.m.path.checkout_dir,
-        build_dir,
-        builder_id,
-        recursive_lookup=True,
-        phase=phase)
+        source_dir, build_dir, builder_id, recursive_lookup=True, phase=phase)
     if tmp_siso_deps_path:
       self.m.file.move('restore %s' % siso_deps_path, tmp_siso_deps_path,
                        siso_deps_path)
@@ -114,11 +112,11 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       self.m.file.rmtree('rmtree %s' % self.m.reclient.deps_cache_path,
                          self.m.reclient.deps_cache_path)
 
-  def checkout(self, build_dir: Path, revision):
+  def checkout(self, source_dir: Path, build_dir: Path, revision):
     """Check out to a specified revision."""
     cfg = copy.deepcopy(self.m.gclient.c)
     cfg.revisions['src'] = revision
     with self.m.context(cwd=self.m.path.cache_dir / 'builder'):
       self.m.gclient.sync(cfg)
-      self.m.chromium.runhooks(self.m.path.checkout_dir, build_dir)
-    self.m.siso.check_version(self.m.path.checkout_dir)
+      self.m.chromium.runhooks(source_dir, build_dir)
+    self.m.siso.check_version(source_dir)
