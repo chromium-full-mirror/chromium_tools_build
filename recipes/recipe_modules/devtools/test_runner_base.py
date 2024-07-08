@@ -123,7 +123,7 @@ class DevToolsTests(ABC):
         f'out/{self.builder_config}/gen/test/run.js',
         '--artifacts-dir=${ISOLATED_OUTDIR}',
         '--skip-ninja',
-        '-v',
+        '--verbose=2',
     ]
     if self.coverage:
       command.append('--coverage')
