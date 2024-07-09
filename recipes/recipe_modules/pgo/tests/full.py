@@ -33,7 +33,7 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
 
   use_lacros = api.properties.get('use_lacros', False)
   if use_lacros:
@@ -61,7 +61,8 @@ def RunSteps(api):
     )
 
   api.chromium_tests.configure_build(builder_config)
-  api.pgo.configure_llvm_tooling_path(builder_id, is_cros=use_lacros)
+  api.pgo.configure_llvm_tooling_path(
+      source_dir, builder_id, is_cros=use_lacros)
 
   # Fake path.
   api.profiles.source_dir = api.path.start_dir
@@ -107,7 +108,7 @@ def RunSteps(api):
     api.code_coverage.shard_merge(
         step, test.target_name, additional_merge=getattr(test, '_merge', None))
 
-  api.pgo.process_pgo_data(tests)
+  api.pgo.process_pgo_data(source_dir, tests)
 
   # coverage only
   _ = api.pgo.using_pgo

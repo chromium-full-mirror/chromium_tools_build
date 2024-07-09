@@ -1499,7 +1499,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       # this by ensuring all trybots wanting to run the PGO workflow have
       # skip_profile_upload.
       if self.m.pgo.using_pgo and self.m.pgo.skip_profile_upload:
-        self.m.pgo.process_pgo_data(task.test_suites)
+        self.m.pgo.process_pgo_data(self.m.chromium_checkout.source_dir,
+                                    task.test_suites)
 
       # Exit without retries if there were invalid tests or if all tests passed
       if invalid_test_suites or not failing_test_suites:
@@ -1674,7 +1675,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if self.m.pgo.using_pgo:
       is_cros = self.m.chromium.c.TARGET_PLATFORM == 'chromeos'
-      self.m.pgo.configure_llvm_tooling_path(builder_id, is_cros=is_cros)
+      self.m.pgo.configure_llvm_tooling_path(
+          self.m.chromium_checkout.source_dir, builder_id, is_cros=is_cros)
 
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
@@ -2814,7 +2816,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         self.m.code_coverage.process_coverage_data(tests)
 
       if self.m.pgo.using_pgo:
-        self.m.pgo.process_pgo_data(tests)
+        self.m.pgo.process_pgo_data(self.m.chromium_checkout.source_dir, tests)
 
       test_success = True
       if test_failure_summary:
