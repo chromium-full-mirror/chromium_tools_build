@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import contextlib
 import itertools
 import traceback
 
@@ -1231,10 +1232,11 @@ class TestGroup:
     """
     raise NotImplementedError()
 
-  def _run_func(self, test_func, api, suffix):
-    """Runs a function on a test, and handles errors appropriately."""
+  @contextlib.contextmanager
+  def _handle_test_errors(self, api):
+    """Handle errors from running a function on a test."""
     try:
-      test_func(suffix)
+      yield
     except api.step.InfraFailure:
       raise
     except api.step.StepFailure:
@@ -1329,12 +1331,14 @@ class LocalGroup(TestGroup):
   def pre_run(self, api, suffix):
     """Executes the |pre_run| method of each test."""
     for t in self._test_suites:
-      self._run_func(t.pre_run, api, suffix)
+      with self._handle_test_errors(api):
+        t.pre_run(suffix)
 
   def run(self, api, suffix):
     """Executes the |run| method of each test."""
     for t in self._test_suites:
-      self._run_func(t.run, api, suffix)
+      with self._handle_test_errors(api):
+        t.run(suffix)
       self.fetch_rdb_results(t, suffix, api.flakiness)
 
     self.include_rdb_invocation(
@@ -1467,7 +1471,8 @@ class SkylabGroup(TestGroup):
       # can not separate the flaky tests and deterministic failures.
       self.fetch_rdb_results(
           t, suffix, api.flakiness, force_fetch_all_results=True)
-      self._run_func(t.run, api, suffix)
+      with self._handle_test_errors(api):
+        t.run(suffix)
 
     self.include_rdb_invocation(
         suffix, step_name='include skylab_test_runner invocations')
