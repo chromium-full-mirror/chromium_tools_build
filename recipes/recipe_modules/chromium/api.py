@@ -460,7 +460,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           retcode=ninja_step_result.retcode)
 
     finally:
-      if not self.m.runtime.in_global_shutdown:
+      if not self.m.runtime.in_global_shutdown and not skip_log_upload:
         clang_crashreports_script = (
             source_dir / 'tools/clang/scripts/process_crashreports.py')
         if self.m.path.exists(clang_crashreports_script):
