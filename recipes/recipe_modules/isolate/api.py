@@ -5,6 +5,7 @@
 import itertools
 
 from recipe_engine import recipe_api
+from recipe_engine.config_types import Path
 
 
 # Only surface up to these many isolate hashes via properties, to avoid
@@ -230,7 +231,13 @@ class IsolateApi(recipe_api.RecipeApi):
 
     return self.m.step(name, cmd, **kwargs)
 
-  def archive_differences(self, first_dir, second_dir, values):
+  def archive_differences(
+      self,
+      source_dir: Path,
+      first_dir: str,
+      second_dir: str,
+      values,
+  ):
     """Archive different files of 2 builds."""
     GS_BUCKET = 'chrome-determinism'
     TARBALL_NAME = 'deterministic_build_diffs.tgz'
@@ -261,8 +268,7 @@ class IsolateApi(recipe_api.RecipeApi):
     output = self.m.path.join(t, TARBALL_NAME)
     self.m.step('create tarball', [
         'python3',
-        self.m.path.join(self.m.path.checkout_dir, 'tools', 'determinism',
-                         'create_diffs_tarball.py'),
+        source_dir / 'tools/determinism/create_diffs_tarball.py',
         '--first-build-dir',
         first_dir,
         '--second-build-dir',
@@ -277,12 +283,16 @@ class IsolateApi(recipe_api.RecipeApi):
         '{}/{}/{}'.format(self.m.properties['buildername'],
                           self.m.properties['buildnumber'], TARBALL_NAME))
 
-  def compare_build_artifacts(self, first_dir, second_dir):
+  def compare_build_artifacts(
+      self,
+      source_dir: Path,
+      first_dir: str,
+      second_dir: str,
+  ):
     """Compare the artifacts from 2 builds."""
     cmd = [
         'python3',
-        self.m.path.join(self.m.path.checkout_dir, 'tools', 'determinism',
-                         'compare_build_artifacts.py'),
+        source_dir / 'tools/determinism/compare_build_artifacts.py',
         '--first-build-dir',
         first_dir,
         '--second-build-dir',
@@ -292,7 +302,7 @@ class IsolateApi(recipe_api.RecipeApi):
         '--json-output',
         self.m.json.output(),
         '--ninja-path',
-        self.m.path.checkout_dir.joinpath('third_party', 'ninja', 'ninja'),
+        source_dir / 'third_party/ninja/ninja',
         '--use-isolate-files',
     ]
     try:
@@ -304,14 +314,16 @@ class IsolateApi(recipe_api.RecipeApi):
                 'expected_diffs': ['flatc'],
                 'unexpected_diffs': ['base_unittest'],
             })))
-      self.archive_differences(first_dir, second_dir, step_result.json.output)
+      self.archive_differences(source_dir, first_dir, second_dir,
+                               step_result.json.output)
     except self.m.step.StepFailure as e:
       step_result = self.m.step.active_result
       step_result.presentation.step_text = (
           'See https://chromium.googlesource.com'
           '/chromium/src/+/HEAD/docs/deterministic_builds.md'
           '#handling-failures-on-the-deterministic-bots')
-      self.archive_differences(first_dir, second_dir, step_result.json.output)
+      self.archive_differences(source_dir, first_dir, second_dir,
+                               step_result.json.output)
       raise e
 
   def write_isolate_file(self, isolate_path, files_to_isolate):
@@ -330,8 +342,13 @@ class IsolateApi(recipe_api.RecipeApi):
         }},
         indent=2)
 
-  def write_isolate_files_for_binary_file_paths(self, file_paths,
-                                                isolate_target_name, build_dir):
+  def write_isolate_files_for_binary_file_paths(
+      self,
+      file_paths,
+      isolate_target_name,
+      source_dir: Path,
+      build_dir: Path,
+  ):
     """Writes .isolate and .isolated.gen.json files for binary files.
 
     After these .isolate and .isolated.gen.json files are written,
@@ -361,10 +378,10 @@ class IsolateApi(recipe_api.RecipeApi):
                 str(
                     self.m.path.relpath(
                         '%s/%s.isolate' % (build_dir, isolate_target_name),
-                        self.m.path.checkout_dir,
+                        source_dir,
                     )),
             ],
-            'dir': str(self.m.path.checkout_dir),
+            'dir': str(source_dir),
             'version': 1,
         },
         indent=2,

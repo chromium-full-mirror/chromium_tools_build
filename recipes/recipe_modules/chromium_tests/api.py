@@ -624,7 +624,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             isolated_tests)
 
         self.m.isolate.write_isolate_files_for_binary_file_paths(
-            file_paths, ALL_TEST_BINARIES_ISOLATE_NAME, build_dir)
+            file_paths, ALL_TEST_BINARIES_ISOLATE_NAME,
+            self.m.chromium_checkout.source_dir, build_dir)
 
         additional_isolate_targets.append(ALL_TEST_BINARIES_ISOLATE_NAME)
 

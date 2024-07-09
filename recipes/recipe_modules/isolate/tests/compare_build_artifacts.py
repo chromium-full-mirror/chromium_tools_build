@@ -15,9 +15,9 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
 
-  api.isolate.compare_build_artifacts('first_dir', 'second_dir')
+  api.isolate.compare_build_artifacts(source_dir, 'first_dir', 'second_dir')
 
 
 def GenTests(api):

@@ -267,7 +267,7 @@ def RunSteps(api):
   if not check_different_build_dirs:
     first_dir = first_dir.rstrip('\\/') + '.1'
   api.isolate.compare_build_artifacts(
-      first_dir,
+      source_dir, first_dir,
       str(default_build_dir).rstrip('\\/') + '.2')
 
 

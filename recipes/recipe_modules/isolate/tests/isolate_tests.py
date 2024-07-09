@@ -13,10 +13,9 @@ DEPS = [
 ]
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
   api.isolate.isolate_tests(
-      api.path.checkout_dir.joinpath('out', 'Release'),
-      targets=['dummy_target_1', 'dummy_target_2'])
+      source_dir / 'out/Release', targets=['dummy_target_1', 'dummy_target_2'])
 
 
 def GenTests(api):
