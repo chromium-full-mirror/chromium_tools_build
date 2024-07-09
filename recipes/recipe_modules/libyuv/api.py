@@ -164,16 +164,19 @@ class LibyuvApi(recipe_api.RecipeApi):
     with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
       with self.m.defer.context() as defer:
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
-          defer(self.m.chromium_android.common_tests_setup_steps)
+          source_dir = self.m.chromium_checkout.source_dir
+          defer(self.m.chromium_android.common_tests_setup_steps, source_dir)
           defer(
               self.m.chromium_android.run_test_suite,
+              source_dir,
               build_dir,
               'libyuv_unittest',
           )
           defer(self.m.chromium_android.shutdown_device_monitor)
-          defer(self.m.chromium_android.logcat_dump, build_dir)
+          defer(self.m.chromium_android.logcat_dump, source_dir, build_dir)
           defer(
               self.m.chromium_android.stack_tool_steps,
+              source_dir,
               force_latest_version=True)
         else:
           # Ignoring --no-sandbox because libyuv uses absl/flags which

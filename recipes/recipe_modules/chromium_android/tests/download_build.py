@@ -17,13 +17,18 @@ DEPS = [
 def RunSteps(api):
   api.gclient.set_config('chromium')
   # Sets api.path.checkout_dir.
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
+  source_dir = update_result.source_root.path
   globs = api.properties.get('globs')
   # properties convert list to tuples.
   if globs:
     globs = list(globs)
-  api.chromium_android.download_build('test-bucket', 'test/path',
-                                      api.properties.get('extract_path'), globs)
+  api.chromium_android.download_build(
+      source_dir,
+      'test-bucket',
+      'test/path',
+      extract_path=api.properties.get('extract_path'),
+      globs=globs)
 
 
 def GenTests(api):

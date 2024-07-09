@@ -12,8 +12,8 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-  api.chromium_android.get_changed_lines_for_revision()
+  source_dir = api.path.cache_dir / 'builder/src'
+  api.chromium_android.get_changed_lines_for_revision(source_dir)
 
 
 def GenTests(api):

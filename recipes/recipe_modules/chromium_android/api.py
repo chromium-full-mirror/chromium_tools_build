@@ -28,13 +28,14 @@ class AndroidApi(recipe_api.RecipeApi):
         'devices is only available after device_status()'
     return self._devices
 
-  def adb_path(self) -> Path:
-    return (self._adb_path or
-            self.m.adb.default_adb_path(self.m.path.checkout_dir))
+  def adb_path(self, source_dir: Path) -> Path:
+    return (self._adb_path or self.m.adb.default_adb_path(source_dir))
 
-  @property
-  def out_path(self):
-    return self.m.path.checkout_dir / 'out'
+  def out_path(self, source_dir: Path) -> Path:
+    return source_dir / 'out'
+
+  def devil_dir(self, source_dir: Path) -> Path:
+    return source_dir / 'third_party/catapult/devil'
 
   @property
   def known_devices_file(self):
@@ -112,25 +113,24 @@ class AndroidApi(recipe_api.RecipeApi):
       refs = [refs]
     result = self.m.bot_update.ensure_checkout(
         spec, refs=refs, with_branch_heads=with_branch_heads)
+    source_dir = result.source_root.path
 
-    self.clean_local_files()
+    self.clean_local_files(source_dir)
 
     return result
 
-  def clean_local_files(self):
+  def clean_local_files(self, source_dir: Path):
     target = self.c.BUILD_CONFIG
-    debug_info_dumps = self.m.path.checkout_dir.joinpath(
-        'out', target, 'debug_info_dumps')
-    test_logs = self.m.path.checkout_dir.joinpath('out', target, 'test_logs')
-    build_product = self.m.path.checkout_dir.joinpath('out',
-                                                      'build_product.zip')
+    debug_info_dumps = source_dir / f'out/{target}/debug_info_dumps'
+    test_logs = source_dir / f'out/{target}/test_logs'
+    build_product = source_dir / 'out/build_product.zip'
     cmd = [
         'vpython3',
         self.resource('clean_local_files.py'),
         debug_info_dumps,
         test_logs,
         build_product,
-        self.m.path.checkout_dir,
+        source_dir,
     ]
     self.m.step('clean local files', cmd, infra_step=True)
 
@@ -144,17 +144,16 @@ class AndroidApi(recipe_api.RecipeApi):
     repos = list(update_result.fixed_revisions)
     if additional_repos:
       repos.extend(additional_repos)
-    self.m.step('tree truth steps', [
-        self.m.path.checkout_dir.joinpath('build', 'tree_truth.sh'),
-        self.m.path.checkout_dir
-    ] + repos)
+    source_dir = update_result.source_root.path
+    self.m.step('tree truth steps',
+                [source_dir / 'build/tree_truth.sh', source_dir] + repos)
 
-  def upload_build(self, bucket, path):
+  def upload_build(self, source_dir: Path, bucket, path):
     archive_name = 'build_product.zip'
 
-    zipfile = self.m.path.checkout_dir.joinpath('out', archive_name)
+    zipfile = source_dir / f'out/{archive_name}'
 
-    with self.m.context(cwd=self.m.path.checkout_dir):
+    with self.m.context(cwd=source_dir):
       self.make_zip_archive(
           'zip_build_product',
           archive_name,
@@ -174,11 +173,17 @@ class AndroidApi(recipe_api.RecipeApi):
     self.m.gsutil.upload(
         name='upload_build_product', source=zipfile, bucket=bucket, dest=path)
 
-  def download_build(self, bucket, path, extract_path=None, globs=None):
-    zipfile = self.m.path.checkout_dir.joinpath('out', 'build_product.zip')
+  def download_build(self,
+                     source_dir: Path,
+                     bucket,
+                     path,
+                     *,
+                     extract_path=None,
+                     globs=None):
+    zipfile = source_dir / 'out/build_product.zip'
     self.m.gsutil.download(
         name='download_build_product', bucket=bucket, source=path, dest=zipfile)
-    extract_path = extract_path or self.m.path.checkout_dir
+    extract_path = extract_path or source_dir
     globs = globs or []
     with self.m.context(cwd=extract_path):
       self.m.step(
@@ -187,21 +192,20 @@ class AndroidApi(recipe_api.RecipeApi):
           infra_step=True,
       )
 
-  def use_devil_adb(self):
+  def use_devil_adb(self, source_dir: Path):
     # TODO(crbug.com/1067294): Remove this after resolving.
-    devil_path = self.m.path.checkout_dir.joinpath('third_party', 'catapult',
-                                                   'devil')
+    devil_path = self.devil_dir(source_dir)
     cmd = ['vpython3', self.resource('initialize_devil.py'), devil_path]
     self.m.step('initialize devil', cmd)
     self._adb_path = devil_path / 'bin/deps/linux2/x86_64/bin/adb'
 
-  def create_adb_symlink(self):
+  def create_adb_symlink(self, source_dir: Path):
     # Creates a sym link to the adb executable in the home dir
     cmd = [
         'vpython3',
-        self.m.path.checkout_dir.joinpath('build', 'symlink.py'),
+        source_dir / 'build/symlink.py',
         '-f',
-        self.adb_path(),
+        self.adb_path(source_dir),
         self.m.path.join('~', 'adb'),
     ]
     self.m.step('create adb symlink', cmd, infra_step=True)
@@ -210,25 +214,24 @@ class AndroidApi(recipe_api.RecipeApi):
   def _logcat_dir(self):
     return self.m.path.cleanup_dir / 'logcat'
 
-  def spawn_logcat_monitor(self):
-    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+  def spawn_logcat_monitor(self, source_dir: Path):
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
       self.m.step(
           'spawn_logcat_monitor',
           [
               'vpython3',
               self.repo_resource('recipes', 'daemonizer.py'),
               '--',
-              self.m.path.checkout_dir / 'build/android/adb_logcat_monitor.py',
+              source_dir / 'build/android/adb_logcat_monitor.py',
               self._logcat_dir,
-              self.adb_path(),
+              self.adb_path(source_dir),
           ],
           infra_step=True,
       )
 
-  def spawn_device_monitor(self):
-    device_monitor_script = self.m.path.checkout_dir.joinpath(
-        'third_party', 'catapult', 'devil', 'devil', 'android', 'tools',
-        'device_monitor.py')
+  def spawn_device_monitor(self, source_dir: Path):
+    device_monitor_script = (
+        self.devil_dir(source_dir) / 'devil/android/tools/device_monitor.py')
     self.m.step(
         'spawn_device_monitor',
         [
@@ -241,9 +244,9 @@ class AndroidApi(recipe_api.RecipeApi):
             '--',
             device_monitor_script,
             '--adb-path',
-            self.adb_path(),
+            self.adb_path(source_dir),
             '--denylist-file',
-            self.denylist_file,
+            self.denylist_file(source_dir),
         ],
         infra_step=True,
     )
@@ -262,8 +265,8 @@ class AndroidApi(recipe_api.RecipeApi):
         infra_step=True,
     )
 
-  def authorize_adb_devices(self):
-    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+  def authorize_adb_devices(self, source_dir: Path):
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
       return self.m.step(
           'authorize_adb_devices',
           [
@@ -271,27 +274,27 @@ class AndroidApi(recipe_api.RecipeApi):
               self.resource('authorize_adb_devices.py'),
               '--verbose',
               '--adb-path',
-              self.adb_path(),
+              self.adb_path(source_dir),
           ],
           infra_step=True,
       )
 
-  @property
-  def denylist_file(self):
-    return self.out_path / 'bad_devices.json'
+  def denylist_file(self, source_dir: Path) -> Path:
+    return self.out_path(source_dir) / 'bad_devices.json'
 
-  def non_denylisted_devices(self):
-    if not self.m.path.exists(self.denylist_file):
+  def non_denylisted_devices(self, source_dir: Path):
+    denylist_file = self.denylist_file(source_dir)
+    if not self.m.path.exists(denylist_file):
       return self.devices
     denylisted_devices = self.m.file.read_json('read_denylist_file',
-                                               self.denylist_file)
+                                               denylist_file)
     return [s for s in self.devices if s not in denylisted_devices]
 
-  def device_status_check(self):
-    self.device_recovery()
-    return self.device_status()
+  def device_status_check(self, source_dir: Path):
+    self.device_recovery(source_dir)
+    return self.device_status(source_dir)
 
-  def host_info(self, args=None, **kwargs):
+  def host_info(self, source_dir: Path, *, args=None, **kwargs):
     args = args or []
     results = None
     try:
@@ -300,14 +303,9 @@ class AndroidApi(recipe_api.RecipeApi):
           known_devices_arg = ['--known-devices-file', self.known_devices_file]
           args.extend(['--args', self.m.json.input(known_devices_arg)])
         args.extend(['run', '--output', self.m.json.output()])
-        with self.m.context(
-            env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+        with self.m.context(env=self.m.chromium.get_env(source_dir)):
           results = self.m.step(
-              'Host Info',
-              [
-                  self.m.path.checkout_dir.joinpath('testing', 'scripts',
-                                                    'host_info.py')
-              ] + args,
+              'Host Info', [source_dir / 'testing/scripts/host_info.py'] + args,
               infra_step=True,
               step_test_data=lambda: self.m.json.test_api.output({
                   'valid': True,
@@ -361,49 +359,46 @@ class AndroidApi(recipe_api.RecipeApi):
         f.result.presentation.logs[failure] = [failure]
       f.result.presentation.status = self.m.step.EXCEPTION
 
-  def device_recovery(self, **kwargs):
+  def device_recovery(self, source_dir: Path, **kwargs):
     cmd = [
         'vpython3',
-        self.m.path.checkout_dir.joinpath('third_party', 'catapult', 'devil',
-                                          'devil', 'android', 'tools',
-                                          'device_recovery.py'),
+        (self.devil_dir(source_dir) /
+         '/devil/android/tools/device_recovery.py'),
         '--denylist-file',
-        self.denylist_file,
+        self.denylist_file(source_dir),
         '--known-devices-file',
         self.known_devices_file,
         '--adb-path',
-        self.adb_path(),
+        self.adb_path(source_dir),
         '-v',
     ]
-    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
       self.m.step('device_recovery', cmd, infra_step=True, **kwargs)
 
-  def device_status(self, **kwargs):
+  def device_status(self, source_dir: Path, **kwargs):
     buildbot_file = '/home/chrome-bot/.adb_device_info'
     args = [
         '--json-output',
         self.m.json.output(),
         '--denylist-file',
-        self.denylist_file,
+        self.denylist_file(source_dir),
         '--known-devices-file',
         self.known_devices_file,
         '--buildbot-path',
         buildbot_file,
         '--adb-path',
-        self.adb_path(),
+        self.adb_path(source_dir),
         '-v',
         '--overwrite-known-devices-files',
     ]
     try:
-      with self.m.context(
-          env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+      with self.m.context(env=self.m.chromium.get_env(source_dir)):
         result = self.m.step(
             'device_status',
             [
                 'vpython3',
-                self.m.path.checkout_dir.joinpath('third_party', 'catapult',
-                                                  'devil', 'devil', 'android',
-                                                  'tools', 'device_status.py')
+                (self.devil_dir(source_dir) /
+                 'devil/android/tools/device_status.py')
             ] + args,
             step_test_data=lambda: self.m.json.test_api.output([{
                 "battery": {
@@ -491,25 +486,26 @@ class AndroidApi(recipe_api.RecipeApi):
       raise
 
   def provision_devices(self,
+                        source_dir: Path,
+                        *,
                         skip_wipe=False,
                         disable_location=False,
                         reboot_timeout=None,
                         emulators=False,
                         **kwargs):
     if self.c and self.c.use_devil_provision:
-      provision_path = self.m.path.checkout_dir.joinpath(
-          'third_party', 'catapult', 'devil', 'devil', 'android', 'tools',
-          'provision_devices.py')
+      provision_path = (
+          self.devil_dir(source_dir) /
+          'devil/android/tools/provision_devices.py')
     else:
-      provision_path = self.m.path.checkout_dir.joinpath(
-          'build', 'android', 'provision_devices.py')
+      provision_path = source_dir / 'build/android/provision_devices.py'
     cmd = [
         'vpython3',
         provision_path,
         '--adb-path',
-        self.adb_path(),
+        self.adb_path(source_dir),
         '--denylist-file',
-        self.denylist_file,
+        self.denylist_file(source_dir),
         '--output-device-denylist',
         self.m.json.output(add_json_log=False),
         '-t',
@@ -531,27 +527,26 @@ class AndroidApi(recipe_api.RecipeApi):
       cmd.append('--chrome-specific-wipe')
     if emulators:
       cmd.append('--emulators')
-    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
       with self.handle_exit_codes():
         return self.m.step('provision_devices', cmd, infra_step=True, **kwargs)
 
   def adb_install_apk(self,
+                      source_dir: Path,
                       apk,
+                      *,
                       allow_downgrade=False,
                       keep_data=False,
                       devices=None):
     install_cmd = [
-        self.m.path.checkout_dir.joinpath('build', 'android',
-                                          'adb_install_apk.py'),
+        source_dir / 'build/android/adb_install_apk.py',
         apk,
         '-v',
         '--denylist-file',
-        self.denylist_file,
+        self.denylist_file(source_dir),
     ]
-    if int(
-        self.m.chromium.get_version(self.m.path.checkout_dir).get('MAJOR',
-                                                                  0)) > 50:
-      install_cmd += ['--adb-path', self.adb_path()]
+    if int(self.m.chromium.get_version(source_dir).get('MAJOR', 0)) > 50:
+      install_cmd += ['--adb-path', self.adb_path(source_dir)]
     if devices and isinstance(devices, list):
       for d in devices:
         install_cmd += ['-d', d]
@@ -561,29 +556,35 @@ class AndroidApi(recipe_api.RecipeApi):
       install_cmd.append('--keep_data')
     if self.m.chromium.c.BUILD_CONFIG == 'Release':
       install_cmd.append('--release')
-    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
       return self.m.step(
           'install ' + self.m.path.basename(apk), install_cmd, infra_step=True)
 
-  def monkey_test(self, build_dir: Path, **kwargs):
+  def monkey_test(self, source_dir: Path, build_dir: Path, **kwargs):
     args = [
         'monkey',
         '-v',
         '--browser=%s' % self.c.channel,
         '--event-count=50000',
         '--denylist-file',
-        self.denylist_file,
+        self.denylist_file(source_dir),
     ]
     with self.m.context(env={'BUILDTYPE': self.c.BUILD_CONFIG}):
-      return self.test_runner(build_dir, 'Monkey Test', args=args, **kwargs)
+      return self.test_runner(
+          source_dir, build_dir, 'Monkey Test', args=args, **kwargs)
 
-  def create_result_details(self, step_name, json_results_file):
+  def create_result_details(
+      self,
+      source_dir: Path,
+      step_name,
+      json_results_file,
+  ):
     try:
       cmd = [
           'vpython3',
-          self.m.path.checkout_dir.joinpath('build', 'android', 'pylib',
-                                            'results', 'presentation',
-                                            'test_results_presentation.py'),
+          (source_dir /
+           'build/android/pylib/results/presentation/test_results_presentation.py'
+          ),
           '--json-file',
           json_results_file,
           '--test-name',
@@ -613,13 +614,12 @@ class AndroidApi(recipe_api.RecipeApi):
       return ('https://storage.googleapis.com/chromium-result-details/'
               'UploadQuietFailure.txt')
 
-  def logcat_dump(self, build_dir: Path):
+  def logcat_dump(self, source_dir: Path, build_dir: Path):
     if self.c.logcat_bucket:
       log_path = build_dir / 'full_log'
       cmd = [
           'vpython3',
-          self.m.path.checkout_dir.joinpath('build', 'android',
-                                            'adb_logcat_printer.py'),
+          source_dir / 'build/android/adb_logcat_printer.py',
           '--output-path',
           log_path,
           self._logcat_dir,
@@ -643,8 +643,7 @@ class AndroidApi(recipe_api.RecipeApi):
           self.repo_resource('recipes', 'tee.py'),
           build_dir / 'full_log',
           '--',
-          self.m.path.checkout_dir.joinpath('build', 'android',
-                                            'adb_logcat_printer.py'),
+          source_dir / 'build/android/adb_logcat_printer.py',
           self._logcat_dir,
       ]
       self.m.step('logcat_dump', cmd, infra_step=True)
@@ -677,18 +676,17 @@ class AndroidApi(recipe_api.RecipeApi):
     self.m.step(('generate breakpad symbols for %s' %
                  self.m.path.basename(binary_path)), cmd)
 
-  def stackwalker(self, root_chromium_dir, binary_paths):
+  def stackwalker(self, source_dir: Path, binary_paths):
     """Runs stack walker tool to symbolize breakpad crashes.
 
     This step requires logcat file. The logcat monitor must have
     been run on the bot.
 
     Args:
+      source_dir: The path to the top-level repo.
       binary_paths: Paths to binaries to generate breakpad symbols.
-      root_chromium_dir: Root Chromium directory.
     """
-    build_dir = root_chromium_dir.joinpath('out',
-                                           self.m.chromium.c.BUILD_CONFIG)
+    build_dir = self.m.chromium.default_build_dir(source_dir)
     logcat = build_dir / 'full_log'
 
     dump_syms_path = build_dir / 'dump_syms'
@@ -714,12 +712,10 @@ class AndroidApi(recipe_api.RecipeApi):
     # know there is at least one breakpad crash. This step takes
     # several minutes and we should only run it if we need to.
     for binary in binary_paths:
-      self.generate_breakpad_symbols(temp_symbols_dir, binary,
-                                     root_chromium_dir)
+      self.generate_breakpad_symbols(temp_symbols_dir, binary, source_dir)
     cmd = [
         'vpython3',
-        root_chromium_dir.joinpath('build', 'android', 'stacktrace',
-                                   'stackwalker.py'),
+        source_dir / 'build/android/stacktrace/stackwalker.py',
         '--stackwalker-binary-path',
         microdump_stackwalk_path,
         '--stack-trace-path',
@@ -729,9 +725,8 @@ class AndroidApi(recipe_api.RecipeApi):
     ]
     self.m.step('symbolized breakpad crashes', cmd)
 
-  def stack_tool_steps(self, force_latest_version=False):
-    build_dir = self.m.path.checkout_dir.joinpath(
-        'out', self.m.chromium.c.BUILD_CONFIG)
+  def stack_tool_steps(self, source_dir: Path, *, force_latest_version=False):
+    build_dir = source_dir / f'out/{self.m.chromium.c.BUILD_CONFIG}'
     log_file = build_dir / 'full_log'
 
     target_arch = self.m.chromium.get_build_target_arch()
@@ -741,61 +736,67 @@ class AndroidApi(recipe_api.RecipeApi):
     # failures on older script versions (e.g. when doing bisects).
     # TODO(agrieve): Switch to --output-directory once we don't need bisects
     #     to be able to try revisions that happened before Feb 2016.
-    env = self.m.chromium.get_env(self.m.path.checkout_dir)
+    env = self.m.chromium.get_env(source_dir)
     env['CHROMIUM_OUTPUT_DIR'] = str(build_dir)
     with self.m.context(env=env):
       self.m.step(
           'stack_tool_with_logcat_dump', [
-              self.m.path.checkout_dir.joinpath(
-                  'third_party', 'android_platform', 'development', 'scripts',
-                  'stack'), '--arch', target_arch, '--more-info', log_file
+              (source_dir /
+               'third_party/android_platform/development/scripts/stack'),
+              '--arch',
+              target_arch,
+              '--more-info',
+              log_file,
           ],
           infra_step=True)
     tombstones_cmd = [
-        self.m.path.checkout_dir.joinpath('build', 'android', 'tombstones.py'),
+        source_dir / 'build/android/tombstones.py',
         '-a',
         '-s',
         '-w',
     ]
-    if (force_latest_version or int(
-        self.m.chromium.get_version(self.m.path.checkout_dir).get('MAJOR', 0))
-        > 52):
-      tombstones_cmd += ['--adb-path', self.adb_path()]
+    if (force_latest_version or
+        int(self.m.chromium.get_version(source_dir).get('MAJOR', 0)) > 52):
+      tombstones_cmd += ['--adb-path', self.adb_path(source_dir)]
     with self.m.context(env=env):
       self.m.step('stack_tool_for_tombstones', tombstones_cmd, infra_step=True)
 
-  def common_tests_setup_steps(self, **provision_kwargs):
+  def common_tests_setup_steps(self, source_dir: Path, **provision_kwargs):
     if self.c.use_devil_adb:
-      self.use_devil_adb()
-    self.create_adb_symlink()
-    self.spawn_logcat_monitor()
-    self.spawn_device_monitor()
-    self.authorize_adb_devices()
-    self.device_recovery()
-    self.provision_devices(**provision_kwargs)
-    self.device_status()
+      self.use_devil_adb(source_dir)
+    self.create_adb_symlink(source_dir)
+    self.spawn_logcat_monitor(source_dir)
+    self.spawn_device_monitor(source_dir)
+    self.authorize_adb_devices(source_dir)
+    self.device_recovery(source_dir)
+    self.provision_devices(source_dir, **provision_kwargs)
+    self.device_status(source_dir)
 
   def common_tests_final_steps(self,
+                               source_dir: Path,
                                build_dir: Path,
                                *,
                                force_latest_version=False,
-                               checkout_dir=None):
+                               run_stackwalker=False):
     self.shutdown_device_monitor()
-    self.logcat_dump(build_dir)
-    self.stack_tool_steps(force_latest_version)
+    self.logcat_dump(source_dir, build_dir)
+    self.stack_tool_steps(source_dir, force_latest_version=force_latest_version)
 
-    if checkout_dir:
+    if run_stackwalker:
       binary_dir = build_dir / 'lib.unstripped'
       breakpad_binaries = [binary_dir / 'libchrome.so']
       if self.m.path.exists(binary_dir / 'libwebviewchromium.so'):
         breakpad_binaries.append(binary_dir / 'libwebviewchromium.so')
-      self.stackwalker(
-          root_chromium_dir=checkout_dir, binary_paths=breakpad_binaries)
+      self.stackwalker(source_dir=source_dir, binary_paths=breakpad_binaries)
 
-  def run_bisect_script(self, extra_src='', path_to_config='', **kwargs):
+  def run_bisect_script(self,
+                        source_dir: Path,
+                        *,
+                        extra_src='',
+                        path_to_config='',
+                        **kwargs):
     self.m.step('prepare bisect perf regression', [
-        self.m.path.checkout_dir.joinpath(
-            'tools', 'prepare-bisect-perf-regression.py'), '-w',
+        source_dir / 'tools/prepare-bisect-perf-regression.py', '-w',
         self.m.path.start_dir
     ])
 
@@ -805,12 +806,12 @@ class AndroidApi(recipe_api.RecipeApi):
     if path_to_config:
       args = args + ['--path_to_config', path_to_config]
     self.m.step('run bisect perf regression', [
-        self.m.path.checkout_dir.joinpath(
-            'tools', 'run-bisect-perf-regression.py'), '-w',
+        source_dir / 'tools/run-bisect-perf-regression.py', '-w',
         self.m.path.start_dir
     ] + args, **kwargs)
 
   def run_test_suite(self,
+                     source_dir: Path,
                      build_dir: Path,
                      suite,
                      *,
@@ -823,7 +824,7 @@ class AndroidApi(recipe_api.RecipeApi):
                      args=None,
                      **kwargs):
     args = args or []
-    args.extend(['--denylist-file', self.denylist_file])
+    args.extend(['--denylist-file', self.denylist_file(source_dir)])
     if verbose:
       args.append('--verbose')
     if result_details and not json_results_file:
@@ -838,9 +839,9 @@ class AndroidApi(recipe_api.RecipeApi):
       args.extend(['-t', str(shard_timeout)])
     step_name = name or str(suite)
     try:
-      with self.m.context(
-          env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+      with self.m.context(env=self.m.chromium.get_env(source_dir)):
         self.test_runner(
+            source_dir,
             build_dir,
             step_name,
             args=args,
@@ -853,11 +854,13 @@ class AndroidApi(recipe_api.RecipeApi):
             hasattr(result_step.test_utils, 'gtest_results')):
           json_results = self.m.json.input(
               result_step.test_utils.gtest_results.raw)
-          details_link = self.create_result_details(step_name, json_results)
+          details_link = self.create_result_details(source_dir, step_name,
+                                                    json_results)
           self.m.step.active_result.presentation.links[_RESULT_DETAILS_LINK] = (
               details_link)
 
   def run_java_unit_test_suite(self,
+                               source_dir: Path,
                                build_dir: Path,
                                suite,
                                *,
@@ -877,8 +880,9 @@ class AndroidApi(recipe_api.RecipeApi):
     if additional_args:
       args.extend(additional_args)
 
-    with self.m.context(env=self.m.chromium.get_env(self.m.path.checkout_dir)):
+    with self.m.context(env=self.m.chromium.get_env(source_dir)):
       return self.test_runner(
+          source_dir,
           build_dir,
           '%s%s' % (str(suite), ' (%s)' % suffix if suffix else ''),
           args=args,
@@ -886,7 +890,7 @@ class AndroidApi(recipe_api.RecipeApi):
           pass_adb_path=False,
           **kwargs)
 
-  def get_changed_lines_for_revision(self):
+  def get_changed_lines_for_revision(self, source_dir: Path):
     """Saves a JSON file containing the files/lines requiring coverage analysis.
 
     Saves a JSON object mapping file paths to lists of changed lines to the
@@ -897,7 +901,7 @@ class AndroidApi(recipe_api.RecipeApi):
     blame_cached_revision = '0000000000000000000000000000000000000000'
 
     file_changes = {}
-    new_files = self.staged_files_matching_filter('A')
+    new_files = self.staged_files_matching_filter(source_dir, 'A')
     for new_file in new_files:
       lines = self.m.file.read_text(
           ('Finding lines changed in added file %s' % new_file),
@@ -905,9 +909,9 @@ class AndroidApi(recipe_api.RecipeApi):
           test_data='int n = 0;\nn++;\nfor (int i = 0; i < n; i++) {')
       file_changes[new_file] = range(1, len(lines.splitlines()) + 1)
 
-    changed_files = self.staged_files_matching_filter('M')
+    changed_files = self.staged_files_matching_filter(source_dir, 'M')
     for changed_file in changed_files:
-      with self.m.context(cwd=self.m.path.checkout_dir):
+      with self.m.context(cwd=source_dir):
         blame = self.m.git(
             'blame',
             '-l',
@@ -928,7 +932,7 @@ class AndroidApi(recipe_api.RecipeApi):
                            self.file_changes_path,
                            self.m.json.dumps(file_changes))
 
-  def staged_files_matching_filter(self, diff_filter):
+  def staged_files_matching_filter(self, source_dir: Path, diff_filter):
     """Returns list of files changed matching the provided diff-filter.
 
     Args:
@@ -937,7 +941,7 @@ class AndroidApi(recipe_api.RecipeApi):
     Returns:
       A list of file paths (strings) matching the provided |diff-filter|.
     """
-    with self.m.context(cwd=self.m.path.checkout_dir):
+    with self.m.context(cwd=source_dir):
       diff = self.m.git(
           'diff',
           '--staged',
@@ -975,6 +979,7 @@ class AndroidApi(recipe_api.RecipeApi):
 
   def test_runner(
       self,
+      source_dir: Path,
       build_dir: Path,
       step_name,
       *,
@@ -998,9 +1003,9 @@ class AndroidApi(recipe_api.RecipeApi):
     if not args:  # pragma: no cover
       args = []
     if pass_adb_path:
-      args.extend(['--adb-path', self.adb_path()])
+      args.extend(['--adb-path', self.adb_path(source_dir)])
     with self.handle_exit_codes():
-      script = self.m.path.checkout_dir / self.c.test_runner
+      script = source_dir / self.c.test_runner
       env = {}
       if wrapper_script_suite_name:
         script = build_dir / f'bin/run_{wrapper_script_suite_name}'

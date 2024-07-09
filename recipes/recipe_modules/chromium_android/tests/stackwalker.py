@@ -13,7 +13,6 @@ DEPS = [
 
 def RunSteps(api):
   source_dir = api.path.start_dir / 'checkout'
-  api.path.checkout_dir = source_dir
   build_dir = source_dir / 'out/Release'
 
   api.chromium.set_config('chromium')
@@ -25,11 +24,10 @@ def GenTests(api):
   yield api.test(
       'basic',
       api.path.exists(
-          api.path.checkout_dir.joinpath('out', 'Release', 'lib.unstripped',
-                                         'libchrome.so'),
-          api.path.checkout_dir.joinpath('out', 'Release',
-                                         'microdump_stackwalk'),
-          api.path.checkout_dir.joinpath('out', 'Release', 'dump_syms'),
+          (api.path.start_dir /
+           'checkout/out/Release/lib.unstripped/libchrome.so'),
+          api.path.start_dir / 'checkout/out/Release/microdump_stackwalk',
+          api.path.start_dir / 'checkout/out/Release/dump_syms',
       ),
       api.post_process(StepSuccess,
                        'generate breakpad symbols for libchrome.so'),

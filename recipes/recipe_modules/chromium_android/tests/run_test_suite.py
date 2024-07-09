@@ -18,12 +18,14 @@ def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('main_builder')
   source_dir = api.path.cache_dir / 'builder/src'
-  api.path.checkout_dir = source_dir
   build_dir = source_dir / 'out/Release'
   api.chromium_android.run_test_suite(
-      build_dir, 'test_suite', shard_timeout=1200)
+      source_dir, build_dir, 'test_suite', shard_timeout=1200)
   api.chromium_android.run_test_suite(
-      build_dir, 'test_suite-with-rdb', resultdb=ResultDB.create(enable=True))
+      source_dir,
+      build_dir,
+      'test_suite-with-rdb',
+      resultdb=ResultDB.create(enable=True))
 
 
 def GenTests(api):

@@ -15,8 +15,8 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-  api.chromium_android.upload_build('test-bucket', 'test/path')
+  source_dir = api.path.cache_dir / 'builder/src'
+  api.chromium_android.upload_build(source_dir, 'test-bucket', 'test/path')
 
 
 def GenTests(api):

@@ -16,11 +16,11 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
   if api.properties['denylist_exists']:
-    api.path.mock_add_paths(api.chromium_android.denylist_file)
+    api.path.mock_add_paths(api.chromium_android.denylist_file(source_dir))
   api.chromium_android._devices = ['serial1', 'serial2']
-  available_devices = api.chromium_android.non_denylisted_devices()
+  available_devices = api.chromium_android.non_denylisted_devices(source_dir)
   api.step('print devices', ['echo'] + available_devices)
 
 

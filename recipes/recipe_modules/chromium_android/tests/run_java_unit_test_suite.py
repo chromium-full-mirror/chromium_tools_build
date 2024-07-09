@@ -26,12 +26,14 @@ def RunSteps(api):
   source_dir = update_result.source_root.path
   build_dir = source_dir / 'out/Release'
   api.chromium_android.run_java_unit_test_suite(
+      source_dir,
       build_dir,
       'test_suite',
       target_name=api.properties.get('target_name', 'test_suite'),
       additional_args=api.properties.get('additional_args'),
       json_results_file=api.test_utils.gtest_results())
   api.chromium_android.run_java_unit_test_suite(
+      source_dir,
       build_dir,
       'test_suite-with-rdb',
       target_name=api.properties.get('target_name', 'test_suite'),

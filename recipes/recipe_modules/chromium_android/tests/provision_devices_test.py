@@ -11,9 +11,9 @@ DEPS = [
 ]
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
   api.chromium_android.configure_from_properties('base_config')
-  api.chromium_android.provision_devices()
+  api.chromium_android.provision_devices(source_dir)
 
 def GenTests(api):
   yield api.test(

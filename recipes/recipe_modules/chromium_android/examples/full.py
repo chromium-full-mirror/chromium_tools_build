@@ -92,7 +92,7 @@ def RunSteps(api):
   api.chromium_android.run_tree_truth(update_result, additional_repos=['foo'])
   assert 'MAJOR' in api.chromium.get_version(source_dir)
 
-  api.chromium_android.host_info()
+  api.chromium_android.host_info(source_dir)
 
   if config.get('build', False):
     raw_result = api.chromium.compile(source_dir, build_dir)
@@ -102,69 +102,67 @@ def RunSteps(api):
         'zip_build_product', 'archive.zip', include_filters=['*.apk'],
         exclude_filters=['*.so', '*.a'])
   else:
-    api.chromium_android.download_build('build-bucket',
+    api.chromium_android.download_build(source_dir, 'build-bucket',
                                         'build_product.zip')
 
   if config.get('specific_install'):
     api.chromium_android.adb_install_apk(
+        source_dir,
         'Chrome.apk',
         devices=['abc123'],
         allow_downgrade=config.get('downgrade', False),
         keep_data=config.get('keep_data', False),
     )
 
-  api.adb.root_devices(api.chromium_android.adb_path())
-  api.chromium_android.spawn_logcat_monitor()
+  api.adb.root_devices(api.chromium_android.adb_path(source_dir))
+  api.chromium_android.spawn_logcat_monitor(source_dir)
 
   failure = False
   try:
     # TODO(luqui): remove redundant cruft, need one consistent API.
-    api.chromium_android.device_status_check()
+    api.chromium_android.device_status_check(source_dir)
 
     api.path.mock_add_paths(api.chromium_android.known_devices_file)
-    api.chromium_android.device_status_check()
+    api.chromium_android.device_status_check(source_dir)
 
     api.chromium_android.provision_devices(
+        source_dir,
         skip_wipe=config.get('skip_wipe', False),
         disable_location=config.get('disable_location', False),
         reboot_timeout=1800)
 
-    api.chromium_android.common_tests_setup_steps(skip_wipe=True)
+    api.chromium_android.common_tests_setup_steps(source_dir, skip_wipe=True)
 
   except api.step.StepFailure as f:
     failure = f
 
-  api.chromium_android.monkey_test(build_dir)
+  api.chromium_android.monkey_test(source_dir, build_dir)
 
   api.chromium_android.run_test_suite(
+      source_dir,
       build_dir,
       'unittests',
       result_details=config.get('result_details'),
       store_tombstones=config.get('store_tombstones'))
   if not failure:
     api.chromium_android.run_bisect_script(
-        extra_src='test.py', path_to_config='test.py')
+        source_dir, extra_src='test.py', path_to_config='test.py')
 
-  api.chromium_android.logcat_dump(build_dir)
-  api.chromium_android.stack_tool_steps()
+  api.chromium_android.logcat_dump(source_dir, build_dir)
+  api.chromium_android.stack_tool_steps(source_dir)
 
   if config.get('run_stackwalker'):
-    chrome_breakpad_binary = api.path.checkout_dir.joinpath(
-        'out', api.chromium.c.BUILD_CONFIG, 'lib.unstripped', 'libchrome.so')
-    webview_breakpad_binary = api.path.checkout_dir.joinpath(
-        'out', api.chromium.c.BUILD_CONFIG, 'lib.unstripped',
-        'libwebviewchromium.so')
-    dump_syms_binary = api.path.checkout_dir.joinpath(
-        'out', api.chromium.c.BUILD_CONFIG, 'dump_syms')
-    microdump_stackwalk_binary = api.path.checkout_dir.joinpath(
-        'out', api.chromium.c.BUILD_CONFIG, 'microdump_stackwalk')
+    chrome_breakpad_binary = build_dir / 'lib.unstripped/libchrome.so'
+    webview_breakpad_binary = build_dir / 'lib.unstripped/libwebviewchromium.so'
+    dump_syms_binary = build_dir / 'dump_syms'
+    microdump_stackwalk_binary = build_dir / 'microdump_stackwalk'
     api.path.mock_add_paths(chrome_breakpad_binary)
     api.path.mock_add_paths(webview_breakpad_binary)
     api.path.mock_add_paths(dump_syms_binary)
     api.path.mock_add_paths(microdump_stackwalk_binary)
 
     api.chromium_android.common_tests_final_steps(
-        build_dir, checkout_dir=api.path.checkout_dir)
+        source_dir, build_dir, run_stackwalker=True)
 
 
   if failure:

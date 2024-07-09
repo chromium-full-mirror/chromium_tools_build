@@ -14,9 +14,9 @@ DEPS = [
 def RunSteps(api):
   api.chromium.set_config('chromium')
   api.chromium_android.set_config('non_device_wipe_provisioning')
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
+  source_dir = api.path.cache_dir / 'builder/src'
 
-  api.chromium_android.provision_devices(emulators=True)
+  api.chromium_android.provision_devices(source_dir, emulators=True)
 
 
 def GenTests(api):

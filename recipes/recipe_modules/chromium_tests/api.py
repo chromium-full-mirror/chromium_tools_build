@@ -563,7 +563,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     execution_mode = override_execution_mode or builder_config.execution_mode
 
     if self.m.chromium.c.TARGET_PLATFORM == 'android':
-      self.m.chromium_android.clean_local_files()
+      self.m.chromium_android.clean_local_files(
+          self.m.chromium_checkout.source_dir)
       self.m.chromium_android.run_tree_truth(update_result)
 
     if execution_mode != ctbc.COMPILE_AND_TEST:
@@ -1291,16 +1292,18 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
       if (self.m.chromium.c.TARGET_PLATFORM == 'android' and
           require_device_steps):
-        self.m.chromium_android.common_tests_setup_steps()
+        self.m.chromium_android.common_tests_setup_steps(
+            self.m.chromium_checkout.source_dir)
 
       try:
         yield
       finally:
-        checkout_dir = self.m.chromium_checkout.source_dir
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
           if require_device_steps:
             self.m.chromium_android.common_tests_final_steps(
-                build_dir, checkout_dir=checkout_dir)
+                self.m.chromium_checkout.source_dir,
+                build_dir,
+                run_stackwalker=True)
 
   def deapply_patch(self, bot_update_step, build_dir: Path):
     assert self.m.tryserver.is_tryserver
