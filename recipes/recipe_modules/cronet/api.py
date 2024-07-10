@@ -3,21 +3,10 @@
 # found in the LICENSE file.
 """Common steps for recipes that sync/build Cronet sources."""
 
-import sys
-
 from recipe_engine import recipe_api
-from recipe_engine.engine_types import freeze
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from RECIPE_MODULES.build import chromium
-
+from recipe_engine.config_types import Path
 
 class CronetApi(recipe_api.RecipeApi):
-
-  def __init__(self, **kwargs):
-    super().__init__(**kwargs)
-    self._repo_path = None
-
-  DASHBOARD_UPLOAD_URL = 'https://chromeperf.appspot.com'
 
   def init_and_sync(self, recipe_config, kwargs, chromium_apply_config=None):
     default_kwargs = {'INTERNAL': False, 'BUILD_CONFIG': 'Debug'}
@@ -30,11 +19,8 @@ class CronetApi(recipe_api.RecipeApi):
       self.m.chromium.apply_config(c)
     droid.init_and_sync()
 
-  def build(self,
-            builder_id=None,
-            targets=None,
-            use_reclient=True):
-    builder_id = builder_id or self.m.chromium.get_builder_id()
+  def build(self, *, targets=None, use_reclient=True):
+    builder_id = self.m.chromium.get_builder_id()
     source_dir = self.m.path.checkout_dir
     build_dir = self.m.chromium.default_build_dir(source_dir)
     self.m.chromium.runhooks(source_dir, build_dir)
@@ -52,43 +38,44 @@ class CronetApi(recipe_api.RecipeApi):
     return self.m.chromium.compile(
         source_dir, build_dir, targets=targets, use_reclient=use_reclient)
 
-  def get_version(self):
+  def _get_version(self):
     version = self.m.chromium.get_version(self.m.path.checkout_dir)
     return "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
                             version['BUILD'], version['PATCH'])
 
-  def get_bucket(self, platform):
+  def _bucket(self) -> str:
     if self.m.runtime.is_experimental:
-      return 'chromium-cronet/experimental/%s' % platform
-    return 'chromium-cronet/%s' % platform
+      return 'chromium-cronet/experimental/android'
+    return 'chromium-cronet/android'
 
-  def get_default_cronet_dir(self):
+  def _cronet_dir(self) -> Path:
     return self.m.path.checkout_dir.joinpath(
         'out', self.m.chromium_android.c.BUILD_CONFIG, 'cronet')
 
-  def generate_changelist(self, cronetdir=None):
-    cronetdir = cronetdir or self.get_default_cronet_dir()
+  def generate_changelist(self):
+    cronet_dir = self._cronet_dir()
     cmd = [
         'python3',
         self.resource('generate_changelist.py'), "--git_dir",
-        self.m.path.checkout_dir, "--output_file", cronetdir / 'CHANGELIST'
+        self.m.path.checkout_dir, "--output_file", cronet_dir / 'CHANGELIST'
     ]
     return self.m.step('generate changelist file', cmd)
 
-  def upload_package(self, build_config, cronetdir=None, platform='android'):
-    cronetdir = cronetdir or self.get_default_cronet_dir()
-    destdir = self.get_version() + '/' + build_config
+  def upload_package(self, build_config: str):
+    cronet_dir = self._cronet_dir()
+    dest_dir = self._get_version() + '/' + build_config
+    bucket = self._bucket()
     # Upload cronet version first to ensure that destdir is created.
     self.m.gsutil.upload(
-        source=cronetdir / 'VERSION',
-        bucket=self.get_bucket(platform),
-        dest=destdir + '/VERSION',
+        source=cronet_dir / 'VERSION',
+        bucket=bucket,
+        dest=dest_dir + '/VERSION',
         name='upload_cronet_version',
         link_name='Cronet version')
     self.m.gsutil.upload(
-        source=cronetdir,
-        bucket=self.get_bucket(platform),
-        dest=destdir,
+        source=cronet_dir,
+        bucket=bucket,
+        dest=dest_dir,
         args=['-R'],
         name='upload_cronet_package',
         link_name='Cronet package')
