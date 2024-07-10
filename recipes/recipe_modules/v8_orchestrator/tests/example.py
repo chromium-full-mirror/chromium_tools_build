@@ -7,9 +7,8 @@ import json
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
-from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
-from recipe_engine.post_process import (DropExpectation, Filter, MustRun,
-                                        ResultReason, SummaryMarkdown)
+from recipe_engine.post_process import (DropExpectation, MustRun,
+                                        SummaryMarkdown)
 from recipe_engine.recipe_api import Property
 from google.protobuf import json_format
 from google.protobuf import struct_pb2
@@ -147,54 +146,8 @@ def GenTests(api):
           ),
       ]),
       api.post_check(
-          StepStdinContains,
-          'trigger compilator',
-          (
-              '"gerritChanges": [{"change": "123456", "host": "chromium-review.'
-              'googlesource.com", "patchset": "7", "project": "project"}]'
-          )
-      ),
-      api.post_process(DropExpectation),
-  )
-
-  led_properties = {
-      '$recipe_engine/led':
-          led_properties_pb.InputProperties(
-              led_run_id='fake-run-id',
-          ),
-  }
-
-  build_proto_json = {
-    'status': common_pb.SUCCESS,
-    'summary': '',
-    'output': {
-      'properties': {'other_prop': 'other value'},
-    },
-  }
-
-  def StepRealmEquals(check, step_odict, step, realm):
-    check('LUCI realm for step %s was %s' % (step, realm),
-          realm == step_odict[step].luci_context['realm']['name'])
-
-  yield api.test(
-      'led try',
-      api.buildbucket.try_build(builder='v8_foobar'),
-      api.properties(**led_properties),
-      api.step_data('read build.proto.json',
-                    api.file.read_json(json_content=build_proto_json)),
-      api.post_process(StepRealmEquals, 'trigger compilator.led launch',
-                       'project:try'),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
-      'led ci',
-      api.buildbucket.ci_build(builder='V8 Foobar'),
-      api.properties(revision='abcd'),
-      api.properties(**led_properties),
-      api.step_data('read build.proto.json',
-                    api.file.read_json(json_content=build_proto_json)),
-      api.post_process(StepRealmEquals, 'trigger compilator.led launch',
-                       'project:ci'),
+          StepStdinContains, 'trigger compilator',
+          ('"gerritChanges": [{"change": "123456", "host": "chromium-review.'
+           'googlesource.com", "patchset": "7", "project": "project"}]')),
       api.post_process(DropExpectation),
   )

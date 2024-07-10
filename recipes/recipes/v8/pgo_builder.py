@@ -143,8 +143,7 @@ def RunSteps(api, max_parallel_versions, version_number_cutoff):
     if not profile_trackers:
       return result_pb2.RawResult(status=common_pb.SUCCESS)
 
-    orchestrator = api.v8_orchestrator.create_compilator_handler(
-        enable_led=False)
+    orchestrator = api.v8_orchestrator.create_compilator_handler()
 
     trigger_compilators(api, profile_trackers, orchestrator)
     perf_code_path = download_benchmark_code(api, work_dir)
