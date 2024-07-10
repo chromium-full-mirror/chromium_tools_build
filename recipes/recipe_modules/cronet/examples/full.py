@@ -51,16 +51,17 @@ def RunSteps(api):
   chromium_apply_config = builder_config.get('chromium_apply_config')
 
   cronet = api.cronet
-  cronet.init_and_sync(recipe_config, kwargs,
-                       chromium_apply_config=chromium_apply_config)
-  cronet.generate_changelist()
+  update_result = cronet.init_and_sync(
+      recipe_config, kwargs, chromium_apply_config=chromium_apply_config)
+  source_dir = update_result.source_root.path
+  cronet.generate_changelist(source_dir)
 
   use_reclient = builder_config.get('use_reclient', True)
-  raw_result = cronet.build(use_reclient=use_reclient)
+  raw_result = cronet.build(source_dir, use_reclient=use_reclient)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
-  return cronet.upload_package(kwargs['BUILD_CONFIG'])
+  return cronet.upload_package(source_dir, kwargs['BUILD_CONFIG'])
 
 
 def GenTests(api):

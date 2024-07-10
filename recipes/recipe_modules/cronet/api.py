@@ -17,11 +17,10 @@ class CronetApi(recipe_api.RecipeApi):
     self.m.chromium.apply_config('cronet_builder')
     for c in chromium_apply_config or []:
       self.m.chromium.apply_config(c)
-    droid.init_and_sync()
+    return droid.init_and_sync()
 
-  def build(self, *, targets=None, use_reclient=True):
+  def build(self, source_dir: Path, *, targets=None, use_reclient=True):
     builder_id = self.m.chromium.get_builder_id()
-    source_dir = self.m.path.checkout_dir
     build_dir = self.m.chromium.default_build_dir(source_dir)
     self.m.chromium.runhooks(source_dir, build_dir)
     if self.m.chromium.c.project_generator.tool == 'gn':  # pragma: no cover
@@ -38,8 +37,8 @@ class CronetApi(recipe_api.RecipeApi):
     return self.m.chromium.compile(
         source_dir, build_dir, targets=targets, use_reclient=use_reclient)
 
-  def _get_version(self):
-    version = self.m.chromium.get_version(self.m.path.checkout_dir)
+  def _get_version(self, source_dir: Path) -> str:
+    version = self.m.chromium.get_version(source_dir)
     return "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
                             version['BUILD'], version['PATCH'])
 
@@ -48,22 +47,21 @@ class CronetApi(recipe_api.RecipeApi):
       return 'chromium-cronet/experimental/android'
     return 'chromium-cronet/android'
 
-  def _cronet_dir(self) -> Path:
-    return self.m.path.checkout_dir.joinpath(
-        'out', self.m.chromium_android.c.BUILD_CONFIG, 'cronet')
+  def _cronet_dir(self, source_dir: Path) -> Path:
+    return source_dir / f'out/{self.m.chromium_android.c.BUILD_CONFIG}/cronet'
 
-  def generate_changelist(self):
-    cronet_dir = self._cronet_dir()
+  def generate_changelist(self, source_dir: Path):
+    cronet_dir = self._cronet_dir(source_dir)
     cmd = [
         'python3',
-        self.resource('generate_changelist.py'), "--git_dir",
-        self.m.path.checkout_dir, "--output_file", cronet_dir / 'CHANGELIST'
+        self.resource('generate_changelist.py'), "--git_dir", source_dir,
+        "--output_file", cronet_dir / 'CHANGELIST'
     ]
     return self.m.step('generate changelist file', cmd)
 
-  def upload_package(self, build_config: str):
-    cronet_dir = self._cronet_dir()
-    dest_dir = self._get_version() + '/' + build_config
+  def upload_package(self, source_dir: Path, build_config: str):
+    cronet_dir = self._cronet_dir(source_dir)
+    dest_dir = self._get_version(source_dir) + '/' + build_config
     bucket = self._bucket()
     # Upload cronet version first to ensure that destdir is created.
     self.m.gsutil.upload(

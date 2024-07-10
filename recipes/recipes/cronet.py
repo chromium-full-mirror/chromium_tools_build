@@ -34,11 +34,13 @@ def RunSteps(api):
 
   use_reclient = builder_config.get('use_reclient', True)
 
-  api.cronet.init_and_sync(
-      recipe_config, kwargs,
+  update_result = api.cronet.init_and_sync(
+      recipe_config,
+      kwargs,
       chromium_apply_config=builder_config.get('chromium_apply_config'))
+  source_dir = update_result.source_root.path
 
-  raw_result = api.cronet.build(use_reclient=use_reclient)
+  raw_result = api.cronet.build(source_dir, use_reclient=use_reclient)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
