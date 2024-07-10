@@ -219,7 +219,9 @@ def RunSteps(api, fail_compile):
 
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
-  return api.chromium_tests.main_waterfall_steps(builder_id, builder_config)
+  build_result, _ = api.chromium_tests.main_waterfall_steps(
+      builder_id, builder_config)
+  return build_result
 
 
 def GenTests(api):

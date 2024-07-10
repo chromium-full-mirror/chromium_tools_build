@@ -1632,12 +1632,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           log_text=traceback.format_exc(),
           raise_on_failure=False)
 
-  def main_waterfall_steps(self,
-                           builder_id,
-                           builder_config,
-                           mb_config_path=None,
-                           mb_phase=None,
-                           root_solution_revision=None):
+  def main_waterfall_steps(
+      self,
+      builder_id,
+      builder_config,
+      mb_config_path=None,
+      mb_phase=None,
+      root_solution_revision=None,
+  ) -> tuple[result_pb2.RawResult | None, bot_update.Result]:
     """Compiles and runs tests for chromium recipe.
 
     Args:
@@ -1648,9 +1650,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         If omitted, ToT Chromium is checked out.
 
     Returns:
-      - A RawResult object with the status of the build
-        and a failure message if a failure occurred.
-      - None if no failures
+      A tuple with the following values
+      * None if no failure occurred, otherwise a RawResult object
+        describing the failure that can be used as the recipe's result.
+      * The bot_update Result describing the checkout. This enables a
+        recipe to correctly access the checkout after
+        main_waterfall_steps has completed.
     """
     # Don't fail the build if snoopy service in unavailable.
     if self._enable_snoopy:
@@ -1664,7 +1669,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('fetch')
-    update_step, build_dir, targets_config = self.prepare_checkout(
+    update_result, build_dir, targets_config = self.prepare_checkout(
         builder_config,
         timeout=3600,
         root_solution_revision=root_solution_revision,
@@ -1688,7 +1693,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         build_dir,
         builder_id,
         builder_config,
-        update_step,
+        update_result,
         targets_config,
         targets_config.compile_targets,
         targets_config.all_tests,
@@ -1696,17 +1701,17 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         mb_phase=mb_phase)
 
     if compile_result and compile_result.status != common_pb.SUCCESS:
-      return compile_result
+      return compile_result, update_result
 
-    self.inbound_transfer(build_dir, builder_config, builder_id, update_step,
+    self.inbound_transfer(build_dir, builder_config, builder_id, update_result,
                           targets_config)
     additional_trigger_properties = self.outbound_transfer(
-        builder_id, builder_config, update_step, targets_config,
+        builder_id, builder_config, update_result, targets_config,
         swarming_execution_info)
 
     self.trigger_child_builds(
         builder_id,
-        update_step,
+        update_result,
         builder_config,
         additional_properties=additional_trigger_properties)
 
@@ -1714,21 +1719,23 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('upload')
 
-    self.archive_clusterfuzz(builder_id, update_step, builder_config, build_dir)
+    self.archive_clusterfuzz(builder_id, update_result, builder_config,
+                             build_dir)
     upload_results = self.archive_build(
-        build_dir, update_step, enable_snoopy=self._enable_snoopy)
+        build_dir, update_result, enable_snoopy=self._enable_snoopy)
 
     if self._enable_snoopy:
       with self._suppress_exception('snoopy failure'):
         self.m.bcid_reporter.report_stage('upload-complete')
 
     tests = targets_config.tests_on(builder_id)
-    return self.run_tests(
+    tests_result = self.run_tests(
         build_dir,
         builder_id,
         builder_config,
         tests,
         upload_results=upload_results)
+    return tests_result, update_result
 
   def outbound_transfer(self,
                         builder_id,

@@ -32,7 +32,9 @@ def RunSteps(api):
       api.chromium_tests_builder_config.lookup_builder())
   if api.tryserver.is_tryserver:
     return api.chromium_tests.trybot_steps(builder_id, builder_config)
-  return api.chromium_tests.main_waterfall_steps(builder_id, builder_config)
+  build_result, _ = api.chromium_tests.main_waterfall_steps(
+      builder_id, builder_config)
+  return build_result
 
 
 def GenTests(api):

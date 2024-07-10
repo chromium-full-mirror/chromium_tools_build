@@ -66,8 +66,9 @@ def RunSteps(api):
       angle_revision)
 
   with api.chromium.chromium_layout():
-    return api.chromium_tests.main_waterfall_steps(
+    build_result, _ = api.chromium_tests.main_waterfall_steps(
         builder_id, builder_config, root_solution_revision=chromium_revision)
+    return build_result
 
 
 def GenTests(api):

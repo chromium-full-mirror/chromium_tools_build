@@ -37,7 +37,9 @@ def RunSteps(api):
       return api.chromium_tests.trybot_steps(builder_id, builder_config)
   else:
     with api.chromium.chromium_layout():
-      return api.chromium_tests.main_waterfall_steps(builder_id, builder_config)
+      build_result, _ = api.chromium_tests.main_waterfall_steps(
+          builder_id, builder_config)
+      return build_result
 
 
 def GenTests(api):
