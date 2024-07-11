@@ -1331,9 +1331,16 @@ class TestGroup:
                                       suite_name=test.canonical_name,
                                       test_id_prefix=test.test_id_prefix)
     elif not (invocation_names := test.get_invocation_names(suffix)):
+      # If we can't find invocation names and resultdb is enabled for the test,
+      # just mark its status as invalid.
+      failure_on_exit = True
+      total_tests_ran = 0
+      if not test.spec.resultdb.enable:
+        failure_on_exit = test.failure_on_exit(suffix)
+        total_tests_ran = 1
       res = RDBPerSuiteResults.create({},
-                                      failure_on_exit=True,
-                                      total_tests_ran=0,
+                                      failure_on_exit=failure_on_exit,
+                                      total_tests_ran=total_tests_ran,
                                       suite_name=test.canonical_name,
                                       test_id_prefix=test.test_id_prefix)
     else:

@@ -14,7 +14,10 @@ class ResultDB:
   """Configuration for ResultDB-integration for a test.
 
   Attributes:
-    * enable - Whether or not ResultDB-integration is enabled.
+    * enable - Whether or not ResultDB-integration is enabled. Defaults to True.
+      Disabling ResultDB for a test should be used **very** sparingly, as the
+      Chromium recipe stack depends on ResultDB-integration to get granular test
+      results.
     * has_native_resultdb_integration - If True, indicates the test will upload
       its results to ResultDB via ResultSink and that `result_adapter` is not
       needed.
@@ -150,7 +153,13 @@ class ResultDB:
     assert isinstance(step_name, (type(None), str)), "%s: %s" % (step_name, cmd)
     configs = attr.evolve(self, **kwargs)
     if not configs.enable:
-      return cmd
+      # If RDB is disabled, not only are we going to not wrap it in `resultdb`,
+      # but we're going to wrap it in `reset_luci_context.py`, which will remove
+      # the result_sink info from the current LUCI_CONTEXT. This can happen if
+      # the test runs locally and so would inherit the build's LUCI_CONTEXT,
+      # which very likely does have result_sink info attached.
+      return ['vpython3',
+              api.chromium_tests.resource('reset_luci_context.py')] + cmd
 
     # wrap it with result_adapter
     if not configs.has_native_resultdb_integration and configs.result_format:

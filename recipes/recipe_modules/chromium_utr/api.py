@@ -91,6 +91,13 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if not should_test:
       return result_pb2.RawResult(status=common_pb2.SUCCESS)
 
+    # Explicitly disable resultdb for any test we're running locally. We don't
+    # want to be uploading results to resultdb locally.
+    for t in tests:
+      if not (t.runs_on_swarming or t.is_skylabtest):
+        t.spec = attr.evolve(
+            t.spec, resultdb=attr.evolve(t.spec.resultdb, enable=False))
+
     test_runner = self.m.chromium_tests.create_test_runner(
         checkout_dir, source_dir, tests)
     with self.m.chromium_tests.wrap_chromium_tests(

@@ -23,7 +23,8 @@ def RunSteps(api):
   rdb = ResultDB.create(enable=False)
   api.assertions.assertEqual(
       rdb.wrap(api, cmd),
-      cmd,
+      ['vpython3',
+       api.chromium_tests.resource('reset_luci_context.py')] + cmd,
   )
 
   # test_location_base, test_id_prefix, coerce_negative_duration
