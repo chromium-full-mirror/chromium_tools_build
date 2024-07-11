@@ -1,0 +1,27 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.chromium_rr.test_launcher;
+
+
+// Next ID: 2
+message InputProperties {
+
+  // Information about tests to run by test suite
+  //
+  // The runner builder will compile all input test suites and run tests using
+  // the rr tool in a runner script.
+  //
+  // Next ID: 3
+  message TestInfo {
+    // The name of test suite for these target tests
+    string test_suite = 1;
+
+    // The names of target tests
+    repeated string test_names = 2;
+  }
+  repeated TestInfo target_test_infos = 1;
+}
