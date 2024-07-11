@@ -147,7 +147,7 @@ def GenTests(api):
       api.siso.properties(),
       api.step_data(
           'upload siso reports.gsutil upload siso_metrics.json', retcode=1),
-      api.post_process(post_process.StepWarning,
+      api.post_process(post_process.StepException,
                        'upload siso reports.gsutil upload siso_metrics.json'),
       api.post_process(post_process.DropExpectation),
   )
