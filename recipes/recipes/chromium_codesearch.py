@@ -174,7 +174,7 @@ def RunSteps(api, properties):
   )
 
   # Checkout the repositories that are needed for the compile.
-  gclient_config = api.gclient.make_config('chromium_no_telemetry_dependencies')
+  gclient_config = api.gclient.make_config('chromium')
   target_os = 'linux'
   host_os = 'linux'
   if platform in ('android', 'webview', 'cronet'):

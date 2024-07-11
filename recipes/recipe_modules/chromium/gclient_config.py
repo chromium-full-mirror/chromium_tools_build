@@ -17,14 +17,6 @@ def chromium_bare(c):
   s = c.solutions.add()
   s.name = 'src'
   s.url = ChromiumGitURL(c, 'chromium', 'src.git')
-  s.custom_vars = {
-      # TODO(crbug.com/339061089): Remove this once the default is changed to
-      # False.
-      # We always want the bots to fetch the dependencies needed to
-      # run the telemetry tests, regardless of whether they are needed or not
-      # (this makes things simpler and more consistent).
-      'checkout_telemetry_dependencies': 'False'
-  }
   m = c.got_revision_reverse_mapping
   m['got_revision'] = 'src'
   m['got_angle_revision'] = 'src/third_party/angle'
@@ -242,7 +234,8 @@ def chromium_webrtc(c):
   c.got_revision_reverse_mapping['got_libvpx_revision'] = (
       'src/third_party/libvpx/source')
 
-@CONFIG_CTX(includes=['chromium_no_telemetry_dependencies'])
+
+@CONFIG_CTX(includes=['chromium'])
 def chromium_webrtc_tot(c):
   """Configures WebRTC ToT revision for Chromium src/third_party/webrtc.
 
@@ -377,12 +370,6 @@ def chrome_internal(c):
 @CONFIG_CTX()
 def checkout_instrumented_libraries(c):
   c.solutions[0].custom_vars['checkout_instrumented_libraries'] = 'True'
-
-
-# TODO(crbug.com/339061089): Remove this once the default is changed to False.
-@CONFIG_CTX(includes=['chromium'])
-def chromium_no_telemetry_dependencies(c):  # pragma: no cover
-  c.solutions[0].custom_vars['checkout_telemetry_dependencies'] = 'False'
 
 
 @CONFIG_CTX(includes=['chromium'])
