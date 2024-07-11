@@ -18,7 +18,7 @@ SPEC = {
                 'TARGET_PLATFORM': 'android'
             },
             gclient_apply_config=['android'],
-            gclient_config='chromium',
+            gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='linux',
         ),
     'linux_chromium_compile':
@@ -30,7 +30,7 @@ SPEC = {
                 'TARGET_BITS': 64
             },
             gclient_apply_config=[],
-            gclient_config='chromium',
+            gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='linux',
         ),
     'linux_chromium_compile_dbg':
@@ -42,7 +42,7 @@ SPEC = {
                 'TARGET_BITS': 64
             },
             gclient_apply_config=[],
-            gclient_config='chromium',
+            gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='linux',
         ),
     'mac_chromium_compile':
@@ -54,7 +54,7 @@ SPEC = {
                 'TARGET_BITS': 64
             },
             gclient_apply_config=[],
-            gclient_config='chromium',
+            gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='mac',
         ),
     'webrtc_linux_chromium':
@@ -66,7 +66,7 @@ SPEC = {
                 'TARGET_BITS': 64
             },
             gclient_apply_config=[],
-            gclient_config='chromium',
+            gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='linux',
         ),
     'win_chromium_compile':
@@ -78,7 +78,7 @@ SPEC = {
                 'TARGET_BITS': 64
             },
             gclient_apply_config=[],
-            gclient_config='chromium',
+            gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='win',
         ),
     'win_chromium_compile_dbg':
@@ -90,7 +90,7 @@ SPEC = {
                 'TARGET_BITS': 64
             },
             gclient_apply_config=[],
-            gclient_config='chromium',
+            gclient_config='chromium_no_telemetry_dependencies',
             simulation_platform='win',
         ),
 }
