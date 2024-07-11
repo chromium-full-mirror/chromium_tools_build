@@ -34,12 +34,15 @@ def RunSteps(api, properties):
           step_text=('Unexpected execution mode. Expect: %s, Actual: %s' %
                      (ctbc.TEST, execution_mode)))
     api.chromium_tests.configure_build(builder_config)
-    update_step, build_dir, build_config = api.chromium_tests.prepare_checkout(
+    update_result, build_dir, build_config = api.chromium_tests.prepare_checkout(
         builder_config, timeout=3600, no_fetch_tags=True)
-    api.chromium_tests.lookup_builder_gn_args(builder_id, builder_config)
+    checkout_dir = update_result.checkout_dir
+    source_dir = update_result.source_root.path
+    api.chromium_tests.lookup_builder_gn_args(source_dir, builder_id,
+                                              builder_config)
     tests = build_config.tests_on(builder_id)
-    api.chromium_tests.download_command_lines_for_tests(build_dir, tests,
-                                                        builder_config)
+    api.chromium_tests.download_command_lines_for_tests(source_dir, build_dir,
+                                                        tests, builder_config)
 
     env = {}
     # Mac perf testers have a different behaviour when this environment var is
@@ -48,7 +51,13 @@ def RunSteps(api, properties):
       env['START_BROWSER_WITH_DEFAULT_PRIORITY'] = '1'
     with api.context(env=env):
       test_failure_summary = api.chromium_tests.run_tests(
-          build_dir, builder_id, builder_config, tests)
+          checkout_dir,
+          source_dir,
+          build_dir,
+          builder_id,
+          builder_config,
+          tests,
+      )
 
     task_groups = {
         t.get_task(NO_SUFFIX).request.name:
@@ -75,7 +84,7 @@ def RunSteps(api, properties):
 
     api.chromium_tests.trigger_child_builds(
         builder_id,
-        update_step,
+        update_result,
         builder_config,
         additional_properties=additional_trigger_properties)
     return test_failure_summary

@@ -30,8 +30,10 @@ class ChromiumReviverApi(recipe_api.RecipeApi):
     self.m.chromium_tests.configure_build(builder_config)
 
     with self.m.chromium.chromium_layout():
-      update_step, build_dir, targets_config = self.m.chromium_tests.prepare_checkout(
+      update_result, build_dir, targets_config = self.m.chromium_tests.prepare_checkout(
           builder_config, report_cache_state=False)
+      checkout_dir = update_result.checkout_dir
+      source_dir = update_result.source_root.path
       self.m.chromium_swarming.configure_swarming(
           'chromium', precommit=False, builder_group=builder_id.group)
 
@@ -51,7 +53,7 @@ class ChromiumReviverApi(recipe_api.RecipeApi):
                   t.compile_targets() for t in tests)))
 
       compile_result, _ = self.m.chromium_tests.compile_specific_targets(
-          build_dir, builder_id, builder_config, update_step, targets_config,
+          build_dir, builder_id, builder_config, update_result, targets_config,
           compile_targets, tests)
       if compile_result and compile_result.status != common_pb.SUCCESS:
         return compile_result
@@ -60,10 +62,13 @@ class ChromiumReviverApi(recipe_api.RecipeApi):
       # all disabled tests can be re-enabled, so don't fail the build due to
       # failed tests
       test_runner = self.m.chromium_tests.create_test_runner(
+          checkout_dir,
+          source_dir,
           tests,
           serialize_tests=builder_config.serialize_tests,
           surface_invalid_results_as_infra_failure=True)
-      with self.m.chromium_tests.wrap_chromium_tests(build_dir, tests=tests):
+      with self.m.chromium_tests.wrap_chromium_tests(
+          checkout_dir, source_dir, build_dir, tests=tests):
         test_result = test_runner()
         if self.m.code_coverage.using_coverage:
           self.m.code_coverage.process_coverage_data(

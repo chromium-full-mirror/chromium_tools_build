@@ -3,22 +3,21 @@
 # found in the LICENSE file.
 
 DEPS = [
+    'chromium',
+    'chromium_tests',
+    'test_utils',
     'recipe_engine/assertions',
     'recipe_engine/json',
     'recipe_engine/luci_analysis',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/raw_io',
     'recipe_engine/step',
     'recipe_engine/time',
-    'chromium',
-    'chromium_tests',
-    'test_utils',
 ]
 
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
-from google.protobuf import json_format
-from google.protobuf import timestamp_pb2
 
 from RECIPE_MODULES.build.chromium_tests import steps
 
@@ -78,8 +77,15 @@ def RunSteps(api, known_luci_analysis_flakes_expectations, weak_flaky_failures,
             }))
   tests = [s.get_test(api.chromium_tests) for s in test_specs]
 
+  checkout_dir = api.path.start_dir
+  source_dir = checkout_dir / 'fake-repo'
   api.test_utils.run_tests(
-      tests, 'with patch', retry_failed_shards=True, retry_invalid_shards=True)
+      checkout_dir,
+      source_dir,
+      tests,
+      'with patch',
+      retry_failed_shards=True,
+      retry_invalid_shards=True)
 
   for t in tests:
     api.assertions.assertEqual(

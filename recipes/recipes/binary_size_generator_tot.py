@@ -51,6 +51,7 @@ def RunSteps(api):
     api.chromium.runhooks(source_dir, build_dir, name='runhooks')
 
     raw_result = api.chromium_tests.run_mb_and_compile(
+        source_dir,
         build_dir,
         api.chromium.get_builder_id(),
         api.binary_size.compile_targets,

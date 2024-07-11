@@ -161,7 +161,7 @@ def _get_targets_config(
     api,
     step_name: str,
     builder_config: ctbc.BuilderConfig,
-    repo_path: Path,
+    source_dir: Path,
     targets_spec_dir: Path,
     precommit_details: generators.PrecommitDetails | None,
 ) -> targets_config_module.TargetsConfig:
@@ -169,10 +169,10 @@ def _get_targets_config(
     return api.chromium_tests.create_targets_config(
         builder_config,
         got_revisions={},
-        checkout_path=repo_path,
+        source_dir=source_dir,
         targets_spec_dir=targets_spec_dir,
         precommit_details=precommit_details,
-        scripts_compile_targets_fn=lambda: {},
+        scripts_compile_targets_fn=lambda source_dir: {},
     )
 
 

@@ -8,6 +8,7 @@ DEPS = [
     'depot_tools/tryserver',
     'recipe_engine/assertions',
     'recipe_engine/buildbucket',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
 ]
@@ -73,8 +74,11 @@ def RunSteps(api):
 
   suffix = api.properties.get('suffix', '')
 
+  checkout_dir = api.path.start_dir
+  source_dir = checkout_dir / 'fake-repo'
+
   experimental_test.pre_run(suffix)
-  experimental_test.run(suffix)
+  experimental_test.run(checkout_dir, source_dir, suffix)
 
   if not experiment_on:
     return

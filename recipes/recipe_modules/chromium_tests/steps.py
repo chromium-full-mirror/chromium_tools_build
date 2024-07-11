@@ -30,7 +30,6 @@ spec type that contains the input details for the test or test wrapper.
 
 import abc
 import attr
-from collections import defaultdict
 from collections.abc import Iterable, Set
 import contextlib
 import hashlib
@@ -40,7 +39,8 @@ import re
 import struct
 import urllib
 
-from recipe_engine import recipe_api, step_data
+from recipe_engine import step_data
+from recipe_engine.config_types import Path
 
 from .resultdb import ResultDB
 
@@ -450,7 +450,13 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
     """Run the test."""
     raise NotImplementedError()  # pragma: no cover
 
@@ -1310,7 +1316,13 @@ class TestWrapper(
     if not self._disabled_message:
       return self._test.pre_run(suffix)
 
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
     # Don't call methods on self that take the suffix, if the subclass performs
     # suffix modification then the suffix passed in should already be modified
     if self._disabled_message:
@@ -1321,7 +1333,7 @@ class TestWrapper(
 
     if self._info_message:
       info_messages = itertools.chain([self._info_message], info_messages)
-    return self._test.run(suffix, info_messages)
+    return self._test.run(checkout_dir, source_dir, suffix, info_messages)
 
 
 class CiOnlyTestSpec(TestWrapperSpec):
@@ -1503,9 +1515,20 @@ class ExperimentalTest(TestWrapper):
       pass
 
   #override
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
     try:
-      return super().run(self._experimental_suffix(suffix), info_messages)
+      return super().run(
+          checkout_dir,
+          source_dir,
+          self._experimental_suffix(suffix),
+          info_messages,
+      )
     except self.api.m.step.StepFailure as e:
       return e.result
 
@@ -1578,7 +1601,11 @@ class LocalTest(Test):
     inv = self._suffix_to_invocation_names.get(suffix)
     return [inv] if inv else []
 
-  def _prep_local_rdb(self, temp=None, include_artifacts=True):
+  def _prep_local_rdb(self,
+                      source_dir: Path,
+                      *,
+                      temp=None,
+                      include_artifacts=True):
     """Returns a ResultDB instance suitable for local test runs.
 
     Main difference between remote swarming runs and local test runs (ie:
@@ -1586,7 +1613,7 @@ class LocalTest(Test):
     result file and the location of the result_adapter binary.
 
     Args:
-      api: Recipe API object.
+      source_dir: The path to the top-level repo.
       temp: Path to temp file to store results.
       include_artifacts: If True, add the parent dir of temp as an artifact dir.
     """
@@ -1602,9 +1629,7 @@ class LocalTest(Test):
         base_variant=dict(
             self.spec.resultdb.base_variant or {},
             test_suite=self.canonical_name),
-        result_adapter_path=str(
-            self.api.m.path.checkout_dir.joinpath('tools', 'resultdb',
-                                                  'result_adapter')),
+        result_adapter_path=str(source_dir / 'tools/resultdb/result_adapter'),
         result_file=self.api.m.path.abspath(temp),
         # Give each local test suite its own invocation to make it easier to
         # fetch results.
@@ -1667,7 +1692,15 @@ class ScriptTest(LocalTest):
   def compile_targets(self) -> Iterable[str]:
     return self.spec.compile_targets
 
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
+    del checkout_dir
+
     run_args = []
 
     tests_to_retry = self._tests_to_retry(suffix)
@@ -1676,7 +1709,7 @@ class ScriptTest(LocalTest):
                        self.api.m.json.input(tests_to_retry)
                       ])  # pragma: no cover
 
-    resultdb = self._prep_local_rdb()
+    resultdb = self._prep_local_rdb(source_dir)
 
     step_test_data = lambda: (
         self.api.m.json.test_api.output({
@@ -1693,11 +1726,11 @@ class ScriptTest(LocalTest):
     # Enforce that all scripts are in the specified directory for
     # consistency.
     common_args, paths, properties = (
-        self.api.m.chromium_tests.get_common_args_for_scripts())
+        self.api.m.chromium_tests.get_common_args_for_scripts(source_dir))
     cmd = ([
         'vpython3',
-        self.api.m.path.checkout_dir.joinpath(
-            'testing', 'scripts', self.api.m.path.basename(self.spec.script))
+        (source_dir / 'testing/scripts' /
+         self.api.m.path.basename(self.spec.script))
     ] + common_args + script_args +
            ['run', '--output', self.api.m.json.output()] + run_args)
     step_name = self.step_name(suffix)
@@ -1781,7 +1814,13 @@ class LocalGTestTest(LocalTest):
   def compile_targets(self) -> Iterable[str]:
     return [self.target_name]
 
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -1791,7 +1830,7 @@ class LocalGTestTest(LocalTest):
     if tests_to_retry:
       args = _merge_arg(args, '--gtest_filter', ':'.join(tests_to_retry))
 
-    resultdb = self._prep_local_rdb(include_artifacts=False)
+    resultdb = self._prep_local_rdb(source_dir, include_artifacts=False)
     gtest_results_file = self.api.m.json.output(
         add_json_log=False, leak_to=resultdb.result_file)
 
@@ -1813,7 +1852,7 @@ class LocalGTestTest(LocalTest):
     kwargs['test_launcher_summary_output'] = gtest_results_file
 
     step_result = self.api.m.chromium.runtest(
-        self.api.m.chromium_checkout.checkout_dir,
+        checkout_dir,
         self.target_name,
         builder_group=self.spec.waterfall_builder_group,
         stderr=self.api.m.raw_io.output_text(
@@ -2449,8 +2488,18 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self.api.m.chromium_swarming.trigger_task(
         self._tasks[suffix], resultdb=resultdb)
 
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
     """Waits for launched test to finish and collects the results."""
+    # There's no guarantee that a checkout exists for a swarming test, so
+    # checkout_dir and source_dir shouldn't be used
+    del checkout_dir, source_dir
+
     step_result, _ = (
         self.api.m.chromium_swarming.collect_task(self._tasks[suffix]))
 
@@ -2592,7 +2641,15 @@ class LocalIsolatedScriptTest(LocalTest):
 
   # TODO(nednguyen, kbr): figure out what to do with Android.
   # (crbug.com/533480)
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
+    del checkout_dir
+
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
@@ -2640,7 +2697,7 @@ class LocalIsolatedScriptTest(LocalTest):
           'stdout': self.api.m.raw_io.output_text(),
       })
 
-    resultdb = self._prep_local_rdb(temp=temp)
+    resultdb = self._prep_local_rdb(source_dir, temp=temp)
 
     step_result = self.api.m.isolate.run_isolated(
         self.step_name(suffix),
@@ -2852,7 +2909,15 @@ class MockTest(AbstractSwarmingTest, Test):
     if self.runs_on_swarming:
       self._tasks_by_suffix[suffix] = MockTask(self.shards)
 
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
+    del checkout_dir, source_dir
+
     with self._mock_exit_codes():
       step_result = self.api.m.step(self.step_name(suffix), ['mock_test'])
 
@@ -3073,7 +3138,16 @@ class SkylabTest(AbstractSkylabTest, Test):
         retry_shards.append(tr.shard)
     self.api.m.skylab.schedule_suite(self, suffix, retry_shards=retry_shards)
 
-  def run(self, suffix: str, info_messages: Iterable[str] = ()) -> None:
+  def run(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      suffix: str,
+      info_messages: Iterable[str] = (),
+  ) -> None:
+    # There's no guarantee that a checkout exists for a skylab test, so
+    # checkout_dir and source_dir shouldn't be used
+    del checkout_dir, source_dir
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
       self.api.m.skylab.fetch_test_runners(self, suffix)

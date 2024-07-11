@@ -66,9 +66,10 @@ def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
              skip_tests):
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
-  api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout()
   targets_config = api.chromium_tests.create_targets_config(
-      builder_config, {
+      builder_config,
+      {
           "got_angle_revision": "19582d1201aab222b61be3858776e6fe93967895",
           "got_nacl_revision": "f231a6e8c08f6733c072ae9cca3ce00f42edd9ff",
           "got_revision": "549c1631e57b7f1980d1f3529a7ac8a9b41e92a3",
@@ -78,11 +79,13 @@ def RunSteps(api, remote_tests_only, expected_tests, targets_spec_dir,
           "got_webrtc_revision": "a19f0c7409f1dc4316bb6a6d9a97d3261539a84d",
           "got_webrtc_revision_cp": "refs/heads/main@{#36539}",
       },
-      api.chromium_checkout.source_dir,
+      update_result.source_root.path,
+      checkout_dir=update_result.checkout_dir,
       targets_spec_dir=targets_spec_dir,
       precommit_details=(generators.PrecommitDetails()
                          if api.tryserver.is_tryserver else None),
-      remote_tests_only=remote_tests_only)
+      remote_tests_only=remote_tests_only,
+  )
   tests = []
   skipped_tests = []
   for t in targets_config.all_tests:

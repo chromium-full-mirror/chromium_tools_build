@@ -100,7 +100,8 @@ def GenTests(api):
               orchestrator=InputProperties.Orchestrator(
                   builder_name='fake-orchestrator',
                   builder_group='fake-try-group'))),
-      api.path.exists(api.path.checkout_dir / 'out/Release/browser_tests'),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/browser_tests'),
       api.post_process(
           post_process.StepCommandContains,
           'compile (without patch)',

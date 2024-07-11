@@ -148,7 +148,11 @@ def RunSteps(api, did_complete_first_run, did_complete_retry_shards,
     t.lacros_gcs_path = 'gs://dummy/lacros.zip'
     t.exe_rel_path = 'out/Lacros/chrome'
 
+  checkout_dir = api.path.start_dir
+  source_dir = checkout_dir / 'fake-repo'
   invalid_suites, failed_tests = api.test_utils.run_tests(
+      checkout_dir,
+      source_dir,
       tests,
       '',
       retry_failed_shards=retry_failed_shards,

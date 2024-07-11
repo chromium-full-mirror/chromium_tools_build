@@ -5,6 +5,7 @@
 DEPS = [
     'chromium_tests',
     'recipe_engine/assertions',
+    'recipe_engine/path',
     'recipe_engine/properties',
     'recipe_engine/step',
 ]
@@ -23,8 +24,10 @@ def RunSteps(api):
 
   test.pre_run('')
 
+  checkout_dir = api.path.start_dir
+  source_dir = checkout_dir / 'fake-repo'
   try:
-    test.run('')
+    test.run(checkout_dir, source_dir, '')
   except api.step.InfraFailure:
     api.step.empty('infra failure in %s' % test.name)
   except api.step.StepFailure:

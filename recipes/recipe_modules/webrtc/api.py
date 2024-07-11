@@ -265,6 +265,7 @@ class WebRTCApi(recipe_api.RecipeApi):
   ):
     if builders.BUILDERS_DB[builder_id].execution_mode != builder_spec.TEST:
       return self.m.chromium_tests.set_swarming_test_execution_info(
+          source_dir,
           build_dir,
           tests,
           self.m.chromium_tests.find_swarming_command_lines('', build_dir),
@@ -365,7 +366,14 @@ class WebRTCApi(recipe_api.RecipeApi):
           args=['-a', 'public-read'],
           unauthenticated_url=True)
 
-  def run_tests(self, source_dir: Path, build_dir: Path, builder_id, tests):
+  def run_tests(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      build_dir: Path,
+      builder_id,
+      tests,
+  ):
     if not tests:
       return
 
@@ -374,7 +382,10 @@ class WebRTCApi(recipe_api.RecipeApi):
 
     self.set_test_command_lines(source_dir, build_dir, builder_id, tests)
     test_runner = self.m.chromium_tests.create_test_runner(
-        tests, surface_invalid_results_as_infra_failure=True)
+        checkout_dir,
+        source_dir,
+        tests,
+        surface_invalid_results_as_infra_failure=True)
     test_failure_summary = test_runner()
 
     if self.m.code_coverage.using_coverage:

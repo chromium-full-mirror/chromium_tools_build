@@ -26,7 +26,6 @@ DEPS = [
 
 def RunSteps(api):
   test_name = api.properties.get('test_name') or 'base_unittests'
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   isolate_profile_data = api.properties.get('isolate_profile_data', False)
 
@@ -56,8 +55,11 @@ def RunSteps(api):
   if relative_cwd:
     test.relative_cwd = relative_cwd
 
+  checkout_dir = api.path.cache_dir / 'builder'
+  source_dir = checkout_dir / 'fake-repo'
   try:
-    _, invalid_suites, failed_suites = api.test_utils.run_tests_once([test], '')
+    _, invalid_suites, failed_suites = api.test_utils.run_tests_once(
+        checkout_dir, source_dir, [test], '')
   finally:
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [

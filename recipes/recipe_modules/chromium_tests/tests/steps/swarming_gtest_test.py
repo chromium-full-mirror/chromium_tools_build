@@ -33,9 +33,10 @@ def RunSteps(api):
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
 
   # Fake path, as the real one depends on having done a chromium checkout.
-  api.profiles.source_dir = api.path.start_dir
-  api.chromium_swarming.path_to_merge_scripts = (
-      api.path.cache_dir / 'merge_scripts')
+  checkout_dir = api.path.start_dir
+  source_dir = checkout_dir / 'fake-repo'
+  api.profiles.source_dir = source_dir
+  api.chromium_swarming.path_to_merge_scripts = source_dir / 'merge_scripts'
   api.chromium_swarming.set_default_dimension('pool', 'foo')
   api.chromium.set_build_properties({
       'got_webrtc_revision': 'webrtc_sha',
@@ -55,7 +56,7 @@ def RunSteps(api):
 
   try:
     assert len(test.get_invocation_names('')) == 0
-    api.test_utils.run_tests_once([test], '')
+    api.test_utils.run_tests_once(checkout_dir, source_dir, [test], '')
     assert len(test.get_invocation_names('')) > 0
     assert test.runs_on_swarming
   finally:

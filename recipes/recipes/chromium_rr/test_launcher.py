@@ -48,7 +48,12 @@ def RunSteps(api, properties):
   build_dir = api.chromium.default_build_dir(source_dir)
   # TODO(jiesheng): Override the symbol level to 2 here.
   raw_result = api.chromium_tests.run_mb_and_compile(
-      build_dir, builder_id, test_suites, isolated_targets=[], name_suffix='')
+      source_dir,
+      build_dir,
+      builder_id,
+      test_suites,
+      isolated_targets=[],
+      name_suffix='')
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 

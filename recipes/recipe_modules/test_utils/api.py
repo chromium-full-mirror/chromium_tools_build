@@ -8,6 +8,7 @@ import traceback
 
 from recipe_engine import recipe_api
 from recipe_engine import util as recipe_util
+from recipe_engine.config_types import Path
 
 from .util import GTestResults, RDBPerSuiteResults, RDBResults
 from .util import (IndividualTestFailureRateAnalysis,
@@ -243,10 +244,20 @@ class TestUtilsApi(recipe_api.RecipeApi):
     ]
     return groups
 
-  def run_tests_once(self, test_suites, suffix, sort_by_shard=False):
+  def run_tests_once(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      test_suites,
+      suffix,
+      *,
+      sort_by_shard=False,
+  ):
     """Runs a set of tests once. Used as a helper function by run_tests.
 
     Args:
+      checkout_dir - The directory where the checkout was performed.
+      source_dir - The path to the top-level repo.
       test_suites - list of steps.Test objects representing tests to run
       suffix - string specifying the stage/type of run, e.g. "without patch" or
         "retry (with patch)".
@@ -269,7 +280,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
         group.pre_run(self.m, suffix)
 
     for group in groups:
-      group.run(self.m, suffix)
+      group.run(self.m, checkout_dir, source_dir, suffix)
 
     all_rdb_results = []
     for t in test_suites:
@@ -295,13 +306,20 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     return rdb_results, bad_results_dict['invalid'], bad_results_dict['failed']
 
-  def run_tests_for_flake_endorser(self, test_objects_by_suffix):
+  def run_tests_for_flake_endorser(
+      self,
+      checkout_dir: Path,
+      source_dir: Path,
+      test_objects_by_suffix,
+  ):
     """Runs tests flake endorser test reruns.
 
     RDB results and failed/invalid test_suites isn't returned because flake
     rates will be analyzed with rdb results stored in test objects.
 
     Args:
+      checkout_dir: The directory where the checkout was performed.
+      source_dir: The path to the top-level repo.
       test_objects_by_suffix: A mapping from test suffixes to lists of
         steps.Test objects.
     """
@@ -319,7 +337,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     for suffix in suffixes:
       groups = groups_by_suffix[suffix]
       for group in groups:
-        group.run(self.m, suffix)
+        group.run(self.m, checkout_dir, source_dir, suffix)
 
   def luci_milo_test_results_url(self, invocation_id):
     """Returns a url to the 'test results' tab in Milo.
@@ -908,8 +926,11 @@ class TestUtilsApi(recipe_api.RecipeApi):
     return _RETRY_SUFFIX + ' ' + suffix
 
   def run_tests(self,
+                checkout_dir: Path,
+                source_dir: Path,
                 test_suites,
                 suffix,
+                *,
                 sort_by_shard=False,
                 retry_failed_shards=False,
                 retry_invalid_shards=False):
@@ -921,6 +942,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
     retrying deterministic failures that are already known to be flaky on ToT.
 
     Args:
+      checkout_dir - The directory where the checkout was performed.
+      source_dir - The path to the top-level repo.
       test_suites - iterable of objects implementing the steps.Test interface.
       suffix - custom suffix, e.g. "with patch", "without patch" indicating
                context of the test run
@@ -942,7 +965,12 @@ class TestUtilsApi(recipe_api.RecipeApi):
           step_text=('every build supported by chromium recipe code'
                      ' must have resultdb enabled'))
     rdb_results, invalid_test_suites, failed_test_suites = (
-        self.run_tests_once(test_suites, suffix, sort_by_shard=sort_by_shard))
+        self.run_tests_once(
+            checkout_dir,
+            source_dir,
+            test_suites,
+            suffix,
+            sort_by_shard=sort_by_shard))
 
     _allowed_failing_suites = {
         x.name
@@ -980,7 +1008,11 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     retry_suffix = self.prepend_retry_shards(suffix)
     _, new_swarming_invalid_suites, _ = self.run_tests_once(
-        swarming_test_suites, retry_suffix, sort_by_shard=True)
+        checkout_dir,
+        source_dir,
+        swarming_test_suites,
+        retry_suffix,
+        sort_by_shard=True)
 
     invalid_test_suites = self._still_invalid_suites(
         old_invalid_suites=invalid_test_suites,
@@ -1002,11 +1034,17 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     return invalid_test_suites, failed_and_invalid_suites
 
-  def run_tests_with_patch(self, test_suites, retry_failed_shards=False):
+  def run_tests_with_patch(self,
+                           checkout_dir: Path,
+                           source_dir: Path,
+                           test_suites,
+                           retry_failed_shards=False):
     """Runs tests and returns failures.
 
     Args:
-      test_suites - iterable of objects implementing the steps.Test interface.
+      checkout_dir: The directory where the checkout was performed.
+      source_dir: The path to the top-level repo.
+      test_suites: iterable of objects implementing the steps.Test interface.
       retry_failed_shards: If true, attempts to retry failed shards of swarming
                            tests.
 
@@ -1019,6 +1057,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
           invalid_test_suites.
     """
     return self.run_tests(
+        checkout_dir,
+        source_dir,
         test_suites,
         'with patch',
         sort_by_shard=True,
@@ -1223,14 +1263,14 @@ class TestGroup:
     """
     raise NotImplementedError()
 
-  def run(self, api, suffix):  # pragma: no cover
+  def run(self, api, checkout_dir: Path, source_dir: Path, suffix):
     """Executes the |run| method of each test.
 
     Args:
       api - The api object of this module.
       suffix - The test name suffix.
     """
-    raise NotImplementedError()
+    raise NotImplementedError()  # pragma: no cover
 
   @contextlib.contextmanager
   def _handle_test_errors(self, api):
@@ -1334,11 +1374,11 @@ class LocalGroup(TestGroup):
       with self._handle_test_errors(api):
         t.pre_run(suffix)
 
-  def run(self, api, suffix):
+  def run(self, api, checkout_dir: Path, source_dir: Path, suffix):
     """Executes the |run| method of each test."""
     for t in self._test_suites:
       with self._handle_test_errors(api):
-        t.run(suffix)
+        t.run(checkout_dir, source_dir, suffix)
       self.fetch_rdb_results(t, suffix, api.flakiness)
 
     self.include_rdb_invocation(
@@ -1376,12 +1416,12 @@ class SwarmingGroup(TestGroup):
     self.include_rdb_invocation(
         suffix, step_name='include swarming task invocations')
 
-  def run(self, api, suffix):
+  def run(self, api, checkout_dir: Path, source_dir: Path, suffix):
     """Executes the |run| method of each test."""
     for test in self._test_suites:
       if not test.is_enabled:
         self.fetch_rdb_results(test, suffix, api.flakiness)
-        test.run(suffix)
+        test.run(checkout_dir, source_dir, suffix)
 
     attempts = 0
     while self._task_ids_to_test:
@@ -1400,7 +1440,7 @@ class SwarmingGroup(TestGroup):
 
       for task_set in finished_sets:
         test = self._task_ids_to_test[tuple(task_set)]
-        test.run(suffix)
+        test.run(checkout_dir, source_dir, suffix)
         del self._task_ids_to_test[task_set]
 
     # Testing this suite is hard, because the step_test_data for get_states
@@ -1424,7 +1464,7 @@ class SwarmingGroup(TestGroup):
         # We won't collect any already collected tasks, as they're removed from
         # self._task_ids_to_test
         self.fetch_rdb_results(test, suffix, api.flakiness)
-        test.run(suffix)
+        test.run(checkout_dir, source_dir, suffix)
 
 
 class SkylabGroup(TestGroup):
@@ -1447,7 +1487,7 @@ class SkylabGroup(TestGroup):
         if not build_id in self.ctp_build_ids:
           self.ctp_build_ids.add(build_id)
 
-  def run(self, api, suffix):
+  def run(self, api, checkout_dir: Path, source_dir: Path, suffix):
     """Render test results for each Skylab Test."""
     try:
       api.buildbucket.collect_builds(
@@ -1472,7 +1512,7 @@ class SkylabGroup(TestGroup):
       self.fetch_rdb_results(
           t, suffix, api.flakiness, force_fetch_all_results=True)
       with self._handle_test_errors(api):
-        t.run(suffix)
+        t.run(checkout_dir, source_dir, suffix)
 
     self.include_rdb_invocation(
         suffix, step_name='include skylab_test_runner invocations')

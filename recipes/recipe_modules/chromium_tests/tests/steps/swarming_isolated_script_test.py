@@ -42,7 +42,7 @@ def RunSteps(api):
 
     _, builder_config = api.chromium_tests_builder_config.lookup_builder()
     api.chromium_tests.configure_build(builder_config)
-    api.chromium_tests.prepare_checkout(builder_config)
+    update_result, _, _, = api.chromium_tests.prepare_checkout(builder_config)
 
     test_repeat_count = api.properties.get('repeat_count')
     if api.properties.get('swarm_hashes'):
@@ -81,15 +81,18 @@ def RunSteps(api):
           retry_limit=0,
           run_disabled=bool(test_repeat_count))
 
+  checkout_dir = update_result.checkout_dir
+  source_dir = update_result.source_root.path
   try:
-    api.test_utils.run_tests_once([test], 'with patch')
+    api.test_utils.run_tests_once(checkout_dir, source_dir, [test],
+                                  'with patch')
 
   finally:
     if api.properties.get('run_without_patch'):
       test._only_retry_failed_tests = True
 
       test.pre_run('without patch')
-      test.run('without patch')
+      test.run(checkout_dir, source_dir, 'without patch')
 
     result = api.step('details', [])
     result.presentation.logs['details'] = [

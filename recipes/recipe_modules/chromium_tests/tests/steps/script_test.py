@@ -25,7 +25,6 @@ DEPS = [
 
 def RunSteps(api):
   api.chromium.set_config('chromium')
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   test_spec = steps.ScriptTestSpec.create(
       'script_test',
@@ -35,8 +34,10 @@ def RunSteps(api):
   test = test_spec.get_test(api.chromium_tests)
   api.assertions.assertEqual(test.option_flags, steps.TestOptionFlags.create())
 
+  checkout_dir = api.path.cache_dir / 'builder'
+  source_dir = checkout_dir / 'src'
   try:
-    test.run('')
+    test.run(checkout_dir, source_dir, '')
   finally:
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [

@@ -197,7 +197,6 @@ def NotIdempotent(check, step_odict, step):
 
 def RunSteps(api, fail_compile):
   api.profiles._root_profile_dir = api.path.cache_dir / 'profile_root'
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   api.path.mock_add_paths(
       api.profiles.profile_dir().joinpath('overall-merged.profdata'))
   api.path.mock_add_paths(api.profiles.profile_dir().joinpath(

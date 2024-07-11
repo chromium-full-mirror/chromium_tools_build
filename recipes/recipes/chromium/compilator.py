@@ -137,6 +137,7 @@ def compilator_steps(api, properties):
     if raw_result and raw_result.status != common_pb.SUCCESS:
       return raw_result
 
+    checkout_dir = update_result.checkout_dir
     source_dir = update_result.source_root.path
     if any((t.runs_on_swarming or t.is_skylabtest) and t.is_enabled
            for t in test_suites):
@@ -154,8 +155,14 @@ def compilator_steps(api, properties):
             # else you'll get a file not found error
             if f not in deleted_files
         ]
-      archive_src_side_deps(api, orch_builder_config, source_dir, build_dir,
-                            affected_files_to_archive)
+      archive_src_side_deps(
+          api,
+          orch_builder_config,
+          checkout_dir,
+          source_dir,
+          build_dir,
+          affected_files_to_archive,
+      )
 
       if any(t.runs_on_swarming and t.is_enabled for t in test_suites):
         # Isolate the tests first so the Orchestrator can trigger them asap
@@ -189,10 +196,13 @@ def compilator_steps(api, properties):
     ]
     if local_tests:
       test_runner = api.chromium_tests.create_test_runner(
+          checkout_dir,
+          source_dir,
           local_tests,
           suffix='with patch',
       )
-      with api.chromium_tests.wrap_chromium_tests(build_dir, tests=local_tests):
+      with api.chromium_tests.wrap_chromium_tests(
+          checkout_dir, source_dir, build_dir, tests=local_tests):
         raw_result = test_runner()
         if raw_result and raw_result.status != common_pb.SUCCESS:
           return raw_result
@@ -203,7 +213,7 @@ def compilator_steps(api, properties):
             local_tests, affected_files=task.affected_files)
         if new_tests:
           return api.chromium_tests.run_tests_for_flakiness(
-              build_dir, new_tests)
+              checkout_dir, source_dir, build_dir, new_tests)
 
     return raw_result
 
@@ -211,6 +221,7 @@ def compilator_steps(api, properties):
 def archive_src_side_deps(
     api,
     orch_builder_config: ctbc.BuilderConfig,
+    checkout_dir: Path,
     source_dir: Path,
     build_dir: Path,
     affected_files,
@@ -220,6 +231,8 @@ def archive_src_side_deps(
   Affected files is also needed by the orchestrator to run code coverage
 
   Args:
+    checkout_dir: The directory where the checkout was performed.
+    source_dir: The path to the top-level repo.
     affected_files (list): List of absolute string paths
   """
   with api.step.nest('archive src-side dep paths') as nested_step:
@@ -243,7 +256,7 @@ def archive_src_side_deps(
     api.file.remove('rm %s' % isolate_file, isolate_file)
 
     targets_spec_dir = api.chromium_tests.get_targets_spec_dir(
-        orch_builder_config)
+        checkout_dir, source_dir, orch_builder_config)
     relative_test_spec_dir = api.path.relpath(targets_spec_dir, source_dir)
     # On windows compilators, this would use a `\\` path separator instead of
     # a `/` that the linux orchestrators need to construct Paths

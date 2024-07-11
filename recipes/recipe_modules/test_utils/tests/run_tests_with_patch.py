@@ -3,13 +3,14 @@
 # found in the LICENSE file.
 
 DEPS = [
-    'recipe_engine/properties',
-    'recipe_engine/step',
     'chromium',
     'chromium_swarming',
     'chromium_tests',
     'flakiness',
     'test_utils',
+    'recipe_engine/path',
+    'recipe_engine/properties',
+    'recipe_engine/step',
 ]
 
 from recipe_engine.recipe_api import Property
@@ -50,8 +51,10 @@ def RunSteps(api, retry_failed_shards, test_kwargs_list):
 
   tests = [s.get_test(api.chromium_tests) for s in test_specs]
 
+  checkout_dir = api.path.start_dir
+  source_dir = checkout_dir / 'fake-repo'
   invalid, failing = api.test_utils.run_tests_with_patch(
-      tests, **run_tests_kwargs)
+      checkout_dir, source_dir, tests, **run_tests_kwargs)
 
   if invalid:
     api.step('%s invalid' % ','.join(sorted(t.name for t in invalid)), None)

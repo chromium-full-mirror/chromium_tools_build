@@ -70,8 +70,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         builder_id, builder_config)
 
     build_path = self.configure_build_dir(properties.build_dir)
-    self.m.profiles.source_dir = self.m.chromium_checkout.source_dir
-    self.m.code_coverage.source_dir = self.m.chromium_checkout.source_dir
+    checkout_dir = self.m.chromium_checkout.checkout_dir
+    source_dir = self.m.chromium_checkout.source_dir
+    self.m.profiles.source_dir = source_dir
+    self.m.code_coverage.source_dir = source_dir
     self.m.code_coverage.build_dir = build_path
 
     result = self.prerun_checks(properties, build_path, compiling_builder_id)
@@ -89,8 +91,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if not should_test:
       return result_pb2.RawResult(status=common_pb2.SUCCESS)
 
-    test_runner = self.m.chromium_tests.create_test_runner(tests)
-    with self.m.chromium_tests.wrap_chromium_tests(build_path, tests=tests):
+    test_runner = self.m.chromium_tests.create_test_runner(
+        checkout_dir, source_dir, tests)
+    with self.m.chromium_tests.wrap_chromium_tests(
+        checkout_dir, source_dir, build_path, tests=tests):
       self.m.chromium_tests.configure_swarming(True)
       # Lower pri for faster turn-around time in debugging. The UTR shouldn't
       # get so much use that it affects CI/CQ traffic substantially. But we can
@@ -635,7 +639,10 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     preserve_gn_args = properties.rerun_options.preserve_gn_args
     builder_recipe = properties.builder_recipe
     targets_config = self.m.chromium_tests.create_targets_config(
-        builder_config, got_revisions, self.m.path.checkout_dir)
+        builder_config,
+        got_revisions,
+        self.m.chromium_checkout.source_dir,
+        checkout_dir=self.m.chromium_checkout.checkout_dir)
 
     def _get_matching_test(requested_test_name):
       for t in targets_config.all_tests:
@@ -681,8 +688,14 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     isolate_tests = [test for test in tests if test.isolate_target]
     if isolate_tests:
-      self.m.chromium_tests.isolate_tests(build_dir, builder_config,
-                                          isolate_tests, '', '')
+      self.m.chromium_tests.isolate_tests(
+          self.m.path.checkout_dir,
+          build_dir,
+          builder_config,
+          isolate_tests,
+          '',
+          '',
+      )
 
     # TODO(crbug.com/41492686): Prepare skylab artifacts
     return None, tests

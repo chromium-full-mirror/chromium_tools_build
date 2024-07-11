@@ -5,7 +5,6 @@
 DEPS = [
     'build',
     'chromium',
-    'chromium_checkout',
     'chromium_android',
     'chromium_tests',
     'depot_tools/bot_update',
@@ -33,7 +32,6 @@ def RunSteps(api):
       TARGET_PLATFORM=api.properties.get('target_platform', 'linux'))
   api.chromium_android.set_config('main_builder')
   update_result = api.bot_update.ensure_checkout()
-  api.chromium_checkout.set_paths_from_update_result(update_result)
 
   test = steps.LocalGTestTestSpec.create(
       'base_unittests',
@@ -45,8 +43,12 @@ def RunSteps(api):
       test_filter=['foo.bar'], retry_limit=3, run_disabled=True)
   test.test_options = test_options
 
+  checkout_dir = update_result.checkout_dir
+  source_dir = update_result.source_root.path
+
   try:
-    api.test_utils.run_tests_once([test], 'with patch')
+    api.test_utils.run_tests_once(checkout_dir, source_dir, [test],
+                                  'with patch')
   finally:
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [
@@ -54,7 +56,8 @@ def RunSteps(api):
         'uses_local_devices: %r' % test.uses_local_devices,
     ]
 
-    api.test_utils.run_tests_once([test], 'without patch')
+    api.test_utils.run_tests_once(checkout_dir, source_dir, [test],
+                                  'without patch')
 
 
 def GenTests(api):

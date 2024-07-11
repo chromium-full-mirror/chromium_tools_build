@@ -94,7 +94,8 @@ def GenTests(api):
               orchestrator=InputProperties.Orchestrator(
                   builder_name='fake-orchestrator',
                   builder_group='fake-try-group'))),
-      api.path.exists(api.path.checkout_dir / 'out/Release/browser_tests'),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/browser_tests'),
       api.post_process(
           post_process.StepCommandContains,
           'compile (with patch)',
@@ -142,7 +143,8 @@ def GenTests(api):
       api.cq(run_mode='FULL_RUN'),
       api.chromium_tests.simulate_previous_build(
           test_statuses={'browser_tests': 'Success'}),
-      api.path.exists(api.path.checkout_dir / 'out/Release/browser_tests'),
+      api.path.exists(api.path.cache_dir /
+                      'builder/src/out/Release/browser_tests'),
       api.post_process(
           post_process.StepCommandDoesNotContain,
           'compile (with patch)',

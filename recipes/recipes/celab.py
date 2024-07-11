@@ -125,7 +125,7 @@ def _RunStepsChromium(api):
   # Build Chromium binaries from source and get CELab from CIPD.
   source_dir, build_dir = _CheckoutChromiumRepo(api)
   test_root = source_dir / 'chrome/test/enterprise/e2e'
-  raw_result = _BuildChromiumFromSource(api, build_dir)
+  raw_result = _BuildChromiumFromSource(api, source_dir, build_dir)
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -231,12 +231,13 @@ def _CheckoutChromiumRepo(api):
   return source_dir, build_dir
 
 
-def _BuildChromiumFromSource(api, build_dir: Path):
+def _BuildChromiumFromSource(api, source_dir: Path, build_dir: Path):
   with api.chromium.chromium_layout():
     compile_targets = [
         'chrome/updater', 'chrome/installer/mini_installer', 'chromedriver'
     ]
     raw_result = api.chromium_tests.run_mb_and_compile(
+        source_dir,
         build_dir,
         api.chromium.get_builder_id(),
         compile_targets,

@@ -189,6 +189,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # explicitly set as `None`, and api.path.checkout_dir should remain unset.
     self.m.chromium_checkout.set_paths(self.m.path.cleanup_dir,
                                        self.m.gclient.c.solutions[0].name)
+    checkout_dir = self.m.chromium_checkout.checkout_dir
     source_dir = self.m.chromium_checkout.source_dir
     build_dir = self.m.chromium.default_build_dir(source_dir)
     self.m.code_coverage.source_dir = source_dir
@@ -215,8 +216,13 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # outputed by the compilator
     tests = []
     if comp_output.swarming_props:
-      tests = self.process_swarming_props(build_dir, comp_output.swarming_props,
-                                          builder_config, targets_config)
+      tests = self.process_swarming_props(
+          source_dir,
+          build_dir,
+          comp_output.swarming_props,
+          builder_config,
+          targets_config,
+      )
     # Add any skylab tests
     if comp_output.skylab_props:
       tests.extend(
@@ -248,9 +254,12 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
           ))
 
     # Trigger and wait for the tests (and process coverage data, if enabled)!
-    with self.m.chromium_tests.wrap_chromium_tests(build_dir, tests=tests):
+    with self.m.chromium_tests.wrap_chromium_tests(
+        checkout_dir, source_dir, build_dir, tests=tests):
       invalid_test_suites, failing_test_suites = (
           self.m.test_utils.run_tests_with_patch(
+              checkout_dir,
+              source_dir,
               tests,
               retry_failed_shards=builder_config.retry_failed_shards,
           ))
@@ -282,7 +291,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
             tests, affected_files=affected_files)
         if new_tests:
           result = self.m.chromium_tests.run_tests_for_flakiness(
-              build_dir, new_tests)
+              checkout_dir, source_dir, build_dir, new_tests)
 
           # If the swarming checks for flakiness succeed, we'll only need to
           # check for the compilator's failures. On success, None is returned by
@@ -354,6 +363,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     if comp_output.swarming_props:
       self.process_swarming_props(
+          source_dir,
           build_dir,
           comp_output.swarming_props,
           builder_config,
@@ -365,9 +375,13 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     # Trigger and wait for the (without patch) tests!
     with self.m.chromium_tests.wrap_chromium_tests(
-        build_dir, tests=failing_test_suites):
+        checkout_dir, source_dir, build_dir, tests=failing_test_suites):
       self.m.test_utils.run_tests(
-          failing_test_suites, 'without patch', sort_by_shard=True)
+          checkout_dir,
+          source_dir,
+          failing_test_suites,
+          'without patch',
+          sort_by_shard=True)
 
     # unrecoverable_test_suites are those that passed without a patch, so the
     # failures must be due to the CL
@@ -646,6 +660,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         status=sub_build.status, summary_markdown=sub_build.summary_markdown)
 
   def process_swarming_props(self,
+                             source_dir: Path,
                              build_dir: Path,
                              swarming_props,
                              builder_config,
@@ -654,6 +669,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     """Read isolate hashes swarming_props content and download command lines
 
     Args:
+      source_dir: The path to the top-level repo.
       swarming_props (dict): contains information about swarming tests to
         trigger
       builder_config (BuilderConfig): configuration for the Orchestrator
@@ -683,6 +699,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     # running a without patch step, so the command lines aren't actually
     # updated to anything different.
     self.m.chromium_tests.download_command_lines_for_tests(
+        source_dir,
         build_dir,
         tests,
         builder_config,

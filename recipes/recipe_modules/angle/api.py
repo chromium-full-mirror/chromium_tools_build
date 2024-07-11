@@ -78,9 +78,9 @@ class ANGLEApi(recipe_api.RecipeApi):
     self.m.chromium.runhooks(source_dir, build_dir)
     return update_result, build_dir
 
-  def _compile(self, build_dir: Path, isolated_targets):
+  def _compile(self, source_dir: Path, build_dir: Path, isolated_targets):
     raw_result = self.m.chromium_tests.run_mb_and_compile(
-        build_dir, self._builder_id, ['all'], isolated_targets, '')
+        source_dir, build_dir, self._builder_id, ['all'], isolated_targets, '')
     return raw_result
 
   def _run_trace_tests(self, checkout, gtest_filter, step_name):
@@ -115,36 +115,39 @@ class ANGLEApi(recipe_api.RecipeApi):
     test_mode = self.m.properties.get('test_mode')
     self._apply_builder_config(platform, toolchain, test_mode)
     update_result, build_dir = self._checkout()
+    checkout_dir = update_result.checkout_dir
+    source_dir = update_result.source_root.path
     if test_mode == 'checkout_only':
       pass
     elif test_mode == 'trace_tests':
       self._trace_tests()
     elif test_mode == 'compile_only':
-      raw_result = self._compile(build_dir, None)
+      raw_result = self._compile(source_dir, build_dir, None)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     else:
       assert (test_mode == 'compile_and_test')
-      script_dir = self.m.path.join(self.m.path.checkout_dir, 'testing',
-                                    'merge_scripts')
+      source_dir = update_result.source_root.path
+      script_dir = self.m.path.join(source_dir, 'testing', 'merge_scripts')
       self.m.chromium_swarming.configure_swarming(
           'angle',
           self.m.tryserver.is_tryserver,
           path_to_merge_scripts=script_dir)
       targets_config = self.m.chromium_tests.create_targets_config(
-          self._builder_config, update_result.properties,
-          self.m.path.checkout_dir)
+          self._builder_config,
+          update_result.properties,
+          source_dir,
+          checkout_dir=update_result.checkout_dir)
 
       if self.m.tryserver.is_tryserver:
         affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
-            relative_to='angle/',
-            cwd=self.m.path.checkout_dir,
-            report_via_property=True)
+            relative_to='angle/', cwd=source_dir, report_via_property=True)
         test_targets, compile_targets = (
             self.m.chromium_tests.determine_compilation_targets(
                 self._builder_id,
                 self._builder_config,
-                self.m.path.checkout_dir,
+                checkout_dir,
+                source_dir,
                 build_dir,
                 affected_files,
                 targets_config,
@@ -158,7 +161,7 @@ class ANGLEApi(recipe_api.RecipeApi):
         test_targets = [t.isolate_target for t in tests if t.uses_isolate]
         compile_targets = sorted(list(set(test_targets)))
 
-      compile_step = self._compile(build_dir, compile_targets)
+      compile_step = self._compile(source_dir, build_dir, compile_targets)
       if compile_step.status != common_pb.SUCCESS:
         return compile_step
 
@@ -168,14 +171,16 @@ class ANGLEApi(recipe_api.RecipeApi):
           verbose=True,
       )
       self.m.chromium_tests.set_swarming_test_execution_info(
+          source_dir,
           build_dir,
           tests,
           self.m.chromium_tests.find_swarming_command_lines("", build_dir),
-          self.m.path.relpath(build_dir, self.m.path.checkout_dir),
+          self.m.path.relpath(build_dir, source_dir),
       )
       # ANGLE marks entire failing shards as invalid. We retry them here.
       invalid_test_suites, failing_test_suites = (
-          self.m.test_utils.run_tests(tests, "", retry_invalid_shards=True))
+          self.m.test_utils.run_tests(
+              checkout_dir, source_dir, tests, "", retry_invalid_shards=True))
 
       self.m.chromium_swarming.report_stats()
 

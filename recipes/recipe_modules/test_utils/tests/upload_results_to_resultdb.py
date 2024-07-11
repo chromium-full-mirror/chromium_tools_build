@@ -50,7 +50,6 @@ def RunSteps(api, is_swarming_test=True):
       'got_revision': 'd3adv3ggie',
       'got_revision_cp': 'refs/heads/main@{#54321}',
   })
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
 
   test_specs = []
   if not is_swarming_test:
@@ -64,17 +63,21 @@ def RunSteps(api, is_swarming_test=True):
             shards=2,
             test_id_prefix='ninja://chromium/tests:base_unittests/'))
   tests = [test_spec.get_test(api.chromium_tests) for test_spec in test_specs]
-  api.chromium_swarming.path_to_merge_scripts = (
-      api.path.cache_dir / 'merge_scripts')
+
+  checkout_dir = api.path.start_dir
+  source_dir = checkout_dir / 'fake-repo'
+  api.chromium_swarming.path_to_merge_scripts = source_dir / 'merge_scripts'
   api.chromium_swarming.set_default_dimension('pool', 'foo')
 
   api.test_utils.run_tests(
+      checkout_dir,
+      source_dir,
       tests,
       'with patch',
       retry_failed_shards=True,
       retry_invalid_shards=True)
 
-  api.test_utils.run_tests(tests, 'without patch')
+  api.test_utils.run_tests(checkout_dir, source_dir, tests, 'without patch')
 
 
 def GenTests(api):

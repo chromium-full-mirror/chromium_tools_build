@@ -27,7 +27,6 @@ DEPS = [
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
   builder_id, builder_config = (
       api.chromium_tests_builder_config.lookup_builder())
   if api.tryserver.is_tryserver:
@@ -158,22 +157,15 @@ def GenTests(api):
     mock_paths = [
         api.path.start_dir.joinpath('squashfs', 'squashfs-tools', 'mksquashfs')
     ]
+    source_dir = api.path.cache_dir / 'builder/src'
     # testing/buildbot/filters should be a folder.
-    mock_paths.append(
-        api.path.checkout_dir.joinpath('testing', 'buildbot', 'filters', 'foo'))
-    mock_paths.append(
-        api.path.checkout_dir.joinpath('out', 'Release', 'chrome'))
-    mock_paths.append(
-        api.path.checkout_dir.joinpath('out', 'Release', 'bin',
-                                       'run_%s' % target_name))
+    mock_paths.append(source_dir / 'testing/buildbot/filters/foo')
+    mock_paths.append(source_dir / 'out/Release/chrome')
+    mock_paths.append(source_dir / f'out/Release/bin/run_{target_name}')
 
-    mock_paths.append(
-        api.path.checkout_dir.joinpath('out', 'Release', 'bin',
-                                       '%s.filter' % target_name))
+    mock_paths.append(source_dir / f'out/Release/bin/{target_name}.filter')
     if isolate_file_exists:
-      mock_paths.append(
-          api.path.checkout_dir.joinpath('out', 'Release',
-                                         '%s.isolate' % target_name))
+      mock_paths.append(source_dir / f'out/Release/{target_name}.isolate')
     steps += api.path.exists(*mock_paths)
     if isolate_file_exists and should_read_isolate:
       steps += api.step_data(

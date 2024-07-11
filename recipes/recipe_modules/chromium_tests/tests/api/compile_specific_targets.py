@@ -55,14 +55,12 @@ BUILDERS = ctbc.BuilderDatabase.create({
 
 
 def RunSteps(api):
-  api.path.checkout_dir = api.path.cache_dir / 'builder' / 'src'
-
   # Create a nested step so that setup steps can be easily filtered out
   with api.step.nest('setup steps'):
     builder_id, builder_config = (
         api.chromium_tests_builder_config.lookup_builder())
     api.chromium_tests.configure_build(builder_config)
-    update_step, build_dir, targets_config = (
+    update_result, build_dir, targets_config = (
         api.chromium_tests.prepare_checkout(builder_config))
 
   tests = []
@@ -75,7 +73,7 @@ def RunSteps(api):
       build_dir,
       builder_id,
       builder_config,
-      update_step,
+      update_result,
       targets_config,
       compile_targets=['base_unittests'],
       tests=tests,
