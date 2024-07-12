@@ -203,6 +203,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
           commit_footers.get(constants.SKIP_EXPECTATIONS_FOOTER_KEY))
       allow_expectations_regressions = is_revert or has_expectations_footer
 
+      self.m.chromium_tests.check_builder_cache(
+          self.m.chromium_checkout.default_checkout_dir)
       gs_zip_path = None
       if not try_gs_analysis:
         bot_update_step = self.m.chromium_checkout.ensure_checkout()

@@ -233,6 +233,25 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       return checkout_dir / builder_config.targets_spec_directory
     return self.m.chromium.targets_spec_dir(source_dir)
 
+  def check_builder_cache(self, checkout_dir: Path):
+    """Displays a step if the builder cache is present on the machine.
+    Also records the same info in an output property.
+
+    Args:
+      checkout_dir: The directory where the checkout was performed.
+    """
+    with self.m.step.nest('builder cache') as presentation:
+      contents = self.m.file.listdir('check if empty', checkout_dir)
+      is_cached = bool(contents)
+      presentation.properties['is_cached'] = is_cached
+      if is_cached:
+        presentation.step_text = (
+            'builder cache is present, '
+            'build may or may not be fast depending on state of cache')
+      else:
+        presentation.step_text = (
+            'builder cache is absent, expect a slow build')
+
   def create_targets_config(self,
                             builder_config,
                             got_revisions,
@@ -346,17 +365,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     """
     checkout_dir = self.m.chromium_checkout.default_checkout_dir
     if report_cache_state:
-      with self.m.step.nest('builder cache') as presentation:
-        contents = self.m.file.listdir('check if empty', checkout_dir)
-        is_cached = bool(contents)
-        presentation.properties['is_cached'] = is_cached
-        if is_cached:
-          presentation.step_text = (
-              'builder cache is present, '
-              'build may or may not be fast depending on state of cache')
-        else:
-          presentation.step_text = (
-              'builder cache is absent, expect a slow build')
+      self.check_builder_cache(checkout_dir)
 
     # The root_solution_revision input property can be used to checkout
     # the root solution at a certain branch. This can be used when attempting
