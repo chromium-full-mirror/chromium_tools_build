@@ -6,7 +6,7 @@
 The recipe will compile input tests, and execute test runner script to run tests
 using the rr tool, and upload the recorded traces to GCS.
 """
-from recipe_engine.post_process import DropExpectation
+from recipe_engine.post_process import DropExpectation, MustRun
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipes.build.chromium_rr.test_launcher import InputProperties
 
@@ -20,15 +20,19 @@ DEPS = [
     'chromium_tests',
     'chromium_tests_builder_config',
     'depot_tools/gclient',
+    'gn',
     'recipe_engine/context',
+    'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'recipe_engine/raw_io',
     'recipe_engine/step',
 ]
 
 
 def RunSteps(api, properties):
 
+  # TODO(jiesheng): Add steps and create test objects to run tests later.
   test_suites = []
   for test_info in properties.target_test_infos:
     if test_info.test_suite:
@@ -46,16 +50,24 @@ def RunSteps(api, properties):
       'out', api.chromium.c.build_config_fs)
   source_dir = update_step.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
-  # TODO(jiesheng): Override the symbol level to 2 here.
-  raw_result = api.chromium_tests.run_mb_and_compile(
-      source_dir,
-      build_dir,
-      builder_id,
-      test_suites,
-      isolated_targets=[],
-      name_suffix='')
-  if raw_result.status != common_pb.SUCCESS:
-    return raw_result
+  with api.chromium.guard_compile(build_dir):
+    # Update gn args with symbol_level=2
+    gn_args = api.chromium.mb_lookup(
+        source_dir, builder_id, recursive=False, name='lookup_builder_gn_args')
+    args = api.gn.parse_gn_args(gn_args)
+    use_reclient = args.get('use_remoteexec') == 'true' and args.get(
+        'use_reclient') != 'false'
+
+    gn_args = gn_args.splitlines()
+    gn_args.append('symbol_level=2')
+    api.file.write_text('write gn args', build_dir.joinpath('args.gn'),
+                        '\n'.join(gn_args))
+    api.gn.gen(build_dir, 'gn_gen')
+
+    raw_result = api.chromium.compile(
+        source_dir, build_dir, targets=test_suites, use_reclient=use_reclient)
+    if raw_result.status != common_pb.SUCCESS:
+      return raw_result
 
   # TODO(jiesheng): Run the tests using the test runner script using the
   # compiled tests.
@@ -131,5 +143,37 @@ def GenTests(api):
       api.builder_group.for_current('chromium.fyi'),
       api.step_data('compile', retcode=1),
       api.expect_status('FAILURE'),
+      api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+      'builder_gn_args_test',
+      api.chromium_polymorphic.triggered_properties(
+          project='fake-project',
+          bucket='fake-bucket',
+          builder='fake-builder',
+          builder_group='fake-group',
+      ),
+      ctbc_api.properties(
+          ctbc_api.properties_assembler_for_ci_builder(
+              builder='fake-builder',
+              builder_group='fake-group',
+          ).assemble()),
+      api.properties(
+          InputProperties(
+              target_test_infos=[
+                  InputProperties.TestInfo(
+                      test_suite='blink_wpt_tests',
+                      test_names=['test1', 'test2'],
+                  ),
+              ],)),
+      api.builder_group.for_current('chromium.fyi'),
+      api.step_data(
+          'lookup_builder_gn_args',
+          stdout=api.raw_io.output_text('import("//builder.args")\n'
+                                        'symbol_level = "1"\n'
+                                        'a = true\n'
+                                        'b = true')),
+      api.post_process(MustRun, 'write gn args'),
       api.post_process(DropExpectation),
   )
