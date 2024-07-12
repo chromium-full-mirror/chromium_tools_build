@@ -42,11 +42,11 @@ class ANGLEApi(recipe_api.RecipeApi):
     self.m.chromium_tests.report_builders(self._builder_config)
     self.m.chromium_tests.configure_build(self._builder_config)
 
-  def _get_angle_commit_pos(self):
+  def _get_angle_commit_pos(self, source_dir: Path):
     stepdata = self.m.step(
         'get commit position', [
             'python3',
-            self.m.path.join(self.m.path.checkout_dir, 'src', 'commit_id.py'),
+            source_dir / 'src/commit_id.py',
             'position',
         ],
         stdout=self.m.raw_io.output_text(add_output_log=True))
@@ -67,12 +67,13 @@ class ANGLEApi(recipe_api.RecipeApi):
       # paths set
       self.m.chromium_checkout.set_paths_from_update_result(update_result)
 
-    # Add an ANGLE commit position to the build properties.
-    build_properties = update_result.properties
-    build_properties['angle_commit_pos'] = self._get_angle_commit_pos()
-
     source_dir = update_result.source_root.path
     build_dir = self.m.chromium.default_build_dir(source_dir)
+
+    # Add an ANGLE commit position to the build properties.
+    build_properties = update_result.properties
+    build_properties['angle_commit_pos'] = self._get_angle_commit_pos(
+        source_dir)
 
     self.m.chromium.set_build_properties(update_result.properties)
     self.m.chromium.runhooks(source_dir, build_dir)
@@ -97,16 +98,15 @@ class ANGLEApi(recipe_api.RecipeApi):
       cmd += ['--xvfb']
     self.m.step(step_name, cmd)
 
-  def _trace_tests(self):
-    checkout = self.m.path.checkout_dir
-    with self.m.context(cwd=checkout):
-      self._run_trace_tests(checkout, '*/ES2_Vulkan_SwiftShader',
+  def _trace_tests(self, source_dir: Path):
+    with self.m.context(cwd=source_dir):
+      self._run_trace_tests(source_dir, '*/ES2_Vulkan_SwiftShader',
                             'GLES 2.0 trace tests')
-      self._run_trace_tests(checkout, '*/ES3_Vulkan_SwiftShader',
+      self._run_trace_tests(source_dir, '*/ES3_Vulkan_SwiftShader',
                             'GLES 3.0 trace tests')
-      self._run_trace_tests(checkout, '*/ES3_1_Vulkan_SwiftShader',
+      self._run_trace_tests(source_dir, '*/ES3_1_Vulkan_SwiftShader',
                             'GLES 3.1 trace tests')
-      self._run_trace_tests(checkout, '*/ES1_Vulkan_SwiftShader',
+      self._run_trace_tests(source_dir, '*/ES1_Vulkan_SwiftShader',
                             'GLES 1.0 trace tests')
 
   def steps(self):
@@ -120,15 +120,14 @@ class ANGLEApi(recipe_api.RecipeApi):
     if test_mode == 'checkout_only':
       pass
     elif test_mode == 'trace_tests':
-      self._trace_tests()
+      self._trace_tests(source_dir)
     elif test_mode == 'compile_only':
       raw_result = self._compile(source_dir, build_dir, None)
       if raw_result.status != common_pb.SUCCESS:
         return raw_result
     else:
       assert (test_mode == 'compile_and_test')
-      source_dir = update_result.source_root.path
-      script_dir = self.m.path.join(source_dir, 'testing', 'merge_scripts')
+      script_dir = source_dir / 'testing/merge_scripts'
       self.m.chromium_swarming.configure_swarming(
           'angle',
           self.m.tryserver.is_tryserver,
@@ -137,7 +136,7 @@ class ANGLEApi(recipe_api.RecipeApi):
           self._builder_config,
           update_result.properties,
           source_dir,
-          checkout_dir=update_result.checkout_dir)
+          checkout_dir=checkout_dir)
 
       if self.m.tryserver.is_tryserver:
         affected_files = self.m.chromium_checkout.get_files_affected_by_patch(

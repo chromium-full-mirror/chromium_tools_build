@@ -340,9 +340,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     return self._path_to_merge_scripts
 
   @path_to_merge_scripts.setter
-  def path_to_merge_scripts(self, value):
-    if not isinstance(value, Path):
-      value = self.m.path.abs_to_path(value)
+  def path_to_merge_scripts(self, value: Path):
     assert isinstance(value, Path), '{!r} is not a Path'.format(value)
     self._path_to_merge_scripts = value
 
