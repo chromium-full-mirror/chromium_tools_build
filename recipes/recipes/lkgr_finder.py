@@ -209,7 +209,6 @@ def GenTests(api):
         api.step_data('calculate custom lkgr', retcode=retcode),
         test_props(),
         api.post_process(post_process.MustRun, 'calculate custom lkgr'),
-        api.post_process(post_process.StatusCodeIn, retcode),
         api.expect_status(status),
     )
 
@@ -245,6 +244,5 @@ def GenTests(api):
       api.post_process(post_process.MustRun, 'calculate custom lkgr'),
       api.post_process(post_process.StepCommandContains,
                        'calculate custom lkgr', ['--project-config-file']),
-      api.post_process(post_process.StatusCodeIn, 0),
       api.post_process(post_process.DropExpectation),
   )
