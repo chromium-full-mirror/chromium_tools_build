@@ -5,22 +5,12 @@
 """
 
 DEPS = [
-    'depot_tools/bot_update',
-    'depot_tools/depot_tools',
-    'depot_tools/gclient',
-    'depot_tools/gsutil',
-    'depot_tools/osx_sdk',
-    'reclient',
-    'recipe_engine/buildbucket',
-    'recipe_engine/cipd',
-    'recipe_engine/context',
-    'recipe_engine/file',
-    'recipe_engine/json',
-    'recipe_engine/path',
-    'recipe_engine/platform',
-    'recipe_engine/properties',
-    'recipe_engine/step',
-    'recipe_engine/time',
+    'depot_tools/bot_update', 'depot_tools/depot_tools', 'depot_tools/gclient',
+    'depot_tools/gsutil', 'depot_tools/osx_sdk', 'reclient',
+    'recipe_engine/buildbucket', 'recipe_engine/cipd', 'recipe_engine/context',
+    'recipe_engine/file', 'recipe_engine/json', 'recipe_engine/path',
+    'recipe_engine/platform', 'recipe_engine/properties', 'recipe_engine/step',
+    'recipe_engine/time', 'recipe_engine/raw_io'
 ]
 
 from contextlib import contextmanager
@@ -74,6 +64,54 @@ def _checkout_steps(api):
     api.gclient.runhooks()
   return update_result
 
+
+# Installs libraries required for Kotlin tests to named cache directory mentioned in luci builder
+# configurations. Data in this directory will be persistent and will be
+# available between builds
+def _install_android_deps(api):
+  env_paths = []
+
+  # Install Java 17
+  java_ensure_path = api.cipd.EnsureFile()
+  java_install_path = api.path.cache_dir / 'java'
+  java_ensure_path.add_package("chromium/third_party/jdk",
+                               "BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C")
+
+  api.cipd.ensure(java_install_path, java_ensure_path, "Install JDK 17")
+  env_paths.append(java_install_path / 'bin')
+
+  # Install Android SDK
+  android_sdk_ensure_path = api.cipd.EnsureFile()
+  android_sdk_install_path = api.path.cache_dir / 'android_sdk'
+  android_sdk_packages = {
+      'chromium/third_party/android_sdk/public/build-tools/34.0.0': 'latest',
+      'chromium/third_party/android_sdk/public/platform-tools': 'latest',
+      'chromium/third_party/android_sdk/public/platforms/android-34': 'latest',
+      'chromium/third_party/android_sdk/public/cmdline-tools': 'latest'
+  }
+  for pkg, version in android_sdk_packages.items():
+    android_sdk_ensure_path.add_package(pkg, version)
+
+  api.cipd.ensure(android_sdk_install_path, android_sdk_ensure_path,
+                  "Install Android SDK")
+
+  # Accept SDK licenses
+  android_sdkmanager_path = android_sdk_install_path / 'cmdline-tools' / 'latest' / 'bin' / 'sdkmanager'
+  api.step(
+      'Accept Android SDK Licenses', [android_sdkmanager_path, '--licenses'],
+      stdin=api.raw_io.input_text('y\n' * 100))
+
+  # Install Gradle
+  gradle_ensure_path = api.cipd.EnsureFile()
+  gradle_install_path = api.path.cache_dir / 'gradle'
+  #TODO(b/347893657): Replace flutter/gradle with a custom gradle package for dawn
+  gradle_ensure_path.add_package("flutter/gradle", "version:8.2.1")
+  api.cipd.ensure(gradle_install_path, gradle_ensure_path, "Install Gradle 8")
+  env_paths.append(gradle_install_path / 'bin')
+
+  return env_paths
+
+
 def _install_clang(api):
   # 'builder' directory is implicitly cached, so cache clang there
   install_path = api.path.cache_dir / 'builder'
@@ -101,7 +139,7 @@ def _install_clang(api):
   #   package_hash = 'fDkN9wRoOjxDSowpeqX2rRdHF3sgPEbM9ulbizq9kCQC'
   ensure_file.add_package(f'fuchsia/third_party/clang/{package_name}',
                           package_hash, 'clang')
-  api.cipd.ensure(install_path, ensure_file)
+  api.cipd.ensure(install_path, ensure_file, "Install Clang")
   env_paths.append(install_path / 'clang/bin')
   return env_paths
 
@@ -379,6 +417,9 @@ def RunSteps(api,
     env['ASAN_OPTIONS'] = 'detect_container_overflow=0'
   if ubsan:
     env['UBSAN_OPTIONS'] = 'print_stacktrace=1:halt_on_error=1'
+  if api.platform.is_linux:
+    env['ANDROID_HOME'] = api.path.cache_dir / 'android_sdk'
+    env['JAVA_HOME'] = api.path.cache_dir / 'java'
 
   with api.context(env=env):
     update_result = _checkout_steps(api)
@@ -389,7 +430,8 @@ def RunSteps(api,
       env_paths = _install_clang(api)
     env_paths.append(source_dir.joinpath('tools', 'golang', 'bin'))
     env_paths.append(source_dir.joinpath('third_party', 'depot_tools'))
-
+    if api.platform.is_linux:
+      env_paths.extend(_install_android_deps(api))
     with api.context(env_prefixes={'PATH': env_paths}) as _, \
         api.osx_sdk('mac') as _, \
         windows_sdk(api, source_dir) as _:
@@ -407,6 +449,9 @@ def RunSteps(api,
           api.step(
               'Run go tool unittests', ['go', 'test', './...'],
               wrapper=shell_wrapper)
+          with api.context(cwd=source_dir.joinpath('tools', 'android')):
+            api.step('Run Kotlin unit tests',
+                     ['gradle', ':webgpu:testDebugUnitTest'])
 
       cmake_fixed_args = CMakeFixedArgs(
           target_cpu,

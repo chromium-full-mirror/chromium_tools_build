@@ -181,7 +181,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ensure_installed",
+    "name": "Install Clang",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",

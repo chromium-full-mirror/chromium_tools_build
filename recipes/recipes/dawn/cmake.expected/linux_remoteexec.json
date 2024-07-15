@@ -11,6 +11,10 @@
       "0o777",
       "[CACHE]/uncached"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -48,6 +52,7 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
@@ -57,7 +62,8 @@
       "GIT_TRACE2_EVENT": "[CLEANUP]/trace2-event",
       "GIT_TRACE_CURL": "[CLEANUP]/trace-curl",
       "GIT_TRACE_CURL_NO_DATA": "1",
-      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet"
+      "GIT_TRACE_PACKET": "[CLEANUP]/trace-packet",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -127,7 +133,9 @@
     ],
     "cwd": "[CACHE]/uncached",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184"
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java"
     },
     "env_suffixes": {
       "PATH": [
@@ -161,6 +169,10 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "luci_context": {
       "realm": {
         "name": "dawn:ci"
@@ -173,7 +185,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ensure_installed",
+    "name": "Install Clang",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
@@ -190,14 +202,188 @@
   },
   {
     "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/java",
+      "-ensure-file",
+      "chromium/third_party/jdk BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Install JDK 17",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-BXZwbslDFpYhPRuG\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/jdk\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/android_sdk",
+      "-ensure-file",
+      "chromium/third_party/android_sdk/public/build-tools/34.0.0 latest\nchromium/third_party/android_sdk/public/platform-tools latest\nchromium/third_party/android_sdk/public/platforms/android-34 latest\nchromium/third_party/android_sdk/public/cmdline-tools latest",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Install Android SDK",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/build-tools/34.0.0\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/cmdline-tools\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/platform-tools\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      },@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-latest----------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/third_party/android_sdk/public/platforms/android-34\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/android_sdk/cmdline-tools/latest/bin/sdkmanager",
+      "--licenses"
+    ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Accept Android SDK Licenses",
+    "stdin": "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CACHE]/gradle",
+      "-ensure-file",
+      "flutter/gradle version:8.2.1",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Install Gradle 8",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-version:8.2.1---\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"flutter/gradle\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
       "./tools/check-no-crlf"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -219,11 +405,17 @@
       "./tools/lint"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -247,11 +439,17 @@
       "./..."
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -267,6 +465,39 @@
       }
     },
     "name": "Run go tool unittests"
+  },
+  {
+    "cmd": [
+      "gradle",
+      ":webgpu:testDebugUnitTest"
+    ],
+    "cwd": "[CACHE]/uncached/dawn/tools/android",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
+    "env_prefixes": {
+      "PATH": [
+        "[CACHE]/builder/clang/bin",
+        "[CACHE]/uncached/dawn/tools/golang/bin",
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
+      ]
+    },
+    "luci_context": {
+      "realm": {
+        "name": "dawn:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Run Kotlin unit tests"
   },
   {
     "cmd": [],
@@ -304,12 +535,18 @@
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -340,11 +577,17 @@
       "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "/path/to/tmp/"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -383,7 +626,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -394,7 +639,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -431,7 +678,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -442,7 +691,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -487,6 +738,8 @@
       "--recursive"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -497,7 +750,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -534,6 +789,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -544,7 +801,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -576,6 +835,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -586,7 +847,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -623,6 +886,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -633,7 +898,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -670,6 +937,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -680,7 +949,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -717,6 +988,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -727,7 +1000,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -754,8 +1029,10 @@
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -788,7 +1065,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -819,6 +1098,8 @@
       "all"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -833,7 +1114,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -866,8 +1149,10 @@
       "-shutdown"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -900,7 +1185,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -930,6 +1217,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -940,7 +1229,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -970,6 +1261,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -980,7 +1273,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1010,6 +1305,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1020,7 +1317,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1053,6 +1352,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1063,7 +1364,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1104,6 +1407,8 @@
       "[START_DIR]/cipd_tool/infra/tools/bqupload/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1114,7 +1419,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1149,6 +1456,8 @@
       "/path/to/tmp/json"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1159,7 +1468,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1197,6 +1508,8 @@
       "goma-logs.rbe_metrics.builds"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1207,7 +1520,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1311,6 +1626,8 @@
       "[TMP_BASE]/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1321,7 +1638,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1355,6 +1674,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125323.00000000-0000-0000-0000-000000001337.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1365,7 +1686,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1398,6 +1721,8 @@
       "[CLEANUP]/reclient_log_tmp_1"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1408,7 +1733,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1454,6 +1781,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1464,7 +1793,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1498,6 +1829,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1508,7 +1841,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1542,6 +1877,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1552,7 +1889,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1586,6 +1925,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy.INFO"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1596,7 +1937,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1630,6 +1973,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1640,7 +1985,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1674,6 +2021,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337/reproxy_stderr.log"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1684,7 +2033,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1718,6 +2069,8 @@
       "[TMP_BASE]/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1728,7 +2081,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1762,6 +2117,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125323.00000000-0000-0000-0000-000000001337.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1772,7 +2129,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1804,6 +2163,8 @@
       "-1"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1814,7 +2175,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1846,6 +2209,8 @@
       "[CLEANUP]/reclient_log_tmp_1"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -1856,7 +2221,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1913,12 +2280,18 @@
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -1949,11 +2322,17 @@
       "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "/path/to/tmp/"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -1992,7 +2371,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2003,7 +2384,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -2040,7 +2423,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2051,7 +2436,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -2096,6 +2483,8 @@
       "--recursive"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2106,7 +2495,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2143,6 +2534,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2153,7 +2546,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2185,6 +2580,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2195,7 +2592,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2232,6 +2631,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2242,7 +2643,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2279,6 +2682,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2289,7 +2694,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2326,6 +2733,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2336,7 +2745,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2363,8 +2774,10 @@
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -2397,7 +2810,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2428,6 +2843,8 @@
       "dawn.node"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2442,7 +2859,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -2475,8 +2894,10 @@
       "-shutdown"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -2509,7 +2930,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2539,6 +2962,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2549,7 +2974,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2579,6 +3006,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2589,7 +3018,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2619,6 +3050,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2629,7 +3062,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2662,6 +3097,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2672,7 +3109,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2699,6 +3138,8 @@
       "goma-logs.rbe_metrics.builds"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2709,7 +3150,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2813,6 +3256,8 @@
       "[TMP_BASE]/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2823,7 +3268,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2857,6 +3304,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125326.00000000-0000-0000-0000-00000000133a.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2867,7 +3316,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2900,6 +3351,8 @@
       "[CLEANUP]/reclient_log_tmp_2"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2910,7 +3363,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -2956,6 +3411,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -2966,7 +3423,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3000,6 +3459,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3010,7 +3471,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3044,6 +3507,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3054,7 +3519,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3088,6 +3555,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy.INFO"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3098,7 +3567,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3132,6 +3603,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3142,7 +3615,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3176,6 +3651,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a/reproxy_stderr.log"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3186,7 +3663,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3220,6 +3699,8 @@
       "[TMP_BASE]/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3230,7 +3711,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3264,6 +3747,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125326.00000000-0000-0000-0000-00000000133a.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3274,7 +3759,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3306,6 +3793,8 @@
       "-1"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3316,7 +3805,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3348,6 +3839,8 @@
       "[CLEANUP]/reclient_log_tmp_2"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3358,7 +3851,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3383,11 +3878,17 @@
     "cmd": [
       "[CACHE]/uncached/dawn/cmake-build/tint_unittests"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -3413,11 +3914,17 @@
       "cmake-build"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -3445,11 +3952,17 @@
       "wgsl,spvasm,msl,hlsl,glsl"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -3478,11 +3991,17 @@
       "--use-ir"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -3535,12 +4054,18 @@
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -3571,11 +4096,17 @@
       "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "/path/to/tmp/"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3614,7 +4145,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3625,7 +4158,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -3662,7 +4197,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3673,7 +4210,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -3718,6 +4257,8 @@
       "--recursive"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3728,7 +4269,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3765,6 +4308,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3775,7 +4320,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3807,6 +4354,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3817,7 +4366,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3854,6 +4405,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3864,7 +4417,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3901,6 +4456,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3911,7 +4468,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3948,6 +4507,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -3958,7 +4519,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -3985,8 +4548,10 @@
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -4019,7 +4584,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4050,6 +4617,8 @@
       "tint_cmd_tint_cmd"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4064,7 +4633,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -4097,8 +4668,10 @@
       "-shutdown"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -4131,7 +4704,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4161,6 +4736,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4171,7 +4748,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4201,6 +4780,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4211,7 +4792,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4241,6 +4824,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4251,7 +4836,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4284,6 +4871,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4294,7 +4883,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4321,6 +4912,8 @@
       "goma-logs.rbe_metrics.builds"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4331,7 +4924,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4435,6 +5030,8 @@
       "[TMP_BASE]/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4445,7 +5042,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4479,6 +5078,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125329.00000000-0000-0000-0000-00000000133d.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4489,7 +5090,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4522,6 +5125,8 @@
       "[CLEANUP]/reclient_log_tmp_3"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4532,7 +5137,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4578,6 +5185,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4588,7 +5197,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4622,6 +5233,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4632,7 +5245,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4666,6 +5281,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4676,7 +5293,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4710,6 +5329,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy.INFO"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4720,7 +5341,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4754,6 +5377,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4764,7 +5389,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4798,6 +5425,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d/reproxy_stderr.log"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4808,7 +5437,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4842,6 +5473,8 @@
       "[TMP_BASE]/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4852,7 +5485,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4886,6 +5521,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125329.00000000-0000-0000-0000-00000000133d.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4896,7 +5533,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4928,6 +5567,8 @@
       "-1"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4938,7 +5579,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -4970,6 +5613,8 @@
       "[CLEANUP]/reclient_log_tmp_3"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -4980,7 +5625,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5037,12 +5684,18 @@
       "-DCMAKE_CXX_COMPILER_LAUNCHER=[CACHE]/uncached/dawn/buildtools/reclient/rewrapper;-cfg=[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg"
     ],
     "cwd": "[CACHE]/uncached/dawn",
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/uncached/dawn/third_party/ninja",
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -5073,11 +5726,17 @@
       "[CACHE]/uncached/dawn/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_linux.cfg",
       "/path/to/tmp/"
     ],
+    "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java"
+    },
     "env_prefixes": {
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5116,7 +5775,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5127,7 +5788,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -5164,7 +5827,9 @@
     ],
     "cwd": "[CACHE]/uncached/dawn",
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "DEPOT_TOOLS_REPORT_BUILD": "dawn/ci/linux/8945511751514863184",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5175,7 +5840,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "env_suffixes": {
@@ -5220,6 +5887,8 @@
       "--recursive"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5230,7 +5899,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5267,6 +5938,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5277,7 +5950,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5309,6 +5984,8 @@
       "[CACHE]/builder/reclient/deps/linux"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5319,7 +5996,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5356,6 +6035,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5366,7 +6047,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5403,6 +6086,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5413,7 +6098,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5450,6 +6137,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5460,7 +6149,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5487,8 +6178,10 @@
       "[CACHE]/uncached/dawn/buildtools/reclient/bootstrap"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -5521,7 +6214,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5552,6 +6247,8 @@
       "tint_cmd_tint_cmd"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5566,7 +6263,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "luci_context": {
@@ -5599,8 +6298,10 @@
       "-shutdown"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
       "GOMA_COMPILER_PROXY_ENABLE_CRASH_DUMP": "false",
       "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_automatic_auth": "false",
       "RBE_auxiliary_metadata_path": "auxiliary_proto-descriptor-set.proto.bin",
@@ -5633,7 +6334,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5663,6 +6366,8 @@
       "[TMP_BASE]/cloudtail_reproxy.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5673,7 +6378,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5703,6 +6410,8 @@
       "[TMP_BASE]/cloudtail_reproxy-gomaip.INFO.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5713,7 +6422,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5743,6 +6454,8 @@
       "[TMP_BASE]/cloudtail_reproxy_outerr.log.pid"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5753,7 +6466,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5786,6 +6501,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5796,7 +6513,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5823,6 +6542,8 @@
       "goma-logs.rbe_metrics.builds"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5833,7 +6554,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5937,6 +6660,8 @@
       "[TMP_BASE]/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5947,7 +6672,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -5981,6 +6708,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reproxy_rpl.20120514-125332.00000000-0000-0000-0000-000000001340.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -5991,7 +6720,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6024,6 +6755,8 @@
       "[CLEANUP]/reclient_log_tmp_4"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6034,7 +6767,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6080,6 +6815,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6090,7 +6827,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6124,6 +6863,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy-gomaip.LUCI-CHROMIUM-C.chrome-bot.log.ERROR.20220803-090904.9256"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6134,7 +6875,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6168,6 +6911,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6178,7 +6923,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6212,6 +6959,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy.INFO"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6222,7 +6971,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6256,6 +7007,8 @@
       "/path/to/tmp/"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6266,7 +7019,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6300,6 +7055,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340/reproxy_stderr.log"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6310,7 +7067,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6344,6 +7103,8 @@
       "[TMP_BASE]/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6354,7 +7115,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6388,6 +7151,8 @@
       "gs://chrome-goma-log/2012/05/14/reclient/reclient_logs.20120514-125332.00000000-0000-0000-0000-000000001340.tar.gz"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6398,7 +7163,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6430,6 +7197,8 @@
       "-1"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6440,7 +7209,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
@@ -6472,6 +7243,8 @@
       "[CLEANUP]/reclient_log_tmp_4"
     ],
     "env": {
+      "ANDROID_HOME": "[CACHE]/android_sdk",
+      "JAVA_HOME": "[CACHE]/java",
       "PLATFORM": "linux",
       "RBE_canonicalize_working_dir": "False",
       "RBE_exec_root": "[CACHE]",
@@ -6482,7 +7255,9 @@
       "PATH": [
         "[CACHE]/builder/clang/bin",
         "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools"
+        "[CACHE]/uncached/dawn/third_party/depot_tools",
+        "[CACHE]/java/bin",
+        "[CACHE]/gradle/bin"
       ]
     },
     "infra_step": true,
