@@ -113,12 +113,34 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
                                                invocation_uuid)
 
       ret = test_runner()
-      if any(not test.has_valid_results('') for test in tests):
+      if any(not t.has_valid_results('') and t.runs_on_swarming for t in tests):
         self.m.step('print swarming tasks link', [
             'python3',
             '-c',
             f'print("https://chromium-swarm.appspot.com/tasklist?f=utr_invocation_uuid-tag%3A{invocation_uuid}")',
         ])
+
+      failed_local_tests = [
+          t for t in tests if not t.runs_on_swarming and not t.is_skylabtest and
+          t.failure_on_exit('')
+      ]
+      if failed_local_tests:
+        ret.summary_markdown += '\n\n' + (
+            '**NOTE**: some tests failed to upload individual results. These are: '
+            '%s. Scroll up to their stdout/stderr to see more info.' %
+            (', '.join(t.name for t in failed_local_tests)))
+
+      if any(t for t in tests if t.runs_on_swarming or t.is_skylabtest):
+        some_or_all_text = 'all of'
+        if failed_local_tests:
+          some_or_all_text = 'some of'
+        self.m.step('print results URL', [
+            'python3', '-c',
+            f'print("For futher information, {some_or_all_text} the test '
+            'results have been uploaded to:")\n'
+            f'print("{self.m.milo.current_results_url}")\n'
+        ])
+
       return ret
 
   def get_compiling_builder_config(

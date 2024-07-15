@@ -323,7 +323,6 @@ solutions = [
                        'postprocess for reclient.stop cloudtail'),
       api.post_process(post_process.DoesNotRun,
                        'preprocess for reclient.start cloudtail: reproxy.INFO'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -541,7 +540,6 @@ target_os=['os']
       api.platform('win', 32),
       api.code_coverage(use_clang_coverage=True),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -574,7 +572,6 @@ target_os=['os']
       ),
       api.code_coverage(use_clang_coverage=True),
       api.post_process(post_process.MustRun, 'save paths of affected files'),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -601,7 +598,6 @@ target_os=['os']
       api.post_process(post_process.StepCommandDoesNotContain,
                        'write cleaned gn args',
                        ['coverage_instrumentation_input_file']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -632,7 +628,6 @@ target_os=['os']
       api.post_process(post_process.StepCommandDoesNotContain,
                        'write cleaned gn args',
                        ['coverage_instrumentation_input_file']),
-      api.post_process(post_process.StatusSuccess),
       api.post_process(post_process.DropExpectation),
   )
 
@@ -713,6 +708,36 @@ target_os=['os']
           },
       ),
       api.post_process(post_process.DoesNotRun, 'compile'),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'ScriptTest_fails',
+      boilerplate(
+          test_names=['browser_tests', 'check_network_annotations'],
+          target_spec={
+              'fake-tester': {
+                  'scripts': [{
+                      'name': 'check_network_annotations',
+                      'script': 'check_network_annotations.py',
+                  }],
+                  'gtest_tests': [{
+                      'name': 'browser_tests',
+                      'swarming': {
+                          'dimensions': {
+                              'os': 'Linux',
+                              'pool': 'fake-pool',
+                          },
+                      },
+                  }],
+              }
+          },
+      ),
+      api.override_step_data(
+          'check_network_annotations',
+          retcode=1,
+      ),
+      api.expect_status('FAILURE'),
       api.post_process(post_process.DropExpectation),
   )
 

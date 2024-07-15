@@ -17,6 +17,7 @@ DEPS = [
     'depot_tools/git',
     'recipe_engine/context',
     'recipe_engine/file',
+    'recipe_engine/milo',
     'recipe_engine/path',
     'recipe_engine/platform',
     'recipe_engine/raw_io',
