@@ -207,7 +207,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           self.m.chromium_checkout.default_checkout_dir)
       gs_zip_path = None
       if not try_gs_analysis:
-        bot_update_step = self.m.chromium_checkout.ensure_checkout()
+        update_result = self.m.chromium_checkout.ensure_checkout()
       else:
         patch_parent_revision = revision_info['commit']['parents'][0]['commit']
         gs_zip_path, recent_upload_revision = self._get_recent_tot_analysis_path(
@@ -216,7 +216,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           self.m.gclient.c.solutions[0].revision = recent_upload_revision
 
         try:
-          bot_update_step = self.m.chromium_checkout.ensure_checkout(
+          update_result = self.m.chromium_checkout.ensure_checkout(
               # Make sure that the git cache is refreshed with another origin
               # fetch to get a correct diff of the patch
               enforce_fetch=True)
@@ -225,9 +225,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
           # analysis. Use the most recent trunk commit instead.
           self.m.gclient.c.solutions[0].revision = None
           gs_zip_path = None
-          bot_update_step = self.m.chromium_checkout.ensure_checkout()
+          update_result = self.m.chromium_checkout.ensure_checkout()
 
-      source_dir = bot_update_step.source_root.path
+      checkout_dir = update_result.checkout_dir
+      source_dir = update_result.source_root.path
       build_dir = self.m.chromium.default_build_dir(source_dir)
 
       suffix = ' (with patch)'
@@ -237,7 +238,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
       affected_files = self.m.chromium_checkout.get_files_affected_by_patch()
       affected_test_targets, _ = self.m.filter.analyze(
-          self.m.path.checkout_dir,
+          source_dir,
           build_dir,
           affected_files,
           self._analyze_targets,
@@ -261,7 +262,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       # case use_gs_analysis == False.
       expectations_without_patch_json = None
       with_results_dir, raw_result = self._build_and_measure(
-          True, build_dir, staging_dir, analysis_cmd_func)
+          True, source_dir, build_dir, staging_dir, analysis_cmd_func)
 
       if raw_result and raw_result.status != common_pb.SUCCESS:
         return raw_result
@@ -273,16 +274,16 @@ class BinarySizeApi(recipe_api.RecipeApi):
         without_results_dir = self._download_recent_tot_analysis(
             gs_zip_path, staging_dir)
       else:
-        with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
-          self.m.bot_update.deapply_patch(bot_update_step)
+        with self.m.context(cwd=checkout_dir):
+          self.m.bot_update.deapply_patch(update_result)
 
-        with self.m.context(cwd=self.m.path.checkout_dir):
+        with self.m.context(cwd=source_dir):
           suffix = ' (without patch)'
 
           self.m.chromium.runhooks(
               source_dir, build_dir, name='runhooks' + suffix)
           without_results_dir, raw_result = self._build_and_measure(
-              False, build_dir, staging_dir, analysis_cmd_func)
+              False, source_dir, build_dir, staging_dir, analysis_cmd_func)
 
           if raw_result and raw_result.status != common_pb.SUCCESS:
             self.m.step.empty(constants.PATCH_FIXED_BUILD_STEP_NAME)
@@ -295,17 +296,25 @@ class BinarySizeApi(recipe_api.RecipeApi):
         # We could build without-patch first to avoid having to apply the patch
         # twice, but it's nicer to fail fast when the patch does not compile.
         suffix = ' (with patch again)'
-        with self.m.context(cwd=self.m.chromium_checkout.checkout_dir):
-          bot_update_step = self.m.bot_update.ensure_checkout(
+        with self.m.context(cwd=checkout_dir):
+          update_result = self.m.bot_update.ensure_checkout(
               suffix=suffix, patch=True)
         self.m.chromium.runhooks(
             source_dir, build_dir, name='runhooks' + suffix)
 
-      with self.m.context(cwd=self.m.path.checkout_dir):
+      with self.m.context(cwd=source_dir):
         size_results_path = staging_dir / 'size_results.json'
 
-        diff_func(author, review_subject, review_url, without_results_dir,
-                  with_results_dir, size_results_path, staging_dir)
+        diff_func(
+            author,
+            review_subject,
+            review_url,
+            source_dir,
+            without_results_dir,
+            with_results_dir,
+            size_results_path,
+            staging_dir,
+        )
         expectation_success = self._check_expectations(
             expectations_with_patch_json, expectations_without_patch_json,
             allow_expectations_regressions)
@@ -321,36 +330,43 @@ class BinarySizeApi(recipe_api.RecipeApi):
           raise self.m.step.StepFailure(
               binary_size_result.presentation.step_text)
 
-  def get_android_size_analysis_command(self, build_dir: Path, staging_dir):
+  def get_android_size_analysis_command(
+      self,
+      source_dir: Path,
+      build_dir: Path,
+      staging_dir,
+  ):
     """Returns the Android command to compute size analysis files.
 
     Args:
       staging_dir: Staging directory to pass input files and retrieve output
         size analysis files (e.g., .size and size JSON files).
     """
-    generator_script = self.m.path.checkout_dir.joinpath(
-        'tools', 'binary_size', 'generate_commit_size_analysis.py')
+    generator_script = (
+        source_dir / 'tools/binary_size/generate_commit_size_analysis.py')
     cmd = [generator_script]
     cmd += ['--size-config-json', build_dir / self._size_config_json]
     cmd += ['--staging-dir', staging_dir]
     cmd += ['--chromium-output-directory', build_dir]
     return cmd
 
-  def get_fuchsia_size_analysis_command(self, build_dir: Path, staging_dir):
+  def get_fuchsia_size_analysis_command(
+      self,
+      source_dir: Path,
+      build_dir: Path,
+      staging_dir,
+  ):
     """Returns the Fuchsia command to compute size analysis files.
 
     Args:
       staging_dir: Staging directory to pass input files and retrieve output
         size analysis files (e.g., .size and size JSON files).
     """
-    generator_script = self.m.path.checkout_dir.joinpath(
-        'build', 'fuchsia', 'binary_sizes.py')
+    generator_script = source_dir / 'build/fuchsia/binary_sizes.py'
     cmd = [generator_script]
     cmd += ['--build-out-dir', build_dir]
 
-    size_path = self.m.path.checkout_dir.joinpath('tools', 'fuchsia',
-                                                  'size_tests',
-                                                  'fyi_sizes.json')
+    size_path = source_dir / 'tools/fuchsia/size_tests/fyi_sizes.json'
     cmd += ['--sizes-path', size_path]
 
     output_file = build_dir / 'plugin.json'
@@ -425,6 +441,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
   def _build_and_measure(
       self,
       with_patch,
+      source_dir: Path,
       build_dir: Path,
       staging_dir,
       analysis_cmd_func,
@@ -433,7 +450,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     results_basename = 'with_patch' if with_patch else 'without_patch'
 
     raw_result = self.m.chromium_tests.run_mb_and_compile(
-        self.m.path.checkout_dir,
+        source_dir,
         build_dir,
         self.m.chromium.get_builder_id(),
         self.compile_targets,
@@ -449,7 +466,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
     self.m.step(
         name='Generate commit size analysis files',
-        cmd=analysis_cmd_func(build_dir, results_dir))
+        cmd=analysis_cmd_func(source_dir, build_dir, results_dir))
 
     return results_dir, None
 
@@ -510,10 +527,19 @@ class BinarySizeApi(recipe_api.RecipeApi):
                                                    normalized_log_name)
     return url
 
-  def _create_diffs_android(self, author, review_subject, review_url,
-                            before_dir, after_dir, results_path, staging_dir):
-    checker_script = self.m.path.checkout_dir.joinpath(
-        'tools', 'binary_size', 'trybot_commit_size_checker.py')
+  def _create_diffs_android(
+      self,
+      author,
+      review_subject,
+      review_url,
+      source_dir: Path,
+      before_dir,
+      after_dir,
+      results_path,
+      staging_dir,
+  ):
+    checker_script = (
+        source_dir / 'tools/binary_size/trybot_commit_size_checker.py')
 
     with self.m.context(env={'PYTHONUNBUFFERED': '1'}):
       cmd = [checker_script]
@@ -530,16 +556,23 @@ class BinarySizeApi(recipe_api.RecipeApi):
       cmd += ['--staging-dir', staging_dir]
       self.m.step(name='Generate diffs', cmd=cmd)
 
-  def _create_diffs_fuchsia(self, author, review_subject, review_url,
-                            before_dir, after_dir, results_path, staging_dir):
-    checker_script = self.m.path.checkout_dir.joinpath('build', 'fuchsia',
-                                                       'binary_size_differ.py')
+  def _create_diffs_fuchsia(
+      self,
+      author,
+      review_subject,
+      review_url,
+      source_dir: Path,
+      before_dir,
+      after_dir,
+      results_path,
+      staging_dir,
+  ):
+    checker_script = source_dir / 'build/fuchsia/binary_size_differ.py'
     with self.m.context(env={'PYTHONUNBUFFERED': '1'}):
       cmd = [checker_script]
       cmd += ['--before-dir', before_dir]
       cmd += ['--after-dir', after_dir]
-      milestone = int(
-          self.m.chromium.get_version(self.m.path.checkout_dir)['MAJOR'])
+      milestone = int(self.m.chromium.get_version(source_dir)['MAJOR'])
       if (milestone
           >= constants.FUCHSIA_AUTHOR_FLOW_MILESTONE):  # pragma: no cover
         cmd += ['--author', author]
