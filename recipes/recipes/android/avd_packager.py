@@ -32,8 +32,10 @@ def GenTests(api):
           }),
       api.post_process(
           post_process.MustRun,
+          'Process tools/android/avd/proto/generic_android28.textpb.'
           'avd create tools/android/avd/proto/generic_android28.textpb'),
       api.override_step_data(
+          'Process tools/android/avd/proto/generic_android28.textpb.'
           'avd create tools/android/avd/proto/generic_android28.textpb',
           api.json.output({
               'result': {
@@ -41,7 +43,13 @@ def GenTests(api):
                   'package': 'sample/avd/package/name',
               }
           })),
-      api.post_process(post_process.MustRun,
-                       'cipd set-tag sample/avd/package/name'),
+      api.post_process(
+          post_process.MustRun,
+          'Process tools/android/avd/proto/generic_android28.textpb.'
+          'cipd set-tag sample/avd/package/name'),
+      api.post_process(
+          post_process.MustRun,
+          'Process tools/android/avd/proto/generic_android28.textpb.'
+          'avd uninstall tools/android/avd/proto/generic_android28.textpb'),
       api.post_process(post_process.DropExpectation),
   )

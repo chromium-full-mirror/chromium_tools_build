@@ -42,31 +42,32 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     with self.m.context(cwd=chromium_src):
       with self.m.defer.context() as defer:
         for avd_config in self._avd_configs:
-          avd_config_path = chromium_src / avd_config
+          with self.m.step.nest('Process %s' % avd_config):
+            avd_config_path = chromium_src / avd_config
 
-          # Call "create" to create and upload AVD.
-          create_commands = [
-              avd_script_path, 'create', '-v', '--avd-config', avd_config_path,
-              '--snapshot', '--cipd-json-output',
-              self.m.json.output()
-          ]
-          create_result = defer(self.m.step, 'avd create %s' % avd_config,
-                                ['vpython3', '-u'] + create_commands)
-          if create_result.is_ok():
-            create_result = create_result.result()
-            if create_result.json.output:
-              cipd_result = create_result.json.output.get('result', {})
-              if 'package' in cipd_result and 'instance_id' in cipd_result:
-                self.m.cipd.add_instance_link(create_result)
-                # Add buildbucket id to the CIPD instance.
-                tags = {'buildbucket_id': str(self.m.buildbucket.build.id)}
-                defer(self.m.cipd.set_tag, cipd_result['package'],
-                      cipd_result['instance_id'], tags)
+            # Call "create" to create and upload AVD.
+            create_commands = [
+                avd_script_path, 'create', '-v', '--avd-config',
+                avd_config_path, '--snapshot', '--cipd-json-output',
+                self.m.json.output()
+            ]
+            create_result = defer(self.m.step, 'avd create %s' % avd_config,
+                                  ['vpython3', '-u'] + create_commands)
+            if create_result.is_ok():
+              create_result = create_result.result()
+              if create_result.json.output:
+                cipd_result = create_result.json.output.get('result', {})
+                if 'package' in cipd_result and 'instance_id' in cipd_result:
+                  self.m.cipd.add_instance_link(create_result)
+                  # Add buildbucket id to the CIPD instance.
+                  tags = {'buildbucket_id': str(self.m.buildbucket.build.id)}
+                  defer(self.m.cipd.set_tag, cipd_result['package'],
+                        cipd_result['instance_id'], tags)
 
-          # Call "uninstall" to free disk space.
-          uninstall_commands = [
-              avd_script_path, 'uninstall', '-v', '--avd-config',
-              avd_config_path
-          ]
-          defer(self.m.step, 'avd uninstall %s' % avd_config,
-                ['vpython3', '-u'] + uninstall_commands)
+            # Call "uninstall" to free disk space.
+            uninstall_commands = [
+                avd_script_path, 'uninstall', '-v', '--avd-config',
+                avd_config_path
+            ]
+            defer(self.m.step, 'avd uninstall %s' % avd_config,
+                  ['vpython3', '-u'] + uninstall_commands)
