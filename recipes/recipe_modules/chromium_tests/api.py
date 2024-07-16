@@ -1076,7 +1076,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             led_job = led_job.then('edit', *property_args)
             result = led_job.then('launch').launch_result
 
-            child_link = result.build_url or result.swarming_task_url
+            child_link = result.build_url
             trigger_presentation.links[child_builder_name] = child_link
 
   def trigger_child_builds(self,

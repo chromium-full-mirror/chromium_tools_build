@@ -143,7 +143,7 @@ def GenTests(api):
           post_process.StepCommandContains,
           'trigger compilator (with patch).led get-builder',
           [
-              'led', 'get-builder', '-adjust-priority', '0', '-real-build',
+              'led', 'get-builder', '-adjust-priority', '0',
               'luci.chromium.try:fake-compilator'
           ],
       ),
@@ -155,10 +155,7 @@ def GenTests(api):
       api.post_process(
           post_process.StepCommandContains,
           'trigger compilator (with patch).led launch',
-          [
-              'led', 'launch', '-resultdb', 'on', '-bound-to-parent',
-              '-real-build'
-          ],
+          ['led', 'launch', '-resultdb', 'on', '-bound-to-parent'],
       ),
       api.post_process(post_process.MustRun, 'compilator steps (with patch)'),
       api.post_process(post_process.DropExpectation),
@@ -223,17 +220,14 @@ def GenTests(api):
           post_process.StepCommandContains,
           'trigger compilator (without patch).led get-builder',
           [
-              'led', 'get-builder', '-adjust-priority', '0', '-real-build',
+              'led', 'get-builder', '-adjust-priority', '0',
               'luci.chromium.try:fake-compilator'
           ],
       ),
       api.post_process(
           post_process.StepCommandContains,
           'trigger compilator (without patch).led launch',
-          [
-              'led', 'launch', '-resultdb', 'on', '-bound-to-parent',
-              '-real-build'
-          ],
+          ['led', 'launch', '-resultdb', 'on', '-bound-to-parent'],
       ),
       api.post_process(post_process.MustRun,
                        'compilator steps (without patch)'),
@@ -303,7 +297,7 @@ def GenTests(api):
           'trigger compilator (with patch).led get-builder',
           [
               'led', 'get-builder', '-adjust-priority', '0', '-experiment',
-              'chromium.enable_cleandead=true', '-real-build',
+              'chromium.enable_cleandead=true',
               'luci.chromium.try:fake-compilator'
           ],
       ),

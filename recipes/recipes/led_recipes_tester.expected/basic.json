@@ -1129,8 +1129,7 @@
       "launch",
       "-resultdb",
       "on",
-      "-bound-to-parent",
-      "-real-build"
+      "-bound-to-parent"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1754,8 +1753,7 @@
       "launch",
       "-resultdb",
       "on",
-      "-bound-to-parent",
-      "-real-build"
+      "-bound-to-parent"
     ],
     "infra_step": true,
     "luci_context": {
@@ -2128,8 +2126,7 @@
       "launch",
       "-resultdb",
       "on",
-      "-bound-to-parent",
-      "-real-build"
+      "-bound-to-parent"
     ],
     "infra_step": true,
     "luci_context": {
