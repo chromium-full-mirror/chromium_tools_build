@@ -144,7 +144,7 @@ def RunSteps(api, did_complete_first_run, did_complete_retry_shards,
       s.get_test(api.chromium_tests)
       for s in test_specs
   ]
-  for t in [test for test in tests if test.is_skylabtest]:
+  for t in [test for test in tests if test.runs_on_skylab]:
     t.lacros_gcs_path = 'gs://dummy/lacros.zip'
     t.exe_rel_path = 'out/Lacros/chrome'
 

@@ -107,7 +107,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     # Explicitly disable resultdb for any test we're running locally. We don't
     # want to be uploading results to resultdb locally.
     for t in tests:
-      if not (t.runs_on_swarming or t.is_skylabtest):
+      if t.runs_locally:
         t.spec = attr.evolve(
             t.spec, resultdb=attr.evolve(t.spec.resultdb, enable=False))
 
@@ -134,8 +134,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         ])
 
       failed_local_tests = [
-          t for t in tests if not t.runs_on_swarming and not t.is_skylabtest and
-          t.failure_on_exit('')
+          t for t in tests if t.runs_locally and t.failure_on_exit('')
       ]
       if failed_local_tests:
         ret.summary_markdown += '\n\n' + (
@@ -143,7 +142,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
             '%s. Scroll up to their stdout/stderr to see more info.' %
             (', '.join(t.name for t in failed_local_tests)))
 
-      if any(t for t in tests if t.runs_on_swarming or t.is_skylabtest):
+      if any(t for t in tests if not t.runs_locally):
         some_or_all_text = 'all of'
         if failed_local_tests:
           some_or_all_text = 'some of'
@@ -725,7 +724,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           build_dir, builder_recipe)
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
-    skylab_tests = [test for test in tests if test.is_skylabtest]
+    skylab_tests = [test for test in tests if test.runs_on_skylab]
     if not should_build or not generated_isolates or skylab_tests:
       # When compiling, "mb.py gen" will produce the *.isolate files for us. In
       # all other instances, we need to ask mb.py to do so specifically. Do so

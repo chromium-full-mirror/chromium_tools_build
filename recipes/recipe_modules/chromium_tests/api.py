@@ -617,7 +617,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         for t in tests
         # Skylab test has different runner script and dependencies. A skylab
         # test should not appear in isolated_tests.
-        if t.is_skylabtest and not t in isolated_tests and t.is_enabled
+        if t.runs_on_skylab and not t in isolated_tests and t.is_enabled
     ]
 
     suffix = ''
@@ -1395,7 +1395,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           to execute the swarming tests in failing_tests.
 
     """
-    skylab_isolates = [t.target_name for t in failing_tests if t.is_skylabtest]
+    skylab_isolates = [t.target_name for t in failing_tests if t.runs_on_skylab]
 
     compile_targets = list(
         itertools.chain(*[t.compile_targets() for t in failing_tests]))
@@ -1875,7 +1875,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     skylab_tests = [
         t for t in targets_config.tests_triggered_by(builder_id)
-        if t.is_skylabtest
+        if t.runs_on_skylab
     ]
 
     if skylab_tests:
@@ -1912,7 +1912,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     tests = targets_config.tests_on(builder_id)
 
     tests_using_isolates = [t for t in tests if t.uses_isolate]
-    tests_using_skylab = [t for t in tests if t.is_skylabtest]
+    tests_using_skylab = [t for t in tests if t.runs_on_skylab]
 
     # Protect against hard to debug mismatches between directory names
     # used to run tests from and extract build to. We've had several cases
@@ -2934,7 +2934,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         # to an existing issue with occasional corruption of collected coverage
         # data.
         retry_invalid_shards=any(
-            t.is_skylabtest or (t.runs_on_swarming and t.isolate_profile_data)
+            t.runs_on_skylab or (t.runs_on_swarming and t.isolate_profile_data)
             for t in tests),
     )
     with self.wrap_chromium_tests(

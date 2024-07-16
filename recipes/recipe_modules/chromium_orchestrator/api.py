@@ -716,7 +716,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     if not tests:
       tests = [
           t for t in targets_config.all_tests
-          if t.is_skylabtest and t.target_name in skylab_props.keys()
+          if t.runs_on_skylab and t.target_name in skylab_props.keys()
       ]
 
     for t in tests:

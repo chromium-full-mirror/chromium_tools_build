@@ -25,6 +25,10 @@ def RunSteps(api):
 
   class FakeTest(steps.Test):
 
+    @property
+    def locality(self) -> steps.TestLocality:
+      return steps.TestLocality.LOCAL
+
     def compile_targets(self):
       return []  # pragma: no cover
 
@@ -53,6 +57,8 @@ def RunSteps(api):
   wrapped_spec = WrapperSpec.create(test_spec)
 
   test = wrapped_spec.get_test(api.chromium_tests)
+
+  api.assertions.assertTrue(test.runs_locally)
 
   test_options = steps.TestOptions.create(test_filter=['foo', 'bar'])
   test.test_options = test_options

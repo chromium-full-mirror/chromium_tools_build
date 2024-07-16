@@ -100,7 +100,7 @@ def compilator_steps(api, properties):
       test_suites = [
           t for t in targets_config.all_tests
           if t.target_name in properties.test_targets and
-          (t.runs_on_swarming or t.is_skylabtest)
+          (t.runs_on_swarming or t.runs_on_skylab)
       ]
       raw_result, execution_info = (
           api.chromium_tests.build_and_isolate_failing_tests(
@@ -139,7 +139,7 @@ def compilator_steps(api, properties):
 
     checkout_dir = update_result.checkout_dir
     source_dir = update_result.source_root.path
-    if any((t.runs_on_swarming or t.is_skylabtest) and t.is_enabled
+    if any((t.runs_on_swarming or t.runs_on_skylab) and t.is_enabled
            for t in test_suites):
       affected_files_to_archive = []
       # If properties.test_targets exist, it means this build is doing a
@@ -176,8 +176,8 @@ def compilator_steps(api, properties):
             'swarming_trigger_properties'] = api.m.json.dumps(
                 trigger_properties, indent=2)
 
-      if any(t.is_skylabtest and t.is_enabled for t in test_suites):
-        skylab_tests = [t for t in test_suites if t.is_skylabtest]
+      if any(t.runs_on_skylab and t.is_enabled for t in test_suites):
+        skylab_tests = [t for t in test_suites if t.runs_on_skylab]
         skylab_trigger_properties = (
             api.chromium_tests._get_skylab_trigger_properties(skylab_tests))
         properties_step = api.step('skylab trigger properties', [])
@@ -191,9 +191,7 @@ def compilator_steps(api, properties):
       post_step.presentation.tags['chromium.outputted_trigger_properties'] = (
           'outputted swarming and/or skylab trigger properties')
 
-    local_tests = [
-        t for t in test_suites if not t.runs_on_swarming and not t.is_skylabtest
-    ]
+    local_tests = [t for t in test_suites if t.runs_locally]
     if local_tests:
       test_runner = api.chromium_tests.create_test_runner(
           checkout_dir,

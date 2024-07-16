@@ -32,6 +32,7 @@ import abc
 import attr
 from collections.abc import Iterable, Set
 import contextlib
+from enum import StrEnum
 import hashlib
 import itertools
 import inspect
@@ -307,6 +308,12 @@ class AbstractTestSpec(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
 
+class TestLocality(StrEnum):
+  LOCAL = 'local'
+  SWARMING = 'swarming'
+  SKYLAB = 'skylab'
+
+
 class AbstractTest(abc.ABC):
   """Abstract base class for tests and wrapped tests."""
 
@@ -401,15 +408,24 @@ class AbstractTest(abc.ABC):
 
   @property
   @abc.abstractmethod
-  def runs_on_swarming(self) -> bool:
-    """Whether or not the test runs on swarming."""
+  def locality(self) -> TestLocality:
+    """Where the test is executed."""
     raise NotImplementedError()  # pragma: no cover
 
   @property
-  @abc.abstractmethod
-  def is_skylabtest(self) -> bool:
-    """Whether or not the test runs on skylab."""
-    raise NotImplementedError()  # pragma: no cover
+  def runs_locally(self) -> bool:
+    """Whether the test runs locally."""
+    return self.locality == TestLocality.LOCAL
+
+  @property
+  def runs_on_swarming(self) -> bool:
+    """Whether or not the test runs on swarming."""
+    return self.locality == TestLocality.SWARMING
+
+  @property
+  def runs_on_skylab(self) -> bool:
+    """Whether the test runs on skylab."""
+    return self.locality == TestLocality.SKYLAB
 
   @property
   @abc.abstractmethod
@@ -919,18 +935,6 @@ class Test(AbstractTest):
     appropriate isolate target.
     """
     return None
-
-  @property
-  def is_skylabtest(self) -> bool:
-    return False
-
-  @property
-  def runs_on_swarming(self):
-    """Whether or not the test runs on swarming.
-
-    Test types that run on swarming should override this.
-    """
-    return False
 
   @property
   def retry_only_failed_tests(self) -> bool:
@@ -1594,6 +1598,10 @@ class LocalTest(Test):
     super().__init__(spec, chromium_tests_api)
     self._suffix_to_invocation_names = {}
 
+  @property
+  def locality(self) -> TestLocality:
+    return TestLocality.LOCAL
+
   def pre_run(self, suffix: str) -> None:
     del suffix
 
@@ -2130,8 +2138,8 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     return False
 
   @property
-  def runs_on_swarming(self) -> bool:
-    return True
+  def locality(self) -> TestLocality:
+    return TestLocality.SWARMING
 
   @property
   def isolate_target(self) -> str:
@@ -2854,8 +2862,9 @@ class MockTest(AbstractSwarmingTest, Test):
     return self.spec.option_flags
 
   @property
-  def runs_on_swarming(self):
-    return self.spec.runs_on_swarming
+  def locality(self):
+    return (TestLocality.SWARMING
+            if self.spec.runs_on_swarming else TestLocality.LOCAL)
 
   @property
   def isolate_profile_data(self) -> bool:
@@ -3065,8 +3074,8 @@ class SkylabTest(AbstractSkylabTest, Test):
     self.telemetry_shard_index = None
 
   @property
-  def is_skylabtest(self) -> bool:
-    return True
+  def locality(self) -> TestLocality:
+    return TestLocality.SKYLAB
 
   @property
   def is_tast_test(self) -> bool:

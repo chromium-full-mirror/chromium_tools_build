@@ -220,27 +220,30 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
   def _create_groups(self, test_suites, sort_by_shard=False):
     """Creates test groups by checking item type in |test_suites|."""
-    local_test_suites = []
-    swarming_test_suites = []
-    skylab_test_suites = []
+    # The dictionary is initialized with explicit keys to ensure that if a new
+    # locality is added, it gets handled here
+    test_suites_by_locality = {
+        steps.TestLocality.LOCAL: [],
+        steps.TestLocality.SWARMING: [],
+        steps.TestLocality.SKYLAB: [],
+    }
     for t in test_suites:
-      if t.runs_on_swarming:
-        swarming_test_suites.append(t)
-      elif t.is_skylabtest:
-        skylab_test_suites.append(t)
-      else:
-        local_test_suites.append(t)
+      test_suites_by_locality[t.locality].append(t)
 
     if sort_by_shard:
       # Trigger tests which have a large number of shards earlier. They usually
       # take longer to complete, and triggering take a few minutes, so this
       # should get us a few extra minutes of speed.
-      swarming_test_suites.sort(key=lambda t: -t.shards)
+      test_suites_by_locality[steps.TestLocality.SWARMING].sort(
+          key=lambda t: -t.shards)
 
     groups = [
-        LocalGroup(local_test_suites, self.m.resultdb),
-        SwarmingGroup(swarming_test_suites, self.m.resultdb),
-        SkylabGroup(skylab_test_suites, self.m.resultdb),
+        LocalGroup(test_suites_by_locality[steps.TestLocality.LOCAL],
+                   self.m.resultdb),
+        SwarmingGroup(test_suites_by_locality[steps.TestLocality.SWARMING],
+                      self.m.resultdb),
+        SkylabGroup(test_suites_by_locality[steps.TestLocality.SKYLAB],
+                    self.m.resultdb),
     ]
     return groups
 
@@ -838,18 +841,14 @@ class TestUtilsApi(recipe_api.RecipeApi):
     self._query_luci_analysis_failures(luci_analysis_tests_to_check)
 
   def _still_invalid_suites(self, old_invalid_suites, retried_invalid_suites):
-    # For remote(swarming or skylab) test suites, if we have valid test results
-    # from one of the runs of a test suite, then that test suite by definition
-    # doesn't have invalid test results.
-    # Non-remote test suites don't get retried in 'retry shards with patch'
-    # steps, so all invalid non-remote suites are still invalid
-    non_swarming_invalid_suites = [
-        t for t in old_invalid_suites
-        if not t.runs_on_swarming and not t.is_skylabtest
-    ]
-    still_invalid_swarming_suites = list(
+    # For remote test suites, if we have valid test results from one of the runs
+    # of a test suite, then that test suite by definition doesn't have invalid
+    # test results. Local test suites don't get retried in 'retry shards with
+    # patch' steps, so all invalid local suites are still invalid
+    invalid_local_suites = [t for t in old_invalid_suites if t.runs_locally]
+    still_invalid_remote_suites = list(
         set(old_invalid_suites).intersection(retried_invalid_suites))
-    return still_invalid_swarming_suites + non_swarming_invalid_suites
+    return still_invalid_remote_suites + invalid_local_suites
 
   def _should_abort_retry(self, rdb_results, allowed_failing_suites):
     """Determines if the current recipe should skip its next retry phases.
@@ -909,7 +908,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     if retry_invalid_shards:
       target_suites.update(invalid_suites)
     # Only Swarming or Skylab suites can be usefully retried
-    return [t for t in target_suites if t.runs_on_swarming or t.is_skylabtest]
+    return [t for t in target_suites if t.runs_on_swarming or t.runs_on_skylab]
 
   def remove_retry_shards(self, suffix):
     """Helper to remove retry shards from the given suffix."""
