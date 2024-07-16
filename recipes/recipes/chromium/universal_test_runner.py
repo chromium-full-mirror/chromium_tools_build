@@ -30,10 +30,12 @@ PROPERTIES = Request
 
 
 def RunSteps(api: RecipeApi, properties: Request):
+  checkout_dir = api.path.cache_dir
+  source_dir = api.path.abs_to_path(properties.checkout_path)
+  api.chromium_checkout.set_paths(checkout_dir, source_dir)
   try:
     builder_id, builder_config = configure_build(
-        api, properties.checkout_path, properties.run_type
-        != Request.RunType.RUN_TYPE_RUN,
+        api, properties.run_type != Request.RunType.RUN_TYPE_RUN,
         properties.rerun_options.skip_config_validation)
   except BadConf as e:
     rerun_options = [
@@ -46,12 +48,12 @@ def RunSteps(api: RecipeApi, properties: Request):
     return api.chromium_utr.create_rerun_result(
         rerun_options, err_msg, properties.output_properties_file)
 
-  return api.chromium_utr.run(properties, builder_id, builder_config)
+  return api.chromium_utr.run(properties, checkout_dir, source_dir, builder_id,
+                              builder_config)
 
 
 def configure_build(
     api: RecipeApi,
-    checkout_dir: str,
     build: bool,
     skip_validation: bool,
 ) -> tuple[chromium.BuilderId, ctbc.BuilderConfig]:
@@ -59,8 +61,6 @@ def configure_build(
 
   Args:
       api: Recipe API object.
-      checkout_dir: String to a chromium/src checkout that already has all
-        intended updates or syncs.
       build: Bool to configure the run to include compiling/building.
       skip_validation: Bool to prevent setting of config from raising a BadConf
         exception
@@ -83,8 +83,6 @@ def configure_build(
   api.chromium.verify_config = not skip_validation
   api.chromium_tests.configure_build(builder_config, test_only=not build)
 
-  api.chromium_checkout.set_paths(api.path.cache_dir,
-                                  api.path.abs_to_path(checkout_dir))
   return builder_id, builder_config
 
 

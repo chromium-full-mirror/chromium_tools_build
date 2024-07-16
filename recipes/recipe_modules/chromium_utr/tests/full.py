@@ -34,8 +34,9 @@ PROPERTIES = Request
 
 
 def RunSteps(api, request):
-  api.chromium_checkout.set_paths(api.path.cache_dir,
-                                  api.path.abs_to_path(request.checkout_path))
+  checkout_dir = api.path.cache_dir
+  source_dir = api.path.abs_to_path(request.checkout_path)
+  api.chromium_checkout.set_paths(checkout_dir, source_dir)
 
   builder = api.buildbucket.build.builder.builder
   builder_id = chromium.BuilderId.create_for_group(
@@ -47,7 +48,8 @@ def RunSteps(api, request):
       builder_config,
       test_only=request.run_type == Request.RunType.RUN_TYPE_RUN)
 
-  return api.chromium_utr.run(request, builder_id, builder_config)
+  return api.chromium_utr.run(request, checkout_dir, source_dir, builder_id,
+                              builder_config)
 
 
 def GenTests(api):

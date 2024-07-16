@@ -51,14 +51,22 @@ except ImportError:  # pragma: no cover
 
 class ChromiumUTRApi(recipe_api.RecipeApi):
 
-  def run(self, properties: Request, builder_id: chromium.BuilderId,
-          builder_config: ctbc.BuilderConfig) -> result_pb2.RawResult:
+  def run(
+      self,
+      properties: Request,
+      checkout_dir: Path,
+      source_dir: Path,
+      builder_id: chromium.BuilderId,
+      builder_config: ctbc.BuilderConfig,
+  ) -> result_pb2.RawResult:
     """Compiles and runs tests as needed.
 
     Args:
       properties: Request given to the recipe
-      compiling_builder_id: BuilderId for the compiler builder
-      compiling_builder_config: BuilderConfig for the compiling builder
+      checkout_dir: The directory that the checkout was performed in.
+      source_dir: The path to the top-level repo.
+      builder_id: BuilderId for the compiler builder
+      builder_config: BuilderConfig for the compiling builder
 
     Returns:
       result_pb2.RawResult of the recipe execution
@@ -69,23 +77,28 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     compiling_builder_id, compiling_builder_config = self.get_compiling_builder_config(
         builder_id, builder_config)
 
-    build_path = self.configure_build_dir(properties.build_dir)
-    checkout_dir = self.m.chromium_checkout.checkout_dir
-    source_dir = self.m.chromium_checkout.source_dir
+    build_path = self.configure_build_dir(source_dir, properties.build_dir)
     self.m.profiles.source_dir = source_dir
     self.m.code_coverage.source_dir = source_dir
     self.m.code_coverage.build_dir = build_path
 
-    result = self.prerun_checks(properties, build_path, compiling_builder_id)
+    result = self.prerun_checks(properties, source_dir, build_path,
+                                compiling_builder_id)
     if result != None:
       return result
 
-    got_revisions = self.generate_got_revisions_map()
+    got_revisions = self.generate_got_revisions_map(source_dir)
 
-    raw_result, tests = self.create_tests(properties, build_path, got_revisions,
-                                          compiling_builder_id,
-                                          compiling_builder_config,
-                                          should_build)
+    raw_result, tests = self.create_tests(
+        properties,
+        checkout_dir,
+        source_dir,
+        build_path,
+        got_revisions,
+        compiling_builder_id,
+        compiling_builder_config,
+        should_build,
+    )
     if raw_result and raw_result.status != common_pb2.SUCCESS:
       return raw_result
     if not should_test:
@@ -174,26 +187,23 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           'this.')
     return compiling_builder_id, compiling_builder_config
 
-  def configure_build_dir(self, build_dir):
+  def configure_build_dir(self, source_dir: Path, build_dir):
     if OLD_PATH_TYPE:  # pragma: no cover
       # see comment in import block at top of this file.
-      build_dir = build_dir or self.m.path.join(
-          self.m.path.checkout_dir, 'out', self.m.chromium.c.build_config_fs)
+      build_dir = build_dir or self.m.chromium.default_build_dir(source_dir)
       build_path = Path(RootBasePath(), build_dir)
     else:  # pragma: no cover
       if build_dir:
         build_path = self.m.path.cast_to_path(build_dir)
       else:
-        build_path = self.m.path.checkout_dir.joinpath(
-            'out', self.m.chromium.c.build_config_fs)
+        build_path = self.m.chromium.default_build_dir(source_dir)
 
     self.m.file.ensure_directory('ensure_build_dir', build_path)
     self.m.chromium.build_dir = build_path
     return build_path
 
-  def get_gclient_config(self):
-    src_file = self.m.path.split(
-        self.m.path.checkout_dir)[0].joinpath('.gclient')
+  def get_gclient_config(self, source_dir: Path):
+    src_file = source_dir.parent / '.gclient'
     if self.m.path.exists(src_file):
       gclient_file_path = src_file
     else:
@@ -205,7 +215,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     exec(gclient_text, {}, local_env)
     return local_env
 
-  def check_gclient(self) -> str:
+  def check_gclient(self, source_dir: Path) -> str:
     """Check if the .gclient file is acceptable to use for the selected builder
 
     Returns:
@@ -213,7 +223,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
         warning
     """
     mismatch_messages = []
-    gclient_config = self.get_gclient_config()
+    gclient_config = self.get_gclient_config(source_dir)
     solution = [
         sol for sol in gclient_config.get('solutions', []) if sol.get(
             'url', '') == 'https://chromium.googlesource.com/chromium/src.git'
@@ -266,8 +276,12 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
           'resolving these:\n' + '\n'.join(mismatch_messages))
     return error_info
 
-  def check_gn_args(self, build_dir: Path,
-                    builder_id: chromium.BuilderId) -> str:
+  def check_gn_args(
+      self,
+      source_dir: Path,
+      build_dir: Path,
+      builder_id: chromium.BuilderId,
+  ) -> str:
     """Check if the args.gn file is acceptable to use for the selected builder
 
     Args:
@@ -282,10 +296,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return [l.strip() for l in args.splitlines() if l.startswith('import(')]
 
     builder_gn_args = self.m.chromium.mb_lookup(
-        self.m.path.checkout_dir,
-        builder_id,
-        recursive=False,
-        name='lookup_builder_gn_args')
+        source_dir, builder_id, recursive=False, name='lookup_builder_gn_args')
     builder_imports = get_imports(builder_gn_args)
     builder_gn_args = self.m.gn.parse_gn_args(builder_gn_args)
 
@@ -323,27 +334,28 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
                     '\n'.join(mismatch_messages))
     return error_info
 
-  def check_upstream_branch(self):
+  def check_upstream_branch(self, source_dir: Path):
     """Check if the current branch has an upstream branch for diffing against
 
     Returns:
         A string that represents the error or an empty string when there is no
         warning
     """
-    if self.get_upstream_branch().retcode != 0:
+    if self.get_upstream_branch(source_dir).retcode != 0:
       return 'Caution: failed to get an upstream branch from the current checkout'
 
-  def get_upstream_branch(self):
-    return self.m.git(
-        'rev-parse',
-        '--abbrev-ref',
-        '--symbolic-full-name',
-        '@{u}',
-        name='check upstream branch',
-        stdout=self.m.raw_io.output(),
-        raise_on_failure=False,
-        step_test_data=lambda: self.m.raw_io.test_api.stream_output(
-            'origin/main\n'))
+  def get_upstream_branch(self, source_dir: Path):
+    with self.m.context(cwd=source_dir):
+      return self.m.git(
+          'rev-parse',
+          '--abbrev-ref',
+          '--symbolic-full-name',
+          '@{u}',
+          name='check upstream branch',
+          stdout=self.m.raw_io.output(),
+          raise_on_failure=False,
+          step_test_data=lambda: self.m.raw_io.test_api.stream_output(
+              'origin/main\n'))
 
   def create_prompt_option(self, properties: Request, prompt: str, **kwargs):
     if not kwargs:
@@ -354,13 +366,17 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     return (prompt, rerun_properties)
 
   def prerun_checks(
-      self, properties: Request, build_path: Path,
-      compiling_builder_id: chromium.BuilderId) -> result_pb2.RawResult:
+      self,
+      properties: Request,
+      source_dir: Path,
+      build_path: Path,
+      compiling_builder_id: chromium.BuilderId,
+  ) -> result_pb2.RawResult:
     # TODO(crbug.com/41492686): Combine these checks so they can be prompted in
     # one interation of the recipe invocations
 
     if not properties.rerun_options.bypass_gclient:
-      error_message = self.check_gclient()
+      error_message = self.check_gclient(source_dir)
       if error_message:
         rerun_options = [
             self.create_prompt_option(properties, 'yes', bypass_gclient=True),
@@ -370,7 +386,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
                                         properties.output_properties_file)
     if (self.m.path.exists(build_path / 'args.gn') and
         not properties.rerun_options.bypass_gn_args):
-      error_message = self.check_gn_args(build_path, compiling_builder_id)
+      error_message = self.check_gn_args(source_dir, build_path,
+                                         compiling_builder_id)
       if error_message:
         rerun_options = [
             self.create_prompt_option(
@@ -390,7 +407,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if (not properties.rerun_options.bypass_branch_check and
         self.m.code_coverage.using_coverage and properties.builder_recipe
         in ('chromium/orchestrator', 'chromium_trybot')):
-      error_message = self.check_upstream_branch()
+      error_message = self.check_upstream_branch(source_dir)
       if error_message:
         rerun_options = [
             self.create_prompt_option(
@@ -445,7 +462,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     return result_pb2.RawResult(
         status=common_pb2.FAILURE, summary_markdown=info)
 
-  def generate_got_revisions_map(self):
+  def generate_got_revisions_map(self, source_dir: Path):
     """Generates a minimalistic got_revisions mapping.
 
     got_revisions is a dict normally returned by gclient/bot_update recipe
@@ -458,7 +475,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     The rev these keys point to is the local HEAD. Note that if the checkout
     contains any local commits, this rev will be unique to the checkout.
     """
-    result = self.m.git('rev-parse', 'HEAD', stdout=self.m.raw_io.output())
+    with self.m.context(cwd=source_dir):
+      result = self.m.git('rev-parse', 'HEAD', stdout=self.m.raw_io.output())
     rev = result.stdout.decode('utf-8').strip()
     return {
         # See the substitutions in recipe_modules/chromium_tests/generators.py
@@ -470,6 +488,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
   def handle_code_coverage(
       self,
+      source_dir: Path,
       build_dir: Path,
       properties: Request,
       builder_id: chromium.BuilderId,
@@ -498,8 +517,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return ['coverage_instrumentation_input_file']
     paths = []
     if not properties.rerun_options.skip_instrumentation:
-      with self.m.context(cwd=self.m.path.checkout_dir):
-        step_result = self.get_upstream_branch()
+      with self.m.context(cwd=source_dir):
+        step_result = self.get_upstream_branch(source_dir)
         branch_upstream_name = step_result.stdout.decode('utf-8').strip()
         step_result = self.m.git(
             '-c',
@@ -539,6 +558,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       tests: Iterable[Test],
       builder_id: chromium.BuilderId,
       preserve_gn_args: bool,
+      source_dir: Path,
       build_dir: Path,
       builder_recipe: str,
   ) -> result_pb2.RawResult:
@@ -564,8 +584,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     # Only recipes that support try should handle changed files
     if (self.m.code_coverage.using_coverage and
         builder_recipe in ('chromium/orchestrator', 'chromium_trybot')):
-      gn_args_to_remove = self.handle_code_coverage(build_dir, properties,
-                                                    builder_id)
+      gn_args_to_remove = self.handle_code_coverage(source_dir, build_dir,
+                                                    properties, builder_id)
 
     gn_args_to_update = {}
     if properties.no_rbe:
@@ -581,7 +601,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     if missing_isolates:
       if not self.m.path.exists(build_dir / 'args.gn'):
         gn_args = self.m.chromium.mb_lookup(
-            self.m.path.checkout_dir,
+            source_dir,
             builder_id,
             recursive=False,
             name='lookup_builder_gn_args')
@@ -607,7 +627,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     else:
       tests_to_isolate = [t.isolate_target for t in tests if t.isolate_target]
       self.m.chromium.mb_gen(
-          self.m.path.checkout_dir,
+          source_dir,
           build_dir,
           builder_id,
           name='generate_build_files',
@@ -632,7 +652,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     def compile_fn():
       return self.m.chromium.compile(
-          self.m.path.checkout_dir,
+          source_dir,
           build_dir,
           targets=targets,
           skip_log_upload=True,
@@ -646,6 +666,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
   def create_tests(
       self,
       properties: Request,
+      checkout_dir: Path,
+      source_dir: Path,
       build_dir: Path,
       got_revisions: Mapping[str, str],
       builder_id: chromium.BuilderId,
@@ -668,10 +690,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     preserve_gn_args = properties.rerun_options.preserve_gn_args
     builder_recipe = properties.builder_recipe
     targets_config = self.m.chromium_tests.create_targets_config(
-        builder_config,
-        got_revisions,
-        self.m.chromium_checkout.source_dir,
-        checkout_dir=self.m.chromium_checkout.checkout_dir)
+        builder_config, got_revisions, source_dir, checkout_dir=checkout_dir)
 
     def _get_matching_test(requested_test_name):
       for t in targets_config.all_tests:
@@ -702,8 +721,8 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
 
     if should_build:
       raw_result, generated_isolates = self.compile_targets(
-          properties, tests, builder_id, preserve_gn_args, build_dir,
-          builder_recipe)
+          properties, tests, builder_id, preserve_gn_args, source_dir,
+          build_dir, builder_recipe)
       if raw_result and raw_result.status != common_pb2.SUCCESS:
         return raw_result, None
     skylab_tests = [test for test in tests if test.is_skylabtest]
@@ -712,13 +731,12 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       # all other instances, we need to ask mb.py to do so specifically. Do so
       # for *all* possible targets. This shouldn't take much longer, and
       # simplifies things a bit.
-      self.m.chromium.mb_isolate_everything(self.m.path.checkout_dir, build_dir,
-                                            None)
+      self.m.chromium.mb_isolate_everything(source_dir, build_dir, None)
 
     isolate_tests = [test for test in tests if test.isolate_target]
     if isolate_tests:
       self.m.chromium_tests.isolate_tests(
-          self.m.path.checkout_dir,
+          source_dir,
           build_dir,
           builder_config,
           isolate_tests,
