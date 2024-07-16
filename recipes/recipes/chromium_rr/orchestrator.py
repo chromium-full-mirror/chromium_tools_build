@@ -7,11 +7,20 @@ The recipe will select flaky tests from last 10 days and trigger rr test
 launcher recipe to run and record tests.
 """
 
+import collections
+from google.protobuf import json_format
+
+from PB.go.chromium.org.luci.buildbucket.proto \
+    import builder_common as builder_common_pb
+from PB.recipes.build.chromium_rr.test_launcher \
+    import InputProperties
 from recipe_engine.post_process import DropExpectation
 
 DEPS = [
     'builder_group',
     'chromium',
+    'chromium_polymorphic',
+    'recipe_engine/buildbucket',
     'recipe_engine/file',
     'recipe_engine/json',
     'recipe_engine/path',
@@ -36,7 +45,8 @@ def RunSteps(api):
   step_result = api.step('query test data', cmd)
   query_results = step_result.json.output
 
-  builder_to_tests = {}
+  builder_to_tests = collections.defaultdict(
+      lambda: collections.defaultdict(list))
   for query_result in query_results:
     # TODO(jiesheng): Support other test type for rr test launcher.
     test_suite = query_result.get('test_suite', '')
@@ -46,15 +56,47 @@ def RunSteps(api):
     test_id = query_result.get('test_id', '')
     if not builder or not test_id:
       continue
-    builder_to_tests.setdefault(builder, []).append((test_suite, test_id))
+    builder_to_tests[builder][test_suite].append(test_id)
 
-  # TODO(jiesheng): Use chromium_polymorphic to launch the child builders here.
+  for builder, test_suites in builder_to_tests.items():
+    # Use hard coded chromium and ci here which is same as the values in
+    # test_selection.sql.
+    builder_id = builder_common_pb.BuilderID(
+        project='chromium', bucket='ci', builder=builder)
+    properties = api.chromium_polymorphic.get_target_properties(builder_id)
+
+    target_test_infos = InputProperties()
+    for test_suite, test_names in test_suites.items():
+      target_test_info = target_test_infos.target_test_infos.add()
+      target_test_info.test_suite = test_suite
+      target_test_info.test_names.extend(test_names)
+    properties['$build/chromium_rr/test_launcher'] = json_format.MessageToDict(
+        target_test_infos, preserving_proto_field_name=True)
+
+    api.buildbucket.schedule(
+        [
+            api.buildbucket.schedule_request(
+                project=api.buildbucket.build.builder.project,
+                bucket=api.buildbucket.build.builder.bucket,
+                builder='linux-rr-test-launcher-fyi',
+                tags=api.buildbucket.build.tags,
+                properties=properties,
+                can_outlive_parent=True,
+                as_shadow_if_parent_is_led=True,
+            ),
+        ],
+        include_sub_invs=False,
+    )
 
 
 def GenTests(api):
   yield api.test(
       'happy_path',
       api.builder_group.for_current('chromium.fyi'),
+      api.chromium_polymorphic.properties_on_target_build({
+          'builder_group': 'fake-group',
+          '$bootstrap/properties': 'fake-bootstrap-properties',
+      }),
       api.override_step_data(
           'query test data',
           api.json.output([{
@@ -63,8 +105,12 @@ def GenTests(api):
               'test_id': 'test_id_123'
           }, {
               'test_suite': 'blink_wpt_tests',
-              'builder': 'builder2',
-              'test_id': 'test_id_234'
+              'builder': 'builder1',
+              'test_id': 'test_id_345'
+          }, {
+              'test_suite': 'blink_web_tests',
+              'builder': 'builder1',
+              'test_id': 'test_id_567'
           }])),
       api.post_process(DropExpectation),
   )
