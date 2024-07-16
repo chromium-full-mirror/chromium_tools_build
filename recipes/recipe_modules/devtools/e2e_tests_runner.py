@@ -59,6 +59,8 @@ class RepeatE2EShuffledTests(E2ETests):
     pass
 
   def skip(self):
+    # TODO(liviurau) Cleanup this: now that we have a dedicated suffled recipe
+    # adding this runner should be sufficient indications that we want to run it
     return super().skip() or (not self.api.devtools.is_shuffled_run())
 
   @property
