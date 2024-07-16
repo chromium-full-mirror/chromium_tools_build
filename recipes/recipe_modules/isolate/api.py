@@ -282,6 +282,7 @@ class IsolateApi(recipe_api.RecipeApi):
         output, GS_BUCKET,
         '{}/{}/{}'.format(self.m.properties['buildername'],
                           self.m.properties['buildnumber'], TARBALL_NAME))
+    self.m.file.rmtree('rmtree %s' % t, t)
 
   def compare_build_artifacts(
       self,
