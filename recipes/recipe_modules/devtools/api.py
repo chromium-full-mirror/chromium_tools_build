@@ -67,9 +67,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
       return self.m.step(step_name, ["vpython3", "-u", sc_path] + args,
                          **kwargs)
 
-  def is_shuffled_run(self):
-    return 'shuffled' in self.m.buildbucket.builder_name.lower()
-
   def run_e2e(self, source_dir, builder_config, args=None, run_mode='regular'):
     args = list(args or [])
     mode_modifiers = dict(
@@ -114,18 +111,15 @@ class DevToolsAPI(recipe_api.RecipeApi):
                            shards=4,
                            file_pattern='',
                            iterations=1):
-    shuffle=self.is_shuffled_run()
     modified_commands = []
-    shuffled = ['--shuffle'] if shuffle else []
     raw_commands = self.m.devtools.run_python_script(
         source_dir,
         'divide test run',
-        'e2e_divider.py',
-        [
+        'e2e_divider.py', [
             f'--jobs={shards}',
             f'--test-file-pattern={file_pattern}',
             f'--iterations={iterations}',
-        ] + shuffled,
+        ],
         stdout=self.m.raw_io.output_text(
             add_output_log=True)).stdout.strip().split('\n')
 
@@ -141,9 +135,9 @@ class DevToolsAPI(recipe_api.RecipeApi):
           self.m.path.join('scripts', 'test', 'run_test_suite.js'),
           f"--test-suite-path={Path('gen/test/e2e')}",
           f"--test-suite-source-dir={Path('test/e2e')}",
-          "--test-server-type='hosted-mode'", "--target=" +
-          builder_config, config
-      ] + ([file_pattern] if shuffle or shards > 1 else [])
+          "--test-server-type='hosted-mode'", "--target=" + builder_config,
+          config
+      ] + ([file_pattern] if shards > 1 else [])
       modified_commands.append(modified_command)
 
     return modified_commands

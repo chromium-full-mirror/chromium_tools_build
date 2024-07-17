@@ -13,7 +13,7 @@ class E2ETests(ExonerableTests):
 
   @property
   def test_type_tag(self):
-    prefix = 'shuffled_' if self.api.devtools.is_shuffled_run() else ''
+    prefix = 'shuffled_' if self.divider.shuffled else ''
     return prefix + 'e2e_tests'
 
   def __init__(self, api, source_dir, trigger, builder_config, coverage,
@@ -21,7 +21,7 @@ class E2ETests(ExonerableTests):
     super().__init__(api, source_dir, trigger, builder_config, coverage,
                      step_name)
     self.divider = divider
-    if self.api.devtools.is_shuffled_run():
+    if self.divider.shuffled:
       self.extra_args = ['--bail']
 
   def skip(self):
@@ -31,8 +31,7 @@ class E2ETests(ExonerableTests):
     return [cmd + self.extra_args for cmd in self.divider.commands]
 
   def construct_commands(self):
-    is_exoneration_attempt = (
-        self.extra_args and not self.api.devtools.is_shuffled_run())
+    is_exoneration_attempt = self.extra_args and not self.divider.shuffled
     if is_exoneration_attempt:
       return [self.run_tests_command('test/e2e')]
     return [
@@ -58,11 +57,6 @@ class RepeatE2EShuffledTests(E2ETests):
   def process_exoneration_results(self, test_names):
     pass
 
-  def skip(self):
-    # TODO(liviurau) Cleanup this: now that we have a dedicated suffled recipe
-    # adding this runner should be sufficient indications that we want to run it
-    return super().skip() or (not self.api.devtools.is_shuffled_run())
-
   @property
   def test_type_tag(self):
     return 'shuffled_repeat_e2e_tests'
@@ -70,11 +64,17 @@ class RepeatE2EShuffledTests(E2ETests):
 
 class E2ETestDivider:
 
-  def __init__(self, api, source_dir, builder_config, shard_count=4):
+  def __init__(self,
+               api,
+               source_dir,
+               builder_config,
+               shard_count=4,
+               shuffled=False):
     self.api = api
     self.source_dir = source_dir
     self.builder_config = builder_config
     self.shard_count = shard_count
+    self.shuffled = shuffled
 
   def legacy_commands(self):
     return self.api.devtools.divided_e2e_commands(
@@ -94,7 +94,7 @@ class E2ETestDivider:
     all_test_paths = [
         self.api.path.join(TEST_RELATIVE_PATH, t) for t in all_tests
     ]
-    if self.api.devtools.is_shuffled_run():
+    if self.shuffled:
       # TODO(liviurau) make this pseudo-random with a seed based e.g. on
       # the revision of the commit
       self.api.random.shuffle(all_test_paths)

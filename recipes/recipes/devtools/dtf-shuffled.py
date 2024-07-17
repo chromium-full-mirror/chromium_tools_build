@@ -20,6 +20,7 @@ DEPS = [
     'recipe_engine/file',
     'recipe_engine/path',
     'recipe_engine/properties',
+    'recipe_engine/random',
     'recipe_engine/resultdb',
     'recipe_engine/step',
 ]
@@ -52,7 +53,7 @@ def RunSteps(api, clobber):
       return compilation_result
     cas_digest = api.devtools.archive_to_cas(source_dir)
 
-    divider = E2ETestDivider(api, source_dir, builder_config)
+    divider = E2ETestDivider(api, source_dir, builder_config, shuffled=True)
     trigger = SwarmingTrigger(api, cas_digest)
     tests = [
         E2ETests(api, source_dir, trigger, builder_config, False, 'E2E Tests',
