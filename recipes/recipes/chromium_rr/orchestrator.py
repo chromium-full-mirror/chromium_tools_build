@@ -83,6 +83,7 @@ def RunSteps(api):
                 properties=properties,
                 can_outlive_parent=True,
                 as_shadow_if_parent_is_led=True,
+                led_inherit_parent=True,
             ),
         ],
         include_sub_invs=False,
