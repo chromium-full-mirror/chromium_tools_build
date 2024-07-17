@@ -61,25 +61,39 @@ FILE_TO_TRIGGER_EXTENSIVE_TESTING = 'DEPS'
 # have variable effects based on WHICH test suite is executed, so we just need
 # to pick SOME test suite.
 FILE_TO_TRIGGER_SHORT_TESTING = 'chrome/test/base/interactive_test_utils.cc'
+# Touching //ui/android/run_all_unittests.cc should similarly trigger just
+# "ui_android_unittests suite on android. It should be relatively quick to both
+# compile and test.
+FILE_TO_TRIGGER_SHORT_ANDROID_TESTING = 'ui/android/run_all_unittests.cc'
+ALL_FILES = [
+    FILE_TO_TRIGGER_EXTENSIVE_TESTING,
+    FILE_TO_TRIGGER_SHORT_TESTING,
+    FILE_TO_TRIGGER_SHORT_ANDROID_TESTING,
+]
 
 @attrs()
 class BuilderToTrigger:
   # The buildbucket v1 style name of the builder
   name = attrib(str)
   # The key of the CL to use when triggering the builder
-  file_to_change = attrib(
-      enum([FILE_TO_TRIGGER_EXTENSIVE_TESTING, FILE_TO_TRIGGER_SHORT_TESTING]),
-      default=FILE_TO_TRIGGER_EXTENSIVE_TESTING)
+  file_to_change_for_quick_testing = attrib(enum(ALL_FILES))
+  file_to_change_for_full_testing = attrib(enum(ALL_FILES), default=None)
 
 
 DEFAULT_BUILDERS = (
     BuilderToTrigger(
         'luci.chromium.try:chromium_presubmit',
-        file_to_change=FILE_TO_TRIGGER_SHORT_TESTING),
-    BuilderToTrigger('luci.chromium.try:linux-rel'),
+        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING),
+    BuilderToTrigger(
+        'luci.chromium.try:android-x64-rel',
+        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_ANDROID_TESTING),
+    BuilderToTrigger(
+        'luci.chromium.try:linux-rel',
+        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING,
+        file_to_change_for_full_testing=FILE_TO_TRIGGER_EXTENSIVE_TESTING),
     BuilderToTrigger(
         'luci.chromium.try:win-rel',
-        file_to_change=FILE_TO_TRIGGER_SHORT_TESTING),
+        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING),
 )
 
 @attrs()
@@ -191,7 +205,10 @@ def _process_footer_builders(api, builders):
         ['\n  ' + b for b in sorted(unknown_buckets)])
     raise api.step.StepFailure(step_name, result)
 
-  return [BuilderToTrigger(builder) for builder in builders]
+  return [
+      BuilderToTrigger(builder, FILE_TO_TRIGGER_EXTENSIVE_TESTING)
+      for builder in builders
+  ]
 
 
 def _get_builders_to_check(api):
@@ -384,10 +401,11 @@ def _get_filepath_to_change(affected_files, affected_recipes, builder, recipe,
     to modify.
   """
   if recipe in affected_recipes:
-    return builder.file_to_change
+    return (builder.file_to_change_for_full_testing or
+            builder.file_to_change_for_quick_testing)
 
   if str(recipes_cfg_path) in affected_files:
-    return FILE_TO_TRIGGER_SHORT_TESTING
+    return builder.file_to_change_for_quick_testing
 
   return None
 
@@ -700,6 +718,9 @@ def GenTests(api):
     if not skip_short:
       all_data += api.step_data(f'fetch main:{FILE_TO_TRIGGER_SHORT_TESTING}',
                                 api.gitiles.make_encoded_file('foobar'))
+      all_data += api.step_data(
+          f'fetch main:{FILE_TO_TRIGGER_SHORT_ANDROID_TESTING}',
+          api.gitiles.make_encoded_file('foobar'))
     return all_data
 
   yield api.test(

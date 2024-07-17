@@ -324,6 +324,65 @@
   },
   {
     "cmd": [],
+    "name": "get led builders.get luci.chromium.try:android-x64-rel",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "led",
+      "get-builder",
+      "-real-build",
+      "-adjust-priority",
+      "0",
+      "luci.chromium.try:android-x64-rel"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "get led builders.get luci.chromium.try:android-x64-rel.led get-builder",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@proto.output@{@@@",
+      "@@@STEP_LOG_LINE@proto.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@    \"bbagent_args\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"android-x64-rel\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"backend\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"config\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"priority\": 40.0@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"input\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"recipe\": \"foo_recipe\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        }@@@",
+      "@@@STEP_LOG_LINE@proto.output@      }@@@",
+      "@@@STEP_LOG_LINE@proto.output@    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@  }@@@",
+      "@@@STEP_LOG_LINE@proto.output@}@@@",
+      "@@@STEP_LOG_END@proto.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "get led builders.get luci.chromium.try:linux-rel",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
@@ -1252,6 +1311,630 @@
   },
   {
     "cmd": [],
+    "name": "edit recipe bundle for luci.chromium.try:android-x64-rel"
+  },
+  {
+    "cmd": [
+      "led",
+      "edit-recipe-bundle"
+    ],
+    "cwd": "[CACHE]/builder/baz",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "edit recipe bundle for luci.chromium.try:android-x64-rel.led edit-recipe-bundle",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"android-x64-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          }\n        },\n        \"input\": {\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@proto.output@{@@@",
+      "@@@STEP_LOG_LINE@proto.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@    \"bbagent_args\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"android-x64-rel\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"backend\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"config\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"priority\": 40.0@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          },@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"agent\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"input\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                \"data\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                  \"kitchen-checkout\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                    \"cas\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                      \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@                        \"size_bytes\": \"1337\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@                      }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                  }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                }@@@",
+      "@@@STEP_LOG_LINE@proto.output@              },@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"purposes\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@              }@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"input\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"recipe\": \"foo_recipe\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        }@@@",
+      "@@@STEP_LOG_LINE@proto.output@      }@@@",
+      "@@@STEP_LOG_LINE@proto.output@    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@  }@@@",
+      "@@@STEP_LOG_LINE@proto.output@}@@@",
+      "@@@STEP_LOG_END@proto.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/chromium/src.git/+/main/ui/android/run_all_unittests.cc",
+      "--format",
+      "text"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "fetch main:ui/android/run_all_unittests.cc"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "createchange",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--project",
+      "chromium/src",
+      "--branch",
+      "main",
+      "--subject",
+      "Test commit; testing a recipe CL\n\nThis CL was uploaded for the purposes of testing a recipe CL on\nChromium trybots.\n\nCreated for https://chromium-review.googlesource.com/c/456789/12\nCreated by https://ci.chromium.org/ui/b/8945511751514863184\n\nBug: None\nCommit: false\n",
+      "--json_file",
+      "/path/to/tmp/json",
+      "-p",
+      "work_in_progress=true",
+      "-p",
+      "notify=NONE",
+      "-p",
+      "topic=led-recipes-tester"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gerrit create change at (chromium/src main) (2)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"_number\": \"91827\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"branch\": \"main\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"change_id\": \"Ideadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"created\": \"2017-01-30 13:11:20.000000000\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"has_review_started\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"id\": \"fully~qualified~changeid\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"project\": \"chromium/src\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"_number\": \"1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  },@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"status\": \"NEW\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LINK@change 91827@https://chromium-review.googlesource.com/#/q/91827@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "update contents in CL 91827"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "foobar\n",
+      "[CLEANUP]/tmp_tmp_2"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update contents in CL 91827.store the new content for ui/android/run_all_unittests.cc",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changeedit",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--change",
+      "91827",
+      "--path",
+      "ui/android/run_all_unittests.cc",
+      "--file",
+      "[CLEANUP]/tmp_tmp_2"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "update contents in CL 91827.gerrit edit file ui/android/run_all_unittests.cc",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "publishchangeedit",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--change",
+      "91827"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gerrit publish edit (2)"
+  },
+  {
+    "cmd": [],
+    "name": "verify the patchset exists on CL 91827"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "changes",
+      "--verbose",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--limit",
+      "1",
+      "-p",
+      "change=91827",
+      "-o",
+      "ALL_REVISIONS",
+      "-o",
+      "ALL_COMMITS"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "verify the patchset exists on CL 91827.gerrit changes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"91827\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"id\": \"fully~qualified~changeid\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"chromium/src\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"2\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"status\": \"NEW\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:android-x64-rel",
+    "~followup_annotations": [
+      "@@@STEP_LINK@Test CL@https://chromium-review.googlesource.com/c/chromium/src/+/91827@@@",
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:android-x64-rel.trigger",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "led",
+      "edit-cr-cl",
+      "https://chromium-review.googlesource.com/c/chromium/src/+/91827"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:android-x64-rel.trigger.led edit-cr-cl",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"android-x64-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@proto.output@{@@@",
+      "@@@STEP_LOG_LINE@proto.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@    \"bbagent_args\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"android-x64-rel\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"backend\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"config\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"priority\": 40.0@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          },@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"agent\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"input\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                \"data\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                  \"kitchen-checkout\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                    \"cas\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                      \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@                        \"size_bytes\": \"1337\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@                      }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                  }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                }@@@",
+      "@@@STEP_LOG_LINE@proto.output@              },@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"purposes\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@              }@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"input\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"gerrit_changes\": [@@@",
+      "@@@STEP_LOG_LINE@proto.output@            {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"change\": \"91827\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"host\": \"chromium-review.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"patchset\": \"1337\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"project\": \"chromium/src\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          ],@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"recipe\": \"foo_recipe\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        }@@@",
+      "@@@STEP_LOG_LINE@proto.output@      }@@@",
+      "@@@STEP_LOG_LINE@proto.output@    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@  }@@@",
+      "@@@STEP_LOG_LINE@proto.output@}@@@",
+      "@@@STEP_LOG_END@proto.output@@@",
+      "@@@STEP_LINK@Test CL@https://chromium-review.googlesource.com/c/chromium/src/+/91827@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "led",
+      "edit",
+      "-exp",
+      "false"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:android-x64-rel.trigger.led edit",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"android-x64-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"91827\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@proto.output@{@@@",
+      "@@@STEP_LOG_LINE@proto.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@    \"bbagent_args\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@      \"build\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"builder\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"bucket\": \"try\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"builder\": \"android-x64-rel\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"project\": \"chromium\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"infra\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"backend\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"config\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"priority\": 40.0@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          },@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"agent\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"input\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                \"data\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                  \"kitchen-checkout\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                    \"cas\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                      \"digest\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@                        \"size_bytes\": \"1337\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@                      }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                  }@@@",
+      "@@@STEP_LOG_LINE@proto.output@                }@@@",
+      "@@@STEP_LOG_LINE@proto.output@              },@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"purposes\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@              }@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        },@@@",
+      "@@@STEP_LOG_LINE@proto.output@        \"input\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"gerrit_changes\": [@@@",
+      "@@@STEP_LOG_LINE@proto.output@            {@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"change\": \"91827\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"host\": \"chromium-review.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"patchset\": \"1337\",@@@",
+      "@@@STEP_LOG_LINE@proto.output@              \"project\": \"chromium/src\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@            }@@@",
+      "@@@STEP_LOG_LINE@proto.output@          ],@@@",
+      "@@@STEP_LOG_LINE@proto.output@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@proto.output@            \"recipe\": \"foo_recipe\"@@@",
+      "@@@STEP_LOG_LINE@proto.output@          }@@@",
+      "@@@STEP_LOG_LINE@proto.output@        }@@@",
+      "@@@STEP_LOG_LINE@proto.output@      }@@@",
+      "@@@STEP_LOG_LINE@proto.output@    }@@@",
+      "@@@STEP_LOG_LINE@proto.output@  }@@@",
+      "@@@STEP_LOG_LINE@proto.output@}@@@",
+      "@@@STEP_LOG_END@proto.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "led",
+      "launch",
+      "-resultdb",
+      "on",
+      "-bound-to-parent"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:android-x64-rel.trigger.led launch",
+    "stdin": "{\n  \"buildbucket\": {\n    \"bbagent_args\": {\n      \"build\": {\n        \"builder\": {\n          \"bucket\": \"try\",\n          \"builder\": \"android-x64-rel\",\n          \"project\": \"chromium\"\n        },\n        \"infra\": {\n          \"backend\": {\n            \"config\": {\n              \"priority\": 40.0\n            }\n          },\n          \"buildbucket\": {\n            \"agent\": {\n              \"input\": {\n                \"data\": {\n                  \"kitchen-checkout\": {\n                    \"cas\": {\n                      \"digest\": {\n                        \"hash\": \"aa5622eda7c9166441707e99177e584d65654c487b2aa1ba01c917ac460391be\",\n                        \"size_bytes\": \"1337\"\n                      }\n                    }\n                  }\n                }\n              },\n              \"purposes\": {\n                \"kitchen-checkout\": \"PURPOSE_EXE_PAYLOAD\"\n              }\n            }\n          }\n        },\n        \"input\": {\n          \"gerrit_changes\": [\n            {\n              \"change\": \"91827\",\n              \"host\": \"chromium-review.googlesource.com\",\n              \"patchset\": \"1337\",\n              \"project\": \"chromium/src\"\n            }\n          ],\n          \"properties\": {\n            \"recipe\": \"foo_recipe\"\n          }\n        }\n      }\n    }\n  }\n}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"buildbucket\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"build_id\": 87654321,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"host_name\": \"buildbucket.appspot.com\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LINK@Build@https://buildbucket.appspot.com/build/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:android-x64-rel.buildbucket.collect",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "collect",
+      "-host",
+      "cr-buildbucket.appspot.com",
+      "-interval",
+      "60s",
+      "87654321"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:android-x64-rel.buildbucket.collect.wait",
+    "timeout": 7200,
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "bb",
+      "batch",
+      "-host",
+      "cr-buildbucket.appspot.com"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "test luci.chromium.try:android-x64-rel.buildbucket.collect.get",
+    "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"id\": \"87654321\"}}]}",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"id\": \"87654321\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"status\": \"SUCCESS\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    }@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@STEP_LOG_LINE@request@{@@@",
+      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
+      "@@@STEP_LOG_LINE@request@    {@@@",
+      "@@@STEP_LOG_LINE@request@      \"getBuild\": {@@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"id\": \"87654321\"@@@",
+      "@@@STEP_LOG_LINE@request@      }@@@",
+      "@@@STEP_LOG_LINE@request@    }@@@",
+      "@@@STEP_LOG_LINE@request@  ]@@@",
+      "@@@STEP_LOG_LINE@request@}@@@",
+      "@@@STEP_LOG_END@request@@@",
+      "@@@STEP_LINK@87654321@https://cr-buildbucket.appspot.com/build/87654321@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test luci.chromium.try:android-x64-rel.build ends with SUCCESS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "edit recipe bundle for luci.chromium.try:linux-rel"
   },
   {
@@ -1387,7 +2070,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gerrit create change at (chromium/src main) (2)",
+    "name": "gerrit create change at (chromium/src main) (3)",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"_number\": \"91827\",@@@",
@@ -1414,7 +2097,7 @@
   },
   {
     "cmd": [],
-    "name": "update contents in CL 91827"
+    "name": "update contents in CL 91827 (2)"
   },
   {
     "cmd": [
@@ -1425,7 +2108,7 @@
       "/path/to/tmp/json",
       "copy",
       "foobar\n",
-      "[CLEANUP]/tmp_tmp_2"
+      "[CLEANUP]/tmp_tmp_3"
     ],
     "infra_step": true,
     "luci_context": {
@@ -1440,7 +2123,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "update contents in CL 91827.store the new content for DEPS",
+    "name": "update contents in CL 91827 (2).store the new content for DEPS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1457,7 +2140,7 @@
       "--path",
       "DEPS",
       "--file",
-      "[CLEANUP]/tmp_tmp_2"
+      "[CLEANUP]/tmp_tmp_3"
     ],
     "env": {
       "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
@@ -1475,7 +2158,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "update contents in CL 91827.gerrit edit file DEPS",
+    "name": "update contents in CL 91827 (2).gerrit edit file DEPS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -1506,11 +2189,11 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "gerrit publish edit (2)"
+    "name": "gerrit publish edit (3)"
   },
   {
     "cmd": [],
-    "name": "verify the patchset exists on CL 91827"
+    "name": "verify the patchset exists on CL 91827 (2)"
   },
   {
     "cmd": [
@@ -1547,7 +2230,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "verify the patchset exists on CL 91827.gerrit changes",
+    "name": "verify the patchset exists on CL 91827 (2).gerrit changes",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@[@@@",
@@ -2451,6 +3134,60 @@
       }
     },
     "name": "gerrit abandon 91827",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@[@@@",
+      "@@@STEP_LOG_LINE@json.output@  {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"_number\": \"91827\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"branch\": \"main\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"change_id\": \"Ideadbeef\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"created\": \"2017-01-30 13:11:20.000000000\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"has_review_started\": false,@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"id\": \"fully~qualified~changeid\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"project\": \"chromium/src\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"revisions\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@      \"184ebe53805e102605d11f6b143486d15c23a09c\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"_number\": \"1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"commit\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"message\": \"Change commit message\"@@@",
+      "@@@STEP_LOG_LINE@json.output@        }@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    },@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"status\": \"ABANDONED\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"subject\": \"Change title\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@]@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "abandon",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--change",
+      "91827",
+      "--json_file",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gerrit abandon 91827 (2)",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
