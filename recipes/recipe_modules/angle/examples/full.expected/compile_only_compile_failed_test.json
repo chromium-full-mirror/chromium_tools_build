@@ -1712,7 +1712,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "#### Step _compile_ failed. Error logs are shown below:\n```\n[1/1] CXX a.o\nfilename:row:col: error: error info\n```\n#### More information in [failure_summary](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)"
+      "humanReason": "#### Step _compile_ failed. Error logs are shown below:\n```\n[1/1] CXX a.o\nfilename:row:col: error: error info\n```\n#### [Click here for more information](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)"
     },
     "name": "$result"
   }

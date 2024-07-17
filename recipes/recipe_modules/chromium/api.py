@@ -338,7 +338,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     return '\n'.join(summary_lines)
 
   # TODO: crbug.com/339375951 - Move this logic to infra recipe modules.
-  def _get_failure_summary_url(self, step):
+  def _get_logdog_url(self, step, log):
     sanitized_name_tokens = [
         re.sub('[ _/()]', '_', t) for t in step.name_tokens
     ]
@@ -347,7 +347,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         'logdog_project': self.m.buildbucket.build.infra.logdog.project,
         'logdog_prefix': self.m.buildbucket.build.infra.logdog.prefix,
         'step_name': '/'.join(sanitized_name_tokens),
-        'log_name': 'raw_io.output_text_failure_summary_',
+        'log_name': log,
     }
     return url
 
@@ -452,7 +452,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       failure_summary_url = ''
       if ninja_step_result.raw_io.output_text:
         failure_summary = ninja_step_result.raw_io.output_text
-        failure_summary_url = self._get_failure_summary_url(ninja_step_result)
+        failure_summary_url = self._get_logdog_url(
+            ninja_step_result, 'raw_io.output_text_failure_summary_')
 
       return CompileResult(
           failure_summary=failure_summary,
@@ -514,7 +515,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     failure_summary_url = ''
     if step_result.presentation.status == self.m.step.FAILURE:
-      failure_summary_url = self._get_failure_summary_url(step_result)
+      failure_summary_url = self._get_logdog_url(step_result, 'stderr')
       return CompileResult(
           failure_summary=textwrap.dedent("""
               Failing build because ninja reported work to do.
@@ -811,8 +812,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if ninja_result.retcode:
       footer = ''
       if ninja_result.failure_summary_url:
-        footer = ('More information in [failure_summary](%s)' %
-                  ninja_result.failure_summary_url)
+        footer = '[Click here for more information](%s)' % ninja_result.failure_summary_url
       failure_summary = self._format_failures(ninja_result.failure_summary,
                                               name or 'compile', footer)
       return result_pb2.RawResult(

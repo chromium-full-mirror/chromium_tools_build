@@ -158,7 +158,7 @@ def GenTests(api):
           [1/1] CXX a.o
           filename:row:col: error: error info
           ```
-          #### More information in [failure_summary](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
+          #### [Click here for more information](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
           """).strip()),
       api.post_process(post_process.DropExpectation),
   )
@@ -206,7 +206,30 @@ def GenTests(api):
           More stuff that happened in the error
           ```
           ##### ...The message was too long...
-          #### More information in [failure_summary](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
+          #### [Click here for more information](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
+          """).strip()),
+      api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+      'noop_failure',
+      api.chromium.generic_build(builder_group='test_group'),
+      api.override_step_data(
+          'compile confirm no-op',
+          stdout=api.raw_io.output_text('ninja explain: dirty')),
+      api.expect_status('FAILURE'),
+      api.post_process(
+          post_process.SummaryMarkdown,
+          textwrap.dedent("""
+          #### Step _compile_ failed. Error logs are shown below:
+          ```
+          Failing build because ninja reported work to do.
+          This means that after completing a compile, another was run and
+          it resulted in still having work to do (that is, a no-op build
+          wasn't a no-op). Consult the first "ninja explain:" line for a
+          likely culprit.
+          ```
+          #### [Click here for more information](https:///logs///+/u/compile_confirm_no-op/stderr)
           """).strip()),
       api.post_process(post_process.DropExpectation),
   )

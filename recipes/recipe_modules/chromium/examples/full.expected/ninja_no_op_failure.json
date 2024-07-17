@@ -396,7 +396,7 @@
   {
     "failure": {
       "failure": {},
-      "humanReason": "#### Step _compile_ failed. Error logs are shown below:\n```\nFailing build because ninja reported work to do.\nThis means that after completing a compile, another was run and\nit resulted in still having work to do (that is, a no-op build\nwasn't a no-op). Consult the first \"ninja explain:\" line for a\nlikely culprit.\n```\n#### More information in [failure_summary](https:///logs///+/u/compile_confirm_no-op/raw_io.output_text_failure_summary_)"
+      "humanReason": "#### Step _compile_ failed. Error logs are shown below:\n```\nFailing build because ninja reported work to do.\nThis means that after completing a compile, another was run and\nit resulted in still having work to do (that is, a no-op build\nwasn't a no-op). Consult the first \"ninja explain:\" line for a\nlikely culprit.\n```\n#### [Click here for more information](https:///logs///+/u/compile_confirm_no-op/stderr)"
     },
     "name": "$result"
   }
