@@ -105,7 +105,7 @@ def GenTests(api):
           '--gs-acl',
           'public',
           '--include-files',
-          'chrome.dll,chrome.exe,chrome_100_percent.pak,chrome_200_percent.pak,chrome_child.dll,chrome_elf.dll,chrome_watcher.dll,chromedriver.exe,default_apps,default_apps/*,d3dcompiler_47.dll,dxcompiler.dll,dxil.dll,icudtl.dat,libEGL.dll,libGLESv2.dll,locales,locales/*,PepperFlash,PepperFlash/*,resources.pak,SecondaryTile.png,v8_context_snapshot.bin,WidevineCdm,WidevineCdm/*',
+          'chrome.dll,chrome.exe,chrome_100_percent.pak,chrome_200_percent.pak,chrome_child.dll,chrome_elf.dll,chrome_watcher.dll,chromedriver.exe,default_apps,default_apps/*,d3dcompiler_47.dll,dxcompiler.dll,dxil.dll,icudtl.dat,libEGL.dll,libGLESv2.dll,locales,locales/*,PepperFlash,PepperFlash/*,resources.pak,SecondaryTile.png,v8_context_snapshot.bin,vk_swiftshader.dll,vk_swiftshader_icd.json,vulkan-1.dll,WidevineCdm,WidevineCdm/*',
           '--whitelist',
           '^\\d+\\.\\d+\\.\\d+\\.\\d+\\.manifest$',
           '--exclude-extra',
