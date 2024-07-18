@@ -266,10 +266,13 @@ def RunSteps(api):
   first_dir = str(default_build_dir)
   if not check_different_build_dirs:
     first_dir = first_dir.rstrip('\\/') + '.1'
-  api.isolate.compare_build_artifacts(
-      source_dir, first_dir,
-      str(default_build_dir).rstrip('\\/') + '.2')
-
+  second_dir = str(default_build_dir).rstrip('\\/') + '.2'
+  try:
+    api.isolate.compare_build_artifacts(source_dir, first_dir, second_dir)
+  finally:
+    # remove Debug* to free up disk space in builder cache.
+    api.file.rmtree('rmtree %s' % first_dir, first_dir)
+    api.file.rmtree('rmtree %s' % second_dir, second_dir)
 
 def _sanitize_nonalpha(text):
   return ''.join(c if c.isalnum() else '_' for c in text)
