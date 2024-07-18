@@ -766,7 +766,7 @@
       "--json-file",
       "/path/to/tmp/json",
       "--url",
-      "https://chromium.googlesource.com/chromium/src.git/+/main/chrome/test/base/interactive_test_utils.cc",
+      "https://chromium.googlesource.com/chromium/src.git/+/main/content/test/content_browser_test_test.cc",
       "--format",
       "text"
     ],
@@ -782,7 +782,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "fetch main:chrome/test/base/interactive_test_utils.cc"
+    "name": "fetch main:content/test/content_browser_test_test.cc"
   },
   {
     "cmd": [
@@ -875,7 +875,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "update contents in CL 11235813.store the new content for chrome/test/base/interactive_test_utils.cc",
+    "name": "update contents in CL 11235813.store the new content for content/test/content_browser_test_test.cc",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -890,7 +890,7 @@
       "--change",
       "11235813",
       "--path",
-      "chrome/test/base/interactive_test_utils.cc",
+      "content/test/content_browser_test_test.cc",
       "--file",
       "[CLEANUP]/tmp_tmp_1"
     ],
@@ -910,7 +910,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "update contents in CL 11235813.gerrit edit file chrome/test/base/interactive_test_utils.cc",
+    "name": "update contents in CL 11235813.gerrit edit file content/test/content_browser_test_test.cc",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

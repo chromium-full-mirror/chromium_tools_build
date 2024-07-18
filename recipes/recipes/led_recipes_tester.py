@@ -54,13 +54,13 @@ BUILDER_FOOTER = 'Led-Recipes-Tester-Builder'
 # the subsequent chromium.try led builds.
 # Touching `DEPS` causes analyze to compile and test all targets.
 FILE_TO_TRIGGER_EXTENSIVE_TESTING = 'DEPS'
-# Touching `chrome/test/base/interactive_test_utils.cc` results in just
-# interactive_ui_tests being built and run. This is a relatively fast, but still
+# Touching `content/test/content_browser_test_test.cc` results in just
+# content_browsertests being built and run. This is a relatively fast, but still
 # swarmed w/ multiple shards, test suite. This fast verification is used for
 # "upstream-only-changes" on the assumption that no upstream code would (should)
 # have variable effects based on WHICH test suite is executed, so we just need
 # to pick SOME test suite.
-FILE_TO_TRIGGER_SHORT_TESTING = 'chrome/test/base/interactive_test_utils.cc'
+FILE_TO_TRIGGER_SHORT_TESTING = 'content/test/content_browser_test_test.cc'
 # Touching //ui/android/run_all_unittests.cc should similarly trigger just
 # "ui_android_unittests suite on android. It should be relatively quick to both
 # compile and test.
